@@ -23,7 +23,7 @@ const Page = () => {
             />
             <div className=' flex justify-self-end items-center mt-10'>
                 <Tabs  defaultValue="today" className='w-full flex justify-end'> 
-                    <TabsList className='flex items-center gap-2 bg-[#EBEBEB]  rounded-full p-1'>
+                    <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
                         <TabsTrigger value="today" className={cn(
                             "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
                         )}>Today</TabsTrigger>
@@ -395,7 +395,7 @@ const Page = () => {
                             <h3 className='text-xl font-semibold'>Transaction History</h3>
                             <div>
                                 <Tabs value={active} onValueChange={setActive} defaultValue="all" className='w-full '>
-                                    <TabsList className='flex items-center gap-2 bg-[#EBEBEB]  rounded-full p-1'>
+                                    <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
                                         <TabsTrigger value="all" className={cn(
                                             "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
                                         )}>All</TabsTrigger>

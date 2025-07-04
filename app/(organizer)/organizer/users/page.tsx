@@ -45,28 +45,31 @@ const Page = () => {
                 </div>
             </div>
             <div className='grid grid-cols-12 '>
-                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  px-8 '>
+                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2 '>
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                         <h3 className='text-xl font-semibold'>Organizer List</h3>
                         <div>
                             <Tabs value={active} onValueChange={setActive} className="w-full">
-                                <TabsList className="flex items-center gap-2 bg-transparent rounded-full p-1">
-                                    {organizerTabs.map((tab: any) => (
-                                        <TabsTrigger
-                                            key={tab.value}
-                                            value={tab.value}
-                                            className={`text-md font-semibold relative rounded-full px-4 py-2 transition-colors
+                                <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
+
+                                    <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1">
+                                        {organizerTabs.map((tab: any) => (
+                                            <TabsTrigger
+                                                key={tab.value}
+                                                value={tab.value}
+                                                className={`text-md font-semibold relative rounded-full px-4 py-2 transition-colors
                                          ${active === tab.value
-                                                    ? "text-primary border-b-2 border-primary"
-                                                    : "text-muted-foreground"}`}
-                                        >
-                                            <span className="flex items-center gap-1">
-                                                {tab.label}
-                                                {tab.icon && <tab.icon className="h-4 w-4" />}
-                                            </span>
-                                        </TabsTrigger>
-                                    ))}
-                                </TabsList>
+                                                        ? "text-primary border-b-2 border-primary"
+                                                        : "text-muted-foreground"}`}
+                                            >
+                                                <span className="flex items-center gap-1">
+                                                    {tab.label}
+                                                    {tab.icon && <tab.icon className="h-4 w-4" />}
+                                                </span>
+                                            </TabsTrigger>
+                                        ))}
+                                    </TabsList>
+                                </div>
                             </Tabs>
                         </div>
                         <div className='flex flex-col md:items-center items-end'>

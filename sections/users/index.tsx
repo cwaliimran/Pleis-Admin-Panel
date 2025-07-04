@@ -1,5 +1,5 @@
 
-export { organizerData, userData } from './data'
+export { organizerData, userData,activePromontions } from './data'
 
 export { default as UserDetailPage } from './userDetailPage'
 
@@ -16,6 +16,12 @@ export { default as UserCalender } from './userCalender'
 export { default as Useranalytics } from './useranalytics'
 
 export { default as UserLoyalty } from './userLoyalty'
+
+export { default as TotalFollowers } from './totalFollowers'
+
+export { default as ActivePromontion } from './activePromontion'
+
+export { default as BusinessInfo } from './businessInfo'
 
 export { default as userCard } from './userCard'
 

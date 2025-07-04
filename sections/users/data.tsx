@@ -124,25 +124,39 @@ export const organizerTabs = [
 ]
 
 export const userData=[
-    {
+    {  _id: 1,
         title:"Total Revenue",
         value: 1000,
         status: "up",
     },
-    {
+    {    _id:2,
         title:"Views",
         value: 5000,
         status: "up",
         total: 10000,   
     },
-    {
+    {    _id:3,
         title:"Total Tickets Sold",
         value: 200,
         status: "down",
     },
-    {
+    {  _id:4,
         title:"Orgainizer Events",
         value: 5,
         status: "up",
     },
 ]
+
+
+export const activePromontions=[
+    {
+        title:"Vigor Challenge",
+        description:"Drink 2x Vodkas"
+    },
+    {
+        title:"Early Bird Tickets",
+        description:"2+1 Free Drink",
+    }
+]
+
+export const userTags=["Clubbing","Techno","Clubbing","Techno"]
