@@ -2,16 +2,17 @@
 import React from "react";
 import Header from "../common/header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { loyaltPoints, loyaltTabsData, loyaltyCardData, rewardData, tabsData } from "@/sections/loyalty/data";
+import { loyaltPoints, loyaltTabsData, loyaltyCardData, rewardData, rewardsTabs, tabsData } from "@/sections/loyalty/data";
 import { Button } from "@/components/ui/button";
 import { useBoolean } from "@/hooks/useBoolean";
 import { Plus, Settings2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { GenderDonutChart, InvoiceCard, MostViewedEvent, Trend, ViewsOverTime, VisitorAge, VisitorRegion } from "@/sections/invoices";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogOverlay, DialogTitle } from "@/components/ui/dialog";
-import { LoyaltyCard, PointsDistribution } from "@/sections/loyalty";
+import { LoyaltyCard, MostEngagedMembers, PointsDistribution } from "@/sections/loyalty";
 import RewardCard from "@/sections/loyalty/rewardCard";
+import LoyaltyList from "@/sections/loyalty/loyaltyList";
 
 const Page = () => {
     const openModal = useBoolean();
@@ -375,7 +376,26 @@ const Page = () => {
                 </div>
             </div>
             <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
-                {/* <div className="border border-red-500"></div> */}
+                <div className="">
+                    <Card className='col-span-12 md:col-span-6 shadow-lg '>
+                        <CardHeader>
+                            <div className='flex justify-between items-center'>
+                                <h3 className='text-xl font-semibold'>Most Engaged Members</h3>
+                            </div>
+                        </CardHeader>
+                        <MostEngagedMembers />
+                    </Card>
+                </div>
+                <div className="">
+                    <Card className='col-span-12 md:col-span-6 shadow-lg   '>
+                        <CardHeader>
+                            <div className='flex justify-between items-center'>
+                                <h3 className='text-xl font-semibold'>Most Engaged Members</h3>
+                            </div>
+                        </CardHeader>
+                        <MostEngagedMembers />
+                    </Card>
+                </div>
                 {/* <div className="border border-red-500"></div> */}
                 <div className="">
                     <Card className='col-span-12 md:col-span-6 shadow-lg h-[500px]'>
@@ -476,8 +496,44 @@ const Page = () => {
                             }}
                         />
                     </Card>
-
                 </div>
+            </div>
+            <div className="grid grid-cols-1 md:gap-4  mt-5 ">
+                <Card className='shadow-lg  '>
+                    <CardHeader>
+                        <div className='flex md:flex-row flex-col md:justify-between items-center gap-4'>
+                            <Tabs value={active} onValueChange={setActive} className="w-[80vw] md:w-full mt-5">
+                                <div className="overflow-x-auto whitespace-nowrap ">
+                                    <TabsList className="flex w-max items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
+                                        {rewardsTabs.map((tab: any) => (
+                                            <TabsTrigger
+                                                key={tab.value}
+                                                value={tab.value}
+                                                className={`text-md font-semibold relative rounded-full px-4 py-2 transition-colors ${active === tab.value
+                                                    ? "text-primary"
+                                                    : "text-muted-foreground"
+                                                    }`}
+                                            >
+                                                <span className="flex items-center gap-1">
+                                                    {tab.label}
+                                                    {tab.icon && <tab.icon className="h-4 w-4" />}
+                                                </span>
+                                            </TabsTrigger>
+                                        ))}
+                                    </TabsList>
+                                </div>
+                            </Tabs>
+                            <Badge className="bg-white text-black shadow-md px-3 py-1 rounded-sm text-md flex items-center gap-2 cursor-pointer">
+                                <Settings2 className="w-5 h-5" />
+                                <span className="whitespace-nowrap">By Profile</span>
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <LoyaltyList />
+                    </CardContent>
+
+                </Card>
             </div>
             <Dialog open={openModal.value} onOpenChange={openModal.onToggle}>
                 <DialogOverlay

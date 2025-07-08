@@ -23,7 +23,7 @@ const RewardCard: FC<PageProps> = ({ item }) => {
                                 {item.name}
                             </h1>
                             <p className='text-md  text-gray-400'>
-                                {item.description.length > 45 ? item.description.slice(0, 45) + '...' : item.description}
+                                {item.description.length > 30 ? item.description.slice(0, 30) + '...' : item.description}
                             </p>
                             <div className='flex'>
                                 <h1 className='text-md font-bold text-gray-400 mt-2'>
