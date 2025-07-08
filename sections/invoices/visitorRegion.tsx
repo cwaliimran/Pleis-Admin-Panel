@@ -14,11 +14,11 @@ import {
 
 
 interface PageProps {
-    chartData: Array<{ month: string; males: number; females: number, others: number }>
+    chartData: Array<{ month: string; males: number; females: number, others?: number }>
     chartConfig: {
         males: { label: string; color: string }
         females: { label: string; color: string }
-        others: { label: string; color: string }
+        others?: { label: string; color: string }
     }
 }
 const VisitorRegion: FC<PageProps> = ({ chartData, chartConfig }) => {
@@ -44,9 +44,9 @@ const VisitorRegion: FC<PageProps> = ({ chartData, chartConfig }) => {
                     />
                     <Bar
                         dataKey="others"
-                        fill={chartConfig.others.color}
+                        fill={chartConfig?.others?.color}
                         radius={[4, 4, 0, 0]}
-                        name={chartConfig.others.label}
+                        name={chartConfig?.others?.label}
                     />
                 </BarChart>
             </ResponsiveContainer>

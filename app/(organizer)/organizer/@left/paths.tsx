@@ -11,6 +11,7 @@ export const paths = {
         home: "/organizer/home",
         users: "/organizer/users",
         tags: "/organizer/tags",
+        loyalty: "/organizer/loyalty",
         notification: "/organizer/notification",
         boost: "/organizer/boost",
         settings: "/organizer/settings",

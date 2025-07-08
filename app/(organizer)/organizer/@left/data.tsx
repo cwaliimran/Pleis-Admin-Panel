@@ -8,7 +8,8 @@ import {
     Tags,
     Bell,
     Rocket,
-    LayoutDashboard
+    LayoutDashboard,
+    CreditCard
 } from "lucide-react"
 import { paths } from "./paths"
 
@@ -56,7 +57,13 @@ export const menuGroups: MenuGroup[] = [
         label: "Tags",
         key: paths.organizer.tags,
         icon: Tags
-    }, {
+    },
+    {
+        label:"Loyalty",
+        key: paths.organizer.loyalty,
+        icon:CreditCard
+    },
+     {
         label: "Notification",
         key: paths.organizer.notification,
         icon: Bell

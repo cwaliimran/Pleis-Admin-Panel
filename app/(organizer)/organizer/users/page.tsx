@@ -5,14 +5,16 @@ import TableHeadCustom from '@/components/table/table-head-custom'
 import { Table } from '@/components/ui/table'
 import { organizerData, UserTableRow } from '@/sections/users'
 import { Button } from '@/components/ui/button'
-import { ChevronsUpDown, Plus } from 'lucide-react'
+import { ChevronsUpDown, Plus, Settings2, X } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/lib/utils'
 import { organizerTabs, tabsData } from '@/sections/users/data'
+import { Badge } from '@/components/ui/badge'
+import { useBoolean } from '@/hooks/useBoolean'
+import { Dialog, DialogContent, DialogOverlay, DialogTitle } from '@/components/ui/dialog'
 
 
 const headLabel = [
@@ -26,7 +28,10 @@ const headLabel = [
     { id: "actions", label: "", align: "end" },
 ]
 const Page = () => {
+
+    const openModal = useBoolean();
     const [active, setActive] = useState("all");
+
     return (
         <div className=''>
             <Header
@@ -38,7 +43,8 @@ const Page = () => {
             <div className='flex justify-between mt-10'>
                 <div></div>
                 <div >
-                    <Button className='bg-blue-600 text-white rounded-3xl cursor-pointer hover:bg-blue-700 transition-colors flex items-center gap-2 px-4 py-2'>
+                    <Button className='bg-blue-600 text-white rounded-3xl cursor-pointer hover:bg-blue-700 transition-colors flex items-center gap-2 px-4 py-2'
+                        onClick={openModal.onTrue}>
                         <Plus />
                         Add Organizer
                     </Button>
@@ -47,7 +53,7 @@ const Page = () => {
             <div className='grid grid-cols-12 '>
                 <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2 '>
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
-                        <h3 className='text-xl font-semibold'>Organizer List</h3>
+                        <h3 className='text-xl font-semibold md:ml-0 ml-2'>Organizer List</h3>
                         <div>
                             <Tabs value={active} onValueChange={setActive} className="w-full">
                                 <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
@@ -59,7 +65,7 @@ const Page = () => {
                                                 value={tab.value}
                                                 className={`text-md font-semibold relative rounded-full px-4 py-2 transition-colors
                                          ${active === tab.value
-                                                        ? "text-primary border-b-2 border-primary"
+                                                        ? "text-primary"
                                                         : "text-muted-foreground"}`}
                                             >
                                                 <span className="flex items-center gap-1">
@@ -73,20 +79,12 @@ const Page = () => {
                             </Tabs>
                         </div>
                         <div className='flex flex-col md:items-center items-end'>
-                            <Select defaultValue='all'>
-                                <SelectTrigger >
-                                    <SelectValue placeholder="" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup className='w-auto'>
-                                        <SelectLabel>Transaction</SelectLabel>
-                                        <SelectItem value="all">All</SelectItem>
-                                        <SelectItem value="today">Today</SelectItem>
-                                        <SelectItem value="thisWeek">This Week</SelectItem>
-                                        <SelectItem value="thisMonth">This Month</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+
+                            <Badge className="bg-white text-black shadow-md px-3 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
+                                <Settings2 className="w-10 h-10" />
+                                <span className="whitespace-nowrap cursor-pointer ">By Profile</span>
+
+                            </Badge>
                         </div>
                     </div>
                     <div className='w-full '>
@@ -150,6 +148,24 @@ const Page = () => {
 
                 </Card>
             </div>
+            <Dialog open={openModal.value} onOpenChange={openModal.onToggle}>
+                <DialogOverlay
+                    className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center">
+                    <DialogContent>
+                        <DialogTitle>Update User Information </DialogTitle>
+                        <div className='flex flex-col gap-4'>
+                            <input type="text" placeholder="Organizer Name" className='shadow-md z-10 p-2 rounded-md' />
+                            <input type="email" placeholder="Email" className='shadow-md z-10 p-2 rounded-md' />
+                            <input type="tel" placeholder="Phone Number" className='shadow-md z-10 p-2 rounded-md' />
+                            <input type="text" placeholder="Address" className='shadow-md z-10 p-2 rounded-md' />
+                        </div>
+                        <div className='flex justify-end mt-4'>
+                            <Button onClick={openModal.onFalse} variant={"outline"} className='mr-2  cursor-pointer'>Cancel</Button>
+                            <Button onClick={openModal.onFalse} className='cursor-pointer'>Update User</Button>
+                        </div>
+                    </DialogContent>
+                </DialogOverlay>
+            </Dialog>
 
         </div>
     )

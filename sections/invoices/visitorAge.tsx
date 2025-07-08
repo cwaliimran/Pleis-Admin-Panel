@@ -21,7 +21,7 @@ const VisitorAge: FC<VisitorAgeProps> = ({ data }) => {
 
     return (
         <>
-            <div className="w-full h-[400px]">
+            <div className="w-full h-[400px] ">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={data}
@@ -35,7 +35,7 @@ const VisitorAge: FC<VisitorAgeProps> = ({ data }) => {
                         <Bar
                             dataKey="visitors"
                             fill="#2563EB"
-                            background={{ fill: '#f1f5f9' }}
+                            background={{ fill: '#f1f5f9',radius: 10 }}
                             radius={[10, 10, 10, 10]}
                         >
                             <LabelList dataKey="visitors" position="right" fill="#000" />

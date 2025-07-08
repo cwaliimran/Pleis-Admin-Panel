@@ -123,40 +123,63 @@ export const organizerTabs = [
     }
 ]
 
-export const userData=[
-    {  _id: 1,
-        title:"Total Revenue",
+export const userData = [
+    {
+        _id: 1,
+        title: "Total Revenue",
         value: 1000,
         status: "up",
     },
-    {    _id:2,
-        title:"Views",
+    {
+        _id: 2,
+        title: "Views",
         value: 5000,
         status: "up",
-        total: 10000,   
+        total: 10000,
     },
-    {    _id:3,
-        title:"Total Tickets Sold",
+    {
+        _id: 3,
+        title: "Total Tickets Sold",
         value: 200,
         status: "down",
     },
-    {  _id:4,
-        title:"Orgainizer Events",
+    {
+        _id: 4,
+        title: "Orgainizer Events",
         value: 5,
         status: "up",
     },
 ]
 
 
-export const activePromontions=[
+export const activePromontions = [
     {
-        title:"Vigor Challenge",
-        description:"Drink 2x Vodkas"
+        title: "Vigor Challenge",
+        description: "Drink 2x Vodkas"
     },
     {
-        title:"Early Bird Tickets",
-        description:"2+1 Free Drink",
+        title: "Early Bird Tickets",
+        description: "2+1 Free Drink",
     }
 ]
 
-export const userTags=["Clubbing","Techno","Clubbing","Techno"]
+export const userTags = ["Clubbing", "Techno", "Clubbing", "Techno"]
+
+export const dateTabs = [
+    {
+        value: "today",
+        label: 'Today'
+    },
+    {
+        value: "week",
+        label: 'Week'
+    },
+    {
+        value: "month",
+        label: 'Month'
+    },
+    {
+        value: "all",
+        label: "All"
+    }
+]

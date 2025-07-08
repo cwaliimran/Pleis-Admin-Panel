@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Josefin_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { metadata } from './metadata'
 import { ThemeProvider } from "@/components/templates/theme-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const poppins = Poppins({
+  variable: "--font-poppins",
+  weight: ["100", "200", "300", "400", "500", "600"],
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const josefin = Josefin_Sans({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${poppins.variable} ${josefin.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

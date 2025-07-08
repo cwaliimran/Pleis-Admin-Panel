@@ -22,7 +22,7 @@ const Page = () => {
                 ]}
             />
             <div className=' flex justify-self-end items-center mt-10'>
-                <Tabs  defaultValue="today" className='w-full flex justify-end'> 
+                <Tabs defaultValue="today" className='w-full flex justify-end'>
                     <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
                         <TabsTrigger value="today" className={cn(
                             "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
@@ -47,7 +47,7 @@ const Page = () => {
                     />
                 ))}
             </div>
-            <Card className='shadow-lg mt-10'>
+            <Card className='shadow-lg mt-5'>
                 <CardHeader>
                     <div className='flex justify-between items-center'>
                         <h3 className='text-xl font-semibold'>Event Performance Comparison</h3>
@@ -85,7 +85,7 @@ const Page = () => {
             </Card>
             <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-2 mt-5'>
                 <div>
-                    <Card className='shadow-lg mt-10 w-full h-[550px]'>
+                    <Card className='shadow-lg  w-full h-[550px]'>
                         <CardHeader>
                             <div className='flex justify-start items-center'>
                                 <h3 className='text-xl font-semibold'>Visitor Age Demographics</h3>
@@ -101,13 +101,18 @@ const Page = () => {
                                     { ageGroup: "55+", visitors: 70 }
                                 ]}
                             />
+                            <div className="mx-4 mt-4">
+                                <p className="text-sm text-muted-foreground font-medium">
+                                    <span className="text-xl font-bold text-black">66%</span> visitors are 45-55 years old
+                                </p>
+                            </div>
                         </div>
                     </Card>
 
                 </div>
 
                 <div>
-                    <Card className='shadow-lg mt-10 h-[550px]'>
+                    <Card className='shadow-lg  h-[550px]'>
                         <CardHeader>
                             <div className='flex justify-between items-center '>
                                 <h3 className='text-xl font-semibold'>Visitor Region Overview</h3>
@@ -151,7 +156,7 @@ const Page = () => {
                     </Card>
                 </div>
                 <div>
-                    <Card className='shadow-lg mt-10 h-[550px]'>
+                    <Card className='shadow-lg  h-[550px]'>
                         <CardHeader>
                             <div className='flex justify-between items-center'>
                                 <h3 className='text-xl font-semibold'>Visitor Gender Analytics</h3>
@@ -190,8 +195,7 @@ const Page = () => {
 
             </div>
             <div className='grid grid-cols-12 gap-4 mt-5'>
-
-                <Card className='col-span-12 md:col-span-7 shadow-lg mt-10 h-[550px]'>
+                <Card className='col-span-12 md:col-span-7 shadow-lg h-[550px]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <div className='flex items-center flex-col'>
@@ -241,7 +245,7 @@ const Page = () => {
                     } />
                 </Card>
 
-                <Card className='col-span-12 md:col-span-5 shadow-lg mt-10 h-[550px]'>
+                <Card className='col-span-12 md:col-span-5 shadow-lg  h-[550px]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Visitor Interest</h3>
@@ -279,7 +283,7 @@ const Page = () => {
                 </Card>
             </div>
             <div className='grid grid-cols-12 gap-4 mt-5 '>
-                <Card className='col-span-12 md:col-span-6 shadow-lg mt-10 h-[550px]'>
+                <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Views Over Time</h3>
@@ -317,7 +321,7 @@ const Page = () => {
 
                     />
                 </Card>
-                <Card className='col-span-12 md:col-span-6 shadow-lg mt-10 h-[550px]'>
+                <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Most Viewed Event</h3>
@@ -342,7 +346,7 @@ const Page = () => {
                 </Card>
             </div>
             <div className='grid grid-cols-12 gap-4 mt-5'>
-                <Card className='col-span-12 md:col-span-6 shadow-lg mt-10 h-[550px]'>
+                <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Follower Count</h3>
@@ -379,7 +383,7 @@ const Page = () => {
                         ]}
                     />
                 </Card>
-                <Card className='col-span-12 md:col-span-6 shadow-lg mt-10 h-[550px]'>
+                <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Top Performing Events</h3>
@@ -388,8 +392,8 @@ const Page = () => {
                     <TopPerformaningEvents />
                 </Card>
             </div>
-            <div className='grid grid-cols-12'>
-                <Card className='col-span-12 shadow-lg mt-10'>
+            <div className='grid grid-cols-12 mt-5'>
+                <Card className='col-span-12 shadow-lg '>
                     <CardHeader>
                         <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                             <h3 className='text-xl font-semibold'>Transaction History</h3>
@@ -430,12 +434,13 @@ const Page = () => {
                 </Card>
             </div>
             <div className='grid grid-cols-12 gap-4 mt-5'>
-                {DashboardCardData.map((item:any,index)=>(
+                {DashboardCardData.map((item: any, index) => (
                     <div key={index} className='col-span-12 md:col-span-4  '>
                         <DashboardCard item={item} />
                     </div>
                 ))}
             </div>
+            
         </div >
     )
 }

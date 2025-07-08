@@ -182,7 +182,7 @@ const UserInfo = () => {
                                 <img
                                     key={index}
                                     src="/images/bannerImage.png"
-                                    className='col-span-6 md:col-span-3 w-full h-[140px] rounded-lg object-cover cursor-pointer'
+                                    className='col-span-6 md:col-span-3 w-full md:h-[140px] h-[100px] rounded-lg object-cover cursor-pointer'
                                     alt={`Gallery Image ${index + 1}`}
                                 />
                             )

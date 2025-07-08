@@ -48,7 +48,7 @@ const UserTableRow: FC<PageProps> = ({ item }) => {
                 )}
             </TableCell>
             <TableCell className='text-end '>
-                <Ellipsis className='cursor-pointer' />
+                <Ellipsis className='cursor-pointer' onClick={(e) => e.stopPropagation()} />
             </TableCell>
         </TableRow>
     )

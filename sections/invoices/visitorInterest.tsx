@@ -22,7 +22,7 @@ interface PageProps {
 }
 const VisitorInterest: FC<PageProps> = ({ chartData, chartConfig }) => {
   return (
-    <div className="w-full h-[400px]">
+    <div className="w-full h-[400px] border ">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
           <XAxis dataKey="month" />

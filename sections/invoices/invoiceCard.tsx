@@ -9,7 +9,8 @@ interface InvoiceCardProps {
         title: string;
         amount: number;
         status: string;
-        raise: string;
+        raise?: string;
+        menu?: boolean
     };
 }
 const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
@@ -21,7 +22,7 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
                         <h3 className="text-lg font-semibold">{item.title.length > 20 ? item.title.slice(0, 20) + "..." : item.title}</h3>
                     </div>
                     <div>
-                        <Select defaultValue='all'>
+                        {item.menu && <Select defaultValue='all'>
                             <SelectTrigger className=' rounded-3xl '>
                                 <SelectValue placeholder="" />
                             </SelectTrigger>
@@ -36,17 +37,16 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
                                     <SelectItem value="upcoming">UpComing</SelectItem>
                                 </SelectGroup>
                             </SelectContent>
-                        </Select>
+                        </Select>}
                     </div>
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                    <p className="text-3xl font-bold">{item.amount.toFixed(0)}</p>
-                    <div className='flex items-center bg-[#79D48B] text-white px-3 py-1 rounded-full text-xs font-semibold'>
+                {item.amount && <div className="flex justify-between items-center mt-2">
+                    <p className="text-3xl font-bold">{item?.amount?.toFixed(0)}</p>
+                    {item.raise && <div className='flex items-center bg-[#79D48B] text-white px-3 py-1 rounded-full text-xs font-semibold'>
                         <TrendingUp />
                         <p>{item.raise}</p>
-                    </div>
-
-                </div>
+                    </div>}
+                </div>}
 
             </CardHeader>
         </Card>
