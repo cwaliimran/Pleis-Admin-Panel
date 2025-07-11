@@ -43,7 +43,7 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
           src="/images/l-reversed.png"
           alt="Dark Logo"
         /> */}
-        <h1 className=' text-5xl font-bold text-center my-1'>Pleis</h1>
+        <h1 className=' text-5xl font-bold text-center my-1'>PLEIS</h1>
       </SidebarHeader>
 
       <SidebarContent>

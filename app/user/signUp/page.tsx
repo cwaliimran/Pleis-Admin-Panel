@@ -55,7 +55,7 @@ const Page = () => {
                         src="/images/l-reversed.png"
                         alt="Dark Logo"
                     /> */}
-                    <h1 className='md:text-7xl text-5xl font-bold'>Pleis</h1>
+                    <h1 className='md:text-7xl text-5xl font-bold'>PLEIS</h1>
                 </div>
                 <div className='
                 md:col-span-4 col-span-12 items-center justify-center flex flex-col dark:shadow-none shadow-2xl dark:bg-[#1e1e2d] md:m-5 m-2 rounded-[5px] md:min-h-[90vh] min-h-[70vh] '>
