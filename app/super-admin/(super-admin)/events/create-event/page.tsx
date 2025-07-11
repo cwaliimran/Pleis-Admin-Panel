@@ -118,7 +118,7 @@ const Page = () => {
                                         name='name'
                                         label='Name'
                                         placeholder='Enter Name of Event'
-                                        className='w-full my-1 rounded-4xl py-4 px-3 bg-transparent'
+                                        className={`w-full my-1 rounded-4xl py-4 px-3 bg-transparent ${methods.formState.errors.name ? 'border-red-400' : ''}`}
                                     />
 
                                     <div className='flex w-full md:flex-row flex-col  gap-4 md:mb-2'>
@@ -195,12 +195,12 @@ const Page = () => {
                                 </div>
 
                                 <div>
-                                    <div className='w-full flex  gap-4 md:flex-row flex-col'>
+                                    <div className='w-full flex  gap-4 md:flex-row flex-col items-start'>
                                         <RHFDate
                                             name="fromDate"
                                             label="From Date"
                                             placeholder="Pick a date"
-                                            className="flex-1"
+                                            className={` ${methods.formState.errors.fromDate ? 'border-red-400' : ''}`}
                                         />
                                         <RHFDate
                                             name="endDate"

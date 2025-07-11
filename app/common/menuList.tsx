@@ -33,7 +33,7 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
   return (
     <Sidebar>
       <SidebarHeader>
-        <img
+        {/* <img
           className="block dark:hidden ml-10 w-[60%] md:w-[60%] max-w-xs mb-10"
           src="/images/l-standard.png"
           alt="Light Logo"
@@ -42,7 +42,8 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
           className="hidden dark:block ml-10 w-[60%] md:w-[60%] max-w-xs mb-10"
           src="/images/l-reversed.png"
           alt="Dark Logo"
-        />
+        /> */}
+        <h1 className=' text-5xl font-bold text-center my-1'>Pleis</h1>
       </SidebarHeader>
 
       <SidebarContent>

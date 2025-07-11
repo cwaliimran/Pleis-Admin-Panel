@@ -42,7 +42,7 @@ const Page = () => {
             <div className='grid md:grid-cols-3 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5'>
                 {invoicesData.map((item: any) => (
                     <InvoiceCard
-                        key={item?.id}
+                        key={item?._id}
                         item={item}
                     />
                 ))}

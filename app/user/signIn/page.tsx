@@ -9,6 +9,7 @@ import RHFTextField from '@/components/rhf/rhf-text-field';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const defaultValues = {
     email: "",
@@ -17,6 +18,8 @@ const defaultValues = {
 
 const Page = () => {
 
+
+    const router = useRouter();
     const open = useBoolean();
 
     const schema = Yup.object().shape({
@@ -29,14 +32,14 @@ const Page = () => {
         resolver: yupResolver(schema),
     });
     const onSubmit = (data: any) => {
-        console.log(data);
+        router.push('/super-admin')
     }
     return (
         <div>
             <div className="w-full h-screen grid grid-cols-12 items-center 
              bg-[url('/images/bg10.jpeg')] dark:bg-[url('/images/bg10-dark.jpeg')] bg-cover bg-no-repeat bg-center">
                 <div className='md:col-span-8 col-span-12  items-center justify-center flex flex-col '>
-                    <img
+                    {/* <img
                         className="block dark:hidden mx-auto w-[60%] md:w-[100%] max-w-xs "
                         src="/images/l-standard.png"
                         alt="Light Logo"
@@ -46,7 +49,8 @@ const Page = () => {
                         className="hidden dark:block mx-auto w-[60%] md:w-[100%] max-w-xs mb-10  "
                         src="/images/l-reversed.png"
                         alt="Dark Logo"
-                    />
+                    /> */}
+                    <h1 className='md:text-7xl text-5xl font-bold'>Pleis</h1>
                 </div>
                 <div className='md:col-span-4 col-span-12 items-center justify-center flex flex-col dark:shadow-none shadow-2xl dark:bg-[#1e1e2d] md:m-5 m-2 rounded-[5px] md:min-h-[90vh] min-h-[60vh] '>
                     <h1 className='font-bold text-3xl mb-10 md:mt-0'>
@@ -78,9 +82,9 @@ const Page = () => {
                             </Button>
 
                         </FormProvider>
-                        <div className='text-center text-gray-400 mt-10'>
+                        {/* <div className='text-center text-gray-400 mt-10'>
                             <p className='text-sm'>Don't have an account? <Link href="/user/signUp" className='text-blue-500 hover:underline'>Sign Up</Link></p>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

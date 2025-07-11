@@ -2,76 +2,92 @@
 
 export const invoicesData = [
     {
-        _id: "INV-001",
-        title: "Web Development Services",
+        _id: 1,
+        title: "Total Users",
         amount: 1500,
         status: "paid",
-        raise: "+2,14%"
+        raise: "+2,14%",
+        menu: true
     },
     {
-        _id: "INV-002",
-        title: "Graphic Design Services",
+        _id: 2,
+        title: "Total Organizers",
         amount: 800,
         status: "unpaid",
-        raise: "+1,50%"
+        raise: "+1,50%",
+        menu: true
     },
     {
-        _id: "INV-003",
-        title: "SEO Optimization Services",
+        _id: 3,
+        title: "Total Events",
         amount: 1200,
         status: "paid",
-        raise: "+3,00%"
+        raise: "+3,00%",
+        menu: true
     },
     {
-        _id: "INV-004",
-        title: "Content Writing Services",
+        _id: 4,
+        title: "Total Revenue",
         amount: 600,
         status: "overdue",
-        raise: "-1,00%"
+        menu: true
     },
     {
-        _id: "INV-005",
-        title: "Social Media Management",
+        _id: 5,
+        title: "Ticket Solid",
         amount: 900,
         status: "paid",
-        raise: "+2,50%"
+        raise: "+2,50%",
+        menu: true
     },
     {
-        _id: "INV-006",
-        title: "Email Marketing Campaign",
+        _id: 6,
+        title: "Active Users",
         amount: 700,
         status: "unpaid",
-        raise: "+1,75%"
+        raise: "+1,75%",
+        menu: true
     },
     {
-        _id: "INV-007",
-        title: "Mobile App Development",
+        _id: 7,
+        title: "Conversion Role",
         amount: 2000,
         status: "paid",
-        raise: "+4,00%"
+        raise: "+4,00%",
+        menu: true
     },
     {
-        id: "INV-008",
-        title: "UI/UX Design Services",
-        amount: 1100,
+        _id: 8,
+        title: "Average Revenue per User",
+        amount: 2348,
         status: "paid",
-        raise: "+2,20%"
+        raise: "+2.14%",
+        menu: true,
     },
     {
-        _id: "INV-009",
-        title: "Digital Marketing Strategy",
-        amount: 1300,
-        status: "unpaid",
-        raise: "+1,80%"
+        _id: 9,
+        title: "Cart Abandonment Rate",
+        amount: 2348,
+        status: "pending",
+        raise: "+2.14%",
+        menu: true,
     },
     {
-        _id: "INV-010",
-        title: "E-commerce Website Development",
-        amount: 1800,
+        _id: 10,
+        title: "Total Payout to Organizer",
+        amount: 2348,
         status: "paid",
-        raise: "+3,50%"
+        raise: "+2.14%",
+        menu: true,
+    },
+    {
+        _id: 11,
+        title: "Average Ticket Price",
+        amount: 2348,
+        status: "paid",
+        raise: "+2.14%",
+        menu: true,
     }
-
 ]
 
 
@@ -181,24 +197,24 @@ export const TransactionHistoryData = [
 
 export const DashboardCardData = [
     {
-        name:"Jane Smith",
+        name: "Jane Smith",
         title: "Web Development Services",
         description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
         location: "New York, USA",
-        status:'new request'
+        status: 'new request'
     },
     {
-        name:"Alice Johnson",
+        name: "Alice Johnson",
         title: "Graphic Design Services",
         description: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
         location: "Los Angeles, USA",
-        status:'new request'
+        status: 'new request'
     },
     {
-        name:"Bob Brown",
+        name: "Bob Brown",
         title: "SEO Optimization Services",
         description: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
         location: "Chicago, USA",
-        status:'rejected'
+        status: 'rejected'
     }
 ]

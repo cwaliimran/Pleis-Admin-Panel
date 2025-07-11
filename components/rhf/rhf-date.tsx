@@ -35,8 +35,8 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
     <FormField
       control={control}
       name={name}
-      render={({ field }) => (
-        <FormItem className={className}>
+      render={({ field,formState:{errors} }) => (
+        <FormItem className={"flex-1"}>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             <Popover>
@@ -44,8 +44,9 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
                 <Button
                   variant="outline"
                   className={cn(
+                    className,
                     "w-full justify-start text-left font-normal",
-                    !field.value && "text-muted-foreground"
+                    !field.value && "text-muted-foreground",
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -57,7 +58,6 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
                   mode="single"
                   selected={field.value}
                   onSelect={field.onChange}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>
