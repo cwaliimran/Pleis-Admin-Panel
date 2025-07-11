@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Header from "../common/header";
+import Header from "../../../common/header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { loyaltPoints, loyaltTabsData, loyaltyCardData, rewardData, rewardsTabs, tabsData } from "@/sections/loyalty/data";
 import { Button } from "@/components/ui/button";

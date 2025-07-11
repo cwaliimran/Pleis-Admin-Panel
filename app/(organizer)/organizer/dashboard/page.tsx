@@ -1,7 +1,7 @@
 
 "use client"
 import React, { useState } from 'react'
-import Header from '../common/header'
+import Header from '../../../common/header'
 import { EventPerformanceComparison, FollowerCount, GenderDonutChart, InvoiceCard, MostViewedEvent, TopPerformaningEvents, TransactionHistory, Trend, ViewsOverTime, VisitorAge, VisitorInterest, VisitorRegion } from '@/sections/invoices'
 import { DashboardCardData, invoicesData } from '@/sections/invoices/data'
 import { Card, CardHeader } from '@/components/ui/card'

@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from 'react'
-import Header from '../common/header'
+import Header from '../../../common/header'
 import TableHeadCustom from '@/components/table/table-head-custom'
 import { Table } from '@/components/ui/table'
 import { organizerData, UserTableRow } from '@/sections/users'
