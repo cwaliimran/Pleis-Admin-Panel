@@ -7,7 +7,6 @@ interface PageProps {
     fromSuperAdmin?: boolean; // Optional prop to indicate if it's from SuperAdmin
 }
 const CustomBreadCrums: FC<PageProps> = ({ item, fromSuperAdmin }) => {
-    console.log(item)
     return (
         <div className='md:ml-6'>
             <h1 className='text-md font-bold mt-5'>{item.heading}</h1>

@@ -35,8 +35,7 @@ const RHFTextField: FC<Props> = ({ name, label, type = "text", showPassword, mul
       name={name}
 
       render={({ field, fieldState: { error } }) => {
-        console.log("field", field);
-        return <FormItem className="mb-4">
+        return <FormItem className="">
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             <div className="relative">

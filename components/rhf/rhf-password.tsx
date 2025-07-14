@@ -20,7 +20,6 @@ interface RHFPasswordFieldProps extends React.InputHTMLAttributes<HTMLInputEleme
 }
 
 const RHFPasswordField: FC<RHFPasswordFieldProps> = ({ name, label, showPassword, onTogglePassword, ...props }) => {
-    console.log("props", props)
     const { control, watch } = useFormContext()
     const password = watch(name)
 

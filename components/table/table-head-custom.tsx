@@ -15,7 +15,7 @@ const TableHeadCustom: FC<CustomHeaderProps> = ({ headLabel }) => {
     <TableHeader>
       <TableRow>
         {headLabel.map((header: any) => (
-          <TableHead key={header.id} className={`text-slate-500 text-lg text-center text-${header.align }`}>{header.label}</TableHead>
+          <TableHead key={header.id} className={`text-slate-500 text-[16px] py-4 bg-slate-100 text-center text-${header.align }`}>{header.label}</TableHead>
         ))}
       </TableRow>
     </TableHeader>

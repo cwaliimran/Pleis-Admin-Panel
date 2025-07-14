@@ -37,4 +37,8 @@ export { default as VisitorGanderAnalytics } from './visitorGanderAnalytics'
 
 export { default as userCard } from './userCard'
 
+export { default as UserTable } from './userTable'
+
+export { default as UserListTableRow } from './userListTableRow'
+
 

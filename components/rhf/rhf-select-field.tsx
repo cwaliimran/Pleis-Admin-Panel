@@ -48,10 +48,10 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
             name={name}
             render={({ field }) => (
                 <FormItem>
-                    {label && <FormLabel>{label}</FormLabel>}
+                    {label && <FormLabel className="">{label}</FormLabel>}
                     <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                         <FormControl>
-                            <SelectTrigger className={className}> {/* Apply className here */}
+                            <SelectTrigger className={`w-full ${className}`}>
                                 <SelectValue placeholder={placeholder} />
                             </SelectTrigger>
                         </FormControl>

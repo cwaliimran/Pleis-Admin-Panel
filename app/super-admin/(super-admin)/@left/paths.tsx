@@ -11,7 +11,16 @@ export const paths = {
             create: "/super-admin/category/create-category",
             list: "/super-admin/category/category-list",
         },
-        tags: '/super-admin/tag',
+        hightLight: {
+            default: "/super-admin/highlight",
+            create: "/super-admin/highlight/create-highlight",
+            list: "/super-admin/highlight/highlight-list",
+        },
+        tags: {
+            default: "/super-admin/tags",
+            create: "/super-admin/tags/create-tag",
+            list: "/super-admin/tags/tag-list",
+        },
         organizations: {
             default: "/super-admin/organization",
             create: "/super-admin/organization/create-organization",
@@ -52,15 +61,24 @@ export const paths = {
             list: "/super-admin/region/region-list",
 
         },
-        marketing: '/super-admin/marketing-list',
+        marketing: {
+            detault: "/super-admin/marketing",
+            create: "/super-admin/marketing/create-marketing",
+            list: '/super-admin/marketing/marketing-list'
+        },
         transactions: {
             default: "/super-admin/transactions",
-            premium: "/super-admin/transactions/premium-tranaction",
-            list: "/super-admin/transactions/transaction-list",
-            refund: "/super-admin/transactions/refund-transaction",
-        
-    },
-    addSupport: '/super-admin/add-support',
+        },
+        notification: {
+            default: "/super-admin/notification",
+            overview: "/super-admin/notification/overview",
+            list: "/super-admin/notification/list",
+            createUpdate: "/super-admin/notification/create-update",
+            createGiveaway: "/super-admin/notification/create-giveaway",
+            createNotification: "/super-admin/notification/create-notification",
+        },
+        subscription: '/super-admin/subscription',
+        addSupport: '/super-admin/add-support',
 
-}
+    }
 }

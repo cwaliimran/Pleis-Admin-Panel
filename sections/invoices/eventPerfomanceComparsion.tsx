@@ -33,12 +33,15 @@ const EventPerformanceComparison: FC<PageProps> = ({ chartData ,chartConfig}) =>
                         fill={chartConfig.desktop.color}
                         radius={[4, 4, 0, 0]}
                         name={chartConfig.desktop.label}
+                        className="border border-red-800"
+                        barSize={60}
                     />
                     <Bar
                         dataKey="mobile"
                         fill={chartConfig.mobile.color}
                         radius={[4, 4, 0, 0]}
                         name={chartConfig.mobile.label}
+                        barSize={60}
                     />
                 </BarChart>
             </ResponsiveContainer>

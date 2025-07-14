@@ -1,7 +1,7 @@
 import { Metadata } from 'next/types'
 
 export const metadata: Metadata = {
-  title: 'Euforia Dashboard',
+  title: 'PLEIS Dashboard',
   description:
     'Manage and analyze events, organizations, venues, and tickets with the Euforia Dashboard.  Gain insights into event performance and streamline operations.',
   authors: [],

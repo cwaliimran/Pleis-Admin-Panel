@@ -10,7 +10,7 @@ const SidebarToggleButton: FC<PageProps> = ({ fromOrganizer }) => {
 
     return (
         <div
-            className={`fixed ${fromOrganizer ? "top-0" : "top-4"} z-30 transition-all duration-300 ${open ? "md:left-[260px]" : "md:left-[0px]" // adjust collapsed width
+            className={`fixed ${fromOrganizer ? "top-0" : "top-4"} z-30 transition-all duration-300 ${open ? "md:left-[220px]" : "md:left-[0px]" // adjust collapsed width
                 } left-0`}
         >
             <button

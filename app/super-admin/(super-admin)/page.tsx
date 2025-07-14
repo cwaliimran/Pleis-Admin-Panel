@@ -1,31 +1,28 @@
 "use client"
-import Superadminheader from '@/app/common/superadminheader'
-import { CustomBreadCrums } from '@/components/breadcrums'
+import Header from '@/app/common/header'
 import { Card, CardHeader } from '@/components/ui/card'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { EventPerformanceComparison, FollowerCount, GenderDonutChart, InvoiceCard, invoicesData, MostViewedEvent, TopPerformaningEvents, TransactionHistory, Trend, ViewsOverTime, VisitorAge, VisitorInterest, VisitorRegion } from '@/sections/invoices'
 import DashboardCard from '@/sections/invoices/dashboardCard'
-import { DashboardCardData, TransactionHistoryData } from '@/sections/invoices/data'
+import { DashboardCardData } from '@/sections/invoices/data'
+import { useMockedUser } from '@/store/store'
 import React from 'react'
 
 const Page = () => {
+  
   const [active, setActive] = React.useState('all');
+  useMockedUser();
   return (
     <div>
-      <Superadminheader />
-      <CustomBreadCrums
-        fromSuperAdmin={true}
-        item={{
-          heading: 'Dashboard',
-          links: [
-            { title: 'Home', name: '/super-admin' },
-            { title: 'Dashboard', name: '/' }
-          ]
-        }}
+      <Header
+        links={[
+          { name: "Dashboard", href: "/super-admin" },
+          { name: "Home" }
+        ]}
       />
-      <div className='md:mx-4 mt-5'>
+      <div className='md:mx-4 mx-2 mt-5'>
         <div className='grid md:grid-cols-3 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5 '>
           {invoicesData.map((item: any) => (
             <InvoiceCard
@@ -70,7 +67,7 @@ const Page = () => {
             }}
           />
         </Card>
-        <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-2 mt-5'>
+        <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-4 mt-5'>
           <div>
             <Card className='shadow-lg  w-full h-[550px]'>
               <CardHeader>

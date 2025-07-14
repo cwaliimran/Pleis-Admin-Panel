@@ -20,7 +20,9 @@ import {
     ChartArea,
     Volume1,
     ArrowRightLeft,
-    HeartPlus
+    HeartPlus,
+    Highlighter,
+    Podcast
 } from "lucide-react"
 import { paths } from "./paths"
 
@@ -45,176 +47,224 @@ export const menuGroups: MenuGroup[] = [
         icon: ChartColumnBig,
     },
     {
-        label: "Categories",
-        key: paths.superAdmin.category.default,
-        icon: List,
-        items: [
-            {
-                title: "Create Category",
-                url: paths.superAdmin.category.create,
-                icon: CalendarDays,
-            },
-            {
-                title: "Category List",
-                url: paths.superAdmin.category.list, // Example ID
-                icon: CalendarDays,
-            }
-        ]
-    },
-    {
-        label: "Tags",
-        key: paths.superAdmin.tags,
-        icon: Hash,
-    },
-    {
         label: "Organizations",
         key: paths.superAdmin.organizations.default,
         icon: Building,
-        items: [
-            {
-                title: "Create Organization",
-                url: paths.superAdmin.organizations.create,
-                icon: Home,
-            },
-            {
-                title: "Organization List",
-                url: paths.superAdmin.organizations.list,
-                icon: Home,
-            }
-        ]
-    },
-    {
-        label: "User",
-        key: paths.superAdmin.users.default,
-        icon: User,
-        items: [
-            {
-                title: "Create User",
-                url: paths.superAdmin.users.create,
-                icon: UsersRound,
-            },
-            {
-                title: "User List",
-                url: paths.superAdmin.users.list, // Example ID
-                icon: UsersRound,
-            },
-            {
-                title: "Pending User List",
-                url: paths.superAdmin.users.pendingList, // Example ID
-                icon: UsersRound,
-            }
-        ]
+        // items: [
+        //     {
+        //         title: "Create Organization",
+        //         url: paths.superAdmin.organizations.create,
+        //         icon: Home,
+        //     },
+        //     {
+        //         title: "Organization List",
+        //         url: paths.superAdmin.organizations.list,
+        //         icon: Home,
+        //     }
+        // ]
     },
     {
         label: "Events",
         key: paths.superAdmin.evnets.default,
         icon: Calendar,
-        items: [
-            {
-                title: "Create Event",
-                url: paths.superAdmin.evnets.create,
-                icon: Tags,
-            },
-            {
-                title: "Events List",
-                url: paths.superAdmin.evnets.list, // Example ID
-                icon: Tags,
-            }
-        ]
-    },
-    {
-        label: "Update",
-        key: paths.superAdmin.update.default,
-        icon: ChevronsUp,
-        items: [
-            {
-                title: "Create Update",
-                url: paths.superAdmin.update.create,
-                icon: CreditCard,
-            },
-            {
-                title: "Update List",
-                url: paths.superAdmin.update.list, // Example ID
-                icon: CreditCard,
-            }
-        ]
+        // items: [
+        //     {
+        //         title: "Create Event",
+        //         url: paths.superAdmin.evnets.create,
+        //         icon: Tags,
+        //     },
+        //     {
+        //         title: "Events List",
+        //         url: paths.superAdmin.evnets.list, // Example ID
+        //         icon: Tags,
+        //     }
+        // ]
     },
     {
         label: "Venue",
         key: paths.superAdmin.venue.default,
         icon: VenetianMask,
-        items: [
-            {
-                title: "Create Venue",
-                url: paths.superAdmin.venue.create,
-                icon: Bell,
-            },
-            {
-                title: "Venues List",
-                url: paths.superAdmin.venue.list, // Example ID
-                icon: Bell,
-            }
-        ]
+        // items: [
+        //     {
+        //         title: "Create Venue",
+        //         url: paths.superAdmin.venue.create,
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Venues List",
+        //         url: paths.superAdmin.venue.list, // Example ID
+        //         icon: Bell,
+        //     }
+        // ]
+    },
+   
+    {
+        label: "Highlights",
+        key: paths.superAdmin.hightLight.default,
+        icon: Highlighter,
+        // items: [
+        //     {
+        //         title: "Create Highlight",
+        //         url: paths.superAdmin.hightLight.create,
+        //         icon: CalendarDays,
+        //     },
+        //     {
+        //         title: "Highlight List",
+        //         url: paths.superAdmin.hightLight.list, // Example ID
+        //         icon: CalendarDays,
+        //     }
+        // ]
+    },
+    {
+        label: "Categories",
+        key: paths.superAdmin.category.default,
+        icon: List,
+        // items: [
+        //     {
+        //         title: "Create Category",
+        //         url: paths.superAdmin.category.create,
+        //         icon: CalendarDays,
+        //     },
+        //     {
+        //         title: "Category List",
+        //         url: paths.superAdmin.category.list, // Example ID
+        //         icon: CalendarDays,
+        //     }
+        // ]
     },
     {
         label: "Venue Type",
         key: paths.superAdmin.vanueType.default,
         icon: VenetianMask,
-        items: [
-            {
-                title: "Create Venue Type",
-                url: paths.superAdmin.vanueType.create,
-                icon: Rocket,
-            },
-            {
-                title: "Venue Type List",
-                url: paths.superAdmin.vanueType.list, // Example ID
-                icon: Rocket,
-            }
-        ]
+        // items: [
+        //     {
+        //         title: "Create Venue Type",
+        //         url: paths.superAdmin.vanueType.create,
+        //         icon: Rocket,
+        //     },
+        //     {
+        //         title: "Venue Type List",
+        //         url: paths.superAdmin.vanueType.list, // Example ID
+        //         icon: Rocket,
+        //     }
+        // ]
     },
     {
-        label: "Region",
-        key: paths.superAdmin.region.default,
-        icon: ChartArea,
-        items: [
-            {
-                title: "Create Region",
-                url: paths.superAdmin.region.create,
-                icon: Settings,
-            },
-            {
-                title: "Region List",
-                url: paths.superAdmin.region.list, // Example ID
-                icon: Settings,
-            }
-        ]
+        label: "Tags",
+        key: paths.superAdmin.tags.default,
+        icon: Hash,
+        // items: [
+        //     {
+        //         title: "Create Tag",
+        //         url: paths.superAdmin.tags.create,
+        //         icon: Tags,
+        //     },
+        //     {
+        //         title: "Tag List",
+        //         url: paths.superAdmin.tags.list, // Example ID
+        //         icon: Tags,
+        //     }
+        // ]
+    },
+
+    {
+        label: "User",
+        key: paths.superAdmin.users.default,
+        icon: User,
+        // items: [
+        //     {
+        //         title: "Create User",
+        //         url: paths.superAdmin.users.create,
+        //         icon: UsersRound,
+        //     },
+        //     {
+        //         title: "User List",
+        //         url: paths.superAdmin.users.list, // Example ID
+        //         icon: UsersRound,
+        //     },
+        //     {
+        //         title: "Pending User List",
+        //         url: paths.superAdmin.users.pendingList, // Example ID
+        //         icon: UsersRound,
+        //     }
+        // ]
     },
     {
         label: "Marketing Requests",
-        key: paths.superAdmin.marketing,
+        key: paths.superAdmin.marketing.detault,
         icon: Volume1,
+        // items: [
+        //     {
+        //         title: "Create Marketing",
+        //         url: paths.superAdmin.marketing.create,
+        //         icon: Volume1,
+        //     },
+        //     {
+        //         title: "Marketing List",
+        //         url: paths.superAdmin.marketing.list, // Example ID
+        //         icon: Volume1,
+        //     }
+        // ]
+
     },
     {
         label: "Transactions",
         key: paths.superAdmin.transactions.default,
         icon: ArrowRightLeft,
-        items: [
-            {
-                title: "Premium Transaction",
-                url: paths.superAdmin.transactions.premium,
-                icon: Settings,
-            },
-            {
-                title: "Transaction List",
-                url: paths.superAdmin.transactions.list, // Example ID
-                icon: Settings,
-            }, {
-                title: "Refund List",
-                url: paths.superAdmin.transactions.refund, // Example ID
-                icon: Settings,
-            }
-        ]
+        // items: [
+        //     {
+        //         title: "Premium Transaction",
+        //         url: paths.superAdmin.transactions.premium,
+        //         icon: Settings,
+        //     },
+        //     {
+        //         title: "Transaction List",
+        //         url: paths.superAdmin.transactions.list, // Example ID
+        //         icon: Settings,
+        //     }, {
+        //         title: "Refund List",
+        //         url: paths.superAdmin.transactions.refund, // Example ID
+        //         icon: Settings,
+        //     }
+        // ]
+    },
+     {
+        label: "Notification",
+        key: paths.superAdmin.notification.default,
+        icon: Bell,
+        // items: [
+        //     {
+        //         title: "Overview",
+        //         url: paths.superAdmin.notification.overview,
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Notification List",
+        //         url: paths.superAdmin.notification.list, // Example ID
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Create Notification",
+        //         url: paths.superAdmin.notification.createUpdate, // Example ID
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Create Giveaway",
+        //         url: paths.superAdmin.notification.createGiveaway, // Example ID
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Create Notification",
+        //         url: paths.superAdmin.notification.createNotification, // Example ID
+        //         icon: Bell,
+        //     }
+        // ]
+    },
+    
+    {
+        label: "Subscription",
+        key: paths.superAdmin.subscription,
+        icon: Podcast,
     },
     {
         label: "Add Support",
