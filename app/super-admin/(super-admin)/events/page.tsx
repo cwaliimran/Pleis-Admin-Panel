@@ -104,7 +104,7 @@ const Page = () => {
                                     placeholder='Enter Event Name'
                                     className={` ${methods.formState.errors.name ? 'border-red-400' : ''}`}
                                 />
-                                <div className='grid md:grid-cols-2 grid-1 gap-2'>
+                                <div className='grid md:grid-cols-2 grid-1 gap-2 items-start'>
                                     <RHFTextField
                                         name='venue'
                                         label='Venue'

@@ -33,7 +33,7 @@ export type AppDispatch = typeof store.dispatch;
 
 
 export const useMockedUser = () => {
-    return useSelector((state: RootState) =>console.log((state.userSlice.user)));
+    return useSelector((state: RootState) =>state.userSlice);
 }
 
 

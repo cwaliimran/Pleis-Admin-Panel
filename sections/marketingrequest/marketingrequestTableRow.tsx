@@ -7,7 +7,7 @@ import React, { FC } from 'react';
 
 interface PageProps {
     item: {
-        id: string;
+        id: number;
         title: string;
         budget: number;
         organization: string;

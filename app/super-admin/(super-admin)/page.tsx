@@ -13,7 +13,8 @@ import React from 'react'
 const Page = () => {
   
   const [active, setActive] = React.useState('all');
-  useMockedUser();
+  const {user}=useMockedUser();
+  console.log("User Data:", user);
   return (
     <div>
       <Header
