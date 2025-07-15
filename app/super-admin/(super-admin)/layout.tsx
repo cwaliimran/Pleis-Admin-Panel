@@ -16,12 +16,12 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ left, right, children }) =>
     <div className="flex min-h-screen">
       <SidebarProvider>
         {/* Sidebar */}
-        <aside className="relative z-20">
+        <aside className="relative z-20   ">
           {left}
-        </aside>       
-         <SidebarToggleButton />
+        </aside>
+        <SidebarToggleButton />
 
-        <main className="flex-1 bg-background md:mx-5">{children}</main>
+        <main className="flex-1 dark:bg-black md:px-5  bg-[#f8f6f7]">{children}</main>
 
         <aside className="fixed top-5 right-5 md:top-10 md:right-10">
           {right}

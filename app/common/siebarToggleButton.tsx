@@ -15,7 +15,7 @@ const SidebarToggleButton: FC<PageProps> = ({ fromOrganizer }) => {
         >
             <button
                 onClick={toggleSidebar}
-                className="ml-3 p-2 rounded-md shadow bg-muted hover:bg-muted/80 cursor-pointer"
+                className="ml-3 p-2 rounded-md shadow bg-muted  dark:bg-[#171717] dark:border-[#2e2f2f] border-[1px] hover:bg-muted/80 cursor-pointer"
                 aria-label="Toggle sidebar"
             >
                 {isMobile

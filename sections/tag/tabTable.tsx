@@ -5,38 +5,35 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Table } from '@/components/ui/table'
 import React, { FC } from 'react'
 import { Card } from '@/components/ui/card'
-import { organizationListData } from './data'
 import { Badge } from '@/components/ui/badge'
 import { Settings2 } from 'lucide-react'
-import OrganizationTableRow from './organizationTableRow'
+import { categoriesData } from './data'
+import { CategoryTableRow } from '.'
 const headLabel = [
     { id: "image", label: "Image", align: "left" },
-    { id: "name", label: "Name", align: 'left' },
-    { id: "phone", label: "Phone", align: "left" },
-    { id: 'email', label: "Email", align: "left" },
-    { id: "createdDate", label: "Created Date", align: "left" },
-    { id: "status", label: "Status", align: "left" },
-    { id: "subscriptionValidity", label: "Subscription Validity", align: "left" },
-    { id: "commission", label: "Pleis Commission (%)", align: "left" },
-    { id: "actions", label: "" }
-]
+    { id: "name", label: "Category Name", align: "left" },
+    { id: "type", label: "Type", align: "left" },
+    { id: "actions", label: "", align: "right" }
+];
+
 interface PageProps {
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
 }
-const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+const CategoryTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
     return (
         <div>
-            <div className='grid grid-cols-12 '>
-                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-[#171717]'>
+            <div className='grid grid-cols-11  '>
+                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5'>
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
-                        <h3 className='text-xl font-semibold md:ml-0 ml-2'>Organization List</h3>
+                        <h3 className='text-xl font-semibold md:ml-0 ml-2'>Category List</h3>
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
+                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit">
                                     <Settings2 className="w-10 h-10" />
                                     <span className="whitespace-nowrap cursor-pointer ">By Name</span>
+
                                 </Badge>
                             </div>
 
@@ -44,7 +41,7 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     </div>
                     <div className='w-full '>
                         <Input
-                            placeholder="Search Organization"
+                            placeholder="Search Category"
                             // value={globalFilter}
                             // onChange={(e) => setGlobalFilter(e.target.value)}
                             className="w-full  h-10 "
@@ -53,8 +50,8 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='border rounded-lg  '>
                         <Table className='w-full rounded-md border  '>
                             <TableHeadCustom headLabel={headLabel} />
-                            {organizationListData.map((item, index) => (
-                                <OrganizationTableRow
+                            {categoriesData.map((item: any, index: number) => (
+                                <CategoryTableRow
                                     key={index}
                                     item={item}
                                     handleDelete={handleDelete}
@@ -110,4 +107,4 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
     )
 }
 
-export default OrganizationTable
+export default CategoryTable

@@ -33,7 +33,7 @@ const MostViewedEvent: FC<PageProps> = ({ chartData, chartConfig }) => {
             fill={chartConfig.search.color}
             radius={[4, 4, 0, 0]}
             name={chartConfig.search.label}
-            barSize={60}
+            barSize={30}
           />
           
 

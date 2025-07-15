@@ -25,23 +25,22 @@ const EventPerformanceComparison: FC<PageProps> = ({ chartData ,chartConfig}) =>
         <div className="w-full h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
-                    <XAxis dataKey="month" />
-                    <YAxis />
+                    <XAxis dataKey="month"   axisLine={false}  />
+                    <YAxis  axisLine={false} />
                     <Tooltip />
                     <Bar
                         dataKey="desktop"
                         fill={chartConfig.desktop.color}
                         radius={[4, 4, 0, 0]}
                         name={chartConfig.desktop.label}
-                        className="border border-red-800"
-                        barSize={60}
+                        barSize={30}
                     />
                     <Bar
                         dataKey="mobile"
                         fill={chartConfig.mobile.color}
                         radius={[4, 4, 0, 0]}
                         name={chartConfig.mobile.label}
-                        barSize={60}
+                        barSize={30}
                     />
                 </BarChart>
             </ResponsiveContainer>

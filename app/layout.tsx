@@ -1,19 +1,24 @@
 "use client"
-import { Geist, Geist_Mono, Josefin_Sans, Poppins } from "next/font/google";
+import { Geist, Geist_Mono, Josefin_Sans, Poppins, Inter } from "next/font/google";
 import "./globals.css";
 import { metadata } from './metadata'
 import { ThemeProvider } from "@/components/templates/theme-provider";
 import { Provider } from "react-redux";
 import { store } from "@/store/store";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
-  weight: ["100", "200", "300", "400", "500", "600"],
-  subsets: ["latin"],
-});
+// const poppins = Poppins({
+//   variable: "--font-poppins",
+//   weight: ["100", "200", "300", "400", "500", "600"],
+//   subsets: ["latin"],
+// });
 
-const josefin = Josefin_Sans({
-  variable: "--font-geist-mono",
+// const josefin = Josefin_Sans({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
+const inter = Inter({
+  variable: "--font-inter",
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
   subsets: ["latin"],
 });
 
@@ -30,9 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${poppins.variable} ${josefin.variable} antialiased`}
-      >
+      <body className={`${inter.variable} antialiased`}>
         <Provider store={store}>
 
           <ThemeProvider

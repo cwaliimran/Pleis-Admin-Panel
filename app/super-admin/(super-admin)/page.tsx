@@ -1,5 +1,6 @@
 "use client"
 import Header from '@/app/common/header'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader } from '@/components/ui/card'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -8,12 +9,13 @@ import { EventPerformanceComparison, FollowerCount, GenderDonutChart, InvoiceCar
 import DashboardCard from '@/sections/invoices/dashboardCard'
 import { DashboardCardData } from '@/sections/invoices/data'
 import { useMockedUser } from '@/store/store'
+import { Settings2, X } from 'lucide-react'
 import React from 'react'
 
 const Page = () => {
-  
+
   const [active, setActive] = React.useState('all');
-  const {user}=useMockedUser();
+  const { user } = useMockedUser();
   console.log("User Data:", user);
   return (
     <div>
@@ -23,7 +25,55 @@ const Page = () => {
           { name: "Home" }
         ]}
       />
-      <div className='md:mx-4 mx-2 mt-5'>
+
+      <div className='md:mx-4 mx-1 mt-5'>
+
+        <div className=' flex md:justify-between md:flex-row flex-col-reverse md:items-center gap-2'>
+          <div>
+            <h1 className='text-2xl font-semibold'>Invoices</h1>
+
+          </div>
+          <div className='flex justify-end md:flex-row flex-col-reverse  md:items-center gap-2'>
+            <div className='flex items-center md:justify-center justify-end'>
+              <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
+                <Settings2 className="w-5 h-5" />
+
+                <span className="whitespace-nowrap">Filter (3)</span>
+
+                <X className="w-4 h-4 cursor-pointer " onClick={() => setActive('')} />
+              </Badge>
+            </div>
+            <Tabs defaultValue="today" className='w-full  justify-end md:block hidden'>
+              <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
+                <TabsTrigger value="today" className={cn(
+                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
+                )}>Today</TabsTrigger>
+                <TabsTrigger value="week" className={cn(
+                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                )}>Week</TabsTrigger>
+                <TabsTrigger value="month" className={cn(
+                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                )}>Month</TabsTrigger>
+                <TabsTrigger value="all" className={cn(
+                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                )}>All</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="block md:hidden ">
+              <Select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select timeframe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">Week</SelectItem>
+                  <SelectItem value="month">Month</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
         <div className='grid md:grid-cols-3 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5 '>
           {invoicesData.map((item: any) => (
             <InvoiceCard
@@ -32,7 +82,7 @@ const Page = () => {
             />
           ))}
         </div>
-        <Card className='shadow-lg mt-5'>
+        <Card className='shadow-lg mt-10 dark:bg-[#171717]'>
           <CardHeader>
             <div className='flex justify-between items-center'>
               <h3 className='text-xl font-semibold'>Organizer Performance Comparison</h3>
@@ -54,12 +104,17 @@ const Page = () => {
           </CardHeader>
           <EventPerformanceComparison
             chartData={[
-              { month: "January", desktop: 186, mobile: 80 },
+              { month: "January", desktop: 700, mobile: 80 },
               { month: "February", desktop: 305, mobile: 200 },
               { month: "March", desktop: 237, mobile: 120 },
               { month: "April", desktop: 73, mobile: 190 },
               { month: "May", desktop: 209, mobile: 130 },
               { month: "June", desktop: 214, mobile: 140 },
+              { month: "July", desktop: 300, mobile: 200 },
+              { month: "August", desktop: 400, mobile: 300 },
+              { month: "September", desktop: 500, mobile: 400 },
+              { month: "October", desktop: 600, mobile: 500 },
+
             ]
             }
             chartConfig={{
@@ -68,9 +123,12 @@ const Page = () => {
             }}
           />
         </Card>
-        <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-4 mt-5'>
+
+
+        <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-4 mt-10'>
+
           <div>
-            <Card className='shadow-lg  w-full h-[550px]'>
+            <Card className='shadow-md  w-full max-h-full h-[450px] dark:bg-[#171717]'>
               <CardHeader>
                 <div className='flex justify-start items-center'>
                   <h3 className='text-xl font-semibold'>Age Demographics</h3>
@@ -79,16 +137,19 @@ const Page = () => {
               <div className='flex-1 '>
                 <VisitorAge
                   data={[
-                    { ageGroup: "18-24", visitors: 120 },
+
+                    { ageGroup: "18", visitors: 120 },
+                    { ageGroup: "18-25", visitors: 120 },
                     { ageGroup: "25-34", visitors: 200 },
                     { ageGroup: "35-44", visitors: 150 },
                     { ageGroup: "45-54", visitors: 90 },
                     { ageGroup: "55+", visitors: 70 }
+
                   ]}
                 />
                 <div className="mx-4 mt-4">
-                  <p className="text-sm text-muted-foreground font-medium">
-                    <span className="text-xl font-bold text-black">66%</span> visitors are 45-55 years old
+                  <p className="text-[12px] text-muted-foreground font-medium">
+                    <span className="text-xl font-bold dark:text-white text-black">66%</span> visitors are 45-55 years old
                   </p>
                 </div>
               </div>
@@ -97,9 +158,9 @@ const Page = () => {
           </div>
 
           <div>
-            <Card className='shadow-lg  h-[550px]'>
+            <Card className='shadow-md h-[450px]  dark:bg-[#171717]'>
               <CardHeader>
-                <div className='flex justify-between items-center '>
+                <div className='flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'>Region Overview</h3>
                   <div className='flex flex-col items-center'>
                     <div className='flex items-center'>
@@ -117,7 +178,7 @@ const Page = () => {
                     <div className='flex mt-2 items-center'>
                       <div className='w-3 h-3 rounded-full bg-[#7DAEF4] leading-10 mr-2' />
                       <h1 className='text-[#7DAEF4] text-md'>
-                        Females
+                        Other
                       </h1>
                     </div>
                   </div>
@@ -125,12 +186,12 @@ const Page = () => {
               </CardHeader>
               <VisitorRegion
                 chartData={[
-                  { month: "January", males: 186, females: 80, others: 50 },
-                  { month: "February", males: 305, females: 200, others: 100 },
-                  { month: "March", males: 237, females: 120, others: 70 },
-                  { month: "April", males: 73, females: 190, others: 60 },
+                  { month: "Jan", males: 186, females: 80, others: 50 },
+                  { month: "Feb", males: 305, females: 200, others: 100 },
+                  { month: "Mar", males: 237, females: 120, others: 70 },
+                  { month: "Apr", males: 73, females: 190, others: 60 },
                   { month: "May", males: 209, females: 130, others: 90 },
-                  { month: "June", males: 214, females: 140, others: 80 }
+                  { month: "Jun", males: 214, females: 140, others: 80 }
                 ]}
                 chartConfig={{
                   males: { label: "Males", color: "#2563eb" },
@@ -141,48 +202,48 @@ const Page = () => {
             </Card>
           </div>
           <div>
-            <Card className='shadow-lg  h-[550px]'>
-              <CardHeader>
-                <div className='flex justify-between items-center'>
+            <Card className='shadow-md  h-[450px] dark:bg-[#171717]'>
+              <CardHeader className=''>
+                <div className='flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'> Gender Analytics</h3>
                   <div className='flex flex-col items-center'>
                     <div className='flex items-center'>
                       <div className='w-3 h-3 rounded-full bg-[#2563EB] mr-2' />
                       <h1 className='text-md leading-6 '>
-                        Males
+                        <span className='text-[#7DAEF4] text-md'>Males</span> 60% /2000
                       </h1>
                     </div>
                     <div className='flex mt-2 items-center'>
                       <div className='w-3 h-3 rounded-full bg-[#202C88] leading-10 mr-2' />
-                      <h1 className='text-[#7DAEF4] text-md'>
-                        Females
+                      <h1 >
+                        <span className='text-[#7DAEF4] text-md'></span> Females  20% /2000
                       </h1>
                     </div>
                     <div className='flex mt-2 items-center'>
                       <div className='w-3 h-3 rounded-full bg-[#7DAEF4] leading-10 mr-2' />
-                      <h1 className='text-[#7DAEF4] text-md'>
-                        Females
+                      <h1 className=' '>
+                        <span className='text-[#7DAEF4] text-md'>Other</span> 20% /2000
                       </h1>
                     </div>
                   </div>
                 </div>
+                <GenderDonutChart
+                  data={[
+                    { name: "Males", value: 60 },
+                    { name: "Females", value: 20 },
+                    { name: "Others", value: 20 }
+                  ]}
+                  COLORS={["#2563EB", "#202C88", "#7DAEF4"]}
+                />
               </CardHeader>
-              <GenderDonutChart
-                data={[
-                  { name: "Males", value: 400 },
-                  { name: "Females", value: 300 },
-                  { name: "Others", value: 100 }
-                ]}
-                COLORS={["#2563EB", "#202C88", "#7DAEF4"]}
-              />
             </Card>
           </div>
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5'>
-          <Card className='col-span-12 md:col-span-7 shadow-lg h-[550px]'>
+          <Card className='col-span-12 md:col-span-7 shadow-lg h-[550px]  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex justify-between items-center'>
-                <div className='flex items-center flex-col'>
+                <div className='flex items-start flex-col'>
                   <h3 className='text-xl font-semibold'>Trends</h3>
                   <div className='flex flex-col items-center'>
                     <div className='flex items-center'>
@@ -229,7 +290,7 @@ const Page = () => {
             } />
           </Card>
 
-          <Card className='col-span-12 md:col-span-5 shadow-lg  h-[550px]'>
+          <Card className='col-span-12 md:col-span-5 shadow-lg  h-[550px]  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Interest Per Category</h3>
@@ -267,7 +328,7 @@ const Page = () => {
           </Card>
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5 '>
-          <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Organizer Activity Over Time</h3>
@@ -305,7 +366,7 @@ const Page = () => {
 
             />
           </Card>
-          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Top Searches</h3>
@@ -330,7 +391,7 @@ const Page = () => {
           </Card>
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5'>
-          <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Growth of Register Users</h3>
@@ -367,7 +428,7 @@ const Page = () => {
               ]}
             />
           </Card>
-          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Top Performing Organizers</h3>
@@ -377,7 +438,7 @@ const Page = () => {
           </Card>
         </div>
         <div className='grid grid-cols-12 mt-5'>
-          <Card className='col-span-12 shadow-lg '>
+          <Card className='col-span-12 shadow-lg  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                 <h3 className='text-xl font-semibold'>Transaction History</h3>

@@ -23,12 +23,12 @@ interface PageProps {
 }
 const VisitorRegion: FC<PageProps> = ({ chartData, chartConfig }) => {
     return (
-        <div className="w-full h-[400px]">
+        <div className="w-full h-[270px]">
             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="month" />
-                    <YAxis />
+                <BarChart data={chartData}   margin={{ top: 0, right: 30, left: 0, bottom:0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false}  />
+                    <XAxis dataKey="month"  axisLine={false}  tickMargin={10}  />
+                    <YAxis  axisLine={false}  className="text-[13px] font-bold "/>
                     <Tooltip />
                     <Bar
                         dataKey="males"
