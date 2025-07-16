@@ -59,9 +59,9 @@ const Page = () => {
                                 <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
 
                                     <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1">
-                                        {organizerTabs.map((tab: any) => (
+                                        {organizerTabs.map((tab: any,index:number) => (
                                             <TabsTrigger
-                                                key={tab.value}
+                                                key={index}
                                                 value={tab.value}
                                                 className={`text-md font-semibold relative rounded-full px-4 py-2 transition-colors
                                          ${active === tab.value

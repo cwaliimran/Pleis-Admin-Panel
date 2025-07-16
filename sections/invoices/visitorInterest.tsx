@@ -22,12 +22,13 @@ interface PageProps {
 }
 const VisitorInterest: FC<PageProps> = ({ chartData, chartConfig }) => {
   return (
-    <div className="w-full h-[400px] border ">
+    <div className="w-full  h-[300px]  ">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
-          <XAxis dataKey="month" />
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <YAxis />
+          <XAxis dataKey="month" axisLine={false}/>
+          {/* <CartesianGrid strokeDasharray="3 3" vertical={false} /> */}
+          <CartesianGrid stroke="#ccc" strokeWidth={1} vertical={false} />
+          <YAxis  axisLine={false}/>
           <Tooltip />
           <Bar
             dataKey="males"

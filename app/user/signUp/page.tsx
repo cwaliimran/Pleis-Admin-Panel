@@ -142,41 +142,49 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import { motion } from 'framer-motion';
-
+import PhoneInput from 'react-phone-input-2';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/atoms/mode-toggle';
 import { useBoolean } from '@/hooks/useBoolean';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 
 const defaultValues = {
-  name: '',
+  fname: '',
+  lname: '',
   email: '',
   password: '',
-  confirmPassword: '',
+  phone: '',
 };
 
-const schema = Yup.object().shape({
-  name: Yup.string()
-  // required('Full name is required')
-  ,
-  email: Yup.string().email('Invalid email')
-  // .required('Email is required')
-  ,
-  password: Yup.string()
-  // .min(6, 'Password must be at least 6 characters').required('Password is required')
-  ,
-  confirmPassword: Yup.string()
-  // .oneOf([Yup.ref('password')], 'Passwords must match')
-  // .required('Confirm your password'),
-});
 
 function SignUpPage() {
+
   const router = useRouter();
   const open = useBoolean();
+
+  const schema = Yup.object().shape({
+    fname: Yup.string()
+    // required('Full name is required')
+    ,
+    lname: Yup.string()
+    // .required('Last name is required')
+    ,
+    email: Yup.string().email('Invalid email')
+    // .required('Email is required')
+    ,
+    password: Yup.string()
+    // .min(6, 'Password must be at least 6 characters').required('Password is required')
+    ,
+    phone: Yup.string()
+    // .matches(/^\d{10}$/, 'Phone number must be 10 digits')
+    // .required('Phone number is required')
+  });
+
+  const [phone, setPhone] = React.useState('');
 
   const methods = useForm({
     defaultValues,
@@ -207,16 +215,7 @@ function SignUpPage() {
             <p className="text-lg text-gray-300 max-w-sm mx-auto">
               Your journey to productivity and collaboration starts here.
             </p>
-            {/* <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-24 h-24 mx-auto opacity-20"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1}
-            >
-              <path d="M12 4v16m8-8H4" />
-            </svg> */}
+
           </div>
         </motion.div>
         <motion.div
@@ -232,7 +231,10 @@ function SignUpPage() {
 
           <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
             <div className="space-y-4">
-              <RHFTextField name="name" placeholder="Full Name" className="rounded-md h-[40px]" />
+              <RHFTextField name="fname" placeholder="First Name" className="rounded-md h-[40px]" />
+              <RHFTextField name="lname" placeholder="Last Name" className="rounded-md h-[40px]" />
+
+
               <RHFTextField name="email" type="email" placeholder="Email Address" className="rounded-md h-[40px]" />
               <RHFTextField
                 name="password"
@@ -242,15 +244,43 @@ function SignUpPage() {
                 showPassword={open.value}
                 onTogglePassword={() => open.onToggle()}
               />
-              <RHFTextField
-                name="confirmPassword"
-                type="password"
-                placeholder="Confirm Password"
-                className="rounded-md h-[40px]"
-                showPassword={open.value}
-                onTogglePassword={() => open.onToggle()}
+              <Controller
+                name={"phone"}
+                control={methods.control}
+                render={({ field, fieldState }) => (
+                  <div className="w-full">
+                    <PhoneInput
+                      {...field}
+                      country="pk"
+                      onChange={(value) => field.onChange(value)}
+                      placeholder={"Phone Number"}
+                      specialLabel=""
+                      inputProps={{
+                        required: true,
+                        "aria-invalid": fieldState.invalid,
+                      }}
+                      containerClass="w-full"
+                      buttonClass="!bg-transparent !border-none !shadow-none px-2"
+                      inputClass={`
+              file:text-foreground placeholder:text-muted-foreground
+              selection:bg-primary selection:text-primary-foreground
+              dark:bg-input/30 border-input !border-gray-100 !shadow-sm
+              flex !h-[40px] !w-full min-w-0 rounded-md
+              !bg-transparent px-3 py-1 text-base
+              shadow-xs transition-[color,box-shadow]
+              outline-none file:inline-flex file:h-7 file:border-0
+              file:bg-transparent file:text-sm file:font-medium
+              disabled:pointer-events-none disabled:cursor-not-allowed
+              disabled:opacity-50 md:text-sm
+              focus-visible:ring-ring/50 focus-visible:ring-[3px]
+              aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
+              aria-invalid:border-destructive
+              ${fieldState.invalid ? "border-destructive ring-destructive/40" : ""}
+            `}
+                    />
+                  </div>
+                )}
               />
-
               <Button type="submit" className="w-full h-[45px]">
                 {methods.formState.isSubmitting ? 'Creating Account...' : 'Sign Up'}
               </Button>
@@ -296,7 +326,7 @@ function SignUpPage() {
         {/* Right Section: Branding / Illustration */}
 
       </div>
-    </div>
+    </div >
   );
 }
 

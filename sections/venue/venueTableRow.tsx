@@ -13,14 +13,6 @@ interface PageProps {
 }
 const VenueTableRow: FC<PageProps> = ({ item,handleDelete,handleEdit }) => {
 
-    const headLabel = [
-        { id: "name", label: "Name", align: 'left' },
-        { id: "dateAdded", label: "Date Added", align: "left" },
-        { id: 'organizaiton', label: "Organization", align: "left" },
-        { id: "location", label: "Location", align: "left" },
-        { id: "region", label: "region", align: "left" },
-        { id: "actions", label: "" }
-    ]
 
 
     const router = useRouter();
@@ -29,13 +21,13 @@ const VenueTableRow: FC<PageProps> = ({ item,handleDelete,handleEdit }) => {
         <TableRow className=" transition-colors h-14 w-full" >
             <TableCell>
                 <div className='flex items-center gap-3'>
-                    <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
+                    {/* <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
                         <AvatarImage
                             src="https://github.com/shadcn.png"
                             alt="Store"
                             className="object-cover w-full h-full cursor-pointer"
                         />
-                    </Avatar>
+                    </Avatar> */}
                     {item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name}
                 </div>
             </TableCell>
@@ -53,11 +45,14 @@ const VenueTableRow: FC<PageProps> = ({ item,handleDelete,handleEdit }) => {
                 </Avatar>
                 {item.organization.name}
             </TableCell>
-            <TableCell>
+            {/* <TableCell>
                 {item.location}
-            </TableCell>
+            </TableCell> */}
             <TableCell className="text-left">
                 {item.region}
+            </TableCell>
+             <TableCell className="text-left">
+                {item.createdAt}
             </TableCell>
 
             <TableCell className="text-end">

@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog'
 import OrganizationTable from '@/sections/organization/organizationTable'
 
-const defaultValues = {
+export const defaultValues = {
     image: null,
     name: '',
     email: '',
@@ -43,22 +43,14 @@ const defaultValues = {
     bankCity: '',
     bankCountry: ''
 }
-const tabOptions = [
+export const tabOptions = [
     { label: "Basic Info", value: "basicInfo" },
     { label: "Social Links", value: "socialLinks" },
     { label: "Business Details", value: "businessDetails" },
     { label: "Bank Details", value: "bankDetails" },
 ];
 
-const Page = () => {
-
-    const openModal = useBoolean();
-    const editModal = useBoolean();
-    const deleteModal = useBoolean();
-    const [activeTab, setActiveTab] = useState('basicInfo');
-
-    // only organization name is required and location is required
-    const schema = Yup.object().shape({
+   export const schema = Yup.object().shape({
         //  Basic Info
         image: Yup.mixed().nullable(),
         name: Yup.string().required("Organization name is required"),
@@ -105,13 +97,22 @@ const Page = () => {
         bankCountry: Yup.string(),
     });
 
+const Page = () => {
+
+    const openModal = useBoolean();
+    const editModal = useBoolean();
+    const deleteModal = useBoolean();
+    const [activeTab, setActiveTab] = useState('basicInfo');
+
+    // only organization name is required and location is required
+ 
+
     const methods = useForm({
         resolver: yupResolver(schema),
         defaultValues: defaultValues
     })
 
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data)
     }
     const CloseModal = () => {
         methods.reset(defaultValues);
@@ -133,18 +134,15 @@ const Page = () => {
     };
 
     const handleEdit = (id: string) => {
-        console.log("id", id);
         openModal.onTrue();
         editModal.onTrue();
     }
 
     const handleDelete = (id: string) => {
-        console.log("id", id)
         deleteModal.onTrue();
     }
     const onDelete = () => {
-        console.log("Delete confirmed")
-        deleteModal.onFalse();
+        deleteModal.onFalse ();
     }
 
     return (
@@ -180,8 +178,8 @@ const Page = () => {
                                             <SelectValue placeholder="Select Tab" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {tabOptions.map((tab) => (
-                                                <SelectItem key={tab.value} value={tab.value}>
+                                            {tabOptions.map((tab,index:number) => (
+                                                <SelectItem key={index} value={tab.value}>
                                                     {tab.label}
                                                 </SelectItem>
                                             ))}
@@ -190,9 +188,9 @@ const Page = () => {
                                 </div>
                                 <div className="overflow-x-auto whitespace-nowrap scrollbar-hide px-1 md:block hidden">
                                     <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1 min-w-max">
-                                        {tabOptions.map((tab) => (
+                                        {tabOptions.map((tab,index) => (
                                             <TabsTrigger
-                                                key={tab.value}
+                                                key={index}
                                                 value={tab.value}
                                                 className={cn(
                                                     "text-sm md:text-md font-semibold rounded-full px-4 py-2 transition-colors cursor-pointer"

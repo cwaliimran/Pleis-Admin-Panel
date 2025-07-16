@@ -37,7 +37,7 @@ const Useranalytics = () => {
         </Badge>
       </div>
       <div className='w-full grid grid-cols-12 gap-4 mt-5'>
-        <div className='md:col-span-6 col-span-12'>
+        <div className='md:col-span-6 col-span-12 ' >
           <SaleTrend />
         </div>
         <div className='md:col-span-6 col-span-12'>

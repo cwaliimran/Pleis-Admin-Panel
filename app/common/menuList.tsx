@@ -136,7 +136,6 @@ export default MenuList;
 //   const toggleGroup = (groupKey: string) => {
 //     setOpenGroup((prev) => (prev === groupKey ? null : groupKey));
 //   };
-// console.log()
 
 
 // return (

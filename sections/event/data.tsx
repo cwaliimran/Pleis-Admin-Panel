@@ -11,6 +11,9 @@ export const eventData = [
     organizaiton: 'InnovateX',
     fromDate: '2025-08-01',
     endDate: '2025-08-03',
+    totalRevenue: '$5000',
+    totalViews: '1500',
+    region: 'North America'
   },
   {
     id: '2',
@@ -20,6 +23,9 @@ export const eventData = [
     organizaiton: 'AI Future Lab',
     fromDate: '2025-09-12',
     endDate: '2025-09-14',
+    totalRevenue: '$8000',
+    totalViews: '2000',
+    region: 'South America'
   },
   {
     id: '3',
@@ -29,6 +35,9 @@ export const eventData = [
     organizaiton: 'Startup Hub',
     fromDate: '2025-07-20',
     endDate: '2025-07-21',
+    totalRevenue: '$3000',
+    totalViews: '1200',
+    region: 'Europe'
   },
   {
     id: '4',
@@ -38,6 +47,9 @@ export const eventData = [
     organizaiton: 'BlockChain PK',
     fromDate: '2025-08-18',
     endDate: '2025-08-19',
+    totalRevenue: '$6000',
+    totalViews: '1800',
+    region: 'Asia'
   },
   {
     id: '5',
@@ -47,6 +59,9 @@ export const eventData = [
     organizaiton: 'MarketMinds',
     fromDate: '2025-10-05',
     endDate: '2025-10-10',
+    totalRevenue: '$2000',
+    totalViews: '1000',
+    region: 'Africa'
   },
   {
     id: '6',
@@ -56,6 +71,9 @@ export const eventData = [
     organizaiton: 'CodeCraft',
     fromDate: '2025-11-01',
     endDate: '2025-11-01',
+    totalRevenue: '$4000',
+    totalViews: '1300',
+    region: 'Middle East'
   },
   {
     id: '7',
@@ -65,6 +83,9 @@ export const eventData = [
     organizaiton: 'CloudTech',
     fromDate: '2025-08-25',
     endDate: '2025-08-25',
+    totalRevenue: '$3500',
+    totalViews: '1100',
+    region: 'Oceania'
   },
   {
     id: '8',
@@ -74,6 +95,9 @@ export const eventData = [
     organizaiton: 'WomenTechPK',
     fromDate: '2025-09-18',
     endDate: '2025-09-18',
+    totalRevenue: '$4500',
+    totalViews: '1400',
+    region: 'Central America'
   },
   {
     id: '9',
@@ -83,6 +107,9 @@ export const eventData = [
     organizaiton: 'SecureNet',
     fromDate: '2025-12-01',
     endDate: '2025-12-02',
+    totalRevenue: '$7000',
+    totalViews: '1600',
+    region: 'Caribbean'
   },
   {
     id: '10',
@@ -92,5 +119,8 @@ export const eventData = [
     organizaiton: 'GreenFuture Org',
     fromDate: '2025-10-15',
     endDate: '2025-10-16',
+    totalRevenue: '$5500',
+    totalViews: '1700',
+    region: 'Global'
   }
 ];

@@ -13,9 +13,9 @@ const CustomBreadCrums: FC<PageProps> = ({ item, fromSuperAdmin }) => {
             <div className='flex justify-between items-center '>
                 <div className='flex items-center '>
                     {item.links.map((link: any, index: number) => (
-                        <span key={link.name} className="flex items-center">
+                        <span key={index} className="flex items-center">
                             <Link
-                                href={link.name}
+                                href={link}
                                 className={`text-[12px] text-gray-400 ${index !== item.links.length - 1 ? "cursor-pointer" : ""
                                     }`}
                             >

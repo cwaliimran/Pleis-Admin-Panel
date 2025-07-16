@@ -38,9 +38,9 @@ const Page = () => {
                 <Tabs value={mainActive} onValueChange={setMainActive} className="w-[90vw] md:w-full ">
                     <div className="overflow-x-auto whitespace-nowrap ">
                         <TabsList className="flex w-max gap-2 bg-transparent rounded-full p-1">
-                            {tabsData.map((tab: any) => (
+                            {tabsData.map((tab: any,index:number) => (
                                 <TabsTrigger
-                                    key={tab.value}
+                                    key={index}
                                     value={tab.value}
                                     className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all shadow-none cursor-pointer border-none
                     ${mainActive === tab.value
@@ -74,9 +74,9 @@ const Page = () => {
             <Tabs value={active} onValueChange={setActive} className="w-[90vw] md:w-full mt-5">
                 <div className="overflow-x-auto whitespace-nowrap ">
                     <TabsList className="flex w-max items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
-                        {loyaltTabsData.map((tab: any) => (
+                        {loyaltTabsData.map((tab: any,index:number) => (
                             <TabsTrigger
-                                key={tab.value}
+                                key={index}
                                 value={tab.value}
                                 className={`text-md font-semibold relative rounded-full px-4 py-2 transition-colors ${active === tab.value
                                     ? "text-primary"
@@ -505,9 +505,9 @@ const Page = () => {
                             <Tabs value={active} onValueChange={setActive} className="w-[80vw] md:w-full mt-5">
                                 <div className="overflow-x-auto whitespace-nowrap ">
                                     <TabsList className="flex w-max items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
-                                        {rewardsTabs.map((tab: any) => (
+                                        {rewardsTabs.map((tab: any,index) => (
                                             <TabsTrigger
-                                                key={tab.value}
+                                                key={index}
                                                 value={tab.value}
                                                 className={`text-md font-semibold relative rounded-full px-4 py-2 transition-colors ${active === tab.value
                                                     ? "text-primary"

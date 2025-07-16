@@ -16,9 +16,9 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog'
 const defaultValues = {
     image: null,
     name: '',
-    venue: '',
-    category: '',
-    tag: '',
+    venue: [],
+    category: [],
+    tag: [],
     organization: '',
     fromDate: new Date(),
     endDate: new Date(),
@@ -34,9 +34,15 @@ const Page = () => {
     const schema = Yup.object().shape({
         image: Yup.mixed().nullable(),
         name: Yup.string().required("Event name is required"),
-        venue: Yup.string().required("Venue is required"),
-        category: Yup.string().required("Category is required"),
-        tag: Yup.string().required("Tag is required"),
+        venue: Yup.array()
+            .min(1, 'At least one Venue is required')
+            .of(Yup.string().required('Venue is required')),
+        category: Yup.array()
+            .min(1, 'At least one Category is required')
+            .of(Yup.string().required('Category is required')),
+        tag: Yup.array()
+            .min(1, 'At least one Tag is required')
+            .of(Yup.string().required('Tag is required')),
         organization: Yup.string().required("Organization is required"),
         fromDate: Yup.date().required("From Date is required"),
         endDate: Yup.date().required("End Date is required"),
@@ -49,7 +55,6 @@ const Page = () => {
     })
 
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data)
     }
     const CloseModal = () => {
         methods.reset(defaultValues);
@@ -57,17 +62,14 @@ const Page = () => {
         editModal.onFalse();
     }
     const handleEdit = (id: string) => {
-        console.log("id", id);
         openModal.onTrue();
         editModal.onTrue();
     }
 
     const handleDelete = (id: string) => {
-        console.log("id", id)
         deleteModal.onTrue();
     }
     const onDelete = () => {
-        console.log("Delete confirmed")
         deleteModal.onFalse();
     }
 
@@ -105,11 +107,16 @@ const Page = () => {
                                     className={` ${methods.formState.errors.name ? 'border-red-400' : ''}`}
                                 />
                                 <div className='grid md:grid-cols-2 grid-1 gap-2 items-start'>
-                                    <RHFTextField
+                                    <RHFSelectField
                                         name='venue'
                                         label='Venue'
-                                        placeholder='Enter Venue'
-                                        className={` ${methods.formState.errors.venue ? 'border-red-400' : ''}`}
+                                        placeholder='Select Venue'
+                                        className='w-full flex-1'
+                                        options={[
+                                            { label: 'Venue 1', value: 'venue1' },
+                                            { label: 'Venue 2', value: 'venue2' },
+                                            { label: 'Venue 3', value: 'venue3' }
+                                        ]}
                                     />
                                     <RHFSelectField
                                         name='category'

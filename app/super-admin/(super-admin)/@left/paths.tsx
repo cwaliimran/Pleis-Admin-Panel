@@ -30,7 +30,7 @@ export const paths = {
             default: "/super-admin/user",
             create: "/super-admin/user/create-user",
             list: "/super-admin/user/user-list",
-            pendingList: "/super-admin/user/pending-user-list",
+            pendingList: "/super-admin/user/pending-list",
         },
         evnets: {
             default: "/super-admin/events",

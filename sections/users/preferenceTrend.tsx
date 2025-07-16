@@ -5,7 +5,7 @@ import { VisitorAge } from '../invoices'
 
 const PreferenceTrend = () => {
     return (
-            <Card className=''>
+            <Card className=' h-[450px]'>
                 <CardHeader className='flex justify-between'>
                     <h1 className='text-2xl font-bold'>
                         Preference Trends
@@ -32,6 +32,11 @@ const PreferenceTrend = () => {
                             { ageGroup: "55+", visitors: 70 }
                         ]}
                     />
+                     <div className="mx-4 mt-4">
+                  <p className="text-[12px] text-muted-foreground font-medium">
+                    <span className="text-xl font-bold dark:text-white text-black">66%</span> visitors are 45-55 years old
+                  </p>
+                </div>
 
                 </CardContent>
             </Card>

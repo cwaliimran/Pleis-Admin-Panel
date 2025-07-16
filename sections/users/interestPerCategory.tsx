@@ -4,7 +4,7 @@ import { VisitorInterest } from '../invoices'
 
 const InterestPerCategory = () => {
     return (
-        <Card className='shadow-lg'>
+        <Card className='shadow-lg  h-[450px]'>
             <CardHeader>
                 <div className='flex justify-between items-center'>
                     <h3 className='text-xl font-semibold'>Interest per Category</h3>
@@ -25,7 +25,7 @@ const InterestPerCategory = () => {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className=''>
+            {/* <CardContent className=''> */}
                 <VisitorInterest
                     chartData={[
                         { month: "January", males: 186, females: 80 },
@@ -40,7 +40,7 @@ const InterestPerCategory = () => {
                         females: { label: "Females", color: "#202C88" },
                     }}
                 />
-            </CardContent>
+            {/* </CardContent> */}
         </Card>
     )
 }

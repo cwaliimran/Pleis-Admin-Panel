@@ -36,7 +36,6 @@ const Page = () => {
     })
 
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data)
     }
     const CloseModal = () => {
         methods.reset(defaultValues);
@@ -44,17 +43,14 @@ const Page = () => {
         editModal.onFalse();
     }
     const handleEdit = (id: string) => {
-        console.log("id", id);
         openModal.onTrue();
         editModal.onTrue();
     }
 
     const handleDelete = (id: string) => {
-        console.log("id", id)
         deleteModal.onTrue();
     }
     const onDelete = () => {
-        console.log("Delete confirmed")
         deleteModal.onFalse();
     }
 
@@ -78,7 +74,7 @@ const Page = () => {
             <Dialog open={openModal.value} onOpenChange={CloseModal}>
                 <DialogOverlay
                     className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-                    <DialogContent>
+                    <DialogContent className=' dark:bg-[#171717]'>
                         <DialogHeader>
                             <DialogTitle> {!editModal.value ? "Create Venue Type" : "Edit Venue Type"} </DialogTitle>
                         </DialogHeader>

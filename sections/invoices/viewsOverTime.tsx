@@ -22,8 +22,8 @@ const ViewsOverTime: FC<PageProps> = ({ data }) => {
             <ResponsiveContainer width="100%" height={350}>
                 <LineChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="4 4" />
-                    <XAxis dataKey="month" />
-                    <YAxis tickFormatter={(v) => `${v}`} />
+                    <XAxis dataKey="month"  axisLine={false}/>
+                    <YAxis tickFormatter={(v) => `${v}`} axisLine={false} />
                     <Tooltip formatter={(value: number) => `${value.toLocaleString()}`} />
                     <Line
                         type="monotone"

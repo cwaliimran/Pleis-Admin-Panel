@@ -27,7 +27,6 @@ const Page = () => {
     })
 
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data)
     }
     const CloseModal = () => {
         methods.reset(defaultValues);
@@ -55,7 +54,7 @@ const Page = () => {
             <Dialog open={openModal.value} onOpenChange={CloseModal}>
                 <DialogOverlay
                     className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-                    <DialogContent>
+                    <DialogContent className=' dark:bg-[#171717]'>
                         <DialogHeader>
                             <DialogTitle> {openModal.value ? "Create Tag" : "Edit Tag"} </DialogTitle>
                         </DialogHeader>

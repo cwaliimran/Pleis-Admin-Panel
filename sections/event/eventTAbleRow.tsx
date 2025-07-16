@@ -41,6 +41,15 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
             <TableCell className="text-left">
                 {item.endDate ? item.endDate : "N/A"}
             </TableCell>
+            <TableCell>
+                {item.totalRevenue ? item.totalRevenue : "N/A"}
+            </TableCell>
+            <TableCell className="text-left">
+                {item.totalViews ? item.totalViews : "N/A"}
+            </TableCell>
+            <TableCell className="text-left">
+                {item.region ? item.region : "N/A"}
+            </TableCell>
             <TableCell className="text-end">
                 <div className="flex gap-2 ">
                     <button

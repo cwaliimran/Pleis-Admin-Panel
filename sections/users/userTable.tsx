@@ -3,34 +3,44 @@ import TableHeadCustom from '@/components/table/table-head-custom'
 import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table } from '@/components/ui/table'
+import { Table, TableBody } from '@/components/ui/table'
 import React, { FC } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Settings2 } from 'lucide-react'
 import { usersList } from './data'
 import UserListTableRow from './userListTableRow'
-const headLabel = [
-    { id: "image", label: "Image", align: "left" },
-    { id: "fname", label: "First Name", align: "left" },
-    { id: "lname", label: "Last Name", align: "left" },
-    { id: "email", label: "Email", align: "left" },
-    { id: "role", label: "Role", align: "left" },
-    { id: "status", label: "Status", align: "left" },
-    { id: "actions", label: "", align: "right" }
-];
 
 interface PageProps {
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
+    handlePending?: (id: string) => void;
+    pendingUser?: boolean;
 }
-const VenueTypeTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handlePending }) => {
+
+
+    const headLabel = [
+        { id: "image", label: "Image", align: "left" },
+        { id: "fname", label: "First Name", align: "left" },
+        { id: "lname", label: "Last Name", align: "left" },
+        pendingUser && { id: "organization", label: "Organization", align: "left" },
+        { id: "email", label: "Email", align: "left" },
+        { id: "username", label: "Username", align: "left" },
+        pendingUser && { id: 'phone', label: "Phone", align: "left" },
+        !pendingUser && { id: "role", label: "Role", align: "left" },
+        !pendingUser && { id: "status", label: "Global Status", align: "left" },
+        !pendingUser && { id: "totalPoints", label: "Total Points Earned", align: "left" },
+        !pendingUser && { id: "toatlRevenue", label: "Total Revenue From User", align: "left" },
+        !pendingUser && { id: "region", label: "Region", align: "left" },
+        { id: "actions", label: "", align: "right" }
+    ].filter(Boolean);
     return (
         <div>
             <div className='grid grid-cols-12 '>
-                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5'>
+                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-[#171717]'>
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
-                        <h3 className='text-xl font-semibold md:ml-0 ml-2'>User List</h3>
+                        <h3 className='text-xl font-semibold md:ml-0 ml-2'>{pendingUser ? "Pending User List" : "User List"}</h3>
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
 
@@ -54,14 +64,18 @@ const VenueTypeTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='border rounded-lg  '>
                         <Table className='w-full rounded-md border  '>
                             <TableHeadCustom headLabel={headLabel} />
-                            {usersList.map((item: any, index: number) => (
-                                <UserListTableRow
-                                    key={index}
-                                    item={item}
-                                    handleDelete={handleDelete}
-                                    handleEdit={handleEdit}
-                                />
-                            ))}
+                            <TableBody>
+                                {usersList.map((item: any, index: number) => (
+                                    <UserListTableRow
+                                        key={index}
+                                        item={item}
+                                        handleDelete={handleDelete}
+                                        handleEdit={handleEdit}
+                                        pendingUser={pendingUser}
+                                        handlePending={handlePending}
+                                    />
+                                ))}
+                            </TableBody>
                         </Table>
                     </div>
                     <Pagination className="flex flex-wrap items-center justify-end gap-4 mt-4 text-sm">
@@ -109,4 +123,4 @@ const VenueTypeTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
     )
 }
 
-export default VenueTypeTable
+export default UserTable

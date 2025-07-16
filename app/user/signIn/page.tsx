@@ -142,7 +142,7 @@
 //                 <div className="hidden md:flex w-1/2 dark:bg-[#171717] bg-[#f5f5f5] items-center justify-center">
 //                     <h1 className="text-5xl font-extrabold">PLEIS</h1>
 //                 </div>
-//             </div>
+//             </div>x
 //         </div>
 //     );
 // }
@@ -209,16 +209,7 @@ export default function LoginPage() {
                         <p className="text-lg text-gray-300 max-w-sm mx-auto">
                             Let’s get you signed in to continue.
                         </p>
-                        {/* <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-24 h-24 mx-auto opacity-20"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1}
-                        >
-                            <path d="M12 4v16m8-8H4" />
-                        </svg> */}
+                       
                     </div>
                 </motion.div>
 

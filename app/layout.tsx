@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/components/templates/theme-provider";
 import { Provider } from "react-redux";
 import { store } from "@/store/store";
 
+import 'react-phone-input-2/lib/style.css';
+
 // const poppins = Poppins({
 //   variable: "--font-poppins",
 //   weight: ["100", "200", "300", "400", "500", "600"],

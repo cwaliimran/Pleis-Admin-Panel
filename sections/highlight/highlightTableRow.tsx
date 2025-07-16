@@ -14,13 +14,15 @@ interface PageProps {
         organization: string;
         status: string;
         video: string;
-    }   
+        event: string,
+        createdAt: string
+    }
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
 
 }
 
-const HighlightTableRow: FC<PageProps> = ({ item,handleDelete,handleEdit }) => {
+const HighlightTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
     return (
         <TableRow className="transition-colors h-14 w-full">
             <TableCell>
@@ -41,6 +43,9 @@ const HighlightTableRow: FC<PageProps> = ({ item,handleDelete,handleEdit }) => {
                 </div>
             </TableCell>
             <TableCell>
+                {item.event}
+            </TableCell>
+            <TableCell>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Play className="h-4 w-4 text-primary cursor-pointer    " />
@@ -56,6 +61,8 @@ const HighlightTableRow: FC<PageProps> = ({ item,handleDelete,handleEdit }) => {
                     </DialogContent>
                 </Dialog>
             </TableCell>
+            <TableCell>{item.createdAt}</TableCell>
+
 
 
             {/* Status */}

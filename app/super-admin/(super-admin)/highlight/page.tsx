@@ -27,6 +27,7 @@ import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 type HighlightFormValues = {
   video: File | null;
   title: string;
+  event: string;
   status: string;
   organization: string;
 };
@@ -34,6 +35,7 @@ type HighlightFormValues = {
 const defaultValues: HighlightFormValues = {
   video: null,
   title: "",
+  event: "",
   status: "",
   organization: "",
 };
@@ -42,6 +44,7 @@ const schema = Yup.object({
   video: Yup.mixed()
     .required("Video is required"),
   title: Yup.string().required("Title is required"),
+  event: Yup.string().required("Event is required"),
   status: Yup.string().required("Status is required"),
   organization: Yup.string().required("Organization is required"),
 });
@@ -73,7 +76,6 @@ const Page = () => {
   }, [videoPreviewUrl]);
 
   const onSubmit = (data: any) => {
-    console.log("Form Data:", data);
     // You can upload form here
   };
 
@@ -83,17 +85,14 @@ const Page = () => {
     editModal.onFalse();
   };
   const handleEdit = (id: string) => {
-    console.log("id", id);
     openModal.onTrue();
     editModal.onTrue();
   }
 
   const handleDelete = (id: string) => {
-    console.log("id", id)
     deleteModal.onTrue();
   }
   const onDelete = () => {
-    console.log("Delete confirmed")
     deleteModal.onFalse();
   }
 
@@ -119,7 +118,7 @@ const Page = () => {
       {/* dialog for add and update the highlight  */}
       <Dialog open={openModal.value} onOpenChange={closeModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30" />
-        <DialogContent className="w-full md:!max-w-screen-md">
+        <DialogContent className="w-full md:!max-w-screen-md  dark:bg-[#171717]">
           <DialogHeader>
             <DialogTitle>
               {!editModal.value ? "Create Highlight" : "Edit Highlight"}
@@ -140,6 +139,16 @@ const Page = () => {
                   placeholder="Enter Highlight Title"
                   className={`${methods.formState.errors.title ? "border-red-400" : ""
                     }`}
+                />
+                <RHFSelectField
+                  name="event"
+                  label="Event"
+                  placeholder="Select Event"
+                  options={[
+                    { label: "Event 1", value: "event1" },
+                    { label: "Event 2", value: "event2" },
+                    { label: "Event 3", value: "event3" },
+                  ]}
                 />
                 <RHFSelectField
                   name="organization"

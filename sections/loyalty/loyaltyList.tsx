@@ -48,8 +48,8 @@ const LoyaltyList = () => {
             <div className='border rounded-lg md:m-4  '>
                 <Table className="w-full">
                     <TableHeadCustom headLabel={headLabel} />
-                    {loyaltylistData.map((item: any) => (
-                        <LoyaltyTableRow key={item._id} item={item} />
+                    {loyaltylistData.map((item: any,index:number) => (
+                        <LoyaltyTableRow key={index} item={item} />
                     ))}
                 </Table>
             </div>

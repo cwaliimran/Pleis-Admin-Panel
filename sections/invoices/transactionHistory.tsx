@@ -1,15 +1,15 @@
 import TableHeadCustom from '@/components/table/table-head-custom'
-import { Table } from '@/components/ui/table'
+import { Table, TableBody } from '@/components/ui/table'
 import React from 'react'
 import { TransactionHistoryData } from './data'
 import TransactionHitoryTableRow from './transactionHistoryRow'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 const headLabel = [
-    { id: "user", label: "User" ,align:'left'},
-    { id: 'contact', label: 'Contact',align:'left' },
-    { id: "invoice", label: "Invoice" ,align:'left'},
-    { id: 'organizer', label: 'Organizer',align:'left' },
-    { id: 'date', label: 'Date' ,align:'left'},
+    { id: "user", label: "User", align: 'left' },
+    { id: 'contact', label: 'Contact', align: 'left' },
+    { id: "invoice", label: "Invoice", align: 'left' },
+    { id: 'organizer', label: 'Organizer', align: 'left' },
+    { id: 'date', label: 'Date', align: 'left' },
     { id: 'total', label: 'Total' },
     { id: 'status', label: 'Status' },
     { id: 'action', label: '' },
@@ -21,13 +21,15 @@ const TransactionHistory = () => {
             <div className='border rounded-lg m-4 '>
                 <Table className="w-full">
                     <TableHeadCustom headLabel={headLabel} />
-                    {TransactionHistoryData.map((item: any) => (
-                        <TransactionHitoryTableRow key={item._id} item={item} />
-                    ))}
+                    <TableBody>
+                        {TransactionHistoryData.map((item: any, index: number) => (
+                            <TransactionHitoryTableRow key={index} item={item} />
+                        ))}
+                    </TableBody>
                 </Table>
-               <div >
-               </div>
-                 <Pagination className='w-full flex justify-end mt-2'>
+                <div >
+                </div>
+                <Pagination className='w-full flex justify-end mt-2'>
                     <PaginationContent>
                         <PaginationItem>
                             <PaginationPrevious href="#" />

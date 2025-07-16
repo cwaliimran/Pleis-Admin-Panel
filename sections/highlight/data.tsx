@@ -1,10 +1,12 @@
- export const highlightData = [
+export const highlightData = [
   {
     id: '1',
     title: 'Opening Ceremony Highlights',
     organization: 'EventMasters',
     status: 'active',
     video: '/videos/highlights/opening.mp4',
+    event: "Event 1",
+    createdAt: "2024-12-31"
   },
   {
     id: '2',
@@ -12,6 +14,8 @@
     organization: 'InnovateX',
     status: 'scheduled',
     video: '/videos/highlights/techtalk.mp4',
+    event: "Event 2",
+    createdAt: "2024-12-31"
   },
   {
     id: '3',
@@ -19,6 +23,8 @@
     organization: 'AI Future Lab',
     status: 'inactive',
     video: '/videos/highlights/panel.mp4',
+    event: "Event 3",
+    createdAt: "2024-12-31"
   },
   {
     id: '4',
@@ -26,6 +32,8 @@
     organization: 'Startup Hub',
     status: 'active',
     video: '/videos/highlights/awards.mp4',
+    event: "Event 4",
+    createdAt: "2024-12-31"
   },
   {
     id: '5',
@@ -33,6 +41,8 @@
     organization: 'BlockChain PK',
     status: 'active',
     video: '/videos/highlights/closing.mp4',
+    event: "Event 5",
+    createdAt: "2024-12-31"
   },
   {
     id: '6',
@@ -40,6 +50,8 @@
     organization: 'MarketMinds',
     status: 'inactive',
     video: '/videos/highlights/keynote.mp4',
+    event: "Event 6",
+    createdAt: "2024-12-31"
   },
   {
     id: '7',
@@ -47,6 +59,8 @@
     organization: 'WomenTechPK',
     status: 'active',
     video: '/videos/highlights/women-tech.mp4',
+    event: "Event 7",
+    createdAt: "2024-12-31"
   },
   {
     id: '8',
@@ -54,6 +68,8 @@
     organization: 'CodeCraft',
     status: 'scheduled',
     video: '/videos/highlights/dev-meetup.mp4',
+    event: "Event 8",
+    createdAt: "2024-12-31"
   },
   {
     id: '9',
@@ -61,6 +77,8 @@
     organization: 'SecureNet',
     status: 'active',
     video: '/videos/highlights/cyber.mp4',
+    event: "Event 9",
+    createdAt: "2024-12-31"
   },
   {
     id: '10',
@@ -68,5 +86,7 @@
     organization: 'GreenFuture Org',
     status: 'inactive',
     video: '/videos/highlights/green-energy.mp4',
+    event: "Event 10",
+    createdAt: "2024-12-31"
   },
 ];

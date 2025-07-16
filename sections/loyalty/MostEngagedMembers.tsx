@@ -37,8 +37,8 @@ const MostEngagedMembers = () => {
             <div className='border rounded-lg m-4  '>
                 <Table className="w-full">
                     <TableHeadCustom headLabel={headLabel} />
-                    {engagedMembers.map((item: any) => (
-                        <MostEngagedMemberTableRow key={item._id} item={item} />
+                    {engagedMembers.map((item: any,index) => (
+                        <MostEngagedMemberTableRow key={index} item={item} />
                     ))}
                 </Table>
             </div>

@@ -10,14 +10,17 @@ import { Badge } from '@/components/ui/badge'
 import { Settings2 } from 'lucide-react'
 import OrganizationTableRow from './organizationTableRow'
 const headLabel = [
-    { id: "image", label: "Image", align: "left" },
+    { id: "log", label: "Logo", align: "left" },
     { id: "name", label: "Name", align: 'left' },
     { id: "phone", label: "Phone", align: "left" },
     { id: 'email', label: "Email", align: "left" },
     { id: "createdDate", label: "Created Date", align: "left" },
-    { id: "status", label: "Status", align: "left" },
-    { id: "subscriptionValidity", label: "Subscription Validity", align: "left" },
+    {id:"subscriptionType", label: "Subscription Type", align: "left"},
+    { id: "subscriptionValidity", label: "Subscription End Date", align: "left" },
     { id: "commission", label: "Pleis Commission (%)", align: "left" },
+    {id:"totalViews", label: "Total Views", align: "left"},
+    {id:"totalRevenue", label: "Total Revenue", align: "left"},
+    {id:"region", label: "Region", align: "left"},
     { id: "actions", label: "" }
 ]
 interface PageProps {

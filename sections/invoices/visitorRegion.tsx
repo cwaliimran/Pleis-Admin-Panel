@@ -26,7 +26,8 @@ const VisitorRegion: FC<PageProps> = ({ chartData, chartConfig }) => {
         <div className="w-full h-[270px]">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}   margin={{ top: 0, right: 30, left: 0, bottom:0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false}  />
+                    {/* <CartesianGrid strokeDasharray="3 3" strokeWidth={1} vertical={false}   /> */}
+                    <CartesianGrid stroke="#ccc" strokeWidth={1} vertical={false} />
                     <XAxis dataKey="month"  axisLine={false}  tickMargin={10}  />
                     <YAxis  axisLine={false}  className="text-[13px] font-bold "/>
                     <Tooltip />

@@ -36,7 +36,6 @@ const Page = () => {
     })
 
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data)
     }
     const CloseModal = () => {
         methods.reset(defaultValues);
@@ -44,17 +43,14 @@ const Page = () => {
         editModal.onFalse();
     }
     const handleEdit = (id: string) => {
-        console.log("id", id);
         openModal.onTrue();
         editModal.onTrue();
     }
 
     const handleDelete = (id: string) => {
-        console.log("id", id)
         deleteModal.onTrue();
     }
     const onDelete = () => {
-        console.log("Delete confirmed")
         deleteModal.onFalse();
     }
 
@@ -80,7 +76,7 @@ const Page = () => {
             <Dialog open={openModal.value} onOpenChange={CloseModal}>
                 <DialogOverlay
                     className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-                    <DialogContent>
+                    <DialogContent className=' dark:bg-[#171717]'>
                         <DialogHeader>
                             <DialogTitle> {!editModal.value ? "Create Category" : "Edit Category"} </DialogTitle>
                         </DialogHeader>
@@ -94,7 +90,7 @@ const Page = () => {
                                     className={` ${methods.formState.errors.name ? 'border-red-400' : ''}`}
                                 />
 
-                                <RHFSelectField
+                                {/* <RHFSelectField
                                     name='type'
                                     label='Category Type'
                                     placeholder='Select Category'
@@ -104,7 +100,7 @@ const Page = () => {
                                         { label: 'Service', value: 'service' },
                                         { label: 'Other', value: 'other' }
                                     ]}
-                                />
+                                /> */}
 
                                 <div className='flex justify-end gap-2'>
                                     <Button type='submit' className='bg-blue-700 text-white hover:bg-blue-800 cursor-pointer'>

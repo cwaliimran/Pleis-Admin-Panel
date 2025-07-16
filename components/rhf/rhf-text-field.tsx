@@ -50,7 +50,7 @@ const RHFTextField: FC<Props> = ({ name, label, type = "text", showPassword, mul
               ) : (
                 <Input
                   type={inputType}
-                  className={props.className}
+                  className={` h-[40px] ${props.className}`}
                   {...field}
                   {...props}
                 />

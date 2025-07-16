@@ -16,7 +16,6 @@ const Page = () => {
 
   const [active, setActive] = React.useState('all');
   const { user } = useMockedUser();
-  console.log("User Data:", user);
   return (
     <div>
       <Header
@@ -206,7 +205,7 @@ const Page = () => {
               <CardHeader className=''>
                 <div className='flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'> Gender Analytics</h3>
-                  <div className='flex flex-col items-center'>
+                  <div className='flex flex-col items-start'>
                     <div className='flex items-center'>
                       <div className='w-3 h-3 rounded-full bg-[#2563EB] mr-2' />
                       <h1 className='text-md leading-6 '>
@@ -293,7 +292,7 @@ const Page = () => {
           <Card className='col-span-12 md:col-span-5 shadow-lg  h-[550px]  dark:bg-[#171717]'>
             <CardHeader>
               <div className='flex justify-between items-center'>
-                <h3 className='text-xl font-semibold'>Interest Per Category</h3>
+                <h3 className='text-xl font-semibold'>Interest per Category</h3>
                 <div className='flex flex-col items-center'>
                   <div className='flex items-center'>
                     <div className='w-3 h-3 rounded-full bg-[#020617] mr-2' />

@@ -9,8 +9,12 @@ export const organizationListData = [
         email: "contact@technova.com",
         createdAt: "2023-01-15",
         status: "active",
+        subscriptionType: "Premium User",
         subscriptionValidity: "2024-12-31",
         commission: "10%",
+        totalRevenue: "$100,000",
+        totalViews: 5,
+        region: "North America"
     },
     {
         id: 2,
@@ -20,8 +24,12 @@ export const organizationListData = [
         email: "hello@greenworks.io",
         createdAt: "2022-11-10",
         status: "inactive",
+        subscriptionType: "Basic User",
         subscriptionValidity: "2023-11-10",
         commission: "12%",
+        totalRevenue: "$50,000",
+        totalViews: 3,
+        region: "Europe"
     },
     {
         id: 3,
@@ -31,8 +39,12 @@ export const organizationListData = [
         email: "support@edusmart.org",
         createdAt: "2024-03-05",
         status: "active",
+        subscriptionType: "Enterprise User",
         subscriptionValidity: "2025-03-05",
         commission: "15%",
+        totalRevenue: "$75,000",
+        totalViews: 4,
+        region: "Asia"
     },
     {
         id: 4,
@@ -42,8 +54,12 @@ export const organizationListData = [
         email: "info@healthify.com",
         createdAt: "2023-08-22",
         status: "active",
+        subscriptionType: "Premium User",
         subscriptionValidity: "Lifetime",
         commission: "8%",
+        totalRevenue: "$200,000",
+        totalViews: 10,
+        region: "Australia"
     },
     {
         id: 5,
@@ -53,8 +69,12 @@ export const organizationListData = [
         email: "contact@agrotech.pk",
         createdAt: "2022-06-18",
         status: "inactive",
+        subscriptionType: "Basic User",
         subscriptionValidity: "2023-06-18",
         commission: "7%",
+        totalRevenue: "$30,000",
+        totalViews: 2,
+        region: "Pakistan"
     },
     {
         id: 6,
@@ -64,8 +84,12 @@ export const organizationListData = [
         email: "team@logix.com",
         createdAt: "2023-05-01",
         status: "active",
+        subscriptionType: "Enterprise User",
         subscriptionValidity: "2024-05-01",
         commission: "11%",
+        totalRevenue: "$120,000",
+        totalViews: 6,
+        region: "South America"
     },
     {
         id: 7,
@@ -75,8 +99,12 @@ export const organizationListData = [
         email: "labs@brightlabs.io",
         createdAt: "2021-12-12",
         status: "inactive",
+        subscriptionType: "Basic User",
         subscriptionValidity: "2022-12-12",
         commission: "5%",
+        totalRevenue: "$40,000",
+        totalViews: 1,
+        region: "Middle East"
     },
     {
         id: 8,
@@ -86,8 +114,12 @@ export const organizationListData = [
         email: "media@sparkmail.com",
         createdAt: "2023-09-09",
         status: "active",
+        subscriptionType: "Premium User",
         subscriptionValidity: "2025-09-09",
         commission: "9%",
+        totalRevenue: "$90,000",
+        totalViews: 7,
+        region: "Africa"
     },
     {
         id: 9,
@@ -97,8 +129,13 @@ export const organizationListData = [
         email: "connect@innosoft.dev",
         createdAt: "2023-07-30",
         status: "active",
+        subscriptionType: "Enterprise User",
         subscriptionValidity: "2024-07-30",
         commission: "13%",
+        totalRevenue: "$150,000",
+        totalViews: 8,
+        region: "Europe"
+
     },
     {
         id: 10,
@@ -108,7 +145,11 @@ export const organizationListData = [
         email: "billing@securepay.net",
         createdAt: "2022-02-28",
         status: "inactive",
+        subscriptionType: "Basic User",
         subscriptionValidity: "2023-02-28",
         commission: "6%",
+        totalRevenue: "$25,000",
+        totalViews: 2,
+
     },
 ];

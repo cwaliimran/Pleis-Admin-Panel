@@ -13,9 +13,12 @@ const headLabel = [
     { id: "image", label: "Image", align: "left" },
     { id: "name", label: "Name", align: 'left' },
     { id: "venue", label: "Venue", align: "left" },
-    { id: 'organizaiton', label: "Organization", align: "left" },
-    { id: "fromDate", label: "From Date", align: "left" },
+    { id: 'organizer', label: "Organizer", align: "left" },
+    { id: "startDate", label: "Start Date", align: "left" },
     { id: "endDate", label: "End Date", align: "left" },
+    { id: "totalRevenue", label: "Total Revenue", align: "left" },
+    { id: "totalViews", label: "Total Views", align: "left" },
+    { id: "region", label: "Region", align: "left" },
     { id: "actions", label: "", align: "right" }
 ]
 interface PageProps {
@@ -26,7 +29,7 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
     return (
         <div>
             <div className='grid grid-cols-12 '>
-                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5'>
+                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-[#171717]'>
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                         <h3 className='text-xl font-semibold md:ml-0 ml-2'>Event List</h3>
                         <div>

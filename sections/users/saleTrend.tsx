@@ -6,7 +6,7 @@ import { MostViewedEvent } from '../invoices'
 const saleTrend = () => {
     return (
         <div>
-            <Card className=''>
+            <Card className='h-[450px]'>
                 <CardHeader className='flex justify-between'>
                     <h1 className='text-2xl font-bold'>
                         Sales Trends
@@ -37,6 +37,7 @@ const saleTrend = () => {
                             search: { label: "Category", color: "#2563EB" },
                         }}
                     />
+                    
 
                 </CardContent>
             </Card>

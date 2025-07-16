@@ -16,11 +16,11 @@ import VenueTable from '@/sections/venue/venueTable'
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog'
 
 const defaultValues = {
-    image: null,
+    // image: null,
     name: '',
     venueType: '',
     organization: '',
-    location: '',
+    // location: '',
     clity: '',
     country: ''
 }
@@ -32,11 +32,11 @@ const Page = () => {
     const deleteModal = useBoolean();
 
     const schema = Yup.object().shape({
-        image: Yup.mixed().nullable(),
+        // image: Yup.mixed().nullable(),
         name: Yup.string().required("Venue name is required"),
         venueType: Yup.string().required("Venue Type is required"),
         organization: Yup.string().required("Organization is required"),
-        location: Yup.string().required("Location is required"),
+        // location: Yup.string().required("Location is required"),
         clity: Yup.string(),
         country: Yup.string(),
     })
@@ -47,7 +47,6 @@ const Page = () => {
     })
 
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data)
     }
     const CloseModal = () => {
         methods.reset(defaultValues);
@@ -55,17 +54,14 @@ const Page = () => {
         editModal.onFalse();
     }
     const handleEdit = (id: string) => {
-        console.log("id", id);
         openModal.onTrue();
         editModal.onTrue();
     }
 
     const handleDelete = (id: string) => {
-        console.log("id", id)
         deleteModal.onTrue();
     }
     const onDelete = () => {
-        console.log("Delete confirmed")
         deleteModal.onFalse();
     }
 
@@ -88,14 +84,14 @@ const Page = () => {
             {/* dialog for add and update the venue */}
             <Dialog open={openModal.value} onOpenChange={CloseModal}>
                 <DialogOverlay
-                    className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-                    <DialogContent>
+                    className="fixed inset-0 bg-white   bg-opacity-30 flex items-center justify-center md:w-lg w-full">
+                    <DialogContent className=' dark:bg-[#171717]'>
                         <DialogHeader>
                             <DialogTitle> {!editModal.value ? "Create Venue" : "Edit Venue"} </DialogTitle>
                         </DialogHeader>
                         <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                             <div className="flex flex-col gap-4 mt-4">
-                                <RHFUploadAvatar name="image" label="Venue Image" />
+                                {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
                                 <RHFTextField
                                     name='name'
                                     label='Venue Name'
@@ -124,13 +120,13 @@ const Page = () => {
                                         { label: 'Organization C', value: 'org-c' }
                                     ]}
                                 />
-                                <RHFTextField
+                                {/* <RHFTextField
                                     name='location'
                                     label='Location'
                                     placeholder='Enter Location'
                                     className={` ${methods.formState.errors.location ? 'border-red-400' : ''}`}
 
-                                />
+                                /> */}
                                 <RHFSelectField
                                     name='clity'
                                     label='City'

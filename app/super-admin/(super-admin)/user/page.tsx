@@ -49,7 +49,6 @@ const Page = () => {
     })
 
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data)
     }
     const CloseModal = () => {
         methods.reset(defaultValues);
@@ -57,17 +56,14 @@ const Page = () => {
         editModal.onFalse();
     }
     const handleEdit = (id: string) => {
-        console.log("id", id);
         openModal.onTrue();
         editModal.onTrue();
     }
 
     const handleDelete = (id: string) => {
-        console.log("id", id)
         deleteModal.onTrue();
     }
     const onDelete = () => {
-        console.log("Delete confirmed")
         deleteModal.onFalse();
     }
 
@@ -91,7 +87,7 @@ const Page = () => {
             <Dialog open={openModal.value} onOpenChange={CloseModal}>
                 <DialogOverlay
                     className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-                    <DialogContent>
+                    <DialogContent className=' '>
                         <DialogHeader>
                             <DialogTitle> {!editModal.value ? "Create User" : "Edit User"} </DialogTitle>
                         </DialogHeader>
@@ -133,9 +129,12 @@ const Page = () => {
                                     label='Role'
                                     placeholder='Select Role'
                                     options={[
-                                        { label: 'Admin', value: 'admin' },
-                                        { label: 'User', value: 'user' },
-                                        { label: 'Super Admin', value: 'super-admin' }
+                                        { value: 'Guest', label: 'Guest' },
+                                        { value: 'Registered User', label: 'Registered User' },
+                                        { value: 'Admin', label: 'Admin' },
+                                        { value: 'Manager', label: 'Manager' },
+                                        { value: 'Superadmin', label: 'Superadmin' },
+                                        { value: 'Staff', label: 'Staff' }
                                     ]}
                                 />
 

@@ -193,6 +193,9 @@ export const usersList = [
     email: 'john.doe@example.com',
     role: 'admin',
     status: 'active',
+    totalPoints: 120,
+    totalRevenue: 5000,
+    region: 'North America',
   },
   {
     id: '2',
@@ -202,6 +205,9 @@ export const usersList = [
     email: 'jane.smith@example.com',
     role: 'user',
     status: 'inactive',
+    totalPoints: 80,
+    totalRevenue: 3000,
+    region: 'Europe',
   },
   {
     id: '3',
@@ -211,6 +217,9 @@ export const usersList = [
     email: 'david.brown@example.com',
     role: 'moderator',
     status: 'active',
+    totalPoints: 150,
+    totalRevenue: 7000,
+    region: 'Asia',
   },
   {
     id: '4',
@@ -220,6 +229,9 @@ export const usersList = [
     email: 'emma.wilson@example.com',
     role: 'user',
     status: 'pending',
+    totalPoints: 60,
+    totalRevenue: 2000,
+    region: 'South America',
   },
   {
     id: '5',
@@ -229,6 +241,9 @@ export const usersList = [
     email: 'michael.taylor@example.com',
     role: 'user',
     status: 'active',
+    totalPoints: 90,
+    totalRevenue: 4000,
+    region: 'Africa',
   },
   {
     id: '6',
@@ -238,6 +253,9 @@ export const usersList = [
     email: 'sophia.anderson@example.com',
     role: 'admin',
     status: 'inactive',
+    totalPoints: 110,
+    totalRevenue: 6000,
+    region: 'Australia',
   },
   {
     id: '7',
@@ -247,6 +265,9 @@ export const usersList = [
     email: 'james.thomas@example.com',
     role: 'moderator',
     status: 'active',
+    totalPoints: 130,
+    totalRevenue: 8000,
+    region: 'North America',
   },
   {
     id: '8',
@@ -256,6 +277,9 @@ export const usersList = [
     email: 'olivia.jackson@example.com',
     role: 'user',
     status: 'pending',
+    totalPoints: 70,
+    totalRevenue: 2500,
+    region: 'Europe',
   },
   {
     id: '9',
@@ -265,6 +289,9 @@ export const usersList = [
     email: 'william.white@example.com',
     role: 'user',
     status: 'active',
+    totalPoints: 140,
+    totalRevenue: 9000,
+    region: 'Asia',
   },
   {
     id: '10',
@@ -274,5 +301,8 @@ export const usersList = [
     email: 'mia.martin@example.com',
     role: 'admin',
     status: 'inactive',
+    totalPoints: 100, 
+    totalRevenue: 5500,
+    region: 'South America',
   },
 ];

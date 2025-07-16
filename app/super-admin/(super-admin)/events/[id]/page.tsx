@@ -65,7 +65,6 @@ const Page = () => {
         },
     });
     const onSubmit = (data: any) => {
-        console.log("Form Data:", data);
         openModal.onFalse();
     };
     const handleClose = () => {

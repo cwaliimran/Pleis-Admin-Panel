@@ -75,8 +75,6 @@ const UserInfo = () => {
                                 </Badge>
                             ))
                             }
-
-
                         </div>
                     </CardHeader>
                 </Card>

@@ -40,17 +40,19 @@ const OrganizationTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit })
                 {item.createdAt ? item.createdAt : "N/A"}
             </TableCell>
             <TableCell className="text-left">
-                {item.status && (
-                    <Badge className={`${item.status === "Premium User" ? "text-green-800 bg-green-100" : "text-red-800 bg-red-100"} rounded-full px-3 py-1 text-xs font-medium`}>
-                        {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                    </Badge>
-                )}
+                {item.subscriptionType ? item.subscriptionType : "N/A"}
             </TableCell>
             <TableCell className="text-center">
                 {item.subscriptionValidity ? item.subscriptionValidity : "N/A"}
             </TableCell>
             <TableCell className="text-center">
                 {item.commission ? item.commission : "N/A"}
+            </TableCell>
+            <TableCell className="text-center">
+                {item.totalViews ? item.totalViews : "N/A"}
+            </TableCell>
+            <TableCell className="text-center">
+                {item.totalRevenue ? item.totalRevenue : "N/A"}
             </TableCell>
             <TableCell className="text-end">
                 <div className="flex gap-2 ">

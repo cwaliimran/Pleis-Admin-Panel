@@ -11,6 +11,7 @@ interface CategoryItem {
     name: string;
     type: string;
     image: string;
+    createdAt:string
 }
 
 interface PageProps {
@@ -38,10 +39,13 @@ const CategoryTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => 
                 </span>
             </TableCell>
 
-            <TableCell className="text-left">
+            {/* <TableCell className="text-left">
                 <Badge variant="secondary" className="capitalize">
                     {item.type}
                 </Badge>
+            </TableCell> */}
+            <TableCell>
+                {item.createdAt}
             </TableCell>
 
             <TableCell className="text-end">
