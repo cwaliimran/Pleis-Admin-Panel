@@ -2,7 +2,7 @@ import TableHeadCustom from '@/components/table/table-head-custom'
 import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table } from '@/components/ui/table'
+import { Table, TableBody } from '@/components/ui/table'
 import React, { FC } from 'react'
 import { Card } from '@/components/ui/card'
 import { organizationListData } from './data'
@@ -15,12 +15,12 @@ const headLabel = [
     { id: "phone", label: "Phone", align: "left" },
     { id: 'email', label: "Email", align: "left" },
     { id: "createdDate", label: "Created Date", align: "left" },
-    {id:"subscriptionType", label: "Subscription Type", align: "left"},
+    { id: "subscriptionType", label: "Subscription Type", align: "left" },
     { id: "subscriptionValidity", label: "Subscription End Date", align: "left" },
     { id: "commission", label: "Pleis Commission (%)", align: "left" },
-    {id:"totalViews", label: "Total Views", align: "left"},
-    {id:"totalRevenue", label: "Total Revenue", align: "left"},
-    {id:"region", label: "Region", align: "left"},
+    { id: "totalViews", label: "Total Views", align: "left" },
+    { id: "totalRevenue", label: "Total Revenue", align: "left" },
+    { id: "region", label: "Region", align: "left" },
     { id: "actions", label: "" }
 ]
 interface PageProps {
@@ -56,14 +56,16 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='border rounded-lg  '>
                         <Table className='w-full rounded-md border  '>
                             <TableHeadCustom headLabel={headLabel} />
-                            {organizationListData.map((item, index) => (
-                                <OrganizationTableRow
-                                    key={index}
-                                    item={item}
-                                    handleDelete={handleDelete}
-                                    handleEdit={handleEdit}
-                                />
-                            ))}
+                            <TableBody>
+                                {organizationListData.map((item, index) => (
+                                    <OrganizationTableRow
+                                        key={index}
+                                        item={item}
+                                        handleDelete={handleDelete}
+                                        handleEdit={handleEdit}
+                                    />
+                                ))}
+                            </TableBody>
                         </Table>
                     </div>
 

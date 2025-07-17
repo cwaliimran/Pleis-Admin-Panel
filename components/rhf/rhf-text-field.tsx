@@ -22,12 +22,11 @@ interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
   onTogglePassword?: () => void
 }
 
-const RHFTextField: FC<Props> = ({ name, label, type = "text", showPassword, multiline, rows, ...props }) => {
+const RHFTextField: FC<Props> = ({ name, label, type = "text", showPassword,onTogglePassword, multiline, rows, ...props }) => {
 
   const { control } = useFormContext();
   const isPassword = type === "password"
   const inputType = isPassword && showPassword ? "text" : type
-  const onTogglePassword = props.onTogglePassword;
 
   return (
     <FormField

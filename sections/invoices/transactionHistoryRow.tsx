@@ -37,7 +37,14 @@ const TransactionHitoryTableRow: FC<PageProps> = ({ item }) => {
                 {item.total ? item.total : "N/A"}
             </TableCell>
             <TableCell className="text-center">
-                
+                {item.transactionType ? (
+                    <Badge className={`${item.transactionType === "credit" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"} rounded-full px-3 py-1 text-xs font-medium`}>
+                        {item.transactionType.charAt(0).toUpperCase() + item.transactionType.slice(1)}
+                    </Badge>
+                ) : "N/A"}
+            </TableCell>
+            <TableCell className="text-center">
+
                 {item.status && (
                     <Badge className={`${item.status === "paid" ? "text-green-800 bg-green-100" : "text-red-800 bg-red-100"} rounded-full px-3 py-1 text-xs font-medium`}>
                         {item.status.charAt(0).toUpperCase() + item.status.slice(1)}

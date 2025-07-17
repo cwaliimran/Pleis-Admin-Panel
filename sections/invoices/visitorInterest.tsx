@@ -33,7 +33,7 @@ const VisitorInterest: FC<PageProps> = ({ chartData, chartConfig }) => {
           <Bar
             dataKey="males"
             fill={chartConfig.males.color}
-            radius={[4, 4, 0, 0]}
+            radius={[10, 10, 0, 0]}
             name={chartConfig.males.label}
             barSize={13}
             
@@ -41,7 +41,7 @@ const VisitorInterest: FC<PageProps> = ({ chartData, chartConfig }) => {
           <Bar
             dataKey="females"
             fill={chartConfig.females.color}
-            radius={[4, 4, 0, 0]}
+            radius={[10, 10, 0, 0]}
             name={chartConfig.females.label}
             barSize={13}
           />

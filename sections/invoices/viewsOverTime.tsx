@@ -19,7 +19,7 @@ interface PageProps {
 const ViewsOverTime: FC<PageProps> = ({ data }) => {
     return (
         <div className=" ">
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={270}>
                 <LineChart data={data} margin={{ top: 10, right: 20, left: 10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="4 4" />
                     <XAxis dataKey="month"  axisLine={false}/>

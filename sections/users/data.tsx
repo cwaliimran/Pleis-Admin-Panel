@@ -196,6 +196,7 @@ export const usersList = [
     totalPoints: 120,
     totalRevenue: 5000,
     region: 'North America',
+    phone: '123-456-7890',
   },
   {
     id: '2',
@@ -208,6 +209,7 @@ export const usersList = [
     totalPoints: 80,
     totalRevenue: 3000,
     region: 'Europe',
+    phone: '987-654-3210',
   },
   {
     id: '3',
@@ -220,6 +222,7 @@ export const usersList = [
     totalPoints: 150,
     totalRevenue: 7000,
     region: 'Asia',
+    phone: '456-789-1230',
   },
   {
     id: '4',
@@ -232,6 +235,7 @@ export const usersList = [
     totalPoints: 60,
     totalRevenue: 2000,
     region: 'South America',
+    phone: '321-654-9870',
   },
   {
     id: '5',
@@ -244,6 +248,7 @@ export const usersList = [
     totalPoints: 90,
     totalRevenue: 4000,
     region: 'Africa',
+    phone: '654-321-0987',
   },
   {
     id: '6',
@@ -256,6 +261,7 @@ export const usersList = [
     totalPoints: 110,
     totalRevenue: 6000,
     region: 'Australia',
+    phone: '789-123-4560',
   },
   {
     id: '7',
@@ -268,6 +274,7 @@ export const usersList = [
     totalPoints: 130,
     totalRevenue: 8000,
     region: 'North America',
+    phone: '123-456-7891',
   },
   {
     id: '8',
@@ -280,6 +287,7 @@ export const usersList = [
     totalPoints: 70,
     totalRevenue: 2500,
     region: 'Europe',
+    phone: '987-654-3211',
   },
   {
     id: '9',
@@ -292,6 +300,7 @@ export const usersList = [
     totalPoints: 140,
     totalRevenue: 9000,
     region: 'Asia',
+    phone: '456-789-1231',
   },
   {
     id: '10',
@@ -304,5 +313,6 @@ export const usersList = [
     totalPoints: 100, 
     totalRevenue: 5500,
     region: 'South America',
+    phone: '321-654-9871',
   },
 ];

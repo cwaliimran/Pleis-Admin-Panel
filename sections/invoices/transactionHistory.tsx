@@ -11,6 +11,7 @@ const headLabel = [
     { id: 'organizer', label: 'Organizer', align: 'left' },
     { id: 'date', label: 'Date', align: 'left' },
     { id: 'total', label: 'Total' },
+    { id: "transactionType", label: "Transaction Type", align: 'center' },
     { id: 'status', label: 'Status' },
     { id: 'action', label: '' },
 ]

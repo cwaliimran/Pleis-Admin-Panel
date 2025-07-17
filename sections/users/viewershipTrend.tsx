@@ -5,7 +5,7 @@ import {  VisitorAge } from '../invoices'
 
 const ViewershipTrend = () => {
     return (
-        <Card className='shadow-lg    h-[450px]'>
+        <Card className='shadow-lg    h-[450px] dark:bg-[#171717]'>
             <CardHeader className='flex justify-between'>
                 <h1 className='text-2xl font-bold'>
                     Viewership Trends

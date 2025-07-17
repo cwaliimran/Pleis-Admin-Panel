@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 
 const ActivePromontion = () => {
     return (
-        <Card className='shadow-lg '>
+        <Card className='shadow-lg dark:bg-[#171717]'>
             <CardHeader>
                 <h1 className=' font-bold text-xl'>Active Promontions & Boosts</h1>
             </CardHeader>

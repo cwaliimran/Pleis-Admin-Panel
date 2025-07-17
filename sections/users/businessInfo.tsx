@@ -5,7 +5,7 @@ import React from 'react'
 const BusinessInfo = () => {
     return (
         <div>
-            <Card>
+            <Card className='dark:bg-[#171717]'>
                 <CardHeader>
                     <h1 className='font-bold text-xl'>Business Info</h1>
                 </CardHeader>

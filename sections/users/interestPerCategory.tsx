@@ -4,7 +4,7 @@ import { VisitorInterest } from '../invoices'
 
 const InterestPerCategory = () => {
     return (
-        <Card className='shadow-lg  h-[450px]'>
+        <Card className='shadow-lg  h-[450px] dark:bg-[#171717]'>
             <CardHeader>
                 <div className='flex justify-between items-center'>
                     <h3 className='text-xl font-semibold'>Interest per Category</h3>
