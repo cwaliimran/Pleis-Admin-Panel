@@ -5,7 +5,7 @@ import { GenderDonutChart } from '../invoices'
 const TotalFollowers = () => {
     return (
         <div>
-            <Card className='shadow-lg'>
+            <Card className='shadow-lg dark:bg-[#171717]'>
                 <CardHeader>
                     <div className='flex justify-between items-center'>
                         <h1 className=' font-bold text-xl'>Total Followers</h1>

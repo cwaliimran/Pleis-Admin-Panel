@@ -46,8 +46,8 @@ export const defaultValues = {
 export const tabOptions = [
     { label: "Basic Info", value: "basicInfo" },
     { label: "Social Links", value: "socialLinks" },
-    { label: "Business Details", value: "businessDetails" },
-    { label: "Bank Details", value: "bankDetails" },
+    // { label: "Business Details", value: "businessDetails" },
+    // { label: "Bank Details", value: "bankDetails" },
 ];
 
    export const schema = Yup.object().shape({

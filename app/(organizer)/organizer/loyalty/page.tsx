@@ -182,7 +182,7 @@ const Page = () => {
                 </div>
 
                 <div className="md:col-span-4 col-span-12  ">
-                    <Card className='shadow-lg  w-full h-[550px]'>
+                    <Card className='shadow-lg  w-full h-[450px]'>
                         <CardHeader>
                             <div className='flex justify-start items-center'>
                                 <h3 className='text-xl font-semibold'>Age Demographics</h3>
@@ -207,7 +207,7 @@ const Page = () => {
                     </Card>
                 </div>
                 <div className="md:col-span-4 col-span-12  ">
-                    <Card className='shadow-lg  h-[550px]'>
+                    <Card className='shadow-lg  h-[450px]'>
                         <CardHeader>
                             <div className='flex justify-between items-center '>
                                 <h3 className='text-xl font-semibold'>Location</h3>
@@ -251,7 +251,7 @@ const Page = () => {
                     </Card>
                 </div>
                 <div className="md:col-span-4 col-span-12  ">
-                    <Card className='shadow-lg  h-[550px]'>
+                    <Card className='shadow-lg  h-[450px]'>
                         <CardHeader>
                             <div className='flex justify-between items-center'>
                                 <h3 className='text-xl font-semibold'> Gender Analytics</h3>

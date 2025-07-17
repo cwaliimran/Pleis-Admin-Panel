@@ -4,7 +4,7 @@ import { EventPerformanceComparison } from '../invoices'
 
 const EventPerformanceComparsionInUserDetails = () => {
     return (
-            <Card className='shadow-lg '>
+            <Card className='shadow-lg dark:bg-[#171717]'>
                 <CardHeader>
                     <div className='flex justify-between items-center'>
                         <h3 className='text-xl font-semibold'>Event Performance Comparison</h3>

@@ -7,33 +7,33 @@ import React, { FC } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Settings2 } from 'lucide-react'
-import { MarketingRequestTableRow, marketRequestList } from '.'
+import { TagsData } from './data'
+import TagsTableRow from './tagsTableRow'
 const headLabel = [
-    { id: "Title", label: "Title", align: 'left' },
-    { id: "budget", label: "Budget", align: "left" },
-    { id: 'organizaiton', label: "Organization", align: "left" },
-    { id: "phone", label: "Phone", align: "left" },
-    { id: "email", label: "Email", align: "left" },
-    { id: "Status", label: "Status", align: "left" },
+    // { id: "image", label: "Image", align: "left" },
+    { id: "name", label: "Tag Name", align: "left" },
+    // { id: "type", label: "Type", align: "left" },
+    { id: "createdAt", label: "Created At" },
     { id: "actions", label: "", align: "right" }
-]
+];
+
 interface PageProps {
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
 }
-const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+const TagsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
     return (
         <div>
-            <div className='grid grid-cols-12 '>
+            <div className='grid grid-cols-11  '>
                 <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-[#171717]'>
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
-                        <h3 className='text-xl font-semibold md:ml-0 ml-2'>Marketing Request List</h3>
+                        <h3 className='text-xl font-semibold md:ml-0 ml-2'>Tag List</h3>
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
+                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit">
                                     <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Title</span>
+                                    <span className="whitespace-nowrap cursor-pointer ">By Name</span>
 
                                 </Badge>
                             </div>
@@ -42,7 +42,7 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     </div>
                     <div className='w-full '>
                         <Input
-                            placeholder="Search Maketing Request"
+                            placeholder="Search Tag"
                             // value={globalFilter}
                             // onChange={(e) => setGlobalFilter(e.target.value)}
                             className="w-full  h-10 "
@@ -52,8 +52,8 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                         <Table className='w-full rounded-md border  '>
                             <TableHeadCustom headLabel={headLabel} />
                             <TableBody>
-                                {marketRequestList.map((item, index) => (
-                                    <MarketingRequestTableRow
+                                {TagsData.map((item: any, index: number) => (
+                                    <TagsTableRow
                                         key={index}
                                         item={item}
                                         handleDelete={handleDelete}
@@ -110,4 +110,4 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
     )
 }
 
-export default EventTable
+export default TagsTable

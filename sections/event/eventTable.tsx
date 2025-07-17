@@ -2,7 +2,7 @@ import TableHeadCustom from '@/components/table/table-head-custom'
 import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table } from '@/components/ui/table'
+import { Table, TableBody } from '@/components/ui/table'
 import React, { FC } from 'react'
 import EventTableRow from './eventTAbleRow'
 import { Card } from '@/components/ui/card'
@@ -55,14 +55,16 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='border rounded-lg  '>
                         <Table className='w-full rounded-md border  '>
                             <TableHeadCustom headLabel={headLabel} />
-                            {eventData.map((item, index) => (
-                                <EventTableRow
-                                    key={index}
-                                    item={item}
-                                    handleDelete={handleDelete}
-                                    handleEdit={handleEdit}
-                                />
-                            ))}
+                            <TableBody>
+                                {eventData.map((item, index) => (
+                                    <EventTableRow
+                                        key={index}
+                                        item={item}
+                                        handleDelete={handleDelete}
+                                        handleEdit={handleEdit}
+                                    />
+                                ))}
+                            </TableBody>
                         </Table>
                     </div>
 

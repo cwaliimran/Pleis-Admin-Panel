@@ -3,12 +3,13 @@ import Header from '@/app/common/header'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import React from 'react'
-import FormProvider, {  RHFTextField } from '@/components/rhf'
+import FormProvider, { RHFTextField } from '@/components/rhf'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog'
 import { useBoolean } from '@/hooks/useBoolean'
+import { TagsTable } from '@/sections/tags'
 
 const defaultValues = {
     name: '',
@@ -32,6 +33,16 @@ const Page = () => {
         methods.reset(defaultValues);
         openModal.onFalse();
     }
+    const handleEdit = (id: string) => {
+        openModal.onTrue();
+    }
+    const handleDelete = (id: string) => {
+        // Handle delete logic here
+    }
+    const onDelete = () => {
+        // Handle delete confirmation logic here
+    }
+
 
 
 
@@ -78,6 +89,7 @@ const Page = () => {
                     </DialogContent>
                 </DialogOverlay>
             </Dialog>
+            <TagsTable handleDelete={handleDelete} handleEdit={handleEdit} />
         </div >
     )
 }

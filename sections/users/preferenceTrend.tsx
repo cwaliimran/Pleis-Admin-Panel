@@ -5,7 +5,7 @@ import { VisitorAge } from '../invoices'
 
 const PreferenceTrend = () => {
     return (
-            <Card className=' h-[450px]'>
+            <Card className=' h-[450px] dark:bg-[#171717]'>
                 <CardHeader className='flex justify-between'>
                     <h1 className='text-2xl font-bold'>
                         Preference Trends

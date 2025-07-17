@@ -141,7 +141,8 @@ export const TransactionHistoryData = [
         date: "2023-10-01",
         total: "$1500",
         status: "paid",
-        phone: "#1234567890"
+        phone: "#1234567890",
+        transactionType: "credit"
     },
     {
         user: "Jane Smith",
@@ -151,7 +152,8 @@ export const TransactionHistoryData = [
         date: "2023-10-02",
         total: "$800",
         status: "unpaid",
-        phone: "#0987654321"
+        phone: "#0987654321",
+        transactionType: "debit"
     },
     {
         user: "Alice Johnson",
@@ -161,7 +163,8 @@ export const TransactionHistoryData = [
         date: "2023-10-03",
         total: "$1200",
         status: "paid",
-        phone: "#1122334455"
+        phone: "#1122334455",
+        transactionType: "credit"
     },
     {
         user: "Bob Brown",
@@ -171,7 +174,8 @@ export const TransactionHistoryData = [
         date: "2023-10-04",
         total: "$600",
         status: "overdue",
-        phone: "#5566778899"
+        phone: "#5566778899",
+        transactionType: "debit"
     },
     {
         user: "Charlie Green",
@@ -181,7 +185,8 @@ export const TransactionHistoryData = [
         date: "2023-10-05",
         total: "$900",
         status: "paid",
-        phone: "#2233445566"
+        phone: "#2233445566",
+        transactionType: "credit"
     },
     {
         user: "David White",
@@ -191,7 +196,8 @@ export const TransactionHistoryData = [
         date: "2023-10-06",
         total: "$700",
         status: "unpaid",
-        phone: "#7788990011"
+        phone: "#7788990011",
+        transactionType: "debit"
     },
 ]
 

@@ -1,5 +1,5 @@
 import TableHeadCustom from '@/components/table/table-head-custom';
-import { Table } from '@/components/ui/table';
+import { Table, TableBody } from '@/components/ui/table';
 import React from 'react'
 import { engagedMembers } from './data';
 import MostEngagedMemberTableRow from './mostEngagedMemberTableRow';
@@ -37,9 +37,11 @@ const MostEngagedMembers = () => {
             <div className='border rounded-lg m-4  '>
                 <Table className="w-full">
                     <TableHeadCustom headLabel={headLabel} />
-                    {engagedMembers.map((item: any,index) => (
+                    <TableBody>
+                        {engagedMembers.map((item: any,index) => (
                         <MostEngagedMemberTableRow key={index} item={item} />
                     ))}
+                    </TableBody>
                 </Table>
             </div>
         </>

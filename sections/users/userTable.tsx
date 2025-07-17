@@ -26,7 +26,7 @@ const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handl
         { id: "lname", label: "Last Name", align: "left" },
         pendingUser && { id: "organization", label: "Organization", align: "left" },
         { id: "email", label: "Email", align: "left" },
-        { id: "username", label: "Username", align: "left" },
+        !pendingUser && { id: "username", label: "Username", align: "left" },
         pendingUser && { id: 'phone', label: "Phone", align: "left" },
         !pendingUser && { id: "role", label: "Role", align: "left" },
         !pendingUser && { id: "status", label: "Global Status", align: "left" },

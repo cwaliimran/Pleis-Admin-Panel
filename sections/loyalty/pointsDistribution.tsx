@@ -22,7 +22,7 @@ const PointsDistribution: FC<PointsDistributionProps> = ({ data }) => {
                     data={data}
                     layout="vertical"
                     margin={{ top: 0, right: 50, left: 20, bottom: 0 }}
-                    barCategoryGap={10}
+                    barCategoryGap={5}
                 >
                     <XAxis type="number" hide domain={[0, maxValue]} />
                     <YAxis type="category" dataKey="ageGroup" axisLine={false} tickLine={false} hide />

@@ -127,20 +127,11 @@ const Page = () => {
                                     className={` ${methods.formState.errors.location ? 'border-red-400' : ''}`}
 
                                 /> */}
-                                <RHFSelectField
-                                    name='clity'
-                                    label='City'
-                                    placeholder='Select City'
-                                    options={[
-                                        { label: 'New York', value: 'new-york' },
-                                        { label: 'Los Angeles', value: 'los-angeles' },
-                                        { label: 'Chicago', value: 'chicago' }
-                                    ]}
-                                />
+                               
                                 <RHFTextField
-                                    name='country'
-                                    label='Country'
-                                    placeholder='Enter Country'
+                                    name='locattion'
+                                    label='Locatoin'
+                                    placeholder='Enter Location'
                                 />
 
                                 <div className='flex justify-end gap-2'>
