@@ -5,6 +5,7 @@ import {
   Ellipsis,
   MapPin,
   PartyPopper,
+  Pencil,
   Shirt,
   UserPlus,
   UsersRound,
@@ -52,16 +53,21 @@ const UserInfo = () => {
     <>
       <div>
         <div className="flex justify-end">
-          <button
+          {/* <button
             type="button"
             onClick={openModal.onTrue}
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg cursor-pointer transition-colors"
           >
             Add Details
-          </button>
+          </button> */}
+          <Pencil
+            width={22}
+            className="text-gray-500  mr-2 cursor-pointer hover:text-gray-700 transition-colors"
+            onClick={openModal.onTrue}
+          />
         </div>
 
-        <div className="grid grid-cols-12 gap-4 mt-2">
+        <div className="grid grid-cols-12 gap-4 mt-4">
           {/* ---------- LEFT SIDE ---------- */}
           <div className=" md:col-span-5 col-span-12">
             {/* DESCRIPTION */}
@@ -343,6 +349,8 @@ const UserInfo = () => {
                     name="description"
                     label="Description"
                     placeholder="Enter Description"
+                    rows={2}
+                    multiline
                     className={` ${
                       methods.formState.errors.name ? "border-red-400" : ""
                     }`}
@@ -350,35 +358,45 @@ const UserInfo = () => {
 
                   <div className="w-full grid md:grid-cols-2 grid-cols-1 gap-4">
                     <RHFTextField
-                      type="text"
+                      type="number"
                       name="minAge"
-                      label="Min Age"
-                      placeholder="Enter Min Age"
+                      label="Age"
+                      placeholder="Min Age 5"
+                      min={5}
                     />
 
-                    <RHFTextField
+                    {/* <RHFTextField
                       type="text"
                       name="dress-type"
                       label="Dress Type"
                       placeholder="Enter Dress Type"
-                    />
+                    /> */}
 
-                    <RHFTextField
-                      type="text"
-                      name="max-limit"
-                      label="Max Limit"
-                      placeholder="Enter Max Limit"
-                    />
-
-                    <RHFTextField
-                      type="text"
-                      name="venue"
-                      label="Venue"
-                      placeholder="Enter Venue"
+                    <RHFSelectField
+                      name="dress-type"
+                      label="Dress Type"
+                      placeholder="Select Dress Type"
+                      className="w-full flex-1"
+                      options={[
+                        { label: "Dress Type 1", value: "dressType1" },
+                        { label: "Dress Type 2", value: "dressType2" },
+                        { label: "Dress Type 3", value: "dressType3" },
+                      ]}
                     />
                   </div>
 
                   <div className="w-full grid overflow-hidden md:grid-cols-1 grid-cols-1 gap-4">
+                    <RHFMultiSelect
+                      name="venue"
+                      label="Select Venue"
+                      placeholder="Select Venue"
+                      options={[
+                        { label: "Clubbing", value: "clubbing" },
+                        { label: "Techno", value: "techno" },
+                        { label: "House", value: "house" },
+                      ]}
+                    />
+
                     <RHFMultiSelect
                       name="category"
                       label="Select Categories"
@@ -387,19 +405,6 @@ const UserInfo = () => {
                         { label: "Clubbing", value: "clubbing" },
                         { label: "Techno", value: "techno" },
                         { label: "House", value: "house" },
-                      ]}
-                    />
-                  </div>
-
-                  <div className="w-full grid overflow-hidden md:grid-cols-1 grid-cols-1 gap-4">
-                    <RHFMultiSelect
-                      name="tags"
-                      label="Select Tags"
-                      placeholder="Select Tags"
-                      options={[
-                        { label: "Conference", value: "conference" },
-                        { label: "Workshop", value: "workshop" },
-                        { label: "Webinar", value: "webinar" },
                       ]}
                     />
                   </div>

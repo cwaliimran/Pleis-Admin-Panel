@@ -151,7 +151,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
 
             <div className="flex items-center gap-2 mt-0 pt-0">
               <h1 className="md:text-3xl text-2xl font-bold ml-2 pt-0 mt-0">
-                Username
+                Organization Name
               </h1>
               <Badge
                 className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
@@ -159,11 +159,13 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                 Basic
               </Badge>
             </div>
+
             <Badge
               className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
             >
               0 Subscriptions
             </Badge>
+
             <div className="flex items-center gap-2 ">
               <Badge
                 className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
@@ -262,7 +264,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
       {/* update Organization */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
-          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
+          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[65vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
             <DialogHeader>
               <DialogTitle> Create Organization </DialogTitle>
             </DialogHeader>
@@ -272,6 +274,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
             >
               <div className="flex flex-col gap-4 mt-4 w-full">
                 <RHFUploadAvatar name="image" label="Organization Image" />
+
                 <RHFTextField
                   name="name"
                   label=" Organization Name"
@@ -280,40 +283,6 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                     methods.formState.errors.name ? "border-red-400" : ""
                   }`}
                 />
-
-                <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
-                  <RHFSelectField
-                    name="subscription-type"
-                    label="Subscription Types"
-                    placeholder=" Select Type"
-                    options={[
-                      { label: "Free", value: "free" },
-                      { label: "Basic", value: "basic" },
-                      { label: "Premium", value: "premium" },
-                    ]}
-                  />
-
-                  <RHFTextField
-                    type="number"
-                    name="subscription-count"
-                    label="Subscription"
-                    placeholder="Enter Subscription Count"
-                  />
-
-                  <RHFTextField
-                    type="number"
-                    name="boost"
-                    label="Boost"
-                    placeholder="Enter Boost Amount"
-                  />
-
-                  <RHFTextField
-                    type="number"
-                    name="commission"
-                    label="Commission"
-                    placeholder="Enter Commission Amount"
-                  />
-                </div>
 
                 <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
                   <RHFTextField
@@ -340,26 +309,6 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
               </div>
 
               <div className="flex justify-end mt-4 items-center gap-2">
-                {activeTab !== "basicInfo" && (
-                  <div className="">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={() => {
-                        if (activeTab === "socialLinks")
-                          setActiveTab("basicInfo");
-                        else if (activeTab === "businessDetails")
-                          setActiveTab("socialLinks");
-                        else if (activeTab === "bankDetails")
-                          setActiveTab("businessDetails");
-                      }}
-                    >
-                      Back to
-                    </Button>
-                  </div>
-                )}
-
                 <div className="w-full flex justify-center items-center">
                   <Button
                     type="button"
@@ -369,15 +318,6 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                     Save
                   </Button>
                 </div>
-
-                {activeTab === "bankDetails" && (
-                  <Button
-                    type="submit"
-                    className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
-                  >
-                    Update Organization
-                  </Button>
-                )}
               </div>
             </FormProvider>
           </DialogContent>
