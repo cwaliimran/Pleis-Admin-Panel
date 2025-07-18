@@ -44,7 +44,6 @@ export default function ResetPasswordPage() {
   });
 
   const onSubmit = async (data: any) => {
-    console.log('Password reset with:', data.newPassword);
     // Handle actual reset logic here...
     router.push('/user/signIn'); // Redirect to login
   };

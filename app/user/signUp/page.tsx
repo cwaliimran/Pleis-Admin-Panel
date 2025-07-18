@@ -354,7 +354,6 @@ function SignUpPage() {
   });
 
   const onSubmit = async (data: any) => {
-    console.log(data); // For debugging
   };
 
   return (

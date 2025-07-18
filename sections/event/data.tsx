@@ -168,3 +168,18 @@ export const tabsData = [
     value: "notifications"
   }
 ];
+
+export const eventTabForAnalytics = [
+  {
+    label: "From Sales",
+    value: "fromSales"
+  },
+  {
+    label: "From Updates",
+    value: "fromUpdates"
+  },
+  {
+    label: "From Challenges",
+    value: "fromChallenges"
+  }
+];

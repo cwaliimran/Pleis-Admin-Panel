@@ -31,7 +31,6 @@
 
 //   const onSubmit = async (data: any) => {
 //     // Handle password reset request here
-//     console.log('Reset link sent to:', data.email);
 //     // You might want to redirect or show a success message
 //     router.push('/user/login');
 //   };
@@ -121,7 +120,6 @@ function ForgotPasswordPage() {
 
   const onSubmit = async (data: any) => {
     // Send reset link logic
-    console.log('Reset link sent to:', data.email);
     router.push('/user/reset-password'); // Redirect to reset password page
   };
 
