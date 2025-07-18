@@ -124,3 +124,47 @@ export const eventData = [
     region: 'Global'
   }
 ];
+
+export const eventCardData = [
+  {
+    _id: 1,
+    title: "Total Revenue",
+    value: 1000,
+    status: "up",
+  },
+  {
+    _id: 3,
+    title: "Total Tickets Sold",
+    value: 200,
+    status: "down",
+    total: 10000,
+  },
+
+  {
+    _id: 2,
+    title: "Views",
+    value: 5000,
+    status: "up",
+  },
+];
+
+export const tabsData = [
+  {
+    label: "Overview",
+    value: "overview"
+  },
+  {
+    label: "Analytics",
+    value: "analytics"
+  },
+  {
+    label: "Tickets",
+    value: "tickets"
+  }, {
+    label: "Reservations",
+    value: "reservations"
+  }, {
+    label: "Notifications",
+    value: "notifications"
+  }
+];

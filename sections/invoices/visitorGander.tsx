@@ -14,6 +14,7 @@ import {
 interface PageProps {
   data: Array<{ name: string; value: number }>;
   COLORS: string[];
+  size?: number;
 }
 
 const useIsMobile = (breakpoint = 768) => {
@@ -49,7 +50,7 @@ const renderCustomizedLabel: FC<LabelProps> = ({
 }) => {
 
   // Increase radius to push label outside
-   const RADIAN = Math.PI / 180;
+  const RADIAN = Math.PI / 180;
 
   const offset = 0; // distance outside the pie
   const radius = outerRadius + offset;
@@ -63,14 +64,14 @@ const renderCustomizedLabel: FC<LabelProps> = ({
   const circleRadius = 27;
   return (
     <g>
-    
+
 
       <circle cx={x} cy={y} r={circleRadius} fill="#f3f4f6" />
 
       <text
         x={x}
         y={y}
-        fill="#111827" 
+        fill="#111827"
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={fontSize}
@@ -85,7 +86,7 @@ const renderCustomizedLabel: FC<LabelProps> = ({
 
 
 
-const GenderDonutChart: FC<PageProps> = ({ data, COLORS }) => {
+const GenderDonutChart: FC<PageProps> = ({ data, COLORS, size }) => {
   const isMobile = useIsMobile();
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
@@ -100,7 +101,7 @@ const GenderDonutChart: FC<PageProps> = ({ data, COLORS }) => {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={isMobile ? 90 : 130}
+            outerRadius={isMobile ? 90 : size ? size : 130}
             innerRadius={isMobile ? 35 : 60}
             label={renderCustomizedLabel}
             labelLine={false}

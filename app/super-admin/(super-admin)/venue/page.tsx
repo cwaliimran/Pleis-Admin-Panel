@@ -88,7 +88,7 @@ const Page = () => {
             <Dialog open={openModal.value} onOpenChange={CloseModal}>
                 <DialogOverlay
                     className="fixed inset-0 bg-white   bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-                    <DialogContent className=' dark:bg-[#171717]'>
+                    <DialogContent className=' dark:bg-[#171717] '>
                         <DialogHeader>
                             <DialogTitle> {!editModal.value ? "Create Venue" : "Edit Venue"} </DialogTitle>
                         </DialogHeader>
@@ -146,7 +146,7 @@ const Page = () => {
                                 />
 
                                 <div>
-                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s" width="470" height="280"  loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s" className='md:w-[470px] w-full md:h-[160px] h-full ' loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
                                 </div>
 
                                 <div className='flex justify-end gap-2'>

@@ -12,15 +12,6 @@ import Useranalytics from './useranalytics';
 import UserNotifications from './userNotifications';
 import { ActivePromontion, BusinessInfo, TotalFollowers, UserCalender } from '.';
 import { useBoolean } from '@/hooks/useBoolean';
-import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { cn } from '@/lib/utils';
-import { defaultValues, schema, tabOptions } from '@/app/super-admin/(super-admin)/organization/page';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useRouter } from 'next/navigation';
 
@@ -33,7 +24,6 @@ const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
 
     const router = useRouter();
     const deleteModal = useBoolean();
-
     const [active, setActive] = useState("info");
    
 

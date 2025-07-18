@@ -134,6 +134,7 @@ const Page = () => {
               </CardHeader>
               <div className='flex-1 '>
                 <VisitorAge
+                direction='vertical'
                   data={[
 
                     { ageGroup: "18", visitors: 120 },

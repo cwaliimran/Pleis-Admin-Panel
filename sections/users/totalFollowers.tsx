@@ -14,8 +14,9 @@ const TotalFollowers = () => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className=' p-0'>
                     <GenderDonutChart
+                        size={110}
                         data={[
                             { name: "New", value: 300 },
                             { name: "Old", value: 400 },
