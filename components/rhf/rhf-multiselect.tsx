@@ -1,123 +1,128 @@
 import * as React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import {
-    FormControl,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormControl,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
 type Option = {
-    label: string;
-    value: string;
+  label: string;
+  value: string;
 };
 
 type Props = {
-    name: string;
-    label?: string;
-    placeholder?: string;
-    options: Option[];
+  name: string;
+  label?: string;
+  placeholder?: string;
+  options: Option[];
 };
 
-export function RHFMultiSelect({ name, label, placeholder = "Select", options }: Props) {
-    const { control } = useFormContext();
+export function RHFMultiSelect({
+  name,
+  label,
+  placeholder = "Select",
+  options,
+}: Props) {
+  const { control } = useFormContext();
 
-    return (
-        <Controller
-            name={name}
-            control={control}
-            render={({ field }) => {
-                const selectedValues = field.value || [];
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field }) => {
+        const selectedValues = field.value || [];
 
-                const handleSelect = (val: string) => {
-                    const newValue = selectedValues.includes(val)
-                        ? selectedValues.filter((v: string) => v !== val)
-                        : [...selectedValues, val];
+        const handleSelect = (val: string) => {
+          const newValue = selectedValues.includes(val)
+            ? selectedValues.filter((v: string) => v !== val)
+            : [...selectedValues, val];
 
-                    field.onChange(newValue);
-                };
+          field.onChange(newValue);
+        };
 
-                return (
-                    <FormItem className="w-full">
-                        {label && <FormLabel>{label}</FormLabel>}
-                        <FormControl>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className={cn(
-                                            "w-full justify-between",
-                                            !selectedValues.length && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <div className="flex gap-1 flex-wrap">
-                                            {selectedValues.length ? (
-                                                selectedValues.map((val: string) => {
-                                                    const item = options.find((o) => o.value === val);
-                                                    return (
-                                                        <Badge
-                                                            key={val}
-                                                            variant="secondary"
-                                                            className="text-xs"
-                                                        >
-                                                            {item?.label}
-                                                        </Badge>
-                                                    );
-                                                })
-                                            ) : (
-                                                <span>{placeholder}</span>
-                                            )}
-                                        </div>
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                    align="start"
-                                    sideOffset={4}
-                                    className="md:min-w-4xl max-w-full p-0"
-                                >
-                                    <Command>
-                                        <CommandGroup className="w-full">
-                                            {options.map((option) => (
-                                                <CommandItem
-                                                    key={option.value}
-                                                    onSelect={() => handleSelect(option.value)}
-                                                >
-                                                    <div
-                                                        className={cn(
-                                                            "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                                                            selectedValues.includes(option.value)
-                                                                ? "bg-primary text-primary-foreground"
-                                                                : "opacity-50"
-                                                        )}
-                                                    >
-                                                        {selectedValues.includes(option.value) && (
-                                                            <Check className="h-4 w-4" />
-                                                        )}
-                                                    </div>
-                                                    {option.label}
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                );
-            }}
-        />
-    );
+        return (
+          <FormItem className="w-full">
+            {label && <FormLabel>{label}</FormLabel>}
+            <FormControl>
+              <Popover modal={true}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className={cn(
+                      "w-full justify-between",
+                      !selectedValues.length && "text-muted-foreground"
+                    )}
+                  >
+                    <div className="flex gap-1 flex-wrap">
+                      {selectedValues.length ? (
+                        selectedValues.map((val: string) => {
+                          const item = options.find((o) => o.value === val);
+                          return (
+                            <Badge
+                              key={val}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {item?.label}
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <span>{placeholder}</span>
+                      )}
+                    </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  sideOffset={4}
+                  className="w-[var(--radix-popover-trigger-width)] max-h-[300px] p-0 z-[9999]"
+                >
+                  <Command>
+                    <CommandGroup className="w-full">
+                      {options.map((option) => (
+                        <CommandItem
+                          key={option.value}
+                          onSelect={() => handleSelect(option.value)}
+                        >
+                          <div
+                            className={cn(
+                              "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                              selectedValues.includes(option.value)
+                                ? "bg-primary text-primary-foreground"
+                                : "opacity-50"
+                            )}
+                          >
+                            {selectedValues.includes(option.value) && (
+                              <Check className="h-4 w-4" />
+                            )}
+                          </div>
+                          {option.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        );
+      }}
+    />
+  );
 }

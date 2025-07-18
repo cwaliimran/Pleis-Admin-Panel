@@ -80,7 +80,7 @@ const AdminProfileSection = () => {
               <CardTitle className="text-gray-900 text-2xl font-semibold">
                 Personal Information
               </CardTitle>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 mt-1 text-sm">
                 Use a permanent address where you can receive mail.
               </p>
             </div>
@@ -160,13 +160,6 @@ const AdminProfileSection = () => {
                   placeholder="Enter your last name"
                 />
 
-                <RHFTextField
-                  name="phoneNo"
-                  label="Phone Number"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                />
-
                 {/* <RHFSelectField
                   name="Role"
                   label="Role"
@@ -179,18 +172,25 @@ const AdminProfileSection = () => {
                   ]}
                 /> */}
 
-                <RHFTextField
+                {/* <RHFTextField
                   name="address"
                   label="Address"
                   className="col-span-2"
                   placeholder="Enter your full address"
-                />
+                /> */}
 
                 <RHFTextField
                   name="email"
                   type="email"
                   label="Email"
                   placeholder="Enter your email address"
+                />
+
+                <RHFTextField
+                  name="phoneNo"
+                  label="Phone Number"
+                  type="tel"
+                  placeholder="Enter your phone number"
                 />
 
                 <RHFTextField

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Camera,
   Delete,
   Edit,
   Facebook,
@@ -51,8 +52,12 @@ import {
   ActivePromontion,
   BusinessInfo,
   TotalFollowers,
+  Useranalytics,
   UserCalender,
+  UserEvents,
   UserInfo,
+  UserLoyalty,
+  UserNotifications,
 } from "../users";
 
 interface UserDetailPageProps {
@@ -71,10 +76,12 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
   });
 
   const onSubmit = (data: any) => {};
+
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
   };
+
   const handleNextTab = async () => {
     if (activeTab === "basicInfo") {
       const isValid = await methods.trigger(["name", "location"]);
@@ -93,62 +100,87 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
     deleteModal.onFalse();
     console.log("Delete confirmed");
   };
+
   return (
     <div className="mt-10 h-full">
       <div className="grid grid-cols-12 gap-7">
+        {/* --------------- UPPER SECTION --------------- */}
         <div className="md:col-span-9 col-span-12">
-          <Card className="overflow-hidden  p-4  shadow-md">
+          <Card className="overflow-hidden p-4 shadow-md">
             <div className="relative w-full">
-              <div className="h-72   bg-[url('/images/bannerImage.png')] bg-cover bg-center rounded-lg" />
+              <div className="h-72 bg-[url('/images/blank-img.png')] bg-cover bg-center rounded-lg" />
+              <label
+                htmlFor="banner-upload"
+                className="absolute right-4 top-4 bg-white rounded-full cursor-pointer shadow-lg p-2 flex items-center justify-center hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Edit cover image"
+              >
+                <Camera className="text-gray-500 hover:text-blue-700 w-5 h-5" />
+                <input
+                  id="banner-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      // You can set state or upload the file as needed
+                    }
+                  }}
+                />
+              </label>
               <div className="absolute left-5 bottom-[-30]">
                 <img
-                  src="/images/image.png"
+                  src="/images/blank-profile2.png"
                   alt="User Avatar"
-                  className="md:w-30 w-20  md:h-30 h-20 rounded-full  shadow-lg z-10"
+                  className="md:w-30 w-20  md:h-30 h-20 rounded-full bg-white shadow-lg z-10"
                 />
               </div>
             </div>
-            <div className="flex justify-end  ">
+
+            <div className="flex justify-end">
               <Pencil
+                width={22}
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
                 onClick={openModal.onTrue}
               />
               <Trash2
+                width={22}
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
                 onClick={deleteModal.onTrue}
               />
             </div>
-            <div className="flex items-center gap-2 ">
-              <h1 className="md:text-3xl  text-2xl font-bold ml-2 pt-0 mt-0">
-                Peti Kupe
+
+            <div className="flex items-center gap-2 mt-0 pt-0">
+              <h1 className="md:text-3xl text-2xl font-bold ml-2 pt-0 mt-0">
+                Username
               </h1>
               <Badge
                 className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
               >
-                Premium
+                Basic
               </Badge>
             </div>
             <Badge
               className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
             >
-              12,342 Subscriptions
+              0 Subscriptions
             </Badge>
             <div className="flex items-center gap-2 ">
               <Badge
                 className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
               >
-                5% Commission
+                0% Commission
               </Badge>
               <Badge
                 className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
               >
-                12 Boost
+                0 Boost
               </Badge>
             </div>
             <div className="flex md:items-center md:justify-between mt-4 md:flex-row flex-col gap-4">
               <Tabs value={active} onValueChange={setActive} className="w-full">
                 <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
-                  <TabsList className="inline-flex items-center gap-2 bg-transparent rounded-full p-1 ">
+                  <TabsList className="inline-flex items-center gap-2 bg-transparent p-1 ">
                     {tabsData.map((tab: any) => (
                       <TabsTrigger
                         key={tab.value}
@@ -198,20 +230,22 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
               </div>
             </div>
           </Card>
+
           <div className=" mt-4 rounded-lg">
             {active === "info" && <UserInfo />}
 
-            {/* {active === "events" && <UserEvents />}
+            {active === "events" && <UserEvents />}
 
             {active === "loyalty" && <UserLoyalty />}
 
             {active === "analytics" && <Useranalytics />}
 
-            {active === "notifications" && <UserNotifications />} */}
+            {active === "notifications" && <UserNotifications />}
 
             {active === "calendar" && <UserCalender />}
           </div>
         </div>
+        {/* --------------- UPPER SECTION END --------------- */}
 
         {/* Sidebar or Additional Panel */}
         <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3">
@@ -225,144 +259,64 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
           <BusinessInfo />
         </div>
       </div>
+
       {/* update Organization */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30   ">
-          <DialogContent className="md:!max-w-[600px]  min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col md:items-start">
+        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
+          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
             <DialogHeader>
-              <DialogTitle> Edit Organization </DialogTitle>
+              <DialogTitle> Create Organization </DialogTitle>
             </DialogHeader>
             <FormProvider
               methods={methods}
               onSubmit={methods.handleSubmit(onSubmit)}
             >
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <div className="w-full my-2 md:hidden block">
-                  <Select value={activeTab} onValueChange={setActiveTab}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Tab" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tabOptions.map((tab, index: number) => (
-                        <SelectItem key={index} value={tab.value}>
-                          {tab.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="overflow-x-auto whitespace-nowrap scrollbar-hide px-1 md:block hidden">
-                  <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1 min-w-max">
-                    {tabOptions.map((tab, index) => (
-                      <TabsTrigger
-                        key={index}
-                        value={tab.value}
-                        className={cn(
-                          "text-sm md:text-md font-semibold rounded-full px-4 py-2 transition-colors cursor-pointer"
-                        )}
-                      >
-                        {tab.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </div>
-              </Tabs>
+              <div className="flex flex-col gap-4 mt-4 w-full">
+                <RHFUploadAvatar name="image" label="Organization Image" />
+                <RHFTextField
+                  name="name"
+                  label=" Organization Name"
+                  placeholder="Enter Organization Name"
+                  className={` ${
+                    methods.formState.errors.name ? "border-red-400" : ""
+                  }`}
+                />
 
-              {activeTab === "basicInfo" && (
-                <div className="flex flex-col gap-4 mt-4">
-                  <RHFUploadAvatar name="image" label="Organization Image" />
-                  <RHFTextField
-                    name="name"
-                    label=" Organization Name"
-                    placeholder="Enter Organization Name"
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
+                  <RHFSelectField
+                    name="subscription-type"
+                    label="Subscription Types"
+                    placeholder=" Select Type"
+                    options={[
+                      { label: "Free", value: "free" },
+                      { label: "Basic", value: "basic" },
+                      { label: "Premium", value: "premium" },
+                    ]}
                   />
-                  <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
-                    <RHFTextField
-                      type="email"
-                      name="email"
-                      label="Email (Associated with bank)"
-                      placeholder="Enter Email"
-                    />
-                    <RHFTextField
-                      name="phone"
-                      label="Phone (Associated with bank)"
-                      placeholder="Enter Phone No"
-                    />
-                    <RHFSelectField
-                      name="region"
-                      label="Region"
-                      placeholder="Select Region"
-                      options={[
-                        { label: "North America", value: "north-america" },
-                        { label: "Europe", value: "europe" },
-                        { label: "Asia", value: "asia" },
-                      ]}
-                    />
 
-                    <RHFSelectField
-                      name="type"
-                      label="Types"
-                      placeholder=" Select Type"
-                      options={[
-                        { label: "Non-Profit", value: "non-profit" },
-                        { label: "For-Profit", value: "for-profit" },
-                        { label: "Government", value: "government" },
-                      ]}
-                    />
-                    <RHFSelectField
-                      name="category"
-                      label="category"
-                      placeholder=" Select Category"
-                      options={[
-                        { label: "Education", value: "education" },
-                        { label: "Health", value: "health" },
-                        { label: "Technology", value: "technology" },
-                      ]}
-                    />
-                    <RHFTextField
-                      name="location"
-                      label="Location"
-                      placeholder="Enter Location"
-                      className={` ${
-                        methods.formState.errors.location
-                          ? "border-red-400"
-                          : ""
-                      }`}
-                    />
-                    <RHFSelectField
-                      name="clity"
-                      label="City"
-                      placeholder="Select City"
-                      options={[
-                        { label: "New York", value: "new-york" },
-                        { label: "Los Angeles", value: "los-angeles" },
-                        { label: "Chicago", value: "chicago" },
-                      ]}
-                    />
-                    <RHFTextField
-                      name="country"
-                      label="Country"
-                      placeholder="Enter Country"
-                    />
-                  </div>
                   <RHFTextField
-                    name="description"
-                    label="Description"
-                    placeholder="Enter Event Description"
-                    rows={6}
-                    multiline={true}
+                    type="number"
+                    name="subscription-count"
+                    label="Subscription"
+                    placeholder="Enter Subscription Count"
+                  />
+
+                  <RHFTextField
+                    type="number"
+                    name="boost"
+                    label="Boost"
+                    placeholder="Enter Boost Amount"
+                  />
+
+                  <RHFTextField
+                    type="number"
+                    name="commission"
+                    label="Commission"
+                    placeholder="Enter Commission Amount"
                   />
                 </div>
-              )}
-              {activeTab === "socialLinks" && (
-                <div className="flex flex-col gap-4 mt-4 ">
+
+                <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
                   <RHFTextField
                     name="instagram"
                     label="Instagram Link"
@@ -384,78 +338,8 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                     placeholder="Enter LinkedIn Link"
                   />
                 </div>
-              )}
-              {activeTab === "businessDetails" && (
-                <div className="flex flex-col gap-4 mt-4">
-                  <RHFSelectField
-                    name="commission"
-                    label="Commission"
-                    placeholder="Select Commission"
-                    options={[
-                      { label: "10%", value: "10" },
-                      { label: "15%", value: "15" },
-                      { label: "20%", value: "20" },
-                    ]}
-                  />
-                  <RHFTextField
-                    name="businessId"
-                    label="Business ID"
-                    placeholder="Enter Business ID"
-                  />
-                </div>
-              )}
-              {activeTab === "bankDetails" && (
-                <div className="flex flex-col gap-4 mt-4">
-                  {/* company name */}
-                  <RHFTextField
-                    name="companyName"
-                    label="Company Name"
-                    placeholder="Enter Company Name"
-                  />
-                  {/* account name */}
-                  <RHFTextField
-                    name="accountName"
-                    label="Account Name"
-                    placeholder="Enter Account Name"
-                  />
-                  {/* account number */}
-                  <RHFTextField
-                    name="accountNumber"
-                    label="Account Number"
-                    placeholder="Enter Account Number"
-                  />
-                  {/* OIB */}
-                  <RHFTextField
-                    name="oib"
-                    label="OIB"
-                    placeholder="Enter OIB"
-                  />
-                  {/* address */}
-                  <RHFTextField
-                    name="address"
-                    label="Address"
-                    placeholder="Enter Address"
-                  />
-                  {/* postal code */}
-                  <RHFTextField
-                    name="postalCode"
-                    label="Postal Code"
-                    placeholder="Enter Postal Code"
-                  />
-                  {/* city */}
-                  <RHFTextField
-                    name="city"
-                    label="City"
-                    placeholder="Enter City"
-                  />
-                  {/* country */}
-                  <RHFTextField
-                    name="country"
-                    label="Country"
-                    placeholder="Enter Country"
-                  />
-                </div>
-              )}
+              </div>
+
               <div className="flex justify-end mt-4 items-center gap-2">
                 {activeTab !== "basicInfo" && (
                   <div className="">
@@ -476,17 +360,16 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                     </Button>
                   </div>
                 )}
-                {activeTab !== "bankDetails" && (
-                  <div className="">
-                    <Button
-                      type="button"
-                      className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
-                      onClick={handleNextTab}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                )}
+
+                <div className="w-full flex justify-center items-center">
+                  <Button
+                    type="button"
+                    className="bg-blue-700 text-white hover:bg-blue-800 px-7 mt-3 cursor-pointer"
+                    onClick={handleNextTab}
+                  >
+                    Save
+                  </Button>
+                </div>
 
                 {activeTab === "bankDetails" && (
                   <Button
@@ -501,6 +384,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
+
       {/* delete Organization */}
       <ConfirmDialog
         open={deleteModal.value}
