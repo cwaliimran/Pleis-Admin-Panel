@@ -17,7 +17,7 @@ import {
   DialogOverlay,
   DialogTitle,
 } from "@/components/ui/dialog";
-import React from "react";
+import React, { useRef } from "react";
 import { userTags } from "./data";
 import { useBoolean } from "@/hooks/useBoolean";
 import { useForm } from "react-hook-form";
@@ -26,16 +26,24 @@ import {
   defaultValues,
   schema,
 } from "@/app/super-admin/(super-admin)/organization/page";
-import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
+import FormProvider, {
+  RHFSelectField,
+  RHFTextField,
+  RHFMultiFileUpload,
+} from "@/components/rhf";
 import { Button } from "@/components/ui/button";
 import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
+import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
 
 const UserInfo = () => {
   const totalDays = 30;
   const remainingDays = 5;
   const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openModal = useBoolean();
+  const openVenueModal = useBoolean();
+  const editModal = useBoolean();
 
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -45,6 +53,15 @@ const UserInfo = () => {
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
+  };
+
+  const CloseVenueModal = () => {
+    methods.reset(defaultValues);
+    openVenueModal.onFalse();
+  };
+
+  const handleAvatarChange = () => {
+    fileInputRef.current?.click();
   };
 
   const onSubmit = (data: any) => {};
@@ -98,7 +115,14 @@ const UserInfo = () => {
             {/* VENU */}
             <Card className="mt-4 shadow-lg dark:bg-[#171717]">
               <CardHeader>
-                <h1 className="text-slate-500 font-semibold ">VENUE</h1>
+                <div className="flex justify-between items-center">
+                  <h1 className="text-slate-500 font-semibold ">VENUE</h1>
+                  <Pencil
+                    width={20}
+                    className="text-gray-500  mr-2 cursor-pointer hover:text-gray-700 transition-colors"
+                    onClick={openVenueModal.onTrue}
+                  />
+                </div>
                 <div className="flex items-center gap-2 mt-2">
                   <PartyPopper />
                   <p className=" mt-2 text-lg ">Nightclub</p>
@@ -333,7 +357,7 @@ const UserInfo = () => {
           </div>
         </div>
 
-        {/* update Organization */}
+        {/* ADD OTHER DETAILS */}
         <Dialog open={openModal.value} onOpenChange={CloseModal}>
           <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
             <DialogContent className="md:!max-w-[550px] mx-auto min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
@@ -418,6 +442,14 @@ const UserInfo = () => {
                     }`}
                   />
 
+                  {/* Gallery Images Upload */}
+                  <div className="w-full">
+                    <RHFMultiFileUpload
+                      name="galleryImages"
+                      label="Upload Gallery Images"
+                    />
+                  </div>
+
                   {/* Operating Hours Section */}
                   <div className="w-full">
                     <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
@@ -468,6 +500,95 @@ const UserInfo = () => {
                   >
                     Save
                   </Button>
+                </div>
+              </FormProvider>
+            </DialogContent>
+          </DialogOverlay>
+        </Dialog>
+
+        {/* VENUE MODAL */}
+        <Dialog open={openVenueModal.value} onOpenChange={CloseVenueModal}>
+          <DialogOverlay className="fixed inset-0 bg-white   bg-opacity-30 flex items-center justify-center md:w-lg w-full">
+            <DialogContent className=" dark:bg-[#171717] ">
+              <DialogHeader>
+                <DialogTitle>
+                  {" "}
+                  {!editModal.value ? "Create Venue" : "Edit Venue"}{" "}
+                </DialogTitle>
+              </DialogHeader>
+              <FormProvider
+                methods={methods}
+                onSubmit={methods.handleSubmit(onSubmit)}
+              >
+                <div className="flex flex-col gap-4 mt-4">
+                  {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
+
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleAvatarChange}
+                      className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    >
+                      Upload Floor Plan
+                    </Button>
+                    <p className="text-gray-500 text-sm mt-2">
+                      JPG, GIF or PNG. 1MB max.
+                    </p>
+                  </div>
+
+                  <RHFTextField
+                    name="name"
+                    label="Venue Name"
+                    placeholder="Enter Venue Name"
+                    className={` ${
+                      methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
+                  />
+
+                  <RHFTextfieldWithSelect
+                    name="venueType"
+                    label="Venue Type"
+                    placeholder="Select Venue Type"
+                    options={[
+                      { value: "event1", label: "Event 1" },
+                      { value: "event2", label: "Event 2" },
+                      { value: "event3", label: "Event 3" },
+                    ]}
+                  />
+                  <RHFTextfieldWithSelect
+                    name="organization"
+                    label="Organization"
+                    placeholder="Select Organization"
+                    options={[
+                      { label: "Organization A", value: "org-a" },
+                      { label: "Organization B", value: "org-b" },
+                      { label: "Organization C", value: "org-c" },
+                    ]}
+                  />
+                  <RHFTextField
+                    name="location"
+                    label="Location"
+                    placeholder="Enter Location"
+                  />
+
+                  <div>
+                    <iframe
+                      title="Venue Location Map"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s"
+                      className="md:w-[470px] w-full md:h-[160px] h-full "
+                      referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      type="submit"
+                      className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                    >
+                      {!editModal.value ? "Add Venue" : "Update Venue"}
+                    </Button>
+                  </div>
                 </div>
               </FormProvider>
             </DialogContent>

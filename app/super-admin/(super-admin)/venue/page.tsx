@@ -160,6 +160,7 @@ const Page = () => {
                     </DialogContent>
                 </DialogOverlay>
             </Dialog>
+            
             {/* dialog for delete venue */}
             <ConfirmDialog
                 open={deleteModal.value}
