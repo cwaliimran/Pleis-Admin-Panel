@@ -129,8 +129,7 @@ const Page = () => {
                                     label='Role'
                                     placeholder='Select Role'
                                     options={[
-                                        { value: 'Guest', label: 'Guest' },
-                                        { value: 'Registered User', label: 'Registered User' },
+                                        { value: "User", label: "User" },
                                         { value: 'Admin', label: 'Admin' },
                                         { value: 'Manager', label: 'Manager' },
                                         { value: 'Superadmin', label: 'Superadmin' },
@@ -150,7 +149,6 @@ const Page = () => {
                                         placeholder='Enter Address'
                                     />
                                 </div>
-
 
 
                                 <div className='flex justify-end gap-2'>

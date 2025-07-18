@@ -96,7 +96,6 @@
 //     })
 
 //     const onSubmit = (data: any) => {
-//         console.log('Form Submitted:', data)
 //     }
 
 //     const handleNextTab = async () => {
@@ -346,7 +345,6 @@ const Page = () => {
   });
 
   const onSubmit = (data: any) => {
-    console.log("Form Submitted:", data);
   };
 
   const handleNextTab = async () => {

@@ -156,7 +156,7 @@ const Page = () => {
                     </Card>
                 </div>
                 <div>
-                    <Card className='shadow-lg   h-[450px]'>
+                    <Card className='shadow-lg   h-[450px] !pb-0 '>
                         <CardHeader>
                             <div className='flex justify-between items-center'>
                                 <h3 className='text-xl font-semibold'>Visitor Gender Analytics</h3>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Pencil, Trash2 } from 'lucide-react';
 import React, { FC } from 'react';
@@ -22,27 +23,18 @@ interface PageProps {
 const TagsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
     return (
         <TableRow className="transition-colors h-14 w-full">
-            {/* <TableCell>
-                <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
-                    <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="Store"
-                        className="object-cover w-full h-full cursor-pointer"
-                    />
-                </Avatar>
-
-            </TableCell> */}
+            
             <TableCell>
                 <span className="font-medium">
                     {item.name.length > 30 ? item.name.slice(0, 30) + '...' : item.name}
                 </span>
             </TableCell>
 
-            {/* <TableCell className="text-left">
+            <TableCell className="text-left">
                 <Badge variant="secondary" className="capitalize">
                     {item.type}
                 </Badge>
-            </TableCell> */}
+            </TableCell>
             <TableCell>
                 {item.createdAt}
             </TableCell>

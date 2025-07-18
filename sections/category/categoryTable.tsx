@@ -10,7 +10,7 @@ import { Settings2 } from 'lucide-react'
 import { categoriesData } from './data'
 import { CategoryTableRow } from '.'
 const headLabel = [
-    { id: "image", label: "Image", align: "left" },
+    { id: "icon", label: "Icon", align: "left" },
     { id: "name", label: "Category Name", align: "left" },
     // { id: "type", label: "Type", align: "left" },
     { id: "createdAt", label: "Created At" },

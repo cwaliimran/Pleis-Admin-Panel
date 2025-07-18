@@ -58,9 +58,9 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
 
 
             {/* Email */}
-            <TableCell className="text-left text-sm">
+            {/* <TableCell className="text-left text-sm">
                 {item.email}
-            </TableCell>
+            </TableCell> */}
             {/* Username */}
             {!pendingUser && <TableCell className="text-left text-sm">
                 {item.firstName.toLowerCase() + ' ' + item.lastName.toLowerCase()}

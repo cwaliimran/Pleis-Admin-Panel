@@ -14,7 +14,7 @@ import { VenueTypeTable } from '@/sections/venueType'
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog'
 
 const defaultValues = {
-    image: null,
+    icon: null,
     name: '',
     type: '',
 }
@@ -26,15 +26,14 @@ const Page = () => {
     const deleteModal = useBoolean();
 
     const schema = Yup.object().shape({
-        image: Yup.mixed().nullable(),
+        icon: Yup.mixed().nullable(),
         name: Yup.string().required("Venue Type Name is required"),
-        type: Yup.string().required("Category Type is required"),
+        // type: Yup.string().required("Category Type is required"),
     })
     const methods = useForm({
         resolver: yupResolver(schema),
         defaultValues: defaultValues
     })
-
     const onSubmit = (data: any) => {
     }
     const CloseModal = () => {
@@ -80,7 +79,7 @@ const Page = () => {
                         </DialogHeader>
                         <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                             <div className="flex flex-col gap-4 mt-4">
-                                <RHFUploadAvatar name="image" label="Venue Type Image" />
+                                <RHFUploadAvatar name="icon" label="Venue Type Icon" />
                                 <RHFTextField
                                     name='name'
                                     label='Venue Type Name'

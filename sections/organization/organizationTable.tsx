@@ -1,14 +1,16 @@
+"use client"
 import TableHeadCustom from '@/components/table/table-head-custom'
 import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody } from '@/components/ui/table'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { organizationListData } from './data'
 import { Badge } from '@/components/ui/badge'
 import { Settings2 } from 'lucide-react'
 import OrganizationTableRow from './organizationTableRow'
+import OrganizationFilter from './organizationFilter'
 const headLabel = [
     { id: "log", label: "Logo", align: "left" },
     { id: "name", label: "Name", align: 'left' },
@@ -28,6 +30,9 @@ interface PageProps {
     handleEdit?: (id: string) => void;
 }
 const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+    const [filterField, setFilterField] = useState("name");
+
+
     return (
         <div>
             <div className='grid grid-cols-12 '>
@@ -37,10 +42,14 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
+                                {/* <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
                                     <Settings2 className="w-10 h-10" />
                                     <span className="whitespace-nowrap cursor-pointer ">By Name</span>
-                                </Badge>
+                                </Badge> */}
+                                <OrganizationFilter
+                                    selectedField={filterField}
+                                    onChangeField={setFilterField}
+                                />
                             </div>
 
                         </div>

@@ -48,7 +48,6 @@ const AdminProfileSection = () => {
   const avatarUrl = watch("avatar");
 
   const onSubmit = (data: AdminProfileFormData) => {
-    console.log("Profile data:", data);
   };
 
   const handleAvatarChange = () => {

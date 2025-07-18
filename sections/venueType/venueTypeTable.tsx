@@ -11,7 +11,7 @@ import { Settings2 } from 'lucide-react'
 import { venueTypeList } from './data'
 import { VenueTableRow } from '.'
 const headLabel = [
-    { id: "image", label: "Image", align: "left" },
+    { id: "icon", label: "Icon", align: "left" },
     { id: "name", label: "Venue Type Name", align: "left" },
     { id: "createdAt", label: "Created At", align: "left" },
     { id: "actions", label: "", align: "right" }
