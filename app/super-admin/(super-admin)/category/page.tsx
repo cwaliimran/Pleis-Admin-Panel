@@ -14,7 +14,7 @@ import { CategoryTable } from '@/sections/category'
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog'
 
 const defaultValues = {
-    image: null,
+    icon: null,
     name: '',
     type: '',
 }
@@ -26,7 +26,7 @@ const Page = () => {
     const editModal = useBoolean();
 
     const schema = Yup.object().shape({
-        image: Yup.mixed().nullable(),
+        icon: Yup.mixed().nullable(),
         name: Yup.string().required("Category name is required"),
         type: Yup.string().required("Category Type is required"),
     })
@@ -82,26 +82,13 @@ const Page = () => {
                         </DialogHeader>
                         <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                             <div className="flex flex-col gap-4 mt-4">
-                                <RHFUploadAvatar name="image" label="Category Image" />
+                                <RHFUploadAvatar name="icon" label="Category Icon" />
                                 <RHFTextField
                                     name='name'
                                     label='Category Name'
                                     placeholder='Enter Category Name'
                                     className={` ${methods.formState.errors.name ? 'border-red-400' : ''}`}
                                 />
-
-                                {/* <RHFSelectField
-                                    name='type'
-                                    label='Category Type'
-                                    placeholder='Select Category'
-                                    className='w-full flex-1'
-                                    options={[
-                                        { label: 'Product', value: 'product' },
-                                        { label: 'Service', value: 'service' },
-                                        { label: 'Other', value: 'other' }
-                                    ]}
-                                /> */}
-
                                 <div className='flex justify-end gap-2'>
                                     <Button type='submit' className='bg-blue-700 text-white hover:bg-blue-800 cursor-pointer'>
                                         {!editModal.value ? "Add Category" : "Update Category"}

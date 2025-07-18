@@ -57,12 +57,10 @@ const renderCustomizedLabel: FC<LabelProps> = ({
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-  const lineX = cx + outerRadius * Math.cos(-midAngle * RADIAN);
-  const lineY = cy + outerRadius * Math.sin(-midAngle * RADIAN);
 
   const label = `${(percent * 100).toFixed(0)}%`;
   const fontSize = 12;
-  const circleRadius = 20;
+  const circleRadius = 27;
   return (
     <g>
     
@@ -122,7 +120,7 @@ const GenderDonutChart: FC<PageProps> = ({ data, COLORS }) => {
             fontWeight={600}
             fill="#4B5563"
           >
-            {total}
+            {/* {total} */}
           </text>
         </PieChart>
       </ResponsiveContainer>

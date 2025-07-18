@@ -23,6 +23,7 @@ import { useBoolean } from "@/hooks/useBoolean";
 import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
 import HighlightTable from "@/sections/highlight/hightlightTable";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
 
 type HighlightFormValues = {
   video: File | null;
@@ -140,7 +141,7 @@ const Page = () => {
                   className={`${methods.formState.errors.title ? "border-red-400" : ""
                     }`}
                 />
-                <RHFSelectField
+                {/* <RHFSelectField
                   name="event"
                   label="Event"
                   placeholder="Select Event"
@@ -149,10 +150,19 @@ const Page = () => {
                     { label: "Event 2", value: "event2" },
                     { label: "Event 3", value: "event3" },
                   ]}
-                />
-                <RHFSelectField
+                /> */}
+                <RHFTextfieldWithSelect
+                  name="event"
+                  placeholder="Select Event"
+                  options={[
+                    { value: "event1", label: "Event 1" },
+                    { value: "event2", label: "Event 2" },
+                    { value: "event3", label: "Event 3" },
+                  ]}
+                  />
+                
+                <RHFTextfieldWithSelect
                   name="organization"
-                  label="Organization"
                   placeholder="Select Organization"
                   options={[
                     { label: "Organization 1", value: "org1" },

@@ -4,28 +4,27 @@ import Superadminheader from '@/app/common/superadminheader'
 import { CustomBreadCrums } from '@/components/breadcrums'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
-import React from 'react'
+import React, { useRef } from 'react'
 import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf'
 import { useForm } from 'react-hook-form'
 import * as Yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog'
 import { useBoolean } from '@/hooks/useBoolean'
-import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar'
 import VenueTable from '@/sections/venue/venueTable'
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog'
+import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select'
 
 const defaultValues = {
     // image: null,
     name: '',
     venueType: '',
     organization: '',
-    // location: '',
-    clity: '',
-    country: ''
+    location: '',
 }
 
 const Page = () => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const openModal = useBoolean();
     const editModal = useBoolean();
@@ -36,7 +35,7 @@ const Page = () => {
         name: Yup.string().required("Venue name is required"),
         venueType: Yup.string().required("Venue Type is required"),
         organization: Yup.string().required("Organization is required"),
-        // location: Yup.string().required("Location is required"),
+        location: Yup.string().required("Location is required"),
         clity: Yup.string(),
         country: Yup.string(),
     })
@@ -65,6 +64,10 @@ const Page = () => {
         deleteModal.onFalse();
     }
 
+    const handleAvatarChange = () => {
+        fileInputRef.current?.click();
+    };
+
     return (
         <div>
             <Header
@@ -92,6 +95,22 @@ const Page = () => {
                         <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                             <div className="flex flex-col gap-4 mt-4">
                                 {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
+
+                                <div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleAvatarChange}
+                                        className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                                    >
+                                        Upload Floor Plan
+                                    </Button>
+                                    <p className="text-gray-500 text-sm mt-2">
+                                        JPG, GIF or PNG. 1MB max.
+                                    </p>
+                                </div>
+
+
                                 <RHFTextField
                                     name='name'
                                     label='Venue Name'
@@ -99,18 +118,18 @@ const Page = () => {
                                     className={` ${methods.formState.errors.name ? 'border-red-400' : ''}`}
 
                                 />
-                                <RHFSelectField
-                                    name='venueType'
+
+                                <RHFTextfieldWithSelect
+                                    name="venueType"
                                     label='Venue Type'
-                                    placeholder='Select Venue Type'
+                                    placeholder="Select Venue Type"
                                     options={[
-                                        { label: 'Indoor', value: 'indoor' },
-                                        { label: 'Outdoor', value: 'outdoor' },
-                                        { label: 'Virtual', value: 'virtual' }
+                                        { value: "event1", label: "Event 1" },
+                                        { value: "event2", label: "Event 2" },
+                                        { value: "event3", label: "Event 3" },
                                     ]}
                                 />
-
-                                <RHFSelectField
+                                <RHFTextfieldWithSelect
                                     name='organization'
                                     label='Organization'
                                     placeholder='Select Organization'
@@ -120,19 +139,15 @@ const Page = () => {
                                         { label: 'Organization C', value: 'org-c' }
                                     ]}
                                 />
-                                {/* <RHFTextField
+                                <RHFTextField
                                     name='location'
                                     label='Location'
                                     placeholder='Enter Location'
-                                    className={` ${methods.formState.errors.location ? 'border-red-400' : ''}`}
-
-                                /> */}
-                               
-                                <RHFTextField
-                                    name='locattion'
-                                    label='Locatoin'
-                                    placeholder='Enter Location'
                                 />
+
+                                <div>
+                                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s" width="470" height="280"  loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                                </div>
 
                                 <div className='flex justify-end gap-2'>
                                     <Button type='submit' className='bg-blue-700 text-white hover:bg-blue-800 cursor-pointer'>

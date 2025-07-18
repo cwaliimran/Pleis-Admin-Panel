@@ -27,6 +27,7 @@ const schema = Yup.object().shape({
     // .min(6, 'Password must be at least 6 characters').required('Password is required'),
 });
 
+
 export default function LoginPage() {
     const router = useRouter();
     const open = useBoolean();
@@ -87,6 +88,8 @@ export default function LoginPage() {
                                 showPassword={open.value}
                                 onTogglePassword={open.onToggle}
                             />
+                            <Link href={"/user/forgot-password"} className="text-end text-sm text-muted-foreground hover:underline">
+                            <p className="text-end text-sm text-muted-foreground my-4">Forgot Password?</p></Link>
 
                             <Button type="submit" className="w-full h-[45px]">
                                 {methods.formState.isSubmitting ? 'Signing In...' : 'Login'}

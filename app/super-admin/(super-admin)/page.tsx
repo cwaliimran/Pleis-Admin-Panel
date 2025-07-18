@@ -200,7 +200,7 @@ const Page = () => {
             </Card>
           </div>
           <div>
-            <Card className='shadow-md  h-[450px] dark:bg-[#171717]'>
+            <Card className='shadow-md  h-[450px] dark:bg-[#171717] pb-0'>
               <CardHeader className=''>
                 <div className='flex justify-between items-start'>
                   <h3 className='text-xl font-semibold'> Gender Analytics</h3>

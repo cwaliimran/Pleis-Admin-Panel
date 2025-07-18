@@ -10,17 +10,18 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog'
 import { useBoolean } from '@/hooks/useBoolean'
 import { TagsTable } from '@/sections/tags'
-
+import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select'
 const defaultValues = {
     name: '',
-}
-
+    type: '', // new field
+};
 const Page = () => {
 
     const openModal = useBoolean();
 
     const schema = Yup.object().shape({
         name: Yup.string().required("Tag Name is required"),
+        type: Yup.string().required("Tag Type is required"),
     })
     const methods = useForm({
         resolver: yupResolver(schema),
@@ -76,6 +77,17 @@ const Page = () => {
                                     label='Tag Name'
                                     placeholder='Enter Tag Name'
                                     className={` ${methods.formState.errors.name ? 'border-red-400' : ''}`}
+                                />
+                                <RHFTextfieldWithSelect
+                                    name="type"
+                                    label="Tag Type"
+                                    placeholder="Select a type"
+                                    options={[
+                                        { label: "Primary", value: "primary" },
+                                        { label: "Secondary", value: "secondary" },
+                                        { label: "Info", value: "info" },
+                                        { label: "Warning", value: "warning" },
+                                    ]}
                                 />
 
                                 <div className='flex justify-end gap-2'>

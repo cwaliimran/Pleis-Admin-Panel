@@ -91,7 +91,6 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
 
   const onDelete = () => {
     deleteModal.onFalse();
-    console.log("Delete confirmed");
   };
   return (
     <div className="mt-10 h-full">

@@ -31,7 +31,7 @@ const VisitorGanderAnalytics = () => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className=' p-0 m-0'>
+                <CardContent className=''>
                     <GenderDonutChart
                         data={[
                             { name: "Males", value: 400 },

@@ -19,7 +19,7 @@ const headLabel = [
     { id: 'date', label: 'Date', align: 'left' },
     { id: 'total', label: 'Total' },
     { id: "transactionType", label: "Transaction Type", align: 'center' },
-    { id: 'status', label: 'Status' },
+    { id: 'status', label: 'Status',align:"center" },
     { id: 'action', label: '' },
 ]
 

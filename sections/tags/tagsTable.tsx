@@ -12,7 +12,7 @@ import TagsTableRow from './tagsTableRow'
 const headLabel = [
     // { id: "image", label: "Image", align: "left" },
     { id: "name", label: "Tag Name", align: "left" },
-    // { id: "type", label: "Type", align: "left" },
+    { id: "type", label: "Tag Type", align: "left" },
     { id: "createdAt", label: "Created At" },
     { id: "actions", label: "", align: "right" }
 ];
