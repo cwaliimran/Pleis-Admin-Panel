@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation'
 import React from 'react'
 import Header from '../../../../common/header';
-import UserDetailPage from '@/sections/users/userDetailPage';
+import OrganizationDetailPage from '@/sections/users/organizationDetailPage';
 
 const Page = () => {
     const id = useParams<any>();
@@ -17,7 +17,7 @@ const Page = () => {
                     { name: "Organization Details" },
                 ]}
             />
-            <UserDetailPage id={id} />
+            <OrganizationDetailPage id={id} />
         </div>
     )
 }

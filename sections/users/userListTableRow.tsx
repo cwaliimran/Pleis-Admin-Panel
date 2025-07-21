@@ -3,7 +3,7 @@
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Check, Ellipsis, Pencil, Trash2 } from 'lucide-react';
+import { Check, Ellipsis, Eye, Pencil, Trash2 } from 'lucide-react';
 import React, { FC } from 'react';
 
 interface UserItem {
@@ -30,6 +30,7 @@ interface Props {
 }
 
 const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUser, handlePending }) => {
+    const router = require('next/navigation').useRouter();
     return (
         <TableRow className="transition-colors h-14 w-full">
             {/* Avatar */}
@@ -58,9 +59,9 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
 
 
             {/* Email */}
-            {/* <TableCell className="text-left text-sm">
+            <TableCell className="text-left text-sm">
                 {item.email}
-            </TableCell> */}
+            </TableCell>
             {/* Username */}
             {!pendingUser && <TableCell className="text-left text-sm">
                 {item.firstName.toLowerCase() + ' ' + item.lastName.toLowerCase()}
@@ -89,10 +90,10 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
         !pendingUser && { id: "toatlRevenue", label: "Total Revenue From User", align: "left" },
         !pendingUser && { id: "region", label: "Region", align: "left" }, */}
             </TableCell>}
-            {!pendingUser && <TableCell className="text-left">
+            {!pendingUser && <TableCell className="text-center">
                 {item.totalPoints || 'N/A'}
             </TableCell>}
-            {!pendingUser && <TableCell className="text-left">
+            {!pendingUser && <TableCell className="text-center">
                 {item.totalRevenue || 'N/A'}
             </TableCell>}
             {!pendingUser && <TableCell className="text-left">
@@ -108,6 +109,13 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
             {/* Actions */}
             <TableCell className="text-end">
                 <div className="flex gap-2 ">
+                    {/* Eye button for user details */}
+                    <button
+                        onClick={e => { e.stopPropagation(); router.push(`/super-admin/user/user-detail/`); }}
+                        className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+                    >
+                        <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                    </button>
                     {!pendingUser && <button
                         onClick={(e) => { e.stopPropagation(); handleEdit?.(item.id) }}
                         className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
