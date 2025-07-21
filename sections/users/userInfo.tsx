@@ -70,13 +70,6 @@ const UserInfo = () => {
     <>
       <div>
         <div className="flex justify-end">
-          {/* <button
-            type="button"
-            onClick={openModal.onTrue}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg cursor-pointer transition-colors"
-          >
-            Add Details
-          </button> */}
           <Pencil
             width={22}
             className="text-gray-500  mr-2 cursor-pointer hover:text-gray-700 transition-colors"
@@ -389,28 +382,33 @@ const UserInfo = () => {
                       min={5}
                     />
 
-                    {/* <RHFTextField
-                      type="text"
-                      name="dress-type"
-                      label="Dress Type"
-                      placeholder="Enter Dress Type"
-                    /> */}
-
                     <RHFSelectField
-                      name="dress-type"
-                      label="Dress Type"
-                      placeholder="Select Dress Type"
+                      name="tags"
+                      label="Tags"
+                      placeholder="Select Tags"
                       className="w-full flex-1"
                       options={[
-                        { label: "Dress Type 1", value: "dressType1" },
-                        { label: "Dress Type 2", value: "dressType2" },
-                        { label: "Dress Type 3", value: "dressType3" },
+                        { label: "Tag 1", value: "tag1" },
+                        { label: "Tag 2", value: "tag2" },
+                        { label: "Tag 3", value: "tag3" },
                       ]}
                     />
                   </div>
 
                   <div className="w-full grid overflow-hidden md:grid-cols-1 grid-cols-1 gap-4">
-                    <RHFMultiSelect
+                    <RHFSelectField
+                      name="venue"
+                      label="Venue"
+                      placeholder="Select Venue"
+                      className="w-full flex-1"
+                      options={[
+                        { label: "Venue 1", value: "venue1" },
+                        { label: "Venue 2", value: "venue2" },
+                        { label: "Venue 3", value: "venue3" },
+                      ]}
+                    />
+
+                    {/* <RHFMultiSelect
                       name="venue"
                       label="Select Venue"
                       placeholder="Select Venue"
@@ -419,7 +417,7 @@ const UserInfo = () => {
                         { label: "Techno", value: "techno" },
                         { label: "House", value: "house" },
                       ]}
-                    />
+                    /> */}
 
                     <RHFMultiSelect
                       name="category"
@@ -433,14 +431,14 @@ const UserInfo = () => {
                     />
                   </div>
 
-                  <RHFTextField
+                  {/* <RHFTextField
                     name="location"
                     label="Location"
                     placeholder="Enter Location"
                     className={` ${
                       methods.formState.errors.location ? "border-red-400" : ""
                     }`}
-                  />
+                  /> */}
 
                   {/* Gallery Images Upload */}
                   <div className="w-full">

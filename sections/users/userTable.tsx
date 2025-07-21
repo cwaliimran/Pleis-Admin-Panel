@@ -30,9 +30,10 @@ const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handl
         pendingUser && { id: 'phone', label: "Phone", align: "left" },
         !pendingUser && { id: "role", label: "Role", align: "left" },
         !pendingUser && { id: "status", label: "Global Status", align: "left" },
-        !pendingUser && { id: "totalPoints", label: "Total Points Earned", align: "left" },
-        !pendingUser && { id: "toatlRevenue", label: "Total Revenue From User", align: "left" },
+        !pendingUser && { id: "totalPoints", label: "Points Earned", align: "left" },
+        !pendingUser && { id: "toatlRevenue", label: " User's Revenue", align: "left" },
         !pendingUser && { id: "region", label: "Region", align: "left" },
+        !pendingUser && { id: "action", label: "Action", align: "left" },
         { id: "actions", label: "", align: "right" }
     ].filter(Boolean);
     return (

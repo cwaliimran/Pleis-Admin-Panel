@@ -89,10 +89,10 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
         !pendingUser && { id: "toatlRevenue", label: "Total Revenue From User", align: "left" },
         !pendingUser && { id: "region", label: "Region", align: "left" }, */}
             </TableCell>}
-            {!pendingUser && <TableCell className="text-center">
+            {!pendingUser && <TableCell className="text-left">
                 {item.totalPoints || 'N/A'}
             </TableCell>}
-            {!pendingUser && <TableCell className="text-center">
+            {!pendingUser && <TableCell className="text-left">
                 {item.totalRevenue || 'N/A'}
             </TableCell>}
             {!pendingUser && <TableCell className="text-left">
