@@ -47,7 +47,7 @@ const Page = () => {
       />
       <div>
         <div className=' w-full flex items-center justify-end'>
-          <Button className='rounded-4xl py-2 bg-blue-700 cursor-pointer text-white hover:bg-blue-800' onClick={openModal.onTrue}>
+          <Button className='rounded-4xl py-2 bg-primary cursor-pointer text-white ' onClick={openModal.onTrue}>
             <Plus className='' />
             Create Support Info
           </Button>
@@ -56,7 +56,7 @@ const Page = () => {
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay
           className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-          <DialogContent className=' dark:bg-[#171717]'>
+          <DialogContent className=' bg-secondary'>
             <DialogHeader>
               <DialogTitle> {openModal.value ? "Create Support Info" : "Edit Support Info"} </DialogTitle>
             </DialogHeader>
@@ -76,7 +76,7 @@ const Page = () => {
                   className={` ${methods.formState.errors.phone ? 'border-red-400' : ''}`}
                 />
                 <div className='flex justify-end gap-2'>
-                  <Button type='submit' className='bg-blue-700 text-white hover:bg-blue-800 cursor-pointer'>
+                  <Button type='submit' className='bg-primary text-white hover:bg-primary cursor-pointer'>
                     {openModal.value ? "Add Support Info" : "Update Support Info"}
                   </Button>
                 </div>

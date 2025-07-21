@@ -7,10 +7,8 @@ import { Table, TableBody } from '@/components/ui/table'
 import React, { FC, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { organizationListData } from './data'
-import { Badge } from '@/components/ui/badge'
-import { Settings2 } from 'lucide-react'
 import OrganizationTableRow from './organizationTableRow'
-import OrganizationFilter from './organizationFilter'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "log", label: "Logo", align: "left" },
     { id: "name", label: "Name", align: 'left' },
@@ -19,18 +17,19 @@ const headLabel = [
     { id: "createdDate", label: "Created Date", align: "left" },
     { id: "subscriptionType", label: "Subscription Type", align: "left" },
     { id: "subscriptionValidity", label: "Subscription End Date", align: "left" },
-    { id: "commission", label: "Pleis Commission (%)", align: "left" },
-    { id: "totalViews", label: "Total Views", align: "left" },
-    { id: "totalRevenue", label: "Total Revenue", align: "left" },
+    { id: "commission", label: "Commission", align: "left" },
+    { id: "totalViews", label: "Views", align: "left" },
+    { id: "totalRevenue", label: "Revenue", align: "left" },
     { id: "region", label: "Region", align: "left" },
     { id: "actions", label: "" }
 ]
+
 interface PageProps {
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
 }
 const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
-    const [filterField, setFilterField] = useState("name");
+    const [filterField, setFilterField] = useState<string[]>([]);
 
 
     return (
@@ -41,14 +40,21 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                         <h3 className='text-xl font-semibold md:ml-0 ml-2'>Organization List</h3>
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
-
-                                {/* <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Name</span>
-                                </Badge> */}
-                                <OrganizationFilter
-                                    selectedField={filterField}
-                                    onChangeField={setFilterField}
+                                <FilterDropdown
+                                    options={[
+                                        { id: "name", label: "By Name" },
+                                        { id: "phone", label: "By Phone" },
+                                        { id: "email", label: "By Email" },
+                                        { id: "createdDate", label: "By Created Date" },
+                                        { id: "subscriptionType", label: "By Subscription Type" },
+                                        { id: "subscriptionValidity", label: "By Subscription End Date" },
+                                        { id: "commission", label: "By Commission" },
+                                        { id: "totalViews", label: "By Total Views" },
+                                        { id: "totalRevenue", label: "By Total Revenue" },
+                                        { id: "region", label: "By Region" }
+                                    ]}
+                                    selectedOptions={filterField}
+                                    onSelectOption={setFilterField}
                                 />
                             </div>
 

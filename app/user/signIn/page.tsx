@@ -89,9 +89,9 @@ export default function LoginPage() {
                                 onTogglePassword={open.onToggle}
                             />
                             <Link href={"/user/forgot-password"} className="text-end text-sm text-muted-foreground hover:underline">
-                            <p className="text-end text-sm text-muted-foreground my-4">Forgot Password?</p></Link>
+                                <p className="text-end text-sm text-muted-foreground my-4">Forgot Password?</p></Link>
 
-                            <Button type="submit" className="w-full h-[45px]">
+                            <Button type="submit" className="w-full h-[45px] bg-[#0f172b] hover:bg-[#0f172b] cursor-pointer">
                                 {methods.formState.isSubmitting ? 'Signing In...' : 'Login'}
                             </Button>
 
@@ -120,7 +120,7 @@ export default function LoginPage() {
 
                             <p className="text-center text-sm text-muted-foreground mt-4">
                                 Don’t have an account?{' '}
-                                <Link href="/user/signUp" className="text-primary hover:underline font-medium">
+                                <Link href="/user/signUp" className="text-[#0f172b] hover:text-[#0f172b] hover:underline font-medium">
                                     Sign Up
                                 </Link>
                             </p>

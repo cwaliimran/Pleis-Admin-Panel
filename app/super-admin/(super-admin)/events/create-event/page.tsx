@@ -207,7 +207,7 @@ const Page = () => {
                                         />
                                     </div>
                                     <div className='flex justify-end mt-4'>
-                                        <Button type='submit' className='bg-blue-700 text-white hover:bg-blue-800 cursor-pointer'>
+                                        <Button type='submit' className='bg-primary text-white hover:bg-primary cursor-pointer'>
                                             Create Event
                                         </Button>
                                     </div>

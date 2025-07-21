@@ -43,10 +43,6 @@ const Page = () => {
     const onDelete = () => {
         // Handle delete confirmation logic here
     }
-
-
-
-
     return (
         <div>
             <Header
@@ -57,7 +53,7 @@ const Page = () => {
             />
             <div>
                 <div className=' w-full flex items-center justify-end'>
-                    <Button className='rounded-4xl py-2 bg-blue-700 cursor-pointer text-white hover:bg-blue-800' onClick={openModal.onTrue}>
+                    <Button className='rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary' onClick={openModal.onTrue}>
                         <Plus className='' />
                         Create Tag
                     </Button>
@@ -91,7 +87,7 @@ const Page = () => {
                                 />
 
                                 <div className='flex justify-end gap-2'>
-                                    <Button type='submit' className='bg-blue-700 text-white hover:bg-blue-800 cursor-pointer'>
+                                    <Button type='submit' className='bg-primary text-white hover:bg-primary cursor-pointer'>
                                         {openModal.value ? "Add Tag" : "Update Tag"}
                                     </Button>
                                 </div>

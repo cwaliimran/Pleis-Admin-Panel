@@ -112,7 +112,7 @@ const Page = () => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => { };
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
@@ -155,7 +155,7 @@ const Page = () => {
       <div>
         <div className=" w-full flex items-center justify-end">
           <Button
-            className="rounded-4xl py-2 bg-blue-700 cursor-pointer text-white hover:bg-blue-800"
+            className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary/90"
             onClick={openModal.onTrue}
           >
             <Plus className="" />
@@ -222,9 +222,8 @@ const Page = () => {
                     name="name"
                     label=" Organization Name"
                     placeholder="Enter Organization Name"
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
                   <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
                     <RHFTextField
@@ -273,11 +272,10 @@ const Page = () => {
                       name="location"
                       label="Location"
                       placeholder="Enter Location"
-                      className={` ${
-                        methods.formState.errors.location
+                      className={` ${methods.formState.errors.location
                           ? "border-red-400"
                           : ""
-                      }`}
+                        }`}
                     />
                     <RHFSelectField
                       name="clity"
@@ -423,7 +421,7 @@ const Page = () => {
                   <div className="">
                     <Button
                       type="button"
-                      className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                      className="bg-primary text-white hover:bg-primary cursor-pointer"
                       onClick={handleNextTab}
                     >
                       Next
@@ -434,7 +432,7 @@ const Page = () => {
                 {activeTab === "bankDetails" && (
                   <Button
                     type="submit"
-                    className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                    className="bg-primary text-white hover:bg-primary cursor-pointer"
                   >
                     {!editModal.value
                       ? "Add Organization"

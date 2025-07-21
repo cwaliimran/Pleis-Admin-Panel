@@ -43,7 +43,7 @@ const Page = () => {
             <div className='flex justify-between mt-10'>
                 <div></div>
                 <div >
-                    <Button className='bg-blue-600 text-white rounded-3xl cursor-pointer hover:bg-blue-700 transition-colors flex items-center gap-2 px-4 py-2'
+                    <Button className='bg-primary text-white rounded-3xl cursor-pointer  transition-colors flex items-center gap-2 px-4 py-2'
                         onClick={openModal.onTrue}>
                         <Plus />
                         Add Organizer

@@ -90,6 +90,96 @@ export const invoicesData = [
     }
 ]
 
+export const invoicesData2 = [
+    {
+        _id: 1,
+        title: "Total Views",
+        amount: 1500,
+        status: "paid",
+        raise: "+2,14%",
+        menu: true
+    },
+    {
+        _id: 2,
+        title: "Active Events",
+        amount: 800,
+        status: "unpaid",
+        raise: "+1,50%",
+        menu: true
+    },
+    {
+        _id: 3,
+        title: "Total Events",
+        amount: 1200,
+        status: "paid",
+        raise: "+3,00%",
+        menu: true
+    },
+    {
+        _id: 4,
+        title: "Total Revenue",
+        amount: 600,
+        status: "overdue",
+        menu: true
+    },
+    {
+        _id: 5,
+        title: "Ticket Solid",
+        amount: 900,
+        status: "paid",
+        raise: "+2,50%",
+        menu: true
+    },
+    {
+        _id: 6,
+        title: "Follower Count",
+        amount: 700,
+        status: "unpaid",
+        raise: "+1,75%",
+        menu: true
+    },
+    {
+        _id: 7,
+        title: "Conversion Rate",
+        amount: 2000,
+        status: "paid",
+        raise: "+4,00%",
+        menu: true
+    },
+    {
+        _id: 8,
+        title: "Average Revenue per Visitor",
+        amount: 2348,
+        status: "paid",
+        raise: "+2.14%",
+        menu: true,
+    },
+    {
+        _id: 9,
+        title: "Cart Abandonment Rate",
+        amount: 2348,
+        status: "pending",
+        raise: "+2.14%",
+        menu: true,
+    },
+    {
+        _id: 10,
+        title: "Total Payout from App",
+        amount: 2348,
+        status: "paid",
+        raise: "+2.14%",
+        menu: true,
+    },
+    {
+        _id: 11,
+        title: "Average Ticket Price",
+        amount: 2348,
+        status: "paid",
+        raise: "+2.14%",
+        menu: true,
+    }
+]
+
 
 export const topPerformaningEventsData = [
     {

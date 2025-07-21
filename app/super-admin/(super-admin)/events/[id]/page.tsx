@@ -19,9 +19,11 @@ import EventNotification from '@/sections/event/eventNotification';
 import EventReservation from '@/sections/event/eventReservation';
 import EventTicket from '@/sections/event/eventTicket';
 import EventOverView from '@/sections/event/eventOverview';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Calendar, Pencil, Trash2, Users } from 'lucide-react';
 import { useBoolean } from '@/hooks/useBoolean';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import CapacityGaugeChart from '@/sections/event/CapacityGaugeChart';
+import LastTransaction from '@/sections/event/lastTransaction';
 
 const Page = () => {
     const [active, setActive] = React.useState("overview");
@@ -44,18 +46,16 @@ const Page = () => {
                     ]}
                 />
                 <div className="mt-10 h-full">
-                    <div className="grid grid-cols-12 gap-7">
+                    <div className="grid grid-cols-12 md:gap-7">
                         <div className="md:col-span-9 col-span-12">
-
-
-                            <Card className=" dark:bg-[#171717] shadow-md">
+                            <Card className=" dark:bg-[#171717] shadow-md pb-0 ">
                                 <CardContent>
                                     <div className='flex flex-col sm:flex-row gap-3 '>
                                         <div className="w-full sm:w-1/3">
                                             <img
                                                 src="/images/eventImage.png"
                                                 alt="Event"
-                                                className="rounded-md w-full h-auto object-cover"
+                                                className="rounded-md w-full h-auto object-contain object-top "
                                             />
                                         </div>
 
@@ -71,11 +71,11 @@ const Page = () => {
                                                 </div>
                                                 <div className="flex items-center">
                                                     <Pencil
-                                                        className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+                                                        className="md:w-5 md:h-5 w-4 h-4  text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
                                                         onClick={() => router.push("/super-admin/events/create-event")}
                                                     />
                                                     <Trash2
-                                                        className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
+                                                        className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors md:ml-4 ml-1"
                                                         onClick={deleteModal.onTrue}
                                                     />
                                                 </div>
@@ -107,38 +107,52 @@ const Page = () => {
                                                     <span className="text-sm font-medium text-gray-800">Peti Kupe</span>
                                                 </div>
                                             </div>
-
                                         </div>
-
                                     </div>
                                     {/* Tabs and Boost Button */}
-                                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mt-4">
-                                        <Tabs  value={active} onValueChange={setActive}  className="w-full sm:w-auto">
-                                            <TabsList>
-                                                {tabsData.map((tab) => (
-                                                    <TabsTrigger
-                                                        key={tab.value}
-                                                        value={tab.value}
-                                                        
-                                                        className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                                                                        shadow-none cursor-pointer border-none
-                                                                                                          ${active === tab.value
-                                                                ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                                                : 'text-muted-foreground'
-                                                            }`}
-                                                    >
-                                                        {tab.label}
-                                                    </TabsTrigger>
-                                                ))}
-                                            </TabsList>
-                                        </Tabs>
-
-                                        <button className="bg-blue-600 text-white px-4 py-2 rounded-3xl hover:bg-blue-700 transition w-full sm:w-auto">
+                                    <div className="flex flex-col sm:flex-row justify-end sm:items-center gap-4 mt-4">
+                                        <button className="bg-primary text-white px-4 py-2 rounded-3xl hover:bg-primary transition w-full sm:w-auto cursor-pointer">
                                             Boost
                                         </button>
                                     </div>
-
-
+                                    <div className="w-full">
+                                        {/* Small screen dropdown */}
+                                        <div className="block sm:hidden mb-4">
+                                            <Select value={active} onValueChange={setActive}>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Select tab" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {tabsData.map((tab: any) => (
+                                                        <SelectItem key={tab.value} value={tab.value}>
+                                                            {tab.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        {/* Tabs for larger screens */}
+                                        <Tabs value={active} onValueChange={setActive} className="hidden sm:block w-full">
+                                            <TabsList className="inline-flex items-center gap-2 bg-transparent rounded-full p-1">
+                                                <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
+                                                    {tabsData.map((tab: any) => (
+                                                        <TabsTrigger
+                                                            key={tab.value}
+                                                            value={tab.value}
+                                                            className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
+                                                                    !shadow-none cursor-pointer border-none
+                                                                  ${active === tab.value
+                                                                    ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
+                                                                    : 'text-muted-foreground'
+                                                                }`}
+                                                        >
+                                                            {tab.label}
+                                                        </TabsTrigger>
+                                                    ))}
+                                                </div>
+                                            </TabsList>
+                                        </Tabs>
+                                    </div>
                                 </CardContent>
                             </Card>
 
@@ -158,60 +172,82 @@ const Page = () => {
                         </div>
 
                         {/* Sidebar or Additional Panel */}
-                        <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3">
+                        <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3 md:mt-0 mt-3">
                             {eventCardData.map((user: any) => (
                                 <UserCard item={user} key={user._id} />
                             ))}
-                            {/* <TotalFollowers /> */}
+                            <CapacityGaugeChart />
+                            <LastTransaction />
+                            <div className="w-full flex  justify-between items-start flex-wrap md:mt-20 mt-5 px-4 ">
+                                {/* START DATE */}
+                                <div className="flex flex-col gap-1 min-w-[140px]">
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="w-4 h-4 text-gray-600" />
+                                        <p className="text-xs text-gray-600 font-semibold">START DATE</p>
+                                    </div>
+                                    <p className="text-sm text-black font-medium">March 23, 25, 13:00</p>
+                                </div>
 
-                            {/* <ActivePromontion /> */}
-
-                            {/* <BusinessInfo /> */}
+                                {/* END DATE */}
+                                <div className="flex flex-col gap-1 min-w-[140px] md:mt-0 mt-4">
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="w-4 h-4 text-gray-600" />
+                                        <p className="text-xs text-gray-600 font-semibold">END DATE</p>
+                                    </div>
+                                    <p className="text-sm text-black font-medium">March 23, 25, 13:00</p>
+                                </div>
+                            </div>
+                            <div className='flex items-center justify-center mt-15'>
+                                <Users className='cursor-pointer text-slate-500 w-4 h-4' />
+                                <h1 className='text-slate-500 ml-2'>Players</h1>:  <span className='text-bold ml-2'>632</span>
+                            </div>
                         </div>
                     </div>
-                    {active === "analytics" && <div className='grid grid-cols-12 mt-5'>
-                        <Card className='col-span-12 shadow-lg  dark:bg-[#171717]'>
-                            <CardHeader>
-                                <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
-                                    <h3 className='text-xl font-semibold'>Transaction History</h3>
-                                    <div>
-                                        <Tabs value={tabActive} onValueChange={setTabActive} defaultValue="all" className='w-full '>
-                                            <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
-                                                <TabsTrigger value="all" className={cn(
-                                                    "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
-                                                )}>All</TabsTrigger>
-                                                <TabsTrigger value="transactions" className={cn(
-                                                    "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
-                                                )}>Transactions</TabsTrigger>
-                                                <TabsTrigger value="refunds" className={cn(
-                                                    "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
-                                                )}>Refunds</TabsTrigger>
-                                            </TabsList>
-                                        </Tabs>
+                    {
+                        active === "analytics" && <div className='grid grid-cols-12 mt-5'>
+                            <Card className='col-span-12 shadow-lg  dark:bg-[#171717]'>
+                                <CardHeader>
+                                    <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
+                                        <h3 className='text-xl font-semibold'>Transaction History</h3>
+                                        <div>
+                                            <Tabs value={tabActive} onValueChange={setTabActive} defaultValue="all" className='w-full '>
+                                                <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
+                                                    <TabsTrigger value="all" className={cn(
+                                                        "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
+                                                    )}>All</TabsTrigger>
+                                                    <TabsTrigger value="transactions" className={cn(
+                                                        "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                                                    )}>Transactions</TabsTrigger>
+                                                    <TabsTrigger value="refunds" className={cn(
+                                                        "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                                                    )}>Refunds</TabsTrigger>
+                                                </TabsList>
+                                            </Tabs>
+                                        </div>
+                                        <div className='flex flex-col md:items-center items-end'>
+                                            <Select defaultValue='all'>
+                                                <SelectTrigger >
+                                                    <SelectValue placeholder="" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup className='w-auto'>
+                                                        <SelectLabel>Transaction</SelectLabel>
+                                                        <SelectItem value="all">All</SelectItem>
+                                                        <SelectItem value="today">Today</SelectItem>
+                                                        <SelectItem value="thisWeek">This Week</SelectItem>
+                                                        <SelectItem value="thisMonth">This Month</SelectItem>
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
-                                    <div className='flex flex-col md:items-center items-end'>
-                                        <Select defaultValue='all'>
-                                            <SelectTrigger >
-                                                <SelectValue placeholder="" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup className='w-auto'>
-                                                    <SelectLabel>Transaction</SelectLabel>
-                                                    <SelectItem value="all">All</SelectItem>
-                                                    <SelectItem value="today">Today</SelectItem>
-                                                    <SelectItem value="thisWeek">This Week</SelectItem>
-                                                    <SelectItem value="thisMonth">This Month</SelectItem>
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <TransactionHistory />
-                        </Card>
-                    </div>}
-                </div>
-            </div>
+                                </CardHeader>
+                                <TransactionHistory />
+                            </Card>
+                        </div>
+                    }
+                </div >
+            </div >
             <ConfirmDialog
                 open={deleteModal.value}
                 title="Delete Event"
@@ -219,7 +255,7 @@ const Page = () => {
                 onClose={deleteModal.onFalse}
                 onConfirm={onDelete}
             />
-        </div>
+        </div >
 
     )
 }

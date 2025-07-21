@@ -34,7 +34,7 @@ const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
         <div className="mt-10 h-full">
             <div className="grid grid-cols-12 gap-7">
                 <div className="md:col-span-9 col-span-12">
-                    <Card className="overflow-hidden  p-4  shadow-md dark:bg-[#171717]">
+                    <Card className="overflow-hidden  p-4  shadow-md dark:bg-[#171717] pb-0">
                         <div className='relative w-full'>
                             <div
                                 className="h-72   bg-[url('/images/bannerImage.png')] bg-cover bg-center rounded-lg"
@@ -71,13 +71,13 @@ const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
                         <div className='flex md:items-center md:justify-between mt-4 md:flex-row flex-col gap-4'>
                             <Tabs value={active} onValueChange={setActive} className="w-full">
                                 <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
-                                    <TabsList className="inline-flex items-center gap-2 bg-transparent rounded-full p-1 ">
+                                    <TabsList className="inline-flex items-center gap-2 bg-transparent rounded-full  ">
                                         {tabsData.map((tab: any) => (
                                             <TabsTrigger
                                                 key={tab.value}
                                                 value={tab.value}
                                                 className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                    shadow-none cursor-pointer border-none
+                                                    !shadow-none cursor-pointer border-none
                                                       ${active === tab.value
                                                         ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
                                                         : 'text-muted-foreground'
@@ -90,17 +90,17 @@ const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
                                 </div>
                             </Tabs>
                             <div className="flex gap-4">
-                                <Badge className="bg-blue-200 text-blue-800 w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 
+                                <Badge className="bg-blue-200 text-primary w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 
                                 hover:bg-blue-300 transition-colors">
                                     <Facebook className="w-5 h-5 " />
                                 </Badge>
 
-                                <Badge className="bg-blue-200 text-blue-800 cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
+                                <Badge className="bg-blue-200 text-primary cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
                                 hover:bg-blue-300 transition-colors">
                                     <Instagram className="w-5 h-5 " />
                                 </Badge>
 
-                                <Badge className="bg-blue-200 text-blue-800  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
+                                <Badge className="bg-blue-200 text-primary  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
                                 hover:bg-blue-300 transition-colors">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"

@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Dot, Ellipsis, MapPin, PartyPopper, Shirt, UserPlus, UsersRound } from 'lucide-react'
+import { Calendar, Dot, Ellipsis, MapPin, PartyPopper, Shirt, UserPlus, UsersRound } from 'lucide-react'
 import React from 'react'
 import { userTags } from '../users/data'
 import { Button } from '@/components/ui/button'
@@ -29,7 +29,8 @@ const EventOverView = () => {
   return (
     <div>
       <div className='grid grid-cols-12 gap-4'>
-        <div className='col-span-5'>
+        <div className='md:col-span-5 col-span-12'>
+          {/* about organizer */}
           <Card className="shadow-lg dark:bg-[#171717]">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">ABOUT ORGANIZER</h1>
@@ -43,14 +44,14 @@ const EventOverView = () => {
                   <div className='flex flex-col'>
                     <span className="text-sm font-bold text-gray-800">Peti Kupe</span>
                     <div className='flex'>
-                      <MapPin />
+                      <MapPin className='w-4 h-4' />
                       <span>Trnjanska cesta 5, 10 00...</span>
                     </div>
                   </div>
                 </div>
                 <h1 className='text-slate-500 m-1'>Peti Kupe je destinacija u kojoj se isprepliću glazba, umjetnosti, edukativni sadržaji i gastronomija.</h1>
                 <Badge
-                  className=" bg-transparent w-full  text-black  border border-gray-600 rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
+                  className=" bg-transparent w-full  text-black  border border-gray-400 cursor-pointer rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
                 >
                   Profile
                 </Badge>
@@ -59,6 +60,7 @@ const EventOverView = () => {
 
             </CardHeader>
           </Card>
+          {/* description */}
           <Card className="shadow-lg dark:bg-[#171717] mt-4">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
@@ -68,6 +70,7 @@ const EventOverView = () => {
 
             </CardHeader>
           </Card>
+          {/* venue */}
           <Card className="mt-4 shadow-lg dark:bg-[#171717]">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold ">VENUE</h1>
@@ -77,6 +80,7 @@ const EventOverView = () => {
               </div>
             </CardHeader>
           </Card>
+          {/* categories */}
           <Card className="mt-4 shadow-lg dark:bg-[#171717]">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">CATEGORIES</h1>
@@ -92,6 +96,7 @@ const EventOverView = () => {
               </div>
             </CardHeader>
           </Card>
+          {/* tags */}
           <Card className="mt-4 shadow-lg dark:bg-[#171717]">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">TAGS</h1>
@@ -107,74 +112,79 @@ const EventOverView = () => {
               </div>
             </CardHeader>
           </Card>
-          <Card className="mt-4 shadow-lg dark:bg-[#171717]">
+          <Card className="mt-4 shadow-lg dark:bg-[#171717] w-full">
             <CardHeader>
-              <div className="flex justify-between item-center ">
-                <Badge className="bg-gray-100 dark:bg-white text-black  rounded-full px-4 py-1 text-md font-medium">
+              {/* Top: Status + Ellipsis */}
+              <div className="flex justify-between items-center">
+                <Badge className="bg-gray-100 dark:bg-white text-black rounded-full px-4 py-1 text-sm font-medium">
                   Active
                 </Badge>
                 <Ellipsis className="cursor-pointer w-4 h-4" />
               </div>
-              <div className="mt-2 flex justify-between items-start gap-4">
-                {/* Left Image */}
+
+              {/* Middle: Image + Info */}
+              <div className="mt-4 flex flex-col sm:flex-row justify-between gap-4">
+                {/* Image */}
                 <img
                   src="/images/bannerImage.png"
                   alt="Promotion"
-                  className="w-20 h-20 rounded-[10px] object-cover"
+                  className="w-full sm:w-20 md:h-20 h-30 rounded-[10px] object-cover"
                 />
 
-                {/* Right Content */}
+                {/* Text Info */}
                 <div className="flex-1 flex flex-col">
-                  {/* Top Row: Label + Days Left */}
-                  <div className="flex justify-between items-center w-full mb-1">
-                    <h1 className="text-slate-500 font-semibold">
-                      PROMOTION
-                    </h1>
+                  {/* Row 1: Label + Days Left */}
+                  <div className="flex justify-between items-center mb-1">
+                    <h1 className="text-slate-500 font-semibold">PROMOTION</h1>
                     <h1 className="text-green-500 font-semibold whitespace-nowrap">
                       24 Days left
                     </h1>
                   </div>
 
-                  {/* Title */}
-                  <h1 className="text-xl font-medium">Promotion Name</h1>
-                  <p className="text-slate-500 mt-1">
+                  {/* Row 2: Title */}
+                  <h1 className="text-lg sm:text-xl font-medium">Promotion Name</h1>
+
+                  {/* Row 3: Description */}
+                  <p className="text-slate-500 mt-1 text-sm">
                     lorem ipsum dolor sit amet, consectetur ...
                   </p>
                 </div>
               </div>
             </CardHeader>
+
             <hr />
+
             <CardContent>
-              <div className="flex">
-                <div className="flex">
+              {/* Info Stats Row */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3">
+                <div className="flex items-center">
                   <UsersRound className="w-5 h-5 text-slate-500" />
-                  <p className="text-slate-500 ml-2 font-[400]">
-                    Max Points <span className="font-[700]">632</span>
+                  <p className="text-slate-500 ml-2 font-normal">
+                    Max Points <span className="font-bold">632</span>
                   </p>
                 </div>
-                <div className="flex md:ml-7 ml-3">
+                <div className="flex items-center">
                   <UsersRound className="w-5 h-5 text-slate-500" />
-                  <p className="text-slate-500 ml-2 font-[400]">
-                    Max Points <span className="font-[700]">632</span>
+                  <p className="text-slate-500 ml-2 font-normal">
+                    Max Points <span className="font-bold">632</span>
                   </p>
                 </div>
               </div>
-              <div className="flex justify-between items-center mt-4">
-                <h1 className="text-slate-500 font-semibold">
-                  REWARD AVAILABILITY
-                </h1>
-                <h1 className="text-slate-500 ">488/2300</h1>
+
+              {/* Reward Availability */}
+              <div className="flex justify-between items-center mt-4 text-sm">
+                <h1 className="text-slate-500 font-semibold">REWARD AVAILABILITY</h1>
+                <h1 className="text-slate-500">488/2300</h1>
               </div>
-              <div className="mt-2 flex justify-between items-start gap-4">
-                <div className="flex-1 flex flex-col">
-                  <div className="w-full h-2 bg-gray-200 rounded-full mb-2 overflow-hidden">
-                    <div className="h-full bg-blue-600 transition-all duration-500 w-5/6"></div>
-                  </div>
+
+              {/* Progress Bar */}
+              <div className="mt-2">
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-600 transition-all duration-500 w-5/6"></div>
                 </div>
               </div>
             </CardContent>
           </Card>
-
           <div className="mt-5 grid grid-cols-12 gap-4">
             <div
               className="md:col-span-6 col-span-12 shadow-lg bg-white dark:bg-black  w-full border-2 border-gray-300  rounded-full text-center
@@ -192,12 +202,37 @@ const EventOverView = () => {
           </div>
 
         </div>
-        <div className='col-span-7'>
+        <div className='md:col-span-7 col-span-12'>
+          {/* timeline  */}
           <Card className="shadow-lg dark:bg-[#171717]">
+            <CardHeader className="w-full flex flex-col gap-2">
+              <h1 className="text-slate-500 font-semibold">Timeline</h1>
+              <hr />
+              <div className='flex items-center gap-2 justify-between w-full'>
+                <div className='flex flex-col gap-2'>
+                  <div className='flex items-center gap-2'>
+                    <Calendar className='w-4 h-4' />
+                    <p className='text-sm text-slate-500'>START DATE</p>
+                  </div>
+                  <p className='text-sm'>March 23, 25, 13:00</p>
+                </div>
+                <div className='flex flex-col gap-2'>
+                  <div className='flex items-center gap-2'>
+                    <Calendar className='w-4 h-4' />
+                    <p className='text-sm text-slate-500'>END DATE</p>
+                  </div>
+                  <p className='text-sm'>March 23, 25, 13:00</p>
+                </div>
+              </div>
+
+            </CardHeader>
+          </Card>
+          {/* location */}
+          <Card className="shadow-lg dark:bg-[#171717] mt-4">
             <CardHeader className="w-full flex flex-col gap-2">
               <h1 className="text-slate-500 font-semibold">LOCATION PIN</h1>
               <div className="flex items-center gap-2 mt-2">
-                <MapPin />
+                <MapPin className='w-4 h-4' />
                 <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>
               </div>
               <img
@@ -208,9 +243,8 @@ const EventOverView = () => {
             </CardHeader>
           </Card>
 
-          {/* <div className="p-4 space-y-6"> */}
           {/* Tickets Section */}
-          <Card className="space-y-4 mt-4">
+          <Card className="space-y-4 mt-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
               <h2 className="text-sm font-semibold text-muted-foreground">TICKETS</h2>
 
@@ -219,19 +253,22 @@ const EventOverView = () => {
                   key={index}
                 >
                   <div
-                    className="flex items-start justify-between  p-4 rounded-md "
-                  >
+                    className="flex items-start justify-between  p-4 rounded-md "  >
 
                     <div className="flex-1 space-y-1">
-                      <p className="text-base font-medium">{ticket.title}</p>
-                      <p className="text-xs text-muted-foreground">From {ticket.from}</p>
+                      <div className='flex items-center justify-between mr-2'>
+                        <div>
+                          <p className="text-base font-medium">{ticket.title}</p>
+                          <p className="text-xs text-muted-foreground">From {ticket.from}</p>
+                        </div>
+                        <p>{ticket.sold}/ {ticket.total}</p>
+                      </div>
+
 
                       <div className="mt-1">
-                        {/* <Progress className="h-2 bg-muted"
-                          indicatorClassName="bg-blue-500" value={(ticket.sold / ticket.total) * 100} /> */}
                         <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
                           <div
-                            className="h-full bg-blue-500 transition-all"
+                            className="h-full bg-primary transition-all"
                             style={{ width: `${(ticket.sold / ticket.total) * 100}%` }}
                           />
                         </div>
@@ -250,18 +287,19 @@ const EventOverView = () => {
               ))}
 
               {/* Total Summary */}
-              <div className="flex items-center justify-between px-1 pt-2">
-                <p className="text-lg font-bold">12,026 €</p>
+              <div className="flex items-center justify-between md:px-4 pt-2  ">
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground">Total</p>
+                  <p className="text-lg font-bold">12,026 €</p>
+                </div>
                 <Button variant="outline" size="sm">
                   Manage Tickets
                 </Button>
               </div>
             </CardContent>
           </Card>
-
-
           {/* Updates Section */}
-          <Card className="space-y-4 mt-4">
+          <Card className="space-y-4 mt-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
               <h2 className="text-sm font-semibold text-muted-foreground">UPDATES</h2>
 
@@ -270,7 +308,7 @@ const EventOverView = () => {
                   <div className="flex justify-between p-4 rounded-md items-start">
                     <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <Dot className="text-primary w-2 h-2 -ml-1 rounded-full bg-blue-700" />
+                        <Dot className="text-primary w-2 h-2 -ml-1 rounded-full bg-primary" />
                         <p className="text-sm font-medium">{update.title}</p>
                       </div>
                       <p className="text-sm text-muted-foreground">{update.description}</p>

@@ -12,7 +12,7 @@ interface InvoiceCardProps {
 }
 const UserCard: FC<InvoiceCardProps> = ({ item }) => {
     return (
-        <Card className='dark:bg-[#171717]'>
+        <Card className='dark:bg-secondary'>
             <CardHeader>
                 <div className="flex justify-between items-center ">
                     <div>
@@ -26,7 +26,7 @@ const UserCard: FC<InvoiceCardProps> = ({ item }) => {
                 </div>
                 <div className="flex items-center mt-2 text-4xl font-bold">
                     {item.value}
-                   {item.total && <sub className="ml-1 text-base font-medium ">
+                    {item.total && <sub className="ml-1 text-base font-medium ">
                         / {item.total}k
                     </sub>}
                 </div>

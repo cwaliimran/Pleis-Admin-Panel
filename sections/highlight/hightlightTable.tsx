@@ -3,12 +3,11 @@ import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody } from '@/components/ui/table'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Settings2 } from 'lucide-react'
 import { highlightData } from './data'
 import HighlightTableRow from './highlightTableRow'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "title", label: "Title", align: 'left' },
     { id: "organization", label: "Organization", align: "left" },
@@ -23,6 +22,8 @@ interface PageProps {
     handleEdit?: (id: string) => void;
 }
 const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+    const [filterField, setFilterField] = useState<string[]>([]);
+
     return (
         <div>
             <div className='grid grid-cols-12 '>
@@ -30,15 +31,18 @@ const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                         <h3 className='text-xl font-semibold md:ml-0 ml-2'>Highlight List</h3>
                         <div>
-                            <div className='flex flex-col md:items-center items-end'>
-
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Title</span>
-
-                                </Badge>
-                            </div>
-
+                            <FilterDropdown
+                                options={[
+                                    { id: "title", label: "By Title" },
+                                    { id: "organization", label: "By Organization" },
+                                    { id: "event", label: "By Event" },
+                                    { id: "video", label: "By Video" },
+                                    { id: "createdAt", label: "By Created At" },
+                                    { id: "status", label: "By Status" }
+                                ]}
+                                selectedOptions={filterField}
+                                onSelectOption={setFilterField}
+                            />
                         </div>
                     </div>
                     <div className='w-full '>
@@ -52,16 +56,16 @@ const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='border rounded-lg  '>
                         <Table className='w-full rounded-md border  '>
                             <TableHeadCustom headLabel={headLabel} />
-                           <TableBody>
-                             {highlightData.map((item: any, index: number) => (
-                                <HighlightTableRow
-                                    key={index}
-                                    item={item}
-                                    handleDelete={handleDelete}
-                                    handleEdit={handleEdit}
-                                />
-                            ))}
-                           </TableBody>
+                            <TableBody>
+                                {highlightData.map((item: any, index: number) => (
+                                    <HighlightTableRow
+                                        key={index}
+                                        item={item}
+                                        handleDelete={handleDelete}
+                                        handleEdit={handleEdit}
+                                    />
+                                ))}
+                            </TableBody>
                         </Table>
                     </div>
 

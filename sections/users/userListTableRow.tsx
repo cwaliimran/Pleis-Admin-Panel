@@ -117,9 +117,9 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
                     {
                         pendingUser && <button
                             onClick={(e) => { e.stopPropagation(); handlePending?.(item.id) }}
-                            className="p-1.5 rounded-md bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 transition cursor-pointer"
+                            className="p-1.5 rounded-md bg-blue-100 hover:bg-blue-200 dark:bg-primary dark:hover:bg-primary transition cursor-pointer"
                         >
-                            <Check className="w-4 h-4 text-blue-600 dark:text-blue-300" />
+                            <Check className="w-4 h-4 text-primary dark:text-blue-300" />
                         </button>
                     }
 

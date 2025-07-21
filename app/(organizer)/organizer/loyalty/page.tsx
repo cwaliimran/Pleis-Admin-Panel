@@ -63,7 +63,7 @@ const Page = () => {
                     </Badge>
 
                     <Button
-                        className="bg-blue-600 text-white rounded-3xl hover:bg-blue-700 transition-colors flex items-center gap-2 px-4 py-2 cursor-pointer"
+                        className="bg-primary text-white rounded-3xl  transition-colors flex items-center gap-2 px-4 py-2 cursor-pointer"
                         onClick={openModal.onTrue}
                     >
                         <Plus />
@@ -148,7 +148,7 @@ const Page = () => {
                                 <div className="flex-1 flex flex-col mx-4">
                                     <div className="w-full h-5 bg-gray-200 rounded-full mb-2 overflow-hidden">
                                         <div
-                                            className="h-full bg-blue-600 transition-all duration-500"
+                                            className="h-full bg-primary transition-all duration-500"
                                             style={{ width: `${progressPercent}%` }}
                                         ></div>
                                     </div>
@@ -163,7 +163,7 @@ const Page = () => {
                                 <div className="flex-1 flex flex-col mx-4">
                                     <div className="w-full h-5 bg-gray-200 rounded-full mb-2 overflow-hidden">
                                         <div
-                                            className="h-full bg-blue-600 transition-all duration-500"
+                                            className="h-full bg-primary transition-all duration-500"
                                             style={{ width: `${progressPercent}%` }}
                                         ></div>
                                     </div>

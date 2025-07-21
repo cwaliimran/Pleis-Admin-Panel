@@ -3,11 +3,11 @@ import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody } from '@/components/ui/table'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Settings2 } from 'lucide-react'
 import { MarketingRequestTableRow, marketRequestList } from '.'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "Title", label: "Title", align: 'left' },
     { id: "budget", label: "Budget", align: "left" },
@@ -22,6 +22,8 @@ interface PageProps {
     handleEdit?: (id: string) => void;
 }
 const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+    const [filterField, setFilterField] = useState<string[]>([]);
+
     return (
         <div>
             <div className='grid grid-cols-12 '>
@@ -31,11 +33,17 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Title</span>
-
-                                </Badge>
+                                <FilterDropdown
+                                    options={[
+                                        { id: "budget", label: "Budget" },
+                                        { id: 'organizaiton', label: "Organization" },
+                                        { id: "phone", label: "Phone" },
+                                        { id: "email", label: "Email" },
+                                        { id: "Status", label: "Status" },
+                                    ]}
+                                    selectedOptions={filterField}
+                                    onSelectOption={setFilterField}
+                                />
                             </div>
 
                         </div>

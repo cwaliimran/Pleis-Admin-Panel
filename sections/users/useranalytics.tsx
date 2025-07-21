@@ -62,7 +62,7 @@ const Useranalytics = () => {
               <h2 className="text-white text-2xl font-semibold">
                 To see detailed analytics
               </h2>
-              <button className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+              <button className="px-5 py-2 bg-primary hover:bg-primary text-white text-sm font-medium rounded-md">
                 Upgrade to Premium
               </button>
             </div>

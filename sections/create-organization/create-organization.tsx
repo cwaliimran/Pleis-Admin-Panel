@@ -202,21 +202,21 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
               </Tabs>
               <div className="flex gap-4">
                 <Badge
-                  className="bg-blue-200 text-blue-800 w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 
+                  className="bg-blue-200 text-primary w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 
                                 hover:bg-blue-300 transition-colors"
                 >
                   <Facebook className="w-5 h-5 " />
                 </Badge>
 
                 <Badge
-                  className="bg-blue-200 text-blue-800 cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
+                  className="bg-blue-200 text-primary cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
                                 hover:bg-blue-300 transition-colors"
                 >
                   <Instagram className="w-5 h-5 " />
                 </Badge>
 
                 <Badge
-                  className="bg-blue-200 text-blue-800  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
+                  className="bg-blue-200 text-primary  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
                                 hover:bg-blue-300 transition-colors"
                 >
                   <svg
@@ -312,7 +312,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                 <div className="w-full flex justify-center items-center">
                   <Button
                     type="button"
-                    className="bg-blue-700 text-white hover:bg-blue-800 px-7 mt-3 cursor-pointer"
+                    className="bg-primary text-white hover:bg-primary px-7 mt-3 cursor-pointer"
                     onClick={handleNextTab}
                   >
                     Save

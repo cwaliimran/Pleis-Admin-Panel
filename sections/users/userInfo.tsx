@@ -1,3 +1,4 @@
+"use client"
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -64,7 +65,7 @@ const UserInfo = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => { };
 
   return (
     <>
@@ -73,7 +74,7 @@ const UserInfo = () => {
           {/* <button
             type="button"
             onClick={openModal.onTrue}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg cursor-pointer transition-colors"
+            className="bg-blue-600 hover:bg-primary text-white font-semibold py-2 px-4 rounded-lg cursor-pointer transition-colors"
           >
             Add Details
           </button> */}
@@ -285,7 +286,7 @@ const UserInfo = () => {
                 <div className="mt-2 flex justify-between items-start gap-4">
                   <div className="flex-1 flex flex-col">
                     <div className="w-full h-2 bg-gray-200 rounded-full mb-2 overflow-hidden">
-                      <div className="h-full bg-blue-600 transition-all duration-500 w-5/6"></div>
+                      <div className="h-full bg-primary transition-all duration-500 w-5/6"></div>
                     </div>
                   </div>
                 </div>
@@ -375,9 +376,8 @@ const UserInfo = () => {
                     placeholder="Enter Description"
                     rows={2}
                     multiline
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
 
                   <div className="w-full grid md:grid-cols-2 grid-cols-1 gap-4">
@@ -437,9 +437,8 @@ const UserInfo = () => {
                     name="location"
                     label="Location"
                     placeholder="Enter Location"
-                    className={` ${
-                      methods.formState.errors.location ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.location ? "border-red-400" : ""
+                      }`}
                   />
 
                   {/* Gallery Images Upload */}
@@ -496,7 +495,7 @@ const UserInfo = () => {
                 <div className="mt-2 w-full flex justify-center items-center">
                   <Button
                     type="button"
-                    className="bg-blue-700 text-white hover:bg-blue-800 px-7 mt-3 cursor-pointer"
+                    className="bg-primary text-white hover:bg-primary px-7 mt-3 cursor-pointer"
                   >
                     Save
                   </Button>
@@ -541,9 +540,8 @@ const UserInfo = () => {
                     name="name"
                     label="Venue Name"
                     placeholder="Enter Venue Name"
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
 
                   <RHFTextfieldWithSelect
@@ -584,7 +582,7 @@ const UserInfo = () => {
                   <div className="flex justify-end gap-2">
                     <Button
                       type="submit"
-                      className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                      className="bg-primary text-white hover:bg-primary cursor-pointer"
                     >
                       {!editModal.value ? "Add Venue" : "Update Venue"}
                     </Button>
