@@ -238,7 +238,7 @@ const Page = () => {
                 {step === 1 && (
                   <div className="space-y-8">
                     {/* Image upload and basic info */}
-                   <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-col lg:flex-row gap-8">
                       {/* Left: Image upload */}
                       <div className="w-full lg:basis-[40%]">
                         <Controller
@@ -257,7 +257,9 @@ const Page = () => {
                                   <div className="flex flex-row text-gray-400">
                                     <span className="text-3xl mr-2"> + </span>
                                     <div className="flex flex-col">
-                                      <span className="text-3xl font-medium">Add photo</span>
+                                      <span className="text-3xl font-medium">
+                                        Add photo
+                                      </span>
                                       <span className="text-3xl font-medium align-middle">
                                         or video
                                       </span>
@@ -313,7 +315,6 @@ const Page = () => {
                       </div>
                     </div>
 
-
                     {/* Form fields */}
                     <div className="flex flex-col lg:flex-row gap-6">
                       {/* Venue */}
@@ -326,7 +327,9 @@ const Page = () => {
                           placeholder="Suggested Venue"
                           options={venueOptions}
                           value={venue}
-                          onChange={(e: any) => setValue("venue", e.target.value)}
+                          onChange={(e: any) =>
+                            setValue("venue", e.target.value)
+                          }
                           className="text-md border-gray-200 focus:border-blue-600 rounded-4xl cursor-pointer font-bold mt-2 py-5 px-5"
                         />
                       </div>
@@ -342,7 +345,9 @@ const Page = () => {
                             placeholder="Choose Category"
                             options={categoryOptions}
                             value={categoryInput}
-                            onChange={(e: any) => setValue("categoryInput", e.target.value)}
+                            onChange={(e: any) =>
+                              setValue("categoryInput", e.target.value)
+                            }
                             className="text-md flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[340px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 py-5 px-5"
                           />
                           <Button
@@ -362,7 +367,8 @@ const Page = () => {
                                 variant="secondary"
                                 className="flex items-center gap-1 text-sm"
                               >
-                                {categoryOptions.find((opt) => opt.value === c)?.label || c}
+                                {categoryOptions.find((opt) => opt.value === c)
+                                  ?.label || c}
                                 <button
                                   type="button"
                                   onClick={() => removeCategory(c)}
@@ -377,9 +383,8 @@ const Page = () => {
                       </div>
                     </div>
 
-
                     {/* Tags */}
-                    <div >
+                    <div>
                       <label className="text-sm font-medium text-gray-700 uppercase tracking-wide ">
                         TAGS
                       </label>
@@ -423,7 +428,7 @@ const Page = () => {
                     </div>
 
                     {/* Organizer */}
-                    <div >
+                    <div>
                       <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
                         ORGANIZER
                       </label>
@@ -479,21 +484,23 @@ const Page = () => {
                         {/* Partner organizer input (visible only when toggled) */}
                         {showPartnerOrganizer && (
                           <div className="flex gap-2 w-[70%] mt-2">
-                          <input
-                            type="text"
-                            placeholder="Search for partner organizer"
-                            value={tagInput}
-                            onChange={(e) => setValue("tagInput", e.target.value)}
-                            className="bg-[#F8F6F7] flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
-                          />
-                          <Button
-                            type="button"
-                            onClick={addTag}
-                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-6"
-                          >
-                            Add
-                          </Button>
-                        </div>
+                            <input
+                              type="text"
+                              placeholder="Search for partner organizer"
+                              value={tagInput}
+                              onChange={(e) =>
+                                setValue("tagInput", e.target.value)
+                              }
+                              className="bg-[#F8F6F7] flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
+                            />
+                            <Button
+                              type="button"
+                              onClick={addTag}
+                              className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-6"
+                            >
+                              Add
+                            </Button>
+                          </div>
                         )}
                         {partnerOrganizers.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2">

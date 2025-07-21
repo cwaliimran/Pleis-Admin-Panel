@@ -32,7 +32,7 @@ export const paths = {
             list: "/super-admin/user/user-list",
             pendingList: "/super-admin/user/pending-list",
         },
-        evnets: {
+        events: {
             default: "/super-admin/events",
             create: "/super-admin/events/create-event",
             list: "/super-admin/events/event-list",

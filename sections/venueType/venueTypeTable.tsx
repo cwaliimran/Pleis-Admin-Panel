@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Settings2 } from 'lucide-react'
 import { venueTypeList } from './data'
 import { VenueTableRow } from '.'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "icon", label: "Icon", align: "left" },
     { id: "name", label: "Venue Type Name", align: "left" },
@@ -22,6 +23,7 @@ interface PageProps {
     handleEdit?: (id: string) => void;
 }
 const VenueTypeTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+    const [filterField, setFilterField] = React.useState<string[]>([]);
     return (
         <div>
             <div className='grid grid-cols-12 '>
@@ -31,11 +33,14 @@ const VenueTypeTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1  text-md flex items-center gap-2 w-fit">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Name</span>
-
-                                </Badge>
+                                <FilterDropdown
+                                    options={[
+                                        { id: "name", label: "By Name" },
+                                        { id: "createdAt", label: "By Created At" }
+                                    ]}
+                                    selectedOptions={filterField}
+                                    onSelectOption={setFilterField}
+                                />
                             </div>
 
                         </div>

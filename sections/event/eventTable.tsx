@@ -3,12 +3,11 @@ import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody } from '@/components/ui/table'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import EventTableRow from './eventTAbleRow'
 import { Card } from '@/components/ui/card'
 import { eventData } from './data'
-import { Badge } from '@/components/ui/badge'
-import { Settings2 } from 'lucide-react'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "image", label: "Image", align: "left" },
     { id: "name", label: "Name", align: 'left' },
@@ -16,8 +15,8 @@ const headLabel = [
     { id: 'organizer', label: "Organizer", align: "left" },
     { id: "startDate", label: "Start Date", align: "left" },
     { id: "endDate", label: "End Date", align: "left" },
-    { id: "totalRevenue", label: "Total Revenue", align: "left" },
-    { id: "totalViews", label: "Total Views", align: "left" },
+    { id: "totalRevenue", label: "Revenue", align: "left" },
+    { id: "totalViews", label: "Views", align: "left" },
     { id: "region", label: "Region", align: "left" },
     { id: "actions", label: "", align: "right" }
 ]
@@ -26,6 +25,8 @@ interface PageProps {
     handleEdit?: (id: string) => void;
 }
 const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+    const [filterField, setFilterField] = useState<string[]>([]);
+
     return (
         <div>
             <div className='grid grid-cols-12 '>
@@ -34,12 +35,21 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                         <h3 className='text-xl font-semibold md:ml-0 ml-2'>Event List</h3>
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
+                                <FilterDropdown
+                                    options={[
+                                        { id: "name", label: "Name" },
+                                        { id: "venue", label: "Venue" },
+                                        { id: "organizer", label: "Organizer" },
+                                        { id: "startDate", label: "Start Date" },
+                                        { id: "endDate", label: "End Date" },
+                                        { id: "totalRevenue", label: "Revenue" },
+                                        { id: "totalViews", label: "Views" },
+                                        { id: "region", label: "Region" }
+                                    ]}
+                                    selectedOptions={filterField}
+                                    onSelectOption={setFilterField}
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Name</span>
-
-                                </Badge>
+                                />
                             </div>
 
                         </div>

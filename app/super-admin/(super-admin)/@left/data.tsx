@@ -65,17 +65,17 @@ export const menuGroups: MenuGroup[] = [
     },
     {
         label: "Events",
-        key: paths.superAdmin.evnets.default,
+        key: paths.superAdmin.events.default,
         icon: Calendar,
         items: [
             {
                 title: "Create Event",
-                url: paths.superAdmin.evnets.create,
+                url: paths.superAdmin.events.create,
                 icon: Tags,
             },
             {
                 title: "Events List",
-                url: paths.superAdmin.evnets.list, // Example ID
+                url: paths.superAdmin.events.list, // Example ID
                 icon: Tags,
             }
         ]

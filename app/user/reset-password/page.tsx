@@ -44,7 +44,6 @@ export default function ResetPasswordPage() {
   });
 
   const onSubmit = async (data: any) => {
-    console.log('Password reset with:', data.newPassword);
     // Handle actual reset logic here...
     router.push('/user/signIn'); // Redirect to login
   };
@@ -104,19 +103,13 @@ export default function ResetPasswordPage() {
                 onTogglePassword={showPassword.onToggle}
               />
 
-              <Button type="submit" className="w-full h-[45px]">
+              <Button type="submit" className="bg-[#0f172b] hover:bg-[#0f172b] w-full h-[45px] cursor-pointer">
                 {methods.formState.isSubmitting ? 'Resetting...' : 'Reset Password'}
               </Button>
             </div>
           </FormProvider>
 
-          {/* <p className="text-center text-sm text-muted-foreground mt-6">
-            Back to{' '}
-            <a href="/user/signIn" className="text-primary hover:underline font-medium">
-              Login
-            </a>
-          </p> */}
-
+         
           <p className="mt-10 text-xs text-muted-foreground text-center">
             By continuing, you agree to our <span className="underline">Terms</span> and{' '}
             <span className="underline">Privacy Policy</span>.

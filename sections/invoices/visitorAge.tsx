@@ -86,7 +86,6 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
   const maxValue = Math.max(...data.map((d) => d.visitors));
 
   const isVertical = direction === "vertical";
-  console.log("isVertical:", isVertical);
 
   return (
     <div className={`w-full relative`} style={{ height }}>

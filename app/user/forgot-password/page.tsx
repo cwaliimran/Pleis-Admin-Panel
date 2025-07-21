@@ -31,7 +31,6 @@
 
 //   const onSubmit = async (data: any) => {
 //     // Handle password reset request here
-//     console.log('Reset link sent to:', data.email);
 //     // You might want to redirect or show a success message
 //     router.push('/user/login');
 //   };
@@ -121,7 +120,6 @@ function ForgotPasswordPage() {
 
   const onSubmit = async (data: any) => {
     // Send reset link logic
-    console.log('Reset link sent to:', data.email);
     router.push('/user/reset-password'); // Redirect to reset password page
   };
 
@@ -170,13 +168,13 @@ function ForgotPasswordPage() {
                 className="rounded-md h-[45px]"
               />
 
-              <Button type="submit" className="w-full h-[45px]">
+              <Button type="submit" className=" bg-[#0f172b] hover:bg-[#0f172b] w-full h-[45px] cursor-pointer">
                 {methods.formState.isSubmitting ? 'Sending Reset Link...' : 'Send Reset Link'}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground mt-4">
                 Remember your password?{' '}
-                <Link href="/user/signIn" className="text-primary hover:underline font-medium">
+                <Link href="/user/signIn" className="text-[#0f172b] hover:text-[#0f172b] hover:underline font-medium">
                   Go back to login
                 </Link>
               </p>

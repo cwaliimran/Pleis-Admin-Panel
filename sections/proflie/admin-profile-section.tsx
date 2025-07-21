@@ -102,7 +102,7 @@ const AdminProfileSection = () => {
                 <div
                   className={`relative w-11 h-6 rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all cursor-pointer ${
                     isTwoFactorEnabled
-                      ? "bg-blue-600 after:translate-x-full after:border-white"
+                      ? "bg-primary after:translate-x-full after:border-white"
                       : "bg-gray-200"
                   }`}
                   onClick={handleToggleChange}
@@ -204,7 +204,7 @@ const AdminProfileSection = () => {
               <div className="pt-4 flex justify-end items-center">
                 <Button
                   type="submit"
-                  className="bg-blue-700 text-white hover:bg-blue-800 px-7 h-11"
+                  className="bg-primary text-white hover:bg-primary px-7 h-11"
                 >
                   Save Changes
                 </Button>

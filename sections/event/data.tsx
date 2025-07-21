@@ -168,3 +168,65 @@ export const tabsData = [
     value: "notifications"
   }
 ];
+
+export const eventTabForAnalytics = [
+  {
+    label: "From Sales",
+    value: "fromSales"
+  },
+  {
+    label: "From Updates",
+    value: "fromUpdates"
+  },
+  {
+    label: "From Challenges",
+    value: "fromChallenges"
+  }
+];
+
+export const lastTransactionData = [
+  {
+    name: "John Doe",
+    transaction: "+$39.00"
+  },
+  {
+    name: "Jane Smith",
+    transaction: "+$25.00"
+  },
+  {
+    name: "Alice Johnson",
+    transaction: "+$50.00"
+  },
+  {
+    name: "Bob Brown",
+    transaction: "+$15.00"
+  },
+  {
+    name: "Charlie Davis",
+    transaction: "+$30.00"
+  },
+  {
+    name: "Diana Prince",
+    transaction: "+$45.00"
+  },
+  {
+    name: "Ethan Hunt",
+    transaction: "+$60.00"
+  },
+  
+]
+
+ export const updates = [
+    {
+      title: 'Early Bird Tickets',
+      description:
+        'Ends Mon 13, 2025 at 7:00PM',
+    },
+    {
+      title: 'Early Bird Tickets',
+      description: 'Ends Mon 13, 2025 at 7:00PM',
+    }, {
+      title: 'Early Bird Tickets',
+      description: 'Tellus congue tortor non morbi eros risus aenean.',
+    }
+  ];

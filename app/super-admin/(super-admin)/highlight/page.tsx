@@ -109,7 +109,7 @@ const Page = () => {
 
       <div className="w-full flex items-center justify-end mb-4">
         <Button
-          className="rounded-4xl py-2 bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+          className="rounded-4xl py-2 bg-primary text-white hover:bg-primary cursor-pointer"
           onClick={openModal.onTrue}
         >
           <Plus className="mr-1" />
@@ -141,16 +141,7 @@ const Page = () => {
                   className={`${methods.formState.errors.title ? "border-red-400" : ""
                     }`}
                 />
-                {/* <RHFSelectField
-                  name="event"
-                  label="Event"
-                  placeholder="Select Event"
-                  options={[
-                    { label: "Event 1", value: "event1" },
-                    { label: "Event 2", value: "event2" },
-                    { label: "Event 3", value: "event3" },
-                  ]}
-                /> */}
+               
                 <RHFTextfieldWithSelect
                   name="event"
                   placeholder="Select Event"
@@ -185,7 +176,7 @@ const Page = () => {
             <div className="flex justify-end mt-6">
               <Button
                 type="submit"
-                className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                className="bg-primary text-white hover:bg-primary cursor-pointer"
               >
                 {!editModal.value ? "Add Highlight" : "Update Highlight"}
               </Button>

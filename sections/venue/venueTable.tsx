@@ -3,17 +3,15 @@ import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody } from '@/components/ui/table'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Settings2 } from 'lucide-react'
 import { venueData } from './data'
 import VenueTableRow from './venueTableRow'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "name", label: "Name", align: 'left' },
     { id: "dateAdded", label: "Date Added", align: "left" },
     { id: 'organizaiton', label: "Organization", align: "left" },
-    // { id: "location", label: "Location", align: "left" },
     { id: "location", label: "Location", align: "left" },
     { id: "createdAt", label: "Created At" },
     { id: "actions", label: "" }
@@ -23,6 +21,8 @@ interface PageProps {
     handleEdit?: (id: string) => void;
 }
 const VenueTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+    const [filterField, setFilterField] = useState<string[]>([]);
+
     return (
         <div>
             <div className='grid grid-cols-12 '>
@@ -30,14 +30,18 @@ const VenueTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                         <h3 className='text-xl font-semibold md:ml-0 ml-2'>Venue List</h3>
                         <div>
-                            <div className='flex flex-col md:items-center items-end'>
+                            <FilterDropdown
+                                options={[
+                                    { id: "name", label: "By Name" },
+                                    { id: "dateAdded", label: "By Date Added" },
+                                    { id: "organizaiton", label: "By Organization" },
+                                    { id: "location", label: "By Location" },
+                                    { id: "createdAt", label: "By Created At" }
+                                ]}
+                                selectedOptions={filterField}
+                                onSelectOption={setFilterField}
+                            />
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit cursor-pointer">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Name</span>
-
-                                </Badge>
-                            </div>
 
                         </div>
                     </div>

@@ -9,7 +9,15 @@ import {
     Bell,
     Rocket,
     LayoutDashboard,
-    CreditCard
+    CreditCard,
+    Calendar,
+    Building,
+    VenetianMask,
+    Highlighter,
+    Volume1,
+    Podcast,
+    ArrowRightLeft,
+    User
 } from "lucide-react"
 import { paths } from "./paths"
 
@@ -34,48 +42,130 @@ export const menuGroups: MenuGroup[] = [
         icon: ChartColumnBig,
     },
     {
-        label: "Calendar",
-        key: paths.organizer.calendar,
-        icon: CalendarDays,
+        label: "Organizations",
+        key: paths.organizer.organizations.default,
+        icon: Building,
+        items: [
+            {
+                title: "Create Organization",
+                url: paths.organizer.organizations.create,
+                icon: Home,
+            },
+            {
+                title: "Organization List",
+                url: paths.organizer.organizations.list,
+                icon: Home,
+            }
+        ]
     },
     {
-        label: "Invoices",
-        key: paths.organizer.invoices,
-        icon: LayoutDashboard,
+        label: "Events",
+        key: paths.organizer.events.default,
+        icon: Calendar,
+        items: [
+            {
+                title: "Create Event",
+                url: paths.organizer.events.create,
+                icon: Tags,
+            },
+            {
+                title: "Events List",
+                url: paths.organizer.events.list, // Example ID
+                icon: Tags,
+            }
+        ]
     },
     {
-        label: "Home",
-        key: paths.organizer.home,
-        icon: Home,
+        label: "Venue",
+        key: paths.organizer.venue.default,
+        icon: VenetianMask,
     },
     {
-        label: "Organizers",
-        key: paths.organizer.users,
-        icon: UsersRound
+        label: "Highlights",
+        key: paths.organizer.hightLight.default,
+        icon: Highlighter,
+
     },
     {
-        label: "Tags",
-        key: paths.organizer.tags,
-        icon: Tags
+        label: "User",
+        key: paths.organizer.users.default,
+        icon: User,
+        items: [
+            {
+                title: "User List",
+                url: paths.organizer.users.list,
+                icon: UsersRound,
+            },
+            // {
+            //     title: "Pending User List",
+            //     url: paths.superAdmin.users.pendingList,
+            //     icon: UsersRound,
+            // }
+        ]
     },
     {
-        label:"Loyalty",
-        key: paths.organizer.loyalty,
-        icon:CreditCard
+        label: "Marketing Requests",
+        key: paths.organizer.marketing.detault,
+        icon: Volume1
     },
-     {
+
+    {
+        label: "Transactions",
+        key: paths.organizer.transactions.default,
+        icon: ArrowRightLeft,
+        // items: [
+        //     {
+        //         title: "Premium Transaction",
+        //         url: paths.superAdmin.transactions.premium,
+        //         icon: Settings,
+        //     },
+        //     {
+        //         title: "Transaction List",
+        //         url: paths.superAdmin.transactions.list, // Example ID
+        //         icon: Settings,
+        //     }, {
+        //         title: "Refund List",
+        //         url: paths.superAdmin.transactions.refund, // Example ID
+        //         icon: Settings,
+        //     }
+        // ]
+    },
+    {
         label: "Notification",
-        key: paths.organizer.notification,
-        icon: Bell
+        key: paths.organizer.notification.default,
+        icon: Bell,
+        // items: [
+        //     {
+        //         title: "Overview",
+        //         url: paths.superAdmin.notification.overview,
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Notification List",
+        //         url: paths.superAdmin.notification.list, // Example ID
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Create Notification",
+        //         url: paths.superAdmin.notification.createUpdate, // Example ID
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Create Giveaway",
+        //         url: paths.superAdmin.notification.createGiveaway, // Example ID
+        //         icon: Bell,
+        //     },
+        //     {
+        //         title: "Create Notification",
+        //         url: paths.superAdmin.notification.createNotification, // Example ID
+        //         icon: Bell,
+        //     }
+        // ]
     },
+
     {
-        label: "Boost",
-        key: paths.organizer.boost,
-        icon: Rocket
+        label: "Subscription",
+        key: paths.organizer.subscription,
+        icon: Podcast,
     },
-    {
-        label: "Settings",
-        key: paths.organizer.settings,
-        icon: Settings,
-    }
 ]

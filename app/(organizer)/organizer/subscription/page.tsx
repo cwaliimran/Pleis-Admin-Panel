@@ -1,17 +1,17 @@
-
+import Header from '@/app/common/header'
 import React from 'react'
-import Header from '../../../common/header'
 
 const Page = () => {
     return (
-        <div>
+        <>
             <Header
                 links={[
                     { name: "Dashboard", href: "/organizer/dashboard" },
-                    { name: "Tags" },
+                    { name: "Subscription", href: "" },
                 ]}
             />
-            Comming Soon</div>
+            Coming Soon
+        </>
     )
 }
 

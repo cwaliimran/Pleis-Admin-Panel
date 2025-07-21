@@ -63,7 +63,7 @@ const Page = () => {
             />
             <div>
                 <div className=' w-full flex items-center justify-end'>
-                    <Button className='rounded-4xl py-2 bg-blue-700 cursor-pointer text-white hover:bg-blue-800' onClick={openModal.onTrue}>
+                    <Button className='rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary' onClick={openModal.onTrue}>
                         <Plus className='' />
                         Create Venue Type
                     </Button>
@@ -88,7 +88,7 @@ const Page = () => {
                                 />
 
                                 <div className='flex justify-end gap-2'>
-                                    <Button type='submit' className='bg-blue-700 text-white hover:bg-blue-800 cursor-pointer'>
+                                    <Button type='submit' className='bg-primary text-white hover:bg-primary cursor-pointer'>
                                         {!editModal.value ? "Add Venue Type" : "Update Venue Type"}
                                     </Button>
                                 </div>

@@ -4,13 +4,13 @@ import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody } from '@/components/ui/table'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Settings2 } from 'lucide-react'
 import { usersList } from './data'
 import UserListTableRow from './userListTableRow'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 
+type Option = { id: string; label: string };
 interface PageProps {
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
@@ -18,14 +18,13 @@ interface PageProps {
     pendingUser?: boolean;
 }
 const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handlePending }) => {
-
+    const [filterField, setFilterField] = useState<string[]>([]);
 
     const headLabel = [
         { id: "image", label: "Image", align: "left" },
         { id: "fname", label: "First Name", align: "left" },
         { id: "lname", label: "Last Name", align: "left" },
         pendingUser && { id: "organization", label: "Organization", align: "left" },
-        // pendingUser && { id: "email", label: "Email", align: "left" },
         !pendingUser && { id: "username", label: "Username", align: "left" },
         pendingUser && { id: 'phone', label: "Phone", align: "left" },
         !pendingUser && { id: "role", label: "Role", align: "left" },
@@ -36,6 +35,19 @@ const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handl
         !pendingUser && { id: "action", label: "Action", align: "left" },
         { id: "actions", label: "", align: "right" }
     ].filter(Boolean);
+
+    const options: Option[] = [
+        { id: "fname", label: "First Name" },
+        { id: "lname", label: "Last Name" },
+        pendingUser ? { id: "organization", label: "Organization" } : null,
+        !pendingUser ? { id: "username", label: "Username" } : null,
+        pendingUser ? { id: "phone", label: "Phone" } : null,
+        !pendingUser ? { id: "role", label: "Role" } : null,
+        !pendingUser ? { id: "status", label: "Status" } : null,
+        !pendingUser ? { id: "totalPoints", label: "Total Points Earned" } : null,
+        !pendingUser ? { id: "totalRevenue", label: "Total Revenue From User" } : null,
+        !pendingUser ? { id: "region", label: "Region" } : null,
+    ].filter((opt): opt is Option => Boolean(opt));
     return (
         <div>
             <div className='grid grid-cols-12 '>
@@ -45,11 +57,11 @@ const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handl
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
 
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Email</span>
-
-                                </Badge>
+                                <FilterDropdown
+                                    options={options}
+                                    selectedOptions={filterField}
+                                    onSelectOption={setFilterField}
+                                />
                             </div>
 
                         </div>

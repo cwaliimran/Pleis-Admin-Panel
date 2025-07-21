@@ -1,5 +1,6 @@
 "use client"
 import Header from '@/app/common/header'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader } from '@/components/ui/card'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -15,6 +16,7 @@ import React from 'react'
 const Page = () => {
 
   const [active, setActive] = React.useState('all');
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
   const { user } = useMockedUser();
   return (
     <div>
@@ -27,10 +29,7 @@ const Page = () => {
 
       <div className='md:mx-4 mx-1 mt-5'>
 
-        <div className=' flex md:justify-between md:flex-row flex-col-reverse md:items-center gap-2'>
-          <div>
-
-          </div>
+        <div className=' flex md:justify-end md:flex-row flex-col-reverse md:items-center gap-2'>
           <div className='flex justify-end md:flex-row flex-col-reverse  md:items-center gap-2'>
             <div className='flex items-center md:justify-center justify-end'>
               <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
@@ -112,7 +111,6 @@ const Page = () => {
               { month: "August", desktop: 400, mobile: 300 },
               { month: "September", desktop: 500, mobile: 400 },
               { month: "October", desktop: 600, mobile: 500 },
-
             ]
             }
             chartConfig={{
@@ -134,9 +132,8 @@ const Page = () => {
               </CardHeader>
               <div className='flex-1 '>
                 <VisitorAge
-                direction='vertical'
+                  direction='vertical'
                   data={[
-
                     { ageGroup: "18", visitors: 120 },
                     { ageGroup: "18-25", visitors: 120 },
                     { ageGroup: "25-34", visitors: 200 },
@@ -201,35 +198,24 @@ const Page = () => {
             </Card>
           </div>
           <div>
-            <Card className='shadow-md  h-[450px] dark:bg-[#171717] pb-0'>
+            <Card className='shadow-md  h-[450px] dark:bg-[#171717] pb-0 p'>
               <CardHeader className=''>
-                <div className='flex justify-between items-start'>
+                <div className='flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'> Gender Analytics</h3>
-                 
-                  <div className="flex flex-col gap-2 items-start  ">
-                    <div className="flex items-center w-full justify-between">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 rounded-full bg-[#2563EB] mr-2" />
-                        <span className="text-[#2563EB] text-md ">Males</span>
+                  <div className="flex flex-col gap-3 items-start rounded-md">
+                    {[
+                      { label: "Males", color: "#2563EB", value: "60% / 2000" },
+                      { label: "Females", color: "#202C88", value: "20% / 2000" },
+                      { label: "Other", color: "#7DAEF4", value: "20% / 2000" },
+                    ].map((item, index) => (
+                      <div key={index} className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-sm" style={{ color: item.color }}>{item.label}</span>
+                        </div>
+                        <span className="text-sm text-gray-700 ml-1">{item.value}</span>
                       </div>
-                      <span className=" text-md">60% / 2000</span>
-                    </div>
-
-                    <div className="flex items-center w-full justify-between">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 rounded-full bg-[#202C88] mr-2" />
-                        <span className="text-[#202C88] text-md">Females</span>
-                      </div>
-                      <span className=" text-md">20% / 2000</span>
-                    </div>
-
-                    <div className="flex items-center w-full justify-between">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 rounded-full bg-[#7DAEF4] mr-2" />
-                        <span className="text-[#7DAEF4] text-md">Other</span>
-                      </div>
-                      <span className=" text-md">20% / 2000</span>
-                    </div>
+                    ))}
                   </div>
                 </div>
                 <GenderDonutChart
@@ -448,37 +434,73 @@ const Page = () => {
               <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                 <h3 className='text-xl font-semibold'>Transaction History</h3>
                 <div>
-                  <Tabs value={active} onValueChange={setActive} defaultValue="all" className='w-full '>
-                    <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
-                      <TabsTrigger value="all" className={cn(
-                        "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
-                      )}>All</TabsTrigger>
-                      <TabsTrigger value="transactions" className={cn(
-                        "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
-                      )}>Transactions</TabsTrigger>
-                      <TabsTrigger value="refunds" className={cn(
-                        "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
-                      )}>Refunds</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+
+                  <div className="w-full">
+                    {/* Show select on small screens */}
+                    <div className="block sm:hidden">
+                      <Select value={active} onValueChange={setActive}>
+                        <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
+                          <SelectValue placeholder="Select tab" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="transactions">Transactions</SelectItem>
+                          <SelectItem value="refunds">Refunds</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      </div>
+
+                      {/* Show tabs on medium and larger screens */}
+                      <div className="hidden sm:block">
+                        <Tabs value={active} onValueChange={setActive} defaultValue="all" className="w-full">
+                          <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
+                            <TabsTrigger
+                              value="all"
+                              className={cn(
+                                "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                              )}
+                            >
+                              All
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="transactions"
+                              className={cn(
+                                "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                              )}
+                            >
+                              Transactions
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="refunds"
+                              className={cn(
+                                "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                              )}
+                            >
+                              Refunds
+                            </TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      </div>
+                    </div>
+
+                  </div>
+                  <div className='flex flex-col md:items-center items-end'>
+                    <FilterDropdown
+                      selectedOptions={selectedOptions}
+                      onSelectOption={setSelectedOptions}
+                      options={[
+                        { id: "user", label: "User" },
+                        { id: 'contact', label: 'Contact' },
+                        { id: "invoice", label: "Invoice" },
+                        { id: 'organizer', label: 'Organizer ' },
+                        { id: 'date', label: 'Date' },
+                        { id: 'total', label: 'Total' },
+                        { id: "transactionType", label: "Transaction Type" },
+                        { id: 'status', label: 'Status' },
+                      ]}
+                    />
+                  </div>
                 </div>
-                <div className='flex flex-col md:items-center items-end'>
-                  <Select defaultValue='all'>
-                    <SelectTrigger >
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup className='w-auto'>
-                        <SelectLabel>Transaction</SelectLabel>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="thisWeek">This Week</SelectItem>
-                        <SelectItem value="thisMonth">This Month</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
             </CardHeader>
             <TransactionHistory />
           </Card>

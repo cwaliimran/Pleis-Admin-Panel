@@ -3,51 +3,81 @@
 import React, { useState } from 'react'
 import Header from '../../../common/header'
 import { EventPerformanceComparison, FollowerCount, GenderDonutChart, InvoiceCard, MostViewedEvent, TopPerformaningEvents, TransactionHistory, Trend, ViewsOverTime, VisitorAge, VisitorInterest, VisitorRegion } from '@/sections/invoices'
-import { DashboardCardData, invoicesData } from '@/sections/invoices/data'
+import { DashboardCardData, invoicesData2 } from '@/sections/invoices/data'
 import { Card, CardHeader } from '@/components/ui/card'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import DashboardCard from '@/sections/invoices/dashboardCard'
+import { Badge } from '@/components/ui/badge'
+import { Settings2, X } from 'lucide-react'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 
 const Page = () => {
 
     const [active, setActive] = useState("all");
+    const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
     return (
         <div >
             <Header
                 links={[
                     { name: "Dashboard", href: "/organizer/dashboard" },
-                    { name: "Invoices" },
+                    { name: "Home" },
                 ]}
             />
-            <div className=' flex justify-self-end items-center mt-10'>
-                <Tabs defaultValue="today" className='w-full flex justify-end'>
-                    <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
-                        <TabsTrigger value="today" className={cn(
-                            "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
-                        )}>Today</TabsTrigger>
-                        <TabsTrigger value="week" className={cn(
-                            "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
-                        )}>Week</TabsTrigger>
-                        <TabsTrigger value="month" className={cn(
-                            "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
-                        )}>Month</TabsTrigger>
-                        <TabsTrigger value="all" className={cn(
-                            "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
-                        )}>All</TabsTrigger>
-                    </TabsList>
-                </Tabs>
+            <div className=' flex md:justify-end md:flex-row flex-col-reverse md:items-center gap-2'>
+
+                <div className='flex justify-end md:flex-row flex-col-reverse  md:items-center gap-2'>
+                    <div className='flex items-center md:justify-center justify-end'>
+                        <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
+                            <Settings2 className="w-5 h-5" />
+
+                            <span className="whitespace-nowrap">Filter (3)</span>
+
+                            <X className="w-4 h-4 cursor-pointer " onClick={() => setActive('')} />
+                        </Badge>
+                    </div>
+                    <Tabs defaultValue="today" className='w-full  justify-end md:block hidden'>
+                        <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
+                            <TabsTrigger value="today" className={cn(
+                                "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer ",
+                            )}>Today</TabsTrigger>
+                            <TabsTrigger value="week" className={cn(
+                                "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                            )}>Week</TabsTrigger>
+                            <TabsTrigger value="month" className={cn(
+                                "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                            )}>Month</TabsTrigger>
+                            <TabsTrigger value="all" className={cn(
+                                "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer",
+                            )}>All</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                    <div className="block md:hidden ">
+                        <Select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select timeframe" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="today">Today</SelectItem>
+                                <SelectItem value="week">Week</SelectItem>
+                                <SelectItem value="month">Month</SelectItem>
+                                <SelectItem value="all">All</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
             </div>
             <div className='grid md:grid-cols-3 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5'>
-                {invoicesData.map((item: any) => (
+                {invoicesData2.map((item: any) => (
                     <InvoiceCard
                         key={item?._id}
                         item={item}
                     />
                 ))}
             </div>
-            <Card className='shadow-lg mt-5'>
+            {/* event performance comparsion */}
+            <Card className='shadow-lg mt-10 dark:bg-[#171717]'>
                 <CardHeader>
                     <div className='flex justify-between items-center'>
                         <h3 className='text-xl font-semibold'>Event Performance Comparison</h3>
@@ -85,7 +115,8 @@ const Page = () => {
             </Card>
             <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-2 mt-5'>
                 <div>
-                    <Card className='shadow-lg  w-full  h-[450px]'>
+                    {/* visitor age demographics */}
+                    <Card className='shadow-lg  w-full dark:bg-[#171717]  h-[450px]'>
                         <CardHeader>
                             <div className='flex justify-start items-center'>
                                 <h3 className='text-xl font-semibold'>Visitor Age Demographics</h3>
@@ -108,11 +139,11 @@ const Page = () => {
                             </div>
                         </div>
                     </Card>
-
                 </div>
 
                 <div>
-                    <Card className='shadow-lg   h-[450px]'>
+                    {/* Visitor Region Overview */}
+                    <Card className='shadow-lg dark:bg-[#171717] h-[450px]'>
                         <CardHeader>
                             <div className='flex justify-between items-center '>
                                 <h3 className='text-xl font-semibold'>Visitor Region Overview</h3>
@@ -156,7 +187,8 @@ const Page = () => {
                     </Card>
                 </div>
                 <div>
-                    <Card className='shadow-lg   h-[450px] !pb-0 '>
+                    {/* Visitor Gender Analytics */}
+                    <Card className='shadow-lg h-[450px]  dark:bg-[#171717] !pb-0 '>
                         <CardHeader>
                             <div className='flex justify-between items-center'>
                                 <h3 className='text-xl font-semibold'>Visitor Gender Analytics</h3>
@@ -183,6 +215,7 @@ const Page = () => {
                             </div>
                         </CardHeader>
                         <GenderDonutChart
+                        size={120}
                             data={[
                                 { name: "Males", value: 400 },
                                 { name: "Females", value: 300 },
@@ -192,10 +225,10 @@ const Page = () => {
                         />
                     </Card>
                 </div>
-
             </div>
             <div className='grid grid-cols-12 gap-4 mt-5'>
-                <Card className='col-span-12 md:col-span-7 shadow-lg h-[450px]'>
+                {/* Trends */}
+                <Card className='col-span-12 md:col-span-7 shadow-lg h-[450px] dark:bg-[#171717]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <div className='flex items-center flex-col'>
@@ -244,8 +277,8 @@ const Page = () => {
                         ]
                     } />
                 </Card>
-
-                <Card className='col-span-12 md:col-span-5 shadow-lg  h-[450px]'>
+                {/* visitor interest */}
+                <Card className='col-span-12 md:col-span-5 shadow-lg  h-[450px] dark:bg-[#171717]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Visitor Interest</h3>
@@ -283,7 +316,8 @@ const Page = () => {
                 </Card>
             </div>
             <div className='grid grid-cols-12 gap-4 mt-5 '>
-                <Card className='col-span-12 md:col-span-6 shadow-lg h-[450px]'>
+                {/* Views Over Time */}
+                <Card className='col-span-12 md:col-span-6 shadow-lg h-[450px] dark:bg-[#171717]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Views Over Time</h3>
@@ -321,7 +355,8 @@ const Page = () => {
 
                     />
                 </Card>
-                <Card className='col-span-12 md:col-span-6 shadow-lg  h-[450px]'>
+                {/* most viewed event */}
+                <Card className='col-span-12 md:col-span-6 shadow-lg h-[450px] dark:bg-[#171717]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Most Viewed Event</h3>
@@ -346,7 +381,8 @@ const Page = () => {
                 </Card>
             </div>
             <div className='grid grid-cols-12 gap-4 mt-5'>
-                <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]'>
+                {/* Follower Count */}
+                <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px] dark:bg-[#171717]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Follower Count</h3>
@@ -383,7 +419,8 @@ const Page = () => {
                         ]}
                     />
                 </Card>
-                <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]'>
+                {/* Top Performing Events */}
+                <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px] dark:bg-[#171717]'>
                     <CardHeader>
                         <div className='flex justify-between items-center'>
                             <h3 className='text-xl font-semibold'>Top Performing Events</h3>
@@ -393,7 +430,7 @@ const Page = () => {
                 </Card>
             </div>
             <div className='grid grid-cols-12 mt-5'>
-                <Card className='col-span-12 shadow-lg '>
+                <Card className='col-span-12 shadow-lg dark:bg-[#171717]'>
                     <CardHeader>
                         <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                             <h3 className='text-xl font-semibold'>Transaction History</h3>
@@ -413,20 +450,20 @@ const Page = () => {
                                 </Tabs>
                             </div>
                             <div className='flex flex-col md:items-center items-end'>
-                                <Select defaultValue='all'>
-                                    <SelectTrigger >
-                                        <SelectValue placeholder="" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup className='w-auto'>
-                                            <SelectLabel>Transaction</SelectLabel>
-                                            <SelectItem value="all">All</SelectItem>
-                                            <SelectItem value="today">Today</SelectItem>
-                                            <SelectItem value="thisWeek">This Week</SelectItem>
-                                            <SelectItem value="thisMonth">This Month</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
+                                <FilterDropdown
+                                    selectedOptions={selectedOptions}
+                                    onSelectOption={setSelectedOptions}
+                                    options={[
+                                        { id: "user", label: "User" },
+                                        { id: 'contact', label: 'Contact' },
+                                        { id: "invoice", label: "Invoice" },
+                                        { id: 'organizer', label: 'Organizer ' },
+                                        { id: 'date', label: 'Date' },
+                                        { id: 'total', label: 'Total' },
+                                        { id: "transactionType", label: "Transaction Type" },
+                                        { id: 'status', label: 'Status' },
+                                    ]}
+                                />
                             </div>
                         </div>
                     </CardHeader>
@@ -440,7 +477,7 @@ const Page = () => {
                     </div>
                 ))}
             </div>
-            
+
         </div >
     )
 }

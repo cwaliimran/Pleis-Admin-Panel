@@ -3,16 +3,14 @@ import { Input } from '@/components/ui/input'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody } from '@/components/ui/table'
-import React, { FC } from 'react'
+import React, { FC, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Settings2 } from 'lucide-react'
 import { categoriesData } from './data'
 import { CategoryTableRow } from '.'
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "icon", label: "Icon", align: "left" },
     { id: "name", label: "Category Name", align: "left" },
-    // { id: "type", label: "Type", align: "left" },
     { id: "createdAt", label: "Created At" },
     { id: "actions", label: "", align: "right" }
 ];
@@ -22,6 +20,7 @@ interface PageProps {
     handleEdit?: (id: string) => void;
 }
 const CategoryTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+    const [filterField, setFilterField] = useState<string[]>([]);
     return (
         <div>
             <div className='grid grid-cols-11  '>
@@ -30,12 +29,15 @@ const CategoryTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                         <h3 className='text-xl font-semibold md:ml-0 ml-2'>Category List</h3>
                         <div>
                             <div className='flex flex-col md:items-center items-end'>
-
-                                <Badge className="bg-white text-black shadow-md px-3 py-1 text-md flex items-center gap-2 w-fit">
-                                    <Settings2 className="w-10 h-10" />
-                                    <span className="whitespace-nowrap cursor-pointer ">By Name</span>
-
-                                </Badge>
+                              
+                                <FilterDropdown
+                                    options={[
+                                        { id: "name", label: "Name" },
+                                        { id: "createdAt", label: "Created At" }
+                                    ]}
+                                    selectedOptions={filterField}
+                                    onSelectOption={setFilterField}
+                                />
                             </div>
 
                         </div>
@@ -51,16 +53,16 @@ const CategoryTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     <div className='border rounded-lg  '>
                         <Table className='w-full rounded-md border  '>
                             <TableHeadCustom headLabel={headLabel} />
-                           <TableBody>
-                             {categoriesData.map((item: any, index: number) => (
-                                <CategoryTableRow
-                                    key={index}
-                                    item={item}
-                                    handleDelete={handleDelete}
-                                    handleEdit={handleEdit}
-                                />
-                            ))}
-                           </TableBody>
+                            <TableBody>
+                                {categoriesData.map((item: any, index: number) => (
+                                    <CategoryTableRow
+                                        key={index}
+                                        item={item}
+                                        handleDelete={handleDelete}
+                                        handleEdit={handleEdit}
+                                    />
+                                ))}
+                            </TableBody>
                         </Table>
                     </div>
 
