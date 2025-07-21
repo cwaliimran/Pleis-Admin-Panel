@@ -59,6 +59,8 @@ import {
   UserLoyalty,
   UserNotifications,
 } from "../users";
+import OrgInfo from "../users/orgInfo";
+import OrgAnalytics from "../users/organalytics";
 
 interface UserDetailPageProps {
   id: string;
@@ -239,7 +241,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
 
             {active === "loyalty" && <UserLoyalty />}
 
-            {active === "analytics" && <Useranalytics />}
+            {active === "analytics" && <OrgAnalytics />}
 
             {active === "notifications" && <UserNotifications />}
 

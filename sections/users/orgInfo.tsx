@@ -12,7 +12,7 @@ import {
 import React from "react";
 import { userTags } from "./data";
 
-const UserInfo = () => {
+const OrgInfo = () => {
   const totalDays = 30;
   const remainingDays = 5;
   const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
@@ -211,4 +211,4 @@ const UserInfo = () => {
   );
 };
 
-export default UserInfo;
+export default OrgInfo;

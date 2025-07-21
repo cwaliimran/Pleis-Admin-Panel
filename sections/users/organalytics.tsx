@@ -13,7 +13,7 @@ import {
   VisitorGanderAnalytics,
 } from "./index"; // Adjust the d'
 
-const Useranalytics = () => {
+const OrgAnalytics = () => {
   const [active, setActive] = React.useState("info");
 
   return (
@@ -90,4 +90,4 @@ const Useranalytics = () => {
   );
 };
 
-export default Useranalytics;
+export default OrgAnalytics;
