@@ -32,6 +32,7 @@ const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handl
         !pendingUser && { id: "totalPoints", label: "Points Earned", align: "left" },
         !pendingUser && { id: "toatlRevenue", label: " User's Revenue", align: "left" },
         !pendingUser && { id: "region", label: "Region", align: "left" },
+        !pendingUser && { id: "action", label: "Action", align: "left" },
         { id: "actions", label: "", align: "right" }
     ].filter(Boolean);
 
