@@ -1,4 +1,3 @@
-
 import {
     Home,
     Settings,
@@ -26,21 +25,21 @@ import {
     LogOut
 } from "lucide-react"
 import { paths } from "./paths"
-
+ 
 type MenuItem = {
     title: string
     url?: string
     icon: any
     items?: MenuItem[]
 }
-
+ 
 type MenuGroup = {
     label: string
     key: string,
     icon: any,
     items?: MenuItem[]
 }
-
+ 
 export const menuGroups: MenuGroup[] = [
     {
         label: "Dashboard",
@@ -85,14 +84,14 @@ export const menuGroups: MenuGroup[] = [
         label: "Venue",
         key: paths.superAdmin.venue.default,
         icon: VenetianMask,
-
+ 
     },
-
+ 
     {
         label: "Highlights",
         key: paths.superAdmin.hightLight.default,
         icon: Highlighter,
-
+ 
     },
     {
         label: "Categories",
@@ -103,15 +102,15 @@ export const menuGroups: MenuGroup[] = [
         label: "Venue Type",
         key: paths.superAdmin.vanueType.default,
         icon: VenetianMask,
-
+ 
     },
     {
         label: "Tags",
         key: paths.superAdmin.tags.default,
         icon: Hash,
-
+ 
     },
-
+ 
     {
         label: "User",
         key: paths.superAdmin.users.default,
@@ -187,7 +186,7 @@ export const menuGroups: MenuGroup[] = [
         //     }
         // ]
     },
-
+ 
     {
         label: "Subscription",
         key: paths.superAdmin.subscription,
