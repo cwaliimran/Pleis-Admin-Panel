@@ -109,7 +109,7 @@ const UserInfo = () => {
             <Card className="mt-4 shadow-lg dark:bg-[#171717]">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <h1 className="text-slate-500 font-semibold ">VENUE</h1>
+                  <h1 className="text-slate-500 font-semibold ">VENUE TYPE</h1>
                   <Pencil
                     width={20}
                     className="text-gray-500  mr-2 cursor-pointer hover:text-gray-700 transition-colors"
@@ -313,7 +313,7 @@ const UserInfo = () => {
             {/* USER INFO */}
             <Card className="shadow-lg dark:bg-[#171717]">
               <CardHeader className="w-full flex flex-col gap-2">
-                <h1 className="text-slate-500 font-semibold">LOCATION PIN</h1>
+                <h1 className="text-slate-500 font-semibold">VENUE NAME</h1>
                 <div className="flex items-center gap-2 mt-2">
                   <MapPin />
                   <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>

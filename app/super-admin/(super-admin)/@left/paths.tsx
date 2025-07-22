@@ -69,6 +69,9 @@ export const paths = {
         transactions: {
             default: "/super-admin/transactions",
         },
+        browserControl: {
+            default: "/super-admin/browser-control",
+        },
         notification: {
             default: "/super-admin/notification",
             overview: "/super-admin/notification/overview",
