@@ -18,7 +18,7 @@ const headLabel = [
     { id: "totalRevenue", label: "Revenue", align: "left" },
     { id: "totalViews", label: "Views", align: "left" },
     { id: "region", label: "Region", align: "left" },
-    { id: "actions", label: "", align: "right" }
+    { id: "actions", label: "Action", align: "center" }
 ]
 interface PageProps {
     handleDelete?: (id: string) => void;

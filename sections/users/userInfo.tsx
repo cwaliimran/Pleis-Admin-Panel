@@ -30,6 +30,7 @@ import FormProvider, {
   RHFSelectField,
   RHFTextField,
   RHFMultiFileUpload,
+  RHFCombobox,
 } from "@/components/rhf";
 import { Button } from "@/components/ui/button";
 import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
@@ -64,7 +65,7 @@ const UserInfo = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = (data: any) => { };
+  const onSubmit = (data: any) => {};
 
   return (
     <>
@@ -110,11 +111,19 @@ const UserInfo = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <h1 className="text-slate-500 font-semibold ">VENUE TYPE</h1>
-                  <Pencil
+                  {/* <Pencil
                     width={20}
                     className="text-gray-500  mr-2 cursor-pointer hover:text-gray-700 transition-colors"
                     onClick={openVenueModal.onTrue}
-                  />
+                  /> */}
+
+                  <Button
+                    variant="default"
+                    className="cursor-pointer rounded-full"
+                    onClick={openVenueModal.onTrue}
+                  >
+                    Add Venue
+                  </Button>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <PartyPopper />
@@ -216,7 +225,7 @@ const UserInfo = () => {
             </Card>
 
             {/* SOCIAL MEDIA */}
-            <Card className="mt-4 shadow-lg dark:bg-[#171717]">
+            {/* <Card className="mt-4 shadow-lg dark:bg-[#171717]">
               <CardHeader>
                 <div className="flex justify-between item-center ">
                   <Badge className="bg-gray-100 dark:bg-white text-black  rounded-full px-4 py-1 text-md font-medium">
@@ -225,16 +234,13 @@ const UserInfo = () => {
                   <Ellipsis className="cursor-pointer w-4 h-4" />
                 </div>
                 <div className="mt-2 flex justify-between items-start gap-4">
-                  {/* Left Image */}
                   <img
                     src="/images/bannerImage.png"
                     alt="Promotion"
                     className="w-20 h-20 rounded-[10px] object-cover"
                   />
 
-                  {/* Right Content */}
                   <div className="flex-1 flex flex-col">
-                    {/* Top Row: Label + Days Left */}
                     <div className="flex justify-between items-center w-full mb-1">
                       <h1 className="text-slate-500 font-semibold">
                         PROMOTION
@@ -244,7 +250,6 @@ const UserInfo = () => {
                       </h1>
                     </div>
 
-                    {/* Title */}
                     <h1 className="text-xl font-medium">Promotion Name</h1>
                     <p className="text-slate-500 mt-1">
                       lorem ipsum dolor sit amet, consectetur ...
@@ -282,9 +287,9 @@ const UserInfo = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            <div className="mt-5 grid grid-cols-12 gap-4">
+            {/* <div className="mt-5 grid grid-cols-12 gap-4">
               <div
                 className="md:col-span-6 col-span-12 shadow-lg bg-white dark:bg-black  w-full border-2 border-gray-300  rounded-full text-center
                    hover:bg-gray-100 "
@@ -304,7 +309,7 @@ const UserInfo = () => {
               <Badge className="bg-transparent text-black dark:text-gray-500  px-4 py-1 text-md font-semibold">
                 Join Loyalty
               </Badge>
-            </div>
+            </div> */}
           </div>
 
           {/* ---------- RIGHT SIDE ---------- */}
@@ -314,7 +319,7 @@ const UserInfo = () => {
               <CardHeader className="w-full flex flex-col gap-2">
                 <h1 className="text-slate-500 font-semibold">VENUE NAME</h1>
                 <div className="flex items-center gap-2 mt-2">
-                  <PartyPopper className='w-4 h-4' />
+                  <PartyPopper className="w-4 h-4" />
                   <span> Vibrant club</span>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
@@ -371,33 +376,36 @@ const UserInfo = () => {
                     placeholder="Enter Description"
                     rows={2}
                     multiline
-                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
-                      }`}
+                    className={` ${
+                      methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
                   />
 
                   <div className="w-full grid md:grid-cols-2 grid-cols-1 gap-4">
                     <RHFTextField
                       type="number"
                       name="minAge"
-                      label="Age"
+                      label="Age (optional)"
                       placeholder="Min Age 5"
                       min={5}
                     />
+                  </div>
 
-                    <RHFSelectField
+                  <div className="w-full grid overflow-hidden md:grid-cols-1 grid-cols-1 gap-4">
+                    <RHFCombobox
                       name="tags"
                       label="Tags"
-                      placeholder="Select Tags"
+                      placeholder="Select or add tags"
                       className="w-full flex-1"
+                      multiple={true}
+                      allowCustom={true}
                       options={[
                         { label: "Tag 1", value: "tag1" },
                         { label: "Tag 2", value: "tag2" },
                         { label: "Tag 3", value: "tag3" },
                       ]}
                     />
-                  </div>
 
-                  <div className="w-full grid overflow-hidden md:grid-cols-1 grid-cols-1 gap-4">
                     <RHFSelectField
                       name="venue"
                       label="Venue"
@@ -410,17 +418,6 @@ const UserInfo = () => {
                       ]}
                     />
 
-                    {/* <RHFMultiSelect
-                      name="venue"
-                      label="Select Venue"
-                      placeholder="Select Venue"
-                      options={[
-                        { label: "Clubbing", value: "clubbing" },
-                        { label: "Techno", value: "techno" },
-                        { label: "House", value: "house" },
-                      ]}
-                    /> */}
-
                     <RHFMultiSelect
                       name="category"
                       label="Select Categories"
@@ -432,15 +429,6 @@ const UserInfo = () => {
                       ]}
                     />
                   </div>
-
-                  {/* <RHFTextField
-                    name="location"
-                    label="Location"
-                    placeholder="Enter Location"
-                    className={` ${
-                      methods.formState.errors.location ? "border-red-400" : ""
-                    }`}
-                  /> */}
 
                   {/* Gallery Images Upload */}
                   <div className="w-full">
@@ -541,8 +529,9 @@ const UserInfo = () => {
                     name="name"
                     label="Venue Name"
                     placeholder="Enter Venue Name"
-                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
-                      }`}
+                    className={` ${
+                      methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
                   />
 
                   <RHFTextfieldWithSelect

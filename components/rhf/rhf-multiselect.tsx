@@ -73,7 +73,7 @@ export function RHFMultiSelect({
                           return (
                             <Badge
                               key={val}
-                              variant="secondary"
+                              variant="outline"
                               className="text-xs"
                             >
                               {item?.label}
@@ -101,9 +101,9 @@ export function RHFMultiSelect({
                         >
                           <div
                             className={cn(
-                              "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                              "mr-2 flex h-4 w-4 items-center justify-center rounded-sm",
                               selectedValues.includes(option.value)
-                                ? "bg-primary text-primary-foreground"
+                                ? ""
                                 : "opacity-50"
                             )}
                           >

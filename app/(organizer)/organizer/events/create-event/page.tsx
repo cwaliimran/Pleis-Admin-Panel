@@ -603,6 +603,7 @@ const Page = () => {
                                 {categoryOptions.find((opt) => opt.value === c)
                                   ?.label || c}
                                 <button
+                                  title="Remove category"
                                   type="button"
                                   onClick={() => removeCategory(c)}
                                   className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -647,6 +648,7 @@ const Page = () => {
                               {tagOptions.find((opt) => opt.value === t)
                                 ?.label || t}
                               <button
+                                title="Remove tag"
                                 type="button"
                                 onClick={() => removeTag(t)}
                                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -690,6 +692,7 @@ const Page = () => {
                               {organizerOptions.find((opt) => opt.value === o)
                                 ?.label || o}
                               <button
+                                title="Remove organizer"
                                 type="button"
                                 onClick={() => removeOrganizer(o)}
                                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -744,6 +747,7 @@ const Page = () => {
                                   (opt) => opt.value === po
                                 )?.label || po}
                                 <button
+                                  title="Remove partner organizer"
                                   type="button"
                                   onClick={() => removePartnerOrganizer(po)}
                                   className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -838,6 +842,7 @@ const Page = () => {
                               START TIME
                             </label>
                             <input
+                              title="Start Time"
                               type="time"
                               step="1800"
                               value={watch("fromTime")}
@@ -868,6 +873,7 @@ const Page = () => {
                               END TIME
                             </label>
                             <input
+                              title="End Time"
                               type="time"
                               step="1800"
                               value={watch("endTime")}
@@ -887,7 +893,20 @@ const Page = () => {
                     <div className="space-y-6">
                       <h3 className="text-lg font-medium">Recurring event</h3>
 
-                      <div className="flex gap-4">
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={recurring}
+                            onChange={(e) =>
+                              setValue("recurring", e.target.checked)
+                            }
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                          />
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Enable
+                          </span>
+                        </label>
                         <RHFSelectField
                           name="recurringType"
                           placeholder="Select Recurrence"
@@ -900,7 +919,12 @@ const Page = () => {
                           onChange={(e: any) =>
                             setValue("recurringType", e.target.value)
                           }
-                          className="w-32 border-gray-200 focus:border-blue-600 rounded-2xl cursor-pointer"
+                          className={`w-32 border-gray-200 focus:border-blue-600 rounded-2xl ${
+                            recurring
+                              ? "cursor-pointer"
+                              : "cursor-not-allowed opacity-50"
+                          }`}
+                          disabled={!recurring}
                         />
                       </div>
 
@@ -911,6 +935,7 @@ const Page = () => {
                           </label>
                           <div className="flex items-center gap-2">
                             <input
+                              title="Recurring Interval"
                               type="number"
                               value={watch("recurringInterval")}
                               onChange={(e) =>
@@ -1029,6 +1054,7 @@ const Page = () => {
                             {recurringEnd === "after" && (
                               <div className="w-[30%] border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-2 bg-white dark:bg-[#23272f] flex items-center gap-2">
                                 <input
+                                  title="Recurring End Count"
                                   type="number"
                                   value={watch("recurringEndCount")}
                                   onChange={(e) =>
