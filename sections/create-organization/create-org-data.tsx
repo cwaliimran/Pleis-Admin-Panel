@@ -103,11 +103,11 @@ export const organizerData = [
 
 export const tabsData = [
   { value: "info", label: "Info" },
-  { value: "events", label: "Events" },
-  { value: "loyalty", label: "Loyalty" },
-  { value: "analytics", label: "Analytics" },
-  { value: "notifications", label: "Notifications" },
-  { value: "calendar", label: "Calendar" },
+  // { value: "events", label: "Events" },
+  // { value: "loyalty", label: "Loyalty" },
+  // { value: "analytics", label: "Analytics" },
+  // { value: "notifications", label: "Notifications" },
+  // { value: "calendar", label: "Calendar" },
 ];
 
 export const organizerTabs = [

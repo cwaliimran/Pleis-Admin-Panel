@@ -15,3 +15,5 @@ export { default as RHFUploadVideo } from "./rhf-upload-video";
 export { default as RHFMultiFileUpload } from "./rhf-mutiple-upload";
 
 export { default as RHFTextField } from "./rhf-text-field";
+
+export { RHFCombobox } from "./rhf-combobox";
