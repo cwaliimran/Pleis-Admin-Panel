@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
                 onTogglePassword={showPassword.onToggle}
               />
 
-              <Button type="submit" className="bg-[#0f172b] hover:bg-[#0f172b] w-full h-[45px] cursor-pointer">
+              <Button type="submit" className="w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200">
                 {methods.formState.isSubmitting ? 'Resetting...' : 'Reset Password'}
               </Button>
             </div>

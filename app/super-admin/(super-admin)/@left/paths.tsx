@@ -79,6 +79,7 @@ export const paths = {
         },
         subscription: '/super-admin/subscription',
         addSupport: '/super-admin/add-support',
+        logout: '/super-admin/logout',
 
     }
 }

@@ -32,7 +32,7 @@ const Page = () => {
         <>
             <Header
                 links={[
-                    { name: "Dashboard", href: "/super-admin" },
+                    { name: "Dashboard", href: "/organizer/dashboard" },
                     { name: "Transaction", href: "" },
                 ]}
             />

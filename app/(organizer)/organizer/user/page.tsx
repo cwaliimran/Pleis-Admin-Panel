@@ -71,7 +71,7 @@ const Page = () => {
         <div>
             <Header
                 links={[
-                    { name: "Dashboard", href: "/super-admin" },
+                    { name: "Dashboard", href: "/organizer/dashboard" },
                     { name: "Users", href: "" },
                 ]}
             />

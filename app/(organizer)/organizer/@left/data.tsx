@@ -17,7 +17,8 @@ import {
     Volume1,
     Podcast,
     ArrowRightLeft,
-    User
+    User,
+    LogOut
 } from "lucide-react"
 import { paths } from "./paths"
 
@@ -103,16 +104,16 @@ export const menuGroups: MenuGroup[] = [
             // }
         ]
     },
-    {
-        label: "Marketing Requests",
-        key: paths.organizer.marketing.detault,
-        icon: Volume1
-    },
+    // {
+    //     label: "Marketing Requests",
+    //     key: paths.organizer.marketing.detault,
+    //     icon: Volume1
+    // },
 
-    {
-        label: "Transactions",
-        key: paths.organizer.transactions.default,
-        icon: ArrowRightLeft,
+    // {
+    //     label: "Transactions",
+    //     key: paths.organizer.transactions.default,
+    //     icon: ArrowRightLeft,
         // items: [
         //     {
         //         title: "Premium Transaction",
@@ -129,11 +130,11 @@ export const menuGroups: MenuGroup[] = [
         //         icon: Settings,
         //     }
         // ]
-    },
-    {
-        label: "Notification",
-        key: paths.organizer.notification.default,
-        icon: Bell,
+    // },
+    // {
+    //     label: "Notification",
+    //     key: paths.organizer.notification.default,
+    //     icon: Bell,
         // items: [
         //     {
         //         title: "Overview",
@@ -161,11 +162,16 @@ export const menuGroups: MenuGroup[] = [
         //         icon: Bell,
         //     }
         // ]
-    },
+    // },
 
+    // {
+    //     label: "Subscription",
+    //     key: paths.organizer.subscription,
+    //     icon: Podcast,
+    // },
     {
-        label: "Subscription",
-        key: paths.organizer.subscription,
-        icon: Podcast,
-    },
+        label: "Logout",
+        key: "/user/signIn",
+        icon: LogOut,
+    }
 ]

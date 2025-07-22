@@ -30,7 +30,7 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
     return (
         <div>
             <div className='grid grid-cols-12 '>
-                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-[#171717]'>
+                <Card className='mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-secondary'>
                     <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                         <h3 className='text-xl font-semibold md:ml-0 ml-2'>Event List</h3>
                         <div>
@@ -69,6 +69,7 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                                 {eventData.map((item, index) => (
                                     <EventTableRow
                                         key={index}
+                                         active={index === 0}
                                         item={item}
                                         handleDelete={handleDelete}
                                         handleEdit={handleEdit}

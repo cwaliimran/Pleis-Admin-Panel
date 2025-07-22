@@ -14,9 +14,9 @@ export const paths = {
         boost: "/organizer/boost",
         settings: "/organizer/settings",
         organizations: {
-            default: "/organizer/organizations",
-            create: "/organizer/organizations/create-organization",
-            list: "/organizer/organizations/organization-list",
+            default: "/orgnizer/organization",
+            create: "/organizer/organization/create-organization",
+            list: "/organizer/organization/organization-list",
         },
         events: {
             default: "/organizer/events",
@@ -44,14 +44,15 @@ export const paths = {
             create: "/organizer/notification/create-notification",
             list: "/organizer/notification/notification-list",
         },
-        transactions:{
+        transactions: {
             default: "/organizer/transactions",
         },
-        users:{
+        users: {
             default: "/organizer/user",
             create: "/organizer/user/create-user",
             list: "/organizer/user/user-list",
             pendingList: "/organizer/user/pending-list",
-        }
+        },
+        logout: "/organizer/logout",
     }
 }

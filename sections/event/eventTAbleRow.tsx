@@ -1,5 +1,6 @@
 "use client"
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Eye, Pencil, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -9,10 +10,27 @@ interface PageProps {
     item: any,
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
+    active?: boolean;
 }
-const EventTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
+const EventTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit, active }) => {
 
     const router = useRouter();
+    const event = item;
+
+    const handleTogglePublish = async (id: string) => {
+        // Call API to toggle published state
+        //   await togglePublishStatus(id);
+        //   toast.success("Event status updated.");
+        //   refetch(); // Or update local state
+    };
+
+    const handleCloneEvent = async (id: string) => {
+        // Call API to clone event
+        //   const clonedEvent = await cloneEvent(id);
+        //   toast.success("Event cloned successfully.");
+        //   router.push(`/events/${clonedEvent.id}`); // or refresh list
+    };
+
 
     return (
         <TableRow className=" transition-colors h-14 w-full" onClick={() => router.push(`/super-admin/events/${item.id}`)}>
@@ -52,8 +70,33 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
             </TableCell>
             <TableCell className="text-end">
                 <div className="flex gap-2 ">
+                    {/* Publish / Hide Button */}
+                    <Button
+                        // variant={active ? "" : "outline"}
+                        className={`cursor-pointer px-4 py-2 font-medium rounded-md transition-colors duration-200 
+    ${active
+                                ? "bg-red-600 text-white hover:bg-red-700"
+                                : ""}
+  `}
+
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); handleTogglePublish(event.id) }}
+                    >
+                        {active ? "UnPublish" : "Publish"}
+                    </Button>
+
+                    {/* Clone Button */}
+                    <Button
+                        variant={event.clone ? "secondary" : "outline"}
+                        className='cursor-pointer'
+                        size="sm"
+                    // onClick={(e) => { e.stopPropagation(); handleCloneEvent(event.id) }}
+
+                    >
+                        Clone
+                    </Button>
                     <button
-                        className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+                        className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer "
                     >
                         <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />
                     </button>

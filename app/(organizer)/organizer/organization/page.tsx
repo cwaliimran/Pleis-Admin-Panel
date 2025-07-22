@@ -1,28 +1,12 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Delete,
-  Edit,
-  Facebook,
-  Instagram,
-  Pencil,
-  TicketCheckIcon,
-  Trash2,
-} from "lucide-react";
-import React, { FC, useState } from "react";
-import { tabsData, userData } from "./data";
-import UserCard from "./userCard";
-import UserEvents from "./userEvents";
-import UserLoyalty from "./userLoyalty";
-import UserNotifications from "./userNotifications";
-import {
-  ActivePromontion,
-  BusinessInfo,
-  TotalFollowers,
-  UserCalender,
-} from ".";
-import { useBoolean } from "@/hooks/useBoolean";
+"use client";
+import Header from "@/app/common/header";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import React, { useState } from "react";
+import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
+import { useForm } from "react-hook-form";
+import * as Yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Dialog,
   DialogContent,
@@ -30,8 +14,10 @@ import {
   DialogOverlay,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
+import { useBoolean } from "@/hooks/useBoolean";
+import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -39,38 +25,98 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { cn } from "@/lib/utils";
-import {
-  defaultValues,
-  schema,
-  tabOptions,
-} from "@/app/super-admin/(super-admin)/organization/page";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import UserInfo from "./orgInfo";
-import Useranalytics from "./organalytics";
+import OrganizationTable from "@/sections/organization/organizationTable";
 
-interface OrganizationDetailPageProps {
-  id: string;
-}
-const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
+export const defaultValues = {
+  image: null,
+  name: "",
+  email: "",
+  phone: "",
+  region: "",
+  type: "",
+  category: "",
+  location: "",
+  city: "",
+  country: "",
+  description: "",
+  instagram: "",
+  facebook: "",
+  youtube: "",
+  linkedin: "",
+  commission: "",
+  businessId: "",
+  companyName: "",
+  accountName: "",
+  accountNumber: "",
+  oib: "",
+  address: "",
+  postalCode: "",
+  bankCity: "",
+  bankCountry: "",
+  galleryImages: [],
+};
+export const tabOptions = [
+  { label: "Basic Info", value: "basicInfo" },
+  { label: "Social Links", value: "socialLinks" },
+  // { label: "Business Details", value: "businessDetails" },
+  // { label: "Bank Details", value: "bankDetails" },
+];
+
+export const schema = Yup.object().shape({
+  //  Basic Info
+  image: Yup.mixed().nullable(),
+  name: Yup.string().required("Organization name is required"),
+  email: Yup.string().email("Invalid email"),
+  phone: Yup.string(),
+  region: Yup.string(),
+  type: Yup.string(),
+  category: Yup.string(),
+  location: Yup.string().required("Location is required"),
+  city: Yup.string(),
+  country: Yup.string(),
+  description: Yup.string(),
+  galleryImages: Yup.array().nullable(),
+
+  // Social Links
+  instagram: Yup.string().url("Invalid Instagram URL").nullable().notRequired(),
+  facebook: Yup.string().url("Invalid Facebook URL").nullable().notRequired(),
+  youtube: Yup.string().url("Invalid YouTube URL").nullable().notRequired(),
+  linkedin: Yup.string().url("Invalid LinkedIn URL").nullable().notRequired(),
+
+  //  Business Details
+  commission: Yup.string(),
+  businessId: Yup.string(),
+
+  //  Bank Details
+  companyName: Yup.string(),
+  accountName: Yup.string(),
+  accountNumber: Yup.string(),
+  oib: Yup.string(),
+  address: Yup.string(),
+  postalCode: Yup.string(),
+  bankCity: Yup.string(),
+  bankCountry: Yup.string(),
+});
+
+const Page = () => {
   const openModal = useBoolean();
+  const editModal = useBoolean();
   const deleteModal = useBoolean();
-
-  const [active, setActive] = useState("info");
   const [activeTab, setActiveTab] = useState("basicInfo");
+
+  // only organization name is required and location is required
 
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => { };
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
+    editModal.onFalse();
   };
   const handleNextTab = async () => {
     if (activeTab === "basicInfo") {
@@ -86,148 +132,48 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
     }
   };
 
+  const handleEdit = (id: string) => {
+    openModal.onTrue();
+    editModal.onTrue();
+  };
+
+  const handleDelete = (id: string) => {
+    deleteModal.onTrue();
+  };
   const onDelete = () => {
     deleteModal.onFalse();
-    console.log("Delete confirmed");
   };
+
   return (
-    <div className="mt-10 h-full">
-      <div className="grid grid-cols-12 gap-7">
-        <div className="md:col-span-9 col-span-12">
-          <Card className="overflow-hidden  p-4  shadow-md dark:bg-secondary">
-            <div className="relative w-full">
-              <div className="h-72   bg-[url('/images/bannerImage.png')] bg-cover bg-center rounded-lg" />
-              <div className="absolute left-5 bottom-[-30]">
-                <img
-                  src="/images/image.png"
-                  alt="User Avatar"
-                  className="md:w-30 w-20  md:h-30 h-20 rounded-full  shadow-lg z-10"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end  ">
-              <Pencil
-                className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
-                onClick={openModal.onTrue}
-              />
-              <Trash2
-                className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
-                onClick={deleteModal.onTrue}
-              />
-            </div>
-            <div className="flex items-center gap-2 ">
-              <h1 className="md:text-3xl  text-2xl font-bold ml-2 pt-0 mt-0">
-                Peti Kupe
-              </h1>
-              <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
-              >
-                Premium
-              </Badge>
-            </div>
-            <Badge
-              className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
-            >
-              12,342 Subscriptions
-            </Badge>
-            <div className="flex items-center gap-2 ">
-              <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
-              >
-                5% Commission
-              </Badge>
-              <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
-              >
-                12 Boost
-              </Badge>
-            </div>
-            <div className="flex md:items-center md:justify-between mt-4 md:flex-row flex-col gap-4">
-              <Tabs value={active} onValueChange={setActive} className="w-full">
-                <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
-                  <TabsList className="inline-flex items-center gap-2 bg-transparent rounded-full p-1 ">
-                    {tabsData.map((tab: any) => (
-                      <TabsTrigger
-                        key={tab.value}
-                        value={tab.value}
-                        className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                    shadow-none dark:!bg-transparent cursor-pointer border-none
-                                                      ${
-                                                        active === tab.value
-                                                          ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                                          : "text-muted-foreground"
-                                                      }`}
-                      >
-                        {tab.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </div>
-              </Tabs>
-              <div className="flex gap-4">
-                <Badge
-                  className="bg-blue-200 text-blue-800 w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 
-                                hover:bg-blue-300 transition-colors"
-                >
-                  <Facebook className="w-5 h-5 " />
-                </Badge>
-
-                <Badge
-                  className="bg-blue-200 text-blue-800 cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
-                                hover:bg-blue-300 transition-colors"
-                >
-                  <Instagram className="w-5 h-5 " />
-                </Badge>
-
-                <Badge
-                  className="bg-blue-200 text-blue-800  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
-                                hover:bg-blue-300 transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 256 256"
-                    fill="currentColor"
-                    className="w-5 h-5 "
-                  >
-                    <path d="M232 72v40a88 88 0 1 1-88-88h40v40a48 48 0 0 0 48 48V72a72 72 0 0 1-72-72h-40a128 128 0 1 0 128 128V72Z" />
-                  </svg>
-                </Badge>
-              </div>
-            </div>
-          </Card>
-          <div className=" mt-4 rounded-lg">
-            {active === "info" && <UserInfo />}
-
-            {active === "events" && <UserEvents />}
-
-            {active === "loyalty" && <UserLoyalty />}
-
-            {active === "analytics" && <Useranalytics />}
-
-            {active === "notifications" && <UserNotifications />}
-
-            {active === "calendar" && <UserCalender />}
-          </div>
-        </div>
-
-        {/* Sidebar or Additional Panel */}
-        <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3">
-          {userData.map((user: any) => (
-            <UserCard item={user} key={user._id} />
-          ))}
-          <TotalFollowers />
-
-          <ActivePromontion />
-
-          <BusinessInfo />
+    <div>
+      <Header
+        links={[
+          { name: "Dashboard", href: "/super-admin" },
+          { name: "Organizations", href: "" },
+        ]}
+      />
+      <div>
+        <div className=" w-full flex items-center justify-end">
+          <Button
+            className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary/90"
+            onClick={openModal.onTrue}
+          >
+            <Plus className="" />
+            Create Organization
+          </Button>
         </div>
       </div>
-      {/* update Organization */}
+      {/* dialog for add and update the organization */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30   ">
           <DialogContent className="md:!max-w-[600px]  min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col md:items-start">
             <DialogHeader>
-              <DialogTitle> Edit Organization </DialogTitle>
+              <DialogTitle>
+                {" "}
+                {!editModal.value
+                  ? "Create Organization"
+                  : "Edit Organization"}{" "}
+              </DialogTitle>
             </DialogHeader>
             <FormProvider
               methods={methods}
@@ -276,9 +222,8 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                     name="name"
                     label=" Organization Name"
                     placeholder="Enter Organization Name"
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
                   <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
                     <RHFTextField
@@ -327,11 +272,10 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                       name="location"
                       label="Location"
                       placeholder="Enter Location"
-                      className={` ${
-                        methods.formState.errors.location
+                      className={` ${methods.formState.errors.location
                           ? "border-red-400"
                           : ""
-                      }`}
+                        }`}
                     />
                     <RHFSelectField
                       name="clity"
@@ -477,7 +421,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                   <div className="">
                     <Button
                       type="button"
-                      className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                      className="bg-primary text-white hover:bg-primary cursor-pointer"
                       onClick={handleNextTab}
                     >
                       Next
@@ -488,9 +432,11 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                 {activeTab === "bankDetails" && (
                   <Button
                     type="submit"
-                    className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                    className="bg-primary text-white hover:bg-primary cursor-pointer"
                   >
-                    Update Organization
+                    {!editModal.value
+                      ? "Add Organization"
+                      : "Update Organization"}
                   </Button>
                 )}
               </div>
@@ -498,7 +444,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
-      {/* delete Organization */}
+      {/* dialog for delete the organization */}
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Organization"
@@ -506,8 +452,9 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
+      <OrganizationTable handleDelete={handleDelete} handleEdit={handleEdit} />
     </div>
   );
 };
 
-export default OrganizationDetailPage;
+export default Page;

@@ -39,7 +39,7 @@ export default function LoginPage() {
 
     const onSubmit = async (data: any) => {
         // Fake login logic
-        router.push('/organizer/dashboard'); // or '/super-admin'
+        router.push('/super-admin'); // or '/super-admin'
     };
 
     return (
@@ -88,49 +88,12 @@ export default function LoginPage() {
                                 showPassword={open.value}
                                 onTogglePassword={open.onToggle}
                             />
-                            <Link href={"/user/forgot-password"} className="text-end text-sm text-muted-foreground hover:underline">
-                                <p className="text-end text-sm text-muted-foreground my-4">Forgot Password?</p></Link>
-
+                           
                             <Button type="submit" className="w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200">
                                 {methods.formState.isSubmitting ? 'Signing In...' : 'Login'}
                             </Button>
-
-                            <div className="text-center text-muted-foreground text-sm">Or sign in with</div>
-
-                            <div className="flex items-center justify-center gap-4">
-                                <Button variant="outline" className="py-3 cursor-pointer h-[60px] w-[60px] rounded-full">
-                                    <span className="w-6 h-6 flex items-center justify-center">
-                                        <img src="/images/appleIcon.png" alt="Apple" className='w-[25px] h-[25px] dark:hidden block' />
-                                        <img src="/images/macIconDark.png" alt="Apple" className='w-[25px] h-[25px] dark:block hidden' />
-                                    </span>
-                                </Button>
-
-                                <Button variant="outline" className=" cursor-pointer h-[60px] w-[60px] rounded-full">
-                                    <span className="w-6 h-6 flex items-center justify-center">
-                                        <img src="/images/googleIcon.png" alt="Google" className='w-[25px] h-[25px]' />
-                                    </span>
-                                </Button>
-
-                                <Button variant="outline" className=" cursor-pointer h-[60px] w-[60px] rounded-full">
-                                    <span className="w-6 h-6 flex items-center justify-center">
-                                        <img src="/images/metaIcon.png" alt="Meta" className='w-[25px] h-[25px]' />
-                                    </span>
-                                </Button>
-                            </div>
-
-                            <p className="text-center text-sm text-muted-foreground mt-4">
-                                Don’t have an account?{' '}
-                                <Link href="/user/signUp" className="text-[#0f172b] dark:text-white hover:underline font-medium">
-                                    Sign Up
-                                </Link>
-                            </p>
                         </div>
                     </FormProvider>
-
-                    <p className="mt-10 text-xs text-muted-foreground text-center">
-                        By continuing, you agree to our <span className="underline">Terms</span> and{' '}
-                        <span className="underline">Privacy Policy</span>.
-                    </p>
                 </motion.div>
             </div>
         </div>

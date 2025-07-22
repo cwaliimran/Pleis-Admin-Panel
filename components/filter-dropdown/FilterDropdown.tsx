@@ -157,7 +157,7 @@ export default function FilterDropdown({
         </div>
       </PopoverTrigger>
 
-      <PopoverContent className="w-64 p-0">
+      <PopoverContent className="w-64 p-0 ">
         <Command>
           <CommandInput placeholder="Search..." />
           <CommandEmpty>No results found.</CommandEmpty>

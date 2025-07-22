@@ -19,7 +19,7 @@ const OrgInfo = () => {
   return (
     <div className="grid grid-cols-12 gap-4 mt-7">
       <div className=" md:col-span-5 col-span-12">
-        <Card className="shadow-lg">
+        <Card className="shadow-lg dark:bg-secondary">
           <CardHeader>
             <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
             <p className=" mt-2">
@@ -43,16 +43,16 @@ const OrgInfo = () => {
             </div>
           </CardHeader>
         </Card>
-        <Card className="mt-4 shadow-lg">
+        <Card className="mt-4 shadow-lg dark:bg-secondary">
           <CardHeader>
-            <h1 className="text-slate-500 font-semibold">VENU</h1>
+            <h1 className="text-slate-500 font-semibold">VENU TYPE</h1>
             <div className="flex items-center gap-2 mt-2">
               <PartyPopper />
               <p className=" mt-2 text-lg ">Nightclub</p>
             </div>
           </CardHeader>
         </Card>
-        <Card className="mt-4 shadow-lg">
+        <Card className="mt-4 shadow-lg dark:bg-secondary">
           <CardHeader>
             <h1 className="text-slate-500 font-semibold">CATEGORIES</h1>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -67,7 +67,7 @@ const OrgInfo = () => {
             </div>
           </CardHeader>
         </Card>
-        <Card className="mt-4 shadow-lg">
+        <Card className="mt-4 shadow-lg dark:bg-secondary">
           <CardHeader>
             <h1 className="text-slate-500 font-semibold">TAGS</h1>
             <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -82,7 +82,7 @@ const OrgInfo = () => {
             </div>
           </CardHeader>
         </Card>
-        <Card className="mt-4 shadow-lg">
+        <Card className="mt-4 shadow-lg dark:bg-secondary">
           <CardHeader>
             <div className="flex justify-between item-center ">
               <Badge className="bg-gray-100 dark:bg-white text-black  rounded-full px-4 py-1 text-md font-medium">
@@ -172,9 +172,13 @@ const OrgInfo = () => {
         </div>
       </div>
       <div className="md:col-span-7 col-span-12">
-        <Card className="shadow-lg">
+        <Card className="shadow-lg dark:bg-secondary">
           <CardHeader className="w-full flex flex-col gap-2">
             <h1 className="text-slate-500 font-semibold">LOCATION PIN</h1>
+            <div className="flex items-center gap-2 mt-2">
+              <PartyPopper className='w-4 h-4' />
+              <span> Vibrant club</span>
+            </div>
             <div className="flex items-center gap-2 mt-2">
               <MapPin />
               <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>
@@ -186,7 +190,7 @@ const OrgInfo = () => {
             />
           </CardHeader>
         </Card>
-        <Card className="shadow-lg mt-5">
+        <Card className="shadow-lg mt-5 dark:bg-secondary">
           <CardHeader className="gap-4">
             <h1 className="text-slate-500 font-semibold">GALLERY</h1>
             <img

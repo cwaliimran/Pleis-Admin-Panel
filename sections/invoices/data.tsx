@@ -30,6 +30,7 @@ export const invoicesData = [
         title: "Total Revenue",
         amount: 600,
         status: "overdue",
+        raise: "+1,50%",
         menu: true
     },
     {
@@ -120,6 +121,7 @@ export const invoicesData2 = [
         title: "Total Revenue",
         amount: 600,
         status: "overdue",
+        raise: "+1,50%",
         menu: true
     },
     {

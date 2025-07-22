@@ -33,7 +33,6 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
     const router = require('next/navigation').useRouter();
     return (
         <TableRow className="transition-colors h-14 w-full">
-            {/* Avatar */}
             <TableCell>
 
                 <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
@@ -59,9 +58,9 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
 
 
             {/* Email */}
-            <TableCell className="text-left text-sm">
+            {/* <TableCell className="text-left text-sm">
                 {item.email}
-            </TableCell>
+            </TableCell> */}
             {/* Username */}
             {!pendingUser && <TableCell className="text-left text-sm">
                 {item.firstName.toLowerCase() + ' ' + item.lastName.toLowerCase()}
@@ -69,7 +68,7 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
 
             {/* Role */}
             {!pendingUser && <TableCell className="text-left capitalize">
-                <Badge variant="secondary">{item.role}</Badge>
+                <Badge className='bg-secondary dark:bg-white text-white dark:text-black'>{item.role}</Badge>
             </TableCell>}
 
             {/* Status */}
@@ -80,15 +79,13 @@ const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUs
                             ? 'default'
                             : item.status === 'inactive'
                                 ? 'outline'
-                                : 'secondary'
+                                : 'destructive'
                     }
                     className="capitalize"
                 >
                     {item.status}
                 </Badge>
-                {/* !pendingUser && { id: "totalPoints", label: "Total Points Earned", align: "left" },
-        !pendingUser && { id: "toatlRevenue", label: "Total Revenue From User", align: "left" },
-        !pendingUser && { id: "region", label: "Region", align: "left" }, */}
+
             </TableCell>}
             {!pendingUser && <TableCell className="text-center">
                 {item.totalPoints || 'N/A'}

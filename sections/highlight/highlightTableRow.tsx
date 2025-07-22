@@ -72,8 +72,8 @@ const HighlightTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) =>
                         item.status === 'active'
                             ? 'destructive'
                             : item.status === 'inactive'
-                                ? 'secondary'
-                                : 'outline'
+                    
+                                ? 'outline':"default"
                     }
                     className="capitalize"
                 >

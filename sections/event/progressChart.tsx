@@ -27,11 +27,11 @@ const ProgressChart: FC<PageProps> = ({ data, COLORS }) => {
             </PieChart>
 
             <div className="absolute top-[60px] text-xl font-bold text-center mt-3">41%</div>
-            <div className="text-sm text-gray-700 font-semibold ">Attendees Confirmed</div>
+            <div className="text-sm text-gray-700 dark:text-gray-400 font-semibold ">Attendees Confirmed</div>
 
             <div className="w-[200px] flex justify-between px-2 ">
-                <span className="text-sm font-medium text-black">0</span>
-                <span className="text-sm font-medium text-black">300</span>
+                <span className="text-sm font-medium text-black dark:text-white">0</span>
+                <span className="text-sm font-medium text-black dark:text-white">300</span>
             </div>
         </div>
     )

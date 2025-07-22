@@ -79,20 +79,20 @@ const Page = () => {
             />
           ))}
         </div>
-        <Card className='shadow-lg mt-10 dark:bg-[#171717]'>
+        <Card className='shadow-lg mt-10 dark:bg-secondary'>
           <CardHeader>
             <div className='flex justify-between items-center'>
               <h3 className='text-xl font-semibold'>Organizer Performance Comparison</h3>
               <div className='flex flex-col items-center'>
                 <div className='flex items-center'>
-                  <div className='w-3 h-3 rounded-full bg-black mr-2' />
-                  <h1 className='text-md leading-6 '>
+                  <div className='w-2 h-2 rounded-full bg-black mr-2' />
+                  <h1 className='text-[14px] leading-6 '>
                     Tickets Sold
                   </h1>
                 </div>
                 <div className='flex mt-2 items-center'>
-                  <div className='w-3 h-3 rounded-full bg-[#7DAEF4] leading-10 mr-2' />
-                  <h1 className='text-[#7DAEF4] text-md'>
+                  <div className='w-2 h-2 rounded-full bg-[#7DAEF4] leading-10 mr-2' />
+                  <h1 className='text-[#7DAEF4] text-[14px]'>
                     Revenue
                   </h1>
                 </div>
@@ -124,7 +124,7 @@ const Page = () => {
         <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-4 mt-10'>
 
           <div>
-            <Card className='shadow-md  w-full max-h-full h-[450px] dark:bg-[#171717]'>
+            <Card className='shadow-md  w-full max-h-full h-[450px] dark:bg-secondary'>
               <CardHeader>
                 <div className='flex justify-start items-center'>
                   <h3 className='text-xl font-semibold'>Age Demographics</h3>
@@ -154,26 +154,26 @@ const Page = () => {
           </div>
 
           <div>
-            <Card className='shadow-md h-[450px]  dark:bg-[#171717]'>
+            <Card className='shadow-md h-[450px]  dark:bg-secondary'>
               <CardHeader>
                 <div className='flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'>Region Overview</h3>
                   <div className='flex flex-col items-center'>
                     <div className='flex items-center'>
-                      <div className='w-3 h-3 rounded-full bg-[#2563EB] mr-2' />
-                      <h1 className='text-md leading-6 '>
+                      <div className='w-2 h-2 rounded-full bg-[#2563EB] mr-2' />
+                      <h1 className='text-[14px] leading-6 '>
                         Males
                       </h1>
                     </div>
                     <div className='flex mt-2 items-center'>
-                      <div className='w-3 h-3 rounded-full bg-[#202C88] leading-10 mr-2' />
-                      <h1 className='text-[#7DAEF4] text-md'>
+                      <div className='w-2 h-2 rounded-full bg-[#202C88] leading-10 mr-2' />
+                      <h1 className='text-[#7DAEF4] text-[14px]'>
                         Females
                       </h1>
                     </div>
                     <div className='flex mt-2 items-center'>
-                      <div className='w-3 h-3 rounded-full bg-[#7DAEF4] leading-10 mr-2' />
-                      <h1 className='text-[#7DAEF4] text-md'>
+                      <div className='w-2 h-2 rounded-full bg-[#7DAEF4] leading-10 mr-2' />
+                      <h1 className='text-[#7DAEF4] text-[14px]'>
                         Other
                       </h1>
                     </div>
@@ -198,7 +198,7 @@ const Page = () => {
             </Card>
           </div>
           <div>
-            <Card className='shadow-md  h-[450px] dark:bg-[#171717] pb-0 p'>
+            <Card className='shadow-md  h-[450px] dark:bg-secondary pb-0 p'>
               <CardHeader className=''>
                 <div className='flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'> Gender Analytics</h3>
@@ -210,10 +210,10 @@ const Page = () => {
                     ].map((item, index) => (
                       <div key={index} className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                          <span className="text-sm" style={{ color: item.color }}>{item.label}</span>
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                          <span className="text-[14px]" style={{ color: item.color }}>{item.label}</span>
                         </div>
-                        <span className="text-sm text-gray-700 ml-1">{item.value}</span>
+                        <span className="text-[14px] text-gray-700 dark:text-white ml-1">{item.value}</span>
                       </div>
                     ))}
                   </div>
@@ -231,21 +231,21 @@ const Page = () => {
           </div>
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5'>
-          <Card className='col-span-12 md:col-span-7 shadow-lg h-[450px]  dark:bg-[#171717]'>
+          <Card className='col-span-12 md:col-span-7 shadow-lg h-[450px]  dark:bg-secondary'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <div className='flex items-start flex-col'>
                   <h3 className='text-xl font-semibold'>Trends</h3>
                   <div className='flex flex-col items-center'>
                     <div className='flex items-center'>
-                      <div className='w-3 h-3 rounded-full bg-[#2563EB] mr-2' />
-                      <h1 className='text-md leading-6 '>
+                      <div className='w-2 h-2 rounded-full bg-[#2563EB] mr-2' />
+                      <h1 className='text-[14px] leading-6 '>
                         This Month
                       </h1>
                     </div>
                     <div className='flex mt-2 items-center'>
-                      <div className='w-3 h-3 rounded-full bg-[#7B7E91] leading-10 mr-2' />
-                      <h1 className='text-[#7B7E91] text-md'>
+                      <div className='w-2 h-2 rounded-full bg-[#7B7E91] leading-10 mr-2' />
+                      <h1 className='text-[#7B7E91] text-[14px]'>
                         Last Month
                       </h1>
                     </div>
@@ -281,20 +281,20 @@ const Page = () => {
             } />
           </Card>
 
-          <Card className='col-span-12 md:col-span-5 shadow-lg  h-[450px]  dark:bg-[#171717]'>
+          <Card className='col-span-12 md:col-span-5 shadow-lg  h-[450px]  dark:bg-secondary'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Interest per Category</h3>
                 <div className='flex flex-col items-center'>
                   <div className='flex items-center'>
-                    <div className='w-3 h-3 rounded-full bg-[#020617] mr-2' />
-                    <h1 className='text-md leading-6 '>
+                    <div className='w-2 h-2 rounded-full bg-[#020617] mr-2' />
+                    <h1 className='text-[14px] leading-6 '>
                       Males
                     </h1>
                   </div>
                   <div className='flex mt-2 items-center'>
-                    <div className='w-3 h-3 rounded-full bg-[#202C88] leading-10 mr-2' />
-                    <h1 className='text-[#202C88] text-md'>
+                    <div className='w-2 h-2 rounded-full bg-[#202C88] leading-10 mr-2' />
+                    <h1 className='text-[#202C88] text-[14px]'>
                       Females
                     </h1>
                   </div>
@@ -319,7 +319,7 @@ const Page = () => {
           </Card>
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5 '>
-          <Card className='col-span-12 md:col-span-6 shadow-lg h-[450px]  dark:bg-[#171717]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg h-[450px]  dark:bg-secondary'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Organizer Activity Over Time</h3>
@@ -357,7 +357,7 @@ const Page = () => {
 
             />
           </Card>
-          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[450px]  dark:bg-[#171717]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[450px]  dark:bg-secondary'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Top Searches</h3>
@@ -382,7 +382,7 @@ const Page = () => {
           </Card>
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5'>
-          <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]  dark:bg-[#171717]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]  dark:bg-secondary'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Growth of Register Users</h3>
@@ -419,7 +419,7 @@ const Page = () => {
               ]}
             />
           </Card>
-          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]  dark:bg-[#171717]'>
+          <Card className='col-span-12 md:col-span-6 shadow-lg  h-[550px]  dark:bg-secondary'>
             <CardHeader>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-semibold'>Top Performing Organizers</h3>
@@ -429,7 +429,7 @@ const Page = () => {
           </Card>
         </div>
         <div className='grid grid-cols-12 mt-5'>
-          <Card className='col-span-12 shadow-lg  dark:bg-[#171717]'>
+          <Card className='col-span-12 shadow-lg  dark:bg-secondary'>
             <CardHeader>
               <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
                 <h3 className='text-xl font-semibold'>Transaction History</h3>

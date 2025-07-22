@@ -107,7 +107,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
       <div className="grid grid-cols-12 gap-7">
         {/* --------------- UPPER SECTION --------------- */}
         <div className="md:col-span-9 col-span-12">
-          <Card className="overflow-hidden p-4 shadow-md">
+          <Card className="overflow-hidden p-4 shadow-md dark:bg-secondary">
             <div className="relative w-full">
               <div className="h-72 bg-[url('/images/blank-img.png')] bg-cover bg-center rounded-lg" />
               <label
@@ -189,7 +189,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                         key={tab.value}
                         value={tab.value}
                         className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                    shadow-none cursor-pointer border-none
+                                                    !shadow-none dark:!bg-transparent cursor-pointer border-none
                                                       ${
                                                         active === tab.value
                                                           ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'

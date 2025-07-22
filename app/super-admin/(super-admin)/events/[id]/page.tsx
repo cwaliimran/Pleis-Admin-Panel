@@ -19,21 +19,47 @@ import EventNotification from '@/sections/event/eventNotification';
 import EventReservation from '@/sections/event/eventReservation';
 import EventTicket from '@/sections/event/eventTicket';
 import EventOverView from '@/sections/event/eventOverview';
-import { Calendar, Pencil, Trash2, Users } from 'lucide-react';
+import { Calendar, Copy, Eye, EyeOff, Pencil, Trash2, Users } from 'lucide-react';
 import { useBoolean } from '@/hooks/useBoolean';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import CapacityGaugeChart from '@/sections/event/CapacityGaugeChart';
 import LastTransaction from '@/sections/event/lastTransaction';
+import { Button } from '@/components/ui/button';
 
 const Page = () => {
+
     const [active, setActive] = React.useState("overview");
     const [tabActive, setTabActive] = React.useState("all");
     const router = useRouter();
     const deleteModal = useBoolean();
+    const event = {
+        id: "1",
+        name: "Summer Music Festival 2025",
+        published: true,
+        fromDate: "2025-03-23T13:00:00Z",
+        endDate: "2025-03-25T13:00:00Z"
+    }
+
+
     const onDelete = () => {
         deleteModal.onFalse();
         // Handle delete logic here
     }
+
+    const handleTogglePublish = async (id: string) => {
+        // Call API to toggle published state
+        //   await togglePublishStatus(id);
+        //   toast.success("Event status updated.");
+        //   refetch(); // Or update local state
+    };
+
+    const handleCloneEvent = async (id: string) => {
+        // Call API to clone event
+        //   const clonedEvent = await cloneEvent(id);
+        //   toast.success("Event cloned successfully.");
+        //   router.push(`/events/${clonedEvent.id}`); // or refresh list
+    };
+
 
     return (
         <div>
@@ -82,12 +108,12 @@ const Page = () => {
                                             </div>
 
                                             {/* Title */}
-                                            <h2 className="text-xl font-semibold text-gray-900">
+                                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                                                 Summer Music Festival 2025
                                             </h2>
 
                                             {/* Description */}
-                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                                                 Svirati ploče bez pritiska, jednostavno iz ljubavi prema zvukovima te
                                                 njegovati umjetnost slušanja muzike. Misija je to jedinstvenog kluba
                                                 Kasheme u Zürichu. S ovim audiofilskim barom posebne koncepcije i
@@ -104,18 +130,53 @@ const Page = () => {
                                                         alt="Peti Kupe"
                                                         className="w-6 h-6 rounded-full"
                                                     />
-                                                    <span className="text-sm font-medium text-gray-800">Peti Kupe</span>
+                                                    <span className="text-sm font-medium text-gray-800 dark:text-white">Peti Kupe</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    {/* Tabs and Boost Button */}
-                                    <div className="flex flex-col sm:flex-row justify-end sm:items-center gap-4 mt-4">
-                                        <button className="bg-primary text-white px-4 py-2 rounded-3xl hover:bg-primary transition w-full sm:w-auto cursor-pointer">
-                                            Boost
-                                        </button>
+                                   
+                                    <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 w-full mt-4 md:mb-0 mb-2 md:px-0 px-2">
+                                        {/* Publish / Hide Button */}
+                                        <div className="w-full sm:w-auto">
+                                            <Button
+                                                variant="default"
+                                                onClick={() => handleTogglePublish(event.id)}
+                                                className="flex items-center justify-center gap-2 px-4 py-2 rounded-3xl w-full sm:w-auto cursor-pointer"
+                                            >
+                                                {event.published ? (
+                                                    <>
+                                                        <EyeOff className="w-4 h-4" /> Hide
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Eye className="w-4 h-4" /> Publish
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+
+                                        {/* Clone Button */}
+                                        <div className="w-full sm:w-auto">
+                                            <Button
+                                                variant="default"
+                                                onClick={() => handleCloneEvent(event.id)}
+                                                className="flex items-center justify-center gap-2 px-4 py-2 rounded-3xl w-full sm:w-auto cursor-pointer"
+                                            >
+                                                <Copy className="w-4 h-4" /> Clone
+                                            </Button>
+                                        </div>
+
+                                        {/* Boost Button */}
+                                        <div className="w-full sm:w-auto">
+                                            <button className="bg-primary text-white px-4 py-2 rounded-3xl hover:bg-primary transition w-full sm:w-auto cursor-pointer">
+                                                Boost
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="w-full">
+
+
+                                    <div className="w-full md:px-0 px-2">
                                         {/* Small screen dropdown */}
                                         <div className="block sm:hidden mb-4">
                                             <Select value={active} onValueChange={setActive}>
@@ -140,7 +201,7 @@ const Page = () => {
                                                             key={tab.value}
                                                             value={tab.value}
                                                             className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                                    !shadow-none cursor-pointer border-none
+                                                                    !shadow-none dark:!bg-transparent cursor-pointer border-none
                                                                   ${active === tab.value
                                                                     ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
                                                                     : 'text-muted-foreground'
@@ -178,28 +239,28 @@ const Page = () => {
                             ))}
                             <CapacityGaugeChart />
                             <LastTransaction />
-                            <div className="w-full flex  justify-between items-start flex-wrap md:mt-20 mt-5 px-4 ">
+                            <div className="w-full md:flex  justify-between items-start flex-wrap md:mt-20 mt-5 md:px-0 px-2">
                                 {/* START DATE */}
                                 <div className="flex flex-col gap-1 min-w-[140px]">
                                     <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-600" />
-                                        <p className="text-xs text-gray-600 font-semibold">START DATE</p>
+                                        <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
+                                        <p className="text-xs text-gray-600 dark:text-white font-semibold">START DATE</p>
                                     </div>
-                                    <p className="text-sm text-black font-medium">March 23, 25, 13:00</p>
+                                    <p className="text-sm text-black dark:text-white font-medium">March 23, 25, 13:00</p>
                                 </div>
 
                                 {/* END DATE */}
                                 <div className="flex flex-col gap-1 min-w-[140px] md:mt-0 mt-4">
                                     <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-gray-600" />
-                                        <p className="text-xs text-gray-600 font-semibold">END DATE</p>
+                                        <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
+                                        <p className="text-xs text-gray-600 dark:text-white font-semibold">END DATE</p>
                                     </div>
-                                    <p className="text-sm text-black font-medium">March 23, 25, 13:00</p>
+                                    <p className="text-sm text-black dark:text-white font-medium">March 23, 25, 13:00</p>
                                 </div>
                             </div>
                             <div className='flex items-center justify-center mt-15'>
-                                <Users className='cursor-pointer text-slate-500 w-4 h-4' />
-                                <h1 className='text-slate-500 ml-2'>Players</h1>:  <span className='text-bold ml-2'>632</span>
+                                <Users className='cursor-pointer text-slate-500 dark:text-white w-4 h-4' />
+                                <h1 className='text-slate-500 dark:text-white ml-2'>Players</h1>:  <span className='text-bold ml-2'>632</span>
                             </div>
                         </div>
                     </div>

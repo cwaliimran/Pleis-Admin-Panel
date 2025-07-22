@@ -10,7 +10,7 @@ interface PageProps {
 const DashboardCard: FC<PageProps> = ({ item }) => {
   return (
     <div>
-      <Card className='shadow-lg w-full md:h-[300px] mb-3  dark:bg-[#171717]'>
+      <Card className='shadow-lg w-full md:h-[300px] mb-3  dark:bg-secondary'>
         <CardHeader className=''>
           <div className='flex justify-between items-center'>
             <div>

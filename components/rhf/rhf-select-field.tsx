@@ -55,7 +55,7 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
                                 <SelectValue placeholder={placeholder} />
                             </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="dark:bg-secondary">
                             {options.map((option) => (
                                 <SelectItem key={option.value} value={option.value}>
                                     {option.label}

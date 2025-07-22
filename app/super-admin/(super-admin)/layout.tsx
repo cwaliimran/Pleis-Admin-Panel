@@ -3,8 +3,6 @@
 import SidebarToggleButton from "@/app/common/siebarToggleButton";
 import {
   SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import React, { FC } from "react";
 

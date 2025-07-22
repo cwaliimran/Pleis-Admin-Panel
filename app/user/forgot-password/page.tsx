@@ -103,8 +103,8 @@ const defaultValues = {
 
 const schema = Yup.object().shape({
   email: Yup.string()
-    // .email('Invalid email')
-    // .required('Email is required')
+  // .email('Invalid email')
+  // .required('Email is required')
 });
 
 // ----------------------
@@ -125,13 +125,13 @@ function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100 dark:from-[#0f0f0f] dark:via-[#1a1a1a] dark:to-[#0f0f0f] px-4 text-foreground relative">
-      
+
       <div className="absolute top-4 right-4 z-10">
         <ModeToggle />
       </div>
 
       <div className="flex w-full max-w-5xl shadow-2xl rounded-xl overflow-hidden bg-white/30 dark:bg-black/30 backdrop-blur-md border border-border transition-all">
-        
+
         {/* ---------------- Left Branding ---------------- */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
@@ -168,13 +168,13 @@ function ForgotPasswordPage() {
                 className="rounded-md h-[45px]"
               />
 
-              <Button type="submit" className=" bg-[#0f172b] hover:bg-[#0f172b] w-full h-[45px] cursor-pointer">
+              <Button type="submit" className=" w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200">
                 {methods.formState.isSubmitting ? 'Sending Reset Link...' : 'Send Reset Link'}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground mt-4">
                 Remember your password?{' '}
-                <Link href="/user/signIn" className="text-[#0f172b] hover:text-[#0f172b] hover:underline font-medium">
+                <Link href="/user/signIn" className="text-[#0f172b] dark:text-white hover:underline font-medium">
                   Go back to login
                 </Link>
               </p>

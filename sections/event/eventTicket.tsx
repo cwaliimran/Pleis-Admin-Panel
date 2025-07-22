@@ -73,7 +73,7 @@ const EventTicket = () => {
               </div>
             </CardContent>
           </Card>
-          <Button className='rounded-3xl bg-primary hover:bg-primary cursor-pointer mt-4 w-full'>
+          <Button className='rounded-3xl bg-primary hover:bg-primary text-white cursor-pointer mt-4 w-full'>
             <Plus /> Add Tickets
           </Button>
         </div>

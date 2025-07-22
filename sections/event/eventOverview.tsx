@@ -31,7 +31,7 @@ const EventOverView = () => {
       <div className='grid grid-cols-12 gap-4'>
         <div className='md:col-span-5 col-span-12'>
           {/* about organizer */}
-          <Card className="shadow-lg dark:bg-[#171717]">
+          <Card className="shadow-lg dark:bg-secondary">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">ABOUT ORGANIZER</h1>
               <div className="mt-2">
@@ -42,7 +42,7 @@ const EventOverView = () => {
                     className="w-10 h-10 rounded-full"
                   />
                   <div className='flex flex-col'>
-                    <span className="text-sm font-bold text-gray-800">Peti Kupe</span>
+                    <span className="text-sm font-bold text-gray-800 dark:text-white">Peti Kupe</span>
                     <div className='flex'>
                       <MapPin className='w-4 h-4' />
                       <span>Trnjanska cesta 5, 10 00...</span>
@@ -51,7 +51,7 @@ const EventOverView = () => {
                 </div>
                 <h1 className='text-slate-500 m-1'>Peti Kupe je destinacija u kojoj se isprepliću glazba, umjetnosti, edukativni sadržaji i gastronomija.</h1>
                 <Badge
-                  className=" bg-transparent w-full  text-black  border border-gray-400 cursor-pointer rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
+                  className=" bg-transparent w-full  text-black dark:bg-white  border border-gray-400 cursor-pointer rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800  transition-colors"
                 >
                   Profile
                 </Badge>
@@ -61,7 +61,7 @@ const EventOverView = () => {
             </CardHeader>
           </Card>
           {/* description */}
-          <Card className="shadow-lg dark:bg-[#171717] mt-4">
+          <Card className="shadow-lg dark:bg-secondary mt-4">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
               <p className=" mt-2">
@@ -71,9 +71,9 @@ const EventOverView = () => {
             </CardHeader>
           </Card>
           {/* venue */}
-          <Card className="mt-4 shadow-lg dark:bg-[#171717]">
+          <Card className="mt-4 shadow-lg dark:bg-secondary">
             <CardHeader>
-              <h1 className="text-slate-500 font-semibold ">VENUE</h1>
+              <h1 className="text-slate-500 font-semibold ">VENUE TYPE</h1>
               <div className="flex items-center gap-2 mt-2">
                 <PartyPopper />
                 <p className=" mt-2 text-lg ">Nightclub</p>
@@ -81,7 +81,7 @@ const EventOverView = () => {
             </CardHeader>
           </Card>
           {/* categories */}
-          <Card className="mt-4 shadow-lg dark:bg-[#171717]">
+          <Card className="mt-4 shadow-lg dark:bg-secondary">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">CATEGORIES</h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -97,7 +97,7 @@ const EventOverView = () => {
             </CardHeader>
           </Card>
           {/* tags */}
-          <Card className="mt-4 shadow-lg dark:bg-[#171717]">
+          <Card className="mt-4 shadow-lg dark:bg-secondary">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">TAGS</h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -112,7 +112,7 @@ const EventOverView = () => {
               </div>
             </CardHeader>
           </Card>
-          <Card className="mt-4 shadow-lg dark:bg-[#171717] w-full">
+          <Card className="mt-4 shadow-lg dark:bg-secondary w-full">
             <CardHeader>
               {/* Top: Status + Ellipsis */}
               <div className="flex justify-between items-center">
@@ -231,6 +231,10 @@ const EventOverView = () => {
           <Card className="shadow-lg dark:bg-[#171717] mt-4">
             <CardHeader className="w-full flex flex-col gap-2">
               <h1 className="text-slate-500 font-semibold">LOCATION PIN</h1>
+               <div className="flex items-center gap-2 mt-2">
+                <PartyPopper className='w-4 h-4' />
+                <span> Vibrant club</span>
+              </div>
               <div className="flex items-center gap-2 mt-2">
                 <MapPin className='w-4 h-4' />
                 <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>
@@ -266,7 +270,7 @@ const EventOverView = () => {
 
 
                       <div className="mt-1">
-                        <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden">
+                        <div className="relative h-2 w-full rounded-full bg-muted dark:bg-white overflow-hidden">
                           <div
                             className="h-full bg-primary transition-all"
                             style={{ width: `${(ticket.sold / ticket.total) * 100}%` }}

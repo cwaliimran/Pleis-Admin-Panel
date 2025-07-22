@@ -53,7 +53,7 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
                   {field.value ? format(field.value, "PPP") : <span>{placeholder}</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 dark:bg-secondary" align="start">
                 <Calendar
                   mode="single"
                   selected={field.value}

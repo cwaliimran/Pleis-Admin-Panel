@@ -22,7 +22,8 @@ import {
     ArrowRightLeft,
     HeartPlus,
     Highlighter,
-    Podcast
+    Podcast,
+    LogOut
 } from "lucide-react"
 import { paths } from "./paths"
 
@@ -196,5 +197,10 @@ export const menuGroups: MenuGroup[] = [
         label: "Add Support",
         key: paths.superAdmin.addSupport,
         icon: HeartPlus,
+    },
+    {
+        label:"Logout",
+        key: "/login",
+        icon: LogOut,
     }
 ]

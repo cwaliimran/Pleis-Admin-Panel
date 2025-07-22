@@ -233,7 +233,7 @@ const Page = () => {
 
               <FormProvider
                 methods={methods}
-                onSubmit={methods.handleSubmit(() => {})}
+                onSubmit={methods.handleSubmit(() => { })}
               >
                 {step === 1 && (
                   <div className="space-y-8">
@@ -300,9 +300,9 @@ const Page = () => {
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="absolute right-1 top-0.5 text-gray-400 rounded-2xl"
+                            className="absolute right-1 top-0.5 text-gray-400 rounded-2xl cursor-pointer"
                           >
-                            <X className="w-4 h-4" />
+                            <X className="w-4 h-4 " />
                           </Button>
                         </div>
                         <RHFTextField
@@ -319,7 +319,7 @@ const Page = () => {
                     <div className="flex flex-col lg:flex-row gap-6">
                       {/* Venue */}
                       <div className="w-full lg:basis-[40%] space-y-2">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
                           VENUE
                         </label>
                         <RHFSelectField
@@ -336,7 +336,7 @@ const Page = () => {
 
                       {/* Category */}
                       <div className="w-full lg:basis-[60%] space-y-2">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
                           CATEGORY
                         </label>
                         <div className="flex gap-2">
@@ -364,8 +364,7 @@ const Page = () => {
                             {category.map((c: string) => (
                               <Badge
                                 key={c}
-                                variant="secondary"
-                                className="flex items-center gap-1 text-sm"
+                                className="flex items-center bg-secondary dark:bg-white text-white dark:text-black gap-1 text-sm"
                               >
                                 {categoryOptions.find((opt) => opt.value === c)
                                   ?.label || c}
@@ -374,7 +373,7 @@ const Page = () => {
                                   onClick={() => removeCategory(c)}
                                   className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
                                 >
-                                  <X className="w-3 h-3" />
+                                  <X className="w-3 h-3 cursor-pointer" />
                                 </button>
                               </Badge>
                             ))}
@@ -385,7 +384,7 @@ const Page = () => {
 
                     {/* Tags */}
                     <div>
-                      <label className="text-sm font-medium text-gray-700 uppercase tracking-wide ">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
                         TAGS
                       </label>
                       <div className="flex gap-2 w-[70%] mt-2">
@@ -394,7 +393,7 @@ const Page = () => {
                           placeholder="Search for tag"
                           value={tagInput}
                           onChange={(e) => setValue("tagInput", e.target.value)}
-                          className="bg-[#F8F6F7] flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
+                          className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
                         />
                         <Button
                           type="button"
@@ -409,8 +408,7 @@ const Page = () => {
                           {tag.map((t: string) => (
                             <Badge
                               key={t}
-                              variant="secondary"
-                              className="flex items-center gap-1 text-sm"
+                              className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
                             >
                               {tagOptions.find((opt) => opt.value === t)
                                 ?.label || t}
@@ -419,7 +417,7 @@ const Page = () => {
                                 onClick={() => removeTag(t)}
                                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
                               >
-                                <X className="w-3 h-3" />
+                                <X className="w-3 h-3 cursor-pointer" />
                               </button>
                             </Badge>
                           ))}
@@ -429,7 +427,7 @@ const Page = () => {
 
                     {/* Organizer */}
                     <div>
-                      <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
                         ORGANIZER
                       </label>
                       <div className="flex gap-2 w-[70%] mt-2">
@@ -438,7 +436,7 @@ const Page = () => {
                           placeholder="Search for organizer"
                           value={tagInput}
                           onChange={(e) => setValue("tagInput", e.target.value)}
-                          className="bg-[#F8F6F7] flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
+                          className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
                         />
                         <Button
                           type="button"
@@ -453,8 +451,7 @@ const Page = () => {
                           {organizers.map((o: string) => (
                             <Badge
                               key={o}
-                              variant="secondary"
-                              className="flex items-center gap-1 text-sm"
+                              className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
                             >
                               {organizerOptions.find((opt) => opt.value === o)
                                 ?.label || o}
@@ -463,7 +460,7 @@ const Page = () => {
                                 onClick={() => removeOrganizer(o)}
                                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
                               >
-                                <X className="w-3 h-3" />
+                                <X className="w-3 h-3 cursor-pointer" />
                               </button>
                             </Badge>
                           ))}
@@ -491,7 +488,7 @@ const Page = () => {
                               onChange={(e) =>
                                 setValue("tagInput", e.target.value)
                               }
-                              className="bg-[#F8F6F7] flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
+                              className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
                             />
                             <Button
                               type="button"
@@ -507,8 +504,7 @@ const Page = () => {
                             {partnerOrganizers.map((po: string) => (
                               <Badge
                                 key={po}
-                                variant="secondary"
-                                className="flex items-center gap-1 text-sm"
+                                className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
                               >
                                 {organizerOptions.find(
                                   (opt) => opt.value === po
@@ -518,7 +514,7 @@ const Page = () => {
                                   onClick={() => removePartnerOrganizer(po)}
                                   className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
                                 >
-                                  <X className="w-3 h-3" />
+                                  <X className="w-3 h-3 cursor-pointer" />
                                 </button>
                               </Badge>
                             ))}
@@ -558,11 +554,10 @@ const Page = () => {
                           type="button"
                           variant="outline"
                           onClick={() => setValue("eventType", "one-time")}
-                          className={`border-2 ${
-                            eventType === "one-time"
+                          className={`border-2 ${eventType === "one-time"
                               ? "border-blue-700 text-blue-700"
                               : "border-gray-300 dark:border-zinc-700"
-                          } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
+                            } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           One time
                         </Button>
@@ -570,11 +565,10 @@ const Page = () => {
                           type="button"
                           variant="outline"
                           onClick={() => setValue("eventType", "slots")}
-                          className={`border-2 ${
-                            eventType === "slots"
+                          className={`border-2 ${eventType === "slots"
                               ? "border-blue-700 text-blue-700"
                               : "border-gray-300 dark:border-zinc-700"
-                          } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
+                            } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           Slots
                         </Button>
@@ -603,7 +597,7 @@ const Page = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700  flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               START TIME
                             </label>
@@ -614,7 +608,7 @@ const Page = () => {
                               onChange={(e) =>
                                 setValue("fromTime", e.target.value)
                               }
-                              className="rounded-4xl bg-[#F8F6F7] border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
                             />
                           </div>
                         </div>
@@ -644,7 +638,7 @@ const Page = () => {
                               onChange={(e) =>
                                 setValue("endTime", e.target.value)
                               }
-                              className="rounded-4xl bg-[#F8F6F7] border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
                             />
                           </div>
                         </div>
@@ -715,11 +709,10 @@ const Page = () => {
                               }
                               size="sm"
                               onClick={() => toggleRecurringDay(day.value)}
-                              className={`w-12 h-8 text-xs cursor-pointer ${
-                                recurringDays.includes(day.value)
+                              className={`w-12 h-8 text-xs cursor-pointer ${recurringDays.includes(day.value)
                                   ? "bg-blue-600 text-white"
                                   : "text-gray-600"
-                              }`}
+                                }`}
                             >
                               {day.label}
                             </Button>

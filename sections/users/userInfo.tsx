@@ -64,7 +64,7 @@ const UserInfo = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => { };
 
   return (
     <>
@@ -122,7 +122,6 @@ const UserInfo = () => {
                 </div>
               </CardHeader>
             </Card>
-
             {/* CATEGORIES */}
             <Card className="mt-4 shadow-lg dark:bg-[#171717]">
               <CardHeader>
@@ -315,6 +314,10 @@ const UserInfo = () => {
               <CardHeader className="w-full flex flex-col gap-2">
                 <h1 className="text-slate-500 font-semibold">LOCATION PIN</h1>
                 <div className="flex items-center gap-2 mt-2">
+                  <PartyPopper className='w-4 h-4' />
+                  <span> Vibrant club</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
                   <MapPin />
                   <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>
                 </div>
@@ -368,9 +371,8 @@ const UserInfo = () => {
                     placeholder="Enter Description"
                     rows={2}
                     multiline
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
 
                   <div className="w-full grid md:grid-cols-2 grid-cols-1 gap-4">
@@ -539,9 +541,8 @@ const UserInfo = () => {
                     name="name"
                     label="Venue Name"
                     placeholder="Enter Venue Name"
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
 
                   <RHFTextfieldWithSelect

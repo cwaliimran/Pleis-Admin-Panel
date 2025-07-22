@@ -87,7 +87,7 @@ const Page = () => {
             />
             <div>
                 <div className=' w-full flex items-center justify-end'>
-                    <Button className='rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary'
+                    <Button className='rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary/80'
                      onClick={()=>router.push('/super-admin/events/create-event')}>
                         <Plus className='' />
                         Create Event
