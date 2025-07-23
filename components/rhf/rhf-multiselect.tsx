@@ -62,7 +62,7 @@ export function RHFMultiSelect({
                     variant="outline"
                     role="combobox"
                     className={cn(
-                      "w-full justify-between",
+                      "w-full justify-between h-[40px] dark:bg-input/30 border-input bg-transparent shadow-xs",
                       !selectedValues.length && "text-muted-foreground"
                     )}
                   >

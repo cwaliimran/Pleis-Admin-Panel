@@ -22,13 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { useBoolean } from "@/hooks/useBoolean";
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  MapPin,
-  PartyPopper,
-  Pencil,
-  Shirt,
-  UserPlus
-} from "lucide-react";
+import { MapPin, PartyPopper, Pencil, Shirt, UserPlus } from "lucide-react";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { userTags } from "./data";
@@ -292,12 +286,12 @@ const UserInfo = () => {
                    hover:bg-gray-100 "
               >
                 <Badge className=" bg-transparent text-black dark:text-slate-500 px-4 py-1 text-md font-semibold">
-                  New Promonation
+                  New Promotion
                 </Badge>
               </div>
               <div className="md:col-span-6 col-span-12 shadow-lg bg-white dark:bg-black w-full border-2 border-gray-300  rounded-full text-center hover:bg-gray-100 ">
                 <Badge className="bg-transparent text-black dark:text-slate-500  px-4 py-1 text-md font-semibold">
-                  New Notificaion
+                  New Notification
                 </Badge>
               </div>
             </div>
@@ -314,7 +308,7 @@ const UserInfo = () => {
             {/* USER INFO */}
             <Card className="shadow-lg dark:bg-[#171717]">
               <CardHeader className="w-full flex flex-col gap-2">
-                <h1 className="text-slate-500 font-semibold">VENUE NAME</h1>
+                <h1 className="text-slate-500 font-semibold">VENUE</h1>
                 <div className="flex items-center gap-2 mt-2">
                   <PartyPopper className="w-4 h-4" />
                   <span> Vibrant club</span>

@@ -12,8 +12,6 @@ import FilterDropdown from '@/components/filter-dropdown/FilterDropdown'
 const headLabel = [
     { id: "log", label: "Logo", align: "left" },
     { id: "name", label: "Name", align: 'left' },
-    { id: "phone", label: "Phone", align: "left" },
-    { id: 'email', label: "Email", align: "left" },
     { id: "createdDate", label: "Created Date", align: "left" },
     { id: "subscriptionType", label: "Sub Type", align: "left" },
     { id: "subscriptionValidity", label: "Sub End Date", align: "left" },

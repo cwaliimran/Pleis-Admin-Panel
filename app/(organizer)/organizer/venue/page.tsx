@@ -1,9 +1,7 @@
 "use client";
 import Header from "@/app/common/header";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import FormProvider, {
-  RHFTextField
-} from "@/components/rhf";
+import FormProvider, { RHFTextField } from "@/components/rhf";
 import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
 import { Button } from "@/components/ui/button";
 import {
@@ -154,11 +152,26 @@ const Page = () => {
                     { label: "Organization C", value: "org-c" },
                   ]}
                 />
+
                 <RHFTextField
                   name="location"
                   label="Location"
                   placeholder="Enter Location"
                 />
+                
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAvatarChange}
+                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Upload Floor Plan
+                  </Button>
+                  <p className="text-gray-500 text-sm mt-2">
+                    JPG or PNG. 1MB max.
+                  </p>
+                </div>
 
                 <div className="w-full">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

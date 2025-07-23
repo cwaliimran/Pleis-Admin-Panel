@@ -23,6 +23,7 @@ import { useBoolean } from "@/hooks/useBoolean";
 import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
 import { UserTable } from "@/sections/users";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
 
 const defaultValues = {
   image: null,
@@ -488,19 +489,17 @@ const Page = () => {
           break;
         case "moduleAccess":
           fieldComponents.push(
-            <RHFSelectField
+            <RHFMultiSelect
               key={field}
               name="moduleAccess"
               label="Module Access"
               placeholder="Select Module Access"
               options={[
-                { value: "full", label: "Full Access" },
-                { value: "limited", label: "Limited Access" },
-                { value: "readonly", label: "Read Only" },
+                { label: "Ticketing", value: "ticketing" },
+                { label: "Reservation Management", value: "reservation" },
+                { label: "Loyalty Scanning", value: "loyalty" },
+                { label: "In App Ordering", value: "ordering" },
               ]}
-              className={`${
-                methods.formState.errors.moduleAccess ? "border-red-400" : ""
-              }`}
             />
           );
           break;
@@ -623,6 +622,7 @@ const Page = () => {
                       "address",
                       "listOfSupplier",
                       "representativeFullName",
+                      "moduleAccess",
                     ];
                     if (fullWidthFields.includes(field.key as string)) {
                       return (

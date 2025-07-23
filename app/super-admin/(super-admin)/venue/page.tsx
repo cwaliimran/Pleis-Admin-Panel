@@ -115,20 +115,6 @@ const Page = () => {
               <div className="flex flex-col gap-4 mt-4">
                 {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
 
-                <div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAvatarChange}
-                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                  >
-                    Upload Floor Plan
-                  </Button>
-                  <p className="text-gray-500 text-sm mt-2">
-                    JPG or PNG. 1MB max.
-                  </p>
-                </div>
-
                 <RHFTextField
                   name="name"
                   label="Venue Name"
@@ -158,11 +144,26 @@ const Page = () => {
                     { label: "Organization C", value: "org-c" },
                   ]}
                 />
+
                 <RHFTextField
                   name="location"
                   label="Location"
                   placeholder="Enter Location"
                 />
+
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAvatarChange}
+                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Upload Floor Plan
+                  </Button>
+                  <p className="text-gray-500 text-sm mt-2">
+                    JPG or PNG. 1MB max.
+                  </p>
+                </div>
 
                 <div className="w-full">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

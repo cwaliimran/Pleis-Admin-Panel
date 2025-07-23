@@ -69,8 +69,7 @@ const EventTableRow: FC<PageProps> = ({
       <TableCell className="text-end">
         <div className="flex gap-2 ">
           {/* Publish / Hide Button */}
-          <Button
-            // variant={active ? "" : "outline"}
+          {/* <Button
             className={`cursor-pointer px-0 w-24 py-2 font-medium rounded-md transition-colors duration-200 
     ${active ? "bg-red-600 text-white hover:bg-red-700" : ""}
   `}
@@ -83,15 +82,13 @@ const EventTableRow: FC<PageProps> = ({
             {active ? "UnPublish" : "Publish"}
           </Button>
 
-          {/* Clone Button */}
           <Button
             variant={event.clone ? "secondary" : "outline"}
             className="cursor-pointer"
             size="sm"
-            // onClick={(e) => { e.stopPropagation(); handleCloneEvent(event.id) }}
           >
             Clone
-          </Button>
+          </Button> */}
           <button
             title="View Details"
             type="button"

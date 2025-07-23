@@ -34,8 +34,8 @@ const OrganizationTableRow: FC<PageProps> = ({
       <TableCell className="text-left">
         {item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name}
       </TableCell>
-      <TableCell className="text-left">{item.phone}</TableCell>
-      <TableCell className="text-left">{item.email}</TableCell>
+      {/* <TableCell className="text-left">{item.phone}</TableCell>
+      <TableCell className="text-left">{item.email}</TableCell> */}
 
       <TableCell>{item.createdAt ? item.createdAt : "N/A"}</TableCell>
       <TableCell className="text-left">

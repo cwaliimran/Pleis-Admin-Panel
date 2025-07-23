@@ -10,7 +10,8 @@ export const venueData = [
     },
     location: 'Johar Town, Lahore',
     region: 'Punjab',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: 'primary'
   },
   {
     id: '2',
@@ -23,7 +24,8 @@ export const venueData = [
     },
     location: 'Shahrah-e-Faisal, Karachi',
     region: 'Sindh',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '3',
@@ -36,7 +38,8 @@ export const venueData = [
     },
     location: 'Khushal Road, Islamabad',
     region: 'Islamabad Capital Territory',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '4',
@@ -49,7 +52,8 @@ export const venueData = [
     },
     location: 'Gulberg, Lahore',
     region: 'Punjab',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '5',
@@ -62,7 +66,8 @@ export const venueData = [
     },
     location: 'PIDC Road, Karachi',
     region: 'Sindh',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '6',
@@ -75,7 +80,8 @@ export const venueData = [
     },
     location: 'Bhurban, Murree',
     region: 'Punjab',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '7',
@@ -88,7 +94,8 @@ export const venueData = [
     },
     location: 'Sher Shah Suri Rd, Peshawar',
     region: 'Khyber Pakhtunkhwa',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '8',
@@ -101,7 +108,8 @@ export const venueData = [
     },
     location: 'Multan Cantt, Multan',
     region: 'Punjab',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '9',
@@ -114,7 +122,8 @@ export const venueData = [
     },
     location: 'Latifabad, Hyderabad',
     region: 'Sindh',
-    createdAt:"2024-12-31"
+    createdAt: "2024-12-31",
+    status: '-'
   },
   {
     id: '10',
@@ -126,7 +135,8 @@ export const venueData = [
       name: 'Baloch Events',
     },
     location: 'Jinnah Road, Quetta',
-    createdAt:"2024-12-31",
+    createdAt: "2024-12-31",
     region: 'Balochistan',
+    status: '-'
   },
 ];

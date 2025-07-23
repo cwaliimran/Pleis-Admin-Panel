@@ -1,36 +1,38 @@
+"use client";
 
-'use client';
+import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as Yup from "yup";
+import { motion } from "framer-motion";
+import PhoneInput from "react-phone-input-2";
 
-import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Controller, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
-import { motion } from 'framer-motion';
-import PhoneInput from 'react-phone-input-2';
-
-import { Button } from '@/components/ui/button';
-import { ModeToggle } from '@/components/atoms/mode-toggle';
-import { useBoolean } from '@/hooks/useBoolean';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/atoms/mode-toggle";
+import { useBoolean } from "@/hooks/useBoolean";
+import FormProvider, { RHFTextField } from "@/components/rhf";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
 
 const defaultValues = {
-  fname: '',
-  lname: '',
-  email: '',
-  password: '',
-  phone: '',
-  companyName: '',
-  oib: '',
-  bankAccountNumber: '',
-  bankAccountName: '',
-  representativeFullName: '',
-  address: '',
-  postalCode: '',
-  city: '',
-  country: '',
-  suppliers: '',
+  fname: "",
+  lname: "",
+  email: "",
+  password: "",
+  phone: "",
+  companyName: "",
+  oib: "",
+  bankAccountNumber: "",
+  bankAccountName: "",
+  representativeFullName: "",
+  address: "",
+  postalCode: "",
+  city: "",
+  country: "",
+  suppliers: "",
 };
 
 const schema = Yup.object().shape({
@@ -54,7 +56,11 @@ const schema = Yup.object().shape({
 function SignUpPage() {
   const router = useRouter();
   const open = useBoolean();
-  const [step, setStep] = React.useState<'basicInfo' | 'businessDetails'>('basicInfo');
+  const confirmOpen = useBoolean();
+
+  const [step, setStep] = React.useState<"basicInfo" | "businessDetails">(
+    "basicInfo"
+  );
 
   const methods = useForm({
     defaultValues,
@@ -94,23 +100,44 @@ function SignUpPage() {
           transition={{ duration: 0.5 }}
           className="w-full md:w-1/2 p-8 md:p-14"
         >
-          <h2 className="text-3xl font-extrabold text-center mb-1">Create Account</h2>
+          <h2 className="text-3xl font-extrabold text-center mb-1">
+            Create Account
+          </h2>
           <p className="text-sm text-muted-foreground text-center mb-6">
             Join Pleis and explore the future
           </p>
 
-          <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
-            {step === 'basicInfo' && (
+          <FormProvider
+            methods={methods}
+            onSubmit={methods.handleSubmit(onSubmit)}
+          >
+            {step === "basicInfo" && (
               <div className="space-y-4">
                 <RHFTextField name="fname" placeholder="First Name" />
                 <RHFTextField name="lname" placeholder="Last Name" />
-                <RHFTextField name="email" type="email" placeholder="Email Address" />
+                <RHFTextField
+                  name="organizationName"
+                  placeholder="Organization Name"
+                />
+                <RHFTextField
+                  name="email"
+                  type="email"
+                  placeholder="Email Address"
+                />
                 <RHFTextField
                   name="password"
                   type="password"
                   placeholder="Password"
                   showPassword={open.value}
                   onTogglePassword={open.onToggle}
+                />
+
+                <RHFTextField
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm Password"
+                  showPassword={confirmOpen.value}
+                  onTogglePassword={confirmOpen.onToggle}
                 />
 
                 <Controller
@@ -145,7 +172,11 @@ function SignUpPage() {
               focus-visible:ring-ring/50 focus-visible:ring-[3px]
               aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
               aria-invalid:border-destructive
-              ${fieldState.invalid ? "border-destructive ring-destructive/40" : ""}
+              ${
+                fieldState.invalid
+                  ? "border-destructive ring-destructive/40"
+                  : ""
+              }
             `}
                       />
                     </div>
@@ -153,7 +184,7 @@ function SignUpPage() {
                 />
                 <Button
                   type="button"
-                  onClick={() => setStep('businessDetails')}
+                  onClick={() => setStep("businessDetails")}
                   className="w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200"
                 >
                   Next
@@ -161,15 +192,26 @@ function SignUpPage() {
               </div>
             )}
 
-            {step === 'businessDetails' && (
+            {step === "businessDetails" && (
               <>
                 <div className="grid md:grid-cols-2 gap-4">
                   <RHFTextField name="companyName" placeholder="Company Name" />
                   <RHFTextField name="oib" placeholder="OIB" />
-                  <RHFTextField name="bankAccountNumber" placeholder="Bank Account Number" />
-                  <RHFTextField name="bankAccountName" placeholder="Bank Account Name" />
-                  <RHFTextField name="representativeFullName" placeholder="Representative Full Name" />
+                  <RHFTextField
+                    name="bankAccountNumber"
+                    placeholder="Bank Account Number"
+                  />
                   <RHFTextField name="postalCode" placeholder="Postal Code" />
+                  {/* <RHFTextField
+                    name="bankAccountName"
+                    placeholder="Bank Account Name"
+                  /> */}
+                  <div className="col-span-2">
+                    <RHFTextField
+                      name="representativeFullName"
+                      placeholder="Representative Full Name"
+                    />
+                  </div>
                 </div>
 
                 <div className="mt-4">
@@ -181,8 +223,34 @@ function SignUpPage() {
                   <RHFTextField name="country" placeholder="Country" />
                 </div>
 
+                {/* <div className="mt-4">
+                  <RHFTextField
+                    multiline
+                    name="suppliers"
+                    placeholder="List of Suppliers"
+                  />
+                </div> */}
+
                 <div className="mt-4">
-                  <RHFTextField multiline name="suppliers" placeholder="List of Suppliers" />
+                  <RHFMultiSelect
+                    name="suppliers"
+                    placeholder="List of Suppliers"
+                    options={[
+                      { label: "Clubbing", value: "clubbing" },
+                      { label: "Techno", value: "techno" },
+                      { label: "House", value: "house" },
+                    ]}
+                  />
+                </div>
+
+                <div className="mt-4 flex items-center gap-3">
+                  <Checkbox
+                    id="terms"
+                    className="border border-gray-800 dark:border-gray-400 cursor-pointer"
+                  />
+                  <Label className="cursor-pointer" htmlFor="terms">
+                    Accept terms and conditions
+                  </Label>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mt-6">
@@ -190,7 +258,7 @@ function SignUpPage() {
                     type="button"
                     variant="outline"
                     className="w-full h-[45px] cursor-pointer"
-                    onClick={() => setStep('basicInfo')}
+                    onClick={() => setStep("basicInfo")}
                   >
                     Back
                   </Button>
@@ -198,7 +266,9 @@ function SignUpPage() {
                     type="submit"
                     className="w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200"
                   >
-                    {methods.formState.isSubmitting ? 'Creating Account...' : 'Sign Up'}
+                    {methods.formState.isSubmitting
+                      ? "Creating Account..."
+                      : "Sign Up"}
                   </Button>
                 </div>
               </>
@@ -210,27 +280,46 @@ function SignUpPage() {
             Or sign up with
             <div className="flex justify-center gap-4 mt-4">
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <img src="/images/appleIcon.png" alt="Apple" className="w-6 h-6 dark:hidden" />
-                <img src="/images/macIconDark.png" alt="Apple Dark" className="w-6 h-6 hidden dark:block" />
+                <img
+                  src="/images/appleIcon.png"
+                  alt="Apple"
+                  className="w-6 h-6 dark:hidden"
+                />
+                <img
+                  src="/images/macIconDark.png"
+                  alt="Apple Dark"
+                  className="w-6 h-6 hidden dark:block"
+                />
               </Button>
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <img src="/images/googleIcon.png" alt="Google" className="w-6 h-6" />
+                <img
+                  src="/images/googleIcon.png"
+                  alt="Google"
+                  className="w-6 h-6"
+                />
               </Button>
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <img src="/images/metaIcon.png" alt="Meta" className="w-6 h-6" />
+                <img
+                  src="/images/metaIcon.png"
+                  alt="Meta"
+                  className="w-6 h-6"
+                />
               </Button>
             </div>
-
             <p className="text-sm mt-4">
-              Already have an account?{' '}
-              <Link href="/user/signIn" className="text-[#0f172b] dark:text-white hover:underline font-medium">
+              Already have an account?{" "}
+              <Link
+                href="/user/signIn"
+                className="text-[#0f172b] dark:text-white hover:underline font-medium"
+              >
                 Login
               </Link>
             </p>
           </div>
 
           <p className="mt-10 text-xs text-center text-muted-foreground">
-            By signing up, you agree to our <span className="underline">Terms of Service</span> and{' '}
+            By signing up, you agree to our{" "}
+            <span className="underline">Terms of Service</span> and{" "}
             <span className="underline">Privacy Policy</span>.
           </p>
         </motion.div>

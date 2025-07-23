@@ -75,7 +75,7 @@ const Page = () => {
 
   return (
     <div>
-      <div className="space-y-6">
+      <div className="space-y-6 pb-12">
         <Header
           links={[
             { name: "Dashboard", href: "/super-admin" },
@@ -157,7 +157,7 @@ const Page = () => {
 
                   <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 w-full mt-4 md:mb-0 mb-2 md:px-0 px-2">
                     {/* Publish / Hide Button */}
-                    <div className="w-full sm:w-auto">
+                    {/* <div className="w-full sm:w-auto">
                       <Button
                         variant="default"
                         onClick={() => handleTogglePublish(event.id)}
@@ -173,7 +173,7 @@ const Page = () => {
                           </>
                         )}
                       </Button>
-                    </div>
+                    </div> */}
 
                     {/* Clone Button */}
                     <div className="w-full sm:w-auto">
@@ -271,38 +271,38 @@ const Page = () => {
               ))}
               <CapacityGaugeChart />
               <LastTransaction />
-              <div className="w-full md:flex  justify-between items-start flex-wrap md:mt-20 mt-5 md:px-0 px-2">
-                {/* START DATE */}
-                <div className="flex flex-col gap-1 min-w-[140px]">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
-                    <p className="text-xs text-gray-600 dark:text-white font-semibold">
-                      START DATE
-                    </p>
-                  </div>
-                  <p className="text-sm text-black dark:text-white font-medium">
-                    March 23, 25, 13:00
-                  </p>
-                </div>
 
-                {/* END DATE */}
-                <div className="flex flex-col gap-1 min-w-[140px] md:mt-0 mt-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
-                    <p className="text-xs text-gray-600 dark:text-white font-semibold">
-                      END DATE
-                    </p>
+              <Card className="col-span-12 shadow-lg  dark:bg-[#171717]">
+                <CardContent>
+                  <div className="w-full md:flex  justify-between items-start flex-wrap gap-y-6 md:px-0 px-2">
+                    {/* START DATE */}
+                    <div className="flex flex-col gap-1 min-w-[140px]">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
+                        <p className="text-xs text-gray-600 dark:text-white font-semibold">
+                          START DATE
+                        </p>
+                      </div>
+                      <p className="text-sm text-black dark:text-white font-medium">
+                        March 23, 25, 13:00
+                      </p>
+                    </div>
+
+                    {/* END DATE */}
+                    <div className="flex flex-col gap-1 min-w-[140px] md:mt-0 mt-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
+                        <p className="text-xs text-gray-600 dark:text-white font-semibold">
+                          END DATE
+                        </p>
+                      </div>
+                      <p className="text-sm text-black dark:text-white font-medium">
+                        March 23, 25, 13:00
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm text-black dark:text-white font-medium">
-                    March 23, 25, 13:00
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center justify-center mt-15">
-                <Users className="cursor-pointer text-slate-500 dark:text-white w-4 h-4" />
-                <h1 className="text-slate-500 dark:text-white ml-2">Players</h1>
-                : <span className="text-bold ml-2">632</span>
-              </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
           {active === "analytics" && (

@@ -19,7 +19,7 @@ const ActivePromontion = () => {
                             <h1 className='text-lg font-semibold'>{item.title}</h1>
                             <p className=' text-gray-500'>{item.description}</p>
                         </div>
-                        <Badge className='border-gray-300 rounded-2xl ml-auto bg-transparent px-3 py-1 text-lg text-gray-700 dark:text-gray-400'>Boost</Badge>
+                        {/* <Badge className='border-gray-300 rounded-2xl ml-auto bg-transparent px-3 py-1 text-lg text-gray-700 dark:text-gray-400'>Boost</Badge> */}
                     </div>
                 ))}
 

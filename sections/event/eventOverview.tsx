@@ -1,35 +1,51 @@
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Calendar, Dot, Ellipsis, MapPin, PartyPopper, Shirt, UserPlus, UsersRound } from 'lucide-react'
-import React from 'react'
-import { userTags } from '../users/data'
-import { Button } from '@/components/ui/button'
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Calendar,
+  Dot,
+  Ellipsis,
+  MapPin,
+  PartyPopper,
+  Shirt,
+  UserPlus,
+  UsersRound,
+} from "lucide-react";
+import React from "react";
+import { userTags } from "../users/data";
+import { Button } from "@/components/ui/button";
 
 const EventOverView = () => {
-
-
   const tickets = [
-    { title: 'Early Bird Tickets', from: 'Mon 13, 25', sold: 1500, total: 2000 },
-    { title: 'Early Bird Tickets', from: 'Mon 13, 25', sold: 1800, total: 2000 },
+    {
+      title: "Early Bird Tickets",
+      from: "Mon 13, 25",
+      sold: 1500,
+      total: 2000,
+    },
+    {
+      title: "Early Bird Tickets",
+      from: "Mon 13, 25",
+      sold: 1800,
+      total: 2000,
+    },
   ];
 
   const updates = [
     {
-      title: 'Early Bird Tickets',
+      title: "Early Bird Tickets",
       description:
-        'Lorem ipsum dolor sit amet consectetur. Posuere tellus sagittis morbi eu ac justo. Phasellus in in porta egestas eget massa.',
+        "Lorem ipsum dolor sit amet consectetur. Posuere tellus sagittis morbi eu ac justo. Phasellus in in porta egestas eget massa.",
     },
     {
-      title: 'Early Bird Tickets',
-      description: 'Tellus congue tortor non morbi eros risus aenean.',
+      title: "Early Bird Tickets",
+      description: "Tellus congue tortor non morbi eros risus aenean.",
     },
   ];
 
-
   return (
     <div>
-      <div className='grid grid-cols-12 gap-4'>
-        <div className='md:col-span-5 col-span-12'>
+      <div className="grid grid-cols-12 gap-4">
+        <div className="md:col-span-5 col-span-12">
           {/* about organizer */}
           <Card className="shadow-lg dark:bg-secondary">
             <CardHeader>
@@ -41,23 +57,24 @@ const EventOverView = () => {
                     alt="Peti Kupe"
                     className="w-10 h-10 rounded-full"
                   />
-                  <div className='flex flex-col'>
-                    <span className="text-sm font-bold text-gray-800 dark:text-white">Peti Kupe</span>
-                    <div className='flex'>
-                      <MapPin className='w-4 h-4' />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-gray-800 dark:text-white">
+                      Peti Kupe
+                    </span>
+                    <div className="flex">
+                      <MapPin className="w-4 h-4" />
                       <span>Trnjanska cesta 5, 10 00...</span>
                     </div>
                   </div>
                 </div>
-                <h1 className='text-slate-500 m-1'>Peti Kupe je destinacija u kojoj se isprepliću glazba, umjetnosti, edukativni sadržaji i gastronomija.</h1>
-                <Badge
-                  className=" bg-transparent w-full  text-black dark:bg-white  border border-gray-400 cursor-pointer rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800  transition-colors"
-                >
+                <h1 className="text-slate-500 m-1">
+                  Peti Kupe je destinacija u kojoj se isprepliću glazba,
+                  umjetnosti, edukativni sadržaji i gastronomija.
+                </h1>
+                <Badge className=" bg-transparent w-full  text-black dark:bg-white  border border-gray-400 cursor-pointer rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800  transition-colors">
                   Profile
                 </Badge>
               </div>
-
-
             </CardHeader>
           </Card>
           {/* description */}
@@ -65,9 +82,12 @@ const EventOverView = () => {
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
               <p className=" mt-2">
-                Svirati ploče bez pritiska, jednostavno iz ljubavi prema zvukovima te njegovati umjetnost slušanja muzike. Misija je to jedinstvenog kluba Kasheme u Zürichu. S ovim audiofilskim barom posebne koncepcije i uređenja upoznali smo se proljetos pri gostovanju njihove sjajne ekipe u Kupeu.
+                Svirati ploče bez pritiska, jednostavno iz ljubavi prema
+                zvukovima te njegovati umjetnost slušanja muzike. Misija je to
+                jedinstvenog kluba Kasheme u Zürichu. S ovim audiofilskim barom
+                posebne koncepcije i uređenja upoznali smo se proljetos pri
+                gostovanju njihove sjajne ekipe u Kupeu.
               </p>
-
             </CardHeader>
           </Card>
           {/* venue */}
@@ -142,7 +162,9 @@ const EventOverView = () => {
                   </div>
 
                   {/* Row 2: Title */}
-                  <h1 className="text-lg sm:text-xl font-medium">Promotion Name</h1>
+                  <h1 className="text-lg sm:text-xl font-medium">
+                    Promotion Name
+                  </h1>
 
                   {/* Row 3: Description */}
                   <p className="text-slate-500 mt-1 text-sm">
@@ -173,7 +195,9 @@ const EventOverView = () => {
 
               {/* Reward Availability */}
               <div className="flex justify-between items-center mt-4 text-sm">
-                <h1 className="text-slate-500 font-semibold">REWARD AVAILABILITY</h1>
+                <h1 className="text-slate-500 font-semibold">
+                  REWARD AVAILABILITY
+                </h1>
                 <h1 className="text-slate-500">488/2300</h1>
               </div>
 
@@ -191,52 +215,50 @@ const EventOverView = () => {
                              hover:bg-gray-100 "
             >
               <Badge className=" bg-transparent text-black dark:text-slate-500 px-4 py-1 text-md font-semibold">
-                New Promonation
+                New Promotion
               </Badge>
             </div>
             <div className="md:col-span-6 col-span-12 shadow-lg bg-white dark:bg-black w-full border-2 border-gray-300  rounded-full text-center hover:bg-gray-100 ">
               <Badge className="bg-transparent text-black dark:text-slate-500  px-4 py-1 text-md font-semibold">
-                New Notificaion
+                New Notification
               </Badge>
             </div>
           </div>
-
         </div>
-        <div className='md:col-span-7 col-span-12'>
+        <div className="md:col-span-7 col-span-12">
           {/* timeline  */}
           <Card className="shadow-lg dark:bg-[#171717]">
             <CardHeader className="w-full flex flex-col gap-2">
               <h1 className="text-slate-500 font-semibold">Timeline</h1>
               <hr />
-              <div className='flex items-center gap-2 justify-between w-full'>
-                <div className='flex flex-col gap-2'>
-                  <div className='flex items-center gap-2'>
-                    <Calendar className='w-4 h-4' />
-                    <p className='text-sm text-slate-500'>START DATE</p>
+              <div className="flex items-center gap-2 justify-between w-full">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <p className="text-sm text-slate-500">START DATE</p>
                   </div>
-                  <p className='text-sm'>March 23, 25, 13:00</p>
+                  <p className="text-sm">March 23, 25, 13:00</p>
                 </div>
-                <div className='flex flex-col gap-2'>
-                  <div className='flex items-center gap-2'>
-                    <Calendar className='w-4 h-4' />
-                    <p className='text-sm text-slate-500'>END DATE</p>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <p className="text-sm text-slate-500">END DATE</p>
                   </div>
-                  <p className='text-sm'>March 23, 25, 13:00</p>
+                  <p className="text-sm">March 23, 25, 13:00</p>
                 </div>
               </div>
-
             </CardHeader>
           </Card>
           {/* location */}
           <Card className="shadow-lg dark:bg-[#171717] mt-4">
             <CardHeader className="w-full flex flex-col gap-2">
-              <h1 className="text-slate-500 font-semibold">LOCATION PIN</h1>
-               <div className="flex items-center gap-2 mt-2">
-                <PartyPopper className='w-4 h-4' />
+              <h1 className="text-slate-500 font-semibold">VENUE</h1>
+              <div className="flex items-center gap-2 mt-2">
+                <PartyPopper className="w-4 h-4" />
                 <span> Vibrant club</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                <MapPin className='w-4 h-4' />
+                <MapPin className="w-4 h-4" />
                 <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>
               </div>
               <img
@@ -250,30 +272,35 @@ const EventOverView = () => {
           {/* Tickets Section */}
           <Card className="space-y-4 mt-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
-              <h2 className="text-sm font-semibold text-muted-foreground">TICKETS</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground">
+                TICKETS
+              </h2>
 
               {tickets.map((ticket, index) => (
-                <div
-                  key={index}
-                >
-                  <div
-                    className="flex items-start justify-between  p-4 rounded-md "  >
-
+                <div key={index}>
+                  <div className="flex items-start justify-between  p-4 rounded-md ">
                     <div className="flex-1 space-y-1">
-                      <div className='flex items-center justify-between mr-2'>
+                      <div className="flex items-center justify-between mr-2">
                         <div>
-                          <p className="text-base font-medium">{ticket.title}</p>
-                          <p className="text-xs text-muted-foreground">From {ticket.from}</p>
+                          <p className="text-base font-medium">
+                            {ticket.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            From {ticket.from}
+                          </p>
                         </div>
-                        <p>{ticket.sold}/ {ticket.total}</p>
+                        <p>
+                          {ticket.sold}/ {ticket.total}
+                        </p>
                       </div>
-
 
                       <div className="mt-1">
                         <div className="relative h-2 w-full rounded-full bg-muted dark:bg-white overflow-hidden">
                           <div
                             className="h-full bg-primary transition-all"
-                            style={{ width: `${(ticket.sold / ticket.total) * 100}%` }}
+                            style={{
+                              width: `${(ticket.sold / ticket.total) * 100}%`,
+                            }}
                           />
                         </div>
                       </div>
@@ -282,9 +309,9 @@ const EventOverView = () => {
                         {ticket.sold}/{ticket.total}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    {/* <Button variant="outline" size="sm">
                       Boost
-                    </Button>
+                    </Button> */}
                   </div>
                   <hr />
                 </div>
@@ -293,7 +320,9 @@ const EventOverView = () => {
               {/* Total Summary */}
               <div className="flex items-center justify-between md:px-4 pt-2  ">
                 <div>
-                  <p className="text-sm font-semibold text-muted-foreground">Total</p>
+                  <p className="text-sm font-semibold text-muted-foreground">
+                    Total
+                  </p>
                   <p className="text-lg font-bold">12,026 €</p>
                 </div>
                 <Button variant="outline" size="sm">
@@ -305,7 +334,9 @@ const EventOverView = () => {
           {/* Updates Section */}
           <Card className="space-y-4 mt-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
-              <h2 className="text-sm font-semibold text-muted-foreground">UPDATES</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground">
+                UPDATES
+              </h2>
 
               {updates.map((update, index) => (
                 <div key={index}>
@@ -315,7 +346,9 @@ const EventOverView = () => {
                         <Dot className="text-primary w-2 h-2 -ml-1 rounded-full bg-primary" />
                         <p className="text-sm font-medium">{update.title}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground">{update.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {update.description}
+                      </p>
                     </div>
                     <Button variant="outline" size="sm">
                       Boost
@@ -327,23 +360,19 @@ const EventOverView = () => {
 
               {/* Optional Summary Section */}
               <div className="flex items-center justify-between px-1 pt-2">
-                <p className="text-sm font-semibold text-muted-foreground">Last updated: 2 hours ago</p>
+                <p className="text-sm font-semibold text-muted-foreground">
+                  Last updated: 2 hours ago
+                </p>
                 <Button variant="outline" size="sm">
                   Manage Updates
                 </Button>
               </div>
             </CardContent>
           </Card>
-
-
-
-
-
-
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default EventOverView
+export default EventOverView;
