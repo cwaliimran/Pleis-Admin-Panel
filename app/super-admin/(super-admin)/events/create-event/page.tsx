@@ -2,7 +2,7 @@
 
 import Header from "@/app/common/header";
 import { Button } from "@/components/ui/button";
-import { Plus, X, CalendarIcon, Clock } from "lucide-react";
+import { Plus, X, CalendarIcon, Clock, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import RHFDate from "@/components/rhf/rhf-date";
+import { Input } from "@/components/ui/input";
 
 interface EventFormValues {
   image: File | null;
@@ -101,7 +102,9 @@ const weekDays = [
 ];
 
 const Page = () => {
+
   const [step, setStep] = useState(1);
+  const [version, setVersion] = useState(1);
   const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const methods = useForm<EventFormValues>({ defaultValues });
@@ -208,8 +211,8 @@ const Page = () => {
         <div className="w-full flex justify-end mb-2"></div>
 
         <div className="w-full max-w-4xl mx-auto">
-          <Card className="shadow-sm dark:bg-[#171717]">
-            <CardContent className="p-8 dark:bg-[#171717]">
+          <Card className="shadow-sm dark:bg-secondary">
+            <CardContent className="p-8 dark:bg-secondary">
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-6 text-foreground">
@@ -220,12 +223,12 @@ const Page = () => {
                   <div className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
                     {step === 1
                       ? "Step 1: Basic Info"
-                      : "Step 2: Schedule Date and Time"}
+                      : step === 2 ? "Step 2: Schedule Date and Time" : " Step 3: Add Ticketing"}
                   </div>
                   <div className="relative w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div
                       className="bg-blue-700 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${step === 1 ? 50 : 100}%` }}
+                      style={{ width: `${step === 1 ? 33 : step === 2 ? 66 : 100}%` }}
                     />
                   </div>
                 </div>
@@ -257,10 +260,10 @@ const Page = () => {
                                   <div className="flex flex-row text-gray-400">
                                     <span className="text-3xl mr-2"> + </span>
                                     <div className="flex flex-col">
-                                      <span className="text-3xl font-medium">
+                                      <span className="text-[22.9px] font-semibold">
                                         Add photo
                                       </span>
-                                      <span className="text-3xl font-medium align-middle">
+                                      <span className="text-[22.9px] font-semibold align-middle">
                                         or video
                                       </span>
                                     </div>
@@ -353,7 +356,7 @@ const Page = () => {
                           <Button
                             type="button"
                             onClick={addCategory}
-                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-6"
+                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 md:px-6 px-3 py-3"
                           >
                             Add
                           </Button>
@@ -398,7 +401,7 @@ const Page = () => {
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer py-6 px-6"
+                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 md:px-6 px-3 py-3"
                         >
                           Add
                         </Button>
@@ -441,7 +444,7 @@ const Page = () => {
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer py-6 px-6"
+                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-6 px-5"
                         >
                           Add
                         </Button>
@@ -493,7 +496,7 @@ const Page = () => {
                             <Button
                               type="button"
                               onClick={addTag}
-                              className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-6"
+                              className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                             >
                               Add
                             </Button>
@@ -524,11 +527,11 @@ const Page = () => {
                     </div>
 
                     {/* Navigation buttons */}
-                    <div className="flex justify-end mt-22 items-center gap-2">
+                    <div className="flex md:justify-end flex-wrap mt-22 items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-22 rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                         onClick={() => router.back()}
                       >
                         Cancel
@@ -536,7 +539,7 @@ const Page = () => {
                       <Button
                         type="button"
                         onClick={() => setStep(2)}
-                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                       >
                         Next
                       </Button>
@@ -555,8 +558,8 @@ const Page = () => {
                           variant="outline"
                           onClick={() => setValue("eventType", "one-time")}
                           className={`border-2 ${eventType === "one-time"
-                              ? "border-blue-700 text-blue-700"
-                              : "border-gray-300 dark:border-zinc-700"
+                            ? "border-blue-700 text-blue-700"
+                            : "border-gray-300 dark:border-zinc-700"
                             } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           One time
@@ -566,8 +569,8 @@ const Page = () => {
                           variant="outline"
                           onClick={() => setValue("eventType", "slots")}
                           className={`border-2 ${eventType === "slots"
-                              ? "border-blue-700 text-blue-700"
-                              : "border-gray-300 dark:border-zinc-700"
+                            ? "border-blue-700 text-blue-700"
+                            : "border-gray-300 dark:border-zinc-700"
                             } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           Slots
@@ -710,8 +713,8 @@ const Page = () => {
                               size="sm"
                               onClick={() => toggleRecurringDay(day.value)}
                               className={`w-12 h-8 text-xs cursor-pointer ${recurringDays.includes(day.value)
-                                  ? "bg-blue-600 text-white"
-                                  : "text-gray-600"
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-600"
                                 }`}
                             >
                               {day.label}
@@ -814,30 +817,306 @@ const Page = () => {
                     </div>
 
                     {/* Navigation buttons */}
-                    <div className="flex justify-end mt-22 items-center gap-2">
+                    <div className="flex md:justify-end flex-wrap mt-22 items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => setStep(1)}
-                        className="w-22 rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                       >
                         Back
                       </Button>
                       <Button
-                        type="submit"
-                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        // type="submit"
+                        onClick={() => setStep(3)}
+                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                       >
                         Next
                       </Button>
                     </div>
                   </div>
                 )}
+                {
+                  step === 3 && (
+                    <div>
+                      <div className="w-full md:flex justify-start items-center">
+                        <div className="flex flex-wrap gap-4">
+                          {['Resend to Unopened Users', 'Include Names on Tickets'].map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 w-full sm:w-auto">
+                              <Input type="checkbox" className="h-4 w-4 cursor-pointer" />
+                              <span className="text-sm text-foreground">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <h1 className="text-[16px] font-medium leading-5 my-5">General Information</h1>
+                      <div className="flex flex-wrap items-center gap-4">
+                        {['Paid', 'Free', 'Donation'].map((item, index) => (
+                          <div key={index} className="flex items-center gap-2 w-full sm:w-auto">
+                            <Button variant={"outline"} onClick={() => setVersion(index + 1)} className={`cursor-pointer
+                               md:max-w-[140px] md:min-w-[140px] px-10 py-5 transition-all ${version === index + 1 ?
+                                'border border-primary  dark:border-primary ' : ''}`}>{item}</Button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="relative mt-5 md:w-[66%] w-full">
+                        <RHFTextField
+                          name="name"
+                          placeholder="General Admission"
+                          className="text-sm  font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-0.5 text-gray-400 rounded-2xl cursor-pointer"
+                        >
+                          <X className="w-4 h-4 " />
+                        </Button>
+                      </div>
+                      <div className="w-full grid grid-cols-12 mt-4 gap-4">
+                        <div className="col-span-12 md:col-span-8">
+                          <RHFTextField
+                            name="description"
+                            multiline
+                            rows={4}
+                            placeholder="Type Ticket Description"
+                            className="text-sm md:min-h-[132px] font-medium border border-gray-200 px-4 bg-[#F8F6F7] "
+                          />
+                        </div>
+                        <div className="col-span-12 md:col-span-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                              AVAILABLE QUANTITY
+                            </label>
+                            <RHFTextField
+                              name="quantity"
+                              placeholder="100"
+                              type="number"
+                              className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                            />
+                          </div>
+                          <div className="flex items-end gap-4 mt-3">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                                PRICE
+                              </label>
+                              <RHFTextField
+                                name="price"
+                                placeholder="0.00"
+                                type="number"
+                                className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                              />
+
+                            </div>
+                            <RHFSelectField
+                              name="currency"
+                              placeholder="USD"
+                              defaultValue={"EURO"}
+                              options={[
+                                { label: "USD", value: "USD" },
+                                { label: "EURO", value: "EUR" },
+                                { label: "GBP", value: "GBP" },
+                              ]}
+                              className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <h1 className="text-[16px] font-medium leading-5 my-5">Set up sale start date and time</h1>
+                      <div className="w-full md:w-[60%]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                              <CalendarIcon className="w-4 h-4" />
+                              START DATE
+                            </label>
+                            <RHFDate
+                              name="fromDate"
+                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              START TIME
+                            </label>
+                            <input
+                              type="time"
+                              step="1800"
+                              value={watch("fromTime")}
+                              onChange={(e) =>
+                                setValue("fromTime", e.target.value)
+                              }
+                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      {/* End Date and Time row */}
+                      <div className="w-full md:w-[60%] md:mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 gap-y-4 ">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
+                              <CalendarIcon className="w-4 h-4" />
+                              END DATE
+                            </label>
+                            <RHFDate
+                              name="endDate"
+                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              END TIME
+                            </label>
+                            <input
+                              type="time"
+                              step="1800"
+                              value={watch("endTime")}
+                              onChange={(e) =>
+                                setValue("endTime", e.target.value)
+                              }
+                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                          <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                            TICKET OPTIONS
+                          </label>
+                          <RHFSelectField
+                            name="ticketOptions"
+                            defaultValue="early-bird"
+                            placeholder="Select Ticket Options"
+                            options={[
+                              { label: "General Admission", value: "general" },
+                              { label: "VIP", value: "vip" },
+                              { label: "Early Bird - 5$", value: "early-bird" },
+                            ]}
+                            className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <Button
+                        type="button"
+                        className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
+                        <Plus className="w-4 h-4 " />
+                        Add Date
+                      </Button>
+
+                      <h1 className="text-[14px] font-medium leading-5 my-5 text-foreground">
+                        <span className="text-primary cursor-pointer">+ Create a section</span> if you want to sell multiple ticket types that share the same inventory.
+                      </h1>
+                      <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                        <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                          CHOOSE A SECTION
+                        </label>
+                        <RHFSelectField
+                          name="time"
+                          options={[
+                            { label: "10:00AM", value: "10:00AM" },
+                            { label: "11:00AM", value: "11:00AM" },
+                            { label: "12:00PM", value: "12:00PM" },
+                            { label: "1:00PM", value: "1:00PM" },
+                            { label: "2:00PM", value: "2:00PM" },
+                            { label: "3:00PM", value: "3:00PM" },
+                          ]}
+                          className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                        />
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <div className="my-6 flex items-center-safe gap-2">
+                        <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap">Advanced settings
+                        </h1>
+                        <ChevronDown className="w-4 h-4 cursor-pointer" />
+                      </div>
+                      <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                        <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                          TICKETS PER ORDER
+                        </label>
+                        <div className="md:flex items-center gap-3">
+                          <RHFTextField
+                            name="minQuantity"
+                            placeholder="Minimum quantity"
+                            type="number"
+                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                          /><RHFTextField
+                            name="maxQuantity"
+                            placeholder="Minimum quantity"
+                            type="number"
+                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl md:mt-0 mt-3"
+                          />
+                        </div>
+                        <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                          SALES CHANNEL
+                        </label>
+                        <RHFSelectField
+                          name="salesChannel"
+                          placeholder="Select Sales Channel"
+                          options={[
+                            { label: "Online", value: "online" },
+                            { label: "In-person", value: "in-person" },
+                            { label: "Phone", value: "phone" },
+                          ]}
+                          className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                        />
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <div className="flex flex-wrap gap-3">
+                        <Button
+                          type="button"
+                          className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
+                          <Plus className="w-4 h-4 " />
+                          Add tickets
+                        </Button>
+                        <Button
+                          type="button"
+                          className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
+                          <Plus className="w-4 h-4 " />
+                          Import Tickets
+                        </Button>
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap text-primary cursor-pointer">+ Add package</h1>
+
+                      <div className="flex md:justify-end flex-wrap mt-22 items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setStep(2)}
+                          className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                        >
+                          Publish
+                        </Button>
+                      </div>
+
+                    </div>
+
+                  )
+                }
               </FormProvider>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
