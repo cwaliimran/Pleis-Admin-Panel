@@ -29,13 +29,13 @@ const EventOverView = () => {
   return (
     <div>
       <div className='grid grid-cols-12 gap-4'>
-        <div className='md:col-span-5 col-span-12'>
+        <div className='lg:col-span-5 col-span-12'>
           {/* about organizer */}
           <Card className="shadow-lg dark:bg-secondary">
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">ABOUT ORGANIZER</h1>
               <div className="mt-2">
-                <div className="flex items-center gap-2 mt-1">
+                <div className="md:flex items-center gap-2 mt-1">
                   <img
                     src="/images/eventImage.png"
                     alt="Peti Kupe"
@@ -202,15 +202,15 @@ const EventOverView = () => {
           </div>
 
         </div>
-        <div className='md:col-span-7 col-span-12'>
+        <div className='lg:col-span-7 col-span-12'>
           {/* timeline  */}
           <Card className="shadow-lg dark:bg-[#171717]">
             <CardHeader className="w-full flex flex-col gap-2">
               <h1 className="text-slate-500 font-semibold">Timeline</h1>
               <hr />
-              <div className='flex items-center gap-2 justify-between w-full'>
+              <div className='flex md:items-center gap-2 md:flex-row flex-col md:justify-between w-full'>
                 <div className='flex flex-col gap-2'>
-                  <div className='flex items-center gap-2'>
+                  <div className='flex items-center  gap-2'>
                     <Calendar className='w-4 h-4' />
                     <p className='text-sm text-slate-500'>START DATE</p>
                   </div>

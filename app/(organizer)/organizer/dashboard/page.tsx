@@ -49,7 +49,7 @@ const Page = () => {
         <div className=" flex md:justify-end md:flex-row flex-col-reverse md:items-center gap-2">
           <div className="flex justify-end md:flex-row flex-col-reverse  md:items-center gap-2">
             <div className="flex items-center md:justify-center justify-end">
-              <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
+              {/* <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
                 <Settings2 className="w-5 h-5" />
 
                 <span className="whitespace-nowrap">Filter (3)</span>
@@ -58,7 +58,7 @@ const Page = () => {
                   className="w-4 h-4 cursor-pointer "
                   onClick={() => setActive("")}
                 />
-              </Badge>
+              </Badge> */}
             </div>
             <Tabs
               defaultValue="today"
@@ -104,7 +104,7 @@ const Page = () => {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select timeframe" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="dark:bg-secondary">
                   <SelectItem value="today">Today</SelectItem>
                   <SelectItem value="week">Week</SelectItem>
                   <SelectItem value="month">Month</SelectItem>
@@ -120,13 +120,13 @@ const Page = () => {
           ))}
         </div>
         {/* event performance comparsion */}
-        <Card className="shadow-lg mt-10 dark:bg-secondary">
+        <Card className="shadow-lg lg:mt-10 mt-5 dark:bg-secondary">
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="lg:flex justify-between items-center">
               <h3 className="text-xl font-semibold">
                 Event Performance Comparison
               </h3>
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col lg:items-center">
                 <div className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-black mr-2" />
                   <h1 className="text-[14px] leading-6 ">Tickets Sold</h1>
@@ -188,11 +188,11 @@ const Page = () => {
             {/* Visitor Region Overview */}
             <Card className="shadow-lg dark:bg-secondary h-[450px]">
               <CardHeader>
-                <div className="flex justify-between items-center ">
+                <div className="md:flex justify-between items-center ">
                   <h3 className="text-xl font-semibold">
                     Visitor Region Overview
                   </h3>
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col md:items-center">
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-[#2563EB] mr-2" />
                       <h1 className="text-[14px] leading-6 ">Males</h1>
@@ -229,11 +229,11 @@ const Page = () => {
             {/* Visitor Gender Analytics */}
             <Card className="shadow-lg h-[450px]  dark:bg-secondary !pb-0 ">
               <CardHeader>
-                <div className="flex justify-between items-center">
+                <div className="md:flex justify-between items-center">
                   <h3 className="text-xl font-semibold">
                     Visitor Gender Analytics
                   </h3>
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col md:items-center">
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-[#2563EB] mr-2" />
                       <h1 className="text-[14px] leading-6 ">Males</h1>
@@ -264,36 +264,37 @@ const Page = () => {
         <div className="grid grid-cols-12 gap-4 mt-5">
           {/* Trends */}
           <Card className="col-span-12 md:col-span-7 shadow-lg h-[450px] dark:bg-secondary">
+
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center flex-col">
-                  <h3 className="text-xl font-semibold">Trends</h3>
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-[#2563EB] mr-2" />
-                      <h1 className="text-md leading-6 ">This Month</h1>
+              <div className='md:flex justify-between items-center'>
+                <div className='flex items-start flex-col'>
+                  <h3 className='text-xl font-semibold'>Trends</h3>
+                  <div className='flex flex-col items-center'>
+                    <div className='flex items-center'>
+                      <div className='w-2 h-2 rounded-full bg-[#2563EB] mr-2' />
+                      <h1 className='text-[14px] leading-6 '>
+                        This Month
+                      </h1>
                     </div>
-                    <div className="flex mt-2 items-center">
-                      <div className="w-3 h-3 rounded-full bg-[#7B7E91] leading-10 mr-2" />
-                      <h1 className="text-[#7B7E91] text-md">Last Month</h1>
+                    <div className='flex mt-2 items-center'>
+                      <div className='w-2 h-2 rounded-full bg-[#7B7E91] leading-10 mr-2' />
+                      <h1 className='text-[#7B7E91] text-[14px]'>
+                        Last Month
+                      </h1>
                     </div>
                   </div>
                 </div>
-                <div>
-                  <Select defaultValue="totalSales">
-                    <SelectTrigger>
+                <div className='md:mt-0 mt-2'>
+                  <Select defaultValue='totalSales' >
+                    <SelectTrigger >
                       <SelectValue placeholder="" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup className="w-auto">
+                    <SelectContent className=" dark:bg-secondary">
+                      <SelectGroup className='w-auto'>
                         <SelectLabel>Sale</SelectLabel>
                         <SelectItem value="totalSales">Total Sales</SelectItem>
-                        <SelectItem value="totalRevenue">
-                          Total Revenue
-                        </SelectItem>
-                        <SelectItem value="totalVisitors">
-                          Total Visitors
-                        </SelectItem>
+                        <SelectItem value="totalRevenue">Total Revenue</SelectItem>
+                        <SelectItem value="totalVisitors">Total Visitors</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -314,18 +315,24 @@ const Page = () => {
           </Card>
           {/* visitor interest */}
           <Card className="col-span-12 md:col-span-5 shadow-lg  h-[450px] dark:bg-secondary">
+
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Visitor Interest</h3>
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 rounded-full bg-[#020617] mr-2" />
-                    <h1 className="text-[14px] leading-6 ">Males</h1>
+              <div className='md:flex justify-between md:items-center'>
+                <h3 className='text-xl font-semibold'>Visitor Interest</h3>
+                <div className='flex flex-col md:items-center'>
+                  <div className='flex items-center'>
+                    <div className='w-2 h-2 rounded-full bg-[#020617] mr-2' />
+                    <h1 className='text-[14px] leading-6 '>
+                      Males
+                    </h1>
                   </div>
-                  <div className="flex mt-2 items-center">
-                    <div className="w-2 h-2 rounded-full bg-[#202C88] leading-10 mr-2" />
-                    <h1 className="text-[#202C88] text-[14px]">Females</h1>
+                  <div className='flex mt-2 items-center'>
+                    <div className='w-2 h-2 rounded-full bg-[#202C88] leading-10 mr-2' />
+                    <h1 className='text-[#202C88] text-[14px]'>
+                      Females
+                    </h1>
                   </div>
+
                 </div>
               </div>
             </CardHeader>
@@ -348,16 +355,17 @@ const Page = () => {
         <div className="grid grid-cols-12 gap-4 mt-5 ">
           {/* Views Over Time */}
           <Card className="col-span-12 md:col-span-6 shadow-lg h-[450px] dark:bg-secondary">
+
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Views Over Time</h3>
-                <div className="flex flex-col items-center">
-                  <Select defaultValue="newEvent">
-                    <SelectTrigger>
+              <div className='lg:flex justify-between lgitems-center'>
+                <h3 className='text-xl font-semibold'>Views Over Time</h3>
+                <div className='flex flex-col lg:items-center lg:mt-0 mt-2'>
+                  <Select defaultValue='newEvent'>
+                    <SelectTrigger >
                       <SelectValue placeholder="" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectGroup className="w-auto">
+                      <SelectGroup className='w-auto'>
                         <SelectLabel>Event</SelectLabel>
                         <SelectItem value="newEvent">New Event</SelectItem>
                         <SelectItem value="otherEvent">Other Event</SelectItem>
@@ -410,16 +418,17 @@ const Page = () => {
         <div className="grid grid-cols-12 gap-4 mt-5">
           {/* Follower Count */}
           <Card className="col-span-12 md:col-span-6 shadow-lg h-[550px] dark:bg-secondary">
+            
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Follower Count</h3>
-                <div className="flex flex-col items-center">
-                  <Select defaultValue="users">
-                    <SelectTrigger>
+              <div className='lg:flex justify-between md:items-center'>
+                <h3 className='text-xl font-semibold'>Follower Count</h3>
+                <div className='flex flex-col lg:items-center lg:mt-0 mt-2'>
+                  <Select defaultValue='users'>
+                    <SelectTrigger >
                       <SelectValue placeholder="" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectGroup className="w-auto">
+                      <SelectGroup className='w-auto'>
                         <SelectLabel>Event</SelectLabel>
                         <SelectItem value="users">Users</SelectItem>
                         <SelectItem value="otherUsers">Other Users</SelectItem>
@@ -461,7 +470,22 @@ const Page = () => {
             <CardHeader>
               <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
                 <h3 className="text-xl font-semibold">Transaction History</h3>
-                <div>
+                <div className="w-full">
+                  {/* Show select on small screens */}
+                  <div className="block sm:hidden">
+                    <Select value={active} onValueChange={setActive}>
+                      <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
+                        <SelectValue placeholder="Select tab" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-secondary">
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="transactions">Transactions</SelectItem>
+                        <SelectItem value="refunds">Refunds</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="md:block hidden w-full">
                   <Tabs
                     value={active}
                     onValueChange={setActive}

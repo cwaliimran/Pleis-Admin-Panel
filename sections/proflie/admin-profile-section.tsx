@@ -71,22 +71,22 @@ const AdminProfileSection = () => {
   };
 
   return (
-    <div className="min-h-[87vh] p-6">
-      <div className="max-w-4xl mx-auto">
-        <Card className="bg-white border-gray-200 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between">
+    <div className="min-h-[87vh] md:p-6 md:mt-0 mt-5">
+      <div className="max-w-4xl md:mx-auto">
+        <Card className="bg-white dark:bg-secondary border-gray-200 dark:border-none shadow-sm">
+          <CardHeader className="flex md:flex-row flex-col-reverse items-center justify-between">
             <div>
-              <CardTitle className="text-gray-900 text-2xl font-semibold">
+              <CardTitle className="text-gray-900 dark:text-white text-2xl font-semibold">
                 Personal Information
               </CardTitle>
-              <p className="text-gray-600 mt-1 text-sm">
+              <p className="text-gray-600 dark:text-white mt-1 text-sm">
                 Use a permanent address where you can receive mail.
               </p>
             </div>
             <div className="flex items-center space-x-3">
               <Label
                 htmlFor="two-factor"
-                className="text-gray-700 cursor-pointer"
+                className="text-gray-700 dark:text-white cursor-pointer"
                 onClick={handleToggleChange}
               >
                 Enable two factor
@@ -103,7 +103,7 @@ const AdminProfileSection = () => {
                   className={`relative w-11 h-6 rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all cursor-pointer ${
                     isTwoFactorEnabled
                       ? "bg-primary after:translate-x-full after:border-white"
-                      : "bg-gray-200"
+                      : "bg-gray-200 "
                   }`}
                   onClick={handleToggleChange}
                 ></div>
@@ -111,7 +111,7 @@ const AdminProfileSection = () => {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6 px-8 pt-0 pb-3">
+          <CardContent className="space-y-6 md:px-8 pt-0 pb-3">
             <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
               {/* Hidden file input */}
               <Input
@@ -123,7 +123,7 @@ const AdminProfileSection = () => {
               />
 
               {/* Avatar Section */}
-              <div className="flex items-center space-x-8 pb-6 border-b border-gray-200">
+              <div className="flex items-center md:space-x-8 space-x-2 pb-6 border-b border-gray-200">
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={avatarUrl} />
                   <AvatarFallback className="bg-gray-100 text-gray-700">
@@ -135,7 +135,7 @@ const AdminProfileSection = () => {
                     type="button"
                     variant="outline"
                     onClick={handleAvatarChange}
-                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="bg-white border-gray-300 text-gray-700 dark:text-white hover:bg-gray-50"
                   >
                     Change avatar
                   </Button>

@@ -14,7 +14,7 @@ const EventAnalytics = () => {
   return (
     <div className='grid grid-cols-12 gap-4'>
 
-      <div className='md:col-span-4 col-span-12  '>
+      <div className='lg:col-span-4 col-span-12  '>
         {/* Engagement */}
         <Card className='mb-3  shadow-md dark:bg-[#171717]'>
           <CardHeader>
@@ -80,7 +80,7 @@ const EventAnalytics = () => {
         {/* Gender Analytic */}
         <Card className='shadow-md   dark:bg-[#171717] pb-0'>
           <CardHeader className=''>
-            <h3 className='text-xl font-semibold text-center'> Gender Analytics</h3>
+            <h3 className='text-xl font-semibold lg:text-center'> Gender Analytics</h3>
 
             <CardContent className='p-0'>
               <GenderDonutChart
@@ -125,7 +125,7 @@ const EventAnalytics = () => {
           </CardHeader>
         </Card>
       </div>
-      <div className='md:col-span-8 col-span-12 '>
+      <div className='lg:col-span-8 col-span-12 '>
         {/* Ticket Performance  */}
         <Card className='shadow-md dark:bg-[#171717] h-[450px]'>
           <CardHeader> <h3 className='text-xl font-semibold'> Ticket Performance </h3> </CardHeader>
@@ -146,7 +146,7 @@ const EventAnalytics = () => {
         {/* Total Revenue */}
         <Card className='mt-10 h-[500px] shadow-md dark:bg-[#171717]'>
           <CardHeader>
-            <div className='flex md:flex-row flex-col justify-between items-center gap-4'>
+            <div className='flex md:flex-row flex-col justify-between lg:items-center gap-4'>
               <div>
                 <h3 className='text-xl font-semibold'> Total Revenue </h3>
                 <h3 className='text-2xl font-bold'>12, 026e</h3>

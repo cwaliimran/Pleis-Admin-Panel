@@ -65,7 +65,7 @@ const UserInfo = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => { };
 
   return (
     <>
@@ -80,7 +80,7 @@ const UserInfo = () => {
 
         <div className="grid grid-cols-12 gap-4 mt-4">
           {/* ---------- LEFT SIDE ---------- */}
-          <div className=" md:col-span-5 col-span-12">
+          <div className=" lg:col-span-5 col-span-12">
             {/* DESCRIPTION */}
             <Card className="shadow-lg dark:bg-[#171717]">
               <CardHeader>
@@ -203,17 +203,17 @@ const UserInfo = () => {
                       key={index}
                       className="flex items-center justify-between py-0.5 last:border-b-0"
                     >
-                      <div className="flex items-center justify-between gap-4 flex-1">
+                      <div className="lg:flex items-center justify-between gap-4 flex-1">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300 w-20">
                           {schedule.day}
                         </span>
 
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <span className="bg-gray-50 dark:bg-gray-800 px-2 w-24 py-1 rounded border">
+                          <span className="bg-gray-50 dark:bg-gray-800 px-2 w-[100%] lg:w-24 py-1 rounded border">
                             {schedule.startTime}
                           </span>
                           <span className="text-xs text-gray-500">to</span>
-                          <span className="bg-gray-50 dark:bg-gray-800 px-2 w-24 py-1 rounded border">
+                          <span className="bg-gray-50 dark:bg-gray-800 px-2 w-[100%] lg:w-24 py-1 rounded border">
                             {schedule.endTime}
                           </span>
                         </div>
@@ -313,7 +313,7 @@ const UserInfo = () => {
           </div>
 
           {/* ---------- RIGHT SIDE ---------- */}
-          <div className="md:col-span-7 col-span-12">
+          <div className="lg:col-span-7 col-span-12">
             {/* USER INFO */}
             <Card className="shadow-lg dark:bg-[#171717]">
               <CardHeader className="w-full flex flex-col gap-2">
@@ -335,7 +335,7 @@ const UserInfo = () => {
             </Card>
 
             {/* USER GALLERY */}
-            <Card className="shadow-lg mt-5 dark:bg-[#171717]">
+            <Card className="shadow-lg mt-5 dark:bg-secondary">
               <CardHeader className="gap-4">
                 <h1 className="text-slate-500 font-semibold">GALLERY</h1>
                 <img
@@ -348,7 +348,7 @@ const UserInfo = () => {
                     <img
                       key={index}
                       src="/images/bannerImage.png"
-                      className="col-span-6 md:col-span-3 w-full md:h-[140px] h-[100px] rounded-lg object-cover cursor-pointer"
+                      className="col-span-6 md:col-span-6 lg:col-span-3 w-full md:h-[140px] h-[100px] rounded-lg object-cover cursor-pointer"
                       alt={`Gallery Image ${index + 1}`}
                     />
                   ))}
@@ -376,9 +376,8 @@ const UserInfo = () => {
                     placeholder="Enter Description"
                     rows={2}
                     multiline
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
 
                   <div className="w-full grid md:grid-cols-2 grid-cols-1 gap-4">
@@ -529,9 +528,8 @@ const UserInfo = () => {
                     name="name"
                     label="Venue Name"
                     placeholder="Enter Venue Name"
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                      }`}
                   />
 
                   <RHFTextfieldWithSelect

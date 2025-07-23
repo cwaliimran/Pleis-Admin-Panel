@@ -20,19 +20,22 @@ const OrgAnalytics = () => {
     <div>
       <div className="flex justify-start md:flex-row flex-col md:items-center items-start gap-4  p-2">
         <Tabs defaultValue="today">
-          <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
-            {dateTabs.map((item) => (
-              <TabsTrigger
-                key={item.value}
-                value={item.value}
-                className={cn(
-                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
-                )}
-              >
-                {item.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
+
+            <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
+              {dateTabs.map((item) => (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  className={cn(
+                    "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                  )}
+                >
+                  {item.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
         </Tabs>
 
         <Badge className="bg-white text-black shadow-md px-3 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
@@ -47,22 +50,22 @@ const OrgAnalytics = () => {
         </Badge>
       </div>
       <div className="w-full grid grid-cols-12 gap-4 mt-5">
-        <div className="md:col-span-6 col-span-12 ">
+        <div className="lg:col-span-6 col-span-12 ">
           <SaleTrend />
         </div>
-        <div className="md:col-span-6 col-span-12">
+        <div className="lg:col-span-6 col-span-12">
           <ViewershipTrend />
         </div>
 
-        <div className="md:col-span-12 col-span-12">
+        <div className="lg:col-span-12 col-span-12">
           <EventPerformanceComparsionInUserDetails />
         </div>
         <div className="col-span-12 grid grid-cols-12 gap-4 relative overflow-hidden rounded-xl">
           {/* Grid Content (Blurred behind overlay) */}
-          <div className="md:col-span-6 col-span-12">
+          <div className="lg:col-span-6 col-span-12">
             <ViewershipTrend />
           </div>
-          <div className="md:col-span-6 col-span-12">
+          <div className="lg:col-span-6 col-span-12">
             <VisitorGanderAnalytics />
           </div>
 
@@ -79,10 +82,10 @@ const OrgAnalytics = () => {
           </div>
         </div>
 
-        <div className="md:col-span-6 col-span-12 ">
+        <div className="lg:col-span-6 col-span-12 ">
           <PreferenceTrend />
         </div>
-        <div className="md:col-span-6 col-span-12 ">
+        <div className="lg:col-span-6 col-span-12 ">
           <InterestPerCategory />
         </div>
       </div>

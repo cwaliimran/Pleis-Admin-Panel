@@ -65,7 +65,7 @@ const Page = () => {
                 ]}
             />
             <div>
-                <div className=' w-full flex items-center justify-end'>
+                <div className=' w-full flex items-center justify-end md:mt-0 mt-3'>
                     <Button className='rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary' onClick={openModal.onTrue}>
                         <Plus className='' />
                         Create Category

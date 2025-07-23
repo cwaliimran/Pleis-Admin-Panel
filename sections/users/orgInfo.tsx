@@ -18,7 +18,7 @@ const OrgInfo = () => {
   const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
   return (
     <div className="grid grid-cols-12 gap-4 mt-7">
-      <div className=" md:col-span-5 col-span-12">
+      <div className=" lg:col-span-5 col-span-12">
         <Card className="shadow-lg dark:bg-secondary">
           <CardHeader>
             <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
@@ -171,7 +171,7 @@ const OrgInfo = () => {
           </Badge>
         </div>
       </div>
-      <div className="md:col-span-7 col-span-12">
+      <div className="lg:col-span-7 col-span-12">
         <Card className="shadow-lg dark:bg-secondary">
           <CardHeader className="w-full flex flex-col gap-2">
             <h1 className="text-slate-500 font-semibold">LOCATION PIN</h1>

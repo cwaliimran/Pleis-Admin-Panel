@@ -51,11 +51,14 @@ import {
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import UserInfo from "./orgInfo";
 import Useranalytics from "./organalytics";
+import { useRouter } from "next/navigation";
 
 interface OrganizationDetailPageProps {
   id: string;
 }
 const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
+
+  const router=useRouter();
   const openModal = useBoolean();
   const deleteModal = useBoolean();
 
@@ -93,8 +96,8 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
   return (
     <div className="mt-10 h-full">
       <div className="grid grid-cols-12 gap-7">
-        <div className="md:col-span-9 col-span-12">
-          <Card className="overflow-hidden  p-4  shadow-md dark:bg-secondary">
+        <div className="lg:col-span-12 xl:col-span-9 col-span-12">
+          <Card className="overflow-hidden  p-4  shadow-md dark:bg-secondary md:pb-0 border-[10px] border-red-600">
             <div className="relative w-full">
               <div className="h-72   bg-[url('/images/bannerImage.png')] bg-cover bg-center rounded-lg" />
               <div className="absolute left-5 bottom-[-30]">
@@ -108,7 +111,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
             <div className="flex justify-end  ">
               <Pencil
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
-                onClick={openModal.onTrue}
+                onClick={()=>router.push("/super-admin/organization/create-organization")}
               />
               <Trash2
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
@@ -142,16 +145,16 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                 12 Boost
               </Badge>
             </div>
-            <div className="flex md:items-center md:justify-between mt-4 md:flex-row flex-col gap-4">
+            <div className="flex md:items-end md:justify-between mt-4 lg:flex-row flex-col-reverse gap-4">
               <Tabs value={active} onValueChange={setActive} className="w-full">
                 <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
-                  <TabsList className="inline-flex items-center gap-2 bg-transparent rounded-full p-1 ">
+                  <TabsList className="inline-flex items-end  bg-transparent rounded-full ">
                     {tabsData.map((tab: any) => (
                       <TabsTrigger
                         key={tab.value}
                         value={tab.value}
                         className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                    shadow-none dark:!bg-transparent cursor-pointer border-none
+                                                    !shadow-none dark:!bg-transparent cursor-pointer border-none
                                                       ${
                                                         active === tab.value
                                                           ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
@@ -211,7 +214,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
         </div>
 
         {/* Sidebar or Additional Panel */}
-        <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3">
+        <div className="lg:col-span-3 col-span-12 md:space-y-2 space-y-3">
           {userData.map((user: any) => (
             <UserCard item={user} key={user._id} />
           ))}

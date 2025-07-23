@@ -26,7 +26,7 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
                             <SelectTrigger className=' rounded-3xl '>
                                 <SelectValue placeholder="" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className='dark:bg-secondary '>
                                 <SelectGroup className='w-auto'>
                                     <SelectLabel>Status</SelectLabel>
                                     <SelectItem value="all">All</SelectItem>

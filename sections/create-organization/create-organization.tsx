@@ -77,7 +77,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => { };
 
   const CloseModal = () => {
     methods.reset(defaultValues);
@@ -103,11 +103,11 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
   };
 
   return (
-    <div className="mt-10 h-full">
-      <div className="grid grid-cols-12 gap-7">
+    <div className="md:mt-10 mt-5 h-full">
+      <div className="grid grid-cols-12 ">
         {/* --------------- UPPER SECTION --------------- */}
-        <div className="md:col-span-12 col-span-12">
-          <Card className="overflow-hidden p-4 shadow-md dark:bg-secondary">
+        <div className="lg:col-span-12 col-span-12">
+          <Card className="overflow-hidden p-4  shadow-md dark:bg-secondary">
             <div className="relative w-full">
               <div className="h-72 bg-[url('/images/blank-img.png')] bg-cover bg-center rounded-lg" />
               <label
@@ -138,7 +138,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
               <Pencil
                 width={22}
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
@@ -149,14 +149,14 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
                 onClick={deleteModal.onTrue}
               />
-            </div>
+            </div> */}
 
-            <div className="flex items-center gap-2 mt-0 pt-0">
-              <h1 className="md:text-3xl text-2xl font-bold ml-2 pt-0 mt-0">
+            <div className="md:flex items-center gap-2  pt-0 md:mt-0 mt-2">
+              <h1 className="md:text-3xl text-2xl font-bold md:ml-2 pt-0 mt-0">
                 Organization Name
               </h1>
               <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
+                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium md:mt-0 mt-2`}
               >
                 Basic
               </Badge>
@@ -209,15 +209,15 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
               </Tabs> */}
 
               <div className="flex gap-4">
-                <Badge className="bg-blue-200 text-primary w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
+                <Badge className="bg-blue-200 text-primary lg:w-10 lg:h-10 w-7 h-7 cursor-pointer rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
                   <Facebook className="w-5 h-5 " />
                 </Badge>
 
-                <Badge className="bg-blue-200 text-primary cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
+                <Badge className="bg-blue-200 text-primary cursor-pointer lg:w-10 lg:h-10 w-7 h-7 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
                   <Instagram className="w-5 h-5 " />
                 </Badge>
 
-                <Badge className="bg-blue-200 text-primary  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
+                <Badge className="bg-blue-200 text-primary cursor-pointer lg:w-10 lg:h-10 w-7 h-7 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 256 256"
@@ -278,9 +278,8 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                   name="name"
                   label=" Organization Name"
                   placeholder="Enter Organization Name"
-                  className={` ${
-                    methods.formState.errors.name ? "border-red-400" : ""
-                  }`}
+                  className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
                 />
 
                 <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">

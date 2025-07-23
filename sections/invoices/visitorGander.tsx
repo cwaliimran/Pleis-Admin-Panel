@@ -17,7 +17,7 @@ interface PageProps {
   size?: number;
 }
 
-const useIsMobile = (breakpoint = 768) => {
+const useIsMobile = (breakpoint = 1024) => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {

@@ -231,12 +231,11 @@
 // }
 
 // export default Page
-
 "use client";
 
 import Header from "@/app/common/header";
 import { Button } from "@/components/ui/button";
-import { Plus, X, CalendarIcon, Clock } from "lucide-react";
+import { Plus, X, CalendarIcon, Clock, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
@@ -245,6 +244,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import RHFDate from "@/components/rhf/rhf-date";
+import { Input } from "@/components/ui/input";
 
 interface EventFormValues {
   image: File | null;
@@ -335,7 +335,9 @@ const weekDays = [
 ];
 
 const Page = () => {
+
   const [step, setStep] = useState(1);
+  const [version, setVersion] = useState(1);
   const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const methods = useForm<EventFormValues>({ defaultValues });
@@ -433,7 +435,7 @@ const Page = () => {
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/organizer/dashboard" },
+          { name: "Dashboard", href: "/super-admin" },
           { name: "New Event", href: "" },
         ]}
       />
@@ -441,9 +443,9 @@ const Page = () => {
       <div className="w-full flex flex-col items-center min-h-screen bg-[#f8f6f7] dark:bg-black py-4 font['Inter']">
         <div className="w-full flex justify-end mb-2"></div>
 
-        <div className="w-full max-w-4xl mx-auto">
-          <Card className="shadow-sm dark:bg-[#171717]">
-            <CardContent className="p-8 dark:bg-[#171717]">
+        <div className="w-full md:max-w-4xl md:mx-auto">
+          <Card className="shadow-sm dark:bg-secondary">
+            <CardContent className="md:p-8 p-2 dark:bg-secondary">
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-6 text-foreground">
@@ -454,12 +456,12 @@ const Page = () => {
                   <div className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
                     {step === 1
                       ? "Step 1: Basic Info"
-                      : "Step 2: Schedule Date and Time"}
+                      : step === 2 ? "Step 2: Schedule Date and Time" : " Step 3: Add Ticketing"}
                   </div>
                   <div className="relative w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div
                       className="bg-blue-700 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${step === 1 ? 50 : 100}%` }}
+                      style={{ width: `${step === 1 ? 33 : step === 2 ? 66 : 100}%` }}
                     />
                   </div>
                 </div>
@@ -467,12 +469,12 @@ const Page = () => {
 
               <FormProvider
                 methods={methods}
-                onSubmit={methods.handleSubmit(() => {})}
+                onSubmit={methods.handleSubmit(() => { })}
               >
                 {step === 1 && (
                   <div className="space-y-8">
                     {/* Image upload and basic info */}
-                    <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-col lg:flex-row md:gap-8 gap-4">
                       {/* Left: Image upload */}
                       <div className="w-full lg:basis-[40%]">
                         <Controller
@@ -491,10 +493,10 @@ const Page = () => {
                                   <div className="flex flex-row text-gray-400">
                                     <span className="text-3xl mr-2"> + </span>
                                     <div className="flex flex-col">
-                                      <span className="text-3xl font-medium">
+                                      <span className="text-[22.9px] font-semibold">
                                         Add photo
                                       </span>
-                                      <span className="text-3xl font-medium align-middle">
+                                      <span className="text-[22.9px] font-semibold align-middle">
                                         or video
                                       </span>
                                     </div>
@@ -550,7 +552,7 @@ const Page = () => {
                     </div>
 
                     {/* Form fields */}
-                    <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="flex flex-col lg:flex-row md:gap-6 gap-4">
                       {/* Venue */}
                       <div className="w-full lg:basis-[40%] space-y-2">
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
@@ -573,7 +575,7 @@ const Page = () => {
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
                           CATEGORY
                         </label>
-                        <div className="flex gap-2">
+                        <div className="md:flex gap-2">
                           <RHFSelectField
                             name="categoryInput"
                             placeholder="Choose Category"
@@ -587,7 +589,7 @@ const Page = () => {
                           <Button
                             type="button"
                             onClick={addCategory}
-                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-6"
+                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 md:px-6 px-3 py-3"
                           >
                             Add
                           </Button>
@@ -603,7 +605,6 @@ const Page = () => {
                                 {categoryOptions.find((opt) => opt.value === c)
                                   ?.label || c}
                                 <button
-                                  title="Remove category"
                                   type="button"
                                   onClick={() => removeCategory(c)}
                                   className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -622,18 +623,20 @@ const Page = () => {
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
                         TAGS
                       </label>
-                      <div className="flex gap-2 w-[70%] mt-2">
+                      <div className="md:flex gap-2 w-full md:w-[70%] mt-2">
+
                         <input
                           type="text"
                           placeholder="Search for tag"
                           value={tagInput}
                           onChange={(e) => setValue("tagInput", e.target.value)}
-                          className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
+                          className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] md:py-3"
                         />
+
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer py-6 px-6"
+                          className="w-22 md:mt-0 mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 md:px-6 px-3  py-2"
                         >
                           Add
                         </Button>
@@ -648,7 +651,6 @@ const Page = () => {
                               {tagOptions.find((opt) => opt.value === t)
                                 ?.label || t}
                               <button
-                                title="Remove tag"
                                 type="button"
                                 onClick={() => removeTag(t)}
                                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -666,18 +668,19 @@ const Page = () => {
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
                         ORGANIZER
                       </label>
-                      <div className="flex gap-2 w-[70%] mt-2">
+                      <div className="md:flex gap-2 w-full  md:w-[70%] mt-2">
                         <input
                           type="text"
                           placeholder="Search for organizer"
-                          value={tagInput}
-                          onChange={(e) => setValue("tagInput", e.target.value)}
-                          className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
+                          value={organizerInput}
+                          onChange={(e) => setValue("organizerInput", e.target.value)}
+                          // className="border focus:border-blue-600 rounded-4xl cursor-pointer md:py-3 py-[8px] px-5 border-gray-200 focus:outline-none"
+                            className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] md:py-3"
                         />
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer py-6 px-6"
+                          className="w-22 md:mt-0 mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-2  md:px-6 px-5"
                         >
                           Add
                         </Button>
@@ -692,7 +695,6 @@ const Page = () => {
                               {organizerOptions.find((opt) => opt.value === o)
                                 ?.label || o}
                               <button
-                                title="Remove organizer"
                                 type="button"
                                 onClick={() => removeOrganizer(o)}
                                 className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
@@ -703,70 +705,70 @@ const Page = () => {
                           ))}
                         </div>
                       )}
-
-                      {/* Partner Organizer */}
-                      <div className="mt-4">
-                        <button
-                          type="button"
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1 rounded-2xl cursor-pointer"
-                          onClick={() => setShowPartnerOrganizer((v) => !v)}
-                        >
-                          <Plus className="w-4 h-4" />
-                          Add Partner Organizer
-                        </button>
-
-                        {/* Partner organizer input (visible only when toggled) */}
-                        {showPartnerOrganizer && (
-                          <div className="flex gap-2 w-[70%] mt-2">
-                            <input
-                              type="text"
-                              placeholder="Search for partner organizer"
-                              value={tagInput}
-                              onChange={(e) =>
-                                setValue("tagInput", e.target.value)
-                              }
-                              className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
-                            />
-                            <Button
-                              type="button"
-                              onClick={addTag}
-                              className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-6"
-                            >
-                              Add
-                            </Button>
-                          </div>
-                        )}
-                        {partnerOrganizers.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {partnerOrganizers.map((po: string) => (
-                              <Badge
-                                key={po}
-                                className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
-                              >
-                                {organizerOptions.find(
-                                  (opt) => opt.value === po
-                                )?.label || po}
-                                <button
-                                  title="Remove partner organizer"
-                                  type="button"
-                                  onClick={() => removePartnerOrganizer(po)}
-                                  className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
-                                >
-                                  <X className="w-3 h-3 cursor-pointer" />
-                                </button>
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
                     </div>
 
+                    {/* Partner Organizer */}
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1 rounded-2xl cursor-pointer"
+                        onClick={() => setShowPartnerOrganizer((v) => !v)}
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Partner Organizer
+                      </button>
+
+                      {/* Partner organizer input (visible only when toggled) */}
+                      {showPartnerOrganizer && (
+                        <div className="flex gap-2 w-[70%] mt-2">
+                          <input
+                            type="text"
+                            placeholder="Search for partner organizer"
+                            value={tagInput}
+                            onChange={(e) =>
+                              setValue("tagInput", e.target.value)
+                            }
+                            className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
+                          />
+                          <Button
+                            type="button"
+                            onClick={addTag}
+                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      )}
+                      {partnerOrganizers.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {partnerOrganizers.map((po: string) => (
+                            <Badge
+                              key={po}
+                              className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
+                            >
+                              {organizerOptions.find(
+                                (opt) => opt.value === po
+                              )?.label || po}
+                              <button
+                                type="button"
+                                onClick={() => removePartnerOrganizer(po)}
+                                className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                              >
+                                <X className="w-3 h-3 cursor-pointer" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {/* </div> */}
+
                     {/* Navigation buttons */}
-                    <div className="flex justify-end mt-22 items-center gap-2">
+                    <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-22 rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                         onClick={() => router.back()}
                       >
                         Cancel
@@ -774,7 +776,7 @@ const Page = () => {
                       <Button
                         type="button"
                         onClick={() => setStep(2)}
-                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                       >
                         Next
                       </Button>
@@ -787,16 +789,15 @@ const Page = () => {
                     {/* Event type selection */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium">Choose event type</h3>
-                      <div className="flex gap-4">
+                      <div className="flex gap-4 flex-wrap">
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => setValue("eventType", "one-time")}
-                          className={`border-2 ${
-                            eventType === "one-time"
-                              ? "border-blue-700 text-blue-700"
-                              : "border-gray-300 dark:border-zinc-700"
-                          } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
+                          className={`border-2 ${eventType === "one-time"
+                            ? "border-blue-700 text-blue-700"
+                            : "border-gray-300 dark:border-zinc-700"
+                            } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           One time
                         </Button>
@@ -804,11 +805,10 @@ const Page = () => {
                           type="button"
                           variant="outline"
                           onClick={() => setValue("eventType", "slots")}
-                          className={`border-2 ${
-                            eventType === "slots"
-                              ? "border-blue-700 text-blue-700"
-                              : "border-gray-300 dark:border-zinc-700"
-                          } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
+                          className={`border-2 ${eventType === "slots"
+                            ? "border-blue-700 text-blue-700"
+                            : "border-gray-300 dark:border-zinc-700"
+                            } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           Slots
                         </Button>
@@ -819,30 +819,29 @@ const Page = () => {
 
                     {/* Date and time */}
                     <div className="space-y-6">
-                      <h3 className="text-lg font-medium">
+                      <h3 className="text-lg font-medium ">
                         Set up your event date and time
                       </h3>
 
                       {/* Start Date and Time row */}
                       <div className="w-full md:w-[60%]">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <div className="space-y-2 w-full">
+                            <label className="text-sm font-medium text-gray-700  dark:text-white flex items-center gap-2">
                               <CalendarIcon className="w-4 h-4" />
                               START DATE
                             </label>
                             <RHFDate
                               name="fromDate"
-                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                              className="rounded-4xl border-gray-200 focus:border-blue-600  w-full cursor-pointer"
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700  flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white  flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               START TIME
                             </label>
                             <input
-                              title="Start Time"
                               type="time"
                               step="1800"
                               value={watch("fromTime")}
@@ -858,7 +857,7 @@ const Page = () => {
                       <div className="w-full md:w-[60%]">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
                               <CalendarIcon className="w-4 h-4" />
                               END DATE
                             </label>
@@ -868,12 +867,11 @@ const Page = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               END TIME
                             </label>
                             <input
-                              title="End Time"
                               type="time"
                               step="1800"
                               value={watch("endTime")}
@@ -893,20 +891,7 @@ const Page = () => {
                     <div className="space-y-6">
                       <h3 className="text-lg font-medium">Recurring event</h3>
 
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={recurring}
-                            onChange={(e) =>
-                              setValue("recurring", e.target.checked)
-                            }
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                          />
-                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Enable
-                          </span>
-                        </label>
+                      <div className="flex gap-4">
                         <RHFSelectField
                           name="recurringType"
                           placeholder="Select Recurrence"
@@ -919,23 +904,17 @@ const Page = () => {
                           onChange={(e: any) =>
                             setValue("recurringType", e.target.value)
                           }
-                          className={`w-32 border-gray-200 focus:border-blue-600 rounded-2xl ${
-                            recurring
-                              ? "cursor-pointer"
-                              : "cursor-not-allowed opacity-50"
-                          }`}
-                          disabled={!recurring}
+                          className="w-32 border-gray-200 focus:border-blue-600 rounded-2xl cursor-pointer"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex items-center gap-2 justify-start">
-                          <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <div className="md:flex items-center  gap-2 justify-start">
+                          <label className="text-sm font-medium text-gray-700 dark:text-white uppercase tracking-wide">
                             RECURRING INTERVAL
                           </label>
                           <div className="flex items-center gap-2">
                             <input
-                              title="Recurring Interval"
                               type="number"
                               value={watch("recurringInterval")}
                               onChange={(e) =>
@@ -947,7 +926,7 @@ const Page = () => {
                               className="w-16 px-3 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-blue-600"
                               min="1"
                             />
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-gray-600 dark:text-white">
                               Weekly
                             </span>
                           </div>
@@ -955,10 +934,10 @@ const Page = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <label className="text-sm font-medium text-gray-700 dark:text-white uppercase tracking-wide">
                           RECURRING DAY
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {weekDays.map((day) => (
                             <Button
                               key={day.value}
@@ -970,11 +949,10 @@ const Page = () => {
                               }
                               size="sm"
                               onClick={() => toggleRecurringDay(day.value)}
-                              className={`w-12 h-8 text-xs cursor-pointer ${
-                                recurringDays.includes(day.value)
-                                  ? "bg-blue-600 text-white"
-                                  : "text-gray-600"
-                              }`}
+                              className={`w-12 h-8 text-xs cursor-pointer ${recurringDays.includes(day.value)
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-600 dark:text-white"
+                                }`}
                             >
                               {day.label}
                             </Button>
@@ -983,13 +961,13 @@ const Page = () => {
                       </div>
 
                       <div className="space-y-4">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <label className="text-sm font-medium text-gray-700 dark:text-white uppercase tracking-wide">
                           RECURRING ENDS
                         </label>
                         <div className=" mt-2 flex flex-col gap-3">
                           {/* Never */}
                           <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-full md:w-[60%]">
                               <input
                                 type="radio"
                                 name="recurringEnd"
@@ -1007,8 +985,8 @@ const Page = () => {
                             </label>
                           </div>
                           {/* On Day */}
-                          <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                          <div className="md:flex items-center gap-3 w-full">
+                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-full md:w-[60%]">
                               <input
                                 type="radio"
                                 name="recurringEnd"
@@ -1025,7 +1003,7 @@ const Page = () => {
                               <span className="text-sm">On Day</span>
                             </label>
                             {recurringEnd === "on-day" && (
-                              <div className="w-[30%] bg-white dark:bg-[#23272f]">
+                              <div className="md:w-[30%] w-full md:mt-0 mt-3 bg-white dark:bg-[#23272f]">
                                 <RHFDate
                                   name="recurringEndDate"
                                   className="w-full border-gray-200 focus:border-blue-600 rounded-2xl cursor-pointer"
@@ -1034,8 +1012,8 @@ const Page = () => {
                             )}
                           </div>
                           {/* After */}
-                          <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                          <div className="md:flex items-center gap-3 w-full">
+                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200  w-full md:w-[60%]">
                               <input
                                 type="radio"
                                 name="recurringEnd"
@@ -1052,9 +1030,8 @@ const Page = () => {
                               <span className="text-sm">After</span>
                             </label>
                             {recurringEnd === "after" && (
-                              <div className="w-[30%] border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-2 bg-white dark:bg-[#23272f] flex items-center gap-2">
+                              <div className="md:w-[30%] w-full border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-2 bg-white dark:bg-[#23272f] flex items-center gap-2 md:mt-0 mt-3">
                                 <input
-                                  title="Recurring End Count"
                                   type="number"
                                   value={watch("recurringEndCount")}
                                   onChange={(e) =>
@@ -1063,7 +1040,7 @@ const Page = () => {
                                       Number.parseInt(e.target.value)
                                     )
                                   }
-                                  className="w-10 focus:outline-none focus:border-blue-600"
+                                  className="w-10   focus:outline-none focus:border-blue-600"
                                   min="1"
                                 />
                                 <span className="text-sm text-gray-600 dark:text-gray-300">
@@ -1077,30 +1054,306 @@ const Page = () => {
                     </div>
 
                     {/* Navigation buttons */}
-                    <div className="flex justify-end mt-22 items-center gap-2">
+                    <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => setStep(1)}
-                        className="w-22 rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                       >
                         Back
                       </Button>
                       <Button
-                        type="submit"
-                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 py-6 px-18"
+                        // type="submit"
+                        onClick={() => setStep(3)}
+                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                       >
                         Next
                       </Button>
                     </div>
                   </div>
                 )}
+                {
+                  step === 3 && (
+                    <div>
+                      <div className="w-full md:flex justify-start items-center">
+                        <div className="flex flex-wrap gap-4">
+                          {['Resend to Unopened Users', 'Include Names on Tickets'].map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 w-full sm:w-auto">
+                              <Input type="checkbox" className="h-4 w-4 cursor-pointer" />
+                              <span className="text-sm text-foreground">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <h1 className="text-[16px] font-medium leading-5 my-5">General Information</h1>
+                      <div className="flex flex-wrap items-center md:gap-4 gap-2">
+                        {['Paid', 'Free', 'Donation'].map((item, index) => (
+                          <div key={index} className="flex items-center gap-2 w-full sm:w-auto">
+                            <Button variant={"outline"} onClick={() => setVersion(index + 1)} className={`cursor-pointer
+                               md:max-w-[140px] md:min-w-[140px] px-10 py-5 transition-all ${version === index + 1 ?
+                                'border border-primary  dark:border-primary ' : ''}`}>{item}</Button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="relative mt-5 md:w-[66%] w-full">
+                        <RHFTextField
+                          name="name"
+                          placeholder="General Admission"
+                          className="text-sm  font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-0.5 text-gray-400 rounded-2xl cursor-pointer"
+                        >
+                          <X className="w-4 h-4 " />
+                        </Button>
+                      </div>
+                      <div className="w-full grid grid-cols-12 mt-4 gap-4">
+                        <div className="col-span-12 md:col-span-8">
+                          <RHFTextField
+                            name="description"
+                            multiline
+                            rows={4}
+                            placeholder="Type Ticket Description"
+                            className="text-sm md:min-h-[132px] font-medium border border-gray-200 px-4 bg-[#F8F6F7] "
+                          />
+                        </div>
+                        <div className="col-span-12 md:col-span-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                              AVAILABLE QUANTITY
+                            </label>
+                            <RHFTextField
+                              name="quantity"
+                              placeholder="100"
+                              type="number"
+                              className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                            />
+                          </div>
+                          <div className="flex items-end gap-4 mt-3">
+                            <div className="space-y-2">
+                              <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                                PRICE
+                              </label>
+                              <RHFTextField
+                                name="price"
+                                placeholder="0.00"
+                                type="number"
+                                className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                              />
+
+                            </div>
+                            <RHFSelectField
+                              name="currency"
+                              placeholder="USD"
+                              defaultValue={"EURO"}
+                              options={[
+                                { label: "USD", value: "USD" },
+                                { label: "EURO", value: "EUR" },
+                                { label: "GBP", value: "GBP" },
+                              ]}
+                              className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <h1 className="text-[16px] font-medium leading-5 my-5">Set up sale start date and time</h1>
+                      <div className="w-full md:w-[60%]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                              <CalendarIcon className="w-4 h-4" />
+                              START DATE
+                            </label>
+                            <RHFDate
+                              name="fromDate"
+                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              START TIME
+                            </label>
+                            <input
+                              type="time"
+                              step="1800"
+                              value={watch("fromTime")}
+                              onChange={(e) =>
+                                setValue("fromTime", e.target.value)
+                              }
+                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      {/* End Date and Time row */}
+                      <div className="w-full md:w-[60%] md:mt-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 gap-y-4 ">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
+                              <CalendarIcon className="w-4 h-4" />
+                              END DATE
+                            </label>
+                            <RHFDate
+                              name="endDate"
+                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              END TIME
+                            </label>
+                            <input
+                              type="time"
+                              step="1800"
+                              value={watch("endTime")}
+                              onChange={(e) =>
+                                setValue("endTime", e.target.value)
+                              }
+                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                          <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                            TICKET OPTIONS
+                          </label>
+                          <RHFSelectField
+                            name="ticketOptions"
+                            defaultValue="early-bird"
+                            placeholder="Select Ticket Options"
+                            options={[
+                              { label: "General Admission", value: "general" },
+                              { label: "VIP", value: "vip" },
+                              { label: "Early Bird - 5$", value: "early-bird" },
+                            ]}
+                            className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <Button
+                        type="button"
+                        className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
+                        <Plus className="w-4 h-4 " />
+                        Add Date
+                      </Button>
+
+                      <h1 className="text-[14px] font-medium leading-5 my-5 text-foreground">
+                        <span className="text-primary cursor-pointer">+ Create a section</span> if you want to sell multiple ticket types that share the same inventory.
+                      </h1>
+                      <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                        <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                          CHOOSE A SECTION
+                        </label>
+                        <RHFSelectField
+                          name="time"
+                          options={[
+                            { label: "10:00AM", value: "10:00AM" },
+                            { label: "11:00AM", value: "11:00AM" },
+                            { label: "12:00PM", value: "12:00PM" },
+                            { label: "1:00PM", value: "1:00PM" },
+                            { label: "2:00PM", value: "2:00PM" },
+                            { label: "3:00PM", value: "3:00PM" },
+                          ]}
+                          className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                        />
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <div className="my-6 flex items-center-safe gap-2">
+                        <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap">Advanced settings
+                        </h1>
+                        <ChevronDown className="w-4 h-4 cursor-pointer" />
+                      </div>
+                      <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                        <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                          TICKETS PER ORDER
+                        </label>
+                        <div className="md:flex items-center gap-3">
+                          <RHFTextField
+                            name="minQuantity"
+                            placeholder="Minimum quantity"
+                            type="number"
+                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                          /><RHFTextField
+                            name="maxQuantity"
+                            placeholder="Maximum quantity"
+                            type="number"
+                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl md:mt-0 mt-3"
+                          />
+                        </div>
+                        <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                          SALES CHANNEL
+                        </label>
+                        <RHFSelectField
+                          name="salesChannel"
+                          placeholder="Select Sales Channel"
+                          options={[
+                            { label: "Online", value: "online" },
+                            { label: "In-person", value: "in-person" },
+                            { label: "Phone", value: "phone" },
+                          ]}
+                          className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                        />
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <div className="flex flex-wrap gap-3">
+                        <Button
+                          type="button"
+                          className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
+                          <Plus className="w-4 h-4 " />
+                          Add tickets
+                        </Button>
+                        <Button
+                          type="button"
+                          className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
+                          <Plus className="w-4 h-4 " />
+                          Import Tickets
+                        </Button>
+                      </div>
+                      <Separator className="md:my-8 my-4" />
+                      <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap text-primary cursor-pointer">+ Add package</h1>
+
+                      <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setStep(2)}
+                          className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                        >
+                          Skip
+                        </Button>
+                        <Button
+                          type="submit"
+                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                        >
+                          Publish
+                        </Button>
+                      </div>
+
+                    </div>
+
+                  )
+                }
               </FormProvider>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

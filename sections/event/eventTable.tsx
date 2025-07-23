@@ -23,8 +23,9 @@ const headLabel = [
 interface PageProps {
     handleDelete?: (id: string) => void;
     handleEdit?: (id: string) => void;
+    userType?: string;
 }
-const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+const EventTable: FC<PageProps> = ({ handleDelete, handleEdit,userType }) => {
     const [filterField, setFilterField] = useState<string[]>([]);
 
     return (
@@ -73,6 +74,7 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                                         item={item}
                                         handleDelete={handleDelete}
                                         handleEdit={handleEdit}
+                                        userType={userType}
                                     />
                                 ))}
                             </TableBody>

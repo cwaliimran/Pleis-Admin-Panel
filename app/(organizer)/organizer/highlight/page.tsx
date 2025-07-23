@@ -107,7 +107,7 @@ const Page = () => {
         ]}
       />
 
-      <div className="w-full flex items-center justify-end mb-4">
+      <div className="w-full flex items-center justify-end   md:mt-0 mt-4">
         <Button
           className="rounded-4xl py-2 bg-primary text-white hover:bg-primary cursor-pointer"
           onClick={openModal.onTrue}

@@ -210,9 +210,9 @@ const Page = () => {
       <div className="w-full flex flex-col items-center min-h-screen bg-[#f8f6f7] dark:bg-black py-4 font['Inter']">
         <div className="w-full flex justify-end mb-2"></div>
 
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full md:max-w-4xl md:mx-auto">
           <Card className="shadow-sm dark:bg-secondary">
-            <CardContent className="p-8 dark:bg-secondary">
+            <CardContent className="md:p-8 p-2 dark:bg-secondary">
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-6 text-foreground">
@@ -241,7 +241,7 @@ const Page = () => {
                 {step === 1 && (
                   <div className="space-y-8">
                     {/* Image upload and basic info */}
-                    <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-col lg:flex-row md:gap-8 gap-4">
                       {/* Left: Image upload */}
                       <div className="w-full lg:basis-[40%]">
                         <Controller
@@ -319,7 +319,7 @@ const Page = () => {
                     </div>
 
                     {/* Form fields */}
-                    <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="flex flex-col lg:flex-row md:gap-6 gap-4">
                       {/* Venue */}
                       <div className="w-full lg:basis-[40%] space-y-2">
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
@@ -342,7 +342,7 @@ const Page = () => {
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
                           CATEGORY
                         </label>
-                        <div className="flex gap-2">
+                        <div className="md:flex gap-2">
                           <RHFSelectField
                             name="categoryInput"
                             placeholder="Choose Category"
@@ -390,18 +390,20 @@ const Page = () => {
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
                         TAGS
                       </label>
-                      <div className="flex gap-2 w-[70%] mt-2">
+                      <div className="md:flex gap-2 w-full md:w-[70%] mt-2">
+
                         <input
                           type="text"
                           placeholder="Search for tag"
                           value={tagInput}
                           onChange={(e) => setValue("tagInput", e.target.value)}
-                          className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
+                          className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] md:py-3"
                         />
+
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 md:px-6 px-3 py-3"
+                          className="w-22 md:mt-0 mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 md:px-6 px-3  py-2"
                         >
                           Add
                         </Button>
@@ -433,18 +435,19 @@ const Page = () => {
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
                         ORGANIZER
                       </label>
-                      <div className="flex gap-2 w-[70%] mt-2">
+                      <div className="md:flex gap-2 w-full  md:w-[70%] mt-2">
                         <input
                           type="text"
                           placeholder="Search for organizer"
-                          value={tagInput}
-                          onChange={(e) => setValue("tagInput", e.target.value)}
-                          className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer"
+                          value={organizerInput}
+                          onChange={(e) => setValue("organizerInput", e.target.value)}
+                          // className="border focus:border-blue-600 rounded-4xl cursor-pointer md:py-3 py-[8px] px-5 border-gray-200 focus:outline-none"
+                            className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] md:py-3"
                         />
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-6 px-5"
+                          className="w-22 md:mt-0 mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-2  md:px-6 px-5"
                         >
                           Add
                         </Button>
@@ -469,65 +472,66 @@ const Page = () => {
                           ))}
                         </div>
                       )}
-
-                      {/* Partner Organizer */}
-                      <div className="mt-4">
-                        <button
-                          type="button"
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1 rounded-2xl cursor-pointer"
-                          onClick={() => setShowPartnerOrganizer((v) => !v)}
-                        >
-                          <Plus className="w-4 h-4" />
-                          Add Partner Organizer
-                        </button>
-
-                        {/* Partner organizer input (visible only when toggled) */}
-                        {showPartnerOrganizer && (
-                          <div className="flex gap-2 w-[70%] mt-2">
-                            <input
-                              type="text"
-                              placeholder="Search for partner organizer"
-                              value={tagInput}
-                              onChange={(e) =>
-                                setValue("tagInput", e.target.value)
-                              }
-                              className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
-                            />
-                            <Button
-                              type="button"
-                              onClick={addTag}
-                              className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
-                            >
-                              Add
-                            </Button>
-                          </div>
-                        )}
-                        {partnerOrganizers.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {partnerOrganizers.map((po: string) => (
-                              <Badge
-                                key={po}
-                                className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
-                              >
-                                {organizerOptions.find(
-                                  (opt) => opt.value === po
-                                )?.label || po}
-                                <button
-                                  type="button"
-                                  onClick={() => removePartnerOrganizer(po)}
-                                  className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
-                                >
-                                  <X className="w-3 h-3 cursor-pointer" />
-                                </button>
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
                     </div>
 
+                    {/* Partner Organizer */}
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1 rounded-2xl cursor-pointer"
+                        onClick={() => setShowPartnerOrganizer((v) => !v)}
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Partner Organizer
+                      </button>
+
+                      {/* Partner organizer input (visible only when toggled) */}
+                      {showPartnerOrganizer && (
+                        <div className="flex gap-2 w-[70%] mt-2">
+                          <input
+                            type="text"
+                            placeholder="Search for partner organizer"
+                            value={tagInput}
+                            onChange={(e) =>
+                              setValue("tagInput", e.target.value)
+                            }
+                            className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
+                          />
+                          <Button
+                            type="button"
+                            onClick={addTag}
+                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      )}
+                      {partnerOrganizers.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {partnerOrganizers.map((po: string) => (
+                            <Badge
+                              key={po}
+                              className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
+                            >
+                              {organizerOptions.find(
+                                (opt) => opt.value === po
+                              )?.label || po}
+                              <button
+                                type="button"
+                                onClick={() => removePartnerOrganizer(po)}
+                                className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                              >
+                                <X className="w-3 h-3 cursor-pointer" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {/* </div> */}
+
                     {/* Navigation buttons */}
-                    <div className="flex md:justify-end flex-wrap mt-22 items-center gap-2">
+                    <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
@@ -552,7 +556,7 @@ const Page = () => {
                     {/* Event type selection */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium">Choose event type</h3>
-                      <div className="flex gap-4">
+                      <div className="flex gap-4 flex-wrap">
                         <Button
                           type="button"
                           variant="outline"
@@ -582,25 +586,25 @@ const Page = () => {
 
                     {/* Date and time */}
                     <div className="space-y-6">
-                      <h3 className="text-lg font-medium">
+                      <h3 className="text-lg font-medium ">
                         Set up your event date and time
                       </h3>
 
                       {/* Start Date and Time row */}
                       <div className="w-full md:w-[60%]">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <div className="space-y-2 w-full">
+                            <label className="text-sm font-medium text-gray-700  dark:text-white flex items-center gap-2">
                               <CalendarIcon className="w-4 h-4" />
                               START DATE
                             </label>
                             <RHFDate
                               name="fromDate"
-                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                              className="rounded-4xl border-gray-200 focus:border-blue-600  w-full cursor-pointer"
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700  flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white  flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               START TIME
                             </label>
@@ -620,7 +624,7 @@ const Page = () => {
                       <div className="w-full md:w-[60%]">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
                               <CalendarIcon className="w-4 h-4" />
                               END DATE
                             </label>
@@ -630,7 +634,7 @@ const Page = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               END TIME
                             </label>
@@ -672,8 +676,8 @@ const Page = () => {
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex items-center gap-2 justify-start">
-                          <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <div className="md:flex items-center  gap-2 justify-start">
+                          <label className="text-sm font-medium text-gray-700 dark:text-white uppercase tracking-wide">
                             RECURRING INTERVAL
                           </label>
                           <div className="flex items-center gap-2">
@@ -689,7 +693,7 @@ const Page = () => {
                               className="w-16 px-3 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-blue-600"
                               min="1"
                             />
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-gray-600 dark:text-white">
                               Weekly
                             </span>
                           </div>
@@ -697,10 +701,10 @@ const Page = () => {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <label className="text-sm font-medium text-gray-700 dark:text-white uppercase tracking-wide">
                           RECURRING DAY
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {weekDays.map((day) => (
                             <Button
                               key={day.value}
@@ -714,7 +718,7 @@ const Page = () => {
                               onClick={() => toggleRecurringDay(day.value)}
                               className={`w-12 h-8 text-xs cursor-pointer ${recurringDays.includes(day.value)
                                 ? "bg-blue-600 text-white"
-                                : "text-gray-600"
+                                : "text-gray-600 dark:text-white"
                                 }`}
                             >
                               {day.label}
@@ -724,13 +728,13 @@ const Page = () => {
                       </div>
 
                       <div className="space-y-4">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                        <label className="text-sm font-medium text-gray-700 dark:text-white uppercase tracking-wide">
                           RECURRING ENDS
                         </label>
                         <div className=" mt-2 flex flex-col gap-3">
                           {/* Never */}
                           <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-full md:w-[60%]">
                               <input
                                 type="radio"
                                 name="recurringEnd"
@@ -748,8 +752,8 @@ const Page = () => {
                             </label>
                           </div>
                           {/* On Day */}
-                          <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                          <div className="md:flex items-center gap-3 w-full">
+                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-full md:w-[60%]">
                               <input
                                 type="radio"
                                 name="recurringEnd"
@@ -766,7 +770,7 @@ const Page = () => {
                               <span className="text-sm">On Day</span>
                             </label>
                             {recurringEnd === "on-day" && (
-                              <div className="w-[30%] bg-white dark:bg-[#23272f]">
+                              <div className="md:w-[30%] w-full md:mt-0 mt-3 bg-white dark:bg-[#23272f]">
                                 <RHFDate
                                   name="recurringEndDate"
                                   className="w-full border-gray-200 focus:border-blue-600 rounded-2xl cursor-pointer"
@@ -775,8 +779,8 @@ const Page = () => {
                             )}
                           </div>
                           {/* After */}
-                          <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                          <div className="md:flex items-center gap-3 w-full">
+                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200  w-full md:w-[60%]">
                               <input
                                 type="radio"
                                 name="recurringEnd"
@@ -793,7 +797,7 @@ const Page = () => {
                               <span className="text-sm">After</span>
                             </label>
                             {recurringEnd === "after" && (
-                              <div className="w-[30%] border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-2 bg-white dark:bg-[#23272f] flex items-center gap-2">
+                              <div className="md:w-[30%] w-full border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-2 bg-white dark:bg-[#23272f] flex items-center gap-2 md:mt-0 mt-3">
                                 <input
                                   type="number"
                                   value={watch("recurringEndCount")}
@@ -803,7 +807,7 @@ const Page = () => {
                                       Number.parseInt(e.target.value)
                                     )
                                   }
-                                  className="w-10 focus:outline-none focus:border-blue-600"
+                                  className="w-10   focus:outline-none focus:border-blue-600"
                                   min="1"
                                 />
                                 <span className="text-sm text-gray-600 dark:text-gray-300">
@@ -817,7 +821,7 @@ const Page = () => {
                     </div>
 
                     {/* Navigation buttons */}
-                    <div className="flex md:justify-end flex-wrap mt-22 items-center gap-2">
+                    <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
                       <Button
                         type="button"
                         variant="outline"
@@ -850,7 +854,7 @@ const Page = () => {
                         </div>
                       </div>
                       <h1 className="text-[16px] font-medium leading-5 my-5">General Information</h1>
-                      <div className="flex flex-wrap items-center gap-4">
+                      <div className="flex flex-wrap items-center md:gap-4 gap-2">
                         {['Paid', 'Free', 'Donation'].map((item, index) => (
                           <div key={index} className="flex items-center gap-2 w-full sm:w-auto">
                             <Button variant={"outline"} onClick={() => setVersion(index + 1)} className={`cursor-pointer
@@ -1046,7 +1050,7 @@ const Page = () => {
                             className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
                           /><RHFTextField
                             name="maxQuantity"
-                            placeholder="Minimum quantity"
+                            placeholder="Maximum quantity"
                             type="number"
                             className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl md:mt-0 mt-3"
                           />
@@ -1083,7 +1087,7 @@ const Page = () => {
                       <Separator className="md:my-8 my-4" />
                       <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap text-primary cursor-pointer">+ Add package</h1>
 
-                      <div className="flex md:justify-end flex-wrap mt-22 items-center gap-2">
+                      <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
                         <Button
                           type="button"
                           variant="outline"
@@ -1097,7 +1101,7 @@ const Page = () => {
                           variant="outline"
                           className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                         >
-                          Cancel
+                          Skip
                         </Button>
                         <Button
                           type="submit"
