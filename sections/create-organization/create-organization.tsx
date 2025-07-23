@@ -1,25 +1,21 @@
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Camera,
-  Delete,
-  Edit,
-  Facebook,
-  Instagram,
-  Pencil,
-  TicketCheckIcon,
-  Trash2,
-} from "lucide-react";
-import React, { FC, useState } from "react";
-import { tabsData, userData } from "./create-org-data";
+import { Card } from "@/components/ui/card";
+import { Camera, Pencil, Trash2 } from "lucide-react";
+import { FC, useState } from "react";
 // import UserCard from "./userCard";
 // import UserInfo from "./userInfo";
 // import UserEvents from "./userEvents";
 // import UserLoyalty from "./userLoyalty";
 // import Useranalytics from "./useranalytics";
 // import UserNotifications from "./userNotifications";
-import { useBoolean } from "@/hooks/useBoolean";
+import {
+  defaultValues,
+  schema,
+} from "@/app/super-admin/(super-admin)/organization/page";
+import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import FormProvider, { RHFTextField } from "@/components/rhf";
+import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -27,44 +23,16 @@ import {
   DialogOverlay,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
-import { useForm } from "react-hook-form";
+import { useBoolean } from "@/hooks/useBoolean";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { cn } from "@/lib/utils";
-import {
-  defaultValues,
-  schema,
-  tabOptions,
-} from "@/app/super-admin/(super-admin)/organization/page";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import UserCard from "../users/userCard";
+import { useForm } from "react-hook-form";
 // import { ActivePromontion, BusinessInfo, TotalFollowers, UserCalender } from ".";
-import {
-  ActivePromontion,
-  BusinessInfo,
-  TotalFollowers,
-  Useranalytics,
-  UserCalender,
-  UserEvents,
-  UserInfo,
-  UserLoyalty,
-  UserNotifications,
-} from "../users";
-import OrgInfo from "../users/orgInfo";
-import OrgAnalytics from "../users/organalytics";
+import { UserInfo } from "../users";
 
 interface UserDetailPageProps {
   id: string;
 }
+
 const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
   const openModal = useBoolean();
   const deleteModal = useBoolean();
@@ -207,27 +175,6 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                   </TabsList>
                 </div>
               </Tabs> */}
-
-              <div className="flex gap-4">
-                <Badge className="bg-blue-200 text-primary w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
-                  <Facebook className="w-5 h-5 " />
-                </Badge>
-
-                <Badge className="bg-blue-200 text-primary cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
-                  <Instagram className="w-5 h-5 " />
-                </Badge>
-
-                <Badge className="bg-blue-200 text-primary  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 256 256"
-                    fill="currentColor"
-                    className="w-5 h-5 "
-                  >
-                    <path d="M232 72v40a88 88 0 1 1-88-88h40v40a48 48 0 0 0 48 48V72a72 72 0 0 1-72-72h-40a128 128 0 1 0 128 128V72Z" />
-                  </svg>
-                </Badge>
-              </div>
             </div>
           </Card>
 

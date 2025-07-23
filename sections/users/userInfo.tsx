@@ -1,15 +1,18 @@
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
-  Ellipsis,
-  MapPin,
-  PartyPopper,
-  Pencil,
-  Shirt,
-  UserPlus,
-  UsersRound,
-} from "lucide-react";
+  defaultValues,
+  schema,
+} from "@/app/super-admin/(super-admin)/organization/page";
+import FormProvider, {
+  RHFCombobox,
+  RHFMultiFileUpload,
+  RHFSelectField,
+  RHFTextField,
+} from "@/components/rhf";
+import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
+import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -17,24 +20,18 @@ import {
   DialogOverlay,
   DialogTitle,
 } from "@/components/ui/dialog";
-import React, { useRef } from "react";
-import { userTags } from "./data";
 import { useBoolean } from "@/hooks/useBoolean";
-import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
-  defaultValues,
-  schema,
-} from "@/app/super-admin/(super-admin)/organization/page";
-import FormProvider, {
-  RHFSelectField,
-  RHFTextField,
-  RHFMultiFileUpload,
-  RHFCombobox,
-} from "@/components/rhf";
-import { Button } from "@/components/ui/button";
-import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
-import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+  MapPin,
+  PartyPopper,
+  Pencil,
+  Shirt,
+  UserPlus
+} from "lucide-react";
+import { useRef } from "react";
+import { useForm } from "react-hook-form";
+import { userTags } from "./data";
 
 const UserInfo = () => {
   const totalDays = 30;
@@ -338,7 +335,7 @@ const UserInfo = () => {
             <Card className="shadow-lg mt-5 dark:bg-[#171717]">
               <CardHeader className="gap-4">
                 <h1 className="text-slate-500 font-semibold">GALLERY</h1>
-                <img
+                {/* <img
                   title="Banner Image"
                   src="/images/bannerImage.png"
                   className="w-full md:h-[300px] h-[200px] rounded-2xl"
@@ -352,6 +349,10 @@ const UserInfo = () => {
                       alt={`Gallery Image ${index + 1}`}
                     />
                   ))}
+                </div> */}
+                {/* Placeholder image */}
+                <div className="col-span-12 md:col-span-12 w-full md:h-[140px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300">
+                  <span className="text-gray-400 text-sm">No Image</span>
                 </div>
               </CardHeader>
             </Card>
@@ -497,7 +498,7 @@ const UserInfo = () => {
         {/* VENUE MODAL */}
         <Dialog open={openVenueModal.value} onOpenChange={CloseVenueModal}>
           <DialogOverlay className="fixed inset-0 bg-white   bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-            <DialogContent className=" dark:bg-[#171717] ">
+            <DialogContent className=" dark:bg-[#171717] overflow-y-auto mx-auto min-h-[86vh] max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle>
                   {" "}
@@ -521,7 +522,7 @@ const UserInfo = () => {
                       Upload Floor Plan
                     </Button>
                     <p className="text-gray-500 text-sm mt-2">
-                      JPG, GIF or PNG. 1MB max.
+                      JPG or PNG. 1MB max.
                     </p>
                   </div>
 
@@ -560,13 +561,18 @@ const UserInfo = () => {
                     placeholder="Enter Location"
                   />
 
-                  <div>
-                    <iframe
-                      title="Venue Location Map"
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s"
-                      className="md:w-[470px] w-full md:h-[160px] h-full "
-                      referrerPolicy="no-referrer-when-downgrade"
-                    ></iframe>
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Map Preview
+                    </label>
+                    <div className="w-full h-[200px] rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                      <iframe
+                        title="Venue Location Map"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s"
+                        className="w-full h-full border-0"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      ></iframe>
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-2">

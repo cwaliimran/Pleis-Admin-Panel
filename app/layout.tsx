@@ -1,12 +1,19 @@
-"use client"
-import { Geist, Geist_Mono, Josefin_Sans, Poppins, Inter } from "next/font/google";
+"use client";
+import {
+  Geist,
+  Geist_Mono,
+  Josefin_Sans,
+  Poppins,
+  Inter,
+} from "next/font/google";
 import "./globals.css";
-import { metadata } from './metadata'
+import { metadata } from "./metadata";
 import { ThemeProvider } from "@/components/templates/theme-provider";
 import { Provider } from "react-redux";
 import { store } from "@/store/store";
+import AuthProvider from "@/components/providers/AuthProvider";
 
-import 'react-phone-input-2/lib/style.css';
+import "react-phone-input-2/lib/style.css";
 
 // const poppins = Poppins({
 //   variable: "--font-poppins",
@@ -37,17 +44,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`} suppressHydrationWarning>
+      <body
+        className={`${inter.variable} antialiased`}
+        suppressHydrationWarning
+      >
         <Provider store={store}>
-
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem={true}
-            disableTransitionOnChange={false}
-          >
-            {children}
-          </ThemeProvider>
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem={true}
+              disableTransitionOnChange={false}
+            >
+              {children}
+            </ThemeProvider>
+          </AuthProvider>
         </Provider>
       </body>
     </html>

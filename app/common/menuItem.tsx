@@ -1,25 +1,24 @@
 "use client";
- 
+
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { useQuickNavigation } from "@/hooks/useQuickNavigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { FC, useState } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion as m, AnimatePresence } from "framer-motion";
- 
+import { FC, memo, useCallback, useState } from "react";
+
 type MenuItem = {
   title: string;
   url?: string;
   icon?: any;
   items?: MenuItem[];
 };
- 
+
 interface MenuItemsProps {
   items: MenuItem[];
   parentKey?: string;
   isCollapsed?: boolean;
 }
- 
+
 const MenuItem: FC<MenuItemsProps> = ({
   items,
   parentKey,
@@ -28,21 +27,29 @@ const MenuItem: FC<MenuItemsProps> = ({
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const pathname = usePathname();
- 
-  const toggleSubMenu = (itemKey: string) => {
+  const { navigate } = useQuickNavigation();
+
+  const toggleSubMenu = useCallback((itemKey: string) => {
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
-  };
- 
+  }, []);
+
+  const handleClick = useCallback(
+    (url: string) => {
+      navigate(url);
+    },
+    [navigate]
+  );
+
   return (
     <>
       {items.map((item, idx) => {
         const itemKey = `${parentKey}-${item.title}-${idx}`;
         const hasChildren = item.items && item.items.length > 0;
         const isActive = item.url && pathname === item.url;
- 
+
         const ButtonContent = (
           <div
-            className={`flex items-center justify-between w-full gap-2 text-sm px-3 py-1 rounded hover:bg-muted ${
+            className={`sidebar-nav-item flex items-center justify-between w-full gap-2 text-sm px-3 py-1 rounded hover:bg-muted transition-colors duration-100 ${
               isActive ? "bg-muted font-medium" : ""
             }`}
           >
@@ -58,7 +65,7 @@ const MenuItem: FC<MenuItemsProps> = ({
               ))}
           </div>
         );
- 
+
         return (
           <div
             key={itemKey}
@@ -69,19 +76,28 @@ const MenuItem: FC<MenuItemsProps> = ({
               <SidebarMenuButton asChild>
                 {hasChildren ? (
                   <button
+                    type="button"
                     onClick={() => !isCollapsed && toggleSubMenu(itemKey)}
                     className="w-full text-left"
                   >
                     {ButtonContent}
                   </button>
                 ) : item.url ? (
-                  <Link href={item.url}>{ButtonContent}</Link>
+                  <button
+                    type="button"
+                    onClick={() => handleClick(item.url!)}
+                    className="w-full text-left"
+                  >
+                    {ButtonContent}
+                  </button>
                 ) : (
-                  <button disabled>{ButtonContent}</button>
+                  <button type="button" disabled>
+                    {ButtonContent}
+                  </button>
                 )}
               </SidebarMenuButton>
             </SidebarMenuItem>
- 
+
             {/* 🚀 Flyout Popup for Collapsed Sidebar
             {hasChildren && isCollapsed && hoveredItem === itemKey && (
               <AnimatePresence>
@@ -110,7 +126,7 @@ const MenuItem: FC<MenuItemsProps> = ({
                 </m.div>
               </AnimatePresence>
             )} */}
- 
+
             {/* 📦 Inline children if expanded */}
             {hasChildren && !isCollapsed && openSubMenus[itemKey] && (
               <div className="ml-5 border-l pl-3">
@@ -129,5 +145,5 @@ const MenuItem: FC<MenuItemsProps> = ({
     </>
   );
 };
- 
-export default MenuItem;
+
+export default memo(MenuItem);

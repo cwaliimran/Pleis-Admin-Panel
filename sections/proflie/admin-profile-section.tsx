@@ -47,8 +47,7 @@ const AdminProfileSection = () => {
 
   const avatarUrl = watch("avatar");
 
-  const onSubmit = (data: AdminProfileFormData) => {
-  };
+  const onSubmit = (data: AdminProfileFormData) => {};
 
   const handleAvatarChange = () => {
     fileInputRef.current?.click();
@@ -140,7 +139,7 @@ const AdminProfileSection = () => {
                     Change avatar
                   </Button>
                   <p className="text-gray-500 text-sm mt-2">
-                    JPG, GIF or PNG. 1MB max.
+                    JPG or PNG. 1MB max.
                   </p>
                 </div>
               </div>
