@@ -411,7 +411,7 @@ const Page = () => {
 
 
                         <Button
-                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                          className="rounded-4xl py-2 bg-primary mt-2 cursor-pointer text-white hover:bg-primary"
                           onClick={openModal.onTrue}
                         >
                           Add Venue
@@ -479,7 +479,7 @@ const Page = () => {
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                          className="rounded-4xl py-2 bg-primary mt-2 cursor-pointer text-white hover:bg-primary"
                         >
                           Add
                         </Button>
@@ -524,7 +524,7 @@ const Page = () => {
                         <Button
                           type="button"
                           onClick={addOrganizer}
-                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                          className="rounded-4xl py-2 bg-primary mt-2 cursor-pointer text-white hover:bg-primary"
                         >
                           Add
                         </Button>

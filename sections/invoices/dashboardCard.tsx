@@ -10,7 +10,7 @@ interface PageProps {
 const DashboardCard: FC<PageProps> = ({ item }) => {
   return (
     <div>
-      <Card className='shadow-lg w-full md:h-[300px] lg:mb-3  dark:bg-secondary'>
+      <Card className='shadow-lg w-full md:h-[300px]    dark:bg-secondary'>
         <CardHeader className=''>
           <div className='flex justify-between items-center'>
             <div>
@@ -26,7 +26,7 @@ const DashboardCard: FC<PageProps> = ({ item }) => {
           </div>
         </CardHeader>
         <hr />
-        <CardContent>
+        <CardContent className=''>
           <div className='flex items-center gap-3'>
             <Avatar>
                <AvatarImage src="https://github.com/shadcn.png" className='cursor-pointer' />
