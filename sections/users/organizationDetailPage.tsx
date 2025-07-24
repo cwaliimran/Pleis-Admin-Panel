@@ -57,8 +57,7 @@ interface OrganizationDetailPageProps {
   id: string;
 }
 const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
-
-  const router=useRouter();
+  const router = useRouter();
   const openModal = useBoolean();
   const deleteModal = useBoolean();
 
@@ -94,7 +93,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
     console.log("Delete confirmed");
   };
   return (
-    <div className="mt-10 h-full">
+    <div className="mt-10 h-full pb-12">
       <div className="grid grid-cols-12 gap-7">
         <div className="lg:col-span-12 xl:col-span-9 col-span-12">
           <Card className="overflow-hidden  p-4  shadow-md dark:bg-secondary md:pb-0 ">
@@ -111,7 +110,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
             <div className="flex justify-end  ">
               <Pencil
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
-                onClick={()=>router.push("/super-admin/organization/create-organization")}
+                onClick={openModal.onTrue}
               />
               <Trash2
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
@@ -128,11 +127,18 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                 Premium
               </Badge>
             </div>
-            <Badge
-              className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
-            >
-              12,342 Subscriptions
-            </Badge>
+            <div className="flex items-center gap-2 ">
+              <Badge
+                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
+              >
+                12,342 Subscriptions
+              </Badge>
+              <Badge
+                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
+              >
+                Hide
+              </Badge>
+            </div>
             <div className="flex items-center gap-2 ">
               <Badge
                 className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
@@ -145,6 +151,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                 12 Boost
               </Badge>
             </div>
+
             <div className="flex md:items-end md:justify-between mt-4 lg:flex-row flex-col-reverse gap-4">
               <Tabs value={active} onValueChange={setActive} className="w-full">
                 <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
@@ -167,7 +174,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                   </TabsList>
                 </div>
               </Tabs>
-              <div className="flex gap-4">
+              <div className="flex gap-4 mb-3">
                 <Badge
                   className="bg-blue-200 text-blue-800 w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 
                                 hover:bg-blue-300 transition-colors"
@@ -227,8 +234,8 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
       </div>
       {/* update Organization */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30   ">
-          <DialogContent className="md:!max-w-[600px]  min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col md:items-start">
+        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
+          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[65vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
             <DialogHeader>
               <DialogTitle> Edit Organization </DialogTitle>
             </DialogHeader>
@@ -236,133 +243,33 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
               methods={methods}
               onSubmit={methods.handleSubmit(onSubmit)}
             >
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <div className="w-full my-2 md:hidden block">
-                  <Select value={activeTab} onValueChange={setActiveTab}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Tab" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tabOptions.map((tab, index: number) => (
-                        <SelectItem key={index} value={tab.value}>
-                          {tab.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="overflow-x-auto whitespace-nowrap scrollbar-hide px-1 md:block hidden">
-                  <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1 min-w-max">
-                    {tabOptions.map((tab, index) => (
-                      <TabsTrigger
-                        key={index}
-                        value={tab.value}
-                        className={cn(
-                          "text-sm md:text-md font-semibold rounded-full px-4 py-2 transition-colors cursor-pointer"
-                        )}
-                      >
-                        {tab.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </div>
-              </Tabs>
+              <div className="flex flex-col gap-4 mt-4 w-full">
+                <RHFUploadAvatar name="image" label="Organization Image" />
 
-              {activeTab === "basicInfo" && (
-                <div className="flex flex-col gap-4 mt-4">
-                  <RHFUploadAvatar name="image" label="Organization Image" />
-                  <RHFTextField
-                    name="name"
-                    label=" Organization Name"
-                    placeholder="Enter Organization Name"
-                    className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                <div className="mb-1 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="hideOnApp"
+                    className="form-checkbox h-5 w-5 text-primary  cursor-pointer"
                   />
-                  <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
-                    <RHFTextField
-                      type="email"
-                      name="email"
-                      label="Email (Associated with bank)"
-                      placeholder="Enter Email"
-                    />
-                    <RHFTextField
-                      name="phone"
-                      label="Phone (Associated with bank)"
-                      placeholder="Enter Phone No"
-                    />
-                    <RHFSelectField
-                      name="region"
-                      label="Region"
-                      placeholder="Select Region"
-                      options={[
-                        { label: "North America", value: "north-america" },
-                        { label: "Europe", value: "europe" },
-                        { label: "Asia", value: "asia" },
-                      ]}
-                    />
-
-                    <RHFSelectField
-                      name="type"
-                      label="Types"
-                      placeholder=" Select Type"
-                      options={[
-                        { label: "Non-Profit", value: "non-profit" },
-                        { label: "For-Profit", value: "for-profit" },
-                        { label: "Government", value: "government" },
-                      ]}
-                    />
-                    <RHFSelectField
-                      name="category"
-                      label="category"
-                      placeholder=" Select Category"
-                      options={[
-                        { label: "Education", value: "education" },
-                        { label: "Health", value: "health" },
-                        { label: "Technology", value: "technology" },
-                      ]}
-                    />
-                    <RHFTextField
-                      name="location"
-                      label="Location"
-                      placeholder="Enter Location"
-                      className={` ${
-                        methods.formState.errors.location
-                          ? "border-red-400"
-                          : ""
-                      }`}
-                    />
-                    <RHFSelectField
-                      name="clity"
-                      label="City"
-                      placeholder="Select City"
-                      options={[
-                        { label: "New York", value: "new-york" },
-                        { label: "Los Angeles", value: "los-angeles" },
-                        { label: "Chicago", value: "chicago" },
-                      ]}
-                    />
-                    <RHFTextField
-                      name="country"
-                      label="Country"
-                      placeholder="Enter Country"
-                    />
-                  </div>
-                  <RHFTextField
-                    name="description"
-                    label="Description"
-                    placeholder="Enter Event Description"
-                    rows={6}
-                    multiline={true}
-                  />
+                  <label
+                    htmlFor="hideOnApp"
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Hide it on app
+                  </label>
                 </div>
-              )}
-              {activeTab === "socialLinks" && (
-                <div className="flex flex-col gap-4 mt-4 ">
+
+                <RHFTextField
+                  name="name"
+                  label=" Organization Name"
+                  placeholder="Enter Organization Name"
+                  className={` ${
+                    methods.formState.errors.name ? "border-red-400" : ""
+                  }`}
+                />
+
+                <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
                   <RHFTextField
                     name="instagram"
                     label="Instagram Link"
@@ -384,118 +291,18 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                     placeholder="Enter LinkedIn Link"
                   />
                 </div>
-              )}
-              {activeTab === "businessDetails" && (
-                <div className="flex flex-col gap-4 mt-4">
-                  <RHFSelectField
-                    name="commission"
-                    label="Commission"
-                    placeholder="Select Commission"
-                    options={[
-                      { label: "10%", value: "10" },
-                      { label: "15%", value: "15" },
-                      { label: "20%", value: "20" },
-                    ]}
-                  />
-                  <RHFTextField
-                    name="businessId"
-                    label="Business ID"
-                    placeholder="Enter Business ID"
-                  />
-                </div>
-              )}
-              {activeTab === "bankDetails" && (
-                <div className="flex flex-col gap-4 mt-4">
-                  {/* company name */}
-                  <RHFTextField
-                    name="companyName"
-                    label="Company Name"
-                    placeholder="Enter Company Name"
-                  />
-                  {/* account name */}
-                  <RHFTextField
-                    name="accountName"
-                    label="Account Name"
-                    placeholder="Enter Account Name"
-                  />
-                  {/* account number */}
-                  <RHFTextField
-                    name="accountNumber"
-                    label="Account Number"
-                    placeholder="Enter Account Number"
-                  />
-                  {/* OIB */}
-                  <RHFTextField
-                    name="oib"
-                    label="OIB"
-                    placeholder="Enter OIB"
-                  />
-                  {/* address */}
-                  <RHFTextField
-                    name="address"
-                    label="Address"
-                    placeholder="Enter Address"
-                  />
-                  {/* postal code */}
-                  <RHFTextField
-                    name="postalCode"
-                    label="Postal Code"
-                    placeholder="Enter Postal Code"
-                  />
-                  {/* city */}
-                  <RHFTextField
-                    name="city"
-                    label="City"
-                    placeholder="Enter City"
-                  />
-                  {/* country */}
-                  <RHFTextField
-                    name="country"
-                    label="Country"
-                    placeholder="Enter Country"
-                  />
-                </div>
-              )}
-              <div className="flex justify-end mt-4 items-center gap-2">
-                {activeTab !== "basicInfo" && (
-                  <div className="">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="cursor-pointer"
-                      onClick={() => {
-                        if (activeTab === "socialLinks")
-                          setActiveTab("basicInfo");
-                        else if (activeTab === "businessDetails")
-                          setActiveTab("socialLinks");
-                        else if (activeTab === "bankDetails")
-                          setActiveTab("businessDetails");
-                      }}
-                    >
-                      Back to
-                    </Button>
-                  </div>
-                )}
-                {activeTab !== "bankDetails" && (
-                  <div className="">
-                    <Button
-                      type="button"
-                      className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
-                      onClick={handleNextTab}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                )}
+              </div>
 
-                {activeTab === "bankDetails" && (
+              <div className="flex justify-end mt-4 items-center gap-2">
+                <div className="w-full flex justify-center items-center">
                   <Button
-                    type="submit"
-                    className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                    type="button"
+                    className="bg-primary text-white hover:bg-primary px-7 mt-3 cursor-pointer"
+                    onClick={handleNextTab}
                   >
-                    Update Organization
+                    Save
                   </Button>
-                )}
+                </div>
               </div>
             </FormProvider>
           </DialogContent>

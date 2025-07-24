@@ -53,6 +53,9 @@ const OrganizationTableRow: FC<PageProps> = ({
       <TableCell className="text-center">
         {item.totalRevenue ? item.totalRevenue : "N/A"}
       </TableCell>
+      <TableCell className="">
+        <span className="bg-blue-300 px-3 rounded-full py-1">Hide</span>
+      </TableCell>
       <TableCell className="text-end">
         <div className="flex gap-2 ">
           <button

@@ -56,7 +56,7 @@ const UserInfo = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = (data: any) => { };
+  const onSubmit = (data: any) => {};
 
   return (
     <>
@@ -102,12 +102,6 @@ const UserInfo = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <h1 className="text-slate-500 font-semibold ">VENUE TYPE</h1>
-                  {/* <Pencil
-                    width={20}
-                    className="text-gray-500  mr-2 cursor-pointer hover:text-gray-700 transition-colors"
-                    onClick={openVenueModal.onTrue}
-                  /> */}
-
                   <Button
                     variant="default"
                     className="cursor-pointer rounded-full"
@@ -371,8 +365,9 @@ const UserInfo = () => {
                     placeholder="Enter Description"
                     rows={2}
                     multiline
-                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
-                      }`}
+                    className={` ${
+                      methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
                   />
 
                   <div className="w-full grid md:grid-cols-2 grid-cols-1 gap-4">
@@ -523,8 +518,9 @@ const UserInfo = () => {
                     name="name"
                     label="Venue Name"
                     placeholder="Enter Venue Name"
-                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
-                      }`}
+                    className={` ${
+                      methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
                   />
 
                   <RHFTextfieldWithSelect

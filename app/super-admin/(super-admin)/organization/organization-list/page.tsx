@@ -166,6 +166,7 @@ const Page = () => {
                     </Button>
                 </div>
             </div>
+
             {/* dialog for add and update the organization */}
             <Dialog open={openModal.value} onOpenChange={CloseModal}>
                 <DialogOverlay
@@ -425,6 +426,7 @@ const Page = () => {
                     </DialogContent>
                 </DialogOverlay>
             </Dialog>
+            
             {/* dialog for delete the organization */}
             <ConfirmDialog
                 open={deleteModal.value}

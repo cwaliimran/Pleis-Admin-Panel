@@ -1,9 +1,27 @@
-import React from 'react'
+import { useBoolean } from "@/hooks/useBoolean";
+import { useRouter } from "next/navigation";
+import { EventTable } from "../event";
 
 const UserEvents = () => {
-  return (
-    <div>UserEvents</div>
-  )
-}
+  const router = useRouter();
+  const deleteModal = useBoolean();
 
-export default UserEvents
+  const handleEdit = (id: string) => {
+    router.push("/super-admin/events/create-event");
+  };
+
+  const handleDelete = (id: string) => {
+    deleteModal.onTrue();
+  };
+  const onDelete = () => {
+    deleteModal.onFalse();
+  };
+
+  return (
+    <>
+      <EventTable handleDelete={handleDelete} handleEdit={handleEdit} />
+    </>
+  );
+};
+
+export default UserEvents;

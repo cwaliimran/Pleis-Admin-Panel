@@ -54,8 +54,8 @@ const EventTableRow: FC<PageProps> = ({
       <TableCell className="text-left">
         {item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name}
       </TableCell>
-      <TableCell className="text-left">{item.venue}</TableCell>
       <TableCell className="text-left">{item.organizaiton}</TableCell>
+      <TableCell className="text-left">{item.venue}</TableCell>
 
       <TableCell>{item.fromDate ? item.fromDate : "N/A"}</TableCell>
       <TableCell className="text-left">
