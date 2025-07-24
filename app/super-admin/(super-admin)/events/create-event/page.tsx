@@ -508,48 +508,7 @@ const Page = () => {
 
 
                     {/* Organizer */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
-                        ORGANIZER
-                      </label>
-                      <div className="md:flex gap-2 w-full  md:w-[70%] mt-2">
-                        <input
-                          type="text"
-                          placeholder="Search for organizer"
-                          value={organizerInput}
-                          onChange={(e) => setValue("organizerInput", e.target.value)}
-                          className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] h-[40px] text-[14px]"
-                        />
-
-                        <Button
-                          type="button"
-                          onClick={addOrganizer}
-                          className="rounded-4xl py-2 bg-primary mt-2 cursor-pointer text-white hover:bg-primary"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      {organizers.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {organizers.map((o: string) => (
-                            <Badge
-                              key={o}
-                              className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
-                            >
-                              {organizerOptions.find((opt) => opt.value === o)
-                                ?.label || o}
-                              <button
-                                type="button"
-                                onClick={() => removeOrganizer(o)}
-                                className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
-                              >
-                                <X className="w-3 h-3 cursor-pointer" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                   
 
                     {/* Partner Organizer */}
                     <div className="mt-4">

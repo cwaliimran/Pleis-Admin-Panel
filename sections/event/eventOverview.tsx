@@ -350,9 +350,9 @@ const EventOverView = () => {
                         {update.description}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    {/* <Button variant="outline" size="sm">
                       Boost
-                    </Button>
+                    </Button> */}
                   </div>
                   <hr />
                 </div>

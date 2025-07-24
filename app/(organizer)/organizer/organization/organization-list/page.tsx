@@ -175,6 +175,8 @@ const Page = () => {
             <OrganizationTable
                 handleDelete={handleDelete}
                 handleEdit={handleEdit}
+                userType="organizer"
+
             />
         </div >
     )
