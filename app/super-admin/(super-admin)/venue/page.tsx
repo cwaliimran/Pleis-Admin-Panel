@@ -42,7 +42,7 @@ const Page = () => {
   const editModal = useBoolean();
   const deleteModal = useBoolean();
 
-  const schema = Yup.object().shape({
+   const schema = Yup.object().shape({
     // image: Yup.mixed().nullable(),
     name: Yup.string().required("Venue name is required"),
     venueType: Yup.string().required("Venue Type is required"),

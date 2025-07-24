@@ -3,7 +3,7 @@
 import Header from "@/app/common/header";
 import { Button } from "@/components/ui/button";
 import { Plus, X, CalendarIcon, Clock, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
 import { Controller, useForm } from "react-hook-form";
@@ -12,6 +12,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import RHFDate from "@/components/rhf/rhf-date";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from "@/components/ui/dialog";
+import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+import { useBoolean } from "@/hooks/useBoolean";
+import * as Yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+
 
 interface EventFormValues {
   image: File | null;
@@ -38,6 +45,7 @@ interface EventFormValues {
   tagInput?: string;
   organizerInput?: string;
   partnerOrganizerInput?: string;
+  organization?: string;
 }
 
 const defaultValues: EventFormValues = {
@@ -46,6 +54,7 @@ const defaultValues: EventFormValues = {
   venue: "",
   category: [],
   tag: [],
+  organization: "",
   organizers: [],
   partnerOrganizers: [],
   fromDate: new Date(),
@@ -66,6 +75,11 @@ const defaultValues: EventFormValues = {
   organizerInput: "",
   partnerOrganizerInput: "",
 };
+const organizationOptions = [
+  { label: "Organization A", value: "orgA" },
+  { label: "Organization B", value: "orgB" },
+  { label: "Organization C", value: "orgC" },
+]
 
 const venueOptions = [
   { label: "Suggested Venue", value: "suggested-venue" },
@@ -101,7 +115,21 @@ const weekDays = [
   { label: "SUN", value: "sunday" },
 ];
 
+const VenueDefaultValues = {
+  // image: null,
+  name: "",
+  venueType: "",
+  organization: "",
+  location: "",
+  clity: "",
+  country: "",
+};
+
+
 const Page = () => {
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const openModal = useBoolean();
 
   const [step, setStep] = useState(1);
   const [version, setVersion] = useState(1);
@@ -110,6 +138,23 @@ const Page = () => {
   const methods = useForm<EventFormValues>({ defaultValues });
   const router = useRouter();
   const { watch, setValue, getValues } = methods;
+
+
+  const schema = Yup.object().shape({
+    name: Yup.string().required("Venue name is required"),
+    venueType: Yup.string().required("Venue Type is required"),
+    organization: Yup.string().required("Organization is required"),
+    location: Yup.string().required("Location is required"),
+    clity: Yup.string(),
+    country: Yup.string(),
+  });
+
+  const venueMethods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: VenueDefaultValues,
+  });
+
+
 
   const venue = watch("venue");
   const category = watch("category");
@@ -196,6 +241,13 @@ const Page = () => {
       ? recurringDays.filter((d) => d !== day)
       : [...recurringDays, day];
     setValue("recurringDays", newDays);
+  };
+  const handleAvatarChange = () => {
+    fileInputRef.current?.click();
+  };
+  const CloseModal = () => {
+    methods.reset(defaultValues);
+    openModal.onFalse();
   };
 
   return (
@@ -304,8 +356,9 @@ const Page = () => {
                             variant="ghost"
                             size="sm"
                             className="absolute right-1 top-0.5 text-gray-400 rounded-2xl cursor-pointer"
+                            onClick={() => methods.setValue("name", "")}
                           >
-                            <X className="w-4 h-4 " />
+                            <X className="w-4 h-4" />
                           </Button>
                         </div>
                         <RHFTextField
@@ -318,13 +371,33 @@ const Page = () => {
                       </div>
                     </div>
 
-                    {/* Form fields */}
-                    <div className="flex flex-col lg:flex-row md:gap-6 gap-4">
-                      {/* Venue */}
-                      <div className="w-full lg:basis-[40%] space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
-                          VENUE
-                        </label>
+
+                    <div >
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
+                        Organization
+                      </label>
+                      <div className="md:flex gap-2 w-full md:w-[70%] mt-2">
+                        <RHFSelectField
+                          name="organization"
+                          placeholder="Choose Organization"
+                          options={organizationOptions}
+                          value={watch("organization")}
+                          onChange={(e: any) =>
+                            setValue("organization", e.target.value)
+                          }
+                          className=" flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[440px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 h-[40px] px-5"
+                        />
+
+
+                      </div>
+
+                    </div>
+
+                    <div >
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
+                        VENUE
+                      </label>
+                      <div className="md:flex  items-center gap-2 w-full md:w-[70%] mt-2">
                         <RHFSelectField
                           name="venue"
                           placeholder="Suggested Venue"
@@ -333,16 +406,23 @@ const Page = () => {
                           onChange={(e: any) =>
                             setValue("venue", e.target.value)
                           }
-                          className="text-md border-gray-200 focus:border-blue-600 rounded-4xl cursor-pointer font-bold mt-2 py-5 px-5"
+                          className=" flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[440px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 h-[40px] px-5"
                         />
-                      </div>
 
-                      {/* Category */}
-                      <div className="w-full lg:basis-[60%] space-y-2">
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
-                          CATEGORY
+
+                        <Button
+                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                          onClick={openModal.onTrue}
+                        >
+                          Add Venue
+                        </Button>
+                      </div>
+                      <div className="mt-5">
+
+                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                          Category
                         </label>
-                        <div className="md:flex gap-2">
+                        <div className="md:flex gap-2 w-full md:w-[70%] mt-2">
                           <RHFSelectField
                             name="categoryInput"
                             placeholder="Choose Category"
@@ -351,17 +431,11 @@ const Page = () => {
                             onChange={(e: any) =>
                               setValue("categoryInput", e.target.value)
                             }
-                            className="text-md flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[340px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 py-5 px-5"
+                            className=" flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[440px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 h-[40px] px-5 text-[14px]"
                           />
-                          <Button
-                            type="button"
-                            onClick={addCategory}
-                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 md:px-6 px-3 py-3"
-                          >
-                            Add
-                          </Button>
-                        </div>
 
+
+                        </div>
                         {category.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2 rounded-2xl">
                             {category.map((c: string) => (
@@ -383,10 +457,12 @@ const Page = () => {
                           </div>
                         )}
                       </div>
+
                     </div>
 
+
                     {/* Tags */}
-                    <div>
+                    <div >
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
                         TAGS
                       </label>
@@ -397,13 +473,13 @@ const Page = () => {
                           placeholder="Search for tag"
                           value={tagInput}
                           onChange={(e) => setValue("tagInput", e.target.value)}
-                          className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] md:py-3"
+                          className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] h-[40px] text-[14px]"
                         />
 
                         <Button
                           type="button"
                           onClick={addTag}
-                          className="w-22 md:mt-0 mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 md:px-6 px-3  py-2"
+                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
                         >
                           Add
                         </Button>
@@ -430,6 +506,7 @@ const Page = () => {
                       )}
                     </div>
 
+
                     {/* Organizer */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
@@ -441,13 +518,13 @@ const Page = () => {
                           placeholder="Search for organizer"
                           value={organizerInput}
                           onChange={(e) => setValue("organizerInput", e.target.value)}
-                          // className="border focus:border-blue-600 rounded-4xl cursor-pointer md:py-3 py-[8px] px-5 border-gray-200 focus:outline-none"
-                            className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] md:py-3"
+                          className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] h-[40px] text-[14px]"
                         />
+
                         <Button
                           type="button"
-                          onClick={addTag}
-                          className="w-22 md:mt-0 mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-2  md:px-6 px-5"
+                          onClick={addOrganizer}
+                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
                         >
                           Add
                         </Button>
@@ -491,16 +568,18 @@ const Page = () => {
                           <input
                             type="text"
                             placeholder="Search for partner organizer"
-                            value={tagInput}
+                            value={partnerOrganizerInput}
                             onChange={(e) =>
-                              setValue("tagInput", e.target.value)
+                              setValue("partnerOrganizerInput", e.target.value)
                             }
-                            className="bg-[#F8F6F7] dark:bg-transparent flex-1 px-3 border border-gray-200 focus:outline-none focus:border-blue-600 rounded-4xl cursor-pointer mt-3"
+                            className="w-full max-w-md border  border-gray-200  rounded-4xl text-[14px]  cursor-pointer px-5
+                              py-[8px] h-[40px]"
                           />
+
                           <Button
                             type="button"
-                            onClick={addTag}
-                            className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                            onClick={addPartnerOrganizer}
+                            className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
                           >
                             Add
                           </Button>
@@ -532,18 +611,20 @@ const Page = () => {
 
                     {/* Navigation buttons */}
                     <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
+
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
                         onClick={() => router.back()}
+                        className="rounded-4xl py-2 md:min-w-[90px] md:mt-2 cursor-pointer "
                       >
                         Cancel
                       </Button>
+
                       <Button
                         type="button"
                         onClick={() => setStep(2)}
-                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                        className="rounded-4xl py-2 bg-primary md:mt-2 md:min-w-[90px] cursor-pointer text-white hover:bg-primary"
                       >
                         Next
                       </Button>
@@ -822,7 +903,7 @@ const Page = () => {
 
                     {/* Navigation buttons */}
                     <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
-                      <Button
+                      {/* <Button
                         type="button"
                         variant="outline"
                         onClick={() => setStep(1)}
@@ -834,6 +915,28 @@ const Page = () => {
                         // type="submit"
                         onClick={() => setStep(3)}
                         className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                      >
+                        Next
+                      </Button> */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStep(1)}
+                        className="rounded-4xl py-2  md:min-w-[90px] md:mt-2 cursor-pointer "
+                      >
+                        Back
+                      </Button>
+                      {/* <Button
+                        type="button"
+                        onClick={() => setStep(2)}
+                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                      >
+                        Next
+                      </Button> */}
+                      <Button
+                        type="button"
+                        onClick={() => setStep(3)}
+                        className="rounded-4xl py-2 bg-primary md:mt-2 md:min-w-[90px] cursor-pointer text-white hover:bg-primary"
                       >
                         Next
                       </Button>
@@ -1005,11 +1108,12 @@ const Page = () => {
                         </div>
                       </div>
                       <Separator className="md:my-8 my-4" />
+
                       <Button
                         type="button"
-                        className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
-                        <Plus className="w-4 h-4 " />
-                        Add Date
+                        className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                      >
+                        <Plus className="w-4 h-4 " /> Add Date
                       </Button>
 
                       <h1 className="text-[14px] font-medium leading-5 my-5 text-foreground">
@@ -1071,41 +1175,50 @@ const Page = () => {
                       </div>
                       <Separator className="md:my-8 my-4" />
                       <div className="flex flex-wrap gap-3">
+
                         <Button
                           type="button"
-                          className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
-                          <Plus className="w-4 h-4 " />
-                          Add tickets
+                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                        >
+                          <Plus className="w-4 h-4 " /> Add tickets
                         </Button>
+
+
                         <Button
                           type="button"
-                          className=" bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer md:py-6 py-3  md:px-18 px-5">
-                          <Plus className="w-4 h-4 " />
-                          Import Tickets
+                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                        >
+                          <Plus className="w-4 h-4 " />Import Tickets
                         </Button>
+
                       </div>
                       <Separator className="md:my-8 my-4" />
                       <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap text-primary cursor-pointer">+ Add package</h1>
 
                       <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
+
                         <Button
                           type="button"
                           variant="outline"
                           onClick={() => setStep(2)}
-                          className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                          className="rounded-4xl py-2 md:min-w-[90px]  md:mt-2 cursor-pointer"
                         >
                           Back
                         </Button>
+
                         <Button
                           type="button"
                           variant="outline"
-                          className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                          onClick={() => router.push("/super-admin/events/1")}
+                          className="rounded-4xl py-2 md:min-w-[90px]  md:mt-2 cursor-pointer"
                         >
                           Skip
                         </Button>
+
                         <Button
-                          type="submit"
-                          className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
+                          type="button"
+                          onClick={() => router.push("/super-admin/events/1")}
+                          className="rounded-4xl py-2 bg-primary md:mt-2  md:min-w-[90px] cursor-pointer text-white hover:bg-primary"
                         >
                           Publish
                         </Button>
@@ -1120,6 +1233,98 @@ const Page = () => {
           </Card>
         </div>
       </div>
+      <Dialog open={openModal.value} onOpenChange={CloseModal}>
+        <DialogOverlay className="fixed inset-0 bg-white   bg-opacity-30 flex items-center justify-center md:w-lg w-full">
+          <DialogContent className=" dark:bg-[#171717] overflow-y-auto mx-auto min-h-[86vh] max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>
+                Create Venue {" "}
+
+              </DialogTitle>
+            </DialogHeader>
+            <FormProvider
+              methods={venueMethods}
+              onSubmit={venueMethods.handleSubmit(() => { })}
+            >
+              <div className="flex flex-col gap-4 mt-4">
+                {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
+
+                <RHFTextField
+                  name="name"
+                  label="Venue Name"
+                  placeholder="Enter Venue Name"
+                  className={` ${methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
+                />
+
+                <RHFTextfieldWithSelect
+                  name="venueType"
+                  label="Venue Type"
+                  placeholder="Select Venue Type"
+                  options={[
+                    { value: "event1", label: "Event 1" },
+                    { value: "event2", label: "Event 2" },
+                    { value: "event3", label: "Event 3" },
+                  ]}
+                />
+                <RHFTextfieldWithSelect
+                  name="organization"
+                  label="Organization"
+                  placeholder="Select Organization"
+                  options={[
+                    { label: "Organization A", value: "org-a" },
+                    { label: "Organization B", value: "org-b" },
+                    { label: "Organization C", value: "org-c" },
+                  ]}
+                />
+
+                <RHFTextField
+                  name="location"
+                  label="Location"
+                  placeholder="Enter Location"
+                />
+
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAvatarChange}
+                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    Upload Floor Plan
+                  </Button>
+                  <p className="text-gray-500 text-sm mt-2">
+                    JPG or PNG. 1MB max.
+                  </p>
+                </div>
+
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Map Preview
+                  </label>
+                  <div className="w-full h-[200px] rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                    <iframe
+                      title="Venue Location Map"
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s"
+                      className="w-full h-full border-0"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="submit"
+                    className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                  >
+                    Add Venu
+                  </Button>
+                </div>
+              </div>
+            </FormProvider>
+          </DialogContent>
+        </DialogOverlay>
+      </Dialog>
     </div >
   );
 };
