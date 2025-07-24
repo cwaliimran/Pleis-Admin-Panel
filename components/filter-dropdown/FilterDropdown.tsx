@@ -147,7 +147,7 @@ export default function FilterDropdown({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="inline-flex items-center gap-2 cursor-pointer px-3 py-1 border rounded-md shadow-sm text-sm bg-white text-black hover:bg-gray-50 transition">
+        <div className="inline-flex items-center gap-2 cursor-pointer px-3 py-1  rounded-md shadow-sm text-sm bg-white text-black hover:bg-gray-50 transition">
           {icon}
           <span className="truncate max-w-[150px] text-xs">
             {selectedLabels.length > 0
@@ -157,8 +157,8 @@ export default function FilterDropdown({
         </div>
       </PopoverTrigger>
 
-      <PopoverContent className="w-64 p-0 ">
-        <Command>
+      <PopoverContent className="w-64 p-0  ">
+        <Command  className="dark:bg-secondary">
           <CommandInput placeholder="Search..." />
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup>

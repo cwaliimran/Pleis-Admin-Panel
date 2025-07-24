@@ -51,7 +51,7 @@ const EventOverView = () => {
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">ABOUT ORGANIZER</h1>
               <div className="mt-2">
-                <div className="flex items-center gap-2 mt-1">
+                <div className="md:flex items-center gap-2 mt-1">
                   <img
                     src="/images/eventImage.png"
                     alt="Peti Kupe"

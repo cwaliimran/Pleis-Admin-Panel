@@ -11,12 +11,14 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
   active?: boolean;
+  userType?: string;
 }
 const EventTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
   active,
+  userType
 }) => {
   const router = useRouter();
   const event = item;
@@ -38,7 +40,7 @@ const EventTableRow: FC<PageProps> = ({
   return (
     <TableRow
       className=" transition-colors h-14 w-full"
-      onClick={() => router.push(`/super-admin/events/${item.id}`)}
+      onClick={() => userType ? router.push(`/organizer/events/${item.id}`) : router.push(`/super-admin/events/${item.id}`)}
     >
       <TableCell>
         <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">

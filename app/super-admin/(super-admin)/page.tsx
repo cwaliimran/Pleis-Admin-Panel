@@ -32,13 +32,13 @@ const Page = () => {
         <div className=' flex md:justify-end md:flex-row flex-col-reverse md:items-center gap-2'>
           <div className='flex justify-end md:flex-row flex-col-reverse  md:items-center gap-2'>
             <div className='flex items-center md:justify-center justify-end'>
-              <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
+              {/* <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
                 <Settings2 className="w-5 h-5" />
 
                 <span className="whitespace-nowrap">Filter (3)</span>
 
                 <X className="w-4 h-4 cursor-pointer " onClick={() => setActive('')} />
-              </Badge>
+              </Badge> */}
             </div>
             <Tabs defaultValue="today" className='w-full  justify-end md:block hidden'>
               <TabsList className='flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1'>
@@ -61,7 +61,7 @@ const Page = () => {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select timeframe" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='dark:bg-secondary'>
                   <SelectItem value="today">Today</SelectItem>
                   <SelectItem value="week">Week</SelectItem>
                   <SelectItem value="month">Month</SelectItem>
@@ -71,7 +71,7 @@ const Page = () => {
             </div>
           </div>
         </div>
-        <div className='grid md:grid-cols-3 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5 '>
+        <div className='grid md:grid-cols-2 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5 '>
           {invoicesData.map((item: any) => (
             <InvoiceCard
               key={item?._id}
@@ -79,11 +79,11 @@ const Page = () => {
             />
           ))}
         </div>
-        <Card className='shadow-lg mt-10 dark:bg-secondary'>
+        <Card className='shadow-lg lg:mt-10 mt-5 dark:bg-secondary'>
           <CardHeader>
-            <div className='flex justify-between items-center'>
+            <div className='md:flex justify-between items-center'>
               <h3 className='text-xl font-semibold'>Organizer Performance Comparison</h3>
-              <div className='flex flex-col items-center'>
+              <div className='flex flex-col  md:items-center'>
                 <div className='flex items-center'>
                   <div className='w-2 h-2 rounded-full bg-black mr-2' />
                   <h1 className='text-[14px] leading-6 '>
@@ -121,10 +121,10 @@ const Page = () => {
         </Card>
 
 
-        <div className='grid md:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-4 mt-10'>
+        <div className='grid md:grid-cols-2 lg:grid-cols-3 md:gap-x-7 md:gap-y-4 gap-4 lg:mt-10 mt-5'>
 
           <div>
-            <Card className='shadow-md  w-full max-h-full h-[450px] dark:bg-secondary'>
+            <Card className='shadow-md  w-full max-h-full md:h-[450px] dark:bg-secondary'>
               <CardHeader>
                 <div className='flex justify-start items-center'>
                   <h3 className='text-xl font-semibold'>Age Demographics</h3>
@@ -156,10 +156,10 @@ const Page = () => {
           <div>
             <Card className='shadow-md h-[450px]  dark:bg-secondary'>
               <CardHeader>
-                <div className='flex justify-between items-start '>
+                <div className='md:flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'>Region Overview</h3>
-                  <div className='flex flex-col items-center'>
-                    <div className='flex items-center'>
+                  <div className='flex flex-col md:justify-center justify-start md:items-center'>
+                    <div className='flex items-center '>
                       <div className='w-2 h-2 rounded-full bg-[#2563EB] mr-2' />
                       <h1 className='text-[14px] leading-6 '>
                         Males
@@ -198,11 +198,11 @@ const Page = () => {
             </Card>
           </div>
           <div>
-            <Card className='shadow-md  h-[450px] dark:bg-secondary pb-0 p'>
+            <Card className='shadow-md  h-[450px] dark:bg-secondary pb-0 '>
               <CardHeader className=''>
-                <div className='flex justify-between items-start '>
+                <div className='lg:flex justify-between items-start '>
                   <h3 className='text-xl font-semibold'> Gender Analytics</h3>
-                  <div className="flex flex-col gap-3 items-start rounded-md">
+                  <div className="flex flex-col lg:gap-3 md:gap-2 items-start rounded-md md:mt-0 mt-2">
                     {[
                       { label: "Males", color: "#2563EB", value: "60% / 2000" },
                       { label: "Females", color: "#202C88", value: "20% / 2000" },
@@ -231,9 +231,9 @@ const Page = () => {
           </div>
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5'>
-          <Card className='col-span-12 md:col-span-7 shadow-lg h-[450px]  dark:bg-secondary'>
+          <Card className='col-span-12 lg:col-span-7 md:col-span-6 shadow-lg h-[450px]  dark:bg-secondary'>
             <CardHeader>
-              <div className='flex justify-between items-center'>
+              <div className='md:flex justify-between items-center'>
                 <div className='flex items-start flex-col'>
                   <h3 className='text-xl font-semibold'>Trends</h3>
                   <div className='flex flex-col items-center'>
@@ -251,12 +251,12 @@ const Page = () => {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <Select defaultValue='totalSales'>
+                <div className='md:mt-0 mt-2'>
+                  <Select defaultValue='totalSales' >
                     <SelectTrigger >
                       <SelectValue placeholder="" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className=" dark:bg-secondary">
                       <SelectGroup className='w-auto'>
                         <SelectLabel>Sale</SelectLabel>
                         <SelectItem value="totalSales">Total Sales</SelectItem>
@@ -281,11 +281,11 @@ const Page = () => {
             } />
           </Card>
 
-          <Card className='col-span-12 md:col-span-5 shadow-lg  h-[450px]  dark:bg-secondary'>
+          <Card className='col-span-12 lg:col-span-5 md:col-span-6 shadow-lg  md:h-[450px]  dark:bg-secondary'>
             <CardHeader>
-              <div className='flex justify-between items-center'>
+              <div className='md:flex justify-between md:items-center'>
                 <h3 className='text-xl font-semibold'>Interest per Category</h3>
-                <div className='flex flex-col items-center'>
+                <div className='flex flex-col md:items-center'>
                   <div className='flex items-center'>
                     <div className='w-2 h-2 rounded-full bg-[#020617] mr-2' />
                     <h1 className='text-[14px] leading-6 '>
@@ -321,9 +321,9 @@ const Page = () => {
         <div className='grid grid-cols-12 gap-4 mt-5 '>
           <Card className='col-span-12 md:col-span-6 shadow-lg h-[450px]  dark:bg-secondary'>
             <CardHeader>
-              <div className='flex justify-between items-center'>
+              <div className='lg:flex justify-between lgitems-center'>
                 <h3 className='text-xl font-semibold'>Organizer Activity Over Time</h3>
-                <div className='flex flex-col items-center'>
+                <div className='flex flex-col lg:items-center lg:mt-0 mt-2'>
                   <Select defaultValue='newEvent'>
                     <SelectTrigger >
                       <SelectValue placeholder="" />
@@ -384,9 +384,9 @@ const Page = () => {
         <div className='grid grid-cols-12 gap-4 mt-5'>
           <Card className='col-span-12 md:col-span-6 shadow-lg h-[550px]  dark:bg-secondary'>
             <CardHeader>
-              <div className='flex justify-between items-center'>
+              <div className='lg:flex justify-between md:items-center'>
                 <h3 className='text-xl font-semibold'>Growth of Register Users</h3>
-                <div className='flex flex-col items-center'>
+                <div className='flex flex-col lg:items-center lg:mt-0 mt-2'>
                   <Select defaultValue='users'>
                     <SelectTrigger >
                       <SelectValue placeholder="" />
@@ -442,7 +442,7 @@ const Page = () => {
                         <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
                           <SelectValue placeholder="Select tab" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="dark:bg-secondary">
                           <SelectItem value="all">All</SelectItem>
                           <SelectItem value="transactions">Transactions</SelectItem>
                           <SelectItem value="refunds">Refunds</SelectItem>
@@ -507,7 +507,7 @@ const Page = () => {
         </div>
         <div className='grid grid-cols-12 gap-4 mt-5'>
           {DashboardCardData.map((item: any, index) => (
-            <div key={index} className='col-span-12 md:col-span-4  '>
+            <div key={index} className='col-span-12 lg:col-span-4 md:col-span-12  '>
               <DashboardCard item={item} />
             </div>
           ))}

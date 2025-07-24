@@ -40,12 +40,15 @@ import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import CapacityGaugeChart from "@/sections/event/CapacityGaugeChart";
 import LastTransaction from "@/sections/event/lastTransaction";
 import { Button } from "@/components/ui/button";
+import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
 
 const Page = () => {
   const [active, setActive] = React.useState("overview");
   const [tabActive, setTabActive] = React.useState("all");
   const router = useRouter();
   const deleteModal = useBoolean();
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+
   const event = {
     id: "1",
     name: "Summer Music Festival 2025",
@@ -85,7 +88,7 @@ const Page = () => {
         />
         <div className="mt-10 h-full">
           <div className="grid grid-cols-12 md:gap-7">
-            <div className="md:col-span-9 col-span-12">
+            <div className="lg:col-span-9 col-span-12">
               <Card className=" dark:bg-[#171717] shadow-md pb-0">
                 <CardContent>
                   <div className="flex flex-col sm:flex-row gap-3 ">
@@ -101,7 +104,7 @@ const Page = () => {
                     <div className="w-full sm:w-2/3 flex flex-col gap-3">
                       {/* Status and Date */}
                       <div className="flex items-center justify-between gap-3 text-sm text-gray-500">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center md:flex-row flex-col gap-2">
                           <span className="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-xs font-medium">
                             Upcoming
                           </span>
@@ -211,7 +214,7 @@ const Page = () => {
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select tab" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="dark:bg-secondary">
                           {tabsData.map((tab: any) => (
                             <SelectItem key={tab.value} value={tab.value}>
                               {tab.label}
@@ -234,12 +237,11 @@ const Page = () => {
                               value={tab.value}
                               className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
                                                                     !shadow-none dark:!bg-transparent cursor-pointer border-none
-                                                                  ${
-                                                                    active ===
-                                                                    tab.value
-                                                                      ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                                                      : "text-muted-foreground"
-                                                                  }`}
+                                                                  ${active ===
+                                  tab.value
+                                  ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
+                                  : "text-muted-foreground"
+                                }`}
                             >
                               {tab.label}
                             </TabsTrigger>
@@ -265,7 +267,7 @@ const Page = () => {
             </div>
 
             {/* Sidebar or Additional Panel */}
-            <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3 md:mt-0 mt-3">
+            <div className="lg:col-span-3 col-span-12 md:space-y-2 space-y-3 md:mt-0 mt-3">
               {eventCardData.map((user: any) => (
                 <UserCard item={user} key={user._id} />
               ))}
@@ -308,7 +310,7 @@ const Page = () => {
           {active === "analytics" && (
             <div className="grid grid-cols-12 mt-5">
               <Card className="col-span-12 shadow-lg  dark:bg-[#171717]">
-                <CardHeader>
+                {/* <CardHeader>
                   <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
                     <h3 className="text-xl font-semibold">
                       Transaction History
@@ -365,6 +367,78 @@ const Page = () => {
                           </SelectGroup>
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+                </CardHeader> */}
+                <CardHeader>
+                  <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
+                    <h3 className='text-xl font-semibold'>Transaction History</h3>
+                    <div>
+
+                      <div className="w-full">
+                        {/* Show select on small screens */}
+                        <div className="block sm:hidden">
+                          <Select value={active} onValueChange={setActive}>
+                            <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
+                              <SelectValue placeholder="Select tab" />
+                            </SelectTrigger>
+                            <SelectContent className="dark:bg-secondary">
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="transactions">Transactions</SelectItem>
+                              <SelectItem value="refunds">Refunds</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Show tabs on medium and larger screens */}
+                        <div className="hidden sm:block">
+                          <Tabs value={active} onValueChange={setActive} defaultValue="all" className="w-full">
+                            <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
+                              <TabsTrigger
+                                value="all"
+                                className={cn(
+                                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                                )}
+                              >
+                                All
+                              </TabsTrigger>
+                              <TabsTrigger
+                                value="transactions"
+                                className={cn(
+                                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                                )}
+                              >
+                                Transactions
+                              </TabsTrigger>
+                              <TabsTrigger
+                                value="refunds"
+                                className={cn(
+                                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                                )}
+                              >
+                                Refunds
+                              </TabsTrigger>
+                            </TabsList>
+                          </Tabs>
+                        </div>
+                      </div>
+
+                    </div>
+                    <div className='flex flex-col md:items-center items-end'>
+                      <FilterDropdown
+                        selectedOptions={selectedOptions}
+                        onSelectOption={setSelectedOptions}
+                        options={[
+                          { id: "user", label: "User" },
+                          { id: 'contact', label: 'Contact' },
+                          { id: "invoice", label: "Invoice" },
+                          { id: 'organizer', label: 'Organizer ' },
+                          { id: 'date', label: 'Date' },
+                          { id: 'total', label: 'Total' },
+                          { id: "transactionType", label: "Transaction Type" },
+                          { id: 'status', label: 'Status' },
+                        ]}
+                      />
                     </div>
                   </div>
                 </CardHeader>

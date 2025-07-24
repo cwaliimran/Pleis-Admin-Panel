@@ -8,7 +8,7 @@ const Page = () => {
     <div className="bg-muted/40 min-h-screen pb-12">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
+          { name: "Dashboard", href: "/organizer/dashboard" },
           { name: "Organizations", href: "" },
         ]}
       />

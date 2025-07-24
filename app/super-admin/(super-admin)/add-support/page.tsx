@@ -35,8 +35,6 @@ const Page = () => {
     openModal.onFalse();
   }
 
-
-
   return (
     <div>
       <Header

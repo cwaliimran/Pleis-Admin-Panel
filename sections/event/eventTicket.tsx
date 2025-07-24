@@ -12,7 +12,7 @@ const EventTicket = () => {
   return (
     <div>
       <div className='grid grid-cols-12 gap-4'>
-        <div className='md:col-span-6 col-span-12'>
+        <div className='lg:col-span-6 col-span-12'>
           {/* paid tickets and free tickets */}
           <Card className='dark:bg-[#171717]'>
             <CardHeader>
@@ -77,7 +77,7 @@ const EventTicket = () => {
             <Plus /> Add Tickets
           </Button>
         </div>
-        <div className='md:col-span-6 col-span-12 border'>
+        <div className='lg:col-span-6 col-span-12'>
           {/* revenue chart of paid and free tickets */}
           <Card className='dark:bg-[#171717] '>
             <CardHeader>

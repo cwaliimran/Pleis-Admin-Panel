@@ -160,7 +160,7 @@ const Page = () => {
             />
             <div>
                 <div className=' w-full flex items-center justify-end'>
-                    <Button className='rounded-4xl py-2 bg-primary cursor-pointer hover:bg-primary/80 text-white' onClick={() => router.push("/super-admin/organization/create-organization")}>
+                    <Button className='rounded-4xl py-2 bg-primary cursor-pointer hover:bg-primary/80 md:mt-0 mt-4 text-white' onClick={() => router.push("/super-admin/organization/create-organization")}>
                         <Plus className='' />
                         Create Organization
                     </Button>
