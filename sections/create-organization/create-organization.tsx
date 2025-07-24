@@ -106,7 +106,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
               </div>
             </div>
 
-            {/* <div className="flex justify-end">
+            <div className="flex justify-end">
               <Pencil
                 width={22}
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
@@ -117,7 +117,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
                 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
                 onClick={deleteModal.onTrue}
               />
-            </div> */}
+            </div>
 
             <div className="md:flex items-center gap-2  pt-0 md:mt-0 mt-2">
               <h1 className="md:text-3xl text-2xl font-bold md:ml-2 pt-0 mt-0">

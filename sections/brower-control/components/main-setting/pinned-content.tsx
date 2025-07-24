@@ -1,40 +1,43 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import {
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  Over,
+  Active,
+} from "@dnd-kit/core";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderOpen, Tag, MapPin, Plus, X } from "lucide-react";
-
-interface ContentItem {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-  color: string;
-}
+import { FolderOpen, Tag, MapPin } from "lucide-react";
+import { CustomDndProvider } from "@/components/providers/DndProvider";
+import { DroppableArea } from "@/components/ui/droppable-area";
+import { DraggableItem } from "@/components/ui/draggable-item";
+import { useDragAndDrop, type ContentItem } from "@/hooks/useDragAndDrop";
+import { usePersistentState } from "@/hooks/usePersistentState";
 
 const initialPinnedItems: ContentItem[] = [
   {
-    id: "category",
-    name: "Category",
+    id: "events",
+    name: "Events",
     icon: <FolderOpen className="w-4 h-4" />,
     color: "text-blue-600",
   },
   {
-    id: "tag",
-    name: "Tag",
+    id: "loyalty",
+    name: "Loyalty",
     icon: <Tag className="w-4 h-4" />,
-    color: "text-purple-600",
+    color: "text-yellow-600",
   },
 ];
 
 const initialAvailableItems: ContentItem[] = [
   {
-    id: "venue-type",
-    name: "Venue Type",
+    id: "highlight",
+    name: "Highlight",
     icon: <MapPin className="w-4 h-4" />,
-    color: "text-red-600",
+    color: "text-pink-600",
   },
 ];
 
@@ -43,6 +46,18 @@ export default function PinnedContent() {
     useState<ContentItem[]>(initialPinnedItems);
   const [availableItems, setAvailableItems] = useState<ContentItem[]>(
     initialAvailableItems
+  );
+  const [activeItem, setActiveItem] = useState<ContentItem | null>(null);
+
+  const pinnedDragDrop = useDragAndDrop(pinnedItems, setPinnedItems);
+  const availableDragDrop = useDragAndDrop(availableItems, setAvailableItems);
+
+  // Add persistence
+  usePersistentState(
+    pinnedItems,
+    availableItems,
+    setPinnedItems,
+    setAvailableItems
   );
 
   const moveToTop = (item: ContentItem) => {
@@ -55,83 +70,134 @@ export default function PinnedContent() {
     setAvailableItems((prev) => [...prev, item]);
   };
 
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const draggedItem = [...pinnedItems, ...availableItems].find(
+      (item) => item.id === active.id
+    );
+    setActiveItem(draggedItem || null);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    // Only handle cross-container moves in dragOver, same-container moves in dragEnd
+    if (activeData?.type !== overData?.type) {
+      const activeItem = activeData?.item as ContentItem;
+      if (!activeItem) return;
+
+      // Don't move immediately, just check if it's a valid operation
+      if (
+        overData?.type === "pinned" &&
+        availableItems.find((item) => item.id === active.id)
+      ) {
+        // Valid move from available to pinned
+        return;
+      } else if (
+        overData?.type === "available" &&
+        pinnedItems.find((item) => item.id === active.id)
+      ) {
+        // Valid move from pinned to available
+        return;
+      }
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveItem(null);
+
+    if (!over) return;
+
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    // Handle cross-container moves
+    if (activeData?.type !== overData?.type) {
+      const activeItem = activeData?.item as ContentItem;
+      if (!activeItem) return;
+
+      if (
+        overData?.type === "pinned" &&
+        availableItems.find((item) => item.id === active.id)
+      ) {
+        // Move from available to pinned
+        setAvailableItems((prev) =>
+          prev.filter((item) => item.id !== active.id)
+        );
+        setPinnedItems((prev) => [...prev, activeItem]);
+      } else if (
+        overData?.type === "available" &&
+        pinnedItems.find((item) => item.id === active.id)
+      ) {
+        // Move from pinned to available
+        setPinnedItems((prev) => prev.filter((item) => item.id !== active.id));
+        setAvailableItems((prev) => [...prev, activeItem]);
+      }
+    } else if (active.id !== over.id) {
+      // Handle reordering within the same container
+      if (activeData?.type === "pinned") {
+        pinnedDragDrop.moveItem(active.id as string, over.id as string);
+      } else if (activeData?.type === "available") {
+        availableDragDrop.moveItem(active.id as string, over.id as string);
+      }
+    }
+  };
+
   return (
-    <Card className="w-full gap-0 max-w-md mx-auto ">
-      <CardHeader className="mb-4">
-        <CardTitle className="text-lg font-semibold text-gray-900">
-          Pinned Content
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">
-            Quick Access Bar
-          </h3>
-          <div className="space-y-2">
-            {pinnedItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={item.color}>{item.icon}</div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {item.name}
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 hover:bg-red-100 cursor-pointer"
-                  onClick={() => moveToBottom(item)}
-                >
-                  <X className="w-3 h-3 text-red-500" />
-                </Button>
-              </div>
-            ))}
-            {pinnedItems.length === 0 && (
-              <div className="text-sm text-gray-500 italic p-2">
-                No pinned items
-              </div>
-            )}
-          </div>
+    <>
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Pinned Content</h1>
         </div>
 
-        {/* Available to Pin Section */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">
-            Available to Pin
-          </h3>
-          <div className="space-y-2">
-            {availableItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={item.color}>{item.icon}</div>
-                  <span className="text-sm font-medium text-gray-900">
-                    {item.name}
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => moveToTop(item)}
-                >
-                  <Plus className="w-3 h-3 text-gray-500" />
-                </Button>
-              </div>
-            ))}
-            {availableItems.length === 0 && (
-              <div className="text-sm text-gray-500 italic p-2">
-                All items are pinned
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        <CustomDndProvider
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          overlay={
+            activeItem ? (
+              <DraggableItem
+                item={activeItem}
+                isPinned={pinnedItems.some((item) => item.id === activeItem.id)}
+                onTogglePin={() => {}}
+                isOverlay={true}
+              />
+            ) : null
+          }
+        >
+          <Card className="w-full gap-0 max-w-md mx-auto">
+            {/* <CardHeader className="mb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              Pinned Content
+            </CardTitle>
+          </CardHeader> */}
+            <CardContent className="space-y-6">
+              <DroppableArea
+                id="pinned"
+                items={pinnedItems}
+                title="Quick Access Bar"
+                isPinned={true}
+                onTogglePin={moveToBottom}
+                emptyMessage="No pinned items"
+              />
+
+              <DroppableArea
+                id="available"
+                items={availableItems}
+                title="Available to Pin"
+                isPinned={false}
+                onTogglePin={moveToTop}
+                emptyMessage="All items are pinned"
+              />
+            </CardContent>
+          </Card>
+        </CustomDndProvider>
+      </div>
+    </>
   );
 }

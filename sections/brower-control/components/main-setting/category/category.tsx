@@ -2,7 +2,6 @@
 
 import type React from "react";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Pin, EyeOff } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import type { Category, CategoryFormData } from "./types";
 
 // Dummy data
@@ -28,7 +27,8 @@ const initialCategories: Category[] = [
   {
     id: "1",
     name: "Summer Specials",
-    type: "events",
+    type: "event-1",
+    priority: "priority-1",
     isPinned: true,
     isVisible: true,
     order: 1,
@@ -37,7 +37,8 @@ const initialCategories: Category[] = [
   {
     id: "2",
     name: "VIP Exclusive",
-    type: "loyalty",
+    type: "event-1",
+    priority: "priority-1",
     isPinned: false,
     isVisible: false,
     order: 2,
@@ -46,7 +47,8 @@ const initialCategories: Category[] = [
   {
     id: "3",
     name: "Adventure Tours",
-    type: "experiences",
+    type: "event-1",
+    priority: "priority-1",
     isPinned: true,
     isVisible: true,
     order: 3,
@@ -55,7 +57,8 @@ const initialCategories: Category[] = [
   {
     id: "4",
     name: "Event Partners",
-    type: "organizers",
+    type: "event-1",
+    priority: "priority-1",
     isPinned: false,
     isVisible: true,
     order: 4,
@@ -83,42 +86,25 @@ function CategoryCard({
   const getStatusText = () => {
     const parts = [];
     parts.push(
-      `${category.itemCount} ${category.itemCount === 1 ? "item" : "items"}`
+      `${category.itemCount} ${category.itemCount === 1 ? "event" : "events"}`
     );
-    if (category.isPinned) parts.push("Pinned");
-    if (!category.isVisible) parts.push("Hidden");
     return parts.join(" • ");
   };
 
   return (
     <div
-      className={`border-l-blue-400 border-l-4 bg-white border border-gray-200 rounded-lg p-4 transition-all hover:shadow-md`}
+      className={`border-l-blue-400 border-l-4 bg-white border border-gray-200 rounded-lg px-4 py-2.5 transition-all hover:shadow-md`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
-          <div className="text-2xl">{categoryIcons[category.type]}</div>
           <div className="flex-1">
             <div className="flex items-center space-x-3">
-              <h3 className="font-semibold text-gray-900 text-lg">
+              <h3 className="font-semibold text-gray-900 text-md">
                 {category.name}
               </h3>
-              <div className="flex items-center space-x-2">
-                {category.isPinned && (
-                  <Badge variant="outline" className="text-xs">
-                    <Pin className="w-3 h-3 mr-1" />
-                    Pinned
-                  </Badge>
-                )}
-                {!category.isVisible && (
-                  <Badge variant="outline" className="text-xs">
-                    <EyeOff className="w-3 h-3 mr-1" />
-                    Hidden
-                  </Badge>
-                )}
-              </div>
             </div>
 
-            <p className="text-sm text-gray-600 mt-1">{getStatusText()}</p>
+            <p className="text-sm text-gray-600 mt-0">{getStatusText()}</p>
           </div>
         </div>
         <div className="flex space-x-2">
@@ -128,7 +114,7 @@ function CategoryCard({
             onClick={() => onEdit(category)}
             className="h-8 w-8 p-0 cursor-pointer"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
@@ -136,7 +122,7 @@ function CategoryCard({
             onClick={() => onDelete(category.id)}
             className="h-8 w-8 p-0 text-red-600 hover:text-red-700 cursor-pointer"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -160,7 +146,8 @@ function CategoryModal({
 }) {
   const [formData, setFormData] = useState<CategoryFormData>({
     name: category?.name || "",
-    type: category?.type || "events",
+    type: category?.type || "event-1",
+    priority: category?.priority || "priority-1",
     isPinned: category?.isPinned || false,
     isVisible: category?.isVisible !== undefined ? category.isVisible : true,
   });
@@ -176,7 +163,8 @@ function CategoryModal({
   const resetForm = () => {
     setFormData({
       name: category?.name || "",
-      type: category?.type || "events",
+      type: category?.type || "event-1",
+      priority: category?.priority || "priority-1",
       isPinned: category?.isPinned || false,
       isVisible: category?.isVisible !== undefined ? category.isVisible : true,
     });
@@ -211,7 +199,7 @@ function CategoryModal({
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 w-full">
             <Label htmlFor="type">Category Type</Label>
             <Select
               value={formData.type}
@@ -219,34 +207,40 @@ function CategoryModal({
                 setFormData({ ...formData, type: value })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select category type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="events">Events</SelectItem>
-                <SelectItem value="experiences">Experiences</SelectItem>
-                <SelectItem value="organizers">Organizers</SelectItem>
-                <SelectItem value="loyalty">Loyalty Programs</SelectItem>
+                <SelectItem value="event-1">Event 1</SelectItem>
+                <SelectItem value="event-2">Event 2</SelectItem>
+                <SelectItem value="event-3">Event 3</SelectItem>
+                <SelectItem value="event-4">Event 4</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2 w-full">
+            <Label htmlFor="type">Priority</Label>
+            <Select
+              value={formData.priority}
+              onValueChange={(value: any) =>
+                setFormData({ ...formData, priority: value })
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select category type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="priority-1">Priority 1</SelectItem>
+                <SelectItem value="priority-2">Priority 2</SelectItem>
+                <SelectItem value="priority-3">Priority 3</SelectItem>
+                <SelectItem value="priority-4">Priority 4</SelectItem>
+                <SelectItem value="priority-5">Priority 5</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Input
-                id="pinned"
-                type="checkbox"
-                checked={formData.isPinned}
-                onChange={(e) =>
-                  setFormData({ ...formData, isPinned: e.target.checked })
-                }
-                className="w-4 h-4"
-              />
-              <Label htmlFor="pinned" className="text-sm font-medium">
-                Pin to Homepage
-              </Label>
-            </div>
-
             <div className="flex items-center space-x-2">
               <Input
                 id="visible"
@@ -258,7 +252,7 @@ function CategoryModal({
                 className="w-4 h-4"
               />
               <Label htmlFor="visible" className="text-sm font-medium">
-                Visible to Users
+                Always Visible
               </Label>
             </div>
           </div>
@@ -323,27 +317,27 @@ export function CategoryManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Custom Categories</h1>
-        {/* <Button
-          onClick={handleCreateCategory}
-          className="bg-purple-600 hover:bg-purple-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          New Category
-        </Button> */}
 
         <Button
+          onClick={handleCreateCategory}
+          className="size-10 rounded-full bg-primary hover:bg-primary/90 cursor-pointer text-white"
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+
+        {/* <Button
           onClick={handleCreateCategory}
           className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary"
         >
           <Plus />
           New Category
-        </Button>
+        </Button> */}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {sortedCategories.map((category) => (
           <CategoryCard
             key={category.id}

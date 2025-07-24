@@ -6,11 +6,11 @@ import PromoManager from "./promo-manager";
 const MainSettings = () => {
   return (
     <>
-      <div className="w-full grid grid-cols-2 gap-4">
-        <div>
-          <PromoManager />
-        </div>
-        <div>
+      <div className="w-full px-4">
+        <PromoManager />
+      </div>
+      <div className="px-4 w-full grid grid-cols-3 gap-4 mt-8">
+        <div className="col-span-2">
           <CategoryManagement />
         </div>
         <div>
