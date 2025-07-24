@@ -24,7 +24,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
           <aside className="sticky top-0 h-screen z-20">{left}</aside>
           <SidebarToggleButton />
 
-          <main className="flex-1 dark:bg-black md:px-5 px-2  bg-[#f8f6f7]">
+          <main className="flex-1 dark:bg-black md:px-5 px-2  bg-[#f8f6f7] ">
             {children}
           </main>
 

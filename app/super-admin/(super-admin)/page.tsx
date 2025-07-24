@@ -505,9 +505,9 @@ const Page = () => {
             <TransactionHistory />
           </Card>
         </div>
-        <div className='grid grid-cols-12 gap-4 mt-5'>
+        <div className='grid grid-cols-12 gap-4 mt-5 mb-5'>
           {DashboardCardData.map((item: any, index) => (
-            <div key={index} className='col-span-12 lg:col-span-4 md:col-span-12  '>
+            <div key={index} className='col-span-12 lg:col-span-4 md:col-span-12   '>
               <DashboardCard item={item} />
             </div>
           ))}

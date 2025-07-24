@@ -97,7 +97,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
     <div className="mt-10 h-full">
       <div className="grid grid-cols-12 gap-7">
         <div className="lg:col-span-12 xl:col-span-9 col-span-12">
-          <Card className="overflow-hidden  p-4  shadow-md dark:bg-secondary md:pb-0 border-[10px] border-red-600">
+          <Card className="overflow-hidden  p-4  shadow-md dark:bg-secondary md:pb-0 ">
             <div className="relative w-full">
               <div className="h-72   bg-[url('/images/bannerImage.png')] bg-cover bg-center rounded-lg" />
               <div className="absolute left-5 bottom-[-30]">
