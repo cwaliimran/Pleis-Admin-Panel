@@ -928,152 +928,156 @@ const Page = () => {
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex items-center gap-2 justify-start">
-                          <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
-                            RECURRING INTERVAL
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              title="Recurring Interval"
-                              type="number"
-                              value={watch("recurringInterval")}
-                              onChange={(e) =>
-                                setValue(
-                                  "recurringInterval",
-                                  Number.parseInt(e.target.value)
-                                )
-                              }
-                              className="w-16 px-3 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-blue-600"
-                              min="1"
-                            />
-                            <span className="text-sm text-gray-600">
-                              Weekly
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
-                          RECURRING DAY
-                        </label>
-                        <div className="flex gap-2">
-                          {weekDays.map((day) => (
-                            <Button
-                              key={day.value}
-                              type="button"
-                              variant={
-                                recurringDays.includes(day.value)
-                                  ? "default"
-                                  : "outline"
-                              }
-                              size="sm"
-                              onClick={() => toggleRecurringDay(day.value)}
-                              className={`w-12 h-8 text-xs cursor-pointer ${
-                                recurringDays.includes(day.value)
-                                  ? "bg-blue-600 text-white"
-                                  : "text-gray-600"
-                              }`}
-                            >
-                              {day.label}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
-                          RECURRING ENDS
-                        </label>
-                        <div className=" mt-2 flex flex-col gap-3">
-                          {/* Never */}
-                          <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
-                              <input
-                                type="radio"
-                                name="recurringEnd"
-                                value="never"
-                                checked={recurringEnd === "never"}
-                                onChange={(e) =>
-                                  setValue(
-                                    "recurringEnd",
-                                    e.target.value as any
-                                  )
-                                }
-                                className="w-4 h-4 text-blue-600 rounded-2xl cursor-pointer"
-                              />
-                              <span className="text-sm">Never</span>
-                            </label>
-                          </div>
-                          {/* On Day */}
-                          <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
-                              <input
-                                type="radio"
-                                name="recurringEnd"
-                                value="on-day"
-                                checked={recurringEnd === "on-day"}
-                                onChange={(e) =>
-                                  setValue(
-                                    "recurringEnd",
-                                    e.target.value as any
-                                  )
-                                }
-                                className="w-4 h-4 text-blue-600 rounded-2xl cursor-pointer"
-                              />
-                              <span className="text-sm">On Day</span>
-                            </label>
-                            {recurringEnd === "on-day" && (
-                              <div className="w-[30%] bg-white dark:bg-[#23272f]">
-                                <RHFDate
-                                  name="recurringEndDate"
-                                  className="w-full border-gray-200 focus:border-blue-600 rounded-2xl cursor-pointer"
-                                />
-                              </div>
-                            )}
-                          </div>
-                          {/* After */}
-                          <div className="flex items-center gap-3 w-full">
-                            <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
-                              <input
-                                type="radio"
-                                name="recurringEnd"
-                                value="after"
-                                checked={recurringEnd === "after"}
-                                onChange={(e) =>
-                                  setValue(
-                                    "recurringEnd",
-                                    e.target.value as any
-                                  )
-                                }
-                                className="w-4 h-4 text-blue-600 rounded-2xl cursor-pointer"
-                              />
-                              <span className="text-sm">After</span>
-                            </label>
-                            {recurringEnd === "after" && (
-                              <div className="w-[30%] border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-2 bg-white dark:bg-[#23272f] flex items-center gap-2">
+                      {recurring && (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex items-center gap-2 justify-start">
+                              <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                                RECURRING INTERVAL
+                              </label>
+                              <div className="flex items-center gap-2">
                                 <input
-                                  title="Recurring End Count"
+                                  title="Recurring Interval"
                                   type="number"
-                                  value={watch("recurringEndCount")}
+                                  value={watch("recurringInterval")}
                                   onChange={(e) =>
                                     setValue(
-                                      "recurringEndCount",
+                                      "recurringInterval",
                                       Number.parseInt(e.target.value)
                                     )
                                   }
-                                  className="w-10 focus:outline-none focus:border-blue-600"
+                                  className="w-16 px-3 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-blue-600"
                                   min="1"
                                 />
-                                <span className="text-sm text-gray-600 dark:text-gray-300">
-                                  recurrings
+                                <span className="text-sm text-gray-600">
+                                  Weekly
                                 </span>
                               </div>
-                            )}
+                            </div>
                           </div>
-                        </div>
-                      </div>
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                              RECURRING DAY
+                            </label>
+                            <div className="flex gap-2">
+                              {weekDays.map((day) => (
+                                <Button
+                                  key={day.value}
+                                  type="button"
+                                  variant={
+                                    recurringDays.includes(day.value)
+                                      ? "default"
+                                      : "outline"
+                                  }
+                                  size="sm"
+                                  onClick={() => toggleRecurringDay(day.value)}
+                                  className={`w-12 h-8 text-xs cursor-pointer ${
+                                    recurringDays.includes(day.value)
+                                      ? "bg-blue-600 text-white"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  {day.label}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <label className="text-sm font-medium text-gray-700 uppercase tracking-wide">
+                              RECURRING ENDS
+                            </label>
+                            <div className=" mt-2 flex flex-col gap-3">
+                              {/* Never */}
+                              <div className="flex items-center gap-3 w-full">
+                                <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                                  <input
+                                    type="radio"
+                                    name="recurringEnd"
+                                    value="never"
+                                    checked={recurringEnd === "never"}
+                                    onChange={(e) =>
+                                      setValue(
+                                        "recurringEnd",
+                                        e.target.value as any
+                                      )
+                                    }
+                                    className="w-4 h-4 text-blue-600 rounded-2xl cursor-pointer"
+                                  />
+                                  <span className="text-sm">Never</span>
+                                </label>
+                              </div>
+                              {/* On Day */}
+                              <div className="flex items-center gap-3 w-full">
+                                <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                                  <input
+                                    type="radio"
+                                    name="recurringEnd"
+                                    value="on-day"
+                                    checked={recurringEnd === "on-day"}
+                                    onChange={(e) =>
+                                      setValue(
+                                        "recurringEnd",
+                                        e.target.value as any
+                                      )
+                                    }
+                                    className="w-4 h-4 text-blue-600 rounded-2xl cursor-pointer"
+                                  />
+                                  <span className="text-sm">On Day</span>
+                                </label>
+                                {recurringEnd === "on-day" && (
+                                  <div className="w-[30%] bg-white dark:bg-[#23272f]">
+                                    <RHFDate
+                                      name="recurringEndDate"
+                                      className="w-full border-gray-200 focus:border-blue-600 rounded-2xl cursor-pointer"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                              {/* After */}
+                              <div className="flex items-center gap-3 w-full">
+                                <label className="flex items-center gap-3 py-2 px-3 border-2 border-gray-200 dark:border-zinc-700 rounded-2xl bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-200 w-[60%]">
+                                  <input
+                                    type="radio"
+                                    name="recurringEnd"
+                                    value="after"
+                                    checked={recurringEnd === "after"}
+                                    onChange={(e) =>
+                                      setValue(
+                                        "recurringEnd",
+                                        e.target.value as any
+                                      )
+                                    }
+                                    className="w-4 h-4 text-blue-600 rounded-2xl cursor-pointer"
+                                  />
+                                  <span className="text-sm">After</span>
+                                </label>
+                                {recurringEnd === "after" && (
+                                  <div className="w-[30%] border border-gray-200 dark:border-zinc-700 rounded-2xl px-4 py-2 bg-white dark:bg-[#23272f] flex items-center gap-2">
+                                    <input
+                                      title="Recurring End Count"
+                                      type="number"
+                                      value={watch("recurringEndCount")}
+                                      onChange={(e) =>
+                                        setValue(
+                                          "recurringEndCount",
+                                          Number.parseInt(e.target.value)
+                                        )
+                                      }
+                                      className="w-10 focus:outline-none focus:border-blue-600"
+                                      min="1"
+                                    />
+                                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                                      recurrings
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Navigation buttons */}
