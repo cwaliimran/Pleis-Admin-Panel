@@ -19,6 +19,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -282,41 +283,43 @@ export function RHFCombobox({
                         "No results found."
                       )}
                     </CommandEmpty>
-                    <CommandGroup className="max-h-[200px] overflow-y-auto">
-                      {filteredOptions.map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.value}
-                          onSelect={() => handleSelect(option.value)}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedValues.includes(option.value)
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {option.label}
-                        </CommandItem>
-                      ))}
+                    <CommandList className="max-h-[200px] overflow-y-auto">
+                      <CommandGroup>
+                        {filteredOptions.map((option) => (
+                          <CommandItem
+                            key={option.value}
+                            value={option.value}
+                            onSelect={() => handleSelect(option.value)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                selectedValues.includes(option.value)
+                                  ? "opacity-100"
+                                  : "opacity-0"
+                              )}
+                            />
+                            {option.label}
+                          </CommandItem>
+                        ))}
 
-                      {showAddOption && (
-                        <CommandItem
-                          onSelect={() =>
-                            handleAddCustom(
-                              inputValue,
-                              field.value,
-                              field.onChange
-                            )
-                          }
-                          className="text-blue-600 cursor-pointer"
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add "{inputValue.trim()}"
-                        </CommandItem>
-                      )}
-                    </CommandGroup>
+                        {showAddOption && (
+                          <CommandItem
+                            onSelect={() =>
+                              handleAddCustom(
+                                inputValue,
+                                field.value,
+                                field.onChange
+                              )
+                            }
+                            className="text-blue-600 cursor-pointer"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add "{inputValue.trim()}"
+                          </CommandItem>
+                        )}
+                      </CommandGroup>
+                    </CommandList>
                   </Command>
                 </PopoverContent>
               </Popover>

@@ -71,7 +71,7 @@ export function DraggableItem({
       } ${isPinned ? "hover:bg-gray-100" : "hover:bg-gray-50"}`}
       style={transformStyle}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex flex-row-reverse w-full items-center gap-3">
         <div
           className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 transition-colors"
           {...attributes}
@@ -79,8 +79,10 @@ export function DraggableItem({
         >
           <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
-        <div className={item.color}>{item.icon}</div>
-        <span className="text-sm font-medium text-gray-900">{item.name}</span>
+        <div className="flex-1 flex items-center gap-3">
+          <div className={item.color}>{item.icon}</div>
+          <span className="text-sm font-medium text-gray-900">{item.name}</span>
+        </div>
       </div>
       {/* <Button
         variant="ghost"

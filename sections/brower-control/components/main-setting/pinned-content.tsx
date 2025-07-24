@@ -150,7 +150,7 @@ export default function PinnedContent() {
 
   return (
     <>
-      <div className="space-y-5">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Pinned Content</h1>
         </div>
@@ -171,11 +171,6 @@ export default function PinnedContent() {
           }
         >
           <Card className="w-full gap-0 max-w-md mx-auto">
-            {/* <CardHeader className="mb-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">
-              Pinned Content
-            </CardTitle>
-          </CardHeader> */}
             <CardContent className="space-y-6">
               <DroppableArea
                 id="pinned"

@@ -237,13 +237,6 @@ const OrganizerProfileSection = () => {
                 />
 
                 <RHFTextField
-                  name="password"
-                  type="password"
-                  label="Password"
-                  placeholder="Enter your password"
-                />
-
-                <RHFTextField
                   name="companyName"
                   label="Company Name"
                   placeholder="Enter company name"

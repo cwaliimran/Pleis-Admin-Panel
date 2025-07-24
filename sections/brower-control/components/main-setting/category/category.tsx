@@ -64,6 +64,16 @@ const initialCategories: Category[] = [
     order: 4,
     itemCount: 15,
   },
+  {
+    id: "5",
+    name: "Summer Specials 2",
+    type: "event-1",
+    priority: "priority-1",
+    isPinned: true,
+    isVisible: true,
+    order: 1,
+    itemCount: 12,
+  },
 ];
 
 const categoryIcons = {
