@@ -12,7 +12,7 @@ import PhoneInput from "react-phone-input-2";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/atoms/mode-toggle";
 import { useBoolean } from "@/hooks/useBoolean";
-import FormProvider, { RHFTextField } from "@/components/rhf";
+import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
@@ -202,10 +202,7 @@ function SignUpPage() {
                     placeholder="Bank Account Number"
                   />
                   <RHFTextField name="postalCode" placeholder="Postal Code" />
-                  {/* <RHFTextField
-                    name="bankAccountName"
-                    placeholder="Bank Account Name"
-                  /> */}
+
                   <div className="col-span-2">
                     <RHFTextField
                       name="representativeFullName"
@@ -219,8 +216,25 @@ function SignUpPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
-                  <RHFTextField name="city" placeholder="City" />
-                  <RHFTextField name="country" placeholder="Country" />
+                  {/* <RHFTextField name="country" placeholder="Country" />
+                  <RHFTextField name="city" placeholder="City" /> */}
+                  <RHFSelectField
+                    name="country"
+                    placeholder="Select Country"
+                    className="w-full flex-1"
+                    options={[{ label: "Croatia", value: "cr" }]}
+                  />
+
+                  <RHFSelectField
+                    name="city"
+                    placeholder="Select City"
+                    className="w-full flex-1"
+                    options={[
+                      { label: "Zadar", value: "zadar" },
+                      { label: "Pula", value: "pula" },
+                      { label: "Hvar", value: "hvar" },
+                    ]}
+                  />
                 </div>
 
                 {/* <div className="mt-4">

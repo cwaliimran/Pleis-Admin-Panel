@@ -1,4 +1,3 @@
-
 "use client";
 import React, { FC, useState } from "react";
 import Link from "next/link";
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { ModeToggle } from "@/components/atoms/mode-toggle";
 import { useSidebar } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   links?: {
@@ -31,6 +31,8 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ links }) => {
   const { open } = useSidebar();
+  const { user } = useAuth();
+
   const [selectedOrganization, setSelectedOrganization] = useState<string>("");
 
   return (
@@ -43,7 +45,9 @@ const Header: FC<HeaderProps> = ({ links }) => {
               <div key={index} className="flex items-center">
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    {link.href ? <Link href={link.href}>{link.name}</Link> : null}
+                    {link.href ? (
+                      <Link href={link.href}>{link.name}</Link>
+                    ) : null}
                   </BreadcrumbLink>
                   {!link.href && <BreadcrumbPage>{link.name}</BreadcrumbPage>}
                 </BreadcrumbItem>
@@ -61,19 +65,21 @@ const Header: FC<HeaderProps> = ({ links }) => {
           className=" w-[100%]  md:w-[240px] lg:w-[280px] h-10 rounded-full pl-5 bg-white"
         />
 
-        <Select
-          value={selectedOrganization}
-          onValueChange={setSelectedOrganization}
-        >
-          <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
-            <SelectValue placeholder="Select Organization" />
-          </SelectTrigger>
-          <SelectContent className="dark:bg-secondary">
-            <SelectItem value="org1">Organization 1</SelectItem>
-            <SelectItem value="org2">Organization 2</SelectItem>
-            <SelectItem value="org3">Organization 3</SelectItem>
-          </SelectContent>
-        </Select>
+        {user?.role === "organizer" && (
+          <Select
+            value={selectedOrganization}
+            onValueChange={setSelectedOrganization}
+          >
+            <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
+              <SelectValue placeholder="Select Organization" />
+            </SelectTrigger>
+            <SelectContent className="dark:bg-secondary">
+              <SelectItem value="org1">Organization 1</SelectItem>
+              <SelectItem value="org2">Organization 2</SelectItem>
+              <SelectItem value="org3">Organization 3</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         <div className="flex gap-3 items-center justify-end">
           <ModeToggle />

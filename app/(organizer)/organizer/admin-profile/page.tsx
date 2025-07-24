@@ -1,20 +1,19 @@
 "use client";
-import React from "react";
 import Header from "@/app/common/header";
 
-import { AdminProfileSection } from "@/sections/proflie";
+import OrganizerProfileSection from "@/sections/proflie/organizer-profile-section";
 
 const Page = () => {
   return (
     <div className=" ">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
+          { name: "Dashboard", href: "/organizer/dashboard" },
           { name: "Profile", href: "" },
         ]}
       />
 
-      <AdminProfileSection />
+      <OrganizerProfileSection />
     </div>
   );
 };

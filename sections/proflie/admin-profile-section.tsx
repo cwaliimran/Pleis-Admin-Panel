@@ -1,18 +1,11 @@
 "use client";
-import React, { useRef } from "react";
+import FormProvider, { RHFTextField } from "@/components/rhf";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
+import { Label } from "@/components/ui/label";
+import React, { useRef } from "react";
 import { useForm } from "react-hook-form";
 
 interface AdminProfileFormData {
