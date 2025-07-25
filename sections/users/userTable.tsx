@@ -16,8 +16,9 @@ interface PageProps {
     handleEdit?: (id: string) => void;
     handlePending?: (id: string) => void;
     pendingUser?: boolean;
+    userType?: "super-admin" | "organizer";
 }
-const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handlePending }) => {
+const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handlePending, userType }) => {
     const [filterField, setFilterField] = useState<string[]>([]);
 
     const headLabel = [
@@ -86,6 +87,7 @@ const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handl
                                         handleEdit={handleEdit}
                                         pendingUser={pendingUser}
                                         handlePending={handlePending}
+                                        userType={userType}
                                     />
                                 ))}
                             </TableBody>

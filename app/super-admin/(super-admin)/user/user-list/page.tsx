@@ -661,6 +661,7 @@ const Page = () => {
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         pendingUser={false}
+        userType="super-admin"
       />
     </div>
   );

@@ -27,12 +27,15 @@ interface Props {
     handleEdit?: (id: string) => void;
     handlePending?: (id: string) => void;
     pendingUser?: boolean;
+    userType?: "super-admin" | "organizer";
 }
 
-const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUser, handlePending }) => {
+const UserListTableRow: FC<Props> = ({ item, handleDelete, handleEdit, pendingUser, handlePending, userType }) => {
     const router = require('next/navigation').useRouter();
     return (
-        <TableRow className="transition-colors h-14 w-full">
+        <TableRow className="transition-colors h-14 w-full"
+            onClick={() => userType === "super-admin" ? router.push(`/super-admin/user/${item.id}?userType=${item.role}`) : userType === "organizer" &&
+                router.push(`/organizer/user/${item.id}?userType=${item.role}`)}>
             <TableCell>
 
                 <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
