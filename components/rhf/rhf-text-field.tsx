@@ -1,16 +1,16 @@
-import { FC } from "react";
-import { useFormContext } from "react-hook-form";
 import {
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff } from "lucide-react";
-import { Textarea } from "../ui/textarea";
 import { cn } from "@/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
+import { FC } from "react";
+import { useFormContext } from "react-hook-form";
+import { Textarea } from "../ui/textarea";
 
 interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
   name: string;
@@ -40,7 +40,7 @@ const RHFTextField: FC<Props> = ({
     <FormField
       control={control}
       name={name}
-      render={({ field, fieldState: { error } }) => {
+      render={({ field, fieldState: {} }) => {
         return (
           <FormItem className="">
             {label && <FormLabel>{label}</FormLabel>}

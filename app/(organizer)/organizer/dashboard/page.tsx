@@ -1,6 +1,17 @@
 "use client";
-import React, { useState } from "react";
-import Header from "../../../common/header";
+import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { Card, CardHeader } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import {
   EventPerformanceComparison,
   FollowerCount,
@@ -15,23 +26,9 @@ import {
   VisitorInterest,
   VisitorRegion,
 } from "@/sections/invoices";
-import { DashboardCardData, invoicesData2 } from "@/sections/invoices/data";
-import { Card, CardHeader } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import DashboardCard from "@/sections/invoices/dashboardCard";
-import { Badge } from "@/components/ui/badge";
-import { Settings2, X } from "lucide-react";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { invoicesData2 } from "@/sections/invoices/data";
+import { useState } from "react";
+import Header from "../../../common/header";
 
 const Page = () => {
   const [active, setActive] = useState("all");

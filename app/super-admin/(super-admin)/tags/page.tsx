@@ -33,20 +33,29 @@ const Page = () => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => {
+    console.log("Form submitted with data:", data);
+  };
+
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
   };
+
   const handleEdit = (id: string) => {
+    console.log("id", id);
     openModal.onTrue();
   };
+
   const handleDelete = (id: string) => {
+    console.log("id", id);
     // Handle delete logic here
   };
-  const onDelete = () => {
-    // Handle delete confirmation logic here
-  };
+
+  // const onDelete = () => {
+  //   // Handle delete confirmation logic here
+  // };
+
   return (
     <div>
       <Header

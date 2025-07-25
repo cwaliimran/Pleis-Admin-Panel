@@ -1,18 +1,9 @@
 "use client";
 import Header from "@/app/common/header";
-import Superadminheader from "@/app/common/superadminheader";
-import { CustomBreadCrums } from "@/components/breadcrums";
+import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import FormProvider, { RHFTextField } from "@/components/rhf";
+import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import React, { useRef } from "react";
-import FormProvider, {
-  RHFDate,
-  RHFSelectField,
-  RHFTextField,
-} from "@/components/rhf";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { useBoolean } from "@/hooks/useBoolean";
 import VenueTable from "@/sections/venue/venueTable";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Plus } from "lucide-react";
+import { useRef } from "react";
+import { useForm } from "react-hook-form";
+import * as Yup from "yup";
 
 const defaultValues = {
   // image: null,
@@ -57,18 +51,23 @@ const Page = () => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => {
+    console.log("Form submitted:", data);
+  };
+
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
     editModal.onFalse();
   };
   const handleEdit = (id: string) => {
+    console.log("id", id);
     openModal.onTrue();
     editModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
+    console.log("id", id);
     deleteModal.onTrue();
   };
   const onDelete = () => {

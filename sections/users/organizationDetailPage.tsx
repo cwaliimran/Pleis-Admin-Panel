@@ -46,7 +46,7 @@ import { cn } from "@/lib/utils";
 import {
   defaultValues,
   schema,
-  tabOptions,
+  // tabOptions,
 } from "@/app/super-admin/(super-admin)/organization/page";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import UserInfo from "./orgInfo";

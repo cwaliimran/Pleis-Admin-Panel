@@ -1,6 +1,10 @@
 "use client";
 
-import { SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
+import {
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { useQuickNavigation } from "@/hooks/useQuickNavigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -24,12 +28,14 @@ const MenuItem: FC<MenuItemsProps> = ({
   parentKey,
   isCollapsed = false,
 }) => {
-  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const pathname = usePathname();
   const { navigate } = useQuickNavigation();
+
   const { toggleSidebar, isMobile } = useSidebar();
 
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
+  console.log("hoveredItem", hoveredItem);
 
   const toggleSubMenu = useCallback((itemKey: string) => {
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
@@ -37,10 +43,12 @@ const MenuItem: FC<MenuItemsProps> = ({
 
   const handleClick = useCallback(
     (url: string) => {
-      isMobile && toggleSidebar();
+      if (isMobile) {
+        toggleSidebar();
+      }
       navigate(url);
     },
-    [navigate]
+    [navigate, isMobile, toggleSidebar]
   );
 
   return (
@@ -52,8 +60,9 @@ const MenuItem: FC<MenuItemsProps> = ({
 
         const ButtonContent = (
           <div
-            className={`sidebar-nav-item flex items-center justify-between w-full gap-2 text-sm px-3 py-1 rounded hover:bg-muted transition-colors duration-100 ${isActive ? "bg-muted font-medium" : ""
-              }`}
+            className={`sidebar-nav-item flex items-center justify-between w-full gap-2 text-sm px-3 py-1 rounded hover:bg-muted transition-colors duration-100 ${
+              isActive ? "bg-muted font-medium" : ""
+            }`}
           >
             <div className="flex items-center gap-2 cursor-pointer">
               <div className="w-1 h-1 rounded-full dark:bg-white bg-gray-500 ml-3 cursor-pointer" />

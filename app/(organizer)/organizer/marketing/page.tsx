@@ -1,8 +1,6 @@
 "use client"
 import Header from '@/app/common/header'
-import Superadminheader from '@/app/common/superadminheader'
 import { MarketingRequestTable } from '@/sections/marketingrequest'
-import React from 'react'
 
 const Page = () => {
     return (

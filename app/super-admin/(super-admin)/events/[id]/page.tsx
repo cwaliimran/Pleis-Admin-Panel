@@ -1,50 +1,38 @@
 "use client";
 
 import Header from "@/app/common/header";
+import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { userData } from "@/sections/create-organization/create-org-data";
-import { eventCardData } from "@/sections/event/data";
-import { tabsData } from "@/sections/event/data";
-import UserCard from "@/sections/users/userCard";
-import { useRouter } from "next/navigation";
-import React from "react";
-import { TransactionHistory } from "@/sections/invoices";
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useBoolean } from "@/hooks/useBoolean";
+import { cn } from "@/lib/utils";
+import CapacityGaugeChart from "@/sections/event/CapacityGaugeChart";
+import { eventCardData, tabsData } from "@/sections/event/data";
 import EventAnalytics from "@/sections/event/eventAnalytics";
-import EventInfo from "@/sections/event/eventOverview";
 import EventNotification from "@/sections/event/eventNotification";
+import EventOverView from "@/sections/event/eventOverview";
 import EventReservation from "@/sections/event/eventReservation";
 import EventTicket from "@/sections/event/eventTicket";
-import EventOverView from "@/sections/event/eventOverview";
-import {
-  Calendar,
-  Copy,
-  Eye,
-  EyeOff,
-  Pencil,
-  Trash2,
-  Users,
-} from "lucide-react";
-import { useBoolean } from "@/hooks/useBoolean";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import CapacityGaugeChart from "@/sections/event/CapacityGaugeChart";
 import LastTransaction from "@/sections/event/lastTransaction";
-import { Button } from "@/components/ui/button";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { TransactionHistory } from "@/sections/invoices";
+import UserCard from "@/sections/users/userCard";
+import { Calendar, Copy, Pencil, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 const Page = () => {
   const [active, setActive] = React.useState("overview");
-  const [tabActive, setTabActive] = React.useState("all");
+  // const [tabActive, setTabActive] = React.useState("all");
   const router = useRouter();
   const deleteModal = useBoolean();
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
@@ -62,14 +50,15 @@ const Page = () => {
     // Handle delete logic here
   };
 
-  const handleTogglePublish = async (id: string) => {
-    // Call API to toggle published state
-    //   await togglePublishStatus(id);
-    //   toast.success("Event status updated.");
-    //   refetch(); // Or update local state
-  };
+  // const handleTogglePublish = async (id: string) => {
+  //   // Call API to toggle published state
+  //   //   await togglePublishStatus(id);
+  //   //   toast.success("Event status updated.");
+  //   //   refetch(); // Or update local state
+  // };
 
   const handleCloneEvent = async (id: string) => {
+    console.log("Cloning event with ID:", id);
     // Call API to clone event
     //   const clonedEvent = await cloneEvent(id);
     //   toast.success("Event cloned successfully.");
@@ -93,7 +82,7 @@ const Page = () => {
                 <CardContent>
                   <div className="flex flex-col sm:flex-row gap-3 ">
                     <div className="w-full sm:w-1/3">
-                      <img
+                      <Image
                         src="/images/eventImage.png"
                         alt="Event"
                         className="rounded-md w-full h-auto object-contain object-top "
@@ -145,7 +134,7 @@ const Page = () => {
                           ORGANIZER
                         </h4>
                         <div className="flex items-center gap-2 mt-1">
-                          <img
+                          <Image
                             src="/images/eventImage.png"
                             alt="Peti Kupe"
                             className="w-6 h-6 rounded-full"
@@ -237,11 +226,12 @@ const Page = () => {
                               value={tab.value}
                               className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
                                                                     !shadow-none dark:!bg-transparent cursor-pointer border-none
-                                                                  ${active ===
-                                  tab.value
-                                  ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                  : "text-muted-foreground"
-                                }`}
+                                                                  ${
+                                                                    active ===
+                                                                    tab.value
+                                                                      ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
+                                                                      : "text-muted-foreground"
+                                                                  }`}
                             >
                               {tab.label}
                             </TabsTrigger>
@@ -371,10 +361,11 @@ const Page = () => {
                   </div>
                 </CardHeader> */}
                 <CardHeader>
-                  <div className='flex md:justify-between md:items-center flex-col md:flex-row gap-4'>
-                    <h3 className='text-xl font-semibold'>Transaction History</h3>
+                  <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
+                    <h3 className="text-xl font-semibold">
+                      Transaction History
+                    </h3>
                     <div>
-
                       <div className="w-full">
                         {/* Show select on small screens */}
                         <div className="block sm:hidden">
@@ -384,7 +375,9 @@ const Page = () => {
                             </SelectTrigger>
                             <SelectContent className="dark:bg-secondary">
                               <SelectItem value="all">All</SelectItem>
-                              <SelectItem value="transactions">Transactions</SelectItem>
+                              <SelectItem value="transactions">
+                                Transactions
+                              </SelectItem>
                               <SelectItem value="refunds">Refunds</SelectItem>
                             </SelectContent>
                           </Select>
@@ -392,7 +385,12 @@ const Page = () => {
 
                         {/* Show tabs on medium and larger screens */}
                         <div className="hidden sm:block">
-                          <Tabs value={active} onValueChange={setActive} defaultValue="all" className="w-full">
+                          <Tabs
+                            value={active}
+                            onValueChange={setActive}
+                            defaultValue="all"
+                            className="w-full"
+                          >
                             <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
                               <TabsTrigger
                                 value="all"
@@ -422,21 +420,20 @@ const Page = () => {
                           </Tabs>
                         </div>
                       </div>
-
                     </div>
-                    <div className='flex flex-col md:items-center items-end'>
+                    <div className="flex flex-col md:items-center items-end">
                       <FilterDropdown
                         selectedOptions={selectedOptions}
                         onSelectOption={setSelectedOptions}
                         options={[
                           { id: "user", label: "User" },
-                          { id: 'contact', label: 'Contact' },
+                          { id: "contact", label: "Contact" },
                           { id: "invoice", label: "Invoice" },
-                          { id: 'organizer', label: 'Organizer ' },
-                          { id: 'date', label: 'Date' },
-                          { id: 'total', label: 'Total' },
+                          { id: "organizer", label: "Organizer " },
+                          { id: "date", label: "Date" },
+                          { id: "total", label: "Total" },
                           { id: "transactionType", label: "Transaction Type" },
-                          { id: 'status', label: 'Status' },
+                          { id: "status", label: "Status" },
                         ]}
                       />
                     </div>

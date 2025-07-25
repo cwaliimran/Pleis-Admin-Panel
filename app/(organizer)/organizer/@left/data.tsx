@@ -1,37 +1,28 @@
 import {
-  Home,
-  Settings,
-  ChartColumnBig,
-  CalendarDays,
-  UsersRound,
-  Tags,
-  Bell,
-  Rocket,
-  LayoutDashboard,
-  CreditCard,
-  Calendar,
   Building,
-  VenetianMask,
+  Calendar,
+  ChartColumnBig,
   Highlighter,
-  Volume1,
-  Podcast,
-  ArrowRightLeft,
+  Home,
+  Tags,
   User,
-  LogOut,
+  UsersRound,
+  VenetianMask,
 } from "lucide-react";
 import { paths } from "./paths";
+import type { LucideIcon } from "lucide-react";
 
 type MenuItem = {
   title: string;
   url?: string;
-  icon: any;
+  icon?: LucideIcon;
   items?: MenuItem[];
 };
 
 type MenuGroup = {
   label: string;
   key: string;
-  icon: any;
+  icon?: LucideIcon;
   items?: MenuItem[];
 };
 

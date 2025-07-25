@@ -315,7 +315,7 @@ export function RHFCombobox({
                             className="text-blue-600 cursor-pointer"
                           >
                             <Plus className="mr-2 h-4 w-4" />
-                            Add "{inputValue.trim()}"
+                            Add &quot;{inputValue.trim()}&quot;
                           </CommandItem>
                         )}
                       </CommandGroup>

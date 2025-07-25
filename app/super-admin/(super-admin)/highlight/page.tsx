@@ -1,17 +1,14 @@
 "use client";
 
 import Header from "@/app/common/header";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import React, { useEffect, useMemo } from "react";
+import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import FormProvider, {
   RHFSelectField,
   RHFTextField,
   RHFUploadVideo,
 } from "@/components/rhf";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -20,10 +17,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useBoolean } from "@/hooks/useBoolean";
-import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
 import HighlightTable from "@/sections/highlight/hightlightTable";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Plus } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import * as Yup from "yup";
 
 type HighlightFormValues = {
   video: File | null;
@@ -42,8 +41,7 @@ const defaultValues: HighlightFormValues = {
 };
 
 const schema = Yup.object({
-  video: Yup.mixed()
-    .required("Video is required"),
+  video: Yup.mixed().required("Video is required"),
   title: Yup.string().required("Title is required"),
   event: Yup.string().required("Event is required"),
   status: Yup.string().required("Status is required"),
@@ -51,7 +49,6 @@ const schema = Yup.object({
 });
 
 const Page = () => {
-
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -77,6 +74,7 @@ const Page = () => {
   }, [videoPreviewUrl]);
 
   const onSubmit = (data: any) => {
+    console.log("data", data);
     // You can upload form here
   };
 
@@ -86,17 +84,18 @@ const Page = () => {
     editModal.onFalse();
   };
   const handleEdit = (id: string) => {
+    console.log("id", id);
     openModal.onTrue();
     editModal.onTrue();
-  }
+  };
 
   const handleDelete = (id: string) => {
+    console.log("id", id);
     deleteModal.onTrue();
-  }
+  };
   const onDelete = () => {
     deleteModal.onFalse();
-  }
-
+  };
 
   return (
     <div>
@@ -130,7 +129,6 @@ const Page = () => {
             <div className="grid grid-cols-12 gap-4 mt-4">
               <div className="col-span-12 md:col-span-4">
                 <RHFUploadVideo name="video" label="Highlight Video" />
-
               </div>
 
               <div className="col-span-12 md:col-span-8 flex flex-col gap-4">
@@ -138,10 +136,11 @@ const Page = () => {
                   name="title"
                   label="Highlight Title"
                   placeholder="Enter Highlight Title"
-                  className={`${methods.formState.errors.title ? "border-red-400" : ""
-                    }`}
+                  className={`${
+                    methods.formState.errors.title ? "border-red-400" : ""
+                  }`}
                 />
-               
+
                 <RHFTextfieldWithSelect
                   name="event"
                   placeholder="Select Event"
@@ -150,8 +149,8 @@ const Page = () => {
                     { value: "event2", label: "Event 2" },
                     { value: "event3", label: "Event 3" },
                   ]}
-                  />
-                
+                />
+
                 <RHFTextfieldWithSelect
                   name="organization"
                   placeholder="Select Organization"

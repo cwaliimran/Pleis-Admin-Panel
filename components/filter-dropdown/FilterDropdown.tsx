@@ -93,14 +93,6 @@
 
 "use client";
 
-import { useState } from "react";
-import { Check, Settings2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -108,7 +100,14 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Check, Settings2 } from "lucide-react";
+import { useState } from "react";
 
 type Option = {
   id: string;

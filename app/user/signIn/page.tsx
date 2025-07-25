@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/atoms/mode-toggle";
 import { useBoolean } from "@/hooks/useBoolean";
 import FormProvider, { RHFTextField } from "@/components/rhf";
+import Image from "next/image";
 
 const defaultValues = {
   email: "",
@@ -65,7 +66,7 @@ export default function LoginPage() {
       name: data.email.split("@")[0],
       email: data.email,
       role: userRole,
-      image: "", 
+      image: "",
     };
 
     login(userData);
@@ -157,15 +158,20 @@ export default function LoginPage() {
                   className="py-3 cursor-pointer h-[60px] w-[60px] rounded-full"
                 >
                   <span className="w-6 h-6 flex items-center justify-center">
-                    <img
+                    <Image
                       src="/images/appleIcon.png"
                       alt="Apple"
                       className="w-[25px] h-[25px] dark:hidden block"
+                      width={25}
+                      height={25}
                     />
-                    <img
+
+                    <Image
                       src="/images/macIconDark.png"
                       alt="Apple"
                       className="w-[25px] h-[25px] dark:block hidden"
+                      width={25}
+                      height={25}
                     />
                   </span>
                 </Button>
@@ -175,10 +181,12 @@ export default function LoginPage() {
                   className=" cursor-pointer h-[60px] w-[60px] rounded-full"
                 >
                   <span className="w-6 h-6 flex items-center justify-center">
-                    <img
+                    <Image
                       src="/images/googleIcon.png"
                       alt="Google"
                       className="w-[25px] h-[25px]"
+                      width={25}
+                      height={25}
                     />
                   </span>
                 </Button>
@@ -188,10 +196,12 @@ export default function LoginPage() {
                   className=" cursor-pointer h-[60px] w-[60px] rounded-full"
                 >
                   <span className="w-6 h-6 flex items-center justify-center">
-                    <img
+                    <Image
                       src="/images/metaIcon.png"
                       alt="Meta"
                       className="w-[25px] h-[25px]"
+                      width={25}
+                      height={25}
                     />
                   </span>
                 </Button>

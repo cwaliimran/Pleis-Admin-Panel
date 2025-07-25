@@ -1,17 +1,17 @@
 'use client'
 
-import { useFormContext, Controller } from "react-hook-form"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
+    FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
-    FormControl,
-    FormDescription,
     FormMessage,
 } from "@/components/ui/form"
-import { Checkbox } from "@/components/ui/checkbox"
-import { FC } from "react"
 import { cn } from "@/lib/utils"
+import { FC } from "react"
+import { useFormContext } from "react-hook-form"
 
 interface RHFCheckboxProps {
     name: string

@@ -1,17 +1,12 @@
 "use client";
-import {
-  Geist,
-  Geist_Mono,
-  Josefin_Sans,
-  Poppins,
-  Inter,
-} from "next/font/google";
-import "./globals.css";
-import { metadata } from "./metadata";
-import { ThemeProvider } from "@/components/templates/theme-provider";
-import { Provider } from "react-redux";
-import { store } from "@/store/store";
 import AuthProvider from "@/components/providers/AuthProvider";
+import { ThemeProvider } from "@/components/templates/theme-provider";
+import { store } from "@/store/store";
+import {
+  Inter
+} from "next/font/google";
+import { Provider } from "react-redux";
+import "./globals.css";
 
 import "react-phone-input-2/lib/style.css";
 

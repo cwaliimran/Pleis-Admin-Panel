@@ -1,4 +1,12 @@
-import React, { FC, useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import clsx from 'clsx';
+import { ChevronDown } from 'lucide-react';
+import { FC, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import {
     Command,
@@ -6,17 +14,8 @@ import {
     CommandGroup,
     CommandInput,
     CommandItem,
-    CommandList,
-    CommandSeparator,
+    CommandList
 } from '../ui/command';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
-import clsx from 'clsx';
 import { FormLabel } from '../ui/form';
 
 interface PageProps {

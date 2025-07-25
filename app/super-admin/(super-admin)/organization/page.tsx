@@ -56,7 +56,7 @@ export const defaultValues = {
   bankCountry: "",
   galleryImages: [],
 };
-export const tabOptions = [
+const tabOptions = [
   { label: "Basic Info", value: "basicInfo" },
   { label: "Social Links", value: "socialLinks" },
   // { label: "Business Details", value: "businessDetails" },
@@ -112,7 +112,10 @@ const Page = () => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => { };
+  const onSubmit = (data: any) => {
+    console.log("data", data);
+  };
+
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
@@ -133,11 +136,13 @@ const Page = () => {
   };
 
   const handleEdit = (id: string) => {
+    console.log("id", id);
     openModal.onTrue();
     editModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
+    console.log("id", id);
     deleteModal.onTrue();
   };
   const onDelete = () => {
@@ -222,8 +227,9 @@ const Page = () => {
                     name="name"
                     label=" Organization Name"
                     placeholder="Enter Organization Name"
-                    className={` ${methods.formState.errors.name ? "border-red-400" : ""
-                      }`}
+                    className={` ${
+                      methods.formState.errors.name ? "border-red-400" : ""
+                    }`}
                   />
                   <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
                     <RHFTextField
@@ -272,10 +278,11 @@ const Page = () => {
                       name="location"
                       label="Location"
                       placeholder="Enter Location"
-                      className={` ${methods.formState.errors.location
+                      className={` ${
+                        methods.formState.errors.location
                           ? "border-red-400"
                           : ""
-                        }`}
+                      }`}
                     />
                     <RHFSelectField
                       name="clity"

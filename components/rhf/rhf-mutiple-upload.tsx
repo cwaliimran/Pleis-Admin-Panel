@@ -4,7 +4,7 @@ import { useDropzone } from "react-dropzone";
 import { useFormContext } from "react-hook-form";
 import { CloudUpload, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -16,6 +16,7 @@ export default function RHFMultiFileUpload({ name, label }: Props) {
   const { setValue } = useFormContext();
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const previewsRef = useRef<string[]>([]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -29,11 +30,12 @@ export default function RHFMultiFileUpload({ name, label }: Props) {
       );
       const allPreviewUrls = [...previews, ...newPreviewUrls];
       setPreviews(allPreviewUrls);
+      previewsRef.current = allPreviewUrls;
     },
     [files, previews, name, setValue]
   );
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     accept: { "image/*": [] },
     onDrop,
   });
@@ -50,13 +52,14 @@ export default function RHFMultiFileUpload({ name, label }: Props) {
 
     setFiles(updatedFiles);
     setPreviews(updatedPreviews);
+    previewsRef.current = updatedPreviews;
     setValue(name, updatedFiles, { shouldValidate: true });
   };
 
   useEffect(() => {
     // Cleanup function to revoke all object URLs when component unmounts
     return () => {
-      previews.forEach((url) => {
+      previewsRef.current.forEach((url) => {
         if (url && typeof url === "string") {
           URL.revokeObjectURL(url);
         }

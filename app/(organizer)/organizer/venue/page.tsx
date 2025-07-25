@@ -51,18 +51,24 @@ const Page = () => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = (data: any) => {
+    console.log("Form submitted with data:", data);
+  };
+
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
     editModal.onFalse();
   };
+
   const handleEdit = (id: string) => {
+    console.log("id", id);
     openModal.onTrue();
     editModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
+    console.log("id", id);
     deleteModal.onTrue();
   };
   const onDelete = () => {

@@ -16,7 +16,11 @@ import React from "react";
 
 const Account = () => {
   const router = useRouter();
-  const { user, logout, getDashboardRoute } = useAuth();
+  const {
+    user,
+    logout,
+    // getDashboardRoute
+  } = useAuth();
 
   const handleProfileClick = () => {
     if (user?.role === "superAdmin") {
@@ -26,9 +30,9 @@ const Account = () => {
     }
   };
 
-  const handleDashboardClick = () => {
-    router.push(getDashboardRoute());
-  };
+  // const handleDashboardClick = () => {
+  //   router.push(getDashboardRoute());
+  // };
 
   if (!user) {
     return null;

@@ -1,16 +1,14 @@
-'use client'
+"use client";
 
-import { Loader2 } from 'lucide-react'
-import { FC, ReactNode } from 'react'
+import { Loader2 } from "lucide-react";
+import { FC } from "react";
 
-interface AppLoadingProps {}
-
-const AppLoading: FC<AppLoadingProps> = ({}) => {
+const AppLoading: FC = () => {
   return (
-    <div className='flex items-center justify-center w-full min-h-[90vh] h-full'>
-      <Loader2 className='animate-spin' />
+    <div className="flex items-center justify-center w-full min-h-[90vh] h-full">
+      <Loader2 className="animate-spin" />
     </div>
-  )
-}
+  );
+};
 
-export { AppLoading }
+export { AppLoading };

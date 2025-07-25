@@ -1,21 +1,21 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
 import PhoneInput from "react-phone-input-2";
+import * as Yup from "yup";
 
-import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/atoms/mode-toggle";
-import { useBoolean } from "@/hooks/useBoolean";
 import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
+import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
+import { useBoolean } from "@/hooks/useBoolean";
+import Image from "next/image";
 
 const defaultValues = {
   fname: "",
@@ -54,7 +54,7 @@ const schema = Yup.object().shape({
 });
 
 function SignUpPage() {
-  const router = useRouter();
+  // const router = useRouter();
   const open = useBoolean();
   const confirmOpen = useBoolean();
 
@@ -68,6 +68,7 @@ function SignUpPage() {
   });
 
   const onSubmit = async (data: any) => {
+    console.log("data", data);
     // handle form submit
   };
 
@@ -294,26 +295,26 @@ function SignUpPage() {
             Or sign up with
             <div className="flex justify-center gap-4 mt-4">
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <img
+                <Image
                   src="/images/appleIcon.png"
                   alt="Apple"
                   className="w-6 h-6 dark:hidden"
                 />
-                <img
+                <Image
                   src="/images/macIconDark.png"
                   alt="Apple Dark"
                   className="w-6 h-6 hidden dark:block"
                 />
               </Button>
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <img
+                <Image
                   src="/images/googleIcon.png"
                   alt="Google"
                   className="w-6 h-6"
                 />
               </Button>
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <img
+                <Image
                   src="/images/metaIcon.png"
                   alt="Meta"
                   className="w-6 h-6"

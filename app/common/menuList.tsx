@@ -167,8 +167,6 @@
 
 // export default MenuList;
 
-
-
 "use client";
 import { FC, useState, useCallback, useMemo, useEffect } from "react";
 import {
@@ -221,7 +219,6 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
     };
   }, [hoverTimeout, state, toggleSidebar]);
 
-
   useEffect(() => {
     if (isCollapsed) {
       setOpenGroup(null);
@@ -255,12 +252,8 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
 
   const memoizedMenuItems = useMemo(() => {
     return menuGroups.map((group: any) => {
-
-
       const isOpen = openGroup === group.key;
       const hasItems = group.items?.length > 0;
-
-
 
       return (
         <SidebarGroup
@@ -271,7 +264,6 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
             if (hoverTimeout) clearTimeout(hoverTimeout);
             setHoveredGroup(group.key);
           }}
-
         >
           <button
             onClick={() => handleGroupClick(group)}
@@ -283,7 +275,6 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
                 : "justify-between w-full px-3 py-2"
             )}
           >
-
             <div
               className={cn(
                 "group relative flex items-center transition-all duration-100",
@@ -299,7 +290,9 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
 
               {/* Label (visible only if expanded) */}
               {!isCollapsed && (
-                <span className="truncate transition-all duration-100">{group.label}</span>
+                <span className="truncate transition-all duration-100">
+                  {group.label}
+                </span>
               )}
 
               {/* Chevron appears on hover (collapsed only, and has children) */}
@@ -391,10 +384,14 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
     navigate,
     toggleSidebar,
     isMobile,
+    hoverTimeout,
   ]);
 
   return (
-    <Sidebar className="relative z-10 overflow-visible a-50 " collapsible="icon">
+    <Sidebar
+      className="relative z-10 overflow-visible a-50 "
+      collapsible="icon"
+    >
       <SidebarHeader>
         <h1
           className={cn(

@@ -27,10 +27,10 @@ const NotFound = () => {
               404
             </h1>
             <p className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl dark:text-white">
-              Something's missing.
+              Something&#39;s missing.
             </p>
             <p className="mb-4 text-md font-light text-gray-600 dark:text-gray-400">
-              You don't have permission to access this area.
+              You don&#39;t have permission to access this area.
             </p>
             <Button
               onClick={handleGoToDashboard}

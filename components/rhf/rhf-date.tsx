@@ -1,26 +1,30 @@
-"use client"
+"use client";
 
-import { FC } from "react"
-import { useFormContext, Controller } from "react-hook-form"
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import { Button } from "@/components/ui/button"
-import { CalendarIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { FC } from "react";
+import { useFormContext } from "react-hook-form";
 
 interface RHFDatePickerProps {
-  name: string
-  label?: string
-  placeholder?: string
-  className?: string
+  name: string;
+  label?: string;
+  placeholder?: string;
+  className?: string;
 }
 
 const RHFDatePicker: FC<RHFDatePickerProps> = ({
@@ -29,13 +33,13 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
   placeholder = "Pick a date",
   className,
 }) => {
-  const { control } = useFormContext()
+  const { control } = useFormContext();
 
   return (
     <FormField
       control={control}
       name={name}
-      render={({ field,formState:{errors} }) => (
+      render={({ field, formState: {} }) => (
         <FormItem className={"flex-1"}>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
@@ -46,14 +50,21 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
                   className={cn(
                     className,
                     "w-full justify-start text-left font-normal",
-                    !field.value && "text-muted-foreground",
+                    !field.value && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {field.value ? format(field.value, "PPP") : <span>{placeholder}</span>}
+                  {field.value ? (
+                    format(field.value, "PPP")
+                  ) : (
+                    <span>{placeholder}</span>
+                  )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 dark:bg-secondary" align="start">
+              <PopoverContent
+                className="w-auto p-0 dark:bg-secondary"
+                align="start"
+              >
                 <Calendar
                   mode="single"
                   selected={field.value}
@@ -66,7 +77,7 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
         </FormItem>
       )}
     />
-  )
-}
+  );
+};
 
-export default RHFDatePicker
+export default RHFDatePicker;

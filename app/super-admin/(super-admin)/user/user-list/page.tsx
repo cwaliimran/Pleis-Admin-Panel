@@ -1,17 +1,14 @@
 "use client";
 import Header from "@/app/common/header";
-import Superadminheader from "@/app/common/superadminheader";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import React from "react";
+import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import FormProvider, {
   RHFDate,
   RHFSelectField,
   RHFTextField,
 } from "@/components/rhf";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
+import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -20,10 +17,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useBoolean } from "@/hooks/useBoolean";
-import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
 import { UserTable } from "@/sections/users";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Plus } from "lucide-react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import * as Yup from "yup";
 
 const defaultValues = {
   image: null,
@@ -212,7 +211,7 @@ const Page = () => {
 
   // Update form validation when role changes
   React.useEffect(() => {
-    const newSchema = generateSchema(watchedRole || "Manager");
+    // const newSchema = generateSchema(watchedRole || "Manager");
     methods.clearErrors();
   }, [watchedRole, methods]);
 
@@ -222,7 +221,7 @@ const Page = () => {
       roleFieldsConfig[role as keyof typeof roleFieldsConfig] || [];
     const fieldComponents: React.ReactElement[] = [];
 
-    fields.forEach((field, index) => {
+    fields.forEach((field) => {
       switch (field) {
         case "image":
           fieldComponents.push(
@@ -551,11 +550,13 @@ const Page = () => {
     editModal.onFalse();
   };
   const handleEdit = (id: string) => {
+    console.log("id", id);
     openModal.onTrue();
     editModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
+    console.log("id", id);
     deleteModal.onTrue();
   };
   const onDelete = () => {
@@ -613,7 +614,7 @@ const Page = () => {
 
                 {/* Dynamic Fields Grid */}
                 <div className="grid md:grid-cols-2 grid-cols-1 gap-4 items-start">
-                  {renderFieldsByRole(watchedRole).map((field, index) => {
+                  {renderFieldsByRole(watchedRole).map((field) => {
                     // Skip image field as it's handled separately above
                     if (field.key === "image") return null;
 

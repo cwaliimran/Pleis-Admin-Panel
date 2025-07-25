@@ -1,11 +1,9 @@
 "use client";
 
-import React from "react";
+import type { ContentItem } from "@/hooks/useDragAndDrop";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Button } from "@/components/ui/button";
-import { X, Plus, GripVertical } from "lucide-react";
-import type { ContentItem } from "@/hooks/useDragAndDrop";
+import { GripVertical } from "lucide-react";
 
 interface DraggableItemProps {
   item: ContentItem;
@@ -17,7 +15,6 @@ interface DraggableItemProps {
 export function DraggableItem({
   item,
   isPinned,
-  onTogglePin,
   isOverlay = false,
 }: DraggableItemProps) {
   const {

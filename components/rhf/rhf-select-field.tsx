@@ -16,8 +16,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-import { useFormContext } from "react-hook-form"
 import { FC } from "react"
+import { useFormContext } from "react-hook-form"
 
 interface Option {
     label: string
@@ -38,7 +38,6 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
     placeholder = "Select option",
     options,
     className = "",
-    ...props
 }) => {
     const { control } = useFormContext()
 

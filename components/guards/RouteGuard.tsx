@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ interface RouteGuardProps {
 export default function RouteGuard({
   children,
   allowedRoles,
-  redirectTo = "/user/signIn",
+  // redirectTo = "/user/signIn",
 }: RouteGuardProps) {
   const router = useRouter();
   const user = useSelector((state: RootState) => state.userSlice.user);
