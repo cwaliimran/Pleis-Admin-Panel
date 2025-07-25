@@ -119,6 +119,42 @@ const mockEvents = [
     category: "Education",
     date: "2024-11-08",
   },
+  {
+    id: 15,
+    name: "International Book Fair",
+    category: "Literature",
+    date: "2024-10-22",
+  },
+  {
+    id: 16,
+    name: "Green Energy Summit",
+    category: "Environment",
+    date: "2024-08-28",
+  },
+  {
+    id: 17,
+    name: "Kids Coding Bootcamp",
+    category: "Education",
+    date: "2024-09-05",
+  },
+  {
+    id: 18,
+    name: "Cultural Dance Parade",
+    category: "Culture",
+    date: "2024-07-30",
+  },
+  {
+    id: 19,
+    name: "Vintage Car Show",
+    category: "Automotive",
+    date: "2024-11-20",
+  },
+  {
+    id: 20,
+    name: "Health & Wellness Expo",
+    category: "Health",
+    date: "2024-12-10",
+  },
 ];
 
 interface PromoEvent {
@@ -217,7 +253,7 @@ function DraggablePromoItem({
   );
 }
 
-const PromoManager = () => {
+const ViewAllPromos = () => {
   const [promoEvents, setPromoEvents] = useState<PromoEvent[]>([
     { id: 1, eventId: 1, eventName: "Summer Music Festival", position: 1 },
     { id: 2, eventId: 2, eventName: "Tech Conference 2024", position: 2 },
@@ -227,10 +263,23 @@ const PromoManager = () => {
     { id: 6, eventId: 6, eventName: "Business Networking", position: 6 },
     { id: 7, eventId: 7, eventName: "Comedy Night Special", position: 7 },
     { id: 8, eventId: 8, eventName: "Photography Workshop", position: 8 },
-    { id: 9, eventId: 9, eventName: "Photography Workshop", position: 9 },
-    { id: 10, eventId: 10, eventName: "Photography Workshop", position: 10 },
-    { id: 11, eventId: 11, eventName: "Photography Workshop", position: 11 },
-    { id: 12, eventId: 12, eventName: "Photography Workshop", position: 12 },
+    { id: 9, eventId: 9, eventName: "Charity Gala Dinner", position: 9 },
+    { id: 10, eventId: 10, eventName: "Winter Sports Festival", position: 10 },
+    { id: 11, eventId: 11, eventName: "Jazz Concert Series", position: 11 },
+    {
+      id: 12,
+      eventId: 12,
+      eventName: "Startup Pitch Competition",
+      position: 12,
+    },
+    { id: 13, eventId: 13, eventName: "Fashion Week Showcase", position: 13 },
+    { id: 14, eventId: 14, eventName: "Science Fair Exhibition", position: 14 },
+    { id: 15, eventId: 15, eventName: "International Book Fair", position: 15 },
+    { id: 16, eventId: 16, eventName: "Green Energy Summit", position: 16 },
+    { id: 17, eventId: 17, eventName: "Kids Coding Bootcamp", position: 17 },
+    { id: 18, eventId: 18, eventName: "Cultural Dance Parade", position: 18 },
+    { id: 19, eventId: 19, eventName: "Vintage Car Show", position: 19 },
+    { id: 20, eventId: 20, eventName: "Health & Wellness Expo", position: 20 },
   ]);
 
   const router = useRouter();
@@ -351,13 +400,14 @@ const PromoManager = () => {
         ) : null
       }
     >
-      <div className="p-0">
+      <div className="p-0 pb-12">
         <div className="max-w-full mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900">
-              Top 10 / Promo Section
+              All Promos ({promoEvents.length})
             </h1>
+
             <Dialog
               open={isCreateModalOpen}
               onOpenChange={setIsCreateModalOpen}
@@ -512,6 +562,15 @@ const PromoManager = () => {
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-2">
+              <div className="mb-2">
+                <input
+                  type="text"
+                  placeholder="Search by event name..."
+                  className="w-full rounded-lg border px-3 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50
+                    bg-white border-gray-300 text-gray-900 placeholder-gray-400
+                    dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
+                />
+              </div>
               {displayedEvents.map((promo) => (
                 <DraggablePromoItem
                   key={promo.id}
@@ -522,82 +581,6 @@ const PromoManager = () => {
               ))}
             </div>
           </SortableContext>
-
-          <div className="flex justify-center mt-6">
-            <Button
-              variant="outline"
-              onClick={navigateToAllPromos}
-              className="px-6 py-2 border-gray-300 hover:border-gray-400 bg-white"
-            >
-              View All
-            </Button>
-          </div>
-
-          {/* View All Button */}
-          {/* {promoEvents.length > 5 && (
-            <div className="flex justify-center mt-8">
-              <Dialog
-                open={isViewAllModalOpen}
-                onOpenChange={setIsViewAllModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="px-6 py-2 border-gray-300 hover:border-gray-400 bg-white"
-                  >
-                    View All ({promoEvents.length})
-                  </Button>
-                </DialogTrigger>
-
-                <DialogContent className="sm:max-w-3xl max-h-[85vh]">
-                  <DialogHeader className="pb-4">
-                    <DialogTitle className="text-xl font-semibold text-gray-900">
-                      All Promo Events ({promoEvents.length})
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="overflow-y-auto max-h-[60vh] pr-2">
-                    <div className="space-y-3">
-                      {promoEvents.map((promo) => (
-                        <div
-                          key={promo.id}
-                          className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-sm transition-shadow"
-                        >
-                          <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {promo.eventName}
-                            </h4>
-                            <p className="text-sm text-gray-500">
-                              Position {promo.position}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                openEditModal(promo);
-                              }}
-                              className="text-gray-600 hover:text-blue-600 hover:bg-blue-50"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(promo.id)}
-                              className="text-gray-600 hover:text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )} */}
 
           {/* Edit Modal */}
           <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
@@ -749,4 +732,4 @@ const PromoManager = () => {
   );
 };
 
-export default PromoManager;
+export default ViewAllPromos;

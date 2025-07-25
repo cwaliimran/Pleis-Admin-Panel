@@ -1,8 +1,8 @@
 export interface Category {
   id: string;
   name: string;
-  type: "event-1";
-  priority: "priority-1";
+  type: string;
+  priority: string;
   isPinned: boolean;
   isVisible: boolean;
   order: number;
@@ -11,8 +11,9 @@ export interface Category {
 
 export interface CategoryFormData {
   name: string;
-  type: "event-1";
-  priority: "priority-1";
+  type: string;
+  priority: string;
   isPinned: boolean;
   isVisible: boolean;
+  selectedOption?: string;
 }

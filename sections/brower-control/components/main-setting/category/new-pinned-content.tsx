@@ -26,8 +26,8 @@ import type { Category, CategoryFormData } from "./types";
 const initialCategories: Category[] = [
   {
     id: "1",
-    name: "Summer Specials",
-    type: "event-1",
+    name: "Category Name",
+    type: "categoryType",
     priority: "priority-1",
     isPinned: true,
     isVisible: true,
@@ -36,8 +36,8 @@ const initialCategories: Category[] = [
   },
   {
     id: "2",
-    name: "VIP Exclusive",
-    type: "event-1",
+    name: "Tags",
+    type: "categoryType",
     priority: "priority-1",
     isPinned: false,
     isVisible: false,
@@ -46,8 +46,8 @@ const initialCategories: Category[] = [
   },
   {
     id: "3",
-    name: "Adventure Tours",
-    type: "event-1",
+    name: "Category Name",
+    type: "categoryType",
     priority: "priority-1",
     isPinned: true,
     isVisible: true,
@@ -56,8 +56,8 @@ const initialCategories: Category[] = [
   },
   {
     id: "4",
-    name: "Event Partners",
-    type: "event-1",
+    name: "Venue Type",
+    type: "categoryType",
     priority: "priority-1",
     isPinned: false,
     isVisible: true,
@@ -66,8 +66,8 @@ const initialCategories: Category[] = [
   },
   {
     id: "5",
-    name: "Summer Specials 2",
-    type: "event-1",
+    name: "Category Name",
+    type: "categoryType",
     priority: "priority-1",
     isPinned: true,
     isVisible: true,
@@ -75,6 +75,36 @@ const initialCategories: Category[] = [
     itemCount: 12,
   },
 ];
+
+interface CategoryFormDataExtended extends CategoryFormData {
+  selectedOption?: string;
+}
+
+const dropdownOptions = {
+  categoryType: [
+    { value: "events", label: "Events" },
+    { value: "experiences", label: "Experiences" },
+    { value: "food-drinks", label: "Food & Drinks" },
+    { value: "entertainment", label: "Entertainment" },
+    { value: "sports", label: "Sports" },
+    { value: "wellness", label: "Wellness" },
+  ],
+  tags: [
+    { value: "trending", label: "Trending" },
+    { value: "popular", label: "Popular" },
+    { value: "new", label: "New" },
+    { value: "featured", label: "Featured" },
+    { value: "exclusive", label: "Exclusive" },
+  ],
+  venueTag: [
+    { value: "indoor", label: "Indoor Venue" },
+    { value: "outdoor", label: "Outdoor Venue" },
+    { value: "rooftop", label: "Rooftop" },
+    { value: "beachfront", label: "Beachfront" },
+    { value: "downtown", label: "Downtown" },
+    { value: "suburban", label: "Suburban" },
+  ],
+};
 
 const categoryIcons = {
   events: "📅",
@@ -114,7 +144,7 @@ function CategoryCard({
               </h3>
             </div>
 
-            <p className="text-sm text-gray-600 mt-0">{getStatusText()}</p>
+            <p className="text-sm text-gray-600 mt-0">Experiences</p>
           </div>
         </div>
         <div className="flex space-x-2">
@@ -156,11 +186,25 @@ function CategoryModal({
 }) {
   const [formData, setFormData] = useState<CategoryFormData>({
     name: category?.name || "",
-    type: category?.type || "event-1",
+    type: category?.type || "categoryType",
     priority: category?.priority || "priority-1",
     isPinned: category?.isPinned || false,
     isVisible: category?.isVisible !== undefined ? category.isVisible : true,
+    selectedOption: "",
   });
+
+  // Reset selectedOption when type changes
+  const handleTypeChange = (value: string) => {
+    setFormData({
+      ...formData,
+      type: value,
+      selectedOption: "", // Reset selection when type changes
+    });
+  };
+
+  const getCurrentOptions = () => {
+    return dropdownOptions[formData.type as keyof typeof dropdownOptions] || [];
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,10 +217,11 @@ function CategoryModal({
   const resetForm = () => {
     setFormData({
       name: category?.name || "",
-      type: category?.type || "event-1",
+      type: category?.type || "categoryType",
       priority: category?.priority || "priority-1",
       isPinned: category?.isPinned || false,
       isVisible: category?.isVisible !== undefined ? category.isVisible : true,
+      selectedOption: "",
     });
   };
 
@@ -192,65 +237,66 @@ function CategoryModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Create New Category" : "Edit Category"}
+            {mode === "create"
+              ? "Create Pinned Content"
+              : "Edit Pinned Content"}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Category Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              placeholder="Enter category name"
-              required
-            />
-          </div>
-
           <div className="space-y-2 w-full">
-            <Label htmlFor="type">Events</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(value: any) =>
-                setFormData({ ...formData, type: value })
-              }
-            >
+            <Label htmlFor="type">Pinned Content Type</Label>
+            <Select value={formData.type} onValueChange={handleTypeChange}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select category type" />
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="event-1">Event 1</SelectItem>
-                <SelectItem value="event-2">Event 2</SelectItem>
-                <SelectItem value="event-3">Event 3</SelectItem>
-                <SelectItem value="event-4">Event 4</SelectItem>
+                <SelectItem value="categoryType">Category Name</SelectItem>
+                <SelectItem value="tags">Tags</SelectItem>
+                <SelectItem value="venueTag">Venue Type</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2 w-full">
-            <Label htmlFor="type">Priority</Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value: any) =>
-                setFormData({ ...formData, priority: value })
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select category type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="priority-1">Priority 1</SelectItem>
-                <SelectItem value="priority-2">Priority 2</SelectItem>
-                <SelectItem value="priority-3">Priority 3</SelectItem>
-                <SelectItem value="priority-4">Priority 4</SelectItem>
-                <SelectItem value="priority-5">Priority 5</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Conditional dropdown based on type selection */}
+          {formData.type && (
+            <div className="space-y-2 w-full">
+              <Label htmlFor="selectedOption">
+                Select{" "}
+                {formData.type === "categoryType"
+                  ? "Category"
+                  : formData.type === "tags"
+                  ? "Tag"
+                  : "Venue Tag"}
+              </Label>
+              <Select
+                value={formData.selectedOption}
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, selectedOption: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={`Select ${
+                      formData.type === "categoryType"
+                        ? "category"
+                        : formData.type === "tags"
+                        ? "tag"
+                        : "venue tag"
+                    }`}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {getCurrentOptions().map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Input
                 id="visible"
@@ -265,14 +311,14 @@ function CategoryModal({
                 Always Visible
               </Label>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
             <Button type="submit">
-              {mode === "create" ? "Create Category" : "Save Changes"}
+              {mode === "create" ? "Create" : "Save Changes"}
             </Button>
           </div>
         </form>
@@ -281,8 +327,8 @@ function CategoryModal({
   );
 }
 
-// Main Category Management Component
-export function CategoryManagement() {
+// Main Pinned Content Component
+export function PinnedContentV2() {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -329,7 +375,7 @@ export function CategoryManagement() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Custom Categories</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Pinned Content</h1>
 
         <Button
           onClick={handleCreateCategory}
@@ -337,14 +383,6 @@ export function CategoryManagement() {
         >
           <Plus className="w-4 h-4" />
         </Button>
-
-        {/* <Button
-          onClick={handleCreateCategory}
-          className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary"
-        >
-          <Plus />
-          New Category
-        </Button> */}
       </div>
 
       <div className="space-y-2">
