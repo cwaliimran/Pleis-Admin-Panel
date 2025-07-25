@@ -12,13 +12,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import RHFDate from "@/components/rhf/rhf-date";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
 import { useBoolean } from "@/hooks/useBoolean";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-
-
 
 interface EventFormValues {
   image: File | null;
@@ -79,7 +83,7 @@ const organizationOptions = [
   { label: "Organization A", value: "orgA" },
   { label: "Organization B", value: "orgB" },
   { label: "Organization C", value: "orgC" },
-]
+];
 
 const venueOptions = [
   { label: "Suggested Venue", value: "suggested-venue" },
@@ -125,9 +129,7 @@ const VenueDefaultValues = {
   country: "",
 };
 
-
 const Page = () => {
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const openModal = useBoolean();
 
@@ -138,7 +140,6 @@ const Page = () => {
   const methods = useForm<EventFormValues>({ defaultValues });
   const router = useRouter();
   const { watch, setValue, getValues } = methods;
-
 
   const schema = Yup.object().shape({
     name: Yup.string().required("Venue name is required"),
@@ -153,8 +154,6 @@ const Page = () => {
     resolver: yupResolver(schema),
     defaultValues: VenueDefaultValues,
   });
-
-
 
   const venue = watch("venue");
   const category = watch("category");
@@ -275,12 +274,16 @@ const Page = () => {
                   <div className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
                     {step === 1
                       ? "Step 1: Basic Info"
-                      : step === 2 ? "Step 2: Schedule Date and Time" : " Step 3: Add Ticketing"}
+                      : step === 2
+                      ? "Step 2: Schedule Date and Time"
+                      : " Step 3: Add Ticketing"}
                   </div>
                   <div className="relative w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div
                       className="bg-blue-700 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${step === 1 ? 33 : step === 2 ? 66 : 100}%` }}
+                      style={{
+                        width: `${step === 1 ? 33 : step === 2 ? 66 : 100}%`,
+                      }}
                     />
                   </div>
                 </div>
@@ -288,7 +291,7 @@ const Page = () => {
 
               <FormProvider
                 methods={methods}
-                onSubmit={methods.handleSubmit(() => { })}
+                onSubmit={methods.handleSubmit(() => {})}
               >
                 {step === 1 && (
                   <div className="space-y-8">
@@ -371,8 +374,7 @@ const Page = () => {
                       </div>
                     </div>
 
-
-                    <div >
+                    <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
                         Organization
                       </label>
@@ -387,13 +389,10 @@ const Page = () => {
                           }
                           className=" flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[440px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 h-[40px] px-5"
                         />
-
-
                       </div>
-
                     </div>
 
-                    <div >
+                    <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
                         VENUE
                       </label>
@@ -409,7 +408,6 @@ const Page = () => {
                           className=" flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[440px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 h-[40px] px-5"
                         />
 
-
                         <Button
                           className="rounded-4xl py-2 bg-primary mt-2 cursor-pointer text-white hover:bg-primary"
                           onClick={openModal.onTrue}
@@ -418,7 +416,6 @@ const Page = () => {
                         </Button>
                       </div>
                       <div className="mt-5">
-
                         <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
                           Category
                         </label>
@@ -433,8 +430,6 @@ const Page = () => {
                             }
                             className=" flex-1 border-gray-200 focus:border-blue-600 lg:min-w-[440px] sm:min-w-[120px] rounded-4xl cursor-pointer mt-2 h-[40px] px-5 text-[14px]"
                           />
-
-
                         </div>
                         {category.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-2 rounded-2xl">
@@ -457,17 +452,14 @@ const Page = () => {
                           </div>
                         )}
                       </div>
-
                     </div>
 
-
                     {/* Tags */}
-                    <div >
+                    <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide ">
                         TAGS
                       </label>
                       <div className="md:flex gap-2 w-full md:w-[70%] mt-2">
-
                         <input
                           type="text"
                           placeholder="Search for tag"
@@ -506,7 +498,6 @@ const Page = () => {
                       )}
                     </div>
 
-
                     {/* Organizer */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 dark:text-gray-300  uppercase tracking-wide">
@@ -517,7 +508,9 @@ const Page = () => {
                           type="text"
                           placeholder="Search for organizer"
                           value={organizerInput}
-                          onChange={(e) => setValue("organizerInput", e.target.value)}
+                          onChange={(e) =>
+                            setValue("organizerInput", e.target.value)
+                          }
                           className="w-full max-w-md border border-gray-200 focus:border-blue-600 focus:outline-none rounded-4xl cursor-pointer px-5 py-[8px] h-[40px] text-[14px]"
                         />
 
@@ -592,9 +585,8 @@ const Page = () => {
                               key={po}
                               className="flex bg-secondary dark:bg-white text-white dark:text-black items-center gap-1 text-sm"
                             >
-                              {organizerOptions.find(
-                                (opt) => opt.value === po
-                              )?.label || po}
+                              {organizerOptions.find((opt) => opt.value === po)
+                                ?.label || po}
                               <button
                                 type="button"
                                 onClick={() => removePartnerOrganizer(po)}
@@ -611,7 +603,6 @@ const Page = () => {
 
                     {/* Navigation buttons */}
                     <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
-
                       <Button
                         type="button"
                         variant="outline"
@@ -642,10 +633,11 @@ const Page = () => {
                           type="button"
                           variant="outline"
                           onClick={() => setValue("eventType", "one-time")}
-                          className={`border-2 ${eventType === "one-time"
-                            ? "border-blue-700 text-blue-700"
-                            : "border-gray-300 dark:border-zinc-700"
-                            } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
+                          className={`border-2 ${
+                            eventType === "one-time"
+                              ? "border-blue-700 text-blue-700"
+                              : "border-gray-300 dark:border-zinc-700"
+                          } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           One time
                         </Button>
@@ -653,10 +645,11 @@ const Page = () => {
                           type="button"
                           variant="outline"
                           onClick={() => setValue("eventType", "slots")}
-                          className={`border-2 ${eventType === "slots"
-                            ? "border-blue-700 text-blue-700"
-                            : "border-gray-300 dark:border-zinc-700"
-                            } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
+                          className={`border-2 ${
+                            eventType === "slots"
+                              ? "border-blue-700 text-blue-700"
+                              : "border-gray-300 dark:border-zinc-700"
+                          } rounded-2xl px-6 py-2 font-semibold bg-transparent cursor-pointer`}
                         >
                           Slots
                         </Button>
@@ -797,10 +790,11 @@ const Page = () => {
                               }
                               size="sm"
                               onClick={() => toggleRecurringDay(day.value)}
-                              className={`w-12 h-8 text-xs cursor-pointer ${recurringDays.includes(day.value)
-                                ? "bg-blue-600 text-white"
-                                : "text-gray-600 dark:text-white"
-                                }`}
+                              className={`w-12 h-8 text-xs cursor-pointer ${
+                                recurringDays.includes(day.value)
+                                  ? "bg-blue-600 text-white"
+                                  : "text-gray-600 dark:text-white"
+                              }`}
                             >
                               {day.label}
                             </Button>
@@ -943,291 +937,318 @@ const Page = () => {
                     </div>
                   </div>
                 )}
-                {
-                  step === 3 && (
-                    <div>
-                      <div className="w-full md:flex justify-start items-center">
-                        <div className="flex flex-wrap gap-4">
-                          {['Resend to Unopened Users', 'Include Names on Tickets'].map((item, index) => (
-                            <div key={index} className="flex items-center gap-2 w-full sm:w-auto">
-                              <Input type="checkbox" className="h-4 w-4 cursor-pointer" />
-                              <span className="text-sm text-foreground">{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <h1 className="text-[16px] font-medium leading-5 my-5">General Information</h1>
-                      <div className="flex flex-wrap items-center md:gap-4 gap-2">
-                        {['Paid', 'Free', 'Donation'].map((item, index) => (
-                          <div key={index} className="flex items-center gap-2 w-full sm:w-auto">
-                            <Button variant={"outline"} onClick={() => setVersion(index + 1)} className={`cursor-pointer
-                               md:max-w-[140px] md:min-w-[140px] px-10 py-5 transition-all ${version === index + 1 ?
-                                'border border-primary  dark:border-primary ' : ''}`}>{item}</Button>
+                {step === 3 && (
+                  <div>
+                    <div className="w-full md:flex justify-start items-center">
+                      <div className="flex flex-wrap gap-4">
+                        {[
+                          "Resend to Unopened Users",
+                          "Include Names on Tickets",
+                        ].map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 w-full sm:w-auto"
+                          >
+                            <Input
+                              type="checkbox"
+                              className="h-4 w-4 cursor-pointer"
+                            />
+                            <span className="text-sm text-foreground">
+                              {item}
+                            </span>
                           </div>
                         ))}
                       </div>
-                      <div className="relative mt-5 md:w-[66%] w-full">
-                        <RHFTextField
-                          name="name"
-                          placeholder="General Admission"
-                          className="text-sm  font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-1 top-0.5 text-gray-400 rounded-2xl cursor-pointer"
+                    </div>
+                    <h1 className="text-[16px] font-medium leading-5 my-5">
+                      General Information
+                    </h1>
+                    <div className="flex flex-wrap items-center md:gap-4 gap-2">
+                      {["Paid", "Free", "Donation"].map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 w-full sm:w-auto"
                         >
-                          <X className="w-4 h-4 " />
-                        </Button>
+                          <Button
+                            variant={"outline"}
+                            onClick={() => setVersion(index + 1)}
+                            className={`cursor-pointer
+                               md:max-w-[140px] md:min-w-[140px] px-10 py-5 transition-all ${
+                                 version === index + 1
+                                   ? "border border-primary  dark:border-primary "
+                                   : ""
+                               }`}
+                          >
+                            {item}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="relative mt-5 md:w-[66%] w-full">
+                      <RHFTextField
+                        name="name"
+                        placeholder="General Admission"
+                        className="text-sm  font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-1 top-0.5 text-gray-400 rounded-2xl cursor-pointer"
+                      >
+                        <X className="w-4 h-4 " />
+                      </Button>
+                    </div>
+                    <div className="w-full grid grid-cols-12 mt-4 gap-4">
+                      <div className="col-span-12 md:col-span-8">
+                        <RHFTextField
+                          name="description"
+                          multiline
+                          rows={4}
+                          placeholder="Type Ticket Description"
+                          className="text-sm md:min-h-[132px] font-medium border border-gray-200 px-4 bg-[#F8F6F7] "
+                        />
                       </div>
-                      <div className="w-full grid grid-cols-12 mt-4 gap-4">
-                        <div className="col-span-12 md:col-span-8">
+                      <div className="col-span-12 md:col-span-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                            AVAILABLE QUANTITY
+                          </label>
                           <RHFTextField
-                            name="description"
-                            multiline
-                            rows={4}
-                            placeholder="Type Ticket Description"
-                            className="text-sm md:min-h-[132px] font-medium border border-gray-200 px-4 bg-[#F8F6F7] "
+                            name="quantity"
+                            placeholder="100"
+                            type="number"
+                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
                           />
                         </div>
-                        <div className="col-span-12 md:col-span-4">
+                        <div className="flex items-end gap-4 mt-3">
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
-                              AVAILABLE QUANTITY
+                              PRICE
                             </label>
                             <RHFTextField
-                              name="quantity"
-                              placeholder="100"
+                              name="price"
+                              placeholder="0.00"
                               type="number"
                               className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
                             />
                           </div>
-                          <div className="flex items-end gap-4 mt-3">
-                            <div className="space-y-2">
-                              <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
-                                PRICE
-                              </label>
-                              <RHFTextField
-                                name="price"
-                                placeholder="0.00"
-                                type="number"
-                                className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
-                              />
-
-                            </div>
-                            <RHFSelectField
-                              name="currency"
-                              placeholder="USD"
-                              defaultValue={"EURO"}
-                              options={[
-                                { label: "USD", value: "USD" },
-                                { label: "EURO", value: "EUR" },
-                                { label: "GBP", value: "GBP" },
-                              ]}
-                              className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <Separator className="md:my-8 my-4" />
-                      <h1 className="text-[16px] font-medium leading-5 my-5">Set up sale start date and time</h1>
-                      <div className="w-full md:w-[60%]">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
-                              <CalendarIcon className="w-4 h-4" />
-                              START DATE
-                            </label>
-                            <RHFDate
-                              name="fromDate"
-                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              START TIME
-                            </label>
-                            <input
-                              type="time"
-                              step="1800"
-                              value={watch("fromTime")}
-                              onChange={(e) =>
-                                setValue("fromTime", e.target.value)
-                              }
-                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      {/* End Date and Time row */}
-                      <div className="w-full md:w-[60%] md:mt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 gap-y-4 ">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
-                              <CalendarIcon className="w-4 h-4" />
-                              END DATE
-                            </label>
-                            <RHFDate
-                              name="endDate"
-                              className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              END TIME
-                            </label>
-                            <input
-                              type="time"
-                              step="1800"
-                              value={watch("endTime")}
-                              onChange={(e) =>
-                                setValue("endTime", e.target.value)
-                              }
-                              className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2 mt-6 md:w-[60%] w-full">
-                          <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
-                            TICKET OPTIONS
-                          </label>
                           <RHFSelectField
-                            name="ticketOptions"
-                            defaultValue="early-bird"
-                            placeholder="Select Ticket Options"
+                            name="currency"
+                            placeholder="USD"
+                            defaultValue={"EURO"}
                             options={[
-                              { label: "General Admission", value: "general" },
-                              { label: "VIP", value: "vip" },
-                              { label: "Early Bird - 5$", value: "early-bird" },
+                              { label: "USD", value: "USD" },
+                              { label: "EURO", value: "EUR" },
+                              { label: "GBP", value: "GBP" },
                             ]}
-                            className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl cursor-pointer"
                           />
                         </div>
                       </div>
-                      <Separator className="md:my-8 my-4" />
+                    </div>
+                    <Separator className="md:my-8 my-4" />
+                    <h1 className="text-[16px] font-medium leading-5 my-5">
+                      Set up sale start date and time
+                    </h1>
+                    <div className="w-full md:w-[60%]">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4" />
+                            START DATE
+                          </label>
+                          <RHFDate
+                            name="fromDate"
+                            className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            START TIME
+                          </label>
+                          <input
+                            type="time"
+                            step="1800"
+                            value={watch("fromTime")}
+                            onChange={(e) =>
+                              setValue("fromTime", e.target.value)
+                            }
+                            className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {/* End Date and Time row */}
+                    <div className="w-full md:w-[60%] md:mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 gap-y-4 ">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700 dark:text-white flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4" />
+                            END DATE
+                          </label>
+                          <RHFDate
+                            name="endDate"
+                            className="rounded-4xl border-gray-200 focus:border-blue-600 w-full cursor-pointer"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            END TIME
+                          </label>
+                          <input
+                            type="time"
+                            step="1800"
+                            value={watch("endTime")}
+                            onChange={(e) =>
+                              setValue("endTime", e.target.value)
+                            }
+                            className="rounded-4xl bg-[#F8F6F7] dark:bg-transparent dark:border-zinc-700 border border-gray-200 focus:border-blue-600 w-25 px-3 py-2 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                        <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                          TICKET OPTIONS
+                        </label>
+                        <RHFSelectField
+                          name="ticketOptions"
+                          defaultValue="early-bird"
+                          placeholder="Select Ticket Options"
+                          options={[
+                            { label: "General Admission", value: "general" },
+                            { label: "VIP", value: "vip" },
+                            { label: "Early Bird - 5$", value: "early-bird" },
+                          ]}
+                          className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                    <Separator className="md:my-8 my-4" />
+
+                    <Button
+                      type="button"
+                      className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                    >
+                      <Plus className="w-4 h-4 " /> Add Date
+                    </Button>
+
+                    <h1 className="text-[14px] font-medium leading-5 my-5 text-foreground">
+                      <span className="text-primary cursor-pointer">
+                        + Create a section
+                      </span>{" "}
+                      if you want to sell multiple ticket types that share the
+                      same inventory.
+                    </h1>
+                    <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                      <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
+                        CHOOSE A SECTION
+                      </label>
+                      <RHFSelectField
+                        name="time"
+                        options={[
+                          { label: "10:00AM", value: "10:00AM" },
+                          { label: "11:00AM", value: "11:00AM" },
+                          { label: "12:00PM", value: "12:00PM" },
+                          { label: "1:00PM", value: "1:00PM" },
+                          { label: "2:00PM", value: "2:00PM" },
+                          { label: "3:00PM", value: "3:00PM" },
+                        ]}
+                        className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                      />
+                    </div>
+                    <Separator className="md:my-8 my-4" />
+                    <div className="my-6 flex items-center-safe gap-2">
+                      <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap">
+                        Advanced settings
+                      </h1>
+                      <ChevronDown className="w-4 h-4 cursor-pointer" />
+                    </div>
+                    <div className="space-y-2 mt-6 md:w-[60%] w-full">
+                      <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                        TICKETS PER ORDER
+                      </label>
+                      <div className="md:flex items-center gap-3">
+                        <RHFTextField
+                          name="minQuantity"
+                          placeholder="Minimum quantity"
+                          type="number"
+                          className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
+                        />
+                        <RHFTextField
+                          name="maxQuantity"
+                          placeholder="Maximum quantity"
+                          type="number"
+                          className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl md:mt-0 mt-3"
+                        />
+                      </div>
+                      <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
+                        SALES CHANNEL
+                      </label>
+                      <RHFSelectField
+                        name="salesChannel"
+                        placeholder="Select Sales Channel"
+                        options={[
+                          { label: "Online", value: "online" },
+                          { label: "In-person", value: "in-person" },
+                          { label: "Phone", value: "phone" },
+                        ]}
+                        className="w-full border-gray-200 rounded-4xl cursor-pointer"
+                      />
+                    </div>
+                    <Separator className="md:my-8 my-4" />
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        type="button"
+                        className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
+                      >
+                        <Plus className="w-4 h-4 " /> Add tickets
+                      </Button>
 
                       <Button
                         type="button"
                         className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
                       >
-                        <Plus className="w-4 h-4 " /> Add Date
+                        <Plus className="w-4 h-4 " />
+                        Import Tickets
+                      </Button>
+                    </div>
+                    <Separator className="md:my-8 my-4" />
+                    <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap text-primary cursor-pointer">
+                      + Add package
+                    </h1>
+
+                    <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setStep(2)}
+                        className="rounded-4xl py-2 md:min-w-[90px]  md:mt-2 cursor-pointer"
+                      >
+                        Back
                       </Button>
 
-                      <h1 className="text-[14px] font-medium leading-5 my-5 text-foreground">
-                        <span className="text-primary cursor-pointer">+ Create a section</span> if you want to sell multiple ticket types that share the same inventory.
-                      </h1>
-                      <div className="space-y-2 mt-6 md:w-[60%] w-full">
-                        <label className="text-sm font-medium text-slate-500 dark:text-white  flex items-center gap-2">
-                          CHOOSE A SECTION
-                        </label>
-                        <RHFSelectField
-                          name="time"
-                          options={[
-                            { label: "10:00AM", value: "10:00AM" },
-                            { label: "11:00AM", value: "11:00AM" },
-                            { label: "12:00PM", value: "12:00PM" },
-                            { label: "1:00PM", value: "1:00PM" },
-                            { label: "2:00PM", value: "2:00PM" },
-                            { label: "3:00PM", value: "3:00PM" },
-                          ]}
-                          className="w-full border-gray-200 rounded-4xl cursor-pointer"
-                        />
-                      </div>
-                      <Separator className="md:my-8 my-4" />
-                      <div className="my-6 flex items-center-safe gap-2">
-                        <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap">Advanced settings
-                        </h1>
-                        <ChevronDown className="w-4 h-4 cursor-pointer" />
-                      </div>
-                      <div className="space-y-2 mt-6 md:w-[60%] w-full">
-                        <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
-                          TICKETS PER ORDER
-                        </label>
-                        <div className="md:flex items-center gap-3">
-                          <RHFTextField
-                            name="minQuantity"
-                            placeholder="Minimum quantity"
-                            type="number"
-                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl"
-                          /><RHFTextField
-                            name="maxQuantity"
-                            placeholder="Maximum quantity"
-                            type="number"
-                            className="text-sm font-medium border border-gray-200 px-4 bg-[#F8F6F7] rounded-4xl md:mt-0 mt-3"
-                          />
-                        </div>
-                        <label className="text-sm font-medium text-slate-500 dark:text-white flex items-center gap-2">
-                          SALES CHANNEL
-                        </label>
-                        <RHFSelectField
-                          name="salesChannel"
-                          placeholder="Select Sales Channel"
-                          options={[
-                            { label: "Online", value: "online" },
-                            { label: "In-person", value: "in-person" },
-                            { label: "Phone", value: "phone" },
-                          ]}
-                          className="w-full border-gray-200 rounded-4xl cursor-pointer"
-                        />
-                      </div>
-                      <Separator className="md:my-8 my-4" />
-                      <div className="flex flex-wrap gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => router.push("/super-admin/events/1")}
+                        className="rounded-4xl py-2 md:min-w-[90px]  md:mt-2 cursor-pointer"
+                      >
+                        Skip
+                      </Button>
 
-                        <Button
-                          type="button"
-                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
-                        >
-                          <Plus className="w-4 h-4 " /> Add tickets
-                        </Button>
-
-
-                        <Button
-                          type="button"
-                          className="rounded-4xl py-2 bg-primary md:mt-2 cursor-pointer text-white hover:bg-primary"
-                        >
-                          <Plus className="w-4 h-4 " />Import Tickets
-                        </Button>
-
-                      </div>
-                      <Separator className="md:my-8 my-4" />
-                      <h1 className="text-[16px] font-medium leading-5 my-5 flex-wrap text-primary cursor-pointer">+ Add package</h1>
-
-                      <div className="flex justify-end flex-wrap mt-22 items-center gap-2">
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setStep(2)}
-                          className="rounded-4xl py-2 md:min-w-[90px]  md:mt-2 cursor-pointer"
-                        >
-                          Back
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => router.push("/super-admin/events/1")}
-                          className="rounded-4xl py-2 md:min-w-[90px]  md:mt-2 cursor-pointer"
-                        >
-                          Skip
-                        </Button>
-
-                        <Button
-                          type="button"
-                          onClick={() => router.push("/super-admin/events/1")}
-                          className="rounded-4xl py-2 bg-primary md:mt-2  md:min-w-[90px] cursor-pointer text-white hover:bg-primary"
-                        >
-                          Publish
-                        </Button>
-                      </div>
-
+                      <Button
+                        type="button"
+                        onClick={() => router.push("/super-admin/events/1")}
+                        className="rounded-4xl py-2 bg-primary md:mt-2  md:min-w-[90px] cursor-pointer text-white hover:bg-primary"
+                      >
+                        Publish
+                      </Button>
                     </div>
-
-                  )
-                }
+                  </div>
+                )}
               </FormProvider>
             </CardContent>
           </Card>
@@ -1237,14 +1258,11 @@ const Page = () => {
         <DialogOverlay className="fixed inset-0 bg-white   bg-opacity-30 flex items-center justify-center md:w-lg w-full">
           <DialogContent className=" dark:bg-[#171717] overflow-y-auto mx-auto min-h-[86vh] max-h-[90vh]">
             <DialogHeader>
-              <DialogTitle>
-                Create Venue {" "}
-
-              </DialogTitle>
+              <DialogTitle>Create Venue </DialogTitle>
             </DialogHeader>
             <FormProvider
               methods={venueMethods}
-              onSubmit={venueMethods.handleSubmit(() => { })}
+              onSubmit={venueMethods.handleSubmit(() => {})}
             >
               <div className="flex flex-col gap-4 mt-4">
                 {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
@@ -1253,8 +1271,9 @@ const Page = () => {
                   name="name"
                   label="Venue Name"
                   placeholder="Enter Venue Name"
-                  className={` ${methods.formState.errors.name ? "border-red-400" : ""
-                    }`}
+                  className={` ${
+                    methods.formState.errors.name ? "border-red-400" : ""
+                  }`}
                 />
 
                 <RHFTextfieldWithSelect
@@ -1289,7 +1308,7 @@ const Page = () => {
                     type="button"
                     variant="outline"
                     onClick={handleAvatarChange}
-                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="bg-white border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
                   >
                     Upload Floor Plan
                   </Button>
@@ -1325,7 +1344,7 @@ const Page = () => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
-    </div >
+    </div>
   );
 };
 

@@ -505,7 +505,7 @@ const UserInfo = () => {
                       type="button"
                       variant="outline"
                       onClick={handleAvatarChange}
-                      className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="bg-white border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
                     >
                       Upload Floor Plan
                     </Button>

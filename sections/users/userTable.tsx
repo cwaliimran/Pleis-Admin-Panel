@@ -34,7 +34,9 @@ const UserTable: FC<PageProps> = ({ handleDelete, handleEdit, pendingUser, handl
         !pendingUser && { id: "region", label: "Region", align: "left" },
         !pendingUser && { id: "action", label: "Action", align: "left" },
         { id: "actions", label: "", align: "right" }
-    ].filter(Boolean);
+    ].filter(
+        (item): item is { id: string; label: string; align: string } => Boolean(item)
+    );
 
     const options: Option[] = [
         { id: "fname", label: "First Name" },

@@ -1,16 +1,9 @@
 "use client";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import {
-  ChevronDown,
-  Ellipsis,
-  Pencil,
-  ShieldCheck,
-  Trash2,
-} from "lucide-react";
+import { Pencil, ShieldCheck, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { FC } from "react";
+import { FC } from "react";
 
 interface PageProps {
   item: any;
@@ -53,7 +46,7 @@ const VenueTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
       <TableCell className="text-left">
         <span
           className={`px-3 capitalize ${
-            item.status === "primary" ? "bg-green-100" : ""
+            item.status === "primary" ? "bg-green-100 text-green-900" : ""
           } rounded-full py-1`}
         >
           {item.status}
