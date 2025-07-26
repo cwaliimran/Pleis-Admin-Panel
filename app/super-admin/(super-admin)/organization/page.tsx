@@ -28,7 +28,7 @@ import {
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import OrganizationTable from "@/sections/organization/organizationTable";
 
-export const defaultValues = {
+const defaultValues = {
   image: null,
   name: "",
   email: "",
@@ -63,7 +63,7 @@ const tabOptions = [
   // { label: "Bank Details", value: "bankDetails" },
 ];
 
-export const schema = Yup.object().shape({
+const schema = Yup.object().shape({
   //  Basic Info
   image: Yup.mixed().nullable(),
   name: Yup.string().required("Organization name is required"),

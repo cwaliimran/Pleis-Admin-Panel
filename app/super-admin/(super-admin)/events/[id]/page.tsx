@@ -82,10 +82,12 @@ const Page = () => {
                 <CardContent>
                   <div className="flex flex-col sm:flex-row gap-3 ">
                     <div className="w-full sm:w-1/3">
-                      <Image
+                      <img
                         src="/images/eventImage.png"
                         alt="Event"
-                        className="rounded-md w-full h-auto object-contain object-top "
+                        className="rounded-md w-full h-auto object-contain object-top"
+                        width={100}
+                        height={100}
                       />
                     </div>
 
@@ -138,6 +140,8 @@ const Page = () => {
                             src="/images/eventImage.png"
                             alt="Peti Kupe"
                             className="w-6 h-6 rounded-full"
+                            width={6}
+                            height={6}
                           />
                           <span className="text-sm font-medium text-gray-800 dark:text-white">
                             Peti Kupe

@@ -28,10 +28,7 @@ import { userTags } from "./data";
 import { useBoolean } from "@/hooks/useBoolean";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  defaultValues,
-  schema,
-} from "@/app/(organizer)/organizer/organization/page";
+import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
 import { Button } from "@/components/ui/button";
 import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";

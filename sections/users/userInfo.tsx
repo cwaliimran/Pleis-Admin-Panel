@@ -1,7 +1,4 @@
-import {
-  defaultValues,
-  schema,
-} from "@/app/super-admin/(super-admin)/organization/page";
+import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import FormProvider, {
   RHFCombobox,
   RHFMultiFileUpload,

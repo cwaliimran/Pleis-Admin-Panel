@@ -2,6 +2,7 @@
 export interface TabData {
   value: string;
   label: string;
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
 export interface LoyaltyCardData {

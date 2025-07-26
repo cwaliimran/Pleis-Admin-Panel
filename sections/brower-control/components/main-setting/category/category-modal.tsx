@@ -42,6 +42,7 @@ export function CategoryModal({
     type: "events",
     isPinned: false,
     isVisible: true,
+    priority: "0",
   });
 
   useEffect(() => {
@@ -51,6 +52,7 @@ export function CategoryModal({
         type: category.type,
         isPinned: category.isPinned,
         isVisible: category.isVisible,
+        priority: category.priority,
       });
     } else {
       setFormData({
@@ -58,6 +60,7 @@ export function CategoryModal({
         type: "events",
         isPinned: false,
         isVisible: true,
+        priority: "0",
       });
     }
   }, [category, mode, isOpen]);

@@ -47,7 +47,7 @@ import {
   defaultValues,
   schema,
   // tabOptions,
-} from "@/app/super-admin/(super-admin)/organization/page";
+} from "@/lib/schemas/organization-schema";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import UserInfo from "./orgInfo";
 import Useranalytics from "./organalytics";

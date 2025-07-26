@@ -1,4 +1,3 @@
-
 "use client";
 
 import { FC, useEffect, useState } from "react";
@@ -32,22 +31,18 @@ const useIsMobile = (breakpoint = 1024) => {
   return isMobile;
 };
 
-interface LabelProps {
-  cx: number;
-  cy: number;
-  midAngle: number;
-  innerRadius: number;
-  outerRadius: number;
-  percent: number;
-  index: number;
-}
-const renderCustomizedLabel: FC<LabelProps> = ({
-  cx,
-  cy,
-  midAngle,
-  outerRadius,
-  percent,
-}) => {
+const renderCustomizedLabel = (props: any) => {
+  const { cx, cy, midAngle, outerRadius, percent } = props;
+
+  if (
+    cx === undefined ||
+    cy === undefined ||
+    midAngle === undefined ||
+    outerRadius === undefined ||
+    percent === undefined
+  ) {
+    return null;
+  }
 
   // Increase radius to push label outside
   const RADIAN = Math.PI / 180;
@@ -58,14 +53,11 @@ const renderCustomizedLabel: FC<LabelProps> = ({
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-
   const label = `${(percent * 100).toFixed(0)}%`;
   const fontSize = 12;
   const circleRadius = 27;
   return (
     <g>
-
-
       <circle cx={x} cy={y} r={circleRadius} fill="#f3f4f6" />
 
       <text
@@ -82,9 +74,6 @@ const renderCustomizedLabel: FC<LabelProps> = ({
     </g>
   );
 };
-
-
-
 
 const GenderDonutChart: FC<PageProps> = ({ data, COLORS, size }) => {
   const isMobile = useIsMobile();
@@ -107,7 +96,10 @@ const GenderDonutChart: FC<PageProps> = ({ data, COLORS, size }) => {
             labelLine={false}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
 

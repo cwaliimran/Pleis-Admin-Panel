@@ -25,7 +25,7 @@ import { useForm } from "react-hook-form";
 import * as Yup from "yup";
 
 type HighlightFormValues = {
-  video: File | null;
+  video: any;
   title: string;
   event: string;
   status: string;
@@ -41,7 +41,7 @@ const defaultValues: HighlightFormValues = {
 };
 
 const schema = Yup.object({
-  video: Yup.mixed().required("Video is required"),
+  video: Yup.mixed().nullable().required("Video is required"),
   title: Yup.string().required("Title is required"),
   event: Yup.string().required("Event is required"),
   status: Yup.string().required("Status is required"),

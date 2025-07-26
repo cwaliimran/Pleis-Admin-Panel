@@ -6,8 +6,8 @@ import { SuperAdminGuard } from "@/components/guards";
 import React, { FC } from "react";
 
 interface DashboardLayoutProps {
-  left?: React.ReactNode;
-  right?: React.ReactNode;
+  left: React.ReactNode;
+  right: React.ReactNode;
   children: React.ReactNode;
 }
 

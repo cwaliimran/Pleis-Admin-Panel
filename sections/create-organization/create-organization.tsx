@@ -8,10 +8,7 @@ import { FC, useState } from "react";
 // import UserLoyalty from "./userLoyalty";
 // import Useranalytics from "./useranalytics";
 // import UserNotifications from "./userNotifications";
-import {
-  defaultValues,
-  schema,
-} from "@/app/super-admin/(super-admin)/organization/page";
+import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import FormProvider, { RHFTextField } from "@/components/rhf";
 import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
