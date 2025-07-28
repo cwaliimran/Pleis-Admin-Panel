@@ -3,9 +3,9 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Check, Ellipsis, Eye, Pencil, Trash2 } from "lucide-react";
+import { Check, Eye, Pencil, Trash2 } from "lucide-react";
 import React, { FC } from "react";
-
+import { useRouter } from "next/navigation";
 interface UserItem {
   id: string;
   image: string;
@@ -38,10 +38,10 @@ const UserListTableRow: FC<Props> = ({
   handlePending,
   userType,
 }) => {
-  const router = require("next/navigation").useRouter();
+  const router = useRouter();
   return (
     <TableRow
-      className="transition-colors h-14 w-full"
+      className="transition-colors h-14 w-full cursor-pointer"
       onClick={() =>
         userType === "super-admin"
           ? router.push(`/super-admin/user/${item.id}?userType=${item.role}`)
@@ -131,10 +131,7 @@ const UserListTableRow: FC<Props> = ({
           <button
             type="button"
             title="View User"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/super-admin/user/user-detail/`);
-            }}
+           
             className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
           >
             <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />

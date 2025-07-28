@@ -235,7 +235,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
       {/* update Organization */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
-          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[65vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
+          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[65vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
             <DialogHeader>
               <DialogTitle> Edit Organization </DialogTitle>
             </DialogHeader>

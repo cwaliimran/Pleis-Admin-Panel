@@ -132,18 +132,18 @@ function CategoryCard({
 
   return (
     <div
-      className={`border-l-blue-400 border-l-4 bg-white border border-gray-200 rounded-lg px-4 py-2.5 transition-all hover:shadow-md`}
+      className={`border-l-blue-400 border-l-4 bg-white dark:bg-secondary border border-gray-200 rounded-lg px-4 py-2.5 transition-all hover:shadow-md`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
           <div className="flex-1">
             <div className="flex items-center space-x-3">
-              <h3 className="font-semibold text-gray-900 text-md">
+              <h3 className="font-semibold text-gray-900 dark:text-white text-md">
                 {category.name}
               </h3>
             </div>
 
-            <p className="text-sm text-gray-600 mt-0">Experiences</p>
+            <p className="text-sm text-gray-600 dark:text-white mt-0">Experiences</p>
           </div>
         </div>
         <div className="flex space-x-2">
@@ -233,7 +233,7 @@ function CategoryModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] dark:bg-secondary">
         <DialogHeader>
           <DialogTitle>
             {mode === "create"
@@ -248,7 +248,7 @@ function CategoryModal({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-secondary">
                 <SelectItem value="categoryType">Category Name</SelectItem>
                 <SelectItem value="tags">Tags</SelectItem>
                 <SelectItem value="venueTag">Venue Type</SelectItem>
@@ -284,7 +284,7 @@ function CategoryModal({
                     }`}
                   />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="dark:bg-secondary">
                   {getCurrentOptions().map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -374,7 +374,7 @@ export function PinnedContentV2() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Pinned Content</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pinned Content</h1>
 
         <Button
           onClick={handleCreateCategory}

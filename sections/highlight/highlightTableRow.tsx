@@ -4,8 +4,8 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Ellipsis, Pencil, Play, Trash2 } from 'lucide-react';
-import React, { FC } from 'react';
+import { Pencil, Play, Trash2 } from 'lucide-react';
+import { FC } from 'react';
 
 interface PageProps {
     item: {

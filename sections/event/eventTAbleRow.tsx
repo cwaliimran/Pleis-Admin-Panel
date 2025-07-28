@@ -1,10 +1,9 @@
 "use client";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { FC } from "react";
+import { FC } from "react";
 
 interface PageProps {
   item: any;
@@ -17,29 +16,28 @@ const EventTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
-  active,
+  // active,
   userType
 }) => {
   const router = useRouter();
-  const event = item;
 
-  const handleTogglePublish = async (id: string) => {
-    // Call API to toggle published state
-    //   await togglePublishStatus(id);
-    //   toast.success("Event status updated.");
-    //   refetch(); // Or update local state
-  };
+  // const handleTogglePublish = async (id: string) => {
+  //   // Call API to toggle published state
+  //   //   await togglePublishStatus(id);
+  //   //   toast.success("Event status updated.");
+  //   //   refetch(); // Or update local state
+  // };
 
-  const handleCloneEvent = async (id: string) => {
-    // Call API to clone event
-    //   const clonedEvent = await cloneEvent(id);
-    //   toast.success("Event cloned successfully.");
-    //   router.push(`/events/${clonedEvent.id}`); // or refresh list
-  };
+  // const handleCloneEvent = async (id: string) => {
+  //   // Call API to clone event
+  //   //   const clonedEvent = await cloneEvent(id);
+  //   //   toast.success("Event cloned successfully.");
+  //   //   router.push(`/events/${clonedEvent.id}`); // or refresh list
+  // };
 
   return (
     <TableRow
-      className=" transition-colors h-14 w-full"
+      className=" transition-colors h-14 w-full cursor-pointer"
       onClick={() => userType ? router.push(`/organizer/events/${item.id}`) : router.push(`/super-admin/events/${item.id}`)}
     >
       <TableCell>

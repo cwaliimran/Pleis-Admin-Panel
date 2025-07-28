@@ -8,7 +8,7 @@ const MainSettings = () => {
       <div className="w-full px-4">
         <PromoManager />
       </div>
-      <div className="px-4 w-full grid grid-cols-2 gap-4 mt-8">
+      <div className="px-4 w-full grid grid-cols-1 lg:grid-cols-2 gap-4 mt-8">
         <div>
           <CategoryManagement />
         </div>

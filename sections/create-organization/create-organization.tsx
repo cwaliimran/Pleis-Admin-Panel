@@ -8,7 +8,6 @@ import { FC, useState } from "react";
 // import UserLoyalty from "./userLoyalty";
 // import Useranalytics from "./useranalytics";
 // import UserNotifications from "./userNotifications";
-import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import FormProvider, { RHFTextField } from "@/components/rhf";
 import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
@@ -21,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useBoolean } from "@/hooks/useBoolean";
+import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 // import { ActivePromontion, BusinessInfo, TotalFollowers, UserCalender } from ".";
@@ -30,11 +30,11 @@ interface UserDetailPageProps {
   id: string;
 }
 
-const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
+const CreateOrganizationPage: FC<UserDetailPageProps> = () => {
   const openModal = useBoolean();
   const deleteModal = useBoolean();
 
-  const [active, setActive] = useState("info");
+  const [active] = useState("info");
   const [activeTab, setActiveTab] = useState("basicInfo");
 
   const methods = useForm({
@@ -42,7 +42,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = () => {};
 
   const CloseModal = () => {
     methods.reset(defaultValues);
@@ -207,7 +207,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = ({ id }) => {
       {/* update Organization */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
-          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[65vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
+          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[65vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
             <DialogHeader>
               <DialogTitle> Create Organization </DialogTitle>
             </DialogHeader>

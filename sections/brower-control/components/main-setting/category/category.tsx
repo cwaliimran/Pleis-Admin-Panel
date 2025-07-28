@@ -103,18 +103,18 @@ function CategoryCard({
 
   return (
     <div
-      className={`border-l-blue-400 border-l-4 bg-white border border-gray-200 rounded-lg px-4 py-2.5 transition-all hover:shadow-md`}
+      className={`border-l-blue-400 border-l-4 bg-white dark:bg-secondary border border-gray-200 rounded-lg px-4 py-2.5 transition-all hover:shadow-md`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
           <div className="flex-1">
             <div className="flex items-center space-x-3">
-              <h3 className="font-semibold text-gray-900 text-md">
+              <h3 className="font-semibold text-gray-900 dark:text-white text-md">
                 {category.name}
               </h3>
             </div>
 
-            <p className="text-sm text-gray-600 mt-0">{getStatusText()}</p>
+            <p className="text-sm text-gray-600 dark:text-white mt-0">{getStatusText()}</p>
           </div>
         </div>
         <div className="flex space-x-2">
@@ -189,7 +189,7 @@ function CategoryModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] dark:bg-secondary">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? "Create New Category" : "Edit Category"}
@@ -220,7 +220,7 @@ function CategoryModal({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select category type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-secondary">
                 <SelectItem value="event-1">Event 1</SelectItem>
                 <SelectItem value="event-2">Event 2</SelectItem>
                 <SelectItem value="event-3">Event 3</SelectItem>
@@ -240,7 +240,7 @@ function CategoryModal({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select category type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-secondary">
                 <SelectItem value="priority-1">Priority 1</SelectItem>
                 <SelectItem value="priority-2">Priority 2</SelectItem>
                 <SelectItem value="priority-3">Priority 3</SelectItem>
@@ -329,7 +329,7 @@ export function CategoryManagement() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Custom Categories</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Custom Categories</h1>
 
         <Button
           onClick={handleCreateCategory}
@@ -360,7 +360,7 @@ export function CategoryManagement() {
 
       {categories.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No categories created yet</p>
+          <p className="text-gray-500 dark:text-white mb-4">No categories created yet</p>
           <Button onClick={handleCreateCategory} variant="outline">
             Create Your First Category
           </Button>
