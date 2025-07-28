@@ -162,7 +162,12 @@ const Page = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
-      <OrganizationTable handleDelete={handleDelete} handleEdit={handleEdit} />
+      
+      <OrganizationTable
+        handleDelete={handleDelete}
+        handleEdit={handleEdit}
+        userType="organizer"
+      />
     </div>
   );
 };

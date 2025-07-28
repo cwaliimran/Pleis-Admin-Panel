@@ -27,6 +27,7 @@ interface Props {
   handleEdit?: (id: string) => void;
   handlePending?: (id: string) => void;
   pendingUser?: boolean;
+  userType?: "super-admin" | "organizer";
 }
 
 const UserListTableRow: FC<Props> = ({
@@ -35,10 +36,19 @@ const UserListTableRow: FC<Props> = ({
   handleEdit,
   pendingUser,
   handlePending,
+  userType,
 }) => {
   const router = require("next/navigation").useRouter();
   return (
-    <TableRow className="transition-colors h-14 w-full">
+    <TableRow
+      className="transition-colors h-14 w-full"
+      onClick={() =>
+        userType === "super-admin"
+          ? router.push(`/super-admin/user/${item.id}?userType=${item.role}`)
+          : userType === "organizer" &&
+            router.push(`/organizer/user/${item.id}?userType=${item.role}`)
+      }
+    >
       <TableCell>
         <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
           <AvatarImage
@@ -63,7 +73,6 @@ const UserListTableRow: FC<Props> = ({
       {/* <TableCell className="text-left text-sm">
                 {item.email}
             </TableCell> */}
-
       {/* Username */}
       {!pendingUser && (
         <TableCell className="text-left text-sm">
@@ -98,10 +107,12 @@ const UserListTableRow: FC<Props> = ({
         </TableCell>
       )}
       {!pendingUser && (
-        <TableCell className="text-left">{item.totalPoints || "N/A"}</TableCell>
+        <TableCell className="text-center">
+          {item.totalPoints || "N/A"}
+        </TableCell>
       )}
       {!pendingUser && (
-        <TableCell className="text-left">
+        <TableCell className="text-center">
           {item.totalRevenue || "N/A"}
         </TableCell>
       )}
@@ -119,7 +130,7 @@ const UserListTableRow: FC<Props> = ({
           {/* Eye button for user details */}
           <button
             type="button"
-            title="View User Details"
+            title="View User"
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/super-admin/user/user-detail/`);
@@ -128,11 +139,10 @@ const UserListTableRow: FC<Props> = ({
           >
             <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />
           </button>
-
           {!pendingUser && (
             <button
               type="button"
-              title="View User Details"
+              title="Edit User"
               onClick={(e) => {
                 e.stopPropagation();
                 handleEdit?.(item.id);
@@ -142,11 +152,10 @@ const UserListTableRow: FC<Props> = ({
               <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />
             </button>
           )}
-
           {pendingUser && (
             <button
               type="button"
-              title="View User Details"
+              title="Approve User"
               onClick={(e) => {
                 e.stopPropagation();
                 handlePending?.(item.id);
@@ -159,7 +168,7 @@ const UserListTableRow: FC<Props> = ({
 
           <button
             type="button"
-            title="View User Details"
+            title="Delete User"
             onClick={(e) => {
               e.stopPropagation();
               handleDelete?.(item.id);

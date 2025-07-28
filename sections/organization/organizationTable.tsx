@@ -39,11 +39,12 @@ const headLabel = [
 ];
 
 interface PageProps {
-  handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
+    handleDelete?: (id: string) => void;
+    handleEdit?: (id: string) => void;
+    userType?:"organizer" | "super-admin";
 }
-const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
-  const [filterField, setFilterField] = useState<string[]>([]);
+const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
+    const [filterField, setFilterField] = useState<string[]>([]);
 
   return (
     <div>
@@ -95,6 +96,7 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                     item={item}
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}
+                    userType={userType}
                   />
                 ))}
               </TableBody>

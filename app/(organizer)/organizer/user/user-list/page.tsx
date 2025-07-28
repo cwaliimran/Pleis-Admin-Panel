@@ -840,6 +840,7 @@ const Page = () => {
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         pendingUser={false}
+        userType="organizer" 
       />
     </div>
   );

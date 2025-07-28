@@ -9,18 +9,20 @@ interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  userType?:"organizer" | "super-admin";
 }
 const OrganizationTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
+  userType
 }) => {
   const router = useRouter();
 
   return (
     <TableRow
       className=" transition-colors h-14 w-full"
-      onClick={() => router.push(`/super-admin/organization/${item.id}`)}
+      onClick={() => userType === "organizer" ? router.push(`/organizer/organization/${item.id}`) : router.push(`/super-admin/organization/${item.id}`)}
     >
       <TableCell>
         <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
