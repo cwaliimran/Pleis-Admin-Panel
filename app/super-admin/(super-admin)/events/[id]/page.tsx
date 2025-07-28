@@ -82,7 +82,7 @@ const Page = () => {
                 <CardContent>
                   <div className="flex flex-col sm:flex-row gap-3 ">
                     <div className="w-full sm:w-1/3">
-                      <img
+                      <Image
                         src="/images/eventImage.png"
                         alt="Event"
                         className="rounded-md w-full h-auto object-contain object-top"

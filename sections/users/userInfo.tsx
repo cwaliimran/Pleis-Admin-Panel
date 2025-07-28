@@ -74,9 +74,9 @@ const UserInfo = () => {
               <CardHeader>
                 <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
                 <p className=" mt-2">
-                  This is a sample description for the user profile.
+                  {/* This is a sample description for the user profile. */}
                 </p>
-                <div className="flex flex-wrap gap-2 mt-2">
+                {/* <div className="flex flex-wrap gap-2 mt-2">
                   <Badge className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors">
                     +18
                   </Badge>
@@ -90,7 +90,7 @@ const UserInfo = () => {
                     <UserPlus className="mr-2 !h-5 !w-5" />
                     500
                   </Badge>
-                </div>
+                </div> */}
               </CardHeader>
             </Card>
 
@@ -108,8 +108,8 @@ const UserInfo = () => {
                   </Button>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
-                  <PartyPopper />
-                  <p className=" mt-2 text-lg ">Nightclub</p>
+                  {/* <PartyPopper /> */}
+                  <p className="mt-2 text-lg ">{/* Nightclub */}</p>
                 </div>
               </CardHeader>
             </Card>
@@ -118,14 +118,14 @@ const UserInfo = () => {
               <CardHeader>
                 <h1 className="text-slate-500 font-semibold">CATEGORIES</h1>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {userTags.map((item, index) => (
+                  {/* {userTags.map((item, index) => (
                     <Badge
                       key={index}
                       className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
                     >
                       {item}
                     </Badge>
-                  ))}
+                  ))} */}
                 </div>
               </CardHeader>
             </Card>
@@ -140,44 +140,44 @@ const UserInfo = () => {
                   {[
                     {
                       day: "Monday",
-                      startTime: "09:00 AM",
+                      startTime: "00:00 AM",
                       endTime: "11:00 PM",
                       closed: false,
                     },
                     {
                       day: "Tuesday",
-                      startTime: "03:00 PM",
-                      endTime: "06:02 PM",
+                      startTime: "00:00 PM",
+                      endTime: "11:00 PM",
                       closed: false,
                     },
                     {
                       day: "Wednesday",
-                      startTime: "01:00 PM",
+                      startTime: "00:00 PM",
                       endTime: "11:00 PM",
                       closed: false,
                     },
                     {
                       day: "Thursday",
-                      startTime: "04:00 PM",
-                      endTime: "11:15 PM",
+                      startTime: "00:00 PM",
+                      endTime: "11:00 PM",
                       closed: false,
                     },
                     {
                       day: "Friday",
-                      startTime: "09:00 AM",
+                      startTime: "00:00 AM",
                       endTime: "11:00 PM",
                       closed: false,
                     },
                     {
                       day: "Saturday",
-                      startTime: "12:00 AM",
-                      endTime: "12:00 AM",
+                      startTime: "00:00 AM",
+                      endTime: "11:00 AM",
                       closed: true,
                     },
                     {
                       day: "Sunday",
-                      startTime: "12:00 AM",
-                      endTime: "12:00 AM",
+                      startTime: "00:00 AM",
+                      endTime: "11:00 AM",
                       closed: true,
                     },
                   ].map((schedule, index) => (
@@ -301,18 +301,23 @@ const UserInfo = () => {
               <CardHeader className="w-full flex flex-col gap-2">
                 <h1 className="text-slate-500 font-semibold">VENUE</h1>
                 <div className="flex items-center gap-2 mt-2">
-                  <PartyPopper className="w-4 h-4" />
-                  <span> Vibrant club</span>
+                  {/* <PartyPopper className="w-4 h-4" />
+                  <span> Vibrant club</span> */}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
-                  <MapPin />
-                  <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>
+                  {/* <MapPin />
+                  <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span> */}
                 </div>
-                <img
+                {/* <img
                   src="/images/mapImage.png"
                   alt=""
                   className="w-full h-full mt-2"
-                />
+                /> */}
+                <div className="col-span-12 md:col-span-12 w-full md:h-[140px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300">
+                  <span className="text-gray-400 text-sm">
+                    No Venue Selected
+                  </span>
+                </div>
               </CardHeader>
             </Card>
 

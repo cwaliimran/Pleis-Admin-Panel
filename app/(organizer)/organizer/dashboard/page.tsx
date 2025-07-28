@@ -11,6 +11,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
   EventPerformanceComparison,
@@ -27,15 +35,176 @@ import {
   VisitorRegion,
 } from "@/sections/invoices";
 import { invoicesData2 } from "@/sections/invoices/data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../../../common/header";
 
 const Page = () => {
   const [active, setActive] = useState("all");
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+
+  useEffect(() => {
+    setShowTermsModal(true);
+  }, []);
+
+  const handleTermsSubmit = () => {
+    if (acceptedTerms) {
+      setShowTermsModal(false);
+    }
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    if (scrollTop + clientHeight >= scrollHeight - 10) {
+      setHasScrolledToBottom(true);
+    }
+  };
 
   return (
     <div>
+      {/* Terms and Conditions Modal */}
+      <Dialog open={showTermsModal} onOpenChange={() => {}}>
+        <DialogContent className="max-w-2xl max-h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-2xl font-bold">
+              Terms and Conditions
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="px-6">
+            <div
+              className="max-h-[400px] overflow-y-auto pr-4 space-y-4 text-sm"
+              onScroll={handleScroll}
+            >
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">
+                  1. Acceptance of Terms
+                </h3>
+                <p>
+                  By accessing and using this platform, you accept and agree to
+                  be bound by the terms and provision of this agreement. If you
+                  do not agree to abide by the above, please do not use this
+                  service.
+                </p>
+
+                <h3 className="font-semibold text-lg">2. Use License</h3>
+                <p>
+                  Permission is granted to temporarily download one copy of the
+                  materials on our platform for personal, non-commercial
+                  transitory viewing only. This is the grant of a license, not a
+                  transfer of title, and under this license you may not:
+                </p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>modify or copy the materials;</li>
+                  <li>
+                    use the materials for any commercial purpose or for any
+                    public display (commercial or non-commercial);
+                  </li>
+                  <li>
+                    attempt to decompile or reverse engineer any software
+                    contained on the platform;
+                  </li>
+                  <li>
+                    remove any copyright or other proprietary notations from the
+                    materials.
+                  </li>
+                </ul>
+
+                <h3 className="font-semibold text-lg">3. Disclaimer</h3>
+                <p>
+                  The materials on our platform are provided on an as is basis.
+                  We make no warranties, expressed or implied, and hereby
+                  disclaim and negate all other warranties including without
+                  limitation, implied warranties or conditions of
+                  merchantability, fitness for a particular purpose, or
+                  non-infringement of intellectual property or other violation
+                  of rights.
+                </p>
+
+                <h3 className="font-semibold text-lg">4. Limitations</h3>
+                <p>
+                  In no event shall our company or its suppliers be liable for
+                  any damages (including, without limitation, damages for loss
+                  of data or profit, or due to business interruption) arising
+                  out of the use or inability to use the materials on our
+                  platform, even if we or our authorized representative has been
+                  notified orally or in writing of the possibility of such
+                  damage. Because some jurisdictions do not allow limitations on
+                  implied warranties, or limitations of liability for
+                  consequential or incidental damages, these limitations may not
+                  apply to you.
+                </p>
+
+                <h3 className="font-semibold text-lg">5. Privacy Policy</h3>
+                <p>
+                  Your privacy is important to us. Our Privacy Policy explains
+                  how we collect, use, and protect your information when you use
+                  our platform. By using our platform, you agree to the
+                  collection and use of information in accordance with our
+                  Privacy Policy.
+                </p>
+
+                <h3 className="font-semibold text-lg">
+                  6. User Responsibilities
+                </h3>
+                <p>
+                  As a user of this platform, you are responsible for
+                  maintaining the confidentiality of your account and password
+                  and for restricting access to your computer. You agree to
+                  accept responsibility for all activities that occur under your
+                  account or password.
+                </p>
+
+                <h3 className="font-semibold text-lg">7. Governing Law</h3>
+                <p>
+                  These terms and conditions are governed by and construed in
+                  accordance with the laws and you irrevocably submit to the
+                  exclusive jurisdiction of the courts in that state or
+                  location.
+                </p>
+
+                <p className="pt-4 text-xs text-gray-500">
+                  Last updated: July 2025
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 pt-4 border-t">
+            <div className="flex items-center space-x-2 mb-4">
+              <Checkbox
+                id="accept-terms"
+                checked={acceptedTerms}
+                onCheckedChange={(checked) =>
+                  setAcceptedTerms(checked as boolean)
+                }
+                disabled={!hasScrolledToBottom}
+              />
+              <label
+                htmlFor="accept-terms"
+                className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed ${
+                  !hasScrolledToBottom ? "text-gray-400" : "cursor-pointer"
+                }`}
+              >
+                I accept the Terms and Conditions
+              </label>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                onClick={handleTermsSubmit}
+                disabled={!acceptedTerms}
+                className="w-full md:w-auto"
+              >
+                Continue to Dashboard
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Header
         links={[
           { name: "Dashboard", href: "/organizer/dashboard" },
@@ -261,37 +430,36 @@ const Page = () => {
         <div className="grid grid-cols-12 gap-4 mt-5">
           {/* Trends */}
           <Card className="col-span-12 md:col-span-7 shadow-lg h-[450px] dark:bg-secondary">
-
             <CardHeader>
-              <div className='md:flex justify-between items-center'>
-                <div className='flex items-start flex-col'>
-                  <h3 className='text-xl font-semibold'>Trends</h3>
-                  <div className='flex flex-col items-center'>
-                    <div className='flex items-center'>
-                      <div className='w-2 h-2 rounded-full bg-[#2563EB] mr-2' />
-                      <h1 className='text-[14px] leading-6 '>
-                        This Month
-                      </h1>
+              <div className="md:flex justify-between items-center">
+                <div className="flex items-start flex-col">
+                  <h3 className="text-xl font-semibold">Trends</h3>
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-[#2563EB] mr-2" />
+                      <h1 className="text-[14px] leading-6 ">This Month</h1>
                     </div>
-                    <div className='flex mt-2 items-center'>
-                      <div className='w-2 h-2 rounded-full bg-[#7B7E91] leading-10 mr-2' />
-                      <h1 className='text-[#7B7E91] text-[14px]'>
-                        Last Month
-                      </h1>
+                    <div className="flex mt-2 items-center">
+                      <div className="w-2 h-2 rounded-full bg-[#7B7E91] leading-10 mr-2" />
+                      <h1 className="text-[#7B7E91] text-[14px]">Last Month</h1>
                     </div>
                   </div>
                 </div>
-                <div className='md:mt-0 mt-2'>
-                  <Select defaultValue='totalSales' >
-                    <SelectTrigger >
+                <div className="md:mt-0 mt-2">
+                  <Select defaultValue="totalSales">
+                    <SelectTrigger>
                       <SelectValue placeholder="" />
                     </SelectTrigger>
                     <SelectContent className=" dark:bg-secondary">
-                      <SelectGroup className='w-auto'>
+                      <SelectGroup className="w-auto">
                         <SelectLabel>Sale</SelectLabel>
                         <SelectItem value="totalSales">Total Sales</SelectItem>
-                        <SelectItem value="totalRevenue">Total Revenue</SelectItem>
-                        <SelectItem value="totalVisitors">Total Visitors</SelectItem>
+                        <SelectItem value="totalRevenue">
+                          Total Revenue
+                        </SelectItem>
+                        <SelectItem value="totalVisitors">
+                          Total Visitors
+                        </SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -312,24 +480,18 @@ const Page = () => {
           </Card>
           {/* visitor interest */}
           <Card className="col-span-12 md:col-span-5 shadow-lg  h-[450px] dark:bg-secondary">
-
             <CardHeader>
-              <div className='md:flex justify-between md:items-center'>
-                <h3 className='text-xl font-semibold'>Visitor Interest</h3>
-                <div className='flex flex-col md:items-center'>
-                  <div className='flex items-center'>
-                    <div className='w-2 h-2 rounded-full bg-[#020617] mr-2' />
-                    <h1 className='text-[14px] leading-6 '>
-                      Males
-                    </h1>
+              <div className="md:flex justify-between md:items-center">
+                <h3 className="text-xl font-semibold">Visitor Interest</h3>
+                <div className="flex flex-col md:items-center">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 rounded-full bg-[#020617] mr-2" />
+                    <h1 className="text-[14px] leading-6 ">Males</h1>
                   </div>
-                  <div className='flex mt-2 items-center'>
-                    <div className='w-2 h-2 rounded-full bg-[#202C88] leading-10 mr-2' />
-                    <h1 className='text-[#202C88] text-[14px]'>
-                      Females
-                    </h1>
+                  <div className="flex mt-2 items-center">
+                    <div className="w-2 h-2 rounded-full bg-[#202C88] leading-10 mr-2" />
+                    <h1 className="text-[#202C88] text-[14px]">Females</h1>
                   </div>
-
                 </div>
               </div>
             </CardHeader>
@@ -352,17 +514,16 @@ const Page = () => {
         <div className="grid grid-cols-12 gap-4 mt-5 ">
           {/* Views Over Time */}
           <Card className="col-span-12 md:col-span-6 shadow-lg h-[450px] dark:bg-secondary">
-
             <CardHeader>
-              <div className='lg:flex justify-between lgitems-center'>
-                <h3 className='text-xl font-semibold'>Views Over Time</h3>
-                <div className='flex flex-col lg:items-center lg:mt-0 mt-2'>
-                  <Select defaultValue='newEvent'>
-                    <SelectTrigger >
+              <div className="lg:flex justify-between lgitems-center">
+                <h3 className="text-xl font-semibold">Views Over Time</h3>
+                <div className="flex flex-col lg:items-center lg:mt-0 mt-2">
+                  <Select defaultValue="newEvent">
+                    <SelectTrigger>
                       <SelectValue placeholder="" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectGroup className='w-auto'>
+                      <SelectGroup className="w-auto">
                         <SelectLabel>Event</SelectLabel>
                         <SelectItem value="newEvent">New Event</SelectItem>
                         <SelectItem value="otherEvent">Other Event</SelectItem>
@@ -415,17 +576,16 @@ const Page = () => {
         <div className="grid grid-cols-12 gap-4 mt-5">
           {/* Follower Count */}
           <Card className="col-span-12 md:col-span-6 shadow-lg h-[550px] dark:bg-secondary">
-            
             <CardHeader>
-              <div className='lg:flex justify-between md:items-center'>
-                <h3 className='text-xl font-semibold'>Follower Count</h3>
-                <div className='flex flex-col lg:items-center lg:mt-0 mt-2'>
-                  <Select defaultValue='users'>
-                    <SelectTrigger >
+              <div className="lg:flex justify-between md:items-center">
+                <h3 className="text-xl font-semibold">Follower Count</h3>
+                <div className="flex flex-col lg:items-center lg:mt-0 mt-2">
+                  <Select defaultValue="users">
+                    <SelectTrigger>
                       <SelectValue placeholder="" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectGroup className='w-auto'>
+                      <SelectGroup className="w-auto">
                         <SelectLabel>Event</SelectLabel>
                         <SelectItem value="users">Users</SelectItem>
                         <SelectItem value="otherUsers">Other Users</SelectItem>
@@ -476,7 +636,9 @@ const Page = () => {
                       </SelectTrigger>
                       <SelectContent className="dark:bg-secondary">
                         <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="transactions">Transactions</SelectItem>
+                        <SelectItem value="transactions">
+                          Transactions
+                        </SelectItem>
                         <SelectItem value="refunds">Refunds</SelectItem>
                       </SelectContent>
                     </Select>
