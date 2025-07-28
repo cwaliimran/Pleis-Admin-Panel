@@ -1,13 +1,13 @@
 "use client";
 
 import Header from "@/app/common/header";
+import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import FormProvider, { RHFTextField } from "@/components/rhf";
+import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import UserCard from "@/sections/users/userCard";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import React from "react";
-import { TransactionHistory } from "@/sections/invoices";
-import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
@@ -15,36 +15,45 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useBoolean } from "@/hooks/useBoolean";
+import { cn } from "@/lib/utils";
+import { TransactionHistory } from "@/sections/invoices";
+import BookingHistory from "@/sections/users/bookingHistory";
+import { organizerCardData } from "@/sections/users/data";
+import LoyaltyAndOrderTransaction from "@/sections/users/loyaltyAndOrderTransaction";
+import UserCard from "@/sections/users/userCard";
+import UserOverView from "@/sections/users/userOverview";
 import {
     Calendar,
     Pencil,
     Trash2,
 } from "lucide-react";
-import { useBoolean } from "@/hooks/useBoolean";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
-import UserOverView from "@/sections/users/userOverview";
-import { organizerCardData } from "@/sections/users/data";
-import LoyaltyAndOrderTransaction from "@/sections/users/loyaltyAndOrderTransaction";
-import BookingHistory from "@/sections/users/bookingHistory";
+import { useSearchParams } from "next/navigation";
+import React from "react";
+import { useForm } from "react-hook-form";
 
 const Page = () => {
 
-    const { id } = useParams();
+    // const { id } = useParams();
+    const deleteModal = useBoolean();
+    const openModal = useBoolean();
     const data = useSearchParams();
     const userType = data.get("userType");
 
     const [active, setActive] = React.useState("overview");
     const [activeTransactionTab, setActiveTransactionTab] = React.useState("all");
-    const deleteModal = useBoolean();
     const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+
+
+    const methods = useForm();
 
     const tabData = [
         { value: "overview", label: "Overview" },
         { value: "transactions", label: "Transactions" },
         { value: "booking&loyalty", label: "Booking & Loyalty" },
     ]
-   
+
 
     const user = {
         id: "1",
@@ -126,7 +135,7 @@ const Page = () => {
                                                     <div className="flex gap-3">
                                                         <Pencil
                                                             className="w-5 h-5 cursor-pointer text-gray-500 hover:text-primary transition"
-                                                        // onClick={() => router.push(`/super-admin/users/${user.id}/edit`)}
+                                                            onClick={openModal.onTrue}
                                                         />
                                                         <Trash2
                                                             className="w-5 h-5 cursor-pointer text-gray-500 hover:text-red-500 transition"
@@ -379,6 +388,42 @@ const Page = () => {
 
                 </div>
             </div>
+            <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
+                <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
+                    <DialogContent className="md:!max-w-[520px] mx-auto min-h-[50vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
+                        <DialogHeader>
+                            <DialogTitle>
+                                Update User Information
+                            </DialogTitle>
+                        </DialogHeader>
+                        <FormProvider methods={methods} onSubmit={methods.handleSubmit(() => { })}>
+                            <DialogContent className="flex flex-col gap-4">
+                                <RHFUploadAvatar
+                                    name="avatar"
+                                    label="Profile Picture"
+                                />
+                                <RHFTextField
+                                    name="name"
+                                    label="Name"
+                                    placeholder="Enter your name"
+                                />
+                                <RHFTextField
+                                    name="email"
+                                    label="Email"
+                                    placeholder="Enter your email"
+                                />
+                                <RHFTextField
+                                    name="role"
+                                    label="Role"
+
+                                    placeholder="Enter your role"
+                                />
+                            </DialogContent>
+                            <Button type="submit">Update</Button>
+                        </FormProvider>
+                    </DialogContent>
+                </DialogOverlay>
+            </Dialog>
             <ConfirmDialog
                 open={deleteModal.value}
                 title="Delete User"

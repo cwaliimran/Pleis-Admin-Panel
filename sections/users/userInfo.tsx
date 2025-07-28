@@ -1,4 +1,3 @@
-import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import FormProvider, {
   RHFCombobox,
   RHFMultiFileUpload,
@@ -18,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useBoolean } from "@/hooks/useBoolean";
+import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { MapPin, PartyPopper, Pencil, Shirt, UserPlus } from "lucide-react";
 import { useRef } from "react";
@@ -25,9 +25,9 @@ import { useForm } from "react-hook-form";
 import { userTags } from "./data";
 
 const UserInfo = () => {
-  const totalDays = 30;
-  const remainingDays = 5;
-  const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
+  // const totalDays = 30;
+  // const remainingDays = 5;
+  // const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openModal = useBoolean();
@@ -53,7 +53,7 @@ const UserInfo = () => {
     fileInputRef.current?.click();
   };
 
-  const onSubmit = (data: any) => {};
+  const onSubmit = () => {};
 
   return (
     <>
@@ -347,7 +347,7 @@ const UserInfo = () => {
         {/* ADD OTHER DETAILS */}
         <Dialog open={openModal.value} onOpenChange={CloseModal}>
           <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
-            <DialogContent className="md:!max-w-[550px] mx-auto min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
+            <DialogContent className="md:!max-w-[550px] mx-auto min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
               <DialogHeader>
                 <DialogTitle> Add Other Details </DialogTitle>
               </DialogHeader>

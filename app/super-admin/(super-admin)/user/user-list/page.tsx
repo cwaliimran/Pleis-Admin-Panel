@@ -585,7 +585,7 @@ const Page = () => {
       {/* dialog for add and update the user */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
-          <DialogContent className="md:!max-w-[520px] mx-auto min-h-[50vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center">
+          <DialogContent className="md:!max-w-[520px] mx-auto min-h-[50vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
             <DialogHeader>
               <DialogTitle>
                 {" "}

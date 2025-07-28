@@ -193,7 +193,7 @@ function DraggablePromoItem({
     },
   });
 
-  const className = `bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between border-l-4 border-l-blue-500 ${
+  const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 p-4 flex items-center justify-between border-l-4 border-l-blue-500 ${
     isDragging ? "opacity-50" : ""
   } hover:shadow-sm transition-shadow`;
 
@@ -222,7 +222,7 @@ function DraggablePromoItem({
     // eslint-disable-next-line react/forbid-component-props
     <div ref={setNodeRef} className={className} style={dragStyle}>
       <div>
-        <h3 className="font-semibold text-gray-900">{promo.eventName}</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white">{promo.eventName}</h3>
       </div>
       <div className="flex items-center space-x-2">
         <div
@@ -404,7 +404,7 @@ const ViewAllPromos = () => {
         <div className="max-w-full mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               All Promos ({promoEvents.length})
             </h1>
 
@@ -418,9 +418,9 @@ const ViewAllPromos = () => {
                   New Promo
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-lg">
+              <DialogContent className="sm:max-w-lg dark:bg-secondary">
                 <DialogHeader className="pb-4">
-                  <DialogTitle className="text-xl font-semibold text-gray-900">
+                  <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
                     Add New Promo Event
                   </DialogTitle>
                 </DialogHeader>
@@ -428,7 +428,7 @@ const ViewAllPromos = () => {
                   <div className="space-y-2">
                     <Label
                       htmlFor="event-select"
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-gray-700 dark:text-white"
                     >
                       Select Event
                     </Label>
@@ -443,7 +443,7 @@ const ViewAllPromos = () => {
                         >
                           <span
                             className={
-                              selectedEvent ? "text-gray-900" : "text-gray-500"
+                              selectedEvent ? "text-gray-900 dark:text-white" : "text-gray-500"
                             }
                           >
                             {selectedEvent
@@ -461,7 +461,7 @@ const ViewAllPromos = () => {
                         style={{ width: "var(--radix-popover-trigger-width)" }}
                         onWheel={(e) => e.stopPropagation()}
                       >
-                        <Command className="rounded-lg w-full">
+                        <Command className="rounded-lg w-full dark:bg-secondary">
                           <CommandInput
                             placeholder="Search events..."
                             className="border-0 focus:ring-0 focus:outline-none h-11 w-full"
@@ -490,7 +490,7 @@ const ViewAllPromos = () => {
                                       setSelectedEvent(event.id);
                                       setSearchOpen(false);
                                     }}
-                                    className="px-3 py-2 cursor-pointer hover:bg-gray-50 data-[selected]:bg-gray-50"
+                                    className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:bg-secondary data-[selected]:bg-gray-50"
                                   >
                                     <Check
                                       className={cn(
@@ -501,10 +501,10 @@ const ViewAllPromos = () => {
                                       )}
                                     />
                                     <div className="flex flex-col">
-                                      <span className="font-medium text-gray-900">
+                                      <span className="font-medium text-gray-900 dark:text-white">
                                         {event.name}
                                       </span>
-                                      <span className="text-xs text-gray-500">
+                                      <span className="text-xs text-gray-500 dark:text-gray-400">
                                         {event.category} • {event.date}
                                       </span>
                                     </div>
@@ -528,7 +528,7 @@ const ViewAllPromos = () => {
                       />
                       <Label
                         htmlFor="add-to-top10"
-                        className="text-sm font-medium text-gray-700 cursor-pointer"
+                        className="text-sm font-medium text-gray-700 dark:text-white cursor-pointer"
                       >
                         Add To Top 10
                       </Label>
@@ -567,8 +567,8 @@ const ViewAllPromos = () => {
                   type="text"
                   placeholder="Search by event name..."
                   className="w-full rounded-lg border px-3 py-3 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/50
-                    bg-white border-gray-300 text-gray-900 placeholder-gray-400
-                    dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
+                    bg-white border-gray-300  text-gray-900 placeholder-gray-400
+                    dark:bg-secondary dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                 />
               </div>
               {displayedEvents.map((promo) => (
@@ -584,9 +584,9 @@ const ViewAllPromos = () => {
 
           {/* Edit Modal */}
           <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-lg dark:bg-secondary">
               <DialogHeader className="pb-4">
-                <DialogTitle className="text-xl font-semibold text-gray-900">
+                <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
                   Edit Promo Event
                 </DialogTitle>
               </DialogHeader>
@@ -594,7 +594,7 @@ const ViewAllPromos = () => {
                 <div className="space-y-2">
                   <Label
                     htmlFor="edit-event-select"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-gray-700 dark:text-white"
                   >
                     Select Event
                   </Label>
@@ -611,7 +611,7 @@ const ViewAllPromos = () => {
                       >
                         <span
                           className={
-                            selectedEvent ? "text-gray-900" : "text-gray-500"
+                            selectedEvent ? "text-gray-900 dark:text-white" : "text-gray-500"
                           }
                         >
                           {selectedEvent
@@ -624,11 +624,11 @@ const ViewAllPromos = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-full p-0 border-gray-200 shadow-lg"
+                      className="w-full p-0 border-gray-200 shadow-lg dark:bg-secondary"
                       style={{ width: "var(--radix-popover-trigger-width)" }}
                       onWheel={(e) => e.stopPropagation()}
                     >
-                      <Command className="rounded-lg">
+                      <Command className="rounded-lg dark:bg-secondary">
                         <CommandInput
                           placeholder="Search events..."
                           className="border-0 focus:ring-0 focus:outline-none h-11"
@@ -657,7 +657,7 @@ const ViewAllPromos = () => {
                                     setSelectedEvent(event.id);
                                     setEditSearchOpen(false);
                                   }}
-                                  className="px-3 py-2 cursor-pointer hover:bg-gray-50 data-[selected]:bg-gray-50"
+                                  className="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:bg-secondary data-[selected]:bg-gray-50"
                                 >
                                   <Check
                                     className={cn(
@@ -668,10 +668,10 @@ const ViewAllPromos = () => {
                                     )}
                                   />
                                   <div className="flex flex-col">
-                                    <span className="font-medium text-gray-900">
+                                    <span className="font-medium text-gray-900 dark:text-white">
                                       {event.name}
                                     </span>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
                                       {event.category} • {event.date}
                                     </span>
                                   </div>
@@ -697,7 +697,7 @@ const ViewAllPromos = () => {
                     />
                     <Label
                       htmlFor="edit-add-to-top10"
-                      className="text-sm font-medium text-gray-700 cursor-pointer"
+                      className="text-sm font-medium text-gray-700 dark:text-white cursor-pointer"
                     >
                       Add To Top 10
                     </Label>

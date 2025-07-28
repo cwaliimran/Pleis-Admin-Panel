@@ -257,7 +257,7 @@ const BannerControl = () => {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select link type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-secondary">
                 <SelectItem value="loyalty">Loyalty Program</SelectItem>
                 <SelectItem value="event">Event</SelectItem>
                 <SelectItem value="organizer">Organizer</SelectItem>
@@ -275,7 +275,7 @@ const BannerControl = () => {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={`Select ${formData.linkType}`} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="dark:bg-secondary">
                   {mockData[formData.linkType].map((item) => (
                     <SelectItem key={item.id} value={item.id}>
                       {item.name}
@@ -312,8 +312,8 @@ const BannerControl = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Banner Manager</h1>
-          <p className="text-gray-600 mt-1">Create and manage your banners</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Banner Manager</h1>
+          <p className="text-gray-600 mt-1 dark:text-gray-400">Create and manage your banners</p>
         </div>
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
@@ -322,7 +322,7 @@ const BannerControl = () => {
               Create Banner
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg dark:bg-secondary">
             <DialogHeader>
               <DialogTitle>Create New Banner</DialogTitle>
             </DialogHeader>
@@ -339,7 +339,7 @@ const BannerControl = () => {
         {banners.map((banner) => (
           <Card
             key={banner.id}
-            className="group hover:shadow-xl transition-all duration-300 py-0 shadow-lg bg-white"
+            className="group hover:shadow-xl transition-all duration-300 py-0 shadow-lg bg-white dark:bg-secondary"
           >
             <CardContent className="p-0">
               {/* Banner Preview */}
@@ -365,7 +365,7 @@ const BannerControl = () => {
                         </Badge>
                       )}
 
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
                         {banner.title}
                       </h4>
                     </div>
@@ -430,7 +430,7 @@ const BannerControl = () => {
 
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg dark:bg-secondary">
           <DialogHeader>
             <DialogTitle>Edit Banner</DialogTitle>
           </DialogHeader>

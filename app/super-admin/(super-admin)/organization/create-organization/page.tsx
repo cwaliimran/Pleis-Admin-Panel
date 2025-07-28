@@ -5,7 +5,7 @@ import CreateOrganizationPage from "@/sections/create-organization/create-organi
 
 const Page = () => {
   return (
-    <div className="bg-muted/40 min-h-screen pb-12">
+    <div className=" min-h-screen pb-12">
       <Header
         links={[
           { name: "Dashboard", href: "/super-admin" },
