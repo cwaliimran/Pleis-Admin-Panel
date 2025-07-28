@@ -67,7 +67,7 @@ const Page = () => {
     region: "North America",
     dateOfAccountCreation: "2025-01-01",
     lastActivity: "2025-03-01",
-    image: "https://github.com/shadcn.png",
+    image: "/images/eventImage.png",
     linkedOrganization: "Doe Events Ltd.",
     businessDetails: {
       name: "Doe Events",
