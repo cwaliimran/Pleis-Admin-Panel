@@ -23,6 +23,7 @@ import EventTableRow from "./eventTAbleRow";
 import { Card } from "@/components/ui/card";
 import { eventData } from "./data";
 import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { TableFilters } from "@/components/table-filters";
 
 const headLabel = [
   { id: "image", label: "Image", align: "left" },
@@ -42,7 +43,19 @@ interface PageProps {
   userType?: string;
 }
 const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
-  const [filterField, setFilterField] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [region, setRegion] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const handleResetFilters = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setRegion("");
+    setStatus("");
+    setSearchTerm("");
+  };
 
   return (
     <div>
@@ -50,7 +63,52 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
         <Card className="mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-secondary">
           <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
             <h3 className="text-xl font-semibold md:ml-0 ml-2">Event List</h3>
-            <div>
+          </div>
+
+          <TableFilters
+            dateRangeFilter={{
+              startDate: {
+                id: "event-start-date",
+                label: "Start Date",
+                placeholder: "Select start date",
+                value: startDate,
+                onChange: setStartDate,
+              },
+              endDate: {
+                id: "event-end-date",
+                label: "End Date",
+                placeholder: "Select end date",
+                value: endDate,
+                onChange: setEndDate,
+              },
+            }}
+            selectFilters={[
+              {
+                id: "revenue",
+                label: "Revenue",
+                placeholder: "Select by revenue",
+                value: status,
+                onChange: setStatus,
+                options: [
+                  { value: "lessThan10", label: "< $10k" },
+                  { value: "10to50", label: "$10k - $50k" },
+                  { value: "50to100", label: "$50k - $100k" },
+                ],
+              },
+            ]}
+            searchFilter={{
+              placeholder: "Search Event",
+              value: searchTerm,
+              onChange: setSearchTerm,
+            }}
+            resetFilter={{
+              onReset: handleResetFilters,
+              showResetButton: true,
+            }}
+            filtersAlignment="right"
+          />
+
+          {/* <div>
               <div className="flex flex-col md:items-center items-end">
                 <FilterDropdown
                   options={[
@@ -68,15 +126,16 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="w-full ">
+          </div> */}
+          {/* <div className="w-full ">
             <Input
               placeholder="Search Event"
               // value={globalFilter}
               // onChange={(e) => setGlobalFilter(e.target.value)}
               className="w-full  h-10 "
             />
-          </div>
+          </div> */}
+
           <div className="border rounded-lg  ">
             <Table className="w-full rounded-md border  ">
               <TableHeadCustom headLabel={headLabel} />

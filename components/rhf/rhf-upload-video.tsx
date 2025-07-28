@@ -61,12 +61,12 @@ const RHFUploadVideo: React.FC<RHFUploadVideoProps> = ({
               {/* Upload Box */}
               <div className="relative border border-dashed rounded-md p-2">
                 <div
-                  className={`relative w-full h-full overflow-hidden flex items-center justify-center border bg-gray-200 dark:bg-gray-700 transition hover:opacity-80 cursor-pointer w-[${width}] h-[${height}] ${
+                  className={`relative w-full h-full overflow-hidden flex items-center justify-center border bg-gray-200 dark:bg-gray-700 transition hover:opacity-80 cursor-pointer ${
                     hasError
                       ? "border-dashed border-red-400"
                       : "border-gray-300 dark:border-gray-600"
                   }`}
-                  // style={{ width, height }}
+                  style={{ width, height }}
                 >
                   <label
                     htmlFor={`video-upload-${name}`}

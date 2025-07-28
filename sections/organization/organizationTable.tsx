@@ -1,6 +1,5 @@
 "use client";
 import TableHeadCustom from "@/components/table/table-head-custom";
-import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -15,6 +14,7 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -23,7 +23,7 @@ import React, { FC, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { organizationListData } from "./data";
 import OrganizationTableRow from "./organizationTableRow";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { TableFilters } from "@/components/table-filters";
 const headLabel = [
   { id: "log", label: "Logo", align: "left" },
   { id: "name", label: "Name", align: "left" },
@@ -39,12 +39,27 @@ const headLabel = [
 ];
 
 interface PageProps {
-    handleDelete?: (id: string) => void;
-    handleEdit?: (id: string) => void;
-    userType?:"organizer" | "super-admin";
+  handleDelete?: (id: string) => void;
+  handleEdit?: (id: string) => void;
+  userType?: "organizer" | "super-admin";
 }
-const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
-    const [filterField, setFilterField] = useState<string[]>([]);
+const OrganizationTable: FC<PageProps> = ({
+  handleDelete,
+  handleEdit,
+  userType,
+}) => {
+
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [subType, setSubType] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const handleResetFilters = () => {
+    setDate(undefined);
+    setSubType("");
+    setStatus("");
+    setSearchTerm("");
+  };
 
   return (
     <div>
@@ -54,39 +69,54 @@ const OrganizationTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }
             <h3 className="text-xl font-semibold md:ml-0 ml-2">
               Organization List
             </h3>
-            <div>
-              <div className="flex flex-col md:items-center items-end">
-                <FilterDropdown
-                  options={[
-                    { id: "name", label: "By Name" },
-                    { id: "phone", label: "By Phone" },
-                    { id: "email", label: "By Email" },
-                    { id: "createdDate", label: "By Created Date" },
-                    { id: "subscriptionType", label: "By Subscription Type" },
-                    {
-                      id: "subscriptionValidity",
-                      label: "By Subscription End Date",
-                    },
-                    { id: "commission", label: "By Commission" },
-                    { id: "totalViews", label: "By Total Views" },
-                    { id: "totalRevenue", label: "By Total Revenue" },
-                    { id: "region", label: "By Region" },
-                  ]}
-                  selectedOptions={filterField}
-                  onSelectOption={setFilterField}
-                />
-              </div>
-            </div>
           </div>
-          <div className="w-full ">
-            <Input
-              placeholder="Search Organization"
-              // value={globalFilter}
-              // onChange={(e) => setGlobalFilter(e.target.value)}
-              className="w-full  h-10 "
-            />
-          </div>
-          <div className="border rounded-lg  ">
+
+          <TableFilters
+            dateFilter={{
+              id: "organization-date",
+              placeholder: "Select date",
+              value: date,
+              onChange: setDate,
+            }}
+            selectFilters={[
+              {
+                id: "sub-type",
+                label: "Sub Type",
+                placeholder: "Select Sub Type",
+                value: subType,
+                onChange: setSubType,
+                options: [
+                  { value: "basic", label: "Basic" },
+                  { value: "enterprise", label: "Enterprise" },
+                  { value: "premium", label: "Premium" },
+                ],
+              },
+              {
+                id: "status",
+                label: "Status",
+                placeholder: "Select Status",
+                value: status,
+                onChange: setStatus,
+                options: [
+                  { value: "active", label: "Active" },
+                  { value: "inactive", label: "Inactive" },
+                  { value: "pending", label: "Pending" },
+                ],
+              },
+            ]}
+            searchFilter={{
+              placeholder: "Search Organization",
+              value: searchTerm,
+              onChange: setSearchTerm,
+            }}
+            resetFilter={{
+              onReset: handleResetFilters,
+              showResetButton: true,
+            }}
+            filtersAlignment="right"
+          />
+
+          <div className="border rounded-lg ">
             <Table className="w-full rounded-md border  ">
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>

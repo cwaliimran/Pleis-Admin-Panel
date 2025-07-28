@@ -63,8 +63,10 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
                     errors[name]
                       ? "border-dashed border-red-400"
                       : "border-gray-300 dark:border-gray-600"
-                  } ${`w-[${size}] h-[${size}]`}`}
-                  //   style={{ width: size, height: size }}
+                  }
+                  `}
+                  // ${`w-[${size}] h-[${size}]`}
+                  style={{ width: size, height: size }}
                 >
                   <label
                     htmlFor={`avatar-upload-${name}`}

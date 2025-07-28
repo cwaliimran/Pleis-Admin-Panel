@@ -18,9 +18,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronsUpDown, Edit, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Category, CategoryFormData } from "./types";
+import { RHFCombobox } from "@/components/rhf";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 // Dummy data
 const initialCategories: Category[] = [
@@ -162,6 +177,9 @@ function CategoryModal({
     isVisible: category?.isVisible !== undefined ? category.isVisible : true,
   });
 
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name.trim()) {
@@ -187,6 +205,25 @@ function CategoryModal({
     }
   });
 
+  const frameworks = [
+    {
+      value: "event-1",
+      label: "Event 1",
+    },
+    {
+      value: "event-2",
+      label: "Event 2",
+    },
+    {
+      value: "event-3",
+      label: "Event 3",
+    },
+    {
+      value: "event-4",
+      label: "Event 4",
+    },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
@@ -210,23 +247,56 @@ function CategoryModal({
           </div>
 
           <div className="space-y-2 w-full">
-            <Label htmlFor="type">Events</Label>
-            <Select
-              value={formData.type}
-              onValueChange={(value: any) =>
-                setFormData({ ...formData, type: value })
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select category type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="event-1">Event 1</SelectItem>
-                <SelectItem value="event-2">Event 2</SelectItem>
-                <SelectItem value="event-3">Event 3</SelectItem>
-                <SelectItem value="event-4">Event 4</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="type">Event</Label>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-full justify-between"
+                >
+                  {value
+                    ? frameworks.find((framework) => framework.value === value)
+                        ?.label
+                    : "Select event..."}
+                  <ChevronsUpDown className="opacity-50" />
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent className="w-[300px] p-0">
+                <Command className="w-full">
+                  <CommandInput placeholder="Search event..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No event found.</CommandEmpty>
+                    <CommandGroup>
+                      {frameworks.map((framework) => (
+                        <CommandItem
+                          key={framework.value}
+                          value={framework.value}
+                          onSelect={(currentValue) => {
+                            setValue(
+                              currentValue === value ? "" : currentValue
+                            );
+                            setOpen(false);
+                          }}
+                        >
+                          {framework.label}
+                          <Check
+                            className={cn(
+                              "ml-auto",
+                              value === framework.value
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2 w-full">

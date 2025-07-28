@@ -1,10 +1,10 @@
 "use client";
 
-import { TableCell, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Check, Ellipsis, Eye, Pencil, Trash2 } from "lucide-react";
-import React, { FC } from "react";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Check, Eye, Pencil, Trash2 } from "lucide-react";
+import { FC } from "react";
 
 interface UserItem {
   id: string;

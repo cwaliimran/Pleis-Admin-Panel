@@ -23,6 +23,7 @@ import { Card } from "@/components/ui/card";
 import { venueData } from "./data";
 import VenueTableRow from "./venueTableRow";
 import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { TableFilters } from "@/components/table-filters";
 const headLabel = [
   { id: "name", label: "Name", align: "left" },
   { id: "dateAdded", label: "Date Added", align: "left" },
@@ -32,12 +33,21 @@ const headLabel = [
   { id: "createdAt", label: "Created At" },
   { id: "actions", label: "Action", align: "center" },
 ];
+
 interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
 const VenueTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
-  const [filterField, setFilterField] = useState<string[]>([]);
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [location, setLocation] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const handleResetFilters = () => {
+    setDate(undefined);
+    setLocation("");
+    setSearchTerm("");
+  };
 
   return (
     <div>
@@ -45,28 +55,41 @@ const VenueTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
         <Card className="mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-secondary">
           <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
             <h3 className="text-xl font-semibold md:ml-0 ml-2">Venue List</h3>
-            <div>
-              <FilterDropdown
-                options={[
-                  { id: "name", label: "By Name" },
-                  { id: "dateAdded", label: "By Date Added" },
-                  { id: "organizaiton", label: "By Organization" },
-                  { id: "location", label: "By Location" },
-                  { id: "createdAt", label: "By Created At" },
-                ]}
-                selectedOptions={filterField}
-                onSelectOption={setFilterField}
-              />
-            </div>
           </div>
-          <div className="w-full ">
-            <Input
-              placeholder="Search Venue"
-              // value={globalFilter}
-              // onChange={(e) => setGlobalFilter(e.target.value)}
-              className="w-full  h-10 "
-            />
-          </div>
+
+          <TableFilters
+            dateFilter={{
+              id: "organization-date",
+              placeholder: "Select date",
+              value: date,
+              onChange: setDate,
+            }}
+            selectFilters={[
+              {
+                id: "location",
+                label: "Location",
+                placeholder: "Select Location",
+                value: location,
+                onChange: setLocation,
+                options: [
+                  { value: "punjab", label: "Punjab" },
+                  { value: "sindh", label: "Sindh" },
+                  { value: "kashmir", label: "Kashmir" },
+                ],
+              },
+            ]}
+            searchFilter={{
+              placeholder: "Search Organization",
+              value: searchTerm,
+              onChange: setSearchTerm,
+            }}
+            resetFilter={{
+              onReset: handleResetFilters,
+              showResetButton: true,
+            }}
+            filtersAlignment="right"
+          />
+
           <div className="border rounded-lg  ">
             <Table className="w-full rounded-md border  ">
               <TableHeadCustom headLabel={headLabel} />
