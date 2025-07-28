@@ -3,9 +3,17 @@ import FormProvider, { RHFTextField } from "@/components/rhf";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 interface AdminProfileFormData {
@@ -19,9 +27,16 @@ interface AdminProfileFormData {
   avatar?: string;
 }
 
+interface PasswordUpdateFormData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 const AdminProfileSection = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = React.useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const methods = useForm<AdminProfileFormData>({
     defaultValues: {
@@ -46,6 +61,19 @@ const AdminProfileSection = () => {
     fileInputRef.current?.click();
   };
 
+  const passwordMethods = useForm<PasswordUpdateFormData>({
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const handlePasswordModalClose = () => {
+    setIsPasswordModalOpen(false);
+    passwordMethods.reset();
+  };
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -56,6 +84,22 @@ const AdminProfileSection = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handlePasswordModalOpen = () => {
+    setIsPasswordModalOpen(true);
+  };
+
+  const onPasswordSubmit = (data: PasswordUpdateFormData) => {
+    if (data.newPassword !== data.confirmPassword) {
+      alert("New password and confirm password do not match!");
+      return;
+    }
+    console.log("Password update data:", data);
+    // Here you would typically call your API to update the password
+    setIsPasswordModalOpen(false);
+    passwordMethods.reset();
+    alert("Password updated successfully!");
   };
 
   const handleToggleChange = () => {
@@ -151,25 +195,6 @@ const AdminProfileSection = () => {
                   placeholder="Enter your last name"
                 />
 
-                {/* <RHFSelectField
-                  name="Role"
-                  label="Role"
-                  placeholder="Select Role"
-                  options={[
-                    { label: "Admin", value: "admin" },
-                    { label: "Super Admin", value: "super-admin" },
-                    { label: "Manager", value: "manager" },
-                    { label: "User", value: "user" },
-                  ]}
-                /> */}
-
-                {/* <RHFTextField
-                  name="address"
-                  label="Address"
-                  className="col-span-2"
-                  placeholder="Enter your full address"
-                /> */}
-
                 <RHFTextField
                   name="email"
                   type="email"
@@ -183,17 +208,17 @@ const AdminProfileSection = () => {
                   type="tel"
                   placeholder="Enter your phone number"
                 />
-
-                <RHFTextField
-                  name="password"
-                  type="password"
-                  label="Password"
-                  placeholder="Enter your password"
-                />
               </div>
 
               {/* Save Button */}
-              <div className="pt-4 flex justify-end items-center">
+              <div className="pt-4 flex justify-end gap-4 items-center">
+                <Button
+                  type="button"
+                  onClick={handlePasswordModalOpen}
+                  className="bg-gray-200 text-black hover:bg-gray-300 px-7 h-11"
+                >
+                  Update Password
+                </Button>
                 <Button
                   type="submit"
                   className="bg-primary text-white hover:bg-primary px-7 h-11"
@@ -204,6 +229,65 @@ const AdminProfileSection = () => {
             </FormProvider>
           </CardContent>
         </Card>
+
+        {/* Password Update Modal */}
+        <Dialog
+          open={isPasswordModalOpen}
+          onOpenChange={setIsPasswordModalOpen}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Update Password</DialogTitle>
+              <DialogDescription>
+                Enter your current password and choose a new password.
+              </DialogDescription>
+            </DialogHeader>
+
+            <FormProvider
+              methods={passwordMethods}
+              onSubmit={passwordMethods.handleSubmit(onPasswordSubmit)}
+            >
+              <div className="space-y-4">
+                <RHFTextField
+                  name="currentPassword"
+                  type="password"
+                  label="Current Password"
+                  placeholder="Enter your current password"
+                />
+
+                <RHFTextField
+                  name="newPassword"
+                  type="password"
+                  label="New Password"
+                  placeholder="Enter your new password"
+                />
+
+                <RHFTextField
+                  name="confirmPassword"
+                  type="password"
+                  label="Confirm New Password"
+                  placeholder="Confirm your new password"
+                />
+              </div>
+
+              <DialogFooter className="mt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePasswordModalClose}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-primary text-white hover:bg-primary"
+                >
+                  Update Password
+                </Button>
+              </DialogFooter>
+            </FormProvider>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

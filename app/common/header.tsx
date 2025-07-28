@@ -1,8 +1,7 @@
 "use client";
-import React, { FC, useState } from "react";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import Profile from "./profile";
+import { ModeToggle } from "@/components/atoms/mode-toggle";
+import FormProvider from "@/components/rhf";
+import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,16 +10,15 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ModeToggle } from "@/components/atoms/mode-toggle";
+import { Input } from "@/components/ui/input";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { defaultValues, schema } from "@/lib/schemas/organization-schema";
+import { yupResolver } from "@hookform/resolvers/yup";
+import Link from "next/link";
+import { FC } from "react";
+import { useForm } from "react-hook-form";
+import Profile from "./profile";
 
 interface HeaderProps {
   links?: {
@@ -33,7 +31,12 @@ const Header: FC<HeaderProps> = ({ links }) => {
   const { open } = useSidebar();
   const { user } = useAuth();
 
-  const [selectedOrganization, setSelectedOrganization] = useState<string>("");
+  const methods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: defaultValues,
+  });
+
+  const onSubmit = () => {};
 
   return (
     <div className="flex flex-col-reverse lg:flex-row md:items-center justify-between gap-4 md:gap-6 px-3 sm:px-5 md:my-8 mt-4">
@@ -64,22 +67,24 @@ const Header: FC<HeaderProps> = ({ links }) => {
           placeholder="Search..."
           className=" w-[100%]  md:w-[240px] lg:w-[280px] h-10 rounded-full pl-5 bg-white"
         />
-
-        {user?.role === "organizer" && (
-          <Select
-            value={selectedOrganization}
-            onValueChange={setSelectedOrganization}
-          >
-            <SelectTrigger className="w-full md:w-[180px] h-10 bg-white">
-              <SelectValue placeholder="Select Organization" />
-            </SelectTrigger>
-            <SelectContent className="dark:bg-secondary">
-              <SelectItem value="org1">Organization 1</SelectItem>
-              <SelectItem value="org2">Organization 2</SelectItem>
-              <SelectItem value="org3">Organization 3</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
+        <FormProvider
+          methods={methods}
+          onSubmit={methods.handleSubmit(onSubmit)}
+        >
+          {user?.role === "organizer" && (
+            <div className="w-full md:w-[240px] lg:w-[240px] bg-white rounded-md">
+              <RHFMultiSelect
+                name="suppliers"
+                placeholder="Select Organizations"
+                options={[
+                  { value: "org1", label: "Org 1" },
+                  { value: "org2", label: "Org 2" },
+                  { value: "org3", label: "Org 3" },
+                ]}
+              />
+            </div>
+          )}
+        </FormProvider>
 
         <div className="flex gap-3 items-center justify-end">
           <ModeToggle />

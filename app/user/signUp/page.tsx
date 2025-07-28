@@ -299,11 +299,15 @@ function SignUpPage() {
                   src="/images/appleIcon.png"
                   alt="Apple"
                   className="w-6 h-6 dark:hidden"
+                  width={24}
+                  height={24}
                 />
                 <Image
                   src="/images/macIconDark.png"
                   alt="Apple Dark"
                   className="w-6 h-6 hidden dark:block"
+                  width={24}
+                  height={24}
                 />
               </Button>
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
@@ -311,6 +315,8 @@ function SignUpPage() {
                   src="/images/googleIcon.png"
                   alt="Google"
                   className="w-6 h-6"
+                  width={24}
+                  height={24}
                 />
               </Button>
               <Button variant="outline" className="h-12 w-12 rounded-full p-0">
@@ -318,6 +324,8 @@ function SignUpPage() {
                   src="/images/metaIcon.png"
                   alt="Meta"
                   className="w-6 h-6"
+                  width={24}
+                  height={24}
                 />
               </Button>
             </div>

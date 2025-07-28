@@ -119,8 +119,8 @@ const Page = () => {
                           src={user.image}
                           alt={user.fullName}
                           className="rounded-lg w-full h-56 sm:h-auto object-cover shadow"
-                          width={200}
-                          height={200}
+                          width={20}
+                          height={20}
                         />
                       </div>
                       {/* Right Content */}
