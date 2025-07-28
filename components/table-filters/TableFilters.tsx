@@ -271,7 +271,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               value={filter.value}
               onValueChange={filter.onChange}
             >
-              <SelectTrigger className="w-[160px] cursor-pointer">
+              <SelectTrigger className="w-[180px] cursor-pointer">
                 <SelectValue placeholder={filter.placeholder} />
               </SelectTrigger>
               <SelectContent>

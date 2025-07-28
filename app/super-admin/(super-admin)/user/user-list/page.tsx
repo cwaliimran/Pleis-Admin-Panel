@@ -582,6 +582,7 @@ const Page = () => {
           </Button>
         </div>
       </div>
+
       {/* dialog for add and update the user */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
@@ -651,6 +652,7 @@ const Page = () => {
         </DialogOverlay>
       </Dialog>
       {/* dialog for delete the user */}
+
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete User"
@@ -658,6 +660,7 @@ const Page = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
+      
       <UserTable
         handleDelete={handleDelete}
         handleEdit={handleEdit}

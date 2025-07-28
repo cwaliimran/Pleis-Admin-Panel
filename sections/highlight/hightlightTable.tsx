@@ -71,7 +71,7 @@ const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
               {
                 id: "status",
                 label: "Status",
-                placeholder: "Select Status",
+                placeholder: "Select status",
                 value: status,
                 onChange: setStatus,
                 options: [
@@ -82,7 +82,7 @@ const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
               },
             ]}
             searchFilter={{
-              placeholder: "Search Organization",
+              placeholder: "Search Highlight",
               value: searchTerm,
               onChange: setSearchTerm,
             }}

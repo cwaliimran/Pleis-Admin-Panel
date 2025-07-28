@@ -45,15 +45,15 @@ interface PageProps {
 const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [region, setRegion] = useState<string>("");
   const [status, setStatus] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   const handleResetFilters = () => {
     setStartDate(undefined);
     setEndDate(undefined);
-    setRegion("");
     setStatus("");
+    setLocation("");
     setSearchTerm("");
   };
 
@@ -93,6 +93,18 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
                   { value: "lessThan10", label: "< $10k" },
                   { value: "10to50", label: "$10k - $50k" },
                   { value: "50to100", label: "$50k - $100k" },
+                ],
+              },
+              {
+                id: "location",
+                label: "Location",
+                placeholder: "Select Location",
+                value: location,
+                onChange: setLocation,
+                options: [
+                  { value: "punjab", label: "Punjab" },
+                  { value: "sindh", label: "Sindh" },
+                  { value: "kashmir", label: "Kashmir" },
                 ],
               },
             ]}

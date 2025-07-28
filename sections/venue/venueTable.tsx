@@ -79,7 +79,7 @@ const VenueTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
               },
             ]}
             searchFilter={{
-              placeholder: "Search Organization",
+              placeholder: "Search Venue",
               value: searchTerm,
               onChange: setSearchTerm,
             }}
