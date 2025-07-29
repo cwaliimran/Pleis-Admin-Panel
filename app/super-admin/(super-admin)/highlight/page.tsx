@@ -160,9 +160,10 @@ const Page = () => {
                     { label: "Organization 3", value: "org3" },
                   ]}
                 />
+                
                 <RHFSelectField
                   name="status"
-                  label="Status"
+                  // label="Status"
                   placeholder="Select Status"
                   options={[
                     { label: "Active", value: "active" },
@@ -183,6 +184,7 @@ const Page = () => {
           </FormProvider>
         </DialogContent>
       </Dialog>
+
       {/* dialog for delete the highlight */}
       <ConfirmDialog
         open={deleteModal.value}
@@ -191,6 +193,7 @@ const Page = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
+
       <HighlightTable handleDelete={handleDelete} handleEdit={handleEdit} />
     </div>
   );

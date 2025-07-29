@@ -9,6 +9,7 @@ import UserInfo from "./userInfo";
 import Useranalytics from "./useranalytics";
 import UserNotifications from "./userNotifications";
 import { ActivePromontion, TotalFollowers } from ".";
+import Image from "next/image";
 
 interface UserDetailPageProps {
   id: string;
@@ -23,10 +24,12 @@ const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
             <div className="relative w-full">
               <div className="bg-cover bg-center overflow-visible rounded-lg" />
               <div className="">
-                <img
-                  src="/images/image.png"
+                <Image
+                  src="/images/eventImage.png"
                   alt="User Avatar"
                   className="md:w-30 w-20  md:h-30 h-20 rounded-full  shadow-lg z-10"
+                  width={120}
+                  height={120}
                 />
               </div>
             </div>

@@ -1,5 +1,6 @@
+import { TableFilters } from "@/components/table-filters";
 import TableHeadCustom from "@/components/table/table-head-custom";
-import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -18,12 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody } from "@/components/ui/table";
-import React, { FC, useState } from "react";
-import { Card } from "@/components/ui/card";
+import { FC, useState } from "react";
 import { venueData } from "./data";
 import VenueTableRow from "./venueTableRow";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
-import { TableFilters } from "@/components/table-filters";
+
 const headLabel = [
   { id: "name", label: "Name", align: "left" },
   { id: "dateAdded", label: "Date Added", align: "left" },
@@ -38,6 +37,7 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
+
 const VenueTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [location, setLocation] = useState<string>("");

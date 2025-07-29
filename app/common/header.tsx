@@ -67,11 +67,11 @@ const Header: FC<HeaderProps> = ({ links }) => {
           placeholder="Search..."
           className=" w-[100%]  md:w-[240px] lg:w-[280px] h-10 rounded-full pl-5 bg-white"
         />
-        <FormProvider
-          methods={methods}
-          onSubmit={methods.handleSubmit(onSubmit)}
-        >
-          {user?.role === "organizer" && (
+        {user?.role === "organizer" && (
+          <FormProvider
+            methods={methods}
+            onSubmit={methods.handleSubmit(onSubmit)}
+          >
             <div className="w-full md:w-[240px] lg:w-[240px] bg-white rounded-md">
               <RHFMultiSelect
                 name="suppliers"
@@ -83,8 +83,8 @@ const Header: FC<HeaderProps> = ({ links }) => {
                 ]}
               />
             </div>
-          )}
-        </FormProvider>
+          </FormProvider>
+        )}
 
         <div className="flex gap-3 items-center justify-end">
           <ModeToggle />

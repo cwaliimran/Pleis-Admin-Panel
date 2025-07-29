@@ -1,7 +1,7 @@
 "use client";
 
-import type React from "react";
-
+import FormProvider from "@/components/rhf";
+import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,24 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, ChevronsUpDown, Edit, Plus, Trash2 } from "lucide-react";
+import { defaultValues, schema } from "@/lib/schemas/organization-schema";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Edit, Plus, Trash2 } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import type { Category, CategoryFormData } from "./types";
-import { RHFCombobox } from "@/components/rhf";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { cn } from "@/lib/utils";
 
 // Dummy data
 const initialCategories: Category[] = [
@@ -207,6 +196,13 @@ function CategoryModal({
     }
   });
 
+  const methods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: defaultValues,
+  });
+
+  const onSubmit = () => {};
+
   const frameworks = [
     {
       value: "event-1",
@@ -228,114 +224,75 @@ function CategoryModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] dark:bg-secondary">
+      <DialogContent className="sm:max-w-xl dark:bg-secondary">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? "Create New Category" : "Edit Category"}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Category Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              placeholder="Enter category name"
-              required
-            />
-          </div>
-
-          <div className="space-y-2 w-full">
-            <Label htmlFor="type">Event</Label>
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-full justify-between"
-                >
-                  {value
-                    ? frameworks.find((framework) => framework.value === value)
-                        ?.label
-                    : "Select event..."}
-                  <ChevronsUpDown className="opacity-50" />
-                </Button>
-              </PopoverTrigger>
-
-              <PopoverContent className="w-[300px] p-0">
-                <Command className="w-full">
-                  <CommandInput placeholder="Search event..." className="h-9" />
-                  <CommandList>
-                    <CommandEmpty>No event found.</CommandEmpty>
-                    <CommandGroup>
-                      {frameworks.map((framework) => (
-                        <CommandItem
-                          key={framework.value}
-                          value={framework.value}
-                          onSelect={(currentValue) => {
-                            setValue(
-                              currentValue === value ? "" : currentValue
-                            );
-                            setOpen(false);
-                          }}
-                        >
-                          {framework.label}
-                          <Check
-                            className={cn(
-                              "ml-auto",
-                              value === framework.value
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2 w-full">
-            <Label htmlFor="type">Priority</Label>
-            <Select
-              value={formData.priority}
-              onValueChange={(value: any) =>
-                setFormData({ ...formData, priority: value })
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select category type" />
-              </SelectTrigger>
-              <SelectContent className="dark:bg-secondary">
-                <SelectItem value="priority-1">Priority 1</SelectItem>
-                <SelectItem value="priority-2">Priority 2</SelectItem>
-                <SelectItem value="priority-3">Priority 3</SelectItem>
-                <SelectItem value="priority-4">Priority 4</SelectItem>
-                <SelectItem value="priority-5">Priority 5</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
+        <FormProvider
+          methods={methods}
+          onSubmit={methods.handleSubmit(onSubmit)}
+        >
+          <div className="w-full space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Category Name</Label>
               <Input
-                id="visible"
-                type="checkbox"
-                checked={formData.isVisible}
+                id="name"
+                value={formData.name}
                 onChange={(e) =>
-                  setFormData({ ...formData, isVisible: e.target.checked })
+                  setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-4 h-4"
+                placeholder="Enter category name"
+                required
               />
-              <Label htmlFor="visible" className="text-sm font-medium">
-                Always Visible
-              </Label>
+            </div>
+
+            <div className="space-y-2 w-full">
+              <RHFMultiSelect
+                name="event"
+                label="Select Events"
+                placeholder="Select Events"
+                options={frameworks}
+              />
+            </div>
+
+            <div className="space-y-2 w-full">
+              <Label htmlFor="type">Priority</Label>
+              <Select
+                value={formData.priority}
+                onValueChange={(value: any) =>
+                  setFormData({ ...formData, priority: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select category type" />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-secondary">
+                  <SelectItem value="priority-1">Priority 1</SelectItem>
+                  <SelectItem value="priority-2">Priority 2</SelectItem>
+                  <SelectItem value="priority-3">Priority 3</SelectItem>
+                  <SelectItem value="priority-4">Priority 4</SelectItem>
+                  <SelectItem value="priority-5">Priority 5</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="visible"
+                  type="checkbox"
+                  checked={formData.isVisible}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isVisible: e.target.checked })
+                  }
+                  className="w-4 h-4"
+                />
+                <Label htmlFor="visible" className="text-sm font-medium">
+                  Always Visible
+                </Label>
+              </div>
             </div>
           </div>
 
@@ -347,7 +304,7 @@ function CategoryModal({
               {mode === "create" ? "Create Category" : "Save Changes"}
             </Button>
           </div>
-        </form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   );

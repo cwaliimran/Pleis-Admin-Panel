@@ -1,17 +1,9 @@
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { Camera, Pencil, Trash2 } from "lucide-react";
-import { FC, useState } from "react";
-// import UserCard from "./userCard";
-// import UserInfo from "./userInfo";
-// import UserEvents from "./userEvents";
-// import UserLoyalty from "./userLoyalty";
-// import Useranalytics from "./useranalytics";
-// import UserNotifications from "./userNotifications";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import FormProvider, { RHFTextField } from "@/components/rhf";
 import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +14,9 @@ import {
 import { useBoolean } from "@/hooks/useBoolean";
 import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { Camera, Pencil, Trash2 } from "lucide-react";
+import { FC, useState } from "react";
 import { useForm } from "react-hook-form";
-// import { ActivePromontion, BusinessInfo, TotalFollowers, UserCalender } from ".";
 import { UserInfo } from "../users";
 
 interface UserDetailPageProps {
@@ -89,7 +82,6 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = () => {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      // You can set state or upload the file as needed
                     }
                   }}
                 />
@@ -145,63 +137,13 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = () => {
                 0 Boost
               </Badge>
             </div>
-            <div className="-mb-3 flex md:items-center md:justify-end mt-4 md:flex-row flex-col gap-4">
-              {/* <Tabs
-                value={active}
-                onValueChange={setActive}
-                className="hidden sm:block w-full"
-              >
-                <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
-                  <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
-                    {tabsData.map((tab: any) => (
-                      <TabsTrigger
-                        key={tab.value}
-                        value={tab.value}
-                        className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                                    !shadow-none dark:!bg-transparent cursor-pointer border-none
-                                                                  ${
-                                                                    active ===
-                                                                    tab.value
-                                                                      ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                                                      : "text-muted-foreground"
-                                                                  }`}
-                      >
-                        {tab.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </div>
-              </Tabs> */}
-            </div>
+            <div className="-mb-3 flex md:items-center md:justify-end mt-4 md:flex-row flex-col gap-4"></div>
           </Card>
 
           <div className=" mt-4 rounded-lg">
             {active === "info" && <UserInfo />}
-
-            {/* {active === "events" && <UserEvents />}
-
-            {active === "loyalty" && <UserLoyalty />}
-
-            {active === "analytics" && <OrgAnalytics />}
-
-            {active === "notifications" && <UserNotifications />}
-
-            {active === "calendar" && <UserCalender />} */}
           </div>
         </div>
-        {/* --------------- UPPER SECTION END --------------- */}
-
-        {/* Sidebar or Additional Panel */}
-        {/* <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3">
-          {userData.map((user: any) => (
-            <UserCard item={user} key={user._id} />
-          ))}
-          <TotalFollowers />
-
-          <ActivePromontion />
-
-          <BusinessInfo />
-        </div> */}
       </div>
 
       {/* update Organization */}

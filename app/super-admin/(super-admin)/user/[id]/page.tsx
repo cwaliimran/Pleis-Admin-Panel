@@ -67,7 +67,7 @@ const Page = () => {
     region: "North America",
     dateOfAccountCreation: "2025-01-01",
     lastActivity: "2025-03-01",
-    image: "https://github.com/shadcn.png",
+    image: "/images/eventImage.png",
     linkedOrganization: "Doe Events Ltd.",
     businessDetails: {
       name: "Doe Events",
@@ -106,6 +106,7 @@ const Page = () => {
             { name: "User Detail", href: "" },
           ]}
         />
+
         <div className="mt-10 h-full">
           <div className="grid grid-cols-12 md:gap-7">
             <div className="xl:col-span-9 lg:col-span-8 col-span-12">
@@ -209,6 +210,7 @@ const Page = () => {
                         </div>
                       </div>
                     </div>
+
                     <div className="w-full md:px-0 px-2 mt-3">
                       {/* Small screen dropdown */}
                       <div className="block sm:hidden mb-4">
@@ -240,14 +242,12 @@ const Page = () => {
                               <TabsTrigger
                                 key={tab.value}
                                 value={tab.value}
-                                className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                                                                            !shadow-none dark:!bg-transparent cursor-pointer border-none
-                                                                                                          ${
-                                                                                                            active ===
-                                                                                                            tab.value
-                                                                                                              ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                                                                                              : "text-muted-foreground"
-                                                                                                          }`}
+                                className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all !shadow-none dark:!bg-transparent cursor-pointer border-none
+                                  ${
+                                    active === tab.value
+                                      ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
+                                      : "text-muted-foreground"
+                                  }`}
                               >
                                 {tab.label}
                               </TabsTrigger>
@@ -259,7 +259,8 @@ const Page = () => {
                   </div>
                 </CardContent>
               </Card>
-              <div className="  rounded-lg">
+
+              <div className="rounded-lg">
                 {active === "overview" && (
                   <UserOverView userType={userType} user={user} />
                 )}
@@ -368,6 +369,7 @@ const Page = () => {
                         </div>
                       </CardContent>
                     </Card>
+
                     <Card className="dark:bg-secondary shadow-lg mt-4">
                       <CardHeader>
                         <CardTitle>Loyalty & Ordering Transactions</CardTitle>
@@ -423,6 +425,7 @@ const Page = () => {
           </div>
         </div>
       </div>
+
       <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
           <DialogContent className="md:!max-w-[520px] mx-auto min-h-[50vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
@@ -456,6 +459,7 @@ const Page = () => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
+
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete User"

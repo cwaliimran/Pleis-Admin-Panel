@@ -186,7 +186,9 @@ function DraggablePromoItem({
     // eslint-disable-next-line react/forbid-component-props
     <div ref={setNodeRef} className={className} style={dragStyle}>
       <div>
-        <h3 className="font-semibold text-gray-900 dark:text-white">{promo.eventName}</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white">
+          {promo.eventName}
+        </h3>
       </div>
       <div className="flex items-center space-x-2">
         <div
@@ -393,7 +395,9 @@ const PromoManager = () => {
                         >
                           <span
                             className={
-                              selectedEvent ? "text-gray-900 dark:text-white" : "text-gray-500 "
+                              selectedEvent
+                                ? "text-gray-900 dark:text-white"
+                                : "text-gray-500 "
                             }
                           >
                             {selectedEvent
@@ -628,7 +632,9 @@ const PromoManager = () => {
                       >
                         <span
                           className={
-                            selectedEvent ? "text-gray-900 dark:text-white" : "text-gray-500"
+                            selectedEvent
+                              ? "text-gray-900 dark:text-white"
+                              : "text-gray-500"
                           }
                         >
                           {selectedEvent

@@ -1,7 +1,7 @@
 "use client";
 
 import Header from "@/app/common/header";
-import CreateOrganizationPage from "@/sections/create-organization/create-organization";
+import CreateOrganizationPage from "@/sections/organization-section/create-organization";
 
 const Page = () => {
   return (
@@ -14,7 +14,6 @@ const Page = () => {
       />
 
       <CreateOrganizationPage id="1" />
-     
     </div>
   );
 };
