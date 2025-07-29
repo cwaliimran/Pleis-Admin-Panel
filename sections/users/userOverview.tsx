@@ -18,7 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import React from "react";
-import { userTags } from "../users/data";
+import { userTags, venueTypes } from "../users/data";
 import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -160,6 +160,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                   </div>
                 </CardContent>
               </Card>
+
               <Card className="shadow-lg dark:bg-secondary bg-white rounded-2xl mt-4">
                 <CardHeader>
                   <CardTitle className="text-slate-500 text-lg font-semibold">
@@ -229,6 +230,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                   </div>
                 </CardContent>
               </Card>
+
               <Card className="w-full max-w-4xl bg-white dark:bg-secondary mt-6 mb-6 shadow-sm hover:shadow-md transition rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-muted-foreground text-lg font-semibold">
@@ -314,6 +316,25 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                 <h1 className="text-slate-500 font-semibold">TAGS</h1>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   {userTags.map((item, index) => (
+                    <Badge
+                      key={index}
+                      className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-2 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
+                    >
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </CardHeader>
+            </Card>
+          )}
+
+          {/* venue tag */}
+          {userType === "user" && (
+            <Card className="mt-4 shadow-lg dark:bg-secondary">
+              <CardHeader>
+                <h1 className="text-slate-500 font-semibold">VENUE TYPE</h1>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  {venueTypes.map((item, index) => (
                     <Badge
                       key={index}
                       className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-2 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"

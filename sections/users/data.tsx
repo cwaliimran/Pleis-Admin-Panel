@@ -186,6 +186,7 @@ export const activePromontions = [
 ]
 
 export const userTags = ["Clubbing", "Techno", "Clubbing", "Techno"]
+export const venueTypes = ["Type 1", "Type 2", "Type 3", "Type 4"]
 
 export const dateTabs = [
     {

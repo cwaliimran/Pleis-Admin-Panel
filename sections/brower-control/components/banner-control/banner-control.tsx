@@ -23,13 +23,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import CustomBadge from "@/components/ui/custom-badge";
 
 interface Banner {
   id: string;
   title: string;
   description?: string;
   position: "top" | "inline" | "bottom";
-  status: "live" | "scheduled" | "draft";
+  status: "active" | "inactive" | "draft";
   clicks?: number;
   scheduledDate?: string;
   backgroundColor: string;
@@ -67,7 +68,7 @@ const BannerControl = () => {
       title: "Pride Parade 2024",
       description: "Join us for the biggest celebration of the year",
       position: "top",
-      status: "live",
+      status: "active",
       clicks: 1200,
       backgroundColor: "#6366f1",
       textColor: "#ffffff",
@@ -81,7 +82,7 @@ const BannerControl = () => {
       title: "Tech Conference",
       description: "Discover the latest in technology and innovation",
       position: "inline",
-      status: "scheduled",
+      status: "inactive",
       scheduledDate: "Tomorrow",
       backgroundColor: "#3b82f6",
       textColor: "#ffffff",
@@ -97,6 +98,7 @@ const BannerControl = () => {
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [formData, setFormData] = useState({
     title: "",
+    status: "",
     image: "",
     linkType: "" as Banner["linkType"] | "",
     linkTarget: "",
@@ -106,6 +108,7 @@ const BannerControl = () => {
   const resetForm = () => {
     setFormData({
       title: "",
+      status: "",
       image: "",
       linkType: "",
       linkTarget: "",
@@ -131,6 +134,10 @@ const BannerControl = () => {
       linkTarget: "",
       linkTargetName: "",
     });
+  };
+
+  const handleStatusChange = (status: Banner["status"]) => {
+    setFormData({ ...formData, status });
   };
 
   const handleLinkTargetChange = (targetId: string) => {
@@ -196,6 +203,7 @@ const BannerControl = () => {
     setEditingBanner(banner);
     setFormData({
       title: banner.title,
+      status: banner.status,
       image: banner.image || "",
       linkType: banner.linkType || "",
       linkTarget: banner.linkTarget || "",
@@ -285,6 +293,24 @@ const BannerControl = () => {
               </Select>
             </div>
           )}
+
+          <div className="space-y-2 w-full">
+            <Label htmlFor="linkType">Status</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: string) =>
+                handleStatusChange(value as Banner["status"])
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent className="dark:bg-secondary">
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -312,10 +338,22 @@ const BannerControl = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Banner Manager</h1>
-          <p className="text-gray-600 mt-1 dark:text-gray-400">Create and manage your banners</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Banner Manager
+          </h1>
+          <p className="text-gray-600 mt-1 dark:text-gray-400">
+            Create and manage your banners
+          </p>
         </div>
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <Dialog
+          open={isCreateModalOpen}
+          onOpenChange={(open) => {
+            setIsCreateModalOpen(open);
+            if (!open) {
+              resetForm();
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary">
               <Plus />
@@ -359,11 +397,28 @@ const BannerControl = () => {
                 <div className="flex items-start justify-between">
                   <div className="space-y-2 flex-1">
                     <div className="space-y-2">
-                      {banner.linkType && (
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {banner.linkType}
-                        </Badge>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {banner.linkType && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs capitalize"
+                          >
+                            {banner.linkType}
+                          </Badge>
+                        )}
+
+                        <CustomBadge
+                          variant={
+                            banner.status === "active"
+                              ? "success"
+                              : banner.status === "inactive"
+                              ? "error"
+                              : "default"
+                          }
+                        >
+                          {banner.status}
+                        </CustomBadge>
+                      </div>
 
                       <h4 className="font-semibold text-gray-900 dark:text-white">
                         {banner.title}
@@ -429,7 +484,16 @@ const BannerControl = () => {
       )}
 
       {/* Edit Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+      <Dialog
+        open={isEditModalOpen}
+        onOpenChange={(open) => {
+          setIsEditModalOpen(open);
+          if (!open) {
+            setEditingBanner(null);
+            resetForm();
+          }
+        }}
+      >
         <DialogContent className="max-w-lg dark:bg-secondary">
           <DialogHeader>
             <DialogTitle>Edit Banner</DialogTitle>
