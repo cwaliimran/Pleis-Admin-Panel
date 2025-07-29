@@ -1,5 +1,6 @@
 "use client";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import CustomBadge from "@/components/ui/custom-badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,20 +10,24 @@ interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
-  userType?:"organizer" | "super-admin";
+  userType?: "organizer" | "super-admin";
 }
 const OrganizationTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
-  userType
+  userType,
 }) => {
   const router = useRouter();
 
   return (
     <TableRow
       className=" transition-colors h-14 w-full"
-      onClick={() => userType === "organizer" ? router.push(`/organizer/organization/${item.id}`) : router.push(`/super-admin/organization/${item.id}`)}
+      onClick={() =>
+        userType === "organizer"
+          ? router.push(`/organizer/organization/${item.id}`)
+          : router.push(`/super-admin/organization/${item.id}`)
+      }
     >
       <TableCell>
         <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
@@ -56,7 +61,10 @@ const OrganizationTableRow: FC<PageProps> = ({
         {item.totalRevenue ? item.totalRevenue : "N/A"}
       </TableCell>
       <TableCell className="">
-        <span className="bg-blue-300 px-3 rounded-full py-1">Hide</span>
+        {/* <span className="bg-blue-300 px-3 rounded-full py-1">Hide</span> */}
+        <CustomBadge variant={item.status === "active" ? "success" : "error"}>
+          {item.status}
+        </CustomBadge>
       </TableCell>
       <TableCell className="text-end">
         <div className="flex gap-2 ">
@@ -71,10 +79,10 @@ const OrganizationTableRow: FC<PageProps> = ({
           <button
             title="Edit Organization"
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit?.(item.id);
-            }}
+            // onClick={(e) => {
+            //   e.stopPropagation();
+            //   handleEdit?.(item.id);
+            // }}
             className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
           >
             <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />

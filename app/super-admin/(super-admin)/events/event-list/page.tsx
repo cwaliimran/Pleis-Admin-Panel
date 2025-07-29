@@ -32,6 +32,7 @@ const Page = () => {
     console.log("id", id);
     deleteModal.onTrue();
   };
+  
   const onDelete = () => {
     deleteModal.onFalse();
   };
@@ -60,7 +61,7 @@ const Page = () => {
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Event"
-        content="Are you sure you want to delete this?"
+        content="Are you sure you want to delete this event?"
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />

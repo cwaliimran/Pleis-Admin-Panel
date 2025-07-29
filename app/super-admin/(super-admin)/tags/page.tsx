@@ -2,7 +2,7 @@
 import Header from "@/app/common/header";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import FormProvider, { RHFTextField } from "@/components/rhf";
 import { useForm } from "react-hook-form";
 import * as Yup from "yup";
@@ -23,6 +23,7 @@ const defaultValues = {
 };
 const Page = () => {
   const openModal = useBoolean();
+  const [mode, setMode] = useState<"create" | "edit">("create");
 
   const schema = Yup.object().shape({
     name: Yup.string().required("Tag Name is required"),
@@ -42,9 +43,15 @@ const Page = () => {
     openModal.onFalse();
   };
 
+  const handleOpen = () => {
+    openModal.onTrue();
+    setMode("create");
+  };
+
   const handleEdit = (id: string) => {
     console.log("id", id);
     openModal.onTrue();
+    setMode("edit");
   };
 
   const handleDelete = (id: string) => {
@@ -68,7 +75,7 @@ const Page = () => {
         <div className=" w-full flex items-center justify-end">
           <Button
             className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary"
-            onClick={openModal.onTrue}
+            onClick={handleOpen}
           >
             <Plus className="" />
             Create Tag
@@ -80,8 +87,8 @@ const Page = () => {
           <DialogContent className=" dark:bg-[#171717]">
             <DialogHeader>
               <DialogTitle>
-                {" "}
-                {openModal.value ? "Create Tag" : "Edit Tag"}{" "}
+                {/* {openModal.value ? "Create Tag" : "Edit Tag"}{" "} */}
+                {mode === "create" ? "Create Tag" : "Edit Tag"}
               </DialogTitle>
             </DialogHeader>
             <FormProvider

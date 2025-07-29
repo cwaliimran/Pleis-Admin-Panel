@@ -38,11 +38,9 @@ const Page = () => {
   // const { user } = useMockedUser();
   return (
     <div>
-      <Header
-        links={[{ name: "Dashboard", href: "/super-admin" }, { name: "Home" }]}
-      />
+      <Header links={[{ name: "Dashboard", href: "/super-admin" }, { name: "Home" }]} />
 
-      <div className="md:mx-4 mx-1 mt-5">
+      <div className="md:mx-4 mx-1 mt-5 pb-8">
         <div className=" flex md:justify-end md:flex-row flex-col-reverse md:items-center gap-2">
           <div className="flex justify-end md:flex-row flex-col-reverse  md:items-center gap-2">
             <div className="flex items-center md:justify-center justify-end">
@@ -108,7 +106,7 @@ const Page = () => {
             </div>
           </div>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5 ">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:gap-x-4 md:gap-y-4 gap-2 mt-5">
           {invoicesData.map((item: any) => (
             <InvoiceCard key={item?._id} item={item} />
           ))}

@@ -72,8 +72,7 @@ const UserTable: FC<PageProps> = ({
       align: "left",
     },
     !pendingUser && { id: "region", label: "Region", align: "left" },
-    !pendingUser && { id: "action", label: "Action", align: "left" },
-    { id: "actions", label: "", align: "right" },
+     { id: "action", label: "Action", align: "left" },
   ].filter((item): item is { id: string; label: string; align: string } =>
     Boolean(item)
   );

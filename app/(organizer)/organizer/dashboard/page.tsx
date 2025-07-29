@@ -66,7 +66,7 @@ const Page = () => {
     <div>
       {/* Terms and Conditions Modal */}
       <Dialog open={showTermsModal} onOpenChange={() => {}}>
-        <DialogContent className="max-w-2xl max-h-[80vh] p-0">
+        <DialogContent className="max-w-2xl max-h-[80vh] p-0 [&>button]:hidden">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="text-2xl font-bold">
               Terms and Conditions
@@ -280,7 +280,7 @@ const Page = () => {
             </div>
           </div>
         </div>
-        <div className="grid md:grid-cols-3 lg:grid-cols-4  grid-cols-1 md:gap-x-7 md:gap-y-4 gap-2 mt-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:gap-x-4 md:gap-y-4 gap-2 mt-5">
           {invoicesData2.map((item: any) => (
             <InvoiceCard key={item?._id} item={item} />
           ))}
@@ -625,25 +625,24 @@ const Page = () => {
         <div className="grid grid-cols-12 mt-5">
           <Card className="col-span-12 shadow-lg dark:bg-secondary">
             <CardHeader>
-              <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
+              {/* <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4"> */}
+              <div className="grid grid-cols-3 gap-4 items-center">
                 <h3 className="text-xl font-semibold">Transaction History</h3>
-                <div className="w-full">
-                  {/* Show select on small screens */}
-                  <div className="block sm:hidden">
-                    <Select value={active} onValueChange={setActive}>
-                      <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
-                        <SelectValue placeholder="Select tab" />
-                      </SelectTrigger>
-                      <SelectContent className="dark:bg-secondary">
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="transactions">
-                          Transactions
-                        </SelectItem>
-                        <SelectItem value="refunds">Refunds</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+
+                {/* Show select on small screens */}
+                <div className="block sm:hidden">
+                  <Select value={active} onValueChange={setActive}>
+                    <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
+                      <SelectValue placeholder="Select tab" />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-secondary">
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="transactions">Transactions</SelectItem>
+                      <SelectItem value="refunds">Refunds</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+
                 <div className="md:block hidden w-full">
                   <Tabs
                     value={active}
@@ -679,7 +678,8 @@ const Page = () => {
                     </TabsList>
                   </Tabs>
                 </div>
-                <div className="flex flex-col md:items-center items-end">
+
+                <div className="flex justify-end items-center">
                   <FilterDropdown
                     selectedOptions={selectedOptions}
                     onSelectOption={setSelectedOptions}
