@@ -1,18 +1,17 @@
 "use client";
 
-import React from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { motion } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
 
-import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/atoms/mode-toggle";
-import { useBoolean } from "@/hooks/useBoolean";
 import FormProvider, { RHFTextField } from "@/components/rhf";
+import { Button } from "@/components/ui/button";
+import { useBoolean } from "@/hooks/useBoolean";
 import Image from "next/image";
 
 const defaultValues = {
@@ -35,8 +34,9 @@ const schema = Yup.object().shape({
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+
   const open = useBoolean();
+  const { login } = useAuth();
 
   const methods = useForm({
     defaultValues,
@@ -44,8 +44,6 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: any) => {
-    console.log("Login data:", data);
-
     let userRole = "";
     let redirectPath = "";
 
@@ -71,7 +69,6 @@ export default function LoginPage() {
 
     login(userData);
 
-    // Navigate to appropriate dashboard
     router.push(redirectPath);
   };
 
@@ -104,7 +101,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center"
+          className="w-full md:w-1/2 p-6 sm:p-8 md:p-16 flex flex-col justify-center"
         >
           <h2 className="text-3xl font-extrabold text-center mb-1">
             Login to PLEIS
@@ -122,13 +119,13 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 placeholder="Email Address"
-                className="rounded-md h-[40px]"
+                className="rounded-md h-[40px] text-sm sm:text-lg"
               />
               <RHFTextField
                 name="password"
                 type="password"
                 placeholder="Password"
-                className="rounded-md h-[40px]"
+                className="rounded-md h-[40px] text-sm sm:text-lg"
                 showPassword={open.value}
                 onTogglePassword={open.onToggle}
               />
@@ -161,7 +158,7 @@ export default function LoginPage() {
                     <Image
                       src="/images/appleIcon.png"
                       alt="Apple"
-                      className="w-[25px] h-[25px] dark:hidden block"
+                      className="w-[25px] h-[25px] object-contain dark:hidden block"
                       width={25}
                       height={25}
                     />
@@ -169,7 +166,7 @@ export default function LoginPage() {
                     <Image
                       src="/images/macIconDark.png"
                       alt="Apple"
-                      className="w-[25px] h-[25px] dark:block hidden"
+                      className="w-[25px] h-[25px] object-contain dark:block hidden"
                       width={25}
                       height={25}
                     />
@@ -184,7 +181,7 @@ export default function LoginPage() {
                     <Image
                       src="/images/googleIcon.png"
                       alt="Google"
-                      className="w-[25px] h-[25px]"
+                      className="w-[25px] h-[25px] object-contain"
                       width={25}
                       height={25}
                     />
@@ -199,7 +196,7 @@ export default function LoginPage() {
                     <Image
                       src="/images/metaIcon.png"
                       alt="Meta"
-                      className="w-[25px] h-[25px]"
+                      className="w-[25px] h-[25px] object-contain"
                       width={25}
                       height={25}
                     />

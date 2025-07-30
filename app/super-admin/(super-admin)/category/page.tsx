@@ -81,7 +81,9 @@ const Page = () => {
           </Button>
         </div>
       </div>
-      {/* dialog for add and update the category */}
+
+      <CategoryTable handleDelete={handleDelete} handleEdit={handleEdit} />
+
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
           <DialogContent className=" dark:bg-[#171717]">
@@ -118,7 +120,7 @@ const Page = () => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
-      {/* dialog for delete the category */}
+
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Category"
@@ -126,8 +128,6 @@ const Page = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
-
-      <CategoryTable handleDelete={handleDelete} handleEdit={handleEdit} />
     </div>
   );
 };

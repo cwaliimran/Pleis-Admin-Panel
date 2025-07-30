@@ -24,6 +24,7 @@ import { Card } from "@/components/ui/card";
 import { organizationListData } from "./data";
 import OrganizationTableRow from "./organizationTableRow";
 import { TableFilters } from "@/components/table-filters";
+
 const headLabel = [
   { id: "log", label: "Logo", align: "left" },
   { id: "name", label: "Name", align: "left" },
@@ -40,18 +41,12 @@ const headLabel = [
 
 interface PageProps {
   handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
   userType?: "organizer" | "super-admin";
 }
-const OrganizationTable: FC<PageProps> = ({
-  handleDelete,
-  handleEdit,
-  userType,
-}) => {
-
-  const [date, setDate] = useState<Date | undefined>(undefined);
+const OrganizationTable: FC<PageProps> = ({ handleDelete, userType }) => {
   const [subType, setSubType] = useState<string>("");
   const [status, setStatus] = useState<string>("");
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   const handleResetFilters = () => {
@@ -125,7 +120,6 @@ const OrganizationTable: FC<PageProps> = ({
                     key={index}
                     item={item}
                     handleDelete={handleDelete}
-                    handleEdit={handleEdit}
                     userType={userType}
                   />
                 ))}

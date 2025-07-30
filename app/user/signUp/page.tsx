@@ -99,9 +99,9 @@ function SignUpPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full md:w-1/2 p-8 md:p-14"
+          className="w-full md:w-1/2 p-6 sm:p-8 md:p-14"
         >
-          <h2 className="text-3xl font-extrabold text-center mb-1">
+          <h2 className="text-3xl sm:text-3xl font-extrabold text-center mb-1">
             Create Account
           </h2>
           <p className="text-sm text-muted-foreground text-center mb-6">
@@ -293,40 +293,58 @@ function SignUpPage() {
           {/* Social Auth Buttons */}
           <div className="text-center mt-8 text-muted-foreground text-sm">
             Or sign up with
-            <div className="flex justify-center gap-4 mt-4">
-              <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <Image
-                  src="/images/appleIcon.png"
-                  alt="Apple"
-                  className="w-6 h-6 dark:hidden"
-                  width={24}
-                  height={24}
-                />
-                <Image
-                  src="/images/macIconDark.png"
-                  alt="Apple Dark"
-                  className="w-6 h-6 hidden dark:block"
-                  width={24}
-                  height={24}
-                />
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                className="py-3 cursor-pointer h-[60px] w-[60px] rounded-full"
+              >
+                <span className="w-6 h-6 flex items-center justify-center">
+                  <Image
+                    src="/images/appleIcon.png"
+                    alt="Apple"
+                    className="w-[25px] h-[25px] object-contain dark:hidden block"
+                    width={25}
+                    height={25}
+                  />
+
+                  <Image
+                    src="/images/macIconDark.png"
+                    alt="Apple"
+                    className="w-[25px] h-[25px] object-contain dark:block hidden"
+                    width={25}
+                    height={25}
+                  />
+                </span>
               </Button>
-              <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <Image
-                  src="/images/googleIcon.png"
-                  alt="Google"
-                  className="w-6 h-6"
-                  width={24}
-                  height={24}
-                />
+
+              <Button
+                variant="outline"
+                className=" cursor-pointer h-[60px] w-[60px] rounded-full"
+              >
+                <span className="w-6 h-6 flex items-center justify-center">
+                  <Image
+                    src="/images/googleIcon.png"
+                    alt="Google"
+                    className="w-[25px] h-[25px] object-contain"
+                    width={25}
+                    height={25}
+                  />
+                </span>
               </Button>
-              <Button variant="outline" className="h-12 w-12 rounded-full p-0">
-                <Image
-                  src="/images/metaIcon.png"
-                  alt="Meta"
-                  className="w-6 h-6"
-                  width={24}
-                  height={24}
-                />
+
+              <Button
+                variant="outline"
+                className=" cursor-pointer h-[60px] w-[60px] rounded-full"
+              >
+                <span className="w-6 h-6 flex items-center justify-center">
+                  <Image
+                    src="/images/metaIcon.png"
+                    alt="Meta"
+                    className="w-[25px] h-[25px] object-contain"
+                    width={25}
+                    height={25}
+                  />
+                </span>
               </Button>
             </div>
             <p className="text-sm mt-4">

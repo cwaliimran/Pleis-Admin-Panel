@@ -1,12 +1,8 @@
 "use client";
 import Header from "@/app/common/header";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import React, { useState } from "react";
 import FormProvider, { RHFTextField } from "@/components/rhf";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,10 +12,15 @@ import {
 } from "@/components/ui/dialog";
 import { useBoolean } from "@/hooks/useBoolean";
 import { TagsTable } from "@/sections/tags";
-import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as Yup from "yup";
+
 const defaultValues = {
   name: "",
-  type: "", // new field
+  type: "",
 };
 const Page = () => {
   const openModal = useBoolean();
@@ -56,12 +57,7 @@ const Page = () => {
 
   const handleDelete = (id: string) => {
     console.log("id", id);
-    // Handle delete logic here
   };
-
-  // const onDelete = () => {
-  //   // Handle delete confirmation logic here
-  // };
 
   return (
     <div>
@@ -82,6 +78,11 @@ const Page = () => {
           </Button>
         </div>
       </div>
+
+      {/* ------------- TAGS TABLE ------------- */}
+      <TagsTable handleDelete={handleDelete} handleEdit={handleEdit} />
+
+      {/* ------------- TAGS MODAL ------------- */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
           <DialogContent className=" dark:bg-[#171717]">
@@ -129,7 +130,6 @@ const Page = () => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
-      <TagsTable handleDelete={handleDelete} handleEdit={handleEdit} />
     </div>
   );
 };

@@ -6,14 +6,13 @@ import { EventTable } from "@/sections/event";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const EventList = () => {
+type OrganizationListProps = {
+  userType?: "organizer" | "super-admin";
+};
+
+const EventList = ({ userType }: OrganizationListProps) => {
   const router = useRouter();
   const deleteModal = useBoolean();
-
-  const handleEdit = (id: string) => {
-    console.log("id", id);
-    router.push("/super-admin/events/create-event");
-  };
 
   const handleDelete = (id: string) => {
     console.log("id", id);
@@ -24,12 +23,20 @@ const EventList = () => {
     deleteModal.onFalse();
   };
 
+  const handleNavigateToCreate = () => {
+    if (userType === "super-admin") {
+      router.push("/super-admin/events/create-event");
+    } else {
+      router.push("/organizer/events/create-event");
+    }
+  };
+
   return (
     <div>
       <div className=" w-full flex items-center justify-end md:mt-0 mt-3">
         <Button
           className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary/80"
-          onClick={() => router.push("/super-admin/events/create-event")}
+          onClick={handleNavigateToCreate}
         >
           <Plus className="" />
           Create Event
@@ -45,7 +52,7 @@ const EventList = () => {
       />
 
       {/* ------------- EVENT TABLE ------------- */}
-      <EventTable handleDelete={handleDelete} handleEdit={handleEdit} />
+      <EventTable handleDelete={handleDelete} userType={userType} />
     </div>
   );
 };

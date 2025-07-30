@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Category, CategoryFormData } from "./types";
+import type { Category, CategoryFormData } from "../category/types";
 
 // Dummy data
 const initialCategories: Category[] = [
@@ -143,7 +143,9 @@ function CategoryCard({
               </h3>
             </div>
 
-            <p className="text-sm text-gray-600 dark:text-white mt-0">Experiences</p>
+            <p className="text-sm text-gray-600 dark:text-white mt-0">
+              Experiences
+            </p>
           </div>
         </div>
         <div className="flex space-x-2">
@@ -374,7 +376,9 @@ export function PinnedContentV2() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pinned Content</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Pinned Content
+        </h1>
 
         <Button
           onClick={handleCreateCategory}

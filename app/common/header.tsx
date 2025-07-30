@@ -72,7 +72,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
             methods={methods}
             onSubmit={methods.handleSubmit(onSubmit)}
           >
-            <div className="w-full md:w-[240px] lg:w-[240px] bg-white rounded-md">
+            <div className="w-full md:w-[240px] lg:w-[240px] bg-white dark:bg-[#171717] rounded-md">
               <RHFMultiSelect
                 name="suppliers"
                 placeholder="Select Organizations"

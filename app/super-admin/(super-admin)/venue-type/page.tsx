@@ -34,6 +34,7 @@ const Page = () => {
     name: Yup.string().required("Venue Type Name is required"),
     // type: Yup.string().required("Category Type is required"),
   });
+
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: defaultValues,
@@ -59,6 +60,7 @@ const Page = () => {
     console.log("id", id);
     deleteModal.onTrue();
   };
+
   const onDelete = () => {
     deleteModal.onFalse();
   };
@@ -82,7 +84,9 @@ const Page = () => {
           </Button>
         </div>
       </div>
-      {/* dialog for add and update the venue type */}
+
+      <VenueTypeTable handleDelete={handleDelete} handleEdit={handleEdit} />
+
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
           <DialogContent className=" dark:bg-[#171717]">
@@ -122,7 +126,7 @@ const Page = () => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
-      {/* delete modal */}
+
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Venue Type"
@@ -130,8 +134,6 @@ const Page = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
-
-      <VenueTypeTable handleDelete={handleDelete} handleEdit={handleEdit} />
     </div>
   );
 };
