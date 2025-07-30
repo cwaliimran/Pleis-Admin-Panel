@@ -48,6 +48,7 @@ const UserListTableRow: FC<Props> = ({
     e.stopPropagation();
     setIsModalOpen(true);
   };
+
   return (
     <>
       <TableRow
@@ -139,6 +140,16 @@ const UserListTableRow: FC<Props> = ({
         <TableCell className="text-end">
           <div className="flex gap-2 ">
             {/* Eye button for user details */}
+            {!pendingUser && (
+              <button
+                type="button"
+                title="View User"
+                className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+              >
+                <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+              </button>
+            )}
+
             {pendingUser && (
               <button
                 type="button"
@@ -154,10 +165,10 @@ const UserListTableRow: FC<Props> = ({
               <button
                 type="button"
                 title="Edit User"
-                // onClick={(e) => {
-                //   e.stopPropagation();
-                //   handleEdit?.(item.id);
-                // }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit?.(item.id);
+                }}
                 className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
               >
                 <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />

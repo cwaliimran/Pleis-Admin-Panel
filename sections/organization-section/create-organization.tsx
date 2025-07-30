@@ -61,7 +61,7 @@ const CreateOrganizationPage: FC<UserDetailPageProps> = () => {
   };
 
   return (
-    <div className="md:mt-10 mt-5 h-full">
+    <div className="md:mt-10 mt-5 h-full bg-[#f8f6f7] dark:bg-black">
       <div className="grid grid-cols-12 ">
         {/* --------------- UPPER SECTION --------------- */}
         <div className="lg:col-span-12 col-span-12">
