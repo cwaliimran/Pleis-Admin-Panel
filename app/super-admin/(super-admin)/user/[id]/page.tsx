@@ -30,7 +30,7 @@ import { organizerCardData } from "@/sections/users/data";
 import LoyaltyAndOrderTransaction from "@/sections/users/loyaltyAndOrderTransaction";
 import UserCard from "@/sections/users/userCard";
 import UserOverView from "@/sections/users/userOverview";
-import { Calendar, Pencil, Trash2 } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import React from "react";
