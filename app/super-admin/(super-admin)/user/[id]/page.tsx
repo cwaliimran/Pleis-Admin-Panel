@@ -141,7 +141,7 @@ const Page = () => {
                               ).toLocaleDateString()}
                             </span>
                           </div>
-                          <div className="flex gap-3">
+                          {/* <div className="flex gap-3">
                             <Pencil
                               className="w-5 h-5 cursor-pointer text-gray-500 hover:text-primary transition"
                               onClick={openModal.onTrue}
@@ -150,7 +150,7 @@ const Page = () => {
                               className="w-5 h-5 cursor-pointer text-gray-500 hover:text-red-500 transition"
                               onClick={deleteModal.onTrue}
                             />
-                          </div>
+                          </div> */}
                         </div>
 
                         {/* User Name */}

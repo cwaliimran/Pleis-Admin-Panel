@@ -1,5 +1,6 @@
+import { TableFilters } from "@/components/table-filters";
 import TableHeadCustom from "@/components/table/table-head-custom";
-import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -18,12 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody } from "@/components/ui/table";
-import React, { FC, useState } from "react";
-import EventTableRow from "./eventTAbleRow";
-import { Card } from "@/components/ui/card";
+import { FC, useState } from "react";
 import { eventData } from "./data";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
-import { TableFilters } from "@/components/table-filters";
+import EventTableRow from "./eventTAbleRow";
 
 const headLabel = [
   { id: "image", label: "Image", align: "left" },
@@ -39,10 +37,9 @@ const headLabel = [
 ];
 interface PageProps {
   handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
   userType?: string;
 }
-const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
+const EventTable: FC<PageProps> = ({ handleDelete, userType }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [status, setStatus] = useState<string>("");
@@ -120,34 +117,6 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
             filtersAlignment="right"
           />
 
-          {/* <div>
-              <div className="flex flex-col md:items-center items-end">
-                <FilterDropdown
-                  options={[
-                    { id: "name", label: "Name" },
-                    { id: "Organization", label: "Organization" },
-                    { id: "venue", label: "Venue" },
-                    { id: "startDate", label: "Start Date" },
-                    { id: "endDate", label: "End Date" },
-                    { id: "totalRevenue", label: "Revenue" },
-                    { id: "totalViews", label: "Views" },
-                    { id: "region", label: "Region" },
-                  ]}
-                  selectedOptions={filterField}
-                  onSelectOption={setFilterField}
-                />
-              </div>
-            </div>
-          </div> */}
-          {/* <div className="w-full ">
-            <Input
-              placeholder="Search Event"
-              // value={globalFilter}
-              // onChange={(e) => setGlobalFilter(e.target.value)}
-              className="w-full  h-10 "
-            />
-          </div> */}
-
           <div className="border rounded-lg  ">
             <Table className="w-full rounded-md border  ">
               <TableHeadCustom headLabel={headLabel} />
@@ -158,7 +127,6 @@ const EventTable: FC<PageProps> = ({ handleDelete, handleEdit, userType }) => {
                     active={index === 0}
                     item={item}
                     handleDelete={handleDelete}
-                    handleEdit={handleEdit}
                     userType={userType}
                   />
                 ))}

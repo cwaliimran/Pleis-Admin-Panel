@@ -1,10 +1,8 @@
 "use client";
 
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2 } from "lucide-react";
-import React, { FC } from "react";
+import { FC } from "react";
 
 interface CategoryItem {
   id: string;

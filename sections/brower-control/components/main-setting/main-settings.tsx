@@ -1,7 +1,7 @@
 import { CategoryManagement } from "./category/category";
-import { PinnedContentV2 } from "./category/new-pinned-content";
+import { PinnedContentV2 } from "./pinned-content/new-pinned-content";
 import PromoManager from "./promo-manager/promo-manager";
-import QuickAccess from "./quick-access";
+import QuickAccess from "./quick-access/quick-access";
 
 const MainSettings = () => {
   return (
@@ -10,7 +10,7 @@ const MainSettings = () => {
         <PromoManager />
       </div>
 
-      <div className="w-full px-4">
+      <div className="mt-4 w-full px-4">
         <QuickAccess />
       </div>
 
@@ -21,9 +21,6 @@ const MainSettings = () => {
         <div>
           <PinnedContentV2 />
         </div>
-        {/* <div>
-          <QuickAccess />
-        </div> */}
       </div>
     </>
   );

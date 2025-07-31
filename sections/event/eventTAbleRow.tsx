@@ -12,37 +12,31 @@ interface PageProps {
   active?: boolean;
   userType?: string;
 }
-const EventTableRow: FC<PageProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-  // active,
-  userType,
-}) => {
+const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
   const router = useRouter();
 
-  // const handleTogglePublish = async (id: string) => {
-  //   // Call API to toggle published state
-  //   //   await togglePublishStatus(id);
-  //   //   toast.success("Event status updated.");
-  //   //   refetch(); // Or update local state
-  // };
+  const handleNavigateToDetails = () => {
+    if (userType === "organizer") {
+      router.push(`/organizer/events/${item.id}`);
+    }
+    if (userType === "super-admin") {
+      router.push(`/super-admin/events/${item.id}`);
+    }
+  };
 
-  // const handleCloneEvent = async (id: string) => {
-  //   // Call API to clone event
-  //   //   const clonedEvent = await cloneEvent(id);
-  //   //   toast.success("Event cloned successfully.");
-  //   //   router.push(`/events/${clonedEvent.id}`); // or refresh list
-  // };
+  const handleNavigateToEdit = (id: string) => {
+    if (userType === "organizer") {
+      router.push(`/organizer/events/edit-event/${id}`);
+    }
+    if (userType === "super-admin") {
+      router.push(`/super-admin/events/edit-event/${id}`);
+    }
+  };
 
   return (
     <TableRow
       className=" transition-colors h-14 w-full cursor-pointer"
-      onClick={() =>
-        userType
-          ? router.push(`/organizer/events/${item.id}`)
-          : router.push(`/super-admin/events/${item.id}`)
-      }
+      onClick={handleNavigateToDetails}
     >
       <TableCell>
         <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
@@ -104,10 +98,10 @@ const EventTableRow: FC<PageProps> = ({
           <button
             title="Edit Event"
             type="button"
-            // onClick={(e) => {
-            //   e.stopPropagation();
-            //   handleEdit?.(item.id);
-            // }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNavigateToEdit(item.id);
+            }}
             className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
           >
             <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />

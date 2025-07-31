@@ -91,7 +91,7 @@ const EventDetailsPage = () => {
                           <Pencil
                             className="md:w-5 md:h-5 w-4 h-4  text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
                             onClick={() =>
-                              router.push("/super-admin/events/create-event")
+                              router.push("/super-admin/events/edit-event/1")
                             }
                           />
                           <Trash2

@@ -15,7 +15,6 @@ interface PageProps {
 const OrganizationTableRow: FC<PageProps> = ({
   item,
   handleDelete,
-  handleEdit,
   userType,
 }) => {
   const router = useRouter();
@@ -38,34 +37,39 @@ const OrganizationTableRow: FC<PageProps> = ({
           />
         </Avatar>
       </TableCell>
+
       <TableCell className="text-left">
         {item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name}
       </TableCell>
-      {/* <TableCell className="text-left">{item.phone}</TableCell>
-      <TableCell className="text-left">{item.email}</TableCell> */}
 
       <TableCell>{item.createdAt ? item.createdAt : "N/A"}</TableCell>
+
       <TableCell className="text-left">
         {item.subscriptionType ? item.subscriptionType : "N/A"}
       </TableCell>
+
       <TableCell className="text-center">
         {item.subscriptionValidity ? item.subscriptionValidity : "N/A"}
       </TableCell>
+
       <TableCell className="text-center">
         {item.commission ? item.commission : "N/A"}
       </TableCell>
+
       <TableCell className="text-center">
         {item.totalViews ? item.totalViews : "N/A"}
       </TableCell>
+
       <TableCell className="text-center">
         {item.totalRevenue ? item.totalRevenue : "N/A"}
       </TableCell>
+
       <TableCell className="">
-        {/* <span className="bg-blue-300 px-3 rounded-full py-1">Hide</span> */}
         <CustomBadge variant={item.status === "active" ? "success" : "error"}>
           {item.status}
         </CustomBadge>
       </TableCell>
+
       <TableCell className="text-end">
         <div className="flex gap-2 ">
           <button
@@ -79,10 +83,6 @@ const OrganizationTableRow: FC<PageProps> = ({
           <button
             title="Edit Organization"
             type="button"
-            // onClick={(e) => {
-            //   e.stopPropagation();
-            //   handleEdit?.(item.id);
-            // }}
             className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
           >
             <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />

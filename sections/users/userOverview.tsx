@@ -18,7 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import React from "react";
-import { userTags, venueTypes } from "../users/data";
+import { eventTags, orgTags, userTags, venueTypes } from "../users/data";
 import { m } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -430,6 +430,46 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
               </p>
             </CardContent>
           </Card>
+
+          {userType === "user" && (
+            <Card className="mt-4 shadow-lg dark:bg-secondary">
+              <CardHeader>
+                <h1 className="text-slate-500 font-semibold">
+                  FOLLOWED ORGANIZATION
+                </h1>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  {orgTags.map((item, index) => (
+                    <Badge
+                      key={index}
+                      className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-2 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
+                    >
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </CardHeader>
+            </Card>
+          )}
+
+          {userType === "user" && (
+            <Card className="mt-4 shadow-lg dark:bg-secondary">
+              <CardHeader>
+                <h1 className="text-slate-500 font-semibold">
+                  FOLLOWED EVENTS
+                </h1>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  {eventTags.map((item, index) => (
+                    <Badge
+                      key={index}
+                      className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-2 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
+                    >
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </CardHeader>
+            </Card>
+          )}
         </div>
       </div>
     </div>

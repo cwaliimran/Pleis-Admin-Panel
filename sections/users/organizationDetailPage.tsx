@@ -302,6 +302,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
           <BusinessInfo />
         </div>
       </div>
+
       {/* update Organization */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
@@ -378,6 +379,7 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
           </DialogContent>
         </DialogOverlay>
       </Dialog>
+      
       {/* delete Organization */}
       <ConfirmDialog
         open={deleteModal.value}

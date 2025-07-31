@@ -19,7 +19,7 @@ const UserEvents = () => {
 
   return (
     <>
-      <EventTable handleDelete={handleDelete} handleEdit={handleEdit} />
+      <EventTable handleDelete={handleDelete} />
     </>
   );
 };

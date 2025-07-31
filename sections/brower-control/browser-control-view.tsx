@@ -6,7 +6,7 @@ import MainSettings from "./components/main-setting/main-settings";
 
 const BrowserControlPage = () => {
   return (
-    <div className="pb-12 flex w-full max-w-full flex-col gap-6">
+    <div className="my-3 sm:mt-0 pb-12 flex w-full max-w-full flex-col gap-6">
       <Tabs defaultValue="account">
         <TabsList className="mb-4 gap-1">
           <TabsTrigger value="account" className="cursor-pointer">

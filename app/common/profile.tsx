@@ -44,7 +44,10 @@ const Account = () => {
         <Avatar className="cursor-pointer">
           <AvatarImage
             src={user.image || "https://github.com/shadcn.png"}
-            alt={user.name}
+            alt={user.name || "User Avatar"}
+            className="object-cover"
+            width={100}
+            height={100}
           />
           <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
