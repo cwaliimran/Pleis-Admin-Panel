@@ -20,41 +20,59 @@ import Image from "next/image";
 const defaultValues = {
   fname: "",
   lname: "",
+  organizationName: "",
   email: "",
   password: "",
+  confirmPassword: "",
   phone: "",
   companyName: "",
   oib: "",
   bankAccountNumber: "",
-  bankAccountName: "",
   representativeFullName: "",
   address: "",
   postalCode: "",
   city: "",
   country: "",
-  suppliers: "",
+  suppliers: [],
+  terms: false,
 };
 
-const schema = Yup.object().shape({
-  fname: Yup.string(),
-  lname: Yup.string(),
-  email: Yup.string(),
-  password: Yup.string(),
-  phone: Yup.string(),
-  companyName: Yup.string(),
-  oib: Yup.string(),
-  bankAccountNumber: Yup.string(),
-  bankAccountName: Yup.string(),
-  representativeFullName: Yup.string(),
-  address: Yup.string(),
-  postalCode: Yup.string(),
-  city: Yup.string(),
-  country: Yup.string(),
-  suppliers: Yup.string(),
+// Step 1 validation
+const basicInfoSchema = Yup.object().shape({
+  fname: Yup.string().required("First name is required"),
+  lname: Yup.string().required("Last name is required"),
+  organizationName: Yup.string().required("Organization name is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm password is required"),
+  phone: Yup.string().required("Phone number is required"),
 });
 
+// Step 2 validation
+const businessDetailsSchema = Yup.object().shape({
+  companyName: Yup.string().required("Company name is required"),
+  oib: Yup.string().required("OIB is required"),
+  bankAccountNumber: Yup.string().required("Bank account number is required"),
+  postalCode: Yup.string().required("Postal code is required"),
+  representativeFullName: Yup.string().required(
+    "Representative full name is required"
+  ),
+  address: Yup.string().required("Address is required"),
+  country: Yup.string().required("Country is required"),
+  city: Yup.string().required("City is required"),
+  suppliers: Yup.array().min(1, "At least one supplier is required"),
+  terms: Yup.bool()
+    .oneOf([true], "You must accept terms and conditions")
+    .required(),
+});
+
+const fullSchema = basicInfoSchema.concat(businessDetailsSchema);
+
 function SignUpPage() {
-  // const router = useRouter();
   const open = useBoolean();
   const confirmOpen = useBoolean();
 
@@ -64,12 +82,12 @@ function SignUpPage() {
 
   const methods = useForm({
     defaultValues,
-    resolver: yupResolver(schema),
+    resolver: yupResolver(fullSchema),
+    mode: "onTouched",
   });
 
   const onSubmit = async (data: any) => {
-    console.log("data", data);
-    // handle form submit
+    console.log("Submitted data:", data);
   };
 
   return (
@@ -159,7 +177,6 @@ function SignUpPage() {
                         containerClass="w-full"
                         buttonClass="!bg-transparent !border-none !shadow-none px-2"
                         inputClass={`
-                          
               file:text-foreground placeholder:text-muted-foreground
               selection:bg-primary selection:text-primary-foreground
               dark:bg-input/30 border-input !border-gray-100 !shadow-sm
@@ -180,13 +197,55 @@ function SignUpPage() {
               }
             `}
                       />
+                      {fieldState.error && (
+                        <p className="text-xs text-red-500 mt-1">
+                          {fieldState.error.message}
+                        </p>
+                      )}
                     </div>
                   )}
                 />
                 <Button
                   type="button"
-                  onClick={() => setStep("businessDetails")}
+                  onClick={async () => {
+                    const valid = await basicInfoSchema.isValid(
+                      methods.getValues()
+                    );
+                    if (valid) {
+                      setStep("businessDetails");
+                    } else {
+                      methods.trigger([
+                        "fname",
+                        "lname",
+                        "organizationName",
+                        "email",
+                        "password",
+                        "confirmPassword",
+                        "phone",
+                      ]);
+                    }
+                  }}
                   className="w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200"
+                  disabled={
+                    !methods.watch("fname") ||
+                    !methods.watch("lname") ||
+                    !methods.watch("organizationName") ||
+                    !methods.watch("email") ||
+                    !methods.watch("password") ||
+                    !methods.watch("confirmPassword") ||
+                    !methods.watch("phone") ||
+                    Object.keys(methods.formState.errors).some((key) =>
+                      [
+                        "fname",
+                        "lname",
+                        "organizationName",
+                        "email",
+                        "password",
+                        "confirmPassword",
+                        "phone",
+                      ].includes(key)
+                    )
+                  }
                 >
                   Next
                 </Button>
@@ -196,13 +255,20 @@ function SignUpPage() {
             {step === "businessDetails" && (
               <>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <RHFTextField name="companyName" placeholder="Company Name" />
+                  <div className="col-span-2">
+                    <RHFTextField
+                      name="companyName"
+                      placeholder="Company Name"
+                    />
+                  </div>
                   <RHFTextField name="oib" placeholder="OIB" />
-                  <RHFTextField
-                    name="bankAccountNumber"
-                    placeholder="Bank Account Number"
-                  />
                   <RHFTextField name="postalCode" placeholder="Postal Code" />
+                  <div className="col-span-2">
+                    <RHFTextField
+                      name="bankAccountNumber"
+                      placeholder="Bank Account Number"
+                    />
+                  </div>
 
                   <div className="col-span-2">
                     <RHFTextField
@@ -217,8 +283,6 @@ function SignUpPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4 mt-4">
-                  {/* <RHFTextField name="country" placeholder="Country" />
-                  <RHFTextField name="city" placeholder="City" /> */}
                   <RHFSelectField
                     name="country"
                     placeholder="Select Country"
@@ -238,14 +302,6 @@ function SignUpPage() {
                   />
                 </div>
 
-                {/* <div className="mt-4">
-                  <RHFTextField
-                    multiline
-                    name="suppliers"
-                    placeholder="List of Suppliers"
-                  />
-                </div> */}
-
                 <div className="mt-4">
                   <RHFMultiSelect
                     name="suppliers"
@@ -259,13 +315,28 @@ function SignUpPage() {
                 </div>
 
                 <div className="mt-4 flex items-center gap-3">
-                  <Checkbox
-                    id="terms"
-                    className="border border-gray-800 dark:border-gray-400 cursor-pointer"
+                  <Controller
+                    name="terms"
+                    control={methods.control}
+                    render={({ field, fieldState }) => (
+                      <>
+                        <Checkbox
+                          id="terms"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="border border-gray-800 dark:border-gray-400 cursor-pointer"
+                        />
+                        <Label className="cursor-pointer" htmlFor="terms">
+                          Accept terms and conditions
+                        </Label>
+                        {fieldState.error && (
+                          <p className="text-xs text-red-500 mt-1">
+                            {fieldState.error.message}
+                          </p>
+                        )}
+                      </>
+                    )}
                   />
-                  <Label className="cursor-pointer" htmlFor="terms">
-                    Accept terms and conditions
-                  </Label>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mt-6">
@@ -280,6 +351,32 @@ function SignUpPage() {
                   <Button
                     type="submit"
                     className="w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200"
+                    disabled={
+                      !methods.watch("companyName") ||
+                      !methods.watch("oib") ||
+                      !methods.watch("bankAccountNumber") ||
+                      !methods.watch("postalCode") ||
+                      !methods.watch("representativeFullName") ||
+                      !methods.watch("address") ||
+                      !methods.watch("country") ||
+                      !methods.watch("city") ||
+                      !methods.watch("suppliers") ||
+                      !methods.watch("terms") ||
+                      Object.keys(methods.formState.errors).some((key) =>
+                        [
+                          "companyName",
+                          "oib",
+                          "bankAccountNumber",
+                          "postalCode",
+                          "representativeFullName",
+                          "address",
+                          "country",
+                          "city",
+                          "suppliers",
+                          "terms",
+                        ].includes(key)
+                      )
+                    }
                   >
                     {methods.formState.isSubmitting
                       ? "Creating Account..."
@@ -358,10 +455,22 @@ function SignUpPage() {
             </p>
           </div>
 
-          <p className="mt-10 text-xs text-center text-muted-foreground">
+          <p className="mt-6 text-xs text-muted-foreground text-center">
             By signing up, you agree to our{" "}
-            <span className="underline">Terms of Service</span> and{" "}
-            <span className="underline">Privacy Policy</span>.
+            <Link
+              href="/term-and-service"
+              className="underline hover:text-primary transition-colors"
+            >
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy-policy"
+              className="underline hover:text-primary transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            .
           </p>
         </motion.div>
       </div>

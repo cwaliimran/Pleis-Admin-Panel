@@ -218,8 +218,20 @@ export default function LoginPage() {
 
           <p className="mt-10 text-xs text-muted-foreground text-center">
             By continuing, you agree to our{" "}
-            <span className="underline">Terms</span> and{" "}
-            <span className="underline">Privacy Policy</span>.
+            <Link
+              href="/term-and-service"
+              className="underline hover:text-primary transition-colors"
+            >
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy-policy"
+              className="underline hover:text-primary transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            .
           </p>
         </motion.div>
       </div>

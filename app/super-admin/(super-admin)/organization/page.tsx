@@ -1,5 +1,3 @@
-"use client";
-
 import Header from "@/app/common/header";
 import OrganizationList from "@/sections/organization-section/organization-list";
 
