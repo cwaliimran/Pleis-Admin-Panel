@@ -193,15 +193,16 @@ function DraggablePromoItem({
     },
   });
 
-  const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 p-4 flex items-center justify-between border-l-4 border-l-blue-500 ${
-    isDragging ? "opacity-50" : ""
-  } hover:shadow-sm transition-shadow`;
+  const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-600 p-4 flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-sm transition-shadow 
+  ${isDragging ? "opacity-50" : ""} `;
 
   if (isOverlay) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between border-l-4 border-l-blue-500 shadow-lg opacity-95 rotate-1 scale-105">
+      <div className="bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between border-l-4 border-l-blue-500 shadow-lg opacity-95 rotate-1 scale-105">
         <div>
-          <h3 className="font-semibold text-gray-900">{promo.eventName}</h3>
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-white">
+            {promo.eventName}
+          </h3>
         </div>
         <div className="flex items-center space-x-2">
           <GripVertical className="w-4 h-4 text-gray-400" />
@@ -222,13 +223,15 @@ function DraggablePromoItem({
     // eslint-disable-next-line react/forbid-component-props
     <div ref={setNodeRef} className={className} style={dragStyle}>
       <div>
-        <h3 className="font-semibold text-gray-900 dark:text-white">{promo.eventName}</h3>
+        <h3 className="font-semibold text-gray-900 dark:text-white">
+          {promo.eventName}
+        </h3>
       </div>
       <div className="flex items-center space-x-2">
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab hover:cursor-grabbing p-1 rounded hover:bg-gray-100"
+          className="cursor-grab hover:cursor-grabbing p-1 rounded hover:bg-gray-100 hover:dark:bg-gray-700"
         >
           <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
@@ -413,7 +416,7 @@ const ViewAllPromos = () => {
               onOpenChange={setIsCreateModalOpen}
             >
               <DialogTrigger asChild>
-                <Button className="rounded-full bg-primary px-3 hover:shadow-lg shadow-blue-200 transition-shadow duration-300 cursor-pointer text-white hover:bg-primary">
+                <Button className="rounded-full bg-primary px-3 cursor-pointer text-white hover:bg-primary">
                   <Plus className="w-4 h-4 mr-1" />
                   New Promo
                 </Button>
@@ -443,7 +446,9 @@ const ViewAllPromos = () => {
                         >
                           <span
                             className={
-                              selectedEvent ? "text-gray-900 dark:text-white" : "text-gray-500"
+                              selectedEvent
+                                ? "text-gray-900 dark:text-white"
+                                : "text-gray-500"
                             }
                           >
                             {selectedEvent
@@ -611,7 +616,9 @@ const ViewAllPromos = () => {
                       >
                         <span
                           className={
-                            selectedEvent ? "text-gray-900 dark:text-white" : "text-gray-500"
+                            selectedEvent
+                              ? "text-gray-900 dark:text-white"
+                              : "text-gray-500"
                           }
                         >
                           {selectedEvent

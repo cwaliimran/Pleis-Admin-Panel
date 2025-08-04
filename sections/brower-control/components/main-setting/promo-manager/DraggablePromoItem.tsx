@@ -35,15 +35,14 @@ export function DraggablePromoItem({
     },
   });
 
-  const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 p-4 flex items-center justify-between border-l-4 border-l-blue-500 ${
-    isDragging ? "opacity-50" : ""
-  } hover:shadow-sm transition-shadow`;
+  const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-600 p-4 flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-sm transition-shadow 
+  ${isDragging ? "opacity-50" : ""} `;
 
   if (isOverlay) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between border-l-4 border-l-blue-500 shadow-lg opacity-95 rotate-1 scale-105">
+      <div className="bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between border-l-4 border-l-blue-500 shadow-lg opacity-95 rotate-1 scale-105">
         <div>
-          <h3 className="text-xs font-semibold text-gray-900 ">
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-white">
             {promo.eventName}
           </h3>
         </div>
@@ -75,7 +74,7 @@ export function DraggablePromoItem({
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab hover:cursor-grabbing p-1 rounded hover:bg-gray-100"
+          className="cursor-grab hover:cursor-grabbing p-1 rounded hover:bg-gray-100 hover:dark:bg-gray-700"
         >
           <GripVertical className="w-4 h-4 text-gray-400" />
         </div>
