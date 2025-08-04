@@ -1,5 +1,3 @@
-"use client";
-
 import Header from "@/app/common/header";
 import EventList from "@/sections/event/event-list";
 

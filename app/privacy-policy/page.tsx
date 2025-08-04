@@ -5,7 +5,7 @@ const Page = () => {
   return (
     <div className="p-10">
       <h1 className="text-2xl font-bold mb-4 text-foreground">
-        Terms & Serivce
+        Privacy Policy
       </h1>
       <Separator className="mb-4" />
 

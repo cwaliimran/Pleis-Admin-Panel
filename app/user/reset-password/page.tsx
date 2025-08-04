@@ -1,32 +1,29 @@
 "use client";
 
-import React from "react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
-import { motion } from "framer-motion";
 
-import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/atoms/mode-toggle";
 import FormProvider, { RHFTextField } from "@/components/rhf";
+import { Button } from "@/components/ui/button";
 import { useBoolean } from "@/hooks/useBoolean";
+import Link from "next/link";
 
-// ----------------------
-// Schema & Default Values
-// ----------------------
 const defaultValues = {
   newPassword: "",
   confirmPassword: "",
 };
 
 const schema = Yup.object().shape({
-  newPassword: Yup.string(),
-  // .min(6, 'Password must be at least 6 characters')
-  // .required('New password is required')
-  confirmPassword: Yup.string(),
-  // .oneOf([Yup.ref('newPassword')], 'Passwords do not match')
-  // .required('Please confirm your password')
+  newPassword: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("New password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword")], "Passwords do not match")
+    .required("Please confirm your password"),
 });
 
 // ----------------------
@@ -43,8 +40,7 @@ export default function ResetPasswordPage() {
 
   const onSubmit = async (data: any) => {
     console.log("data", data);
-    // Handle actual reset logic here...
-    router.push("/user/signIn"); // Redirect to login
+    router.push("/user/signIn");
   };
 
   return (
@@ -120,8 +116,20 @@ export default function ResetPasswordPage() {
 
           <p className="mt-10 text-xs text-muted-foreground text-center">
             By continuing, you agree to our{" "}
-            <span className="underline">Terms</span> and{" "}
-            <span className="underline">Privacy Policy</span>.
+            <Link
+              href="/term-and-service"
+              className="underline hover:text-primary transition-colors"
+            >
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy-policy"
+              className="underline hover:text-primary transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            .
           </p>
         </motion.div>
       </div>

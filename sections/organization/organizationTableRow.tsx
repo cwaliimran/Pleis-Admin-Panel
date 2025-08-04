@@ -2,6 +2,7 @@
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import CustomBadge from "@/components/ui/custom-badge";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { fDate } from "@/utils/format-time";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
@@ -42,7 +43,7 @@ const OrganizationTableRow: FC<PageProps> = ({
         {item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name}
       </TableCell>
 
-      <TableCell>{item.createdAt ? item.createdAt : "N/A"}</TableCell>
+      <TableCell>{fDate(item?.createdAt)}</TableCell>
 
       <TableCell className="text-left">
         {item.subscriptionType ? item.subscriptionType : "N/A"}

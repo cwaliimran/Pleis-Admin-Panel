@@ -14,8 +14,8 @@ interface RouteGuardProps {
 export default function RouteGuard({
   children,
   allowedRoles,
-  // redirectTo = "/user/signIn",
-}: RouteGuardProps) {
+}: // redirectTo = "/user/signIn",
+RouteGuardProps) {
   const router = useRouter();
   const user = useSelector((state: RootState) => state.userSlice.user);
   const [isAuthorized, setIsAuthorized] = useState(false);
