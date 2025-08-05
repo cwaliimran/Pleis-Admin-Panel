@@ -9,7 +9,7 @@ const SidebarToggleButton: FC<PageProps> = ({ fromOrganizer }) => {
   const { isMobile, openMobile, open, toggleSidebar, state } = useSidebar();
 
   // Sidebar collapsed width is 4.5rem (72px), so use 80px for a little margin
-  const collapsedLeft = "md:left-[70px]";
+  const collapsedLeft = "md:left-[40px]";
   const expandedLeft = "md:left-[220px]";
   const defaultLeft = "md:left-[0px]";
 
@@ -32,14 +32,14 @@ const SidebarToggleButton: FC<PageProps> = ({ fromOrganizer }) => {
       >
         {isMobile ? (
           openMobile ? (
-            <ChevronLeft  className="cursor-pointer"/>
+            <ChevronLeft className="cursor-pointer" />
           ) : (
-            <ChevronRight className="cursor-pointer"/>
+            <ChevronRight className="cursor-pointer" />
           )
         ) : open ? (
-          <ChevronLeft className="cursor-pointer"/>
+          <ChevronLeft className="cursor-pointer" />
         ) : (
-          <ChevronRight className="cursor-pointer"/>
+          <ChevronRight className="cursor-pointer" />
         )}
       </button>
     </div>

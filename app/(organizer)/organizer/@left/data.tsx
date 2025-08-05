@@ -1,16 +1,17 @@
+import type { LucideIcon } from "lucide-react";
 import {
   Building,
   Calendar,
   ChartColumnBig,
+  Handshake,
   Highlighter,
   Home,
   Tags,
   User,
   UsersRound,
-  VenetianMask,
+  VenetianMask
 } from "lucide-react";
 import { paths } from "./paths";
-import type { LucideIcon } from "lucide-react";
 
 type MenuItem = {
   title: string;
@@ -61,7 +62,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: "Events List",
-        url: paths.organizer.events.list, // Example ID
+        url: paths.organizer.events.list,
         icon: Tags,
       },
     ],
@@ -75,6 +76,11 @@ export const menuGroups: MenuGroup[] = [
     label: "Highlights",
     key: paths.organizer.hightLight.default,
     icon: Highlighter,
+  },
+  {
+    label: "Loyalty",
+    key: paths.organizer.loyalty.default,
+    icon: Handshake,
   },
   {
     label: "User",

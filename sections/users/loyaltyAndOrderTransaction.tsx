@@ -1,33 +1,67 @@
-import TableHeadCustom from '@/components/table/table-head-custom'
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
-import React from 'react'
+import TableHeadCustom from "@/components/table/table-head-custom";
+import CustomBadge from "@/components/ui/custom-badge";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import React from "react";
 
 const LoyaltyAndOrderTransaction = () => {
   return (
     <Table>
-      <TableHeadCustom headLabel={[
-        { id: "type", label: "Type", align: "left" },
-        { id: "value", label: "Value", align: "left" },
-        { id: "items", label: "Items", align: "left" },
-        { id: "time", label: "Time", align: "left" }
-      ]}
+      <TableHeadCustom
+        headLabel={[
+          { id: "Invoice", label: "Invoice", align: "left" },
+          { id: "Date", label: "Date", align: "left" },
+          { id: "Transaction Type", label: "Transaction Type", align: "left" },
+          { id: "Status", label: "Status", align: "left" },
+          { id: "Total", label: "Total", align: "left" },
+        ]}
       />
       <TableBody>
         {[
-          { type: "Points Earned", value: "+150", items: "-", time: "2025-07-20 10:45 AM" },
-          { type: "Redemption", value: "-100", items: "Free Drink", time: "2025-07-21 2:30 PM" },
-          { type: "Order", value: "$24.99", items: "Pizza, Soda", time: "2025-07-22 7:15 PM" },
+          {
+            invoice: "INV-001",
+            date: "01/10/2023",
+            type: "Credit",
+            status: "Paid",
+            total: "$150",
+          },
+          {
+            invoice: "INV-002",
+            date: "01/10/2023",
+            type: "Credit",
+            status: "Paid",
+            total: "$200",
+          },
+          {
+            invoice: "INV-003",
+            date: "01/10/2025",
+            type: "Debit",
+            status: "Unpaid",
+            total: "$100",
+          },
         ].map((txn, i) => (
           <TableRow key={i}>
-            <TableCell>{txn.type}</TableCell>
-            <TableCell>{txn.value}</TableCell>
-            <TableCell>{txn.items}</TableCell>
-            <TableCell>{txn.time}</TableCell>
+            <TableCell>{txn.invoice}</TableCell>
+            <TableCell>{txn.date}</TableCell>
+            <TableCell className="w-48">
+              <CustomBadge
+                variant={txn.type === "Credit" ? "success" : "error"}
+              >
+                {txn.type}
+              </CustomBadge>
+            </TableCell>
+            <TableCell>
+              <CustomBadge
+                variant={txn.status === "Paid" ? "success" : "error"}
+              >
+                {txn.status}
+              </CustomBadge>
+            </TableCell>
+            <TableCell>{txn.total}</TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
-  )
-}
+  );
+};
 
-export default LoyaltyAndOrderTransaction
+export default LoyaltyAndOrderTransaction;

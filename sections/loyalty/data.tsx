@@ -23,6 +23,7 @@ export interface RewardData {
   points: number;
   description: string;
   claimRewards: number;
+  limitedAvail: boolean;
 }
 
 export interface EngagedMember {
@@ -81,6 +82,40 @@ export const tabsData: TabData[] = [
   },
 ];
 
+export const loyaltyCardHeaderData: LoyaltyCardData[] = [
+  {
+    title: "Total Members",
+    amount: 1234,
+    raise: "15%",
+  },
+  {
+    title: "New Members this Month",
+    amount: 4234,
+    raise: "12%",
+  },
+  {
+    title: "Active Members",
+    amount: 234,
+  },
+  {
+    title: "Inactive Members",
+    amount: 5432,
+  },
+];
+
+export const loyaltyMidCardData: LoyaltyCardData[] = [
+  {
+    title: "New Members",
+    amount: 1234,
+    raise: "15%",
+  },
+  {
+    title: "Existing Members",
+    amount: 4234,
+    raise: "12%",
+  },
+];
+
 export const loyaltyCardData: LoyaltyCardData[] = [
   {
     title: "Total Members",
@@ -99,6 +134,34 @@ export const loyaltyCardData: LoyaltyCardData[] = [
   {
     title: "Total Challenges",
     amount: 5432,
+  },
+];
+
+export const loyaltPointsDashboard: LoyaltyPoints[] = [
+  {
+    id: 1,
+    name: "Total points earned",
+    points: 5000,
+  },
+  {
+    id: 2,
+    name: "Total points redeemed",
+    points: 1200,
+  },
+  {
+    id: 3,
+    name: "Average points per user",
+    points: 3800,
+  },
+  {
+    id: 4,
+    name: "Total points activity",
+    points: 200,
+  },
+  {
+    id: 5,
+    name: "Total points balance",
+    points: 200,
   },
 ];
 
@@ -132,6 +195,7 @@ export const rewardData: RewardData[] = [
     points: 100,
     description: "Get a free coffee on your next visit.",
     claimRewards: 50,
+    limitedAvail: false,
   },
   {
     id: 2,
@@ -139,6 +203,7 @@ export const rewardData: RewardData[] = [
     points: 200,
     description: "Receive a 20% discount voucher for your next purchase.",
     claimRewards: 100,
+    limitedAvail: false,
   },
   {
     id: 3,
@@ -146,28 +211,42 @@ export const rewardData: RewardData[] = [
     points: 500,
     description: "Claim exclusive merchandise available only to loyal members.",
     claimRewards: 200,
+    limitedAvail: false,
   },
   {
     id: 4,
-    name: "VIP Event Access",
-    points: 1000,
-    description:
-      "Get VIP access to our upcoming events and special gatherings.",
-    claimRewards: 300,
+    name: "Exclusive Merchandise",
+    points: 500,
+    description: "Claim exclusive merchandise available only to loyal members.",
+    claimRewards: 200,
+    limitedAvail: false,
+  },
+];
+
+export const rewardDataWithLimitedAvail: RewardData[] = [
+  {
+    id: 1,
+    name: "Free Coffee",
+    points: 100,
+    description: "Get a free coffee on your next visit.",
+    claimRewards: 50,
+    limitedAvail: true,
   },
   {
-    id: 5,
-    name: "Gift Card",
-    points: 1500,
-    description: "Receive a gift card to use at your favorite store.",
-    claimRewards: 400,
+    id: 2,
+    name: "Discount Voucher",
+    points: 200,
+    description: "Receive a 20% discount voucher for your next purchase.",
+    claimRewards: 100,
+    limitedAvail: true,
   },
   {
-    id: 6,
-    name: "Charity Donation",
-    points: 2000,
-    description: "Donate your points to a charity of your choice.",
-    claimRewards: 500,
+    id: 3,
+    name: "Exclusive Merchandise",
+    points: 500,
+    description: "Claim exclusive merchandise available only to loyal members.",
+    claimRewards: 200,
+    limitedAvail: true,
   },
 ];
 

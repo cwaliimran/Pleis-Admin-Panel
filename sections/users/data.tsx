@@ -1,3 +1,5 @@
+import { id } from "date-fns/locale";
+
 export const organizerData = [
   {
     _id: 1,
@@ -187,6 +189,82 @@ export const activePromontions = [
 
 export const orgTags = ["Org 1", "Org 2", "Org 3", "Org 4"];
 export const eventTags = ["Event 1", "Event 2", "Event 3"];
+
+export const followedOrganizationsList = [
+  {
+    id: 1,
+    orgName: "TechNova Inc",
+    status: "active",
+  },
+  {
+    id: 2,
+    orgName: "GreenWorks Ltd",
+    status: "inactive",
+  },
+  {
+    id: 3,
+    orgName: "AgroTech Pvt. Ltd",
+    status: "active",
+  },
+  {
+    id: 4,
+    orgName: "BrightLabs",
+    status: "active",
+  },
+  {
+    id: 5,
+    orgName: "UrbanEdge Solutions",
+    status: "inactive",
+  },
+  {
+    id: 6,
+    orgName: "NextGen Innovations",
+    status: "active",
+  },
+  {
+    id: 7,
+    orgName: "EcoSphere Enterprises",
+    status: "active",
+  },
+  {
+    id: 8,
+    orgName: "QuantumSoft",
+    status: "inactive",
+  },
+];
+
+export const followedEventList = [
+  {
+    id: 1,
+    orgName: "Tech Summit 2025",
+    status: "active",
+    views: "1500",
+  },
+  {
+    id: 2,
+    orgName: "AI World Conference",
+    status: "inactive",
+    views: "2000",
+  },
+  {
+    id: 3,
+    orgName: "Startup Expo",
+    status: "active",
+    views: "2500",
+  },
+  {
+    id: 4,
+    orgName: "Blockchain Fest",
+    status: "active",
+    views: "250",
+  },
+  {
+    id: 5,
+    orgName: "Women in Tech",
+    status: "inactive",
+    views: "750",
+  },
+];
 
 export const userTags = ["Clubbing", "Techno", "Clubbing", "Techno"];
 export const venueTypes = ["Type 1", "Type 2", "Type 3", "Type 4"];

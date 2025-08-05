@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { TransactionHistory } from "@/sections/invoices";
 import BookingHistory from "@/sections/users/bookingHistory";
 import { organizerCardData } from "@/sections/users/data";
+import Loyalty from "@/sections/users/loyalty";
 import LoyaltyAndOrderTransaction from "@/sections/users/loyaltyAndOrderTransaction";
 import UserCard from "@/sections/users/userCard";
 import UserOverView from "@/sections/users/userOverview";
@@ -332,6 +333,7 @@ const Page = () => {
                               </Tabs>
                             </div>
                           </div>
+                          
                         </div>
                         <div className="flex flex-col lg:items-center items-end">
                           <FilterDropdown
@@ -357,6 +359,7 @@ const Page = () => {
                     <TransactionHistory />
                   </Card>
                 )}
+
                 {active === "booking&loyalty" && (
                   <>
                     <Card className="col-span-12 shadow-lg mt-4 dark:bg-secondary">
@@ -372,11 +375,22 @@ const Page = () => {
 
                     <Card className="dark:bg-secondary shadow-lg mt-4">
                       <CardHeader>
-                        <CardTitle>Loyalty & Ordering Transactions</CardTitle>
+                        <CardTitle>Ordering Transactions</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="border rounded-lg">
                           <LoyaltyAndOrderTransaction />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="dark:bg-secondary shadow-lg mt-4">
+                      <CardHeader>
+                        <CardTitle>Loyalty</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="border rounded-lg">
+                          <Loyalty />
                         </div>
                       </CardContent>
                     </Card>
