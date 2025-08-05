@@ -80,7 +80,7 @@ const GenderDonutChart: FC<PageProps> = ({ data, COLORS, size }) => {
   const total = data.reduce((sum, d) => sum + d.value, 0);
 
   return (
-    <div className="w-full h-[300px]">
+    <div className="w-full h-[330px]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Tooltip />

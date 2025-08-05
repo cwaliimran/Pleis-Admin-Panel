@@ -1,15 +1,14 @@
 "use client"
 
-import { FC } from "react"
+import { FC } from "react";
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
+  BarChart,
   ResponsiveContainer,
-  CartesianGrid,
-} from "recharts"
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
 
 
 
@@ -24,9 +23,9 @@ const MostViewedEvent: FC<PageProps> = ({ chartData, chartConfig }) => {
     <div className="w-full h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData}>
-          <XAxis dataKey="month"  axisLine={false}/>
+          <XAxis dataKey="month"  axisLine={false} style={{ fontSize: '14px' }} />
           {/* <CartesianGrid strokeDasharray="3 3" vertical={false} /> */}
-          <YAxis  axisLine={false}/>
+          <YAxis  axisLine={false} />
           <Tooltip />
           <Bar
             dataKey="search"

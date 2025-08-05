@@ -1,5 +1,3 @@
-"use client";
-import React from "react";
 import Header from "@/app/common/header";
 import BrowserControlPage from "@/sections/brower-control/browser-control-view";
 

@@ -1,16 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { m } from "framer-motion";
 import {
-  ArrowRightFromLine,
   CalendarDays,
-  CheckCircle2,
   DollarSign,
   Eye,
   Facebook,
   Globe,
   Heart,
   Instagram,
-  Languages,
   MapPin,
   Share2,
   Twitter,
@@ -18,10 +16,13 @@ import {
   Users,
 } from "lucide-react";
 import React from "react";
-import { eventTags, orgTags, userTags, venueTypes } from "../users/data";
-import { m } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import {
+  followedEventList,
+  followedOrganizationsList,
+  userTags,
+  venueTypes,
+} from "../users/data";
+
 const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
   userType,
   user,
@@ -364,6 +365,18 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                 </strong>{" "}
                 See more go to transaction tab
               </p>
+
+              <div className="space-y-2 mt-4">
+                <div>
+                  <p className="text-sm">Tickets: 10</p>
+                </div>
+                <div>
+                  <p className="text-sm">Rewards: 5</p>
+                </div>
+                <div>
+                  <p className="text-sm">Loyalty Cards: 3</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -437,14 +450,22 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                 <h1 className="text-slate-500 font-semibold">
                   FOLLOWED ORGANIZATION
                 </h1>
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {orgTags.map((item, index) => (
-                    <Badge
+
+                <div className="gap-2 mt-2 max-h-48 overflow-y-auto">
+                  {followedOrganizationsList?.map((item, index) => (
+                    <div
+                      className="py-2 flex items-center justify-between border-b border-gray-300 dark:border-gray-600 gap-3"
                       key={index}
-                      className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-2 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
                     >
-                      {item}
-                    </Badge>
+                      <p>{item.orgName}</p>
+
+                      <Badge
+                        variant="secondary"
+                        className="bg-gray-200 dark:bg-gray-600 capitalize text-xs mt-1"
+                      >
+                        {item.status}
+                      </Badge>
+                    </div>
                   ))}
                 </div>
               </CardHeader>
@@ -457,14 +478,21 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                 <h1 className="text-slate-500 font-semibold">
                   FOLLOWED EVENTS
                 </h1>
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                  {eventTags.map((item, index) => (
-                    <Badge
+                <div className="gap-2 mt-2 max-h-48 overflow-y-auto">
+                  {followedEventList?.map((item, index) => (
+                    <div
+                      className="py-2 flex items-center justify-between border-b border-gray-300 dark:border-gray-600 gap-3"
                       key={index}
-                      className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-2 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
                     >
-                      {item}
-                    </Badge>
+                      <p>{item.orgName}</p>
+
+                      <Badge
+                        variant="secondary"
+                        className="bg-gray-200 dark:bg-gray-600 capitalize text-xs mt-1"
+                      >
+                        {item.views} Views
+                      </Badge>
+                    </div>
                   ))}
                 </div>
               </CardHeader>

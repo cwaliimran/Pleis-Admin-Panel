@@ -1,4 +1,3 @@
-
 // "use client";
 
 // import { FC } from "react";
@@ -59,7 +58,6 @@
 
 // export default VisitorAge;
 
-
 "use client";
 
 import { FC } from "react";
@@ -74,12 +72,14 @@ import {
 
 interface VisitorAgeProps {
   data: { ageGroup: string; visitors: number }[];
-  direction?: "vertical" | "horizontal"; 
+  noHeaderTotal?: boolean;
+  direction?: "vertical" | "horizontal";
   height?: number;
 }
 
 const VisitorAgeChart: FC<VisitorAgeProps> = ({
   data,
+  noHeaderTotal = true,
   direction = "vertical",
   height = 280,
 }) => {
@@ -89,7 +89,7 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
 
   return (
     <div className={`w-full relative`} style={{ height }}>
-      {isVertical && (
+      {isVertical && noHeaderTotal && (
         <div className="absolute right-13 top-[-10px] z-10 text-sm">10K</div>
       )}
 
@@ -125,7 +125,7 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
           )}
 
           <Tooltip cursor={false} />
-         
+
           <Bar
             dataKey="visitors"
             fill="#2563EB"

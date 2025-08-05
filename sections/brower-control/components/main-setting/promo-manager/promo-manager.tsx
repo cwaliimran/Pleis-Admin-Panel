@@ -152,7 +152,7 @@ const PromoManager = () => {
                 onOpenChange={setIsCreateModalOpen}
               >
                 <DialogTrigger asChild>
-                  <Button className="rounded-full bg-primary px-3 hover:shadow-lg shadow-blue-200 transition-shadow duration-300 cursor-pointer text-white hover:bg-primary">
+                  <Button className="rounded-full bg-primary px-3 cursor-pointer text-white hover:bg-primary">
                     <Plus className="w-4 h-4 mr-1" />
                     New Promo
                   </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import FormProvider from "@/components/rhf";
-import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
+import { RHFCustomCombobox } from "@/components/rhf/rhf-custom-combobox";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,6 +21,7 @@ import {
 import { defaultValues, schema } from "@/lib/schemas/organization-schema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Edit, Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -80,13 +81,6 @@ const initialCategories: Category[] = [
   },
 ];
 
-const categoryIcons = {
-  events: "📅",
-  experiences: "🎯",
-  organizers: "🏢",
-  loyalty: "💳",
-};
-
 // Category Card Component
 function CategoryCard({
   category,
@@ -107,7 +101,7 @@ function CategoryCard({
 
   return (
     <div
-      className={`border-l-blue-400 border-l-4 bg-white dark:bg-secondary border border-gray-200 rounded-lg px-4 py-2.5 transition-all hover:shadow-md`}
+      className={`border-l-blue-400 border-l-4 bg-white dark:bg-secondary border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-2.5 transition-all hover:shadow-md`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
@@ -220,11 +214,35 @@ function CategoryModal({
       value: "event-4",
       label: "Event 4",
     },
+    {
+      value: "event-5",
+      label: "Event 5",
+    },
+    {
+      value: "event-6",
+      label: "Event 6",
+    },
+    {
+      value: "event-7",
+      label: "Event 7",
+    },
+    {
+      value: "event-8",
+      label: "Event 8",
+    },
+    {
+      value: "event-9",
+      label: "Event 9",
+    },
+    {
+      value: "event-10",
+      label: "Event 10",
+    },
   ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl dark:bg-secondary">
+      <DialogContent className="sm:max-w-2xl dark:bg-secondary">
         <DialogHeader>
           <DialogTitle>
             {mode === "create" ? "Create New Category" : "Edit Category"}
@@ -249,10 +267,13 @@ function CategoryModal({
             </div>
 
             <div className="space-y-2 w-full">
-              <RHFMultiSelect
+              <RHFCustomCombobox
                 name="event"
                 label="Select Events"
-                placeholder="Select Events"
+                placeholder="Select events"
+                className="w-full flex-1"
+                multiple={true}
+                allowCustom={true}
                 options={frameworks}
               />
             </div>
@@ -312,12 +333,18 @@ function CategoryModal({
 
 // Main Category Management Component
 export function CategoryManagement() {
+  const router = useRouter();
+
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
 
   const sortedCategories = [...categories].sort((a, b) => a.order - b.order);
+
+  const navigateToAllCustomCategory = () => {
+    router.push("/super-admin/browser-control/all-custom-categories");
+  };
 
   const handleCreateCategory = () => {
     setEditingCategory(null);
@@ -343,7 +370,7 @@ export function CategoryManagement() {
         ...formData,
         id: Math.random().toString(36).substr(2, 9),
         order: categories.length + 1,
-        itemCount: Math.floor(Math.random() * 20) + 1, // Random item count for demo
+        itemCount: Math.floor(Math.random() * 20) + 1,
       };
       setCategories([...categories, newCategory]);
     } else if (editingCategory) {
@@ -368,14 +395,6 @@ export function CategoryManagement() {
         >
           <Plus className="w-4 h-4" />
         </Button>
-
-        {/* <Button
-          onClick={handleCreateCategory}
-          className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary"
-        >
-          <Plus />
-          New Category
-        </Button> */}
       </div>
 
       <div className="space-y-2">
@@ -387,6 +406,16 @@ export function CategoryManagement() {
             onDelete={handleDeleteCategory}
           />
         ))}
+      </div>
+
+      <div className="flex justify-center mt-4">
+        <Button
+          variant="outline"
+          onClick={navigateToAllCustomCategory}
+          className="px-6 py-2 border-gray-300 hover:border-gray-400 bg-white"
+        >
+          View All
+        </Button>
       </div>
 
       {categories.length === 0 && (

@@ -1,6 +1,14 @@
 "use client";
 import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -11,14 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
   EventPerformanceComparison,
@@ -35,7 +35,7 @@ import {
   VisitorRegion,
 } from "@/sections/invoices";
 import { invoicesData2 } from "@/sections/invoices/data";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "../../../common/header";
 
 const Page = () => {
@@ -64,153 +64,13 @@ const Page = () => {
 
   return (
     <div>
-      {/* Terms and Conditions Modal */}
-      <Dialog open={showTermsModal} onOpenChange={() => {}}>
-        <DialogContent className="max-w-2xl max-h-[80vh] p-0 [&>button]:hidden">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-2xl font-bold">
-              Terms and Conditions
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="px-6">
-            <div
-              className="max-h-[400px] overflow-y-auto pr-4 space-y-4 text-sm"
-              onScroll={handleScroll}
-            >
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">
-                  1. Acceptance of Terms
-                </h3>
-                <p>
-                  By accessing and using this platform, you accept and agree to
-                  be bound by the terms and provision of this agreement. If you
-                  do not agree to abide by the above, please do not use this
-                  service.
-                </p>
-
-                <h3 className="font-semibold text-lg">2. Use License</h3>
-                <p>
-                  Permission is granted to temporarily download one copy of the
-                  materials on our platform for personal, non-commercial
-                  transitory viewing only. This is the grant of a license, not a
-                  transfer of title, and under this license you may not:
-                </p>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>modify or copy the materials;</li>
-                  <li>
-                    use the materials for any commercial purpose or for any
-                    public display (commercial or non-commercial);
-                  </li>
-                  <li>
-                    attempt to decompile or reverse engineer any software
-                    contained on the platform;
-                  </li>
-                  <li>
-                    remove any copyright or other proprietary notations from the
-                    materials.
-                  </li>
-                </ul>
-
-                <h3 className="font-semibold text-lg">3. Disclaimer</h3>
-                <p>
-                  The materials on our platform are provided on an as is basis.
-                  We make no warranties, expressed or implied, and hereby
-                  disclaim and negate all other warranties including without
-                  limitation, implied warranties or conditions of
-                  merchantability, fitness for a particular purpose, or
-                  non-infringement of intellectual property or other violation
-                  of rights.
-                </p>
-
-                <h3 className="font-semibold text-lg">4. Limitations</h3>
-                <p>
-                  In no event shall our company or its suppliers be liable for
-                  any damages (including, without limitation, damages for loss
-                  of data or profit, or due to business interruption) arising
-                  out of the use or inability to use the materials on our
-                  platform, even if we or our authorized representative has been
-                  notified orally or in writing of the possibility of such
-                  damage. Because some jurisdictions do not allow limitations on
-                  implied warranties, or limitations of liability for
-                  consequential or incidental damages, these limitations may not
-                  apply to you.
-                </p>
-
-                <h3 className="font-semibold text-lg">5. Privacy Policy</h3>
-                <p>
-                  Your privacy is important to us. Our Privacy Policy explains
-                  how we collect, use, and protect your information when you use
-                  our platform. By using our platform, you agree to the
-                  collection and use of information in accordance with our
-                  Privacy Policy.
-                </p>
-
-                <h3 className="font-semibold text-lg">
-                  6. User Responsibilities
-                </h3>
-                <p>
-                  As a user of this platform, you are responsible for
-                  maintaining the confidentiality of your account and password
-                  and for restricting access to your computer. You agree to
-                  accept responsibility for all activities that occur under your
-                  account or password.
-                </p>
-
-                <h3 className="font-semibold text-lg">7. Governing Law</h3>
-                <p>
-                  These terms and conditions are governed by and construed in
-                  accordance with the laws and you irrevocably submit to the
-                  exclusive jurisdiction of the courts in that state or
-                  location.
-                </p>
-
-                <p className="pt-4 text-xs text-gray-500">
-                  Last updated: July 2025
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 pt-4 border-t">
-            <div className="flex items-center space-x-2 mb-4">
-              <Checkbox
-                id="accept-terms"
-                checked={acceptedTerms}
-                onCheckedChange={(checked) =>
-                  setAcceptedTerms(checked as boolean)
-                }
-                disabled={!hasScrolledToBottom}
-              />
-              <label
-                htmlFor="accept-terms"
-                className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed ${
-                  !hasScrolledToBottom ? "text-gray-400" : "cursor-pointer"
-                }`}
-              >
-                I accept the Terms and Conditions
-              </label>
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <Button
-                onClick={handleTermsSubmit}
-                disabled={!acceptedTerms}
-                className="w-full md:w-auto"
-              >
-                Continue to Dashboard
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <Header
         links={[
           { name: "Dashboard", href: "/organizer/dashboard" },
           { name: "Home" },
         ]}
       />
+
       <div className="md:mx-4 mx-1 mt-5 pb-12">
         <div className=" flex md:justify-end md:flex-row flex-col-reverse md:items-center gap-2">
           <div className="flex justify-end md:flex-row flex-col-reverse  md:items-center gap-2">
@@ -708,6 +568,147 @@ const Page = () => {
                     ))}
                 </div> */}
       </div>
+
+      {/* Terms and Conditions Modal */}
+      <Dialog open={showTermsModal} onOpenChange={() => {}}>
+        <DialogContent className="max-w-2xl max-h-[80vh] p-0 [&>button]:hidden">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-2xl font-bold">
+              Terms and Conditions
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="px-6">
+            <div
+              className="max-h-[400px] overflow-y-auto pr-4 space-y-4 text-sm"
+              onScroll={handleScroll}
+            >
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">
+                  1. Acceptance of Terms
+                </h3>
+                <p>
+                  By accessing and using this platform, you accept and agree to
+                  be bound by the terms and provision of this agreement. If you
+                  do not agree to abide by the above, please do not use this
+                  service.
+                </p>
+
+                <h3 className="font-semibold text-lg">2. Use License</h3>
+                <p>
+                  Permission is granted to temporarily download one copy of the
+                  materials on our platform for personal, non-commercial
+                  transitory viewing only. This is the grant of a license, not a
+                  transfer of title, and under this license you may not:
+                </p>
+                <ul className="list-disc pl-6 space-y-1">
+                  <li>modify or copy the materials;</li>
+                  <li>
+                    use the materials for any commercial purpose or for any
+                    public display (commercial or non-commercial);
+                  </li>
+                  <li>
+                    attempt to decompile or reverse engineer any software
+                    contained on the platform;
+                  </li>
+                  <li>
+                    remove any copyright or other proprietary notations from the
+                    materials.
+                  </li>
+                </ul>
+
+                <h3 className="font-semibold text-lg">3. Disclaimer</h3>
+                <p>
+                  The materials on our platform are provided on an as is basis.
+                  We make no warranties, expressed or implied, and hereby
+                  disclaim and negate all other warranties including without
+                  limitation, implied warranties or conditions of
+                  merchantability, fitness for a particular purpose, or
+                  non-infringement of intellectual property or other violation
+                  of rights.
+                </p>
+
+                <h3 className="font-semibold text-lg">4. Limitations</h3>
+                <p>
+                  In no event shall our company or its suppliers be liable for
+                  any damages (including, without limitation, damages for loss
+                  of data or profit, or due to business interruption) arising
+                  out of the use or inability to use the materials on our
+                  platform, even if we or our authorized representative has been
+                  notified orally or in writing of the possibility of such
+                  damage. Because some jurisdictions do not allow limitations on
+                  implied warranties, or limitations of liability for
+                  consequential or incidental damages, these limitations may not
+                  apply to you.
+                </p>
+
+                <h3 className="font-semibold text-lg">5. Privacy Policy</h3>
+                <p>
+                  Your privacy is important to us. Our Privacy Policy explains
+                  how we collect, use, and protect your information when you use
+                  our platform. By using our platform, you agree to the
+                  collection and use of information in accordance with our
+                  Privacy Policy.
+                </p>
+
+                <h3 className="font-semibold text-lg">
+                  6. User Responsibilities
+                </h3>
+                <p>
+                  As a user of this platform, you are responsible for
+                  maintaining the confidentiality of your account and password
+                  and for restricting access to your computer. You agree to
+                  accept responsibility for all activities that occur under your
+                  account or password.
+                </p>
+
+                <h3 className="font-semibold text-lg">7. Governing Law</h3>
+                <p>
+                  These terms and conditions are governed by and construed in
+                  accordance with the laws and you irrevocably submit to the
+                  exclusive jurisdiction of the courts in that state or
+                  location.
+                </p>
+
+                <p className="pt-4 text-xs text-gray-500">
+                  Last updated: July 2025
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 pt-4 border-t">
+            <div className="flex items-center space-x-2 mb-4">
+              <Checkbox
+                id="accept-terms"
+                checked={acceptedTerms}
+                onCheckedChange={(checked) =>
+                  setAcceptedTerms(checked as boolean)
+                }
+                disabled={!hasScrolledToBottom}
+              />
+              <label
+                htmlFor="accept-terms"
+                className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed ${
+                  !hasScrolledToBottom ? "text-gray-400" : "cursor-pointer"
+                }`}
+              >
+                I accept the Terms and Conditions
+              </label>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                onClick={handleTermsSubmit}
+                disabled={!acceptedTerms}
+                className="w-full md:w-auto"
+              >
+                Continue to Dashboard
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
