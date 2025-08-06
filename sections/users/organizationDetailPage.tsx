@@ -244,34 +244,6 @@ const OrganizationDetailPage: FC<OrganizationDetailPageProps> = ({ id }) => {
                     </g>
                   </svg>
                 </div>
-
-                {/* <Badge
-                  className="bg-blue-200 text-blue-800 w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 
-                                hover:bg-blue-300 transition-colors"
-                >
-                  <Facebook className="w-5 h-5 " />
-                </Badge>
-
-                <Badge
-                  className="bg-blue-200 text-blue-800 cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
-                                hover:bg-blue-300 transition-colors"
-                >
-                  <Instagram className="w-5 h-5 " />
-                </Badge>
-
-                <Badge
-                  className="bg-blue-200 text-blue-800  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0
-                                hover:bg-blue-300 transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 256 256"
-                    fill="currentColor"
-                    className="w-5 h-5 "
-                  >
-                    <path d="M232 72v40a88 88 0 1 1-88-88h40v40a48 48 0 0 0 48 48V72a72 72 0 0 1-72-72h-40a128 128 0 1 0 128 128V72Z" />
-                  </svg>
-                </Badge> */}
               </div>
             </div>
           </Card>
