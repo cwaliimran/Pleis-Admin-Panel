@@ -1,28 +1,28 @@
+'use client';
+
 import FormProvider, {
   RHFCombobox,
   RHFMultiFileUpload,
   RHFSelectField,
   RHFTextField,
-} from "@/components/rhf";
-import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
-import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader } from "@/components/ui/card";
+} from '@/components/rhf';
+import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogOverlay,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useBoolean } from "@/hooks/useBoolean";
-import { defaultValues, schema } from "@/lib/schemas/organization-schema";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { MapPin, PartyPopper, Pencil, Shirt, UserPlus } from "lucide-react";
-import { useRef } from "react";
-import { useForm } from "react-hook-form";
-import { userTags } from "./data";
+} from '@/components/ui/dialog';
+import { useBoolean } from '@/hooks/useBoolean';
+import { defaultValues, schema } from '@/lib/schemas/organization-schema';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Pencil } from 'lucide-react';
+import { useRef } from 'react';
+import { useForm } from 'react-hook-form';
 
 const UserInfo = () => {
   // const totalDays = 30;
@@ -61,19 +61,19 @@ const UserInfo = () => {
         <div className="flex justify-end">
           <Pencil
             width={22}
-            className="text-gray-500  mr-2 cursor-pointer hover:text-gray-700 transition-colors"
+            className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
             onClick={openModal.onTrue}
           />
         </div>
 
-        <div className="grid grid-cols-12 gap-4 mt-4">
+        <div className="mt-4 grid grid-cols-12 gap-4">
           {/* ---------- LEFT SIDE ---------- */}
-          <div className=" lg:col-span-5 col-span-12">
+          <div className="col-span-12 lg:col-span-5">
             {/* DESCRIPTION */}
             <Card className="shadow-lg dark:bg-[#171717]">
               <CardHeader>
-                <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
-                <p className=" mt-2">
+                <h1 className="font-semibold text-slate-500">DESCRIPTION</h1>
+                <p className="mt-2">
                   {/* This is a sample description for the user profile. */}
                 </p>
                 {/* <div className="flex flex-wrap gap-2 mt-2">
@@ -97,8 +97,8 @@ const UserInfo = () => {
             {/* VENU */}
             <Card className="mt-4 shadow-lg dark:bg-[#171717]">
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <h1 className="text-slate-500 font-semibold ">VENUE TYPE</h1>
+                <div className="flex items-center justify-between">
+                  <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
                   <Button
                     variant="default"
                     className="cursor-pointer rounded-full"
@@ -107,17 +107,17 @@ const UserInfo = () => {
                     Add Venue
                   </Button>
                 </div>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="mt-2 flex items-center gap-2">
                   {/* <PartyPopper /> */}
-                  <p className="mt-2 text-lg ">{/* Nightclub */}</p>
+                  <p className="mt-2 text-lg">{/* Nightclub */}</p>
                 </div>
               </CardHeader>
             </Card>
             {/* CATEGORIES */}
             <Card className="mt-4 shadow-lg dark:bg-[#171717]">
               <CardHeader>
-                <h1 className="text-slate-500 font-semibold">CATEGORIES</h1>
-                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <h1 className="font-semibold text-slate-500">CATEGORIES</h1>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   {/* {userTags.map((item, index) => (
                     <Badge
                       key={index}
@@ -133,51 +133,51 @@ const UserInfo = () => {
             {/* OPERATING HOURS */}
             <Card className="mt-4 shadow-lg dark:bg-[#171717]">
               <CardHeader>
-                <h1 className="text-slate-500 font-semibold mb-4">
+                <h1 className="mb-4 font-semibold text-slate-500">
                   OPERATING HOURS
                 </h1>
                 <div className="space-y-3">
                   {[
                     {
-                      day: "Monday",
-                      startTime: "00:00 AM",
-                      endTime: "11:00 PM",
+                      day: 'Monday',
+                      startTime: '00:00 AM',
+                      endTime: '11:00 PM',
                       closed: false,
                     },
                     {
-                      day: "Tuesday",
-                      startTime: "00:00 PM",
-                      endTime: "11:00 PM",
+                      day: 'Tuesday',
+                      startTime: '00:00 PM',
+                      endTime: '11:00 PM',
                       closed: false,
                     },
                     {
-                      day: "Wednesday",
-                      startTime: "00:00 PM",
-                      endTime: "11:00 PM",
+                      day: 'Wednesday',
+                      startTime: '00:00 PM',
+                      endTime: '11:00 PM',
                       closed: false,
                     },
                     {
-                      day: "Thursday",
-                      startTime: "00:00 PM",
-                      endTime: "11:00 PM",
+                      day: 'Thursday',
+                      startTime: '00:00 PM',
+                      endTime: '11:00 PM',
                       closed: false,
                     },
                     {
-                      day: "Friday",
-                      startTime: "00:00 AM",
-                      endTime: "11:00 PM",
+                      day: 'Friday',
+                      startTime: '00:00 AM',
+                      endTime: '11:00 PM',
                       closed: false,
                     },
                     {
-                      day: "Saturday",
-                      startTime: "00:00 AM",
-                      endTime: "11:00 AM",
+                      day: 'Saturday',
+                      startTime: '00:00 AM',
+                      endTime: '11:00 AM',
                       closed: true,
                     },
                     {
-                      day: "Sunday",
-                      startTime: "00:00 AM",
-                      endTime: "11:00 AM",
+                      day: 'Sunday',
+                      startTime: '00:00 AM',
+                      endTime: '11:00 AM',
                       closed: true,
                     },
                   ].map((schedule, index) => (
@@ -185,17 +185,17 @@ const UserInfo = () => {
                       key={index}
                       className="flex items-center justify-between py-0.5 last:border-b-0"
                     >
-                      <div className="lg:flex items-center justify-between gap-4 flex-1">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 w-20">
+                      <div className="flex-1 items-center justify-between gap-4 lg:flex">
+                        <span className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300">
                           {schedule.day}
                         </span>
 
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <span className="bg-gray-50 dark:bg-gray-800 px-2 w-[100%] lg:w-24 py-1 rounded border">
+                          <span className="w-[100%] rounded border bg-gray-50 px-2 py-1 lg:w-24 dark:bg-gray-800">
                             {schedule.startTime}
                           </span>
                           <span className="text-xs text-gray-500">to</span>
-                          <span className="bg-gray-50 dark:bg-gray-800 px-2 w-[100%] lg:w-24 py-1 rounded border">
+                          <span className="w-[100%] rounded border bg-gray-50 px-2 py-1 lg:w-24 dark:bg-gray-800">
                             {schedule.endTime}
                           </span>
                         </div>
@@ -295,16 +295,16 @@ const UserInfo = () => {
           </div>
 
           {/* ---------- RIGHT SIDE ---------- */}
-          <div className="lg:col-span-7 col-span-12">
+          <div className="col-span-12 lg:col-span-7">
             {/* USER INFO */}
             <Card className="shadow-lg dark:bg-[#171717]">
-              <CardHeader className="w-full flex flex-col gap-2">
-                <h1 className="text-slate-500 font-semibold">VENUE</h1>
-                <div className="flex items-center gap-2 mt-2">
+              <CardHeader className="flex w-full flex-col gap-2">
+                <h1 className="font-semibold text-slate-500">VENUE</h1>
+                <div className="mt-2 flex items-center gap-2">
                   {/* <PartyPopper className="w-4 h-4" />
                   <span> Vibrant club</span> */}
                 </div>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="mt-2 flex items-center gap-2">
                   {/* <MapPin />
                   <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span> */}
                 </div>
@@ -313,8 +313,8 @@ const UserInfo = () => {
                   alt=""
                   className="w-full h-full mt-2"
                 /> */}
-                <div className="col-span-12 md:col-span-12 w-full md:h-[140px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300">
-                  <span className="text-gray-400 text-sm">
+                <div className="col-span-12 flex h-[100px] w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-100 md:col-span-12 md:h-[140px] dark:bg-gray-800">
+                  <span className="text-sm text-gray-400">
                     No Venue Selected
                   </span>
                 </div>
@@ -322,9 +322,9 @@ const UserInfo = () => {
             </Card>
 
             {/* USER GALLERY */}
-            <Card className="shadow-lg mt-5 dark:bg-secondary">
+            <Card className="dark:bg-secondary mt-5 shadow-lg">
               <CardHeader className="gap-4">
-                <h1 className="text-slate-500 font-semibold">GALLERY</h1>
+                <h1 className="font-semibold text-slate-500">GALLERY</h1>
                 {/* <img
                   title="Banner Image"
                   src="/images/bannerImage.png"
@@ -341,8 +341,8 @@ const UserInfo = () => {
                   ))}
                 </div> */}
                 {/* Placeholder image */}
-                <div className="col-span-12 md:col-span-12 w-full md:h-[140px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-300">
-                  <span className="text-gray-400 text-sm">No Image</span>
+                <div className="col-span-12 flex h-[100px] w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-100 md:col-span-12 md:h-[140px] dark:bg-gray-800">
+                  <span className="text-sm text-gray-400">No Image</span>
                 </div>
               </CardHeader>
             </Card>
@@ -351,8 +351,8 @@ const UserInfo = () => {
 
         {/* ADD OTHER DETAILS */}
         <Dialog open={openModal.value} onOpenChange={CloseModal}>
-          <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
-            <DialogContent className="md:!max-w-[550px] mx-auto min-h-[86vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
+          <DialogOverlay className="bg-opacity-30 fixed inset-0 bg-white">
+            <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[86vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
               <DialogHeader>
                 <DialogTitle> Add Other Details </DialogTitle>
               </DialogHeader>
@@ -360,7 +360,7 @@ const UserInfo = () => {
                 methods={methods}
                 onSubmit={methods.handleSubmit(onSubmit)}
               >
-                <div className="flex flex-col gap-4 mt-4 w-full">
+                <div className="mt-4 flex w-full flex-col gap-4">
                   <RHFTextField
                     name="description"
                     label="Description"
@@ -368,11 +368,11 @@ const UserInfo = () => {
                     rows={2}
                     multiline
                     className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
+                      methods.formState.errors.name ? 'border-red-400' : ''
                     }`}
                   />
 
-                  <div className="w-full grid md:grid-cols-2 grid-cols-1 gap-4">
+                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <RHFTextField
                       type="number"
                       name="minAge"
@@ -382,7 +382,7 @@ const UserInfo = () => {
                     />
                   </div>
 
-                  <div className="w-full grid overflow-hidden md:grid-cols-1 grid-cols-1 gap-4">
+                  <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
                     <RHFCombobox
                       name="tags"
                       label="Tags"
@@ -391,9 +391,9 @@ const UserInfo = () => {
                       multiple={true}
                       allowCustom={true}
                       options={[
-                        { label: "Tag 1", value: "tag1" },
-                        { label: "Tag 2", value: "tag2" },
-                        { label: "Tag 3", value: "tag3" },
+                        { label: 'Tag 1', value: 'tag1' },
+                        { label: 'Tag 2', value: 'tag2' },
+                        { label: 'Tag 3', value: 'tag3' },
                       ]}
                     />
 
@@ -403,9 +403,9 @@ const UserInfo = () => {
                       placeholder="Select Venue"
                       className="w-full flex-1"
                       options={[
-                        { label: "Venue 1", value: "venue1" },
-                        { label: "Venue 2", value: "venue2" },
-                        { label: "Venue 3", value: "venue3" },
+                        { label: 'Venue 1', value: 'venue1' },
+                        { label: 'Venue 2', value: 'venue2' },
+                        { label: 'Venue 3', value: 'venue3' },
                       ]}
                     />
 
@@ -414,9 +414,9 @@ const UserInfo = () => {
                       label="Select Categories"
                       placeholder="Select Category"
                       options={[
-                        { label: "Clubbing", value: "clubbing" },
-                        { label: "Techno", value: "techno" },
-                        { label: "House", value: "house" },
+                        { label: 'Clubbing', value: 'clubbing' },
+                        { label: 'Techno', value: 'techno' },
+                        { label: 'House', value: 'house' },
                       ]}
                     />
                   </div>
@@ -431,18 +431,18 @@ const UserInfo = () => {
 
                   {/* Operating Hours Section */}
                   <div className="w-full">
-                    <h3 className="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">
                       Operating Hours
                     </h3>
                     <div className="space-y-4">
                       {[
-                        { day: "Monday", dayKey: "monday" },
-                        { day: "Tuesday", dayKey: "tuesday" },
-                        { day: "Wednesday", dayKey: "wednesday" },
-                        { day: "Thursday", dayKey: "thursday" },
-                        { day: "Friday", dayKey: "friday" },
-                        { day: "Saturday", dayKey: "saturday" },
-                        { day: "Sunday", dayKey: "sunday" },
+                        { day: 'Monday', dayKey: 'monday' },
+                        { day: 'Tuesday', dayKey: 'tuesday' },
+                        { day: 'Wednesday', dayKey: 'wednesday' },
+                        { day: 'Thursday', dayKey: 'thursday' },
+                        { day: 'Friday', dayKey: 'friday' },
+                        { day: 'Saturday', dayKey: 'saturday' },
+                        { day: 'Sunday', dayKey: 'sunday' },
                       ].map((dayInfo) => (
                         <div
                           key={dayInfo.dayKey}
@@ -451,7 +451,7 @@ const UserInfo = () => {
                           <span className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300">
                             {dayInfo.day}
                           </span>
-                          <div className="flex items-center gap-2 flex-1">
+                          <div className="flex flex-1 items-center gap-2">
                             <RHFTextField
                               type="time"
                               name={`${dayInfo.dayKey}StartTime`}
@@ -472,10 +472,10 @@ const UserInfo = () => {
                   </div>
                 </div>
 
-                <div className="mt-2 w-full flex justify-center items-center">
+                <div className="mt-2 flex w-full items-center justify-center">
                   <Button
                     type="button"
-                    className="bg-blue-700 text-white hover:bg-blue-800 px-7 mt-3 cursor-pointer"
+                    className="mt-3 cursor-pointer bg-blue-700 px-7 text-white hover:bg-blue-800"
                   >
                     Save
                   </Button>
@@ -487,19 +487,19 @@ const UserInfo = () => {
 
         {/* VENUE MODAL */}
         <Dialog open={openVenueModal.value} onOpenChange={CloseVenueModal}>
-          <DialogOverlay className="fixed inset-0 bg-white   bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-            <DialogContent className=" dark:bg-[#171717] overflow-y-auto mx-auto min-h-[86vh] max-h-[90vh]">
+          <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center bg-white md:w-lg">
+            <DialogContent className="mx-auto max-h-[90vh] min-h-[86vh] overflow-y-auto dark:bg-[#171717]">
               <DialogHeader>
                 <DialogTitle>
-                  {" "}
-                  {!editModal.value ? "Create Venue" : "Edit Venue"}{" "}
+                  {' '}
+                  {!editModal.value ? 'Create Venue' : 'Edit Venue'}{' '}
                 </DialogTitle>
               </DialogHeader>
               <FormProvider
                 methods={methods}
                 onSubmit={methods.handleSubmit(onSubmit)}
               >
-                <div className="flex flex-col gap-4 mt-4">
+                <div className="mt-4 flex flex-col gap-4">
                   {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
 
                   <div>
@@ -507,11 +507,11 @@ const UserInfo = () => {
                       type="button"
                       variant="outline"
                       onClick={handleAvatarChange}
-                      className="bg-white border-gray-300 text-gray-700 dark:text-gray-200 hover:bg-gray-50"
+                      className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:text-gray-200"
                     >
                       Upload Floor Plan
                     </Button>
-                    <p className="text-gray-500 text-sm mt-2">
+                    <p className="mt-2 text-sm text-gray-500">
                       JPG or PNG. 1MB max.
                     </p>
                   </div>
@@ -521,7 +521,7 @@ const UserInfo = () => {
                     label="Venue Name"
                     placeholder="Enter Venue Name"
                     className={` ${
-                      methods.formState.errors.name ? "border-red-400" : ""
+                      methods.formState.errors.name ? 'border-red-400' : ''
                     }`}
                   />
 
@@ -530,9 +530,9 @@ const UserInfo = () => {
                     label="Venue Type"
                     placeholder="Select Venue Type"
                     options={[
-                      { value: "event1", label: "Event 1" },
-                      { value: "event2", label: "Event 2" },
-                      { value: "event3", label: "Event 3" },
+                      { value: 'event1', label: 'Event 1' },
+                      { value: 'event2', label: 'Event 2' },
+                      { value: 'event3', label: 'Event 3' },
                     ]}
                   />
                   <RHFTextfieldWithSelect
@@ -540,9 +540,9 @@ const UserInfo = () => {
                     label="Organization"
                     placeholder="Select Organization"
                     options={[
-                      { label: "Organization A", value: "org-a" },
-                      { label: "Organization B", value: "org-b" },
-                      { label: "Organization C", value: "org-c" },
+                      { label: 'Organization A', value: 'org-a' },
+                      { label: 'Organization B', value: 'org-b' },
+                      { label: 'Organization C', value: 'org-c' },
                     ]}
                   />
                   <RHFTextField
@@ -552,14 +552,14 @@ const UserInfo = () => {
                   />
 
                   <div className="w-full">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Map Preview
                     </label>
-                    <div className="w-full h-[200px] rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                    <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
                       <iframe
                         title="Venue Location Map"
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s"
-                        className="w-full h-full border-0"
+                        className="h-full w-full border-0"
                         referrerPolicy="no-referrer-when-downgrade"
                       ></iframe>
                     </div>
@@ -568,9 +568,9 @@ const UserInfo = () => {
                   <div className="flex justify-end gap-2">
                     <Button
                       type="submit"
-                      className="bg-blue-700 text-white hover:bg-blue-800 cursor-pointer"
+                      className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
                     >
-                      {!editModal.value ? "Add Venue" : "Update Venue"}
+                      {!editModal.value ? 'Add Venue' : 'Update Venue'}
                     </Button>
                   </div>
                 </div>

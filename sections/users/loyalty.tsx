@@ -9,7 +9,7 @@ const Loyalty = () => {
         headLabel={[
           { id: 'user', label: 'User', align: 'left' },
           { id: 'organizer', label: 'Organizer', align: 'left' },
-          { id: 'typeOfTransaction', label: 'Type of Transaction', align: 'left' },
+          { id: 'typeOfTransaction', label: 'Type', align: 'left' },
           { id: 'referenceList', label: 'Reference List', align: 'left' },
           { id: 'pointEarned', label: 'Point Earned', align: 'left' },
           { id: 'pointSpent', label: 'Point Spent', align: 'left' },

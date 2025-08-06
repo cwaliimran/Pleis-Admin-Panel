@@ -1,121 +1,562 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Facebook, Instagram, Pencil, Trash2 } from "lucide-react";
-import React, { FC, useState } from "react";
-import { tabsData, userData } from "./data";
-import UserCard from "./userCard";
-import UserInfo from "./userInfo";
-import Useranalytics from "./useranalytics";
-import UserNotifications from "./userNotifications";
-import { ActivePromontion, TotalFollowers } from ".";
-import Image from "next/image";
+// interface UserDetailPageProps {
+//   id: string;
+// }
+// const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
+// };
 
-interface UserDetailPageProps {
-  id: string;
-}
-const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
-  const [active, setActive] = useState("info");
+// export default UserDetailPage;
+
+'use client';
+
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useBoolean } from '@/hooks/useBoolean';
+import { cn } from '@/lib/utils';
+import { TransactionHistory } from '@/sections/invoices';
+import BookingHistory from '@/sections/users/bookingHistory';
+import { organizerCardData } from '@/sections/users/data';
+import Loyalty from '@/sections/users/loyalty';
+import LoyaltyAndOrderTransaction from '@/sections/users/loyaltyAndOrderTransaction';
+import UserCard from '@/sections/users/userCard';
+import UserOverView from '@/sections/users/userOverview';
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+
+const UserDetailPage = () => {
+  // const { id } = useParams();
+  const deleteModal = useBoolean();
+  const openModal = useBoolean();
+  const data = useSearchParams();
+  const userType = data.get('userType');
+
+  const [active, setActive] = React.useState('overview');
+  const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+
+  const methods = useForm({
+    defaultValues: {
+      role: '',
+      image: '',
+      username: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      password: '',
+      gender: '',
+      dob: '',
+      region: '',
+    },
+  });
+
+  const showPassword = useBoolean();
+
+  const tabData = [
+    { value: 'overview', label: 'Overview' },
+    { value: 'transactions', label: 'Transactions' },
+    { value: 'booking&loyalty', label: 'Booking & Loyalty' },
+  ];
+
+  const user = {
+    id: '1',
+    fullName: 'John Doe',
+    surname: 'Doe',
+    email: 'john.doe@example.com',
+    createdAt: '2025-03-23T13:00:00Z',
+    phoneNumber: '+1234567890',
+    gender: 'Male',
+    dateOfBirth: '1990-01-01',
+    region: 'North America',
+    dateOfAccountCreation: '2025-01-01',
+    lastActivity: '2025-03-01',
+    image: '/images/eventImage.png',
+    linkedOrganization: 'Doe Events Ltd.',
+    businessDetails: {
+      name: 'Doe Events',
+      description: 'Organizing events since 2020',
+      website: 'https://doeevents.com',
+      socialLinks: {
+        facebook: 'https://facebook.com/doeevents',
+        instagram: 'https://instagram.com/doeevents',
+        twitter: 'https://twitter.com/doeevents',
+      },
+    },
+
+    bankDetails: {
+      oib: '12345678901',
+      bankAccountNumber: 'HR1234567890123456789',
+      bankAccountName: 'Doe Events Ltd.',
+      representativeFullName: 'John Doe',
+      address: '123 Event St, City, Country',
+      postalCode: '10000',
+      city: 'City',
+      country: 'Country',
+    },
+  };
+
+  const onDelete = () => {
+    deleteModal.onFalse();
+  };
+
   return (
-    <div className="mt-10 h-full">
-      <div className="grid grid-cols-12 gap-7">
-        <div className="md:col-span-9 col-span-12">
-          <Card className="overflow-hidden  p-4  shadow-md">
-            <div className="relative w-full">
-              <div className="bg-cover bg-center overflow-visible rounded-lg" />
-              <div className="">
-                <Image
-                  src="/images/eventImage.png"
-                  alt="User Avatar"
-                  className="md:w-30 w-20  md:h-30 h-20 rounded-full  shadow-lg z-10"
-                  width={120}
-                  height={120}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Pencil className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors" />
-              <Trash2 className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4" />
-            </div>
-            <div className="flex items-center gap-2">
-              <h1 className="md:text-3xl  text-2xl font-bold ml-2 pt-0 mt-0">
-                Peti Kupe
-              </h1>
-            </div>
-            <Badge
-              className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
-            >
-              Something@email.com
-            </Badge>
-            <div className="flex items-center gap-2">
-              <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
-              >
-                +1234467889
-              </Badge>
-            </div>
-            <div className="flex md:items-center md:justify-between mt-4 md:flex-row flex-col gap-4">
-              <Tabs value={active} onValueChange={setActive} className="w-full">
-                <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
-                  <TabsList className="inline-flex items-center gap-2 bg-transparent rounded-full p-1 ">
-                    {tabsData
-                      .filter(
-                        (tab) =>
-                          tab.value === "info" ||
-                          tab.value === "analytics" ||
-                          tab.value === "notifications"
-                      )
-                      .map((tab: any) => (
-                        <TabsTrigger
-                          key={tab.value}
-                          value={tab.value}
-                          className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all shadow-none cursor-pointer border-none ${
-                            active === tab.value
-                              ? 'after:content-["" ] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                              : "text-muted-foreground"
-                          }`}
+    <div>
+      <div className="space-y-6 pb-12">
+        <div className="mt-10 h-full">
+          <div className="grid grid-cols-12 md:gap-7">
+            <div className="col-span-12 lg:col-span-8 xl:col-span-9">
+              {/* ---------------- UPPER PROFILE SECTION ---------------- */}
+              <Card className="dark:bg-secondary overflow-hidden rounded-xl bg-white pb-0 shadow-lg transition-all">
+                <CardContent>
+                  <div>
+                    <div className="flex flex-col gap-6 lg:flex-row">
+                      {/* Profile Image */}
+                      <div className="w-full lg:w-1/3">
+                        <Image
+                          src={user.image}
+                          alt={user.fullName}
+                          className="h-56 w-full rounded-lg object-cover shadow sm:h-auto"
+                          width={20}
+                          height={20}
+                        />
+                      </div>
+                      {/* Right Content */}
+                      <div className="flex w-full flex-col gap-4 lg:w-2/3">
+                        {/* Actions and Role Info */}
+                        <div className="flex items-start justify-between text-sm text-gray-500 dark:text-gray-400">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800">
+                              {userType &&
+                                userType?.slice(0, 1).toUpperCase() +
+                                  userType?.slice(1)}
+                            </span>
+                            <span>
+                              Joined:{' '}
+                              {new Date(
+                                user.dateOfAccountCreation
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex gap-3">
+                            <Pencil
+                              className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition"
+                              onClick={openModal.onTrue}
+                            />
+                            <Trash2
+                              className="h-5 w-5 cursor-pointer text-gray-500 transition hover:text-red-500"
+                              onClick={deleteModal.onTrue}
+                            />
+                          </div>
+                        </div>
+
+                        {/* User Name */}
+                        <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
+                          {user.fullName}
+                        </h2>
+                        {userType === 'staff' && (
+                          <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
+                            {user.surname}
+                          </h2>
+                        )}
+                        {userType === 'staff' && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Linked Organization: {user.linkedOrganization}
+                          </p>
+                        )}
+
+                        {/* More Info */}
+                        <div className="mt-4">
+                          <h4 className="text-xs font-bold tracking-wide text-gray-500 dark:text-gray-400">
+                            USER INFO
+                          </h4>
+                          <div className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-gray-800 md:grid-cols-2 dark:text-white">
+                            <p>
+                              <span className="font-medium">Email:</span>{' '}
+                              {user.email}
+                            </p>
+                            <p>
+                              <span className="font-medium">Phone:</span>{' '}
+                              {user.phoneNumber}
+                            </p>
+                            {userType === 'user' && (
+                              <>
+                                <p>
+                                  <span className="font-medium">Gender:</span>{' '}
+                                  {user.gender}
+                                </p>
+                                <p>
+                                  <span className="font-medium">DOB:</span>{' '}
+                                  {new Date(
+                                    user.dateOfBirth
+                                  ).toLocaleDateString()}
+                                </p>
+                                <p>
+                                  <span className="font-medium">Region:</span>{' '}
+                                  {user.region}
+                                </p>
+                              </>
+                            )}
+                            {userType === 'staff' && (
+                              <p>
+                                <span className="font-medium">Surname:</span>{' '}
+                                {user.surname}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 w-full px-2 md:px-0">
+                      {/* Small screen dropdown */}
+                      <div className="mb-4 block sm:hidden">
+                        <Select
+                          value={activeTransactionTab}
+                          onValueChange={setActive}
                         >
-                          {tab.label}
-                        </TabsTrigger>
-                      ))}
-                  </TabsList>
-                </div>
-              </Tabs>
-              <div className="flex gap-4">
-                <Badge className="bg-blue-200 text-blue-800 w-10 h-10 cursor-pointer rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
-                  <Facebook className="w-5 h-5 " />
-                </Badge>
-                <Badge className="bg-blue-200 text-blue-800 cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
-                  <Instagram className="w-5 h-5 " />
-                </Badge>
-                <Badge className="bg-blue-200 text-blue-800  cursor-pointer w-10 h-10 rounded-full flex items-center justify-center p-0 hover:bg-blue-300 transition-colors">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 256 256"
-                    fill="currentColor"
-                    className="w-5 h-5 "
-                  >
-                    <path d="M232 72v40a88 88 0 1 1-88-88h40v40a48 48 0 0 0 48 48V72a72 72 0 0 1-72-72h-40a128 128 0 1 0 128 128V72Z" />
-                  </svg>
-                </Badge>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select tab" />
+                          </SelectTrigger>
+                          <SelectContent className="dark:bg-secondary">
+                            {tabData.map((tab: any) => (
+                              <SelectItem key={tab.value} value={tab.value}>
+                                {tab.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Tabs for larger screens */}
+                      <Tabs
+                        value={active}
+                        onValueChange={setActive}
+                        className="hidden w-full sm:block"
+                      >
+                        <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
+                          <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
+                            {tabData.map((tab: any) => (
+                              <TabsTrigger
+                                key={tab.value}
+                                value={tab.value}
+                                className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold !shadow-none transition-all dark:!bg-transparent ${
+                                  active === tab.value
+                                    ? 'after:absolute after:bottom-0 after:left-1/2 after:h-[4px] after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
+                                    : 'text-muted-foreground'
+                                }`}
+                              >
+                                {tab.label}
+                              </TabsTrigger>
+                            ))}
+                          </div>
+                        </TabsList>
+                      </Tabs>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="rounded-lg">
+                {/* ---------------- OVERVIEW ---------------- */}
+                {active === 'overview' && (
+                  <UserOverView userType={userType} user={user} />
+                )}
+
+                {/* ---------------- TRANSACTION ---------------- */}
+                {active === 'transactions' && (
+                  <Card className="dark:bg-secondary mt-4 shadow-lg">
+                    <CardHeader>
+                      <div className="flex flex-col gap-4 md:justify-between lg:flex-row lg:items-center">
+                        <h3 className="text-xl font-semibold">
+                          Transaction History
+                        </h3>
+                        <div>
+                          <div className="w-full">
+                            {/* Show select on small screens */}
+                            <div className="block sm:hidden">
+                              <Select
+                                value={activeTransactionTab}
+                                onValueChange={setActiveTransactionTab}
+                              >
+                                <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
+                                  <SelectValue placeholder="Select tab" />
+                                </SelectTrigger>
+                                <SelectContent className="dark:bg-secondary">
+                                  <SelectItem value="all">All</SelectItem>
+                                  <SelectItem value="transactions">
+                                    Transactions
+                                  </SelectItem>
+                                  <SelectItem value="refunds">
+                                    Refunds
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            {/* Show tabs on medium and larger screens */}
+                            <div className="hidden sm:block">
+                              <Tabs
+                                value={activeTransactionTab}
+                                onValueChange={setActiveTransactionTab}
+                                defaultValue="all"
+                                className="w-full"
+                              >
+                                <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
+                                  <TabsTrigger
+                                    value="all"
+                                    className={cn(
+                                      'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                                    )}
+                                  >
+                                    All
+                                  </TabsTrigger>
+                                  <TabsTrigger
+                                    value="transactions"
+                                    className={cn(
+                                      'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                                    )}
+                                  >
+                                    Transactions
+                                  </TabsTrigger>
+                                  <TabsTrigger
+                                    value="refunds"
+                                    className={cn(
+                                      'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                                    )}
+                                  >
+                                    Refunds
+                                  </TabsTrigger>
+                                </TabsList>
+                              </Tabs>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end lg:items-center">
+                          <FilterDropdown
+                            selectedOptions={selectedOptions}
+                            onSelectOption={setSelectedOptions}
+                            options={[
+                              { id: 'user', label: 'User' },
+                              { id: 'contact', label: 'Contact' },
+                              { id: 'invoice', label: 'Invoice' },
+                              { id: 'organizer', label: 'Organizer ' },
+                              { id: 'date', label: 'Date' },
+                              { id: 'total', label: 'Total' },
+                              {
+                                id: 'transactionType',
+                                label: 'Transaction Type',
+                              },
+                              { id: 'status', label: 'Status' },
+                            ]}
+                          />
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <TransactionHistory />
+                  </Card>
+                )}
+
+                {/* ---------------- BOOKING & LOYALTY ---------------- */}
+                {active === 'booking&loyalty' && (
+                  <>
+                    <Card className="dark:bg-secondary col-span-12 mt-4 shadow-lg">
+                      <CardHeader>
+                        <CardTitle>Booking History</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="rounded-lg border">
+                          <BookingHistory />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="dark:bg-secondary mt-4 shadow-lg">
+                      <CardHeader>
+                        <CardTitle>Ordering Transactions</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="rounded-lg border">
+                          <LoyaltyAndOrderTransaction />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="dark:bg-secondary mt-4 shadow-lg">
+                      <CardHeader>
+                        <CardTitle>Loyalty</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="rounded-lg border">
+                          <Loyalty />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
               </div>
             </div>
-          </Card>
-          <div className="mt-4 rounded-lg">
-            {active === "info" && <UserInfo />}
-            {active === "analytics" && <Useranalytics />}
-            {active === "notifications" && <UserNotifications />}
+
+            <div className="col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-4 xl:col-span-3">
+              {organizerCardData.map((user: any) => (
+                <UserCard item={user} key={user._id} />
+              ))}
+
+              <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
+                <CardContent>
+                  <div className="w-full flex-wrap items-start justify-between gap-y-6 px-2 md:flex md:px-0">
+                    {/* START DATE */}
+                    <div className="flex min-w-[140px] flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
+                        <p className="text-xs font-semibold text-gray-600 dark:text-white">
+                          START DATE
+                        </p>
+                      </div>
+                      <p className="text-sm font-medium text-black dark:text-white">
+                        March 23, 25, 13:00
+                      </p>
+                    </div>
+
+                    {/* END DATE */}
+                    <div className="mt-4 flex min-w-[140px] flex-col gap-1 md:mt-0">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
+                        <p className="text-xs font-semibold text-gray-600 dark:text-white">
+                          Last Activity
+                        </p>
+                      </div>
+                      <p className="text-sm font-medium text-black dark:text-white">
+                        March 23, 25, 13:00
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
-        {/* Sidebar or Additional Panel */}
-        <div className="md:col-span-3 col-span-12 md:space-y-2 space-y-3">
-          {userData.map((user: any) => (
-            <UserCard item={user} key={user._id} />
-          ))}
-          <TotalFollowers />
-          <ActivePromontion />
-        </div>
       </div>
+
+      {/* update Organization */}
+      <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
+        <DialogOverlay className="bg-opacity-30 fixed inset-0">
+          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+            </DialogHeader>
+            <FormProvider
+              methods={methods}
+              onSubmit={methods.handleSubmit(() => {})}
+            >
+              <div className="mt-0 flex w-full flex-col gap-4">
+                <RHFUploadAvatar name="image" label="Profile Image" />
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFTextField
+                    name="username"
+                    label="Username"
+                    placeholder="Enter Username"
+                  />
+                  <RHFTextField
+                    name="email"
+                    label="Email"
+                    placeholder="Enter Email"
+                  />
+                  <RHFTextField
+                    name="firstName"
+                    label="First Name"
+                    placeholder="Enter First Name"
+                  />
+                  <RHFTextField
+                    name="lastName"
+                    label="Last Name"
+                    placeholder="Enter Last Name"
+                  />
+
+                  <RHFTextField
+                    name="phone"
+                    label="Phone"
+                    placeholder="Enter Phone Number"
+                  />
+
+                  <RHFSelectField
+                    name="gender"
+                    label="Gender"
+                    placeholder="Select Gender"
+                    className="w-full flex-1"
+                    options={[
+                      { label: 'Male', value: 'Male' },
+                      { label: 'Female', value: 'Female' },
+                      { label: 'Other', value: 'Other' },
+                    ]}
+                  />
+
+                  <RHFTextField
+                    name="dob"
+                    label="DOB"
+                    placeholder="Enter Date of Birth"
+                  />
+                  <RHFTextField
+                    name="region"
+                    label="Region"
+                    placeholder="Enter Region"
+                  />
+                  <RHFTextField
+                    name="password"
+                    label="Password"
+                    type="password"
+                    placeholder="Enter Password"
+                    showPassword={showPassword.value}
+                    onTogglePassword={showPassword.onToggle}
+                    className={` ${
+                      methods.formState.errors.password ? 'border-red-400' : ''
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <div className="flex w-full items-center justify-center">
+                  <Button
+                    type="button"
+                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </FormProvider>
+          </DialogContent>
+        </DialogOverlay>
+      </Dialog>
+
+      <ConfirmDialog
+        open={deleteModal.value}
+        title="Delete User"
+        content="Are you sure you want to delete this?"
+        onClose={deleteModal.onFalse}
+        onConfirm={onDelete}
+      />
     </div>
   );
 };
