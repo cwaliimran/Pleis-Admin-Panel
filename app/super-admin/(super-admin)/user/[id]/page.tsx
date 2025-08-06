@@ -31,7 +31,7 @@ import Loyalty from '@/sections/users/loyalty';
 import LoyaltyAndOrderTransaction from '@/sections/users/loyaltyAndOrderTransaction';
 import UserCard from '@/sections/users/userCard';
 import UserOverView from '@/sections/users/userOverview';
-import { Calendar } from 'lucide-react';
+import { Calendar, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import React from 'react';
@@ -48,7 +48,18 @@ const Page = () => {
   const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
 
-  const methods = useForm();
+  const methods = useForm({
+    defaultValues: {
+      role: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      password: '',
+    },
+  });
+
+  const showPassword = useBoolean();
 
   const tabData = [
     { value: 'overview', label: 'Overview' },
@@ -143,16 +154,16 @@ const Page = () => {
                               ).toLocaleDateString()}
                             </span>
                           </div>
-                          {/* <div className="flex gap-3">
+                          <div className="flex gap-3">
                             <Pencil
-                              className="w-5 h-5 cursor-pointer text-gray-500 hover:text-primary transition"
+                              className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition"
                               onClick={openModal.onTrue}
                             />
                             <Trash2
-                              className="w-5 h-5 cursor-pointer text-gray-500 hover:text-red-500 transition"
+                              className="h-5 w-5 cursor-pointer text-gray-500 transition hover:text-red-500"
                               onClick={deleteModal.onTrue}
                             />
-                          </div> */}
+                          </div>
                         </div>
 
                         {/* User Name */}
@@ -443,35 +454,72 @@ const Page = () => {
         </div>
       </div>
 
+      {/* update Organization */}
       <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
-        <DialogOverlay className="bg-opacity-30 fixed inset-0 bg-white">
-          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[520px]">
+        <DialogOverlay className="bg-opacity-30 fixed inset-0">
+          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
             <DialogHeader>
-              <DialogTitle>Update User Information</DialogTitle>
+              <DialogTitle>Edit User</DialogTitle>
             </DialogHeader>
             <FormProvider
               methods={methods}
               onSubmit={methods.handleSubmit(() => {})}
             >
-              <DialogContent className="flex flex-col gap-4">
-                <RHFUploadAvatar name="avatar" label="Profile Picture" />
-                <RHFTextField
-                  name="name"
-                  label="Name"
-                  placeholder="Enter your name"
-                />
-                <RHFTextField
-                  name="email"
-                  label="Email"
-                  placeholder="Enter your email"
-                />
+              <div className="mt-4 flex w-full flex-col gap-4">
                 <RHFTextField
                   name="role"
                   label="Role"
-                  placeholder="Enter your role"
+                  placeholder="Enter Role"
+                  className={` ${
+                    methods.formState.errors.role ? 'border-red-400' : ''
+                  }`}
                 />
-              </DialogContent>
-              <Button type="submit">Update</Button>
+
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFTextField
+                    name="firstName"
+                    label="First Name"
+                    placeholder="Enter First Name"
+                  />
+                  <RHFTextField
+                    name="lastName"
+                    label="Last Name"
+                    placeholder="Enter Last Name"
+                  />
+                  <RHFTextField
+                    name="email"
+                    label="Email"
+                    placeholder="Enter Email"
+                  />
+                  <RHFTextField
+                    name="phone"
+                    label="Phone"
+                    placeholder="Enter Phone Number"
+                  />
+                  <RHFTextField
+                    name="password"
+                    label="Password"
+                    type="password"
+                    placeholder="Enter Password"
+                    showPassword={showPassword.value}
+                    onTogglePassword={showPassword.onToggle}
+                    className={` ${
+                      methods.formState.errors.password ? 'border-red-400' : ''
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <div className="flex w-full items-center justify-center">
+                  <Button
+                    type="button"
+                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
             </FormProvider>
           </DialogContent>
         </DialogOverlay>
