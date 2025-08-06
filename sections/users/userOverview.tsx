@@ -1,21 +1,30 @@
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useBoolean } from '@/hooks/useBoolean';
 import { m } from 'framer-motion';
 import {
   CalendarDays,
   DollarSign,
   Eye,
-  Facebook,
   Globe,
   Heart,
-  Instagram,
   MapPin,
+  Pencil,
   Share2,
-  Twitter,
   UserRound,
   Users,
 } from 'lucide-react';
 import React from 'react';
+import { useForm } from 'react-hook-form';
 import {
   followedEventList,
   followedOrganizationsList,
@@ -34,6 +43,23 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
     'Reservation management',
   ];
 
+  const openModal = useBoolean();
+
+  const methods = useForm({
+    defaultValues: {
+      role: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      password: '',
+      clubName: '',
+      points: '',
+      tier: '',
+      spent: '',
+    },
+  });
+
   // const accessList = [
   //   'Ticket validation',
   //   'Reservation info',
@@ -42,7 +68,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
   //   'Viewing active loyalty transactions (point redemption)',
   //   'Manually entering transaction codes (if NFC unavailable)',
   //   'Checking orders and confirming delivery',
-  //   'Viewing table booking status',
+  //   'Viewing table booking sta`t`us',
   // ];
 
   const interactions = [
@@ -457,51 +483,34 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
           </Card>
           {/* timeline  */}
 
-          {/* <Card className="dark:bg-secondary mt-4 shadow-lg">
-            <CardHeader>
-              <h3 className="text-lg font-semibold text-slate-500">
-                Loyalty Program Participation
-              </h3>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <p>
-                <strong className="text-slate-500">Clubs:</strong> Premium Club,
-                EventPlus
-              </p>
-              <p>
-                <strong className="text-slate-500">Tier & Points:</strong> Gold
-                (1,200 pts), Silver (600 pts)
-              </p>
-              <p>
-                <strong className="text-slate-500">Global Points:</strong> 1,800
-                pts
-              </p>
-              <p>
-                <strong className="text-slate-500">Redeemed:</strong> $40 worth
-                in last 30 days
-              </p>
-            </CardContent>
-          </Card> */}
-
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
-                <h1 className="font-semibold text-slate-500">
-                  Loyalty Program Participation
-                </h1>
+                <div className="flex items-center justify-between">
+                  <h1 className="font-semibold text-slate-500">
+                    Loyalty Program Participation
+                  </h1>
+
+                  <div className="flex gap-3">
+                    <Pencil
+                      className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition"
+                      onClick={openModal.onTrue}
+                    />
+                  </div>
+                </div>
 
                 <div className="mt-2 space-y-2 text-sm">
                   <p>
-                    <strong className="text-slate-500">Global Tier:</strong>{' '}
-                    Gold (1,200 pts)
+                    <strong className="text-slate-500">Global Status:</strong>{' '}
+                    Platium
                   </p>
                   <p>
                     <strong className="text-slate-500">Global Points:</strong>{' '}
                     1,800 pts
                   </p>
                   <p>
-                    <strong className="text-slate-500">Spent:</strong> 40 pts in
-                    last 30 days
+                    <strong className="text-slate-500">Global Spent:</strong> 40
+                    pts
                   </p>
                 </div>
 
@@ -520,7 +529,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                             Tier
                           </th>
                           <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">
-                            Spent (30d)
+                            Spent
                           </th>
                         </tr>
                       </thead>
@@ -533,7 +542,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                               Gold
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">$25</td>
+                          <td className="px-2 py-1">25</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">EventPlus</td>
@@ -543,7 +552,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                               Silver
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">$15</td>
+                          <td className="px-2 py-1">15</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">VIP Access</td>
@@ -553,7 +562,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                               Premium
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">$8</td>
+                          <td className="px-2 py-1">8</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">Music Lovers</td>
@@ -563,7 +572,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                               Silver
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">$18</td>
+                          <td className="px-2 py-1">18</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">Cinema Club</td>
@@ -573,7 +582,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                               Gold
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">$10</td>
+                          <td className="px-2 py-1">10</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">Sports Elite</td>
@@ -583,7 +592,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                               Silver
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">$12</td>
+                          <td className="px-2 py-1">32</td>
                         </tr>
                       </tbody>
                     </table>
@@ -649,6 +658,101 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
           )}
         </div>
       </div>
+
+      {/* update Organization */}
+      <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
+        <DialogOverlay className="bg-opacity-30 fixed inset-0">
+          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+            <DialogHeader>
+              <DialogTitle>Edit Loyalty Program</DialogTitle>
+            </DialogHeader>
+            <FormProvider
+              methods={methods}
+              onSubmit={methods.handleSubmit(() => {})}
+            >
+              <div className="mt-4 flex w-full flex-col gap-4">
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFSelectField
+                    name="globalStatus"
+                    label="Global Status"
+                    placeholder="Select Global Status"
+                    className="w-full flex-1"
+                    options={[
+                      { label: 'Gold', value: 'gold' },
+                      { label: 'Silver', value: 'silver' },
+                      { label: 'Bronze', value: 'bronze' },
+                    ]}
+                  />
+
+                  <RHFTextField
+                    name="globalPoints"
+                    label="Global Points"
+                    placeholder="Enter Global Points"
+                  />
+
+                  <RHFTextField
+                    name="globalSpent"
+                    label="Global Spent"
+                    placeholder="Enter Global Spent"
+                  />
+                </div>
+
+                <div className="flex border-t border-gray-300 pt-4">
+                  <h3 className="font-bold">Loyalty</h3>
+                </div>
+
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFSelectField
+                    name="clubName"
+                    label="Club Name"
+                    placeholder="Select Club Name"
+                    className="w-full flex-1"
+                    options={[
+                      { label: 'Premium Club', value: 'PremiumClub' },
+                      { label: 'EventPlus', value: 'EventPlus' },
+                      { label: 'Music Lovers', value: 'MusicLovers' },
+                    ]}
+                  />
+
+                  {/* Show next 3 fields only if a club name is selected */}
+                  {methods.watch('clubName') && (
+                    <>
+                      <RHFTextField
+                        name="points"
+                        label="Points"
+                        placeholder="Enter Points"
+                      />
+
+                      <RHFTextField
+                        name="tier"
+                        label="Tier"
+                        placeholder="Enter Tier"
+                      />
+
+                      <RHFTextField
+                        name="spent"
+                        label="Spent"
+                        placeholder="Enter Spent"
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <div className="flex w-full items-center justify-center">
+                  <Button
+                    type="button"
+                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </FormProvider>
+          </DialogContent>
+        </DialogOverlay>
+      </Dialog>
     </div>
   );
 };

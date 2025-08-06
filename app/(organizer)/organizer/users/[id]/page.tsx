@@ -1,24 +1,22 @@
-"use client"
-import { useParams } from 'next/navigation'
-import React from 'react'
-import Header from '../../../../common/header';
+'use client';
+
 import UserDetailPage from '@/sections/users/userDetailPage';
+import Header from '../../../../common/header';
 
 const Page = () => {
-    const id=useParams<any>();
 
   return (
     <div>
-        <Header
-            links={[
-                { name: "Dashboard", href: "/organizer/dashboard" },
-                { name: "Organizer", href: "/organizer/users" },
-                { name: "Organizer Details" },
-            ]}
-        />
-        <UserDetailPage id={id} />
+      <Header
+        links={[
+          { name: 'Dashboard', href: '/organizer/dashboard' },
+          { name: 'Organizer', href: '/organizer/users' },
+          { name: 'Organizer Details' },
+        ]}
+      />
+      <UserDetailPage />
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

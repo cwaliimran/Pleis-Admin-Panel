@@ -1,32 +1,32 @@
-"use client";
-import Header from "@/app/common/header";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
-import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
-import { Button } from "@/components/ui/button";
+'use client';
+import Header from '@/app/common/header';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogOverlay,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useBoolean } from "@/hooks/useBoolean";
-import { UserTable } from "@/sections/users";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Plus } from "lucide-react";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
+} from '@/components/ui/dialog';
+import { useBoolean } from '@/hooks/useBoolean';
+import { UserTable } from '@/sections/users';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Plus } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 
 const defaultValues = {
   image: null,
-  firstName: "",
-  lastName: "",
-  email: "",
-  role: "",
-  password: "",
-  address: "",
-  phone: "",
+  firstName: '',
+  lastName: '',
+  email: '',
+  role: '',
+  password: '',
+  address: '',
+  phone: '',
 };
 
 const Page = () => {
@@ -37,13 +37,13 @@ const Page = () => {
 
   const schema = Yup.object().shape({
     image: Yup.mixed().nullable(),
-    firstName: Yup.string().required("First name is required"),
-    lastName: Yup.string().required("Last name is required"),
-    email: Yup.string().email("Invalid email").required("Email is required"),
-    role: Yup.string().required("Role is required"),
+    firstName: Yup.string().required('First name is required'),
+    lastName: Yup.string().required('Last name is required'),
+    email: Yup.string().email('Invalid email').required('Email is required'),
+    role: Yup.string().required('Role is required'),
     password: Yup.string()
-      .min(6, "Password must be at least 6 characters")
-      .required("Password is required"),
+      .min(6, 'Password must be at least 6 characters')
+      .required('Password is required'),
     address: Yup.string(),
     phone: Yup.string(),
   });
@@ -54,7 +54,7 @@ const Page = () => {
   });
 
   const onSubmit = (data: any) => {
-    console.log("Form submitted with data:", data);
+    console.log('Form submitted with data:', data);
   };
 
   const CloseModal = () => {
@@ -64,13 +64,13 @@ const Page = () => {
   };
 
   const handleEdit = (id: string) => {
-    console.log("id", id);
+    console.log('id', id);
     openModal.onTrue();
     editModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
-    console.log("id", id);
+    console.log('id', id);
     deleteModal.onTrue();
   };
   const onDelete = () => {
@@ -81,14 +81,14 @@ const Page = () => {
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/organizer/dashboard" },
-          { name: "Users", href: "" },
+          { name: 'Dashboard', href: '/organizer/dashboard' },
+          { name: 'Users', href: '' },
         ]}
       />
       <div>
-        <div className=" w-full flex items-center justify-end">
+        <div className="flex w-full items-center justify-end">
           <Button
-            className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary"
+            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
             onClick={openModal.onTrue}
           >
             <Plus className="" />
@@ -98,27 +98,27 @@ const Page = () => {
       </div>
       {/* dialog for add and update the user */}
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
+        <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center bg-white md:w-lg">
           <DialogContent className=" ">
             <DialogHeader>
               <DialogTitle>
-                {" "}
-                {!editModal.value ? "Create User" : "Edit User"}{" "}
+                {' '}
+                {!editModal.value ? 'Create User' : 'Edit User'}{' '}
               </DialogTitle>
             </DialogHeader>
             <FormProvider
               methods={methods}
               onSubmit={methods.handleSubmit(onSubmit)}
             >
-              <div className="flex flex-col gap-3 mt-4">
+              <div className="mt-4 flex flex-col gap-3">
                 <RHFUploadAvatar name="image" label="Profile Image" />
-                <div className="grid md:grid-cols-2 grid-cols-1 gap-4 items-start">
+                <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
                   <RHFTextField
                     name="firstName"
                     label="First Name"
                     placeholder="Enter First Name"
                     className={` ${
-                      methods.formState.errors.firstName ? "border-red-400" : ""
+                      methods.formState.errors.firstName ? 'border-red-400' : ''
                     }`}
                   />
                   <RHFTextField
@@ -126,7 +126,7 @@ const Page = () => {
                     label="Last Name"
                     placeholder="Enter Last Name"
                     className={` ${
-                      methods.formState.errors.lastName ? "border-red-400" : ""
+                      methods.formState.errors.lastName ? 'border-red-400' : ''
                     }`}
                   />
                 </div>
@@ -135,7 +135,7 @@ const Page = () => {
                   label="Email"
                   placeholder="Enter Email"
                   className={` ${
-                    methods.formState.errors.email ? "border-red-400" : ""
+                    methods.formState.errors.email ? 'border-red-400' : ''
                   }`}
                 />
                 <RHFTextField
@@ -146,7 +146,7 @@ const Page = () => {
                   showPassword={showPassword.value}
                   onTogglePassword={showPassword.onToggle}
                   className={` ${
-                    methods.formState.errors.password ? "border-red-400" : ""
+                    methods.formState.errors.password ? 'border-red-400' : ''
                   }`}
                 />
                 <RHFSelectField
@@ -154,16 +154,16 @@ const Page = () => {
                   label="Role"
                   placeholder="Select Role"
                   options={[
-                    { value: "Guest", label: "Guest" },
-                    { value: "Registered User", label: "Registered User" },
-                    { value: "Admin", label: "Admin" },
-                    { value: "Manager", label: "Manager" },
-                    { value: "Superadmin", label: "Superadmin" },
-                    { value: "Staff", label: "Staff" },
+                    { value: 'Guest', label: 'Guest' },
+                    { value: 'Registered User', label: 'Registered User' },
+                    { value: 'Admin', label: 'Admin' },
+                    { value: 'Manager', label: 'Manager' },
+                    { value: 'Superadmin', label: 'Superadmin' },
+                    { value: 'Staff', label: 'Staff' },
                   ]}
                 />
 
-                <div className=" grid md:grid-cols-2 grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFTextField
                     name="phone"
                     label="Phone"
@@ -179,9 +179,9 @@ const Page = () => {
                 <div className="flex justify-end gap-2">
                   <Button
                     type="submit"
-                    className="bg-primary text-white hover:bg-primary cursor-pointer"
+                    className="bg-primary hover:bg-primary cursor-pointer text-white"
                   >
-                    {!editModal.value ? "Add User" : "Update User"}
+                    {!editModal.value ? 'Add User' : 'Update User'}
                   </Button>
                 </div>
               </div>
