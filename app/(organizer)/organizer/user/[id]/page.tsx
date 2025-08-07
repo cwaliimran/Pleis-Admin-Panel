@@ -1,5 +1,3 @@
-'use client';
-
 import UserDetailPage from '@/sections/users/userDetailPage';
 import Header from '../../../../common/header';
 

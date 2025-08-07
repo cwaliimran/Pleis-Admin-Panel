@@ -1,11 +1,3 @@
-// interface UserDetailPageProps {
-//   id: string;
-// }
-// const UserDetailPage: FC<UserDetailPageProps> = ({ id }) => {
-// };
-
-// export default UserDetailPage;
-
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';

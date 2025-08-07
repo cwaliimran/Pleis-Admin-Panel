@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import Header from "@/app/common/header";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import Header from '@/app/common/header';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import FormProvider, {
   RHFSelectField,
   RHFTextField,
   RHFUploadVideo,
-} from "@/components/rhf";
-import RHFTextfieldWithSelect from "@/components/rhf/rhf-text-field-with-select";
-import { Button } from "@/components/ui/button";
+} from '@/components/rhf';
+import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogOverlay,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useBoolean } from "@/hooks/useBoolean";
-import HighlightTable from "@/sections/highlight/hightlightTable";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Plus } from "lucide-react";
-import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
+} from '@/components/ui/dialog';
+import { useBoolean } from '@/hooks/useBoolean';
+import HighlightTable from '@/sections/highlight/hightlightTable';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Plus } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 
 type HighlightFormValues = {
   video: any;
@@ -34,18 +34,18 @@ type HighlightFormValues = {
 
 const defaultValues = {
   video: null,
-  title: "",
-  event: "",
-  status: "",
-  organization: "",
+  title: '',
+  event: '',
+  status: '',
+  organization: '',
 };
 
 const schema = Yup.object({
-  video: Yup.mixed().nullable().required("Video is required"),
-  title: Yup.string().required("Title is required"),
-  event: Yup.string().required("Event is required"),
-  status: Yup.string().required("Status is required"),
-  organization: Yup.string().required("Organization is required"),
+  video: Yup.mixed().nullable().required('Video is required'),
+  title: Yup.string().required('Title is required'),
+  event: Yup.string().required('Event is required'),
+  status: Yup.string().required('Status is required'),
+  organization: Yup.string().required('Organization is required'),
 });
 
 const HighlightView = () => {
@@ -59,7 +59,7 @@ const HighlightView = () => {
   });
 
   const { watch, reset, handleSubmit } = methods;
-  const video = watch("video");
+  const video = watch('video');
 
   const videoPreviewUrl = useMemo(() => {
     return video instanceof File ? URL.createObjectURL(video) : null;
@@ -74,7 +74,7 @@ const HighlightView = () => {
   }, [videoPreviewUrl]);
 
   const onSubmit = (data: any) => {
-    console.log("data", data);
+    console.log('data', data);
   };
 
   const closeModal = () => {
@@ -83,13 +83,13 @@ const HighlightView = () => {
     editModal.onFalse();
   };
   const handleEdit = (id: string) => {
-    console.log("id", id);
+    console.log('id', id);
     openModal.onTrue();
     editModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
-    console.log("id", id);
+    console.log('id', id);
     deleteModal.onTrue();
   };
   const onDelete = () => {
@@ -98,10 +98,10 @@ const HighlightView = () => {
 
   return (
     <div>
-      <div className="w-full flex items-center justify-end  md:mt-0 mt-3">
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
         <Button
           onClick={openModal.onTrue}
-          className="rounded-4xl py-2 bg-primary text-white hover:bg-primary cursor-pointer"
+          className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
         >
           <Plus className="mr-1" />
           Create Highlight
@@ -113,27 +113,27 @@ const HighlightView = () => {
 
       {/* ------------- MODAL FOR ADDING AND EDITING HIGHLIGHT ------------- */}
       <Dialog open={openModal.value} onOpenChange={closeModal}>
-        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30" />
-        <DialogContent className="w-full md:!max-w-screen-md  dark:bg-[#171717]">
+        <DialogOverlay className="bg-opacity-30 fixed inset-0" />
+        <DialogContent className="w-full md:!max-w-screen-md dark:bg-[#171717]">
           <DialogHeader>
             <DialogTitle>
-              {!editModal.value ? "Create Highlight" : "Edit Highlight"}
+              {!editModal.value ? 'Create Highlight' : 'Edit Highlight'}
             </DialogTitle>
           </DialogHeader>
 
           <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-12 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-12 gap-4">
               <div className="col-span-12 md:col-span-4">
                 <RHFUploadVideo name="video" label="Highlight Video" />
               </div>
 
-              <div className="col-span-12 md:col-span-8 flex flex-col gap-4">
+              <div className="col-span-12 flex flex-col gap-4 md:col-span-8">
                 <RHFTextField
                   name="title"
                   label="Highlight Title"
                   placeholder="Enter Highlight Title"
                   className={`${
-                    methods.formState.errors.title ? "border-red-400" : ""
+                    methods.formState.errors.title ? 'border-red-400' : ''
                   }`}
                 />
 
@@ -141,9 +141,9 @@ const HighlightView = () => {
                   name="event"
                   placeholder="Select Event"
                   options={[
-                    { value: "event1", label: "Event 1" },
-                    { value: "event2", label: "Event 2" },
-                    { value: "event3", label: "Event 3" },
+                    { value: 'event1', label: 'Event 1' },
+                    { value: 'event2', label: 'Event 2' },
+                    { value: 'event3', label: 'Event 3' },
                   ]}
                 />
 
@@ -151,9 +151,9 @@ const HighlightView = () => {
                   name="organization"
                   placeholder="Select Organization"
                   options={[
-                    { label: "Organization 1", value: "org1" },
-                    { label: "Organization 2", value: "org2" },
-                    { label: "Organization 3", value: "org3" },
+                    { label: 'Organization 1', value: 'org1' },
+                    { label: 'Organization 2', value: 'org2' },
+                    { label: 'Organization 3', value: 'org3' },
                   ]}
                 />
 
@@ -162,19 +162,19 @@ const HighlightView = () => {
                   // label="Status"
                   placeholder="Select Status"
                   options={[
-                    { label: "Active", value: "active" },
-                    { label: "Inactive", value: "inactive" },
+                    { label: 'Active', value: 'active' },
+                    { label: 'Inactive', value: 'inactive' },
                   ]}
                 />
               </div>
             </div>
 
-            <div className="flex justify-end mt-6">
+            <div className="mt-6 flex justify-end">
               <Button
                 type="submit"
-                className="bg-primary text-white hover:bg-primary cursor-pointer"
+                className="bg-primary hover:bg-primary cursor-pointer text-white"
               >
-                {!editModal.value ? "Add Highlight" : "Update Highlight"}
+                {!editModal.value ? 'Add Highlight' : 'Update Highlight'}
               </Button>
             </div>
           </FormProvider>
