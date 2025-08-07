@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 import {
   Building,
   Calendar,
@@ -6,12 +6,13 @@ import {
   Handshake,
   Highlighter,
   Home,
+  List,
   Tags,
   User,
   UsersRound,
-  VenetianMask
-} from "lucide-react";
-import { paths } from "./paths";
+  VenetianMask,
+} from 'lucide-react';
+import { paths } from './paths';
 
 type MenuItem = {
   title: string;
@@ -29,66 +30,130 @@ type MenuGroup = {
 
 export const menuGroups: MenuGroup[] = [
   {
-    label: "Dashboard",
+    label: 'Dashboard',
     key: paths.organizer.dashboard,
     icon: ChartColumnBig,
   },
   {
-    label: "Organizations",
+    label: 'Organizations',
     key: paths.organizer.organizations.default,
     icon: Building,
     items: [
       {
-        title: "Create Organization",
+        title: 'Create Organization',
         url: paths.organizer.organizations.create,
         icon: Home,
       },
       {
-        title: "Organization List",
+        title: 'Organization List',
         url: paths.organizer.organizations.list,
         icon: Home,
       },
     ],
   },
   {
-    label: "Events",
+    label: 'Events',
     key: paths.organizer.events.default,
     icon: Calendar,
     items: [
       {
-        title: "Create Event",
+        title: 'Create Event',
         url: paths.organizer.events.create,
         icon: Tags,
       },
       {
-        title: "Events List",
+        title: 'Events List',
         url: paths.organizer.events.list,
         icon: Tags,
       },
     ],
   },
   {
-    label: "Venue",
+    label: 'Loyalty',
+    key: paths.organizer.loyalty.default,
+    icon: Handshake,
+    items: [
+      {
+        title: 'Loyalty Dashboard',
+        url: paths.organizer.loyalty.default,
+        icon: Tags,
+      },
+      {
+        title: 'Rewards',
+        url: paths.organizer.rewards,
+        icon: Tags,
+      },
+      {
+        title: 'Challenges',
+        url: paths.organizer.challenges,
+        icon: Tags,
+      },
+      {
+        title: 'Promotions',
+        url: paths.organizer.events.list,
+        icon: Tags,
+      },
+      {
+        title: 'Members',
+        url: paths.organizer.events.list,
+        icon: Tags,
+      },
+      {
+        title: 'Settings',
+        url: paths.organizer.events.list,
+        icon: Tags,
+      },
+      {
+        title: 'Referrals',
+        url: paths.organizer.events.list,
+        icon: Tags,
+      },
+      {
+        title: 'Transactions',
+        url: paths.organizer.events.list,
+        icon: Tags,
+      },
+    ],
+  },
+  {
+    label: 'Venue',
     key: paths.organizer.venue.default,
     icon: VenetianMask,
   },
   {
-    label: "Highlights",
+    label: 'Highlights',
     key: paths.organizer.hightLight.default,
     icon: Highlighter,
   },
   {
-    label: "Loyalty",
-    key: paths.organizer.loyalty.default,
-    icon: Handshake,
+    label: 'Menu Items',
+    key: paths.organizer.menuItems,
+    icon: List,
   },
+
+  // {
+  //   label: 'Loyalty',
+  //   key: paths.organizer.loyalty.default,
+  //   icon: Handshake,
+  // },
+
+  // {
+  //   label: 'Rewards',
+  //   key: paths.organizer.rewards,
+  //   icon: Trophy,
+  // },
+  // {
+  //   label: 'Challenges',
+  //   key: paths.organizer.challenges,
+  //   icon: Cog,
+  // },
   {
-    label: "User",
+    label: 'User',
     key: paths.organizer.users.default,
     icon: User,
     items: [
       {
-        title: "User List",
+        title: 'User List',
         url: paths.organizer.users.list,
         icon: UsersRound,
       },

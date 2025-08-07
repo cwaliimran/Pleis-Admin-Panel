@@ -1,12 +1,9 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import React from 'react';
-import Header from '../../../../common/header';
 import UserDetailPage from '@/sections/users/userDetailPage';
+import Header from '../../../../common/header';
 
 const Page = () => {
-  const id = useParams<any>();
 
   return (
     <div>
