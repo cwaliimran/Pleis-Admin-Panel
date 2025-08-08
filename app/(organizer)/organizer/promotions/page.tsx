@@ -7,7 +7,7 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer/dashboard' },
-          { name: 'Transactions', href: '' },
+          { name: 'Promotions', href: '' },
         ]}
       />
 

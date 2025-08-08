@@ -90,7 +90,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Promotions',
-        url: paths.organizer.events.list,
+        url: paths.organizer.promotions,
         icon: Tags,
       },
       {

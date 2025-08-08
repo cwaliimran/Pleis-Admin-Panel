@@ -1,5 +1,5 @@
 import Header from '@/app/common/header';
-import PromotionsView from '@/sections/promotions/promotions-view';
+import MembersView from '@/sections/members/members-view';
 
 const Page = () => {
   return (
@@ -7,11 +7,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer/dashboard' },
-          { name: 'Transactions', href: '' },
+          { name: 'Members', href: '' },
         ]}
       />
 
-      <PromotionsView />
+      <MembersView />
     </div>
   );
 };

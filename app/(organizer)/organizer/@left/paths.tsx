@@ -8,6 +8,7 @@ export const paths = {
     menuItems: '/organizer/menuItems',
     rewards: '/organizer/rewards',
     challenges: '/organizer/challenges',
+    promotions: '/organizer/promotions',
     home: '/organizer/home',
     tags: '/organizer/tags',
     loyalty: {

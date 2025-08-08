@@ -682,6 +682,7 @@ const Page = () => {
               <Checkbox
                 id="accept-terms"
                 checked={acceptedTerms}
+                className={`cursor-pointer border border-black ${acceptedTerms ? 'dark:border-primary' : 'dark:border-white'}`}
                 onCheckedChange={(checked) =>
                   setAcceptedTerms(checked as boolean)
                 }
