@@ -21,13 +21,17 @@ import {
 import { Table, TableBody } from '@/components/ui/table';
 import { FC, useState } from 'react';
 import { RewardsData } from './data';
-import MembersTableRow from './membersRow';
+import TransactionsTableRow from './transactionsRow';
 
 const headLabel = [
-  { id: 'username', label: 'Username' },
-  { id: 'currentTier', label: 'Current Tier' },
-  { id: 'status', label: 'Status' },
-  { id: 'streak', label: 'Streak' },
+  { id: 'purchases', label: 'Purchases', align: 'left' },
+  { id: 'rewardRedemptions', label: 'Reward redemptions', align: 'left' },
+  { id: 'challengeCompletions', label: 'Challenge completions', align: 'left' },
+  { id: 'points', label: 'Points', align: 'left' },
+  { id: 'streakRewards', label: 'Streak rewards', align: 'left' },
+  { id: 'manualPointGifts', label: 'Manual point gifts', align: 'left' },
+  { id: 'pointExpirations', label: 'Point expirations', align: 'left' },
+  { id: 'referrals', label: 'Referrals', align: 'left' },
   { id: 'actions', label: 'Actions' },
 ];
 
@@ -36,14 +40,19 @@ interface PageProps {
   handleEdit?: (id: string) => void;
 }
 
-const MembersTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+const TransactionsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [status, setStatus] = useState<string>('');
+  const [type, setType] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const handleResetFilters = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
     setDate(undefined);
-    setStatus('');
+    setType('');
     setSearchTerm('');
   };
 
@@ -52,26 +61,30 @@ const MembersTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Members List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">
+              Loyalty Transaction List
+            </h3>
           </div>
 
           <TableFilters
-            selectFilters={[
-              {
-                id: 'status',
-                label: 'Status',
-                placeholder: 'Select status',
-                value: status,
-                onChange: setStatus,
-                options: [
-                  { value: 'gold', label: 'Gold' },
-                  { value: 'silver', label: 'Silver' },
-                  { value: 'bronze', label: 'Bronze' },
-                ],
+            dateRangeFilter={{
+              startDate: {
+                id: 'event-start-date',
+                label: 'Start Date',
+                placeholder: 'Select start date',
+                value: startDate,
+                onChange: setStartDate,
               },
-            ]}
+              endDate: {
+                id: 'event-end-date',
+                label: 'End Date',
+                placeholder: 'Select end date',
+                value: endDate,
+                onChange: setEndDate,
+              },
+            }}
             searchFilter={{
-              placeholder: 'Search Members',
+              placeholder: 'Search Transactions',
               value: searchTerm,
               onChange: setSearchTerm,
             }}
@@ -87,7 +100,7 @@ const MembersTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {RewardsData.map((item: any, index: number) => (
-                  <MembersTableRow
+                  <TransactionsTableRow
                     key={index}
                     item={item}
                     handleDelete={handleDelete}
@@ -142,4 +155,4 @@ const MembersTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
   );
 };
 
-export default MembersTable;
+export default TransactionsTable;

@@ -31,7 +31,7 @@ const headLabel = [
   { id: 'endTime', label: 'End Time', align: 'left' },
   { id: 'tierLimit', label: 'Tier limit', align: 'left' },
   { id: 'repeatSettings', label: 'Repeat Settings', align: 'left' },
-  { id: 'type', label: 'Type', align: 'left' },
+  { id: 'type', label: 'Promotion Type', align: 'left' },
   { id: 'actions', label: 'Actions' },
 ];
 

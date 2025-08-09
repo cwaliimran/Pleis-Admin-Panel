@@ -9,6 +9,7 @@ export const paths = {
     rewards: '/organizer/rewards',
     challenges: '/organizer/challenges',
     promotions: '/organizer/promotions',
+    members: '/organizer/members',
     home: '/organizer/home',
     tags: '/organizer/tags',
     loyalty: {

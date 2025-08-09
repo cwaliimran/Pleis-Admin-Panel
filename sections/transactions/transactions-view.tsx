@@ -13,61 +13,59 @@ import {
 } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Plus } from 'lucide-react';
+import { Calculator, Plus } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import MembersTable from './membersTable';
+import TransactionsTable from './transactionsTable';
 
-type PromotionsFormValues = {
-  photo: any;
-  title: string;
-  description: string;
-  startTime: string;
-  endTime: string;
-  tierLimit: string;
-  repeatSettings: string;
+type HighlightFormValues = {
+  image: any;
+  name: string;
   type: string;
+  pointValue: string;
+  limit: string;
+  tierLimit: string;
+  description: string;
 };
 
 const defaultValues = {
-  photo: null,
-  title: '',
-  description: '',
-  startTime: '',
-  endTime: '',
-  tierLimit: '',
-  repeatSettings: '',
+  image: null,
+  name: '',
   type: '',
+  pointValue: '',
+  limit: '',
+  tierLimit: '',
+  description: '',
 };
 
 const schema = Yup.object({
-  photo: Yup.mixed().nullable().required('Photo is required'),
-  title: Yup.string().required('Title is required'),
-  description: Yup.string().required('Description is required'),
-  startTime: Yup.string().required('Start Time is required'),
-  endTime: Yup.string().required('End Time is required'),
-  tierLimit: Yup.string().required('Tier Limit is required'),
-  repeatSettings: Yup.string().required('Repeat Settings is required'),
+  image: Yup.mixed().nullable().required('Image is required'),
+  name: Yup.string().required('Name is required'),
   type: Yup.string().required('Type is required'),
+  pointValue: Yup.string().required('Point Value is required'),
+  limit: Yup.string().required('Limit is required'),
+  tierLimit: Yup.string().required('Tier Limit is required'),
+  description: Yup.string().required('Description is required'),
 });
 
-const MembersView = () => {
+const TransactionsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const calculatorModal = useBoolean();
 
-  const methods = useForm<PromotionsFormValues>({
+  const methods = useForm<HighlightFormValues>({
     resolver: yupResolver(schema),
     defaultValues,
   });
 
   const { watch, reset, handleSubmit } = methods;
-  const photo = watch('photo');
+  const image = watch('image');
 
   const imagePreviewUrl = useMemo(() => {
-    return photo instanceof File ? URL.createObjectURL(photo) : null;
-  }, [photo]);
+    return image instanceof File ? URL.createObjectURL(image) : null;
+  }, [image]);
 
   useEffect(() => {
     return () => {
@@ -86,6 +84,7 @@ const MembersView = () => {
     openModal.onFalse();
     editModal.onFalse();
   };
+
   const handleEdit = (id: string) => {
     console.log('id', id);
     openModal.onTrue();
@@ -108,10 +107,18 @@ const MembersView = () => {
 
   return (
     <div>
-      <div className="mt-3 flex w-full items-center justify-end md:mt-0"></div>
+      <div className="mt-3 flex w-full items-center justify-end gap-3 md:mt-0">
+        <Button
+          // onClick={handleCreate}
+          className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
+        >
+          <Plus className="mr-1" />
+          Create Transactions
+        </Button>
+      </div>
 
       {/* ------------- HIGHLIGHT TABLE ------------- */}
-      <MembersTable handleDelete={handleDelete} handleEdit={handleEdit} />
+      <TransactionsTable handleDelete={handleDelete} handleEdit={handleEdit} />
 
       {/* ------------- MODAL FOR ADDING AND EDITING ------------- */}
       <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
@@ -119,7 +126,7 @@ const MembersView = () => {
           <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
             <DialogHeader>
               <DialogTitle>
-                {editModal.value ? 'Edit Promotion' : 'Create Promotion'}
+                {editModal.value ? 'Edit Menu Item' : 'Create Menu Item'}
               </DialogTitle>
             </DialogHeader>
             <FormProvider
@@ -127,39 +134,43 @@ const MembersView = () => {
               onSubmit={methods.handleSubmit(() => {})}
             >
               <div className="mt-0 flex w-full flex-col gap-4">
-                <RHFUploadAvatar name="photo" label="Photo" />
+                <RHFUploadAvatar name="image" label="Image" />
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFTextField
-                    name="title"
-                    label="Title"
-                    placeholder="Enter Title"
+                    name="name"
+                    label="Name"
+                    placeholder="Enter Name"
                   />
 
-                  <RHFSelectField
+                  <RHFTextField
                     name="type"
                     label="Type"
-                    placeholder="Select Type"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'Happy Hour', value: 'Happy Hour' },
-                      { label: 'Special Offer', value: 'Special Offer' },
-                      { label: 'Seasonal', value: 'Seasonal' },
-                    ]}
+                    placeholder="Enter Type"
                   />
 
-                  <RHFTextField
-                    name="startTime"
-                    label="Start Time"
-                    placeholder="Enter Start Time"
-                    type="date"
-                  />
+                  <div className="relative">
+                    <RHFTextField
+                      name="pointValue"
+                      label="Point Value"
+                      placeholder="Enter Point Value"
+                      type="number"
+                    />
+                    <Button
+                      type="button"
+                      onClick={calculatorModal.onTrue}
+                      className="absolute top-8 right-2 h-8 w-8 bg-blue-100 p-0 text-blue-600 hover:bg-blue-200"
+                      title="Open Calculator"
+                    >
+                      <Calculator className="h-4 w-4" />
+                    </Button>
+                  </div>
 
                   <RHFTextField
-                    name="endTime"
-                    label="End Time"
-                    placeholder="Enter End Time"
-                    type="date"
+                    name="limit"
+                    label="Limit"
+                    placeholder="Enter Limit"
+                    type="number"
                   />
 
                   <RHFSelectField
@@ -168,23 +179,9 @@ const MembersView = () => {
                     placeholder="Select Tier Limit"
                     className="w-full flex-1"
                     options={[
-                      { label: 'Bronze', value: 'Bronze' },
-                      { label: 'Silver', value: 'Silver' },
-                      { label: 'Gold', value: 'Gold' },
-                      { label: 'Platinum', value: 'Platinum' },
-                    ]}
-                  />
-
-                  <RHFSelectField
-                    name="repeatSettings"
-                    label="Repeat Settings"
-                    placeholder="Select Repeat Settings"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'None', value: 'None' },
-                      { label: 'Daily', value: 'Daily' },
-                      { label: 'Weekly', value: 'Weekly' },
-                      { label: 'Monthly', value: 'Monthly' },
+                      { label: 'Bronze', value: 'bronze' },
+                      { label: 'Silver', value: 'silver' },
+                      { label: 'Gold', value: 'gold' },
                     ]}
                   />
                 </div>
@@ -217,8 +214,8 @@ const MembersView = () => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Member"
-        content="Are you sure you want to delete this member?"
+        title="Delete Transaction"
+        content="Are you sure you want to delete this?"
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
@@ -226,4 +223,4 @@ const MembersView = () => {
   );
 };
 
-export default MembersView;
+export default TransactionsView;

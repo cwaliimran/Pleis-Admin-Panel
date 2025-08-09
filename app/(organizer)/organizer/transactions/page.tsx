@@ -1,5 +1,5 @@
 import Header from '@/app/common/header';
-import PromotionsView from '@/sections/promotions/promotions-view';
+import TransactionsView from '@/sections/transactions/transactions-view';
 
 const Page = () => {
   return (
@@ -11,7 +11,7 @@ const Page = () => {
         ]}
       />
 
-      <PromotionsView />
+      <TransactionsView />
     </div>
   );
 };

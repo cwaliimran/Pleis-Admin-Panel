@@ -13,8 +13,8 @@ import {
 } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Plus } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { Calculator, Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import RewardsTable from './rewardsTable';
@@ -53,6 +53,13 @@ const RewardsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const calculatorModal = useBoolean();
+
+  // Calculator state
+  const [itemPrice, setItemPrice] = useState<string>('');
+  const [loyaltyReturn, setLoyaltyReturn] = useState<string>('');
+  const [lowestPointsPerEur, setLowestPointsPerEur] = useState<string>('1');
+  const [calculatedPoints, setCalculatedPoints] = useState<number | null>(null);
 
   const methods = useForm<HighlightFormValues>({
     resolver: yupResolver(schema),
@@ -103,9 +110,42 @@ const RewardsView = () => {
     openModal.onTrue();
   };
 
+  // Calculator functions
+  const calculatePoints = () => {
+    const price = parseFloat(itemPrice);
+    const returnPercent = parseFloat(loyaltyReturn);
+    const pointsPerEur = parseFloat(lowestPointsPerEur);
+
+    if (price && returnPercent && pointsPerEur) {
+      const result = price * (100 / returnPercent) * pointsPerEur;
+      setCalculatedPoints(Math.round(result));
+    }
+  };
+
+  const useCalculatedValue = () => {
+    if (calculatedPoints !== null) {
+      methods.setValue('pointValue', calculatedPoints.toString());
+      calculatorModal.onFalse();
+    }
+  };
+
+  const resetCalculator = () => {
+    setItemPrice('');
+    setLoyaltyReturn('');
+    setLowestPointsPerEur('1');
+    setCalculatedPoints(null);
+  };
+
   return (
     <div>
-      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+      <div className="mt-3 flex w-full items-center justify-end gap-3 md:mt-0">
+        <Button
+          onClick={calculatorModal.onTrue}
+          className="cursor-pointer rounded-4xl bg-blue-600 py-2 text-white hover:bg-blue-700"
+        >
+          <Calculator className="mr-1" />
+          Reward Calculator
+        </Button>
         <Button
           onClick={handleCreate}
           className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
@@ -124,7 +164,7 @@ const RewardsView = () => {
           <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
             <DialogHeader>
               <DialogTitle>
-                {editModal.value ? 'Edit Menu Item' : 'Create Menu Item'}
+                {editModal.value ? 'Edit Reward' : 'Create Reward'}
               </DialogTitle>
             </DialogHeader>
             <FormProvider
@@ -147,12 +187,14 @@ const RewardsView = () => {
                     placeholder="Enter Type"
                   />
 
-                  <RHFTextField
-                    name="pointValue"
-                    label="Point Value"
-                    placeholder="Enter Point Value"
-                    type="number"
-                  />
+                  <div className="relative">
+                    <RHFTextField
+                      name="pointValue"
+                      label="Point Value"
+                      placeholder="Enter Point Value"
+                      type="number"
+                    />
+                  </div>
 
                   <RHFTextField
                     name="limit"
@@ -202,11 +244,142 @@ const RewardsView = () => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Rewards List"
+        title="Delete Reward"
         content="Are you sure you want to delete this?"
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
+
+      {/* ------------- REWARD CALCULATOR MODAL ------------- */}
+      <Dialog
+        open={calculatorModal.value}
+        onOpenChange={calculatorModal.onFalse}
+      >
+        <DialogOverlay className="bg-opacity-30 fixed inset-0">
+          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Reward Calculator
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="mt-4 w-full space-y-6">
+              {/* Formula Display */}
+              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                <h4 className="mb-2 font-semibold">Formula:</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Point Value = Item Price (€) × (100 / selected % return) ×
+                  [lowest points possible per EUR]
+                </p>
+              </div>
+
+              {/* Calculator Inputs */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium">
+                      Item Price (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Enter item price"
+                      value={itemPrice}
+                      onChange={(e) => setItemPrice(e.target.value)}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-2 block text-sm font-medium">
+                      Loyalty Return (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Enter % return"
+                      value={loyaltyReturn}
+                      onChange={(e) => setLoyaltyReturn(e.target.value)}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Lowest Points per EUR
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="Enter points per EUR"
+                    value={lowestPointsPerEur}
+                    onChange={(e) => setLowestPointsPerEur(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Calculate Button */}
+              <div className="flex justify-center">
+                <Button
+                  onClick={calculatePoints}
+                  disabled={!itemPrice || !loyaltyReturn || !lowestPointsPerEur}
+                  className="bg-blue-600 px-6 text-white hover:bg-blue-700"
+                >
+                  Calculate Points
+                </Button>
+              </div>
+
+              {/* Result Display */}
+              {calculatedPoints !== null && (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+                  <div className="text-center">
+                    <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">
+                      Calculated Point Value:
+                    </p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {calculatedPoints} points
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between gap-3 border-t pt-4">
+                <Button
+                  onClick={resetCalculator}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Reset
+                </Button>
+
+                {/* {calculatedPoints !== null && (
+                  <Button
+                    onClick={useCalculatedValue}
+                    className="bg-primary hover:bg-primary flex-1 text-white"
+                  >
+                    Use This Value
+                  </Button>
+                )} */}
+
+                <Button
+                  onClick={() => {
+                    calculatorModal.onFalse();
+                    resetCalculator();
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </DialogOverlay>
+      </Dialog>
     </div>
   );
 };
