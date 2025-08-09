@@ -90,12 +90,12 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Promotions',
-        url: paths.organizer.events.list,
+        url: paths.organizer.promotions,
         icon: Tags,
       },
       {
         title: 'Members',
-        url: paths.organizer.events.list,
+        url: paths.organizer.members,
         icon: Tags,
       },
       {
@@ -110,7 +110,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Transactions',
-        url: paths.organizer.events.list,
+        url: paths.organizer.transactions.default,
         icon: Tags,
       },
     ],

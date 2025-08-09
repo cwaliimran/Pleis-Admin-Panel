@@ -1,5 +1,8 @@
-import TableHeadCustom from "@/components/table/table-head-custom";
-import { Input } from "@/components/ui/input";
+'use client';
+
+import { TableFilters } from '@/components/table-filters';
+import TableHeadCustom from '@/components/table/table-head-custom';
+import { Card } from '@/components/ui/card';
 import {
   Pagination,
   PaginationContent,
@@ -8,7 +11,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
@@ -16,14 +19,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Table, TableBody } from "@/components/ui/table";
-import React, { FC, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { usersList } from "./data";
-import UserListTableRow from "./userListTableRow";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
-import { TableFilters } from "@/components/table-filters";
+} from '@/components/ui/select';
+import { Table, TableBody } from '@/components/ui/table';
+import { FC, useState } from 'react';
+import { usersList } from './data';
+import UserListTableRow from './userListTableRow';
 
 type Option = { id: string; label: string };
 interface PageProps {
@@ -31,7 +31,7 @@ interface PageProps {
   handleEdit?: (id: string) => void;
   handlePending?: (id: string) => void;
   pendingUser?: boolean;
-  userType?: "super-admin" | "organizer";
+  userType?: 'super-admin' | 'organizer';
 }
 const UserTable: FC<PageProps> = ({
   handleDelete,
@@ -40,120 +40,111 @@ const UserTable: FC<PageProps> = ({
   handlePending,
   userType,
 }) => {
-  const [revenue, setRevenue] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [role, setRole] = useState<string>("");
+  const [revenue, setRevenue] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [role, setRole] = useState<string>('');
 
   const handleResetFilters = () => {
-    setStatus("");
-    setRole("");
-    setRevenue("");
-    setSearchTerm("");
+    setStatus('');
+    setRole('');
+    setRevenue('');
+    setSearchTerm('');
   };
 
   const headLabel = [
-    { id: "image", label: "Image", align: "left" },
-    { id: "fname", label: "First Name", align: "left" },
-    { id: "lname", label: "Last Name", align: "left" },
-    pendingUser && { id: "organization", label: "Organization", align: "left" },
-    !pendingUser && { id: "username", label: "Username", align: "left" },
-    pendingUser && { id: "phone", label: "Phone", align: "left" },
-    !pendingUser && { id: "role", label: "Role", align: "left" },
-    !pendingUser && { id: "status", label: "Global Status", align: "left" },
+    { id: 'image', label: 'Image', align: 'left' },
+    { id: 'fname', label: 'First Name', align: 'left' },
+    { id: 'lname', label: 'Last Name', align: 'left' },
+    pendingUser && { id: 'organization', label: 'Organization', align: 'left' },
+    !pendingUser && { id: 'username', label: 'Username', align: 'left' },
+    pendingUser && { id: 'phone', label: 'Phone', align: 'left' },
+    !pendingUser && { id: 'role', label: 'Role', align: 'left' },
+    !pendingUser && { id: 'status', label: 'Global Status', align: 'left' },
     !pendingUser && {
-      id: "totalPoints",
-      label: "Points Earned",
-      align: "left",
+      id: 'totalPoints',
+      label: 'Points Earned',
+      align: 'left',
     },
     !pendingUser && {
-      id: "toatlRevenue",
+      id: 'toatlRevenue',
       label: " User's Revenue",
-      align: "left",
+      align: 'left',
     },
-    !pendingUser && { id: "region", label: "Region", align: "left" },
-     { id: "action", label: "Action", align: "left" },
+    !pendingUser && { id: 'region', label: 'Region', align: 'left' },
+    { id: 'action', label: 'Action', align: 'left' },
   ].filter((item): item is { id: string; label: string; align: string } =>
     Boolean(item)
   );
 
   const options: Option[] = [
-    { id: "fname", label: "First Name" },
-    { id: "lname", label: "Last Name" },
-    pendingUser ? { id: "organization", label: "Organization" } : null,
-    !pendingUser ? { id: "username", label: "Username" } : null,
-    pendingUser ? { id: "phone", label: "Phone" } : null,
-    !pendingUser ? { id: "role", label: "Role" } : null,
-    !pendingUser ? { id: "status", label: "Status" } : null,
-    !pendingUser ? { id: "totalPoints", label: "Total Points Earned" } : null,
+    { id: 'fname', label: 'First Name' },
+    { id: 'lname', label: 'Last Name' },
+    pendingUser ? { id: 'organization', label: 'Organization' } : null,
+    !pendingUser ? { id: 'username', label: 'Username' } : null,
+    pendingUser ? { id: 'phone', label: 'Phone' } : null,
+    !pendingUser ? { id: 'role', label: 'Role' } : null,
+    !pendingUser ? { id: 'status', label: 'Status' } : null,
+    !pendingUser ? { id: 'totalPoints', label: 'Total Points Earned' } : null,
     !pendingUser
-      ? { id: "totalRevenue", label: "Total Revenue From User" }
+      ? { id: 'totalRevenue', label: 'Total Revenue From User' }
       : null,
-    !pendingUser ? { id: "region", label: "Region" } : null,
+    !pendingUser ? { id: 'region', label: 'Region' } : null,
   ].filter((opt): opt is Option => Boolean(opt));
+
   return (
     <div>
-      <div className="grid grid-cols-12 ">
-        <Card className="mt-5 shadow-md col-span-12 lg:col-span-12  md:px-8 px-2  mb-5  dark:bg-secondary">
-          <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
-            <h3 className="text-xl font-semibold md:ml-0 ml-2">
-              {pendingUser ? "Pending User List" : "User List"}
+      <div className="grid grid-cols-12">
+        <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">
+              {pendingUser ? 'Pending User List' : 'User List'}
             </h3>
-
-            {/* <div>
-              <div className="flex flex-col md:items-center items-end">
-                <FilterDropdown
-                  options={options}
-                  selectedOptions={filterField}
-                  onSelectOption={setFilterField}
-                />
-              </div>
-            </div> */}
           </div>
 
           {pendingUser ? null : (
             <TableFilters
               selectFilters={[
                 {
-                  id: "role",
-                  label: "Role",
-                  placeholder: "Select role",
+                  id: 'role',
+                  label: 'Role',
+                  placeholder: 'Select role',
                   value: role,
                   onChange: setRole,
                   options: [
-                    { value: "user", label: "User" },
-                    { value: "staff", label: "Staff" },
-                    { value: "manager", label: "Manager" },
-                    { value: "organizer", label: "Organizer" },
+                    { value: 'user', label: 'User' },
+                    { value: 'staff', label: 'Staff' },
+                    { value: 'manager', label: 'Manager' },
+                    { value: 'organizer', label: 'Organizer' },
                   ],
                 },
                 {
-                  id: "revenue",
-                  label: "Revenue",
-                  placeholder: "Select by revenue",
+                  id: 'revenue',
+                  label: 'Revenue',
+                  placeholder: 'Select by revenue',
                   value: revenue,
                   onChange: setRevenue,
                   options: [
-                    { value: "lessThan10", label: "< $10k" },
-                    { value: "10to50", label: "$10k - $50k" },
-                    { value: "50to100", label: "$50k - $100k" },
+                    { value: 'lessThan10', label: '< $10k' },
+                    { value: '10to50', label: '$10k - $50k' },
+                    { value: '50to100', label: '$50k - $100k' },
                   ],
                 },
                 {
-                  id: "status",
-                  label: "Status",
-                  placeholder: "Select status",
+                  id: 'status',
+                  label: 'Status',
+                  placeholder: 'Select status',
                   value: status,
                   onChange: setStatus,
                   options: [
-                    { value: "active", label: "Active" },
-                    { value: "inactive", label: "Inactive" },
-                    { value: "pending", label: "Pending" },
+                    { value: 'active', label: 'Active' },
+                    { value: 'inactive', label: 'Inactive' },
+                    { value: 'pending', label: 'Pending' },
                   ],
                 },
               ]}
               searchFilter={{
-                placeholder: "Search User",
+                placeholder: 'Search User',
                 value: searchTerm,
                 onChange: setSearchTerm,
               }}
@@ -165,8 +156,8 @@ const UserTable: FC<PageProps> = ({
             />
           )}
 
-          <div className="border rounded-lg  ">
-            <Table className="w-full rounded-md border  ">
+          <div className="rounded-lg border">
+            <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {usersList.map((item: any, index: number) => (
@@ -183,11 +174,12 @@ const UserTable: FC<PageProps> = ({
               </TableBody>
             </Table>
           </div>
-          <Pagination className="flex flex-wrap items-center justify-end gap-4 mt-4 text-sm">
+
+          <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
             <div className="flex items-center space-x-2">
               <span className="text-muted-foreground">Rows per page:</span>
               <Select defaultValue="10">
-                <SelectTrigger className="w-[70px] h-8 text-sm">
+                <SelectTrigger className="h-8 w-[70px] text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
