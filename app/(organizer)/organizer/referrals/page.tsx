@@ -1,5 +1,5 @@
 import Header from '@/app/common/header';
-import UserListView from '@/sections/users/userListView';
+import ReferralsView from '@/sections/referrals/referrals-view';
 
 const Page = () => {
   return (
@@ -7,11 +7,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer/dashboard' },
-          { name: 'Users', href: '' },
+          { name: 'Referrals', href: '' },
         ]}
       />
 
-      <UserListView usertype="organizer" />
+      <ReferralsView />
     </div>
   );
 };

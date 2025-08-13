@@ -11,7 +11,7 @@ const RewardCard: FC<PageProps> = ({ item }) => {
   const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
   return (
     <div>
-      <Card className="shadow-md gap-0 py-0 hover:shadow-lg transition-shadow duration-300">
+      <Card className="shadow-md gap-0 py-0 hover:shadow-lg transition-shadow duration-300 dark:bg-secondary">
         <CardHeader className="p-3">
           <div className="flex">
             <div>
