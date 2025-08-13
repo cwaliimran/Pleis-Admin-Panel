@@ -1,3 +1,5 @@
+'use client';
+
 import { TableFilters } from '@/components/table-filters';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';

@@ -105,7 +105,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Referrals',
-        url: paths.organizer.events.list,
+        url: paths.organizer.referrals,
         icon: Tags,
       },
       {

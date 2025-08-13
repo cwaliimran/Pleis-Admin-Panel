@@ -18,7 +18,8 @@ import {
 import { useBoolean } from '@/hooks/useBoolean';
 import { yupResolver } from '@hookform/resolvers/yup';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+import PhoneInput from 'react-phone-input-2';
 import * as Yup from 'yup';
 
 const defaultValues = {
@@ -323,15 +324,47 @@ const UserModal: React.FC<UserModalProps> = ({
           break;
         case 'phone':
           fieldComponents.push(
-            <RHFTextField
-              key={field}
-              name="phone"
-              label="Phone"
-              placeholder="Enter Phone Number"
-              className={`${
-                methods.formState.errors.phone ? 'border-red-400' : ''
-              }`}
-            />
+            <div key={field}>
+              <p className="mb-0.5 text-sm font-medium">Phone</p>
+              <Controller
+                name={'phone'}
+                control={methods.control}
+                render={({ field, fieldState }) => (
+                  <div className="w-full">
+                    <PhoneInput
+                      {...field}
+                      country="pk"
+                      onChange={(value) => field.onChange(value)}
+                      placeholder={'Phone Number'}
+                      specialLabel="Phone"
+                      inputProps={{
+                        required: true,
+                        'aria-invalid': fieldState.invalid,
+                      }}
+                      containerClass="w-full"
+                      dropdownStyle={{
+                        zIndex: 9999,
+                        position: 'fixed',
+                        width: '16rem',
+                      }}
+                      buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                      inputClass={`file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input !border-gray-100 !shadow-sm flex !h-[34px] !w-full min-w-0 rounded-md !bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive
+                    ${
+                      fieldState.invalid
+                        ? 'border-destructive ring-destructive/40'
+                        : ''
+                    }
+                  `}
+                    />
+                    {fieldState.error && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
+            </div>
           );
           break;
         case 'password':
@@ -586,7 +619,7 @@ const UserModal: React.FC<UserModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[520px]">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[580px]">
           <DialogHeader>
             <DialogTitle>{!isEdit ? 'Create User' : 'Edit User'}</DialogTitle>
           </DialogHeader>

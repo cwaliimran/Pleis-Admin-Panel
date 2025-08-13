@@ -7,7 +7,7 @@ interface PageProps {
 const LoyaltyCard: FC<PageProps> = ({ item }) => {
   return (
     <div>
-      <Card className="gap-0">
+      <Card className="gap-0 dark:bg-secondary">
         <CardHeader>
           <CardTitle className="text-sm mb-2">{item.name}</CardTitle>
         </CardHeader>

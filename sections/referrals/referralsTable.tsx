@@ -23,17 +23,17 @@ import {
 import { Table, TableBody } from '@/components/ui/table';
 import { FC, useState } from 'react';
 import { RewardsData } from './data';
-import TransactionsTableRow from './transactionsRow';
+import ReferralsTableRow from './referralsRow';
 
 const headLabel = [
-  { id: 'purchases', label: 'Purchases', align: 'left' },
-  { id: 'rewardRedemptions', label: 'Reward redemptions', align: 'left' },
-  { id: 'challengeCompletions', label: 'Challenge completions', align: 'left' },
-  { id: 'points', label: 'Points', align: 'left' },
-  { id: 'streakRewards', label: 'Streak rewards', align: 'left' },
-  { id: 'manualPointGifts', label: 'Manual point gifts', align: 'left' },
-  { id: 'pointExpirations', label: 'Point expirations', align: 'left' },
-  { id: 'referrals', label: 'Referrals', align: 'left' },
+  { id: 'photo', label: 'Photo', align: 'left' },
+  { id: 'title', label: 'Title', align: 'left' },
+  { id: 'description', label: 'Description', align: 'left' },
+  { id: 'startTime', label: 'Start Time', align: 'left' },
+  { id: 'endTime', label: 'End Time', align: 'left' },
+  { id: 'tierLimit', label: 'Tier limit', align: 'left' },
+  { id: 'repeatSettings', label: 'Repeat Settings', align: 'left' },
+  { id: 'type', label: 'Promotion Type', align: 'left' },
   { id: 'actions', label: 'Actions' },
 ];
 
@@ -42,17 +42,12 @@ interface PageProps {
   handleEdit?: (id: string) => void;
 }
 
-const TransactionsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-
+const ReferralsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [type, setType] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const handleResetFilters = () => {
-    setStartDate(undefined);
-    setEndDate(undefined);
     setDate(undefined);
     setType('');
     setSearchTerm('');
@@ -64,29 +59,27 @@ const TransactionsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Loyalty Transaction List
+              Referral List
             </h3>
           </div>
 
           <TableFilters
-            dateRangeFilter={{
-              startDate: {
-                id: 'event-start-date',
-                label: 'Start Date',
-                placeholder: 'Select start date',
-                value: startDate,
-                onChange: setStartDate,
+            selectFilters={[
+              {
+                id: 'type',
+                label: 'Type',
+                placeholder: 'Select type',
+                value: type,
+                onChange: setType,
+                options: [
+                  { value: 'food', label: 'Food' },
+                  { value: 'beverage', label: 'Beverage' },
+                  { value: 'dessert', label: 'Dessert' },
+                ],
               },
-              endDate: {
-                id: 'event-end-date',
-                label: 'End Date',
-                placeholder: 'Select end date',
-                value: endDate,
-                onChange: setEndDate,
-              },
-            }}
+            ]}
             searchFilter={{
-              placeholder: 'Search Transactions',
+              placeholder: 'Search Referrals',
               value: searchTerm,
               onChange: setSearchTerm,
             }}
@@ -102,7 +95,7 @@ const TransactionsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {RewardsData.map((item: any, index: number) => (
-                  <TransactionsTableRow
+                  <ReferralsTableRow
                     key={index}
                     item={item}
                     handleDelete={handleDelete}
@@ -157,4 +150,4 @@ const TransactionsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
   );
 };
 
-export default TransactionsTable;
+export default ReferralsTable;
