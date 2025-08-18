@@ -36,7 +36,7 @@ export const RewardsData = [
     id: '4',
     photo: '/images/menu/icecream.jpg',
     name: 'Vanilla Ice Cream',
-    description: 'Classic vanilla ice cream scoop.',
+    description: 'Classic vanilla ice-cream scoop.',
     type: 'Dessert',
     pointValue: 50,
     limit: 3,
