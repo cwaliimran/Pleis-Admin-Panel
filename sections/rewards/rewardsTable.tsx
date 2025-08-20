@@ -44,12 +44,10 @@ interface PageProps {
 }
 
 const RewardsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
-  const [date, setDate] = useState<Date | undefined>(undefined);
   const [type, setType] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const handleResetFilters = () => {
-    setDate(undefined);
     setType('');
     setSearchTerm('');
   };

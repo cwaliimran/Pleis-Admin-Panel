@@ -95,7 +95,7 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
       </TableCell>
       <TableCell className="text-left">{item.pointValue}</TableCell>
       <TableCell className="text-left">{formatValue(item.limit)}</TableCell>
-      <TableCell className="text-left">{formatValue(item.tierLimit)}</TableCell>
+      <TableCell className="text-left capitalize">{formatValue(item.tierLimit)}</TableCell>
       <TableCell className="text-left">
         {item.percentOff && Number(item.percentOff) > 0 ? `${item.percentOff}%` : '-'}
       </TableCell>

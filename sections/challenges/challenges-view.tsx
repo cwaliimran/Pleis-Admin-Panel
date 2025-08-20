@@ -21,34 +21,81 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import ChallengesTable from './challengesTable';
 
+
+type RewardType = 'point' | 'item' | 'custom' | 'ticket';
+type TaskType = 'visit' | 'earn_points' | 'buy_menu_item' | 'refer_users';
+
 type ChallengesFormValues = {
   name: string;
-  reward: string;
-  taskType: string;
-  taskParameters: string;
+  rewardType: RewardType;
+  pointReward: string;
+  itemRewardId: string;
+  customReward: {
+    name: string;
+    description: string;
+    photo?: string | null;
+  } | null;
+  ticketReward: string;
+  taskType: TaskType;
+  taskValue: number;
+  menuItemId: string;
   claimLimit: string;
   endTime: string;
   tierLimit: string;
 };
 
-const defaultValues = {
+const defaultValues: ChallengesFormValues = {
   name: '',
-  reward: '',
-  taskType: '',
-  taskParameters: '',
+  rewardType: 'point',
+  pointReward: '',
+  itemRewardId: '',
+  customReward: null,
+  ticketReward: '',
+  taskType: 'visit',
+  taskValue: 1,
+  menuItemId: '',
   claimLimit: '',
   endTime: '',
   tierLimit: '',
 };
 
 const schema = Yup.object({
-  name: Yup.string().required('Name is required'),
-  reward: Yup.string().required('Reward is required'),
-  taskType: Yup.string().required('Task Type is required'),
-  taskParameters: Yup.string().required('Task Parameters is required'),
-  claimLimit: Yup.string().required('Claim Limit is required'),
-  endTime: Yup.string().required('End Time is required'),
-  tierLimit: Yup.string().required('Tier Limit is required'),
+  name: Yup.string().default('').required('Name is required'),
+  rewardType: Yup.string().oneOf(['point', 'item', 'custom', 'ticket']).default('point').required('Reward type is required'),
+  pointReward: Yup.string().default('').when('rewardType', {
+    is: 'point',
+    then: (schema) => schema.required('Point reward is required'),
+    otherwise: (schema) => schema.default(''),
+  }),
+  itemRewardId: Yup.string().default('').when('rewardType', {
+    is: 'item',
+    then: (schema) => schema.required('Menu item is required'),
+    otherwise: (schema) => schema.default(''),
+  }),
+  customReward: Yup.object({
+    name: Yup.string().required('Custom reward name is required'),
+    description: Yup.string().required('Custom reward description is required'),
+    photo: Yup.string().nullable(),
+  }).nullable().default(null).when('rewardType', {
+    is: 'custom',
+    then: (schema) => schema.required(),
+    otherwise: (schema) => schema.nullable().default(null),
+  }),
+  ticketReward: Yup.string().default('').when('rewardType', {
+    is: 'ticket',
+    then: (schema) => schema.required('Ticket reward is required'),
+    otherwise: (schema) => schema.default(''),
+  }),
+  taskType: Yup.string().oneOf(['visit', 'earn_points', 'buy_menu_item', 'refer_users']).required('Task type is required'),
+  taskValue: Yup.number().required('Task value is required').min(1),
+  menuItemId: Yup.string().default('').when('taskType', {
+    is: 'buy_menu_item',
+    then: (schema) => schema.required('Menu item is required'),
+    otherwise: (schema) => schema.default(''),
+  }),
+  claimLimit: Yup.string().default(''),
+  endTime: Yup.string().default('').required('End Time is required'),
+  tierLimit: Yup.string().default('').required('Tier Limit is required'),
 });
 
 const ChallengesView = () => {
@@ -61,11 +108,23 @@ const ChallengesView = () => {
     defaultValues,
   });
 
-  const { reset, handleSubmit } = methods;
+  const { reset } = methods;
+
+
+  const menuItems = [
+    { label: 'Burger', value: 'burger' },
+    { label: 'Pizza', value: 'pizza' },
+    { label: 'Soda', value: 'soda' },
+  ];
+
+  const tiers = [
+    { label: 'Bronze', value: 'Bronze' },
+    { label: 'Silver', value: 'Silver' },
+    { label: 'Gold', value: 'Gold' },
+  ];
 
   const onSubmit = (data: ChallengesFormValues) => {
     console.log('Challenge data:', data);
-    // Add your API call here to save the challenge
     closeModal();
   };
 
@@ -74,6 +133,7 @@ const ChallengesView = () => {
     openModal.onFalse();
     editModal.onFalse();
   };
+
   const handleEdit = (id: string) => {
     console.log('id', id);
     openModal.onTrue();
@@ -122,65 +182,139 @@ const ChallengesView = () => {
               methods={methods}
               onSubmit={methods.handleSubmit(onSubmit)}
             >
+
               <div className="mt-7 flex w-full flex-col gap-4">
-                <div className="grid w-full grid-cols-1 gap-4">
-                  <RHFTextField
-                    name="name"
-                    label="Challenge Name"
-                    placeholder="Enter Challenge Name"
-                  />
-                </div>
+                {/* Challenge Name */}
+                <RHFTextField
+                  name="name"
+                  label="Challenge Name"
+                  placeholder="Enter Challenge Name"
+                />
 
+                {/* Task Type and Parameters */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField
-                    name="reward"
-                    label="Reward"
-                    placeholder="Enter Reward"
-                  />
-
                   <RHFSelectField
                     name="taskType"
                     label="Task Type"
                     placeholder="Select Task Type"
                     className="w-full flex-1"
                     options={[
-                      { label: 'Order Count', value: 'Order Count' },
-                      { label: 'Menu Item', value: 'Menu Item' },
-                      { label: 'Referral', value: 'Referral' },
-                      { label: 'Combo Purchase', value: 'Combo Purchase' },
+                      { label: 'Visit X Times', value: 'visit' },
+                      { label: 'Earn X Points', value: 'earn_points' },
+                      { label: 'Buy Specific Menu Item X Times', value: 'buy_menu_item' },
+                      { label: 'Refer X Users', value: 'refer_users' },
                     ]}
                   />
 
+                  {/* Task Value (X) */}
                   <RHFTextField
-                    name="taskParameters"
-                    label="Task Parameters"
-                    placeholder="Enter Task Parameters"
-                  />
-
-                  <RHFTextField
-                    name="claimLimit"
-                    label="Claim Limit"
-                    placeholder="Enter Claim Limit"
+                    name="taskValue"
+                    label="Task Value (X)"
+                    placeholder="Enter value (e.g. 5)"
                     type="number"
                   />
 
-                  <RHFDate
-                    name="endTime"
-                    label="End Date"
-                    placeholder="Select End Date"
-                  />
+                  {/* Menu Item selection if taskType is buy_menu_item */}
+                  {methods.watch('taskType') === 'buy_menu_item' && (
+                    <RHFSelectField
+                      name="menuItemId"
+                      label="Menu Item"
+                      placeholder="Select Menu Item"
+                      options={menuItems}
+                    />
+                  )}
+                </div>
 
+                {/* Claim Limit */}
+                <RHFTextField
+                  name="claimLimit"
+                  label="Claim Limit (optional)"
+                  placeholder="Enter Claim Limit"
+                  type="number"
+                />
+
+                {/* End Time */}
+                <RHFDate
+                  name="endTime"
+                  label="End Date"
+                  placeholder="Select End Date"
+                />
+
+                {/* Tier Limit */}
+                <RHFSelectField
+                  name="tierLimit"
+                  label="Tier Limit"
+                  placeholder="Select Tier Limit"
+                  className="w-full flex-1"
+                  options={tiers}
+                />
+
+                {/* Reward Type Selection */}
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFSelectField
-                    name="tierLimit"
-                    label="Tier Limit"
-                    placeholder="Select Tier Limit"
-                    className="w-full flex-1"
+                    name="rewardType"
+                    label="Reward Type"
+                    placeholder="Select Reward Type"
                     options={[
-                      { label: 'Bronze', value: 'Bronze' },
-                      { label: 'Silver', value: 'Silver' },
-                      { label: 'Gold', value: 'Gold' },
+                      { label: 'Point Reward', value: 'point' },
+                      { label: 'Menu Item Reward', value: 'item' },
+                      { label: 'Custom Reward', value: 'custom' },
+                      { label: 'Special Ticket', value: 'ticket' },
                     ]}
                   />
+
+                  {/* Point Reward Calculator */}
+                  {methods.watch('rewardType') === 'point' && (
+                    <div className="flex flex-col gap-2">
+                      <RHFTextField
+                        name="pointReward"
+                        label="Point Reward"
+                        placeholder="Enter points to reward"
+                        type="number"
+                      />
+                      {/* Reward Calculator UI placeholder */}
+                      <div className="text-xs text-muted-foreground">
+                        <span>Reward Calculator: </span>
+                        <span>Point Reward = Desired € value × (100 / Return %) × [lowest points per EUR]</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Menu Item Reward */}
+                  {methods.watch('rewardType') === 'item' && (
+                    <RHFSelectField
+                      name="itemRewardId"
+                      label="Menu Item Reward"
+                      placeholder="Select Menu Item"
+                      options={menuItems}
+                    />
+                  )}
+
+                  {/* Custom Reward */}
+                  {methods.watch('rewardType') === 'custom' && (
+                    <div className="flex flex-col gap-2">
+                      <RHFTextField
+                        name="customReward.name"
+                        label="Custom Reward Name"
+                        placeholder="Enter custom reward name"
+                      />
+                      <RHFTextField
+                        name="customReward.description"
+                        label="Custom Reward Description"
+                        placeholder="Enter description"
+                      />
+                      {/* Photo upload can be added here */}
+                    </div>
+                  )}
+
+                  {/* Special Ticket Reward */}
+                  {methods.watch('rewardType') === 'ticket' && (
+                    <RHFTextField
+                      name="ticketReward"
+                      label="Special Ticket Reward"
+                      placeholder="Enter ticket details"
+                    />
+                  )}
                 </div>
               </div>
 

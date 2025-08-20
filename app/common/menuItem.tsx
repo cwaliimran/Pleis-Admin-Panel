@@ -62,10 +62,10 @@ const MenuItem: FC<MenuItemsProps> = ({
           <div
             className={`sidebar-nav-item flex items-center justify-between w-full gap-2 text-sm px-3 py-1 rounded hover:bg-muted transition-colors duration-100 ${
               isActive ? "bg-muted font-medium" : ""
-            }`}
+            } cursor-pointer`}
           >
-            <div className="flex items-center gap-2 cursor-pointer">
-              <div className="w-1 h-1 rounded-full dark:bg-white bg-gray-500 ml-3 cursor-pointer" />
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-1 rounded-full dark:bg-white bg-gray-500 ml-3" />
               <span>{item.title}</span>
             </div>
             {hasChildren &&
