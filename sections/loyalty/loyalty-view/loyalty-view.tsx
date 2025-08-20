@@ -40,11 +40,13 @@ import {
 } from '@/sections/loyalty/data';
 import LoyaltyList from '@/sections/loyalty/loyaltyList';
 import RewardCard from '@/sections/loyalty/rewardCard';
-import { Plus, Settings2 } from 'lucide-react';
+import { Settings2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const LoyaltyView = () => {
   const openModal = useBoolean();
+  const router = useRouter();
 
   const [mainActive, setMainActive] = React.useState('overview');
   const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
@@ -52,6 +54,11 @@ const LoyaltyView = () => {
 
   const activePercent = 75;
   const inactivePercent = 25;
+
+  const handleTabClick = (tab: TabData) => {
+    setMainActive(tab.value);
+    router.push(`/organizer/${tab.link}`);
+  };
 
   return (
     <>
@@ -61,7 +68,7 @@ const LoyaltyView = () => {
             {tabsData.map((tab: TabData, index: number) => (
               <li key={index} className="me-0">
                 <div
-                  onClick={() => setMainActive(tab.value)}
+                  onClick={() => handleTabClick(tab)}
                   className={`inline-block cursor-pointer rounded-t-lg border-b-3 p-4 pb-1 text-[13px] sm:text-[15px] ${
                     mainActive === tab.value
                       ? 'border-[#64748B] font-semibold text-gray-700 dark:text-white'
@@ -82,13 +89,13 @@ const LoyaltyView = () => {
             <span className="whitespace-nowrap">Filter</span>
           </Badge>
 
-          <Button
+          {/* <Button
             className="bg-primary border-primary flex cursor-pointer items-center gap-2 rounded-3xl border px-4 py-2 text-white transition-colors"
             onClick={openModal.onTrue}
           >
             <Plus />
             Create Program
-          </Button>
+          </Button> */}
         </div>
       </div>
 

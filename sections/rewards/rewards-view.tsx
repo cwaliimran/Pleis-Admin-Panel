@@ -1,9 +1,33 @@
 'use client';
 
+/**
+ * RewardsView Component
+ * 
+ * Manages the complete rewards system for organizers including:
+ * 
+ * 1. Three Creation Methods:
+ *    - From Menu Items: Links rewards directly to menu items for easier fulfillment
+ *    - Custom Reward: For items not in menu (merchandise, entry perks, etc.)
+ *    - Ticket Reward: Creates exclusive event tickets only available through loyalty
+ * 
+ * 2. Reward Features:
+ *    - Point-based redemption system
+ *    - Optional tier restrictions (Bronze, Silver, Gold)
+ *    - Limit controls for redemption frequency
+ *    - Percentage-off coupons vs free items
+ *    - Optional descriptions and photos
+ * 
+ * 3. Built-in Calculator:
+ *    - Helps determine appropriate point values based on item price and loyalty return
+ *    - Can be used directly in the form when creating rewards
+ */
+
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -12,14 +36,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { Calculator, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import * as Yup from 'yup';
 import RewardsTable from './rewardsTable';
 
-type HighlightFormValues = {
+type RewardFormValues = {
   image: any;
   name: string;
   type: string;
@@ -27,47 +49,68 @@ type HighlightFormValues = {
   limit: string;
   tierLimit: string;
   description: string;
+  creationMethod: string;
+  percentOff: string;
+  menuItems: string[];
+  eventId: string;
 };
 
-const defaultValues = {
+const defaultValues: RewardFormValues = {
   image: null,
   name: '',
   type: '',
   pointValue: '',
   limit: '',
-  tierLimit: '',
+  tierLimit: 'none',
   description: '',
+  creationMethod: 'custom',
+  percentOff: '',
+  menuItems: [],
+  eventId: '',
 };
-
-const schema = Yup.object({
-  image: Yup.mixed().nullable().required('Image is required'),
-  name: Yup.string().required('Name is required'),
-  type: Yup.string().required('Type is required'),
-  pointValue: Yup.string().required('Point Value is required'),
-  limit: Yup.string().required('Limit is required'),
-  tierLimit: Yup.string().required('Tier Limit is required'),
-  description: Yup.string().required('Description is required'),
-});
 
 const RewardsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
-  const calculatorModal = useBoolean();
 
   // Calculator state
   const [itemPrice, setItemPrice] = useState<string>('');
   const [loyaltyReturn, setLoyaltyReturn] = useState<string>('');
   const [lowestPointsPerEur, setLowestPointsPerEur] = useState<string>('1');
-  const [calculatedPoints, setCalculatedPoints] = useState<number | null>(null);
 
-  const methods = useForm<HighlightFormValues>({
-    resolver: yupResolver(schema),
+  // Calculate points reactively
+  const calculatedPoints = useMemo(() => {
+    const price = parseFloat(itemPrice);
+    const returnPercent = parseFloat(loyaltyReturn);
+    const pointsPerEur = parseFloat(lowestPointsPerEur);
+    if (price && returnPercent && pointsPerEur) {
+      return Math.round(price * (100 / returnPercent) * pointsPerEur);
+    }
+    return null;
+  }, [itemPrice, loyaltyReturn, lowestPointsPerEur]);
+
+  const methods = useForm<RewardFormValues>({
     defaultValues,
   });
 
-  const { watch, reset, handleSubmit } = methods;
+  const { watch, reset, handleSubmit, setValue } = methods;
   const image = watch('image');
+  const creationMethod = watch('creationMethod');
+
+  // Function to copy calculated points to form
+  const useCalculatedPoints = () => {
+    if (calculatedPoints !== null) {
+      setValue('pointValue', calculatedPoints.toString());
+    }
+  };
+
+  // Function to reset calculator
+  const resetCalculator = () => {
+    setItemPrice('');
+    setLoyaltyReturn('');
+    setLowestPointsPerEur('1');
+  };
 
   const imagePreviewUrl = useMemo(() => {
     return image instanceof File ? URL.createObjectURL(image) : null;
@@ -81,8 +124,18 @@ const RewardsView = () => {
     };
   }, [imagePreviewUrl]);
 
-  const onSubmit = (data: any) => {
-    console.log('data', data);
+  const onSubmit = (data: RewardFormValues) => {
+    console.log('Reward data:', data);
+    
+    // Here you would typically send the data to your API
+    // The data structure now includes:
+    // - creationMethod: 'menu-items' | 'custom' | 'ticket'
+    // - menuItems: string[] (for menu-items method)
+    // - eventId: string (for ticket method)
+    // - percentOff: string (for coupon rewards)
+    // - All other existing fields
+    
+    closeModal();
   };
 
   const closeModal = () => {
@@ -90,6 +143,7 @@ const RewardsView = () => {
     openModal.onFalse();
     editModal.onFalse();
   };
+
   const handleEdit = (id: string) => {
     console.log('id', id);
     openModal.onTrue();
@@ -110,42 +164,9 @@ const RewardsView = () => {
     openModal.onTrue();
   };
 
-  // Calculator functions
-  const calculatePoints = () => {
-    const price = parseFloat(itemPrice);
-    const returnPercent = parseFloat(loyaltyReturn);
-    const pointsPerEur = parseFloat(lowestPointsPerEur);
-
-    if (price && returnPercent && pointsPerEur) {
-      const result = price * (100 / returnPercent) * pointsPerEur;
-      setCalculatedPoints(Math.round(result));
-    }
-  };
-
-  const useCalculatedValue = () => {
-    if (calculatedPoints !== null) {
-      methods.setValue('pointValue', calculatedPoints.toString());
-      calculatorModal.onFalse();
-    }
-  };
-
-  const resetCalculator = () => {
-    setItemPrice('');
-    setLoyaltyReturn('');
-    setLowestPointsPerEur('1');
-    setCalculatedPoints(null);
-  };
-
   return (
     <div>
       <div className="mt-3 flex w-full items-center justify-end gap-3 md:mt-0">
-        <Button
-          onClick={calculatorModal.onTrue}
-          className="cursor-pointer rounded-4xl bg-blue-600 py-2 text-white hover:bg-blue-700"
-        >
-          <Calculator className="mr-1" />
-          Reward Calculator
-        </Button>
         <Button
           onClick={handleCreate}
           className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
@@ -155,13 +176,101 @@ const RewardsView = () => {
         </Button>
       </div>
 
+      {/* --- REWARD CALCULATOR --- */}
+      <Card className="mt-3 w-full rounded-lg p-6 dark:bg-gray-800">
+        <div className="mb-0 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            <span className="text-lg font-semibold">Reward Calculator</span>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={resetCalculator}
+            className="text-xs"
+          >
+            Reset
+          </Button>
+        </div>
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          Use this calculator to determine the appropriate point value for menu item rewards.
+        </p>
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Item Price (€)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Enter item price"
+              value={itemPrice}
+              onChange={(e) => setItemPrice(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Loyalty Return (%)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="Enter % return"
+              value={loyaltyReturn}
+              onChange={(e) => setLoyaltyReturn(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Lowest Points per EUR
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="Enter points per EUR"
+              value={lowestPointsPerEur}
+              onChange={(e) => setLowestPointsPerEur(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+        </div>
+        {/* Result Display */}
+        {calculatedPoints !== null && (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+            <div className="text-center">
+              <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">
+                Calculated Point Value:
+              </p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {calculatedPoints} points
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Use this value when creating menu item rewards
+              </p>
+              {openModal.value && (
+                <Button
+                  type="button"
+                  onClick={useCalculatedPoints}
+                  className="mt-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 text-xs"
+                >
+                  Use This Value
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </Card>
+
       {/* ------------- HIGHLIGHT TABLE ------------- */}
       <RewardsTable handleDelete={handleDelete} handleEdit={handleEdit} />
 
       {/* ------------- MODAL FOR ADDING AND EDITING ------------- */}
       <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
         <DialogOverlay className="bg-opacity-30 fixed inset-0">
-          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[700px]">
             <DialogHeader>
               <DialogTitle>
                 {editModal.value ? 'Edit Reward' : 'Create Reward'}
@@ -169,58 +278,156 @@ const RewardsView = () => {
             </DialogHeader>
             <FormProvider
               methods={methods}
-              onSubmit={methods.handleSubmit(() => {})}
+              onSubmit={handleSubmit(onSubmit)}
             >
               <div className="mt-0 flex w-full flex-col gap-4">
-                <RHFUploadAvatar name="image" label="Image" />
+                {/* Creation Method Selection */}
+                <RHFSelectField
+                  name="creationMethod"
+                  label="Creation Method"
+                  placeholder="Select creation method"
+                  className="w-full"
+                  options={[
+                    { label: 'From Menu Items', value: 'menu-items' },
+                    { label: 'Create Custom Reward', value: 'custom' },
+                    { label: 'Add Ticket Reward', value: 'ticket' },
+                  ]}
+                />
+
+                {/* Helper text based on creation method */}
+                {creationMethod === 'menu-items' && (
+                  <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                    <p className="text-xs text-blue-800 dark:text-blue-200">
+                      💡 Select menu items to link directly for easier scanning and fulfillment. 
+                      Use the calculator above to determine point values.
+                    </p>
+                  </div>
+                )}
+
+                {creationMethod === 'custom' && (
+                  <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+                    <p className="text-xs text-green-800 dark:text-green-200">
+                      💡 Create custom rewards for items not in your menu (merchandise, entry perks, etc.). 
+                      Set your own point value and description.
+                    </p>
+                  </div>
+                )}
+
+                {creationMethod === 'ticket' && (
+                  <div className="rounded-lg bg-purple-50 p-3 dark:bg-purple-900/20">
+                    <p className="text-xs text-purple-800 dark:text-purple-200">
+                      💡 Create exclusive tickets available only through loyalty rewards. 
+                      These are not for sale and provide special access to events.
+                    </p>
+                  </div>
+                )}
+
+                {/* Conditional Fields based on Creation Method */}
+                {creationMethod === 'menu-items' && (
+                  <div className="grid w-full grid-cols-1 gap-4">
+                    <RHFMultiSelect
+                      name="menuItems"
+                      label="Select Menu Items"
+                      placeholder="Choose menu items"
+                      options={[
+                        { label: 'Pepperoni Pizza', value: 'pizza-1' },
+                        { label: 'Caesar Salad', value: 'salad-1' },
+                        { label: 'Cappuccino', value: 'coffee-1' },
+                        { label: 'Vanilla Ice Cream', value: 'dessert-1' },
+                      ]}
+                    />
+                  </div>
+                )}
+
+                {creationMethod === 'ticket' && (
+                  <div className="grid w-full grid-cols-1 gap-4">
+                    <RHFSelectField
+                      name="eventId"
+                      label="Select Event"
+                      placeholder="Choose event for ticket reward"
+                      className="w-full"
+                      options={[
+                        { label: 'Summer Music Festival', value: 'event-1' },
+                        { label: 'Food & Wine Expo', value: 'event-2' },
+                        { label: 'Business Networking Night', value: 'event-3' },
+                      ]}
+                    />
+                  </div>
+                )}
+
+                {/* Image Upload - Optional but recommended */}
+                <RHFUploadAvatar 
+                  name="image" 
+                  label="Image (Optional but recommended)" 
+                />
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFTextField
                     name="name"
                     label="Name"
-                    placeholder="Enter Name"
+                    placeholder="Enter reward name"
                   />
 
                   <RHFTextField
                     name="type"
                     label="Type"
-                    placeholder="Enter Type"
+                    placeholder="Enter type for sorting"
                   />
 
                   <div className="relative">
                     <RHFTextField
                       name="pointValue"
                       label="Point Value"
-                      placeholder="Enter Point Value"
+                      placeholder="Points required to claim"
                       type="number"
                     />
                   </div>
 
                   <RHFTextField
                     name="limit"
-                    label="Limit"
-                    placeholder="Enter Limit"
+                    label="Limit (Optional)"
+                    placeholder="Max times claimable"
                     type="number"
                   />
 
                   <RHFSelectField
                     name="tierLimit"
-                    label="Tier Limit"
-                    placeholder="Select Tier Limit"
+                    label="Tier Limit (Optional)"
+                    placeholder="Minimum tier required"
                     className="w-full flex-1"
                     options={[
-                      { label: 'Bronze', value: 'bronze' },
-                      { label: 'Silver', value: 'silver' },
-                      { label: 'Gold', value: 'gold' },
+                      { label: 'No Restriction', value: 'none' },
+                      { label: 'Bronze and above', value: 'bronze' },
+                      { label: 'Silver and above', value: 'silver' },
+                      { label: 'Gold only', value: 'gold' },
                     ]}
                   />
+
+                  <RHFTextField
+                    name="percentOff"
+                    label="Percent Off (Optional)"
+                    placeholder="For coupon rewards (0-100)"
+                    type="number"
+                    min="0"
+                    max="100"
+                  />
                 </div>
+
+                {/* Show percentage info when percent off is entered */}
+                {watch('percentOff') && Number(watch('percentOff')) > 0 && (
+                  <div className="rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
+                    <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                      💡 This reward will provide {watch('percentOff')}% off instead of a free item. 
+                      Customers will pay the remaining amount.
+                    </p>
+                  </div>
+                )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
                   <RHFTextField
                     name="description"
-                    label="Description"
-                    placeholder="Enter Description"
+                    label="Description (Optional)"
+                    placeholder="Enter reward details"
                     multiline
                     rows={2}
                   />
@@ -230,10 +437,10 @@ const RewardsView = () => {
               <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
                   <Button
-                    type="button"
+                    type="submit"
                     className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
                   >
-                    Save
+                    Save Reward
                   </Button>
                 </div>
               </div>
@@ -249,137 +456,6 @@ const RewardsView = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
-
-      {/* ------------- REWARD CALCULATOR MODAL ------------- */}
-      <Dialog
-        open={calculatorModal.value}
-        onOpenChange={calculatorModal.onFalse}
-      >
-        <DialogOverlay className="bg-opacity-30 fixed inset-0">
-          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5" />
-                Reward Calculator
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="mt-4 w-full space-y-6">
-              {/* Formula Display */}
-              <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                <h4 className="mb-2 font-semibold">Formula:</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Point Value = Item Price (€) × (100 / selected % return) ×
-                  [lowest points possible per EUR]
-                </p>
-              </div>
-
-              {/* Calculator Inputs */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">
-                      Item Price (€)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="Enter item price"
-                      value={itemPrice}
-                      onChange={(e) => setItemPrice(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">
-                      Loyalty Return (%)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Enter % return"
-                      value={loyaltyReturn}
-                      onChange={(e) => setLoyaltyReturn(e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium">
-                    Lowest Points per EUR
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    placeholder="Enter points per EUR"
-                    value={lowestPointsPerEur}
-                    onChange={(e) => setLowestPointsPerEur(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Calculate Button */}
-              <div className="flex justify-center">
-                <Button
-                  onClick={calculatePoints}
-                  disabled={!itemPrice || !loyaltyReturn || !lowestPointsPerEur}
-                  className="bg-blue-600 px-6 text-white hover:bg-blue-700"
-                >
-                  Calculate Points
-                </Button>
-              </div>
-
-              {/* Result Display */}
-              {calculatedPoints !== null && (
-                <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-                  <div className="text-center">
-                    <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">
-                      Calculated Point Value:
-                    </p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {calculatedPoints} points
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between gap-3 border-t pt-4">
-                <Button
-                  onClick={resetCalculator}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Reset
-                </Button>
-
-                {/* {calculatedPoints !== null && (
-                  <Button
-                    onClick={useCalculatedValue}
-                    className="bg-primary hover:bg-primary flex-1 text-white"
-                  >
-                    Use This Value
-                  </Button>
-                )} */}
-
-                <Button
-                  onClick={() => {
-                    calculatorModal.onFalse();
-                    resetCalculator();
-                  }}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </DialogOverlay>
-      </Dialog>
     </div>
   );
 };
