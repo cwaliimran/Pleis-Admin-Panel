@@ -19,16 +19,36 @@ interface PageProps {
     name: string;
     description: string;
     type: string;
-    pointValue: string;
-    limit: string;
+    pointValue: string | number;
+    limit: string | number;
     tierLimit: string;
-    percentOff: string;
+    percentOff: string | number;
+    creationMethod: string;
+    menuItems: string[];
+    eventId: string;
   };
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
 
 const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
+  const formatCreationMethod = (method: string) => {
+    switch (method) {
+      case 'menu-items':
+        return 'From Menu Items';
+      case 'custom':
+        return 'Custom Reward';
+      case 'ticket':
+        return 'Ticket Reward';
+      default:
+        return method;
+    }
+  };
+
+  const formatValue = (value: string | number) => {
+    return value === '' || value === 0 ? '-' : value;
+  };
+
   return (
     <TableRow className="h-14 w-full transition-colors">
       <TableCell>
@@ -42,7 +62,7 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
       </TableCell>
       <TableCell className="text-left">{item.name}</TableCell>
       <TableCell className="text-left">
-        {item.description.length > 22 ? (
+        {item.description && item.description.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
               <span
@@ -64,21 +84,28 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
             </DialogContent>
           </Dialog>
         ) : (
-          item.description
+          item.description || '-'
         )}
       </TableCell>
       <TableCell className="text-left">{item.type}</TableCell>
+      <TableCell className="text-left">
+        <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+          {formatCreationMethod(item.creationMethod)}
+        </span>
+      </TableCell>
       <TableCell className="text-left">{item.pointValue}</TableCell>
-      <TableCell className="text-left">{item.limit}</TableCell>
-      <TableCell className="text-left">{item.tierLimit}</TableCell>
-      <TableCell className="text-left">{item.percentOff}</TableCell>
+      <TableCell className="text-left">{formatValue(item.limit)}</TableCell>
+      <TableCell className="text-left capitalize">{formatValue(item.tierLimit)}</TableCell>
+      <TableCell className="text-left">
+        {item.percentOff && Number(item.percentOff) > 0 ? `${item.percentOff}%` : '-'}
+      </TableCell>
 
       {/* Action menu */}
       <TableCell className="text-end">
         <div className="flex gap-2">
           <button
             type="button"
-            title="Edit Highlight"
+            title="Edit Reward"
             onClick={(e) => {
               e.stopPropagation();
               handleEdit?.(item.id);
@@ -90,7 +117,7 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
 
           <button
             type="button"
-            title="Delete Highlight"
+            title="Delete Reward"
             onClick={(e) => {
               e.stopPropagation();
               handleDelete?.(item.id);

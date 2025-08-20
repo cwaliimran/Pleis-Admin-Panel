@@ -30,6 +30,7 @@ const headLabel = [
   { id: 'name', label: 'Name', align: 'left' },
   { id: 'description', label: 'Description' },
   { id: 'type', label: 'Type', align: 'left' },
+  { id: 'creationMethod', label: 'Creation Method', align: 'left' },
   { id: 'pointValue', label: 'Point Value', align: 'left' },
   { id: 'limit', label: 'Limit', align: 'left' },
   { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
@@ -43,12 +44,10 @@ interface PageProps {
 }
 
 const RewardsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
-  const [date, setDate] = useState<Date | undefined>(undefined);
   const [type, setType] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const handleResetFilters = () => {
-    setDate(undefined);
     setType('');
     setSearchTerm('');
   };
@@ -73,6 +72,8 @@ const RewardsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
                   { value: 'food', label: 'Food' },
                   { value: 'beverage', label: 'Beverage' },
                   { value: 'dessert', label: 'Dessert' },
+                  { value: 'experience', label: 'Experience' },
+                  { value: 'merchandise', label: 'Merchandise' },
                 ],
               },
             ]}

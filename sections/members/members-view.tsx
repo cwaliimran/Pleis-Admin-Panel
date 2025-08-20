@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Plus } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
@@ -62,7 +61,7 @@ const MembersView = () => {
     defaultValues,
   });
 
-  const { watch, reset, handleSubmit } = methods;
+  const { watch } = methods;
   const photo = watch('photo');
 
   const imagePreviewUrl = useMemo(() => {
@@ -77,15 +76,16 @@ const MembersView = () => {
     };
   }, [imagePreviewUrl]);
 
-  const onSubmit = (data: any) => {
-    console.log('data', data);
-  };
+  // const onSubmit = (data: any) => {
+  //   console.log('data', data);
+  // };
 
-  const closeModal = () => {
-    reset(defaultValues);
-    openModal.onFalse();
-    editModal.onFalse();
-  };
+  // const closeModal = () => {
+  //   reset(defaultValues);
+  //   openModal.onFalse();
+  //   editModal.onFalse();
+  // };
+
   const handleEdit = (id: string) => {
     console.log('id', id);
     openModal.onTrue();
@@ -101,10 +101,10 @@ const MembersView = () => {
     deleteModal.onFalse();
   };
 
-  const handleCreate = () => {
-    editModal.onFalse();
-    openModal.onTrue();
-  };
+  // const handleCreate = () => {
+  //   editModal.onFalse();
+  //   openModal.onTrue();
+  // };
 
   return (
     <div>
