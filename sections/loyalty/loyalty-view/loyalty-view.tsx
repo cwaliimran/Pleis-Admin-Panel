@@ -63,7 +63,7 @@ const LoyaltyView = () => {
   return (
     <>
       <div className="mt-10 flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="w-[70%] border-b border-gray-200 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400">
+        <div className="w-[90%] border-b border-gray-200 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400">
           <ul className="-mb-px flex flex-wrap">
             {tabsData.map((tab: TabData, index: number) => (
               <li key={index} className="me-0">
