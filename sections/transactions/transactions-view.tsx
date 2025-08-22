@@ -60,7 +60,11 @@ const TransactionsView = () => {
     defaultValues,
   });
 
-  const { watch, reset, handleSubmit } = methods;
+  const {
+    watch,
+    // reset,
+    // handleSubmit
+  } = methods;
   const image = watch('image');
 
   const imagePreviewUrl = useMemo(() => {
@@ -75,15 +79,15 @@ const TransactionsView = () => {
     };
   }, [imagePreviewUrl]);
 
-  const onSubmit = (data: any) => {
-    console.log('data', data);
-  };
+  // const onSubmit = (data: any) => {
+  //   console.log('data', data);
+  // };
 
-  const closeModal = () => {
-    reset(defaultValues);
-    openModal.onFalse();
-    editModal.onFalse();
-  };
+  // const closeModal = () => {
+  //   reset(defaultValues);
+  //   openModal.onFalse();
+  //   editModal.onFalse();
+  // };
 
   const handleEdit = (id: string) => {
     console.log('id', id);
@@ -100,10 +104,10 @@ const TransactionsView = () => {
     deleteModal.onFalse();
   };
 
-  const handleCreate = () => {
-    editModal.onFalse();
-    openModal.onTrue();
-  };
+  // const handleCreate = () => {
+  //   editModal.onFalse();
+  //   openModal.onTrue();
+  // };
 
   return (
     <div>
