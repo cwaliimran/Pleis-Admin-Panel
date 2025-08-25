@@ -1,3 +1,5 @@
+'use client'
+
 import { TableFilters } from '@/components/table-filters';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';
@@ -54,12 +56,11 @@ const EventTable: FC<PageProps> = ({ handleDelete, userType }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [status, setStatus] = useState<string>('');
-  const [location, setLocation] = useState<string>('');
+  // const [location, setLocation] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   // For sheet multi-select
   const [sheetLocation, setSheetLocation] = useState<string[]>([]);
 
-  // react-hook-form for sheet multi-select (for demo, not required for main filters)
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
@@ -70,7 +71,7 @@ const EventTable: FC<PageProps> = ({ handleDelete, userType }) => {
     setStartDate(undefined);
     setEndDate(undefined);
     setStatus('');
-    setLocation('');
+    // setLocation('');
     setSearchTerm('');
     setSheetLocation([]);
     methods.reset({ location: [] });

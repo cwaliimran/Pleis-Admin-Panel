@@ -2,8 +2,7 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
@@ -12,21 +11,27 @@ import FormProvider, { RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
-import { useSendOtpMutation } from '@/store/Reducer/user';
+import { useSendOtpMutation, useVerifyOtpMutation } from '@/store/Reducer/user';
 import { normalizeEmail } from '@/utils/short-utils';
 
 const defaultValues = {
-  email: '',
+  otp: '',
 };
 
 const schema = Yup.object().shape({
-  email: Yup.string().email('Invalid email').required('Email is required'),
+  otp: Yup.string()
+    .required('Otp is required')
+    .min(6, 'Otp must be at least 6 characters'),
 });
 
-function ForgotPasswordPage() {
+function VerifyOtpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email') || '';
 
-  const [forgotPasswordData, { isLoading }] = useSendOtpMutation();
+  const [verifyOtpData, { isLoading }] = useVerifyOtpMutation();
+  const [forgotPasswordData, { isLoading: isLoadingForgotPassword }] =
+    useSendOtpMutation();
 
   const methods = useForm({
     defaultValues,
@@ -35,10 +40,17 @@ function ForgotPasswordPage() {
 
   const { handleSubmit } = methods;
 
-  const onSubmit = handleSubmit(async (data) => {
+  const handleResendOtp = async () => {
+    if (!email) {
+      showError('Email is required to resend OTP.');
+      return;
+    }
+    const trimmedEmail = normalizeEmail(email);
+
     try {
-      const normalizedEmail = normalizeEmail(data.email);
-      const response = await forgotPasswordData({ email: normalizedEmail }).unwrap();
+      const response = await forgotPasswordData({
+        email: trimmedEmail,
+      }).unwrap();
 
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -51,10 +63,42 @@ function ForgotPasswordPage() {
         showSuccess(response?.message || 'Otp sent successfully');
       }
 
-      router.push('/user/verify-otp?email=' + encodeURIComponent(data.email));
+      router.push('/user/verify-otp?email=' + encodeURIComponent(trimmedEmail));
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to add category:', errorMessage);
+      console.error('Failed to add category:', errorMessage);
+      showError(errorMessage);
+    }
+  };
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      const payload = {
+        email: email,
+        otp: data.otp,
+      };
+
+      const response = await verifyOtpData(payload).unwrap();
+      console.log('response', response);
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      // Handle success
+      if (response?.message) {
+        showSuccess(response?.message || 'Otp sent successfully');
+      }
+
+      const resetToken = response?.data?.resetToken;
+      router.push(
+        `/user/reset-password?email=${encodeURIComponent(email)}${resetToken ? `&rst=${encodeURIComponent(resetToken)}` : ''}`
+      );
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.error('Failed to add category:', errorMessage);
       showError(errorMessage);
     }
   });
@@ -75,10 +119,10 @@ function ForgotPasswordPage() {
         >
           <div className="space-y-4 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight">
-              Forgot Password?
+              Verify Otp
             </h1>
             <p className="mx-auto max-w-sm text-lg text-gray-300">
-              We’ll send you a reset link via email.
+              We&#39;ll send you a verification code via email.
             </p>
           </div>
         </motion.div>
@@ -91,18 +135,18 @@ function ForgotPasswordPage() {
           className="flex w-full flex-col justify-center p-8 md:w-1/2 md:p-16"
         >
           <h2 className="mb-1 text-center text-3xl font-extrabold">
-            Reset Your Password
+            Verify Your Otp
           </h2>
           <p className="text-muted-foreground mb-6 text-center text-sm">
-            Enter your email and we&#39;ll send you instructions to reset it.
+            Enter the verification code sent to your email.
           </p>
 
           <FormProvider methods={methods} onSubmit={onSubmit}>
             <div className="space-y-4">
               <RHFTextField
-                name="email"
-                type="email"
-                placeholder="Email Address"
+                name="otp"
+                type="number"
+                placeholder="Enter OTP"
                 className="h-[45px] rounded-md"
               />
 
@@ -111,49 +155,55 @@ function ForgotPasswordPage() {
                   type="submit"
                   className={`h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white`}
                 >
-                  Send Reset Link
+                  Send Verification Code
                 </Button>
               ) : (
                 <Button
                   type="button"
                   className={`h-[45px] w-full cursor-not-allowed bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white`}
                 >
-                  Sending Reset Link...
+                  Sending Verification Code...
                 </Button>
               )}
 
-              <p className="text-muted-foreground mt-4 text-center text-sm">
-                Remember your password?{' '}
-                <Link
-                  href="/user/signIn"
-                  className="font-medium text-[#0f172b] hover:underline dark:text-white"
+              <p className="text-muted-foreground text-center text-sm font-medium">
+                Didn&#39;t receive code?{' '}
+                <span
+                  onClick={
+                    isLoadingForgotPassword ? undefined : handleResendOtp
+                  }
+                  className={`inline-flex cursor-pointer items-center text-[#0f172b] hover:underline dark:text-white ${isLoadingForgotPassword ? 'cursor-not-allowed opacity-60' : ''}`}
                 >
-                  Go back to login
-                </Link>
+                  Resend Otp
+                  {isLoadingForgotPassword && (
+                    <svg
+                      className="ml-2 h-4 w-4 animate-spin text-[#0f172b] dark:text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      ></path>
+                    </svg>
+                  )}
+                </span>
               </p>
             </div>
           </FormProvider>
-
-          <p className="text-muted-foreground mt-10 text-center text-xs">
-            By continuing, you agree to our{' '}
-            <Link
-              href="/term-and-service"
-              className="hover:text-primary underline transition-colors"
-            >
-              Terms
-            </Link>{' '}
-            and{' '}
-            <Link
-              href="/privacy-policy"
-              className="hover:text-primary underline transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            .
-          </p>
         </motion.div>
       </div>
     </div>
   );
 }
-export default ForgotPasswordPage;
+export default VerifyOtpPage;

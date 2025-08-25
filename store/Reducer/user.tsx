@@ -1,47 +1,65 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import API_ROUTES from '../apiRoutes';
 import { customFetchBaseQuery } from '../customFetchBaseQuery';
-import {
-    AddUserRequest,
-    DeleteUserResponse,
-    UpdateUserRequest,
-    User,
-    UserListResponse,
-} from '../types/userTypes';
+import API_ROUTES from '../apiRoutes';
+
+const ADMIN_ACCESS_TOKEN = process.env.NEXT_PUBLIC_ADMIN_ACCESS_TOKEN;
 
 export const userApi = createApi({
   reducerPath: 'userApi',
   baseQuery: customFetchBaseQuery(),
   endpoints: (builder) => ({
-    getUsers: builder.query<UserListResponse, void>({
-      query: () => API_ROUTES.USERS,
-    }),
-    addUser: builder.mutation<User, AddUserRequest>({
-      query: (newUser) => ({
-        url: API_ROUTES.USERS,
+    
+    // -------------- SUPER ADMIN --------------
+    adminLogin: builder.mutation({
+      query: (login) => ({
+        url: API_ROUTES.LOGIN,
         method: 'POST',
-        body: newUser,
+        body: login,
+        headers: {
+          'x-admin-access-token': ADMIN_ACCESS_TOKEN,
+        },
       }),
     }),
-    updateUser: builder.mutation<User, UpdateUserRequest>({
-      query: ({ id, ...updatedUser }) => ({
-        url: API_ROUTES.USER_BY_ID(id),
-        method: 'PUT',
-        body: updatedUser,
+
+    sendOtp: builder.mutation({
+      query: (data) => ({
+        url: API_ROUTES.RESEND_OTP,
+        method: 'POST',
+        body: data,
       }),
     }),
-    deleteUser: builder.mutation<DeleteUserResponse, string>({
-      query: (id) => ({
-        url: API_ROUTES.USER_BY_ID(id),
-        method: 'DELETE',
+
+    verifyOtp: builder.mutation({
+      query: (data) => ({
+        url: API_ROUTES.VERIFY_OTP,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+     resetPassword: builder.mutation({
+      query: (data) => ({
+        url: API_ROUTES.RESET_PASSWORD,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    // -------------- ORGANIZER --------------
+    login: builder.mutation({
+      query: (login) => ({
+        url: API_ROUTES.LOGIN,
+        method: 'POST',
+        body: login,
       }),
     }),
   }),
 });
 
 export const {
-  useGetUsersQuery,
-  useAddUserMutation,
-  useUpdateUserMutation,
-  useDeleteUserMutation,
+  useLoginMutation,
+  useAdminLoginMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+  useResetPasswordMutation,
 } = userApi;

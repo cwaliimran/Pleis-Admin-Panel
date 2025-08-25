@@ -1,51 +1,67 @@
 'use client';
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Ellipsis, Pencil, Trash2 } from 'lucide-react';
 import { TableCell, TableRow } from '@/components/ui/table';
-import React, { FC } from 'react';
+import { fDate, formatStr } from '@/utils/format-time';
+import { Pencil, Trash2 } from 'lucide-react';
+import { FC } from 'react';
 
 interface PageProps {
-    item: any;
-    handleDelete?: (id: string) => void;
-    handleEdit?: (id: string) => void;
+  item: any;
+  handleDelete?: (id: string) => void;
+  handleEdit?: (id: string) => void;
 }
-const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
-    return (
-        <TableRow className="transition-colors h-14 w-full">
-            <TableCell>
-                <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
-                    <AvatarImage
-                        src="https://github.com/shadcn.png"
-                        alt="Store"
-                        className="object-cover w-full h-full cursor-pointer"
-                    />
-                </Avatar>
-            </TableCell>
+const VenueTypeTableRow: FC<PageProps> = ({
+  item,
+  handleDelete,
+  handleEdit,
+}) => {
+  return (
+    <TableRow className="h-14 w-full transition-colors">
+      <TableCell>
+        <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
+          <AvatarImage
+            src="https://github.com/shadcn.png"
+            alt="Store"
+            className="h-full w-full cursor-pointer object-cover"
+          />
+        </Avatar>
+      </TableCell>
 
-            <TableCell className="text-left font-medium">{item.name}</TableCell>
-            <TableCell className="text-left text-sm text-muted-foreground">
-                {item.createdAt}
-            </TableCell>
+      <TableCell className="text-left font-medium">{item?.title}</TableCell>
+      <TableCell className="text-muted-foreground text-left text-sm">
+        {/* {item?.createdAt} */}
+        {fDate(item?.createdAt, formatStr.paramCase.date)}
+      </TableCell>
 
-            <TableCell className="text-end">
-                <div className="flex gap-2 ">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleEdit?.(item.id) }}
-                        className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
-                    >
-                        <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />
-                    </button>
+      <TableCell className="text-end">
+        <div className="flex gap-2">
+          <button
+            type="button"
+            title="Edit"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit?.(item._id);
+            }}
+            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+          >
+            <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+          </button>
 
-                    <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete?.(item.id) }}
-                        className="p-1.5 rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 transition cursor-pointer"
-                    >
-                        <Trash2 className="w-4 h-4 text-red-600 dark:text-red-300" />
-                    </button>
-                </div>
-            </TableCell>
-        </TableRow>
-    );
+          <button
+            type="button"
+            title="Delete"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete?.(item._id);
+            }}
+            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+          >
+            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+          </button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
 };
-export default VenueTypeTableRow
+export default VenueTypeTableRow;

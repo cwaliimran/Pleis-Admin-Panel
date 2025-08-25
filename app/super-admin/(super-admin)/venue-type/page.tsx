@@ -1,27 +1,27 @@
-"use client";
-import Header from "@/app/common/header";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import FormProvider, { RHFTextField } from "@/components/rhf";
-import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
-import { Button } from "@/components/ui/button";
+'use client';
+import Header from '@/app/common/header';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import { VenueTypeTable } from '@/sections/venueType';
+import VenueTypeModal from '@/sections/venueType/VenueTypeModal';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useBoolean } from "@/hooks/useBoolean";
-import { VenueTypeTable } from "@/sections/venueType";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Plus } from "lucide-react";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
+  useAddVenueTypeMutation,
+  useDeleteVenueTypeMutation,
+  useGetVenueTypesQuery,
+  useUpdateVenueTypeMutation,
+} from '@/store/Reducer/venueType';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Plus } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+import { useState, useEffect } from 'react';
 
 const defaultValues = {
   icon: null,
-  name: "",
-  type: "",
+  title: '',
 };
 
 const Page = () => {
@@ -29,10 +29,39 @@ const Page = () => {
   const editModal = useBoolean();
   const deleteModal = useBoolean();
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState('');
+
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
+
+  const [addVenueType, { isLoading: addVenueTypeLoading }] = useAddVenueTypeMutation();
+  const [updateVenueType, { isLoading: updateVenueTypeLoading }] = useUpdateVenueTypeMutation();
+  const [deleteVenueType, { isLoading: deleteVenueTypeLoading }] = useDeleteVenueTypeMutation();
+
+  const {
+    data: apiData,
+    isLoading,
+  } = useGetVenueTypesQuery({
+    pageno: page - 1,
+    search,
+    limit,
+    status: 'active',
+  });
+
+  const data = apiData?.data || [];
+  const meta = apiData?.meta || {
+    currentPage: page,
+    totalPages: 1,
+    totalRecords: 0,
+    limit,
+  };
+
   const schema = Yup.object().shape({
     icon: Yup.mixed().nullable(),
-    name: Yup.string().required("Venue Type Name is required"),
-    // type: Yup.string().required("Category Type is required"),
+    title: Yup.string().required('Venue Type is required'),
   });
 
   const methods = useForm({
@@ -40,44 +69,140 @@ const Page = () => {
     defaultValues: defaultValues,
   });
 
-  const onSubmit = (data: any) => {
-    console.log("Form submitted:", data);
-  };
+  const { handleSubmit, reset } = methods;
+
+  // Effect to populate form when editing
+  useEffect(() => {
+    if (editModal.value && selectedVenueType) {
+      reset({
+        icon: selectedVenueType.icon || null,
+        title: selectedVenueType.title || '',
+      });
+    } else if (!editModal.value) {
+      reset(defaultValues);
+    }
+  }, [editModal.value, selectedVenueType, reset]);
 
   const CloseModal = () => {
     methods.reset(defaultValues);
+    setSelectedVenueType(null);
+    setSelectedId(null);
     openModal.onFalse();
     editModal.onFalse();
   };
 
   const handleEdit = (id: string) => {
-    console.log("id", id);
-    openModal.onTrue();
-    editModal.onTrue();
+    const venueTypeToEdit = data?.find((item: any) => item._id === id);
+    
+    if (venueTypeToEdit) {
+      setSelectedVenueType(venueTypeToEdit);
+      setSelectedId(id);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Venue type not found');
+    }
   };
 
   const handleDelete = (id: string) => {
-    console.log("id", id);
+    console.log('Deleting venue type with id:', id);
+    setSelectedId(id);
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    deleteModal.onFalse();
+  // CREATE/UPDATE VENUE TYPE
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      let response;
+      
+      if (editModal.value && selectedId) {
+        // Update existing venue type
+        response = await updateVenueType({
+          id: selectedId,
+          ...data
+        }).unwrap();
+      } else {
+        // Create new venue type
+        response = await addVenueType(data).unwrap();
+      }
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      // Handle success
+      if (response?.message) {
+        showSuccess(
+          response?.message || 
+          (editModal.value ? 'Venue type updated successfully' : 'Venue type created successfully')
+        );
+      }
+
+      CloseModal();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.log('Failed to save venue type:', errorMessage);
+      showError(errorMessage);
+    }
+  });
+
+  // DELETE VENUE TYPE
+  const onDelete = async () => {
+    try {
+      const response = await deleteVenueType(selectedId).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      // Handle success
+      if (response?.message) {
+        showSuccess(response?.message || 'Venue type deleted successfully');
+      }
+
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.log('Failed to delete venue type:', errorMessage);
+      showError(errorMessage);
+    }
+  };
+
+  const handleCreateNew = () => {
+    setSelectedVenueType(null);
+    setSelectedId(null);
+    editModal.onFalse();
+    openModal.onTrue();
   };
 
   return (
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Venues Type", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Venues Type', href: '' },
         ]}
       />
       <div>
-        <div className=" w-full flex items-center justify-end md:mt-0 mt-3">
+        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button
-            className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary"
-            onClick={openModal.onTrue}
+            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
+            onClick={handleCreateNew}
           >
             <Plus className="" />
             Create Venue Type
@@ -85,54 +210,46 @@ const Page = () => {
         </div>
       </div>
 
-      <VenueTypeTable handleDelete={handleDelete} handleEdit={handleEdit} />
+      <VenueTypeTable
+        data={data}
+        meta={meta}
+        loading={isLoading}
+        handleDelete={handleDelete}
+        handleEdit={handleEdit}
+        onPageChange={setPage}
+        onLimitChange={(l) => {
+          setLimit(l);
+          setPage(1);
+        }}
+        onSearch={(val) => {
+          setSearch(val);
+          setPage(1);
+        }}
+        search={search}
+        limit={limit}
+        page={page}
+      />
 
-      <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-          <DialogContent className=" dark:bg-[#171717]">
-            <DialogHeader>
-              <DialogTitle>
-                {" "}
-                {!editModal.value
-                  ? "Create Venue Type"
-                  : "Edit Venue Type"}{" "}
-              </DialogTitle>
-            </DialogHeader>
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(onSubmit)}
-            >
-              <div className="flex flex-col gap-4 mt-4">
-                <RHFUploadAvatar name="icon" label="Venue Type Icon" />
-                <RHFTextField
-                  name="name"
-                  label="Venue Type Name"
-                  placeholder="Enter Venue Type Name"
-                  className={` ${
-                    methods.formState.errors.name ? "border-red-400" : ""
-                  }`}
-                />
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="submit"
-                    className="bg-primary text-white hover:bg-primary cursor-pointer"
-                  >
-                    {!editModal.value ? "Add Venue Type" : "Update Venue Type"}
-                  </Button>
-                </div>
-              </div>
-            </FormProvider>
-          </DialogContent>
-        </DialogOverlay>
-      </Dialog>
+      <VenueTypeModal
+        open={openModal.value}
+        onClose={CloseModal}
+        editMode={editModal.value}
+        methods={methods}
+        onSubmit={onSubmit}
+        isLoading={addVenueTypeLoading || updateVenueTypeLoading}
+        selectedVenueType={selectedVenueType}
+      />
 
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Venue Type"
-        content="Are you sure you want to delete this?"
-        onClose={deleteModal.onFalse}
+        content="Are you sure you want to delete this venue type? This action cannot be undone."
+        onClose={() => {
+          deleteModal.onFalse();
+          setSelectedId(null);
+        }}
         onConfirm={onDelete}
+        isLoading={deleteVenueTypeLoading}
       />
     </div>
   );

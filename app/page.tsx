@@ -1,9 +1,9 @@
-import Page from "./user/signIn/page";
+import LoginPageView from '@/sections/auth/signinView';
 
 export default function Home() {
   return (
     <>
-      <Page />
+      <LoginPageView userType="organizer" />
     </>
   );
 }

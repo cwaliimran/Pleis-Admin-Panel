@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import SidebarToggleButton from "@/app/common/siebarToggleButton";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { SuperAdminGuard } from "@/components/guards";
-import React, { FC } from "react";
+import SidebarToggleButton from '@/app/common/siebarToggleButton';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { SuperAdminGuard } from '@/components/guards';
+import React, { FC } from 'react';
 
 interface DashboardLayoutProps {
   left: React.ReactNode;
@@ -21,10 +21,10 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
       <div className="flex min-h-screen">
         <SidebarProvider>
           {/* Sidebar */}
-          <aside className="sticky top-0 h-screen z-20">{left}</aside>
+          <aside className="sticky top-0 z-20 h-screen">{left}</aside>
           <SidebarToggleButton />
 
-          <main className="flex-1 dark:bg-black md:px-5 px-2  bg-[#f8f6f7] ">
+          <main className="flex-1 bg-[#f8f6f7] px-2 md:px-5 dark:bg-black">
             {children}
           </main>
 
