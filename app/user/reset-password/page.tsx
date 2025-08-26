@@ -1,67 +1,110 @@
-"use client";
+'use client';
 
-import { yupResolver } from "@hookform/resolvers/yup";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
+import { yupResolver } from '@hookform/resolvers/yup';
+import { motion } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 
-import { ModeToggle } from "@/components/atoms/mode-toggle";
-import FormProvider, { RHFTextField } from "@/components/rhf";
-import { Button } from "@/components/ui/button";
-import { useBoolean } from "@/hooks/useBoolean";
-import Link from "next/link";
+import { ModeToggle } from '@/components/atoms/mode-toggle';
+import FormProvider, { RHFTextField } from '@/components/rhf';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import Link from 'next/link';
+import { useResetPasswordMutation } from '@/store/Reducer/user';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 
 const defaultValues = {
-  newPassword: "",
-  confirmPassword: "",
+  newPassword: '',
+  confirmPassword: '',
 };
 
 const schema = Yup.object().shape({
   newPassword: Yup.string()
-    .min(6, "Password must be at least 6 characters")
-    .required("New password is required"),
+    .min(6, 'Password must be at least 6 characters')
+    .required('New password is required'),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("newPassword")], "Passwords do not match")
-    .required("Please confirm your password"),
+    .oneOf([Yup.ref('newPassword')], 'Passwords do not match')
+    .required('Please confirm your password'),
 });
 
-// ----------------------
-// Reset Password Page
-// ----------------------
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email') || '';
+  const rst = searchParams.get('rst') || '';
   const showPassword = useBoolean();
+
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const methods = useForm({
     defaultValues,
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: any) => {
-    console.log("data", data);
-    router.push("/user/signIn");
-  };
+  const { handleSubmit } = methods;
+
+  const onSubmit = handleSubmit(async (data) => {
+    if (!email || !rst) {
+      showError('Invalid or expired reset link. Please request a new one.');
+      return;
+    }
+
+    try {
+      const payload = {
+        email: email.trim(),
+        newPassword: data.newPassword,
+        resetToken: rst,
+      };
+
+      const response = await resetPassword(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage || 'Failed to reset password.');
+        return;
+      }
+
+      // Handle success
+      if (response?.message) {
+        showSuccess(response.message || 'Password reset successfully');
+      } else {
+        showSuccess('Password reset successfully');
+      }
+
+      router.push(`/`);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.error('Failed to reset password:', errorMessage);
+      showError(errorMessage);
+    }
+  });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100 dark:from-[#0f0f0f] dark:via-[#1a1a1a] dark:to-[#0f0f0f] px-4 text-foreground relative">
+    <div className="text-foreground relative flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100 px-4 dark:from-[#0f0f0f] dark:via-[#1a1a1a] dark:to-[#0f0f0f]">
       <div className="absolute top-4 right-4 z-10">
         <ModeToggle />
       </div>
 
-      <div className="flex w-full max-w-5xl shadow-2xl rounded-xl overflow-hidden bg-white/30 dark:bg-black/30 backdrop-blur-md border border-border transition-all">
+      <div className="border-border flex w-full max-w-5xl overflow-hidden rounded-xl border bg-white/30 shadow-2xl backdrop-blur-md transition-all dark:bg-black/30">
         {/* Left Section */}
         <motion.div
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="hidden md:flex w-1/2 bg-gradient-to-br from-[#1a1a1a] to-black text-white items-center justify-center p-10"
+          className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-black p-10 text-white md:flex"
         >
-          <div className="text-center space-y-4">
+          <div className="space-y-4 text-center">
             <h1 className="text-4xl font-extrabold tracking-tight">
               Set a New Password
             </h1>
-            <p className="text-lg text-gray-300 max-w-sm mx-auto">
+            <p className="mx-auto max-w-sm text-lg text-gray-300">
               Please enter a new password to complete the reset process.
             </p>
           </div>
@@ -72,25 +115,22 @@ export default function ResetPasswordPage() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center"
+          className="flex w-full flex-col justify-center p-8 md:w-1/2 md:p-16"
         >
-          <h2 className="text-3xl font-extrabold text-center mb-1">
+          <h2 className="mb-1 text-center text-3xl font-extrabold">
             Reset Your Password
           </h2>
-          <p className="text-sm text-muted-foreground text-center mb-6">
+          <p className="text-muted-foreground mb-6 text-center text-sm">
             Enter and confirm your new password.
           </p>
 
-          <FormProvider
-            methods={methods}
-            onSubmit={methods.handleSubmit(onSubmit)}
-          >
+          <FormProvider methods={methods} onSubmit={onSubmit}>
             <div className="space-y-4">
               <RHFTextField
                 name="newPassword"
                 type="password"
                 placeholder="New Password"
-                className="rounded-md h-[45px]"
+                className="h-[45px] rounded-md"
                 showPassword={showPassword.value}
                 onTogglePassword={showPassword.onToggle}
               />
@@ -98,34 +138,41 @@ export default function ResetPasswordPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Confirm Password"
-                className="rounded-md h-[45px]"
+                className="h-[45px] rounded-md"
                 showPassword={showPassword.value}
                 onTogglePassword={showPassword.onToggle}
               />
 
-              <Button
-                type="submit"
-                className="w-full h-[45px] bg-[#0f172b] dark:bg-white  dark:text-black text-white cursor-pointer hover:dark:bg-white hover:bg-[#0f172b] transition-colors duration-200"
-              >
-                {methods.formState.isSubmitting
-                  ? "Resetting..."
-                  : "Reset Password"}
-              </Button>
+              {!isLoading ? (
+                <Button
+                  type="submit"
+                  className={`h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white`}
+                >
+                  Reset Password
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  className={`h-[45px] w-full cursor-not-allowed bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white`}
+                >
+                  Resetting...
+                </Button>
+              )}
             </div>
           </FormProvider>
 
-          <p className="mt-10 text-xs text-muted-foreground text-center">
-            By continuing, you agree to our{" "}
+          <p className="text-muted-foreground mt-10 text-center text-xs">
+            By continuing, you agree to our{' '}
             <Link
               href="/term-and-service"
-              className="underline hover:text-primary transition-colors"
+              className="hover:text-primary underline transition-colors"
             >
               Terms
-            </Link>{" "}
-            and{" "}
+            </Link>{' '}
+            and{' '}
             <Link
               href="/privacy-policy"
-              className="underline hover:text-primary transition-colors"
+              className="hover:text-primary underline transition-colors"
             >
               Privacy Policy
             </Link>

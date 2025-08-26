@@ -7,5 +7,5 @@ interface SuperAdminGuardProps {
 }
 
 export default function SuperAdminGuard({ children }: SuperAdminGuardProps) {
-  return <RouteGuard allowedRoles={["superAdmin"]}>{children}</RouteGuard>;
+  return <RouteGuard allowedRoles={["admin"]}>{children}</RouteGuard>;
 }

@@ -7,9 +7,10 @@ import { FC } from 'react';
 interface PageProps {
   item: {
     id: string;
-    purchases: string;
-    rewardRedemptions: string;
+    organizer: string;
+    user: string;
     challengeCompletions: string;
+    timeStamp: string;
     points: string;
     streakRewards: string;
     manualPointGifts: string;
@@ -24,32 +25,34 @@ interface PageProps {
 const TransactionsTableRow: FC<PageProps> = ({
   item,
   handleDelete,
-  handleEdit,
+  // handleEdit,
 }) => {
   // Determine if points are positive or negative for styling
-  const isPositive = item.points.startsWith('+');
-  const isNegative = item.points.startsWith('-');
+  // const isPositive = item.points.startsWith('+');
+  // const isNegative = item.points.startsWith('-');
 
   // Status styling
-  const getStatusStyle = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'expired':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
+  // const getStatusStyle = (status: string) => {
+  //   switch (status.toLowerCase()) {
+  //     case 'completed':
+  //       return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+  //     case 'expired':
+  //       return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+  //     case 'pending':
+  //       return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+  //     default:
+  //       return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+  //   }
+  // };
 
   return (
     <TableRow className="h-14 w-full transition-colors">
-      <TableCell className="text-left">{item.purchases}</TableCell>
-      <TableCell className="text-left">{item.rewardRedemptions}</TableCell>
+      <TableCell className="text-left">{item.organizer}</TableCell>
+      <TableCell className="text-left">{item.user}</TableCell>
+      <TableCell className="text-left">{item.transactionType}</TableCell>
       <TableCell className="text-left">{item.challengeCompletions}</TableCell>
-      <TableCell className="text-left">
+      <TableCell className="text-left">{item.timeStamp}</TableCell>
+      {/* <TableCell className="text-left">
         <span
           className={`font-semibold ${
             isPositive
@@ -61,7 +64,7 @@ const TransactionsTableRow: FC<PageProps> = ({
         >
           {item.points}
         </span>
-      </TableCell>
+      </TableCell> */}
       <TableCell className="text-left">{item.streakRewards}</TableCell>
       <TableCell className="text-left">{item.manualPointGifts}</TableCell>
       <TableCell className="text-left"><span className="text-red-600">{item.pointExpirations}</span></TableCell>

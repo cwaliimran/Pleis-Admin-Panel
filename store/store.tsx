@@ -1,40 +1,28 @@
-"use client";
-import { categoryApi } from "./Reducer/category";
-import { configureStore } from "@reduxjs/toolkit";
-import { highlightApi } from "./Reducer/highlight";
-import { userApi } from "./Reducer/user";
-import { venueTypeApi } from "./Reducer/venueType";
-import { venueApi } from "./Reducer/venue";
-import { useSelector } from "react-redux";
-import { userSlice } from "./slice/userSlice";
+'use client';
+
+import { configureStore } from '@reduxjs/toolkit';
+import { userApi } from './Reducer/user';
+import { useSelector } from 'react-redux';
+import { userSlice } from './slice/userSlice';
+import { venueTypeApi } from './Reducer/venueType';
 
 export const store = configureStore({
-    reducer: {
-        userSlice: userSlice.reducer,
-        [categoryApi.reducerPath]: categoryApi.reducer,
-        [highlightApi.reducerPath]: highlightApi.reducer,
-        [userApi.reducerPath]: userApi.reducer,
-        [venueApi.reducerPath]: venueApi.reducer,
-        [venueTypeApi.reducerPath]: venueTypeApi.reducer,
-    },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware()
-        .concat(categoryApi.middleware,
-            highlightApi.middleware,
-            userApi.middleware,
-            venueApi.middleware,
-            venueTypeApi.middleware,
-        ),
+  reducer: {
+    userSlice: userSlice.reducer,
+    [userApi.reducerPath]: userApi.reducer,
+    [venueTypeApi.reducerPath]: venueTypeApi.reducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(
+      userApi.middleware,
+      venueTypeApi.middleware,
+    ),
 });
-
 
 export type RootState = ReturnType<typeof store.getState>;
 
 export type AppDispatch = typeof store.dispatch;
 
-
 export const useMockedUser = () => {
-    return useSelector((state: RootState) =>state.userSlice);
-}
-
-
-
+  return useSelector((state: RootState) => state.userSlice);
+};

@@ -26,11 +26,12 @@ import { RewardsData } from './data';
 import TransactionsTableRow from './transactionsRow';
 
 const headLabel = [
-  { id: 'purchases', label: 'Purchases', align: 'left' },
-  { id: 'rewardRedemptions', label: 'Reward redemptions', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'user', label: 'User', align: 'left' },
+  { id: 'transactionType', label: 'Transaction Type', align: 'left' },
   { id: 'challengeCompletions', label: 'Challenge completions', align: 'left' },
+  { id: 'timeStamp', label: 'TimeStamp', align: 'left' },
   { id: 'points', label: 'Points', align: 'left' },
-  { id: 'streakRewards', label: 'Streak rewards', align: 'left' },
   { id: 'manualPointGifts', label: 'Manual point gifts', align: 'left' },
   { id: 'pointExpirations', label: 'Point expirations', align: 'left' },
   { id: 'referrals', label: 'Referrals', align: 'left' },
@@ -46,15 +47,11 @@ const TransactionsTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [type, setType] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const handleResetFilters = () => {
     setStartDate(undefined);
     setEndDate(undefined);
-    setDate(undefined);
-    setType('');
     setSearchTerm('');
   };
 

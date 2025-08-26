@@ -3,7 +3,7 @@ import LoginPageView from '@/sections/auth/signinView';
 const Page = () => {
   return (
     <>
-      <LoginPageView userType="organizer" />
+      <LoginPageView userType="admin" />
     </>
   );
 };

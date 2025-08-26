@@ -1,14 +1,13 @@
-"use client";
-import AuthProvider from "@/components/providers/AuthProvider";
-import { ThemeProvider } from "@/components/templates/theme-provider";
-import { store } from "@/store/store";
-import {
-  Inter
-} from "next/font/google";
-import { Provider } from "react-redux";
-import "./globals.css";
+'use client';
+import AuthProvider from '@/components/providers/AuthProvider';
+import { ThemeProvider } from '@/components/templates/theme-provider';
+import { store } from '@/store/store';
+import { Inter } from 'next/font/google';
+import { Provider } from 'react-redux';
+import './globals.css';
+import { Toaster } from 'react-hot-toast';
 
-import "react-phone-input-2/lib/style.css";
+import 'react-phone-input-2/lib/style.css';
 
 // const poppins = Poppins({
 //   variable: "--font-poppins",
@@ -21,9 +20,9 @@ import "react-phone-input-2/lib/style.css";
 //   subsets: ["latin"],
 // });
 const inter = Inter({
-  variable: "--font-inter",
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800"],
-  subsets: ["latin"],
+  variable: '--font-inter',
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800'],
+  subsets: ['latin'],
 });
 
 // export const metadata: Metadata = {
@@ -43,6 +42,7 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
         suppressHydrationWarning
       >
+        <Toaster position="top-right" />
         <Provider store={store}>
           <AuthProvider>
             <ThemeProvider

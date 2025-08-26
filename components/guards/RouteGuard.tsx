@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { RootState } from "@/store/store";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { RootState } from '@/store/store';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -24,12 +24,12 @@ RouteGuardProps) {
   useEffect(() => {
     const checkAuth = () => {
       if (!user) {
-        router.push("/user/signIn");
+        router.push('/');
         return;
       }
 
       if (!allowedRoles.includes(user.role)) {
-        router.push("/not-found");
+        router.push('/not-found');
         return;
       }
 
@@ -44,9 +44,9 @@ RouteGuardProps) {
   // Show loading state while checking authorization
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center dark:bg-black">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900 dark:border-gray-100"></div>
           <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
