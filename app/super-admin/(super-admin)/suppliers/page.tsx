@@ -1,5 +1,5 @@
 import Header from "@/app/common/header";
-import CategoriesView from "@/sections/categories/categories-view";
+import SuppliersView from "@/sections/suppliers/suppliers-view";
 
 const Page = () => {
   return (
@@ -7,11 +7,11 @@ const Page = () => {
       <Header
         links={[
           { name: "Dashboard", href: "/super-admin" },
-          { name: "Categories", href: "" },
+          { name: "Suppliers", href: "" },
         ]}
       />
 
-      <CategoriesView />
+      <SuppliersView />
     </div>
   );
 };

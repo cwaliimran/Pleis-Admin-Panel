@@ -16,8 +16,10 @@ import { getErrorMessage } from '@/utils/api';
 import { showError } from '@/utils/toast';
 import { getDeviceType } from '@/utils/getDeviceType';
 import { useAdminLoginMutation, useLoginMutation } from '@/store/Reducer/user';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '@/store/slice/userSlice';
+import { useCallback, useEffect } from 'react';
+import type { RootState } from '@/store/store';
 
 const defaultValues = {
   email: '',
@@ -41,7 +43,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
   const open = useBoolean();
   const router = useRouter();
 
-  console.log('user type', userType);
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
   const [login, { isLoading }] = useLoginMutation();
   const [adminLogin, { isLoading: isAdminLoading }] = useAdminLoginMutation();
@@ -50,6 +52,33 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
     defaultValues,
     resolver: yupResolver(schema),
   });
+
+  const goTo = useCallback(
+    (role: string) => {
+      switch (role) {
+        case 'admin':
+          router.push('/super-admin');
+          break;
+        case 'organizer':
+          router.push('/organizer/dashboard');
+          break;
+        default:
+          router.push('/');
+          break;
+      }
+    },
+    [router]
+  );
+
+  useEffect(() => {
+    if (
+      user &&
+      user.token &&
+      user.key === process.env.NEXT_PUBLIC_PROJECT_KEY
+    ) {
+      goTo(user?.role);
+    }
+  }, [user, goTo]);
 
   const { reset, handleSubmit } = methods;
 
@@ -94,22 +123,11 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
 
       const role = user?.accountState?.userType || '';
 
-      user = { ...user, role };
+      user = { ...user, role, key: process.env.NEXT_PUBLIC_PROJECT_KEY };
 
       dispatch(setUser(user));
 
-      let redirectPath = '';
-
-      if (role === 'admin') {
-        redirectPath = '/super-admin';
-      } else if (role === 'organizer') {
-        redirectPath = '/organizer/dashboard';
-      } else {
-        showError('Invalid role error');
-        return;
-      }
-
-      router.push(redirectPath);
+      goTo(role);
 
       reset();
     } catch (error) {
@@ -214,6 +232,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                       className="block h-[25px] w-[25px] object-contain dark:hidden"
                       width={25}
                       height={25}
+                      style={{ height: 'auto' }}
                     />
 
                     <Image
@@ -222,6 +241,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                       className="hidden h-[25px] w-[25px] object-contain dark:block"
                       width={25}
                       height={25}
+                      style={{ height: 'auto' }}
                     />
                   </span>
                 </Button>
@@ -237,6 +257,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                       className="h-[25px] w-[25px] object-contain"
                       width={25}
                       height={25}
+                      style={{ height: 'auto' }}
                     />
                   </span>
                 </Button>
@@ -252,6 +273,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                       className="h-[25px] w-[25px] object-contain"
                       width={25}
                       height={25}
+                      style={{ height: 'auto' }}
                     />
                   </span>
                 </Button>

@@ -25,14 +25,14 @@ import { Table, TableBody } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { VenueTableRow } from '.';
+import CategoriesTypeTableRow from './categoriesTypeTableRow';
 
 const headLabel = [
   { id: 'icon', label: 'Icon', align: 'left' },
-  { id: 'name', label: 'Venue Type Name', align: 'left' },
+  { id: 'name', label: 'Category Name', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: '', align: 'right' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
 interface Meta {
@@ -61,7 +61,7 @@ interface PageProps {
   onResetFilters?: () => void;
 }
 
-const VenueTypeTable: FC<PageProps> = ({
+const CategoriesTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
@@ -108,7 +108,7 @@ const VenueTypeTable: FC<PageProps> = ({
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Venue Type List
+              Category List
             </h3>
 
             <Sheet>
@@ -147,7 +147,7 @@ const VenueTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Venue Type...',
+                              placeholder: 'Search Suppliers...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -159,9 +159,9 @@ const VenueTypeTable: FC<PageProps> = ({
                                 value: status,
                                 onChange: onStatusChange,
                                 options: [
+                                  { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
-                                  // { value: 'deleted', label: 'Deleted' },
                                 ],
                               },
                             ]}
@@ -201,23 +201,25 @@ const VenueTypeTable: FC<PageProps> = ({
               <TableBody>
                 {loading ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="py-8 text-center">
-                      Loading...
-                    </td>
+                  <td colSpan={headLabel.length} className="py-8 text-center">
+                    Loading...
+                  </td>
                   </tr>
-                ) : data.length === 0 ? (
+                ) : data.filter((item: any) => item.status !== 'deleted').length === 0 ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="py-8 text-center">
-                      No data found
-                    </td>
+                  <td colSpan={headLabel.length} className="py-8 text-center">
+                    No data found
+                  </td>
                   </tr>
                 ) : (
-                  data.map((item: any, index: number) => (
-                    <VenueTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
+                  data
+                  .filter((item: any) => item.status !== 'deleted')
+                  .map((item: any, index: number) => (
+                    <CategoriesTypeTableRow
+                    key={item._id || index}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
                     />
                   ))
                 )}
@@ -225,7 +227,7 @@ const VenueTypeTable: FC<PageProps> = ({
             </Table>
           </div>
 
-          <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
+          <Pagination className="mt-4 flex flex-wrsap items-center justify-end gap-4 text-sm">
             {/* <div className="flex items-center space-x-2">
               <span className="text-muted-foreground">Rows per page:</span>
               <Select
@@ -300,4 +302,4 @@ const VenueTypeTable: FC<PageProps> = ({
   );
 };
 
-export default VenueTypeTable;
+export default CategoriesTypeTable;

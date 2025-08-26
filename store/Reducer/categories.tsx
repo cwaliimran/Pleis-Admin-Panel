@@ -2,13 +2,13 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
 import { customFetchBaseQuery } from '../customFetchBaseQuery';
 
-export const venueTypeApi = createApi({
-  reducerPath: 'venueTypeApi',
+export const categoriesApi = createApi({
+  reducerPath: 'categoriesApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['venueType'],
+  tagTypes: ['category'],
 
   endpoints: (builder) => ({
-    getVenueTypes: builder.query({
+    getCategories: builder.query({
       query: ({ search, page, status, date, limit }) => {
         const params: any = {
           keyword: search,
@@ -18,7 +18,7 @@ export const venueTypeApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.VENUES_TYPES,
+          url: API_ROUTES.CATEGORIES,
           method: 'GET',
           params,
         };
@@ -27,38 +27,38 @@ export const venueTypeApi = createApi({
         data: res.data,
         meta: res.meta,
       }),
-      providesTags: ['venueType'],
+      providesTags: ['category'],
     }),
 
-    addVenueType: builder.mutation({
-      query: (newVenueType) => ({
-        url: API_ROUTES.VENUES_TYPES,
+    addCategory: builder.mutation({
+      query: (newCategory) => ({
+        url: API_ROUTES.CATEGORIES,
         method: 'POST',
-        body: newVenueType,
+        body: newCategory,
       }),
     }),
 
-    updateVenueType: builder.mutation({
-      query: ({ id, ...updatedVenueType }) => ({
-        url: API_ROUTES.VENUES_TYPE_By_ID(id),
+    updateCategory: builder.mutation({
+      query: ({ id, ...updatedCategory }) => ({
+        url: API_ROUTES.CATEGORIES_BY_ID(id),
         method: 'PUT',
-        body: updatedVenueType,
+        body: updatedCategory,
       }),
     }),
 
-    deleteVenueType: builder.mutation({
+    deleteCategory: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.VENUES_TYPE_By_ID(id),
+        url: API_ROUTES.CATEGORIES_BY_ID(id),
         method: 'DELETE',
       }),
-      invalidatesTags: ['venueType'],
+      invalidatesTags: ['category'],
     }),
   }),
 });
 
 export const {
-  useGetVenueTypesQuery,
-  useAddVenueTypeMutation,
-  useUpdateVenueTypeMutation,
-  useDeleteVenueTypeMutation,
-} = venueTypeApi;
+  useGetCategoriesQuery,
+  useAddCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+} = categoriesApi;

@@ -14,6 +14,12 @@ export const API_ROUTES = {
 
   VENUES_TYPES: `${API_BASE}/admin/venue-types`,
   VENUES_TYPE_By_ID: (id: string) => `${API_BASE}/admin/venue-types/${id}`,
+
+  SUPPLIERS: `${API_BASE}/admin/suppliers`,
+  SUPPLIERS_BY_ID: (id: string) => `${API_BASE}/admin/suppliers/${id}`,
+
+  CATEGORIES: `${API_BASE}/admin/categories`,
+  CATEGORIES_BY_ID: (id: string) => `${API_BASE}/admin/categories/${id}`,
 };
 
 export default API_ROUTES;

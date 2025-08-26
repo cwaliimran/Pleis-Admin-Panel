@@ -12,7 +12,7 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
-const VenueTypeTableRow: FC<PageProps> = ({
+const CategoriesTypeTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
@@ -20,15 +20,22 @@ const VenueTypeTableRow: FC<PageProps> = ({
   return (
     <TableRow className="h-14 w-full transition-colors">
       <TableCell>
-        <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt="Store"
-            className="h-full w-full cursor-pointer object-cover"
-          />
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.imageInfo?.url &&
+          item.imageInfo.url !==
+            'https://pleisappbucketprod.s3.eu-north-1.amazonaws.com/noimage.png' ? (
+            <AvatarImage
+              src={item.imageInfo.url}
+              alt="Store"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+              {item?.title?.[0]?.toUpperCase() || ''}
+            </span>
+          )}
         </Avatar>
       </TableCell>
-
       <TableCell className="text-left font-medium capitalize">
         {item?.title}
       </TableCell>
@@ -79,4 +86,4 @@ const VenueTypeTableRow: FC<PageProps> = ({
     </TableRow>
   );
 };
-export default VenueTypeTableRow;
+export default CategoriesTypeTableRow;

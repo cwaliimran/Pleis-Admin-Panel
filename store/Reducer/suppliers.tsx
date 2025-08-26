@@ -2,13 +2,13 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
 import { customFetchBaseQuery } from '../customFetchBaseQuery';
 
-export const venueTypeApi = createApi({
-  reducerPath: 'venueTypeApi',
+export const suppliersApi = createApi({
+  reducerPath: 'suppliersApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['venueType'],
+  tagTypes: ['supplier'],
 
   endpoints: (builder) => ({
-    getVenueTypes: builder.query({
+    getSuppliers: builder.query({
       query: ({ search, page, status, date, limit }) => {
         const params: any = {
           keyword: search,
@@ -18,7 +18,7 @@ export const venueTypeApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.VENUES_TYPES,
+          url: API_ROUTES.SUPPLIERS,
           method: 'GET',
           params,
         };
@@ -27,38 +27,38 @@ export const venueTypeApi = createApi({
         data: res.data,
         meta: res.meta,
       }),
-      providesTags: ['venueType'],
+      providesTags: ['supplier'],
     }),
 
-    addVenueType: builder.mutation({
-      query: (newVenueType) => ({
-        url: API_ROUTES.VENUES_TYPES,
+    addSupplier: builder.mutation({
+      query: (newSupplier) => ({
+        url: API_ROUTES.SUPPLIERS,
         method: 'POST',
-        body: newVenueType,
+        body: newSupplier,
       }),
     }),
 
-    updateVenueType: builder.mutation({
-      query: ({ id, ...updatedVenueType }) => ({
-        url: API_ROUTES.VENUES_TYPE_By_ID(id),
+    updateSupplier: builder.mutation({
+      query: ({ id, ...updatedSupplier }) => ({
+        url: API_ROUTES.SUPPLIERS_BY_ID(id),
         method: 'PUT',
-        body: updatedVenueType,
+        body: updatedSupplier,
       }),
     }),
 
-    deleteVenueType: builder.mutation({
+    deleteSupplier: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.VENUES_TYPE_By_ID(id),
+        url: API_ROUTES.SUPPLIERS_BY_ID(id),
         method: 'DELETE',
       }),
-      invalidatesTags: ['venueType'],
+      invalidatesTags: ['supplier'],
     }),
   }),
 });
 
 export const {
-  useGetVenueTypesQuery,
-  useAddVenueTypeMutation,
-  useUpdateVenueTypeMutation,
-  useDeleteVenueTypeMutation,
-} = venueTypeApi;
+  useGetSuppliersQuery,
+  useAddSupplierMutation,
+  useUpdateSupplierMutation,
+  useDeleteSupplierMutation,
+} = suppliersApi;

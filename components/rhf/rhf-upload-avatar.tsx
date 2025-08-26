@@ -77,6 +77,8 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
                         src={preview}
                         alt="Avatar"
                         className="w-full h-full object-cover"
+                        width={size}
+                        height={size}
                       />
                     ) : (
                       <Camera className="w-6 h-6 text-gray-500 dark:text-gray-400" />

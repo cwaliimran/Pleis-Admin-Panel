@@ -1,12 +1,12 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -15,9 +15,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { ChevronDownIcon, RotateCcw } from "lucide-react";
+} from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { ChevronDownIcon } from 'lucide-react';
 
 export interface FilterOption {
   value: string;
@@ -76,7 +76,7 @@ export interface TableFiltersProps {
   searchFilter?: SearchFilter;
   resetFilter?: ResetFilter;
   className?: string;
-  filtersAlignment?: "left" | "right" | "center";
+  filtersAlignment?: 'left' | 'right' | 'center';
 }
 
 const TableFilters: React.FC<TableFiltersProps> = ({
@@ -85,8 +85,8 @@ const TableFilters: React.FC<TableFiltersProps> = ({
   selectFilters = [],
   searchFilter,
   resetFilter,
-  className = "",
-  filtersAlignment = "right",
+  className = '',
+  filtersAlignment = 'right',
 }) => {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
@@ -97,9 +97,9 @@ const TableFilters: React.FC<TableFiltersProps> = ({
     const hasStartDate = dateRangeFilter?.startDate?.value;
     const hasEndDate = dateRangeFilter?.endDate?.value;
     const hasSelectFilters = selectFilters.some(
-      (filter) => filter.value && filter.value !== ""
+      (filter) => filter.value && filter.value !== ''
     );
-    const hasSearchFilter = searchFilter?.value && searchFilter.value !== "";
+    const hasSearchFilter = searchFilter?.value && searchFilter.value !== '';
     return (
       hasDateFilter ||
       hasStartDate ||
@@ -111,13 +111,13 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
   const getJustifyClass = () => {
     switch (filtersAlignment) {
-      case "left":
-        return "justify-start";
-      case "center":
-        return "justify-center";
-      case "right":
+      case 'left':
+        return 'justify-start';
+      case 'center':
+        return 'justify-center';
+      case 'right':
       default:
-        return "justify-end";
+        return 'justify-end';
     }
   };
 
@@ -129,11 +129,11 @@ const TableFilters: React.FC<TableFiltersProps> = ({
         selectFilters.length > 0 ||
         (resetFilter?.showResetButton !== false && hasActiveFilters())) && (
         <div
-          className={`mb-3 flex ${getJustifyClass()} items-center gap-3 flex-wrap`}
+          className={`mb-3 flex ${getJustifyClass()} flex-wrap items-center gap-3`}
         >
           {/* Date Filter */}
           {dateFilter && (
-            <div className="flex flex-col gap-3">
+            <div className="flex w-full flex-col gap-3">
               {dateFilter.label && (
                 <label
                   htmlFor={dateFilter.id}
@@ -147,7 +147,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                   <Button
                     variant="outline"
                     id={dateFilter.id}
-                    className="w-44 justify-between font-normal"
+                    className="w-full justify-between font-normal"
                   >
                     {dateFilter.value
                       ? dateFilter.value.toLocaleDateString()
@@ -156,7 +156,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-auto overflow-hidden p-0"
+                  className="dark:bg-secondary w-auto overflow-hidden p-0"
                   align="start"
                 >
                   <Calendar
@@ -274,11 +274,15 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               <SelectTrigger className="w-[180px] cursor-pointer">
                 <SelectValue placeholder={filter.placeholder} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-secondary">
                 <SelectGroup>
                   <SelectLabel>{filter.label}</SelectLabel>
                   {filter.options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className="cursor-pointer"
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
@@ -286,21 +290,6 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               </SelectContent>
             </Select>
           ))}
-
-          {/* Reset Button */}
-          {resetFilter &&
-            resetFilter.showResetButton !== false &&
-            hasActiveFilters() && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetFilter.onReset}
-                className="flex items-center gap-2 px-3"
-                title="Reset all filters"
-              >
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-            )}
         </div>
       )}
 
@@ -309,12 +298,27 @@ const TableFilters: React.FC<TableFiltersProps> = ({
         <div className="search">
           <Input
             placeholder={searchFilter.placeholder}
-            value={searchFilter.value || ""}
+            value={searchFilter.value || ''}
             onChange={(e) => searchFilter.onChange(e.target.value)}
-            className="w-full h-10"
+            className="h-10 w-full"
           />
         </div>
       )}
+
+      <div className="mt-2">
+        {/* Reset Button */}
+        {resetFilter &&
+          resetFilter.showResetButton !== false &&
+          hasActiveFilters() && (
+            <button
+              className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
+              type="button"
+              onClick={resetFilter.onReset}
+            >
+              Reset
+            </button>
+          )}
+      </div>
     </div>
   );
 };

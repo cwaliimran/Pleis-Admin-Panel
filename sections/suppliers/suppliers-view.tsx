@@ -1,16 +1,7 @@
 'use client';
-import Header from '@/app/common/header';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { VenueTypeTable } from '@/sections/venueType';
-import VenueTypeModal from '@/sections/venueType/VenueTypeModal';
-import {
-  useAddVenueTypeMutation,
-  useDeleteVenueTypeMutation,
-  useGetVenueTypesQuery,
-  useUpdateVenueTypeMutation,
-} from '@/store/Reducer/venueType';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -18,13 +9,21 @@ import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { useState, useEffect } from 'react';
+import SupplierTypeTable from './suppliersTypeTable';
+import SupplierTypeModal from './suppliersTypeModal';
+import {
+  useAddSupplierMutation,
+  useDeleteSupplierMutation,
+  useGetSuppliersQuery,
+  useUpdateSupplierMutation,
+} from '@/store/Reducer/suppliers';
 
 const defaultValues = {
-  icon: null,
   title: '',
+  status: 'active',
 };
 
-const Page = () => {
+const SuppliersView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -33,24 +32,24 @@ const Page = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<string>('active');
+  const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const [addVenueType, { isLoading: addVenueTypeLoading }] =
-    useAddVenueTypeMutation();
-  const [updateVenueType, { isLoading: updateVenueTypeLoading }] =
-    useUpdateVenueTypeMutation();
-  const [deleteVenueType, { isLoading: deleteVenueTypeLoading }] =
-    useDeleteVenueTypeMutation();
+  const [addSupplier, { isLoading: addSupplierLoading }] =
+    useAddSupplierMutation();
+  const [updateSupplier, { isLoading: updateSupplierLoading }] =
+    useUpdateSupplierMutation();
+  const [deleteSupplier, { isLoading: deleteSupplierLoading }] =
+    useDeleteSupplierMutation();
 
-  const { data: apiData, isLoading } = useGetVenueTypesQuery({
+  const { data: apiData, isLoading } = useGetSuppliersQuery({
     page: page - 1,
     search,
     limit,
-    status,
+    status: status === 'all' ? undefined : status,
     date: date ? date.toISOString() : undefined,
   });
 
@@ -79,8 +78,8 @@ const Page = () => {
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
-    icon: Yup.mixed().nullable(),
-    title: Yup.string().required('Venue Type is required'),
+    title: Yup.string().required('Supplier Name is required'),
+    status: Yup.string().oneOf(['active', 'inactive']), // Add status validation
   });
 
   const methods = useForm({
@@ -94,8 +93,8 @@ const Page = () => {
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
-        icon: selectedVenueType.icon || null,
         title: selectedVenueType.title || '',
+        status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -132,14 +131,13 @@ const Page = () => {
     try {
       let response;
       if (editModal.value && selectedId) {
-        // Update existing venue type
-        response = await updateVenueType({
+        // Update existing supplier type, include status
+        response = await updateSupplier({
           id: selectedId,
           ...formData,
         }).unwrap();
       } else {
-        // Create new venue type
-        response = await addVenueType(formData).unwrap();
+        response = await addSupplier({ title: formData.title }).unwrap();
       }
 
       if (!response) {
@@ -174,8 +172,8 @@ const Page = () => {
         showSuccess(
           response?.message ||
             (editModal.value
-              ? 'Venue type updated successfully'
-              : 'Venue type created successfully')
+              ? 'Supplier updated successfully'
+              : 'Supplier created successfully')
         );
       }
 
@@ -187,10 +185,10 @@ const Page = () => {
     }
   });
 
-  // DELETE VENUE TYPE
+  // DELETE SUPPLIER
   const onDelete = async () => {
     try {
-      const response = await deleteVenueType(selectedId).unwrap();
+      const response = await deleteSupplier(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -204,14 +202,14 @@ const Page = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Venue type deleted successfully');
+        showSuccess(response?.message || 'Supplier deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete venue type:', errorMessage);
+      console.log('Failed to delete supplier:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -225,12 +223,6 @@ const Page = () => {
 
   return (
     <div>
-      <Header
-        links={[
-          { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Venues Type', href: '' },
-        ]}
-      />
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button
@@ -238,12 +230,12 @@ const Page = () => {
             onClick={handleCreateNew}
           >
             <Plus className="" />
-            Create Venue Type
+            Create Suppliers
           </Button>
         </div>
       </div>
 
-      <VenueTypeTable
+      <SupplierTypeTable
         data={venueTypes}
         meta={meta}
         loading={isLoading}
@@ -279,29 +271,29 @@ const Page = () => {
         }}
       />
 
-      <VenueTypeModal
+      <SupplierTypeModal
         open={openModal.value}
         onClose={CloseModal}
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addVenueTypeLoading || updateVenueTypeLoading}
+        isLoading={addSupplierLoading || updateSupplierLoading}
         selectedVenueType={selectedVenueType}
       />
 
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Venue Type"
-        content="Are you sure you want to delete this venue type?"
+        content="Are you sure you want to delete this venue type? This action cannot be undone."
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteVenueTypeLoading}
+        isLoading={deleteSupplierLoading}
       />
     </div>
   );
 };
 
-export default Page;
+export default SuppliersView;

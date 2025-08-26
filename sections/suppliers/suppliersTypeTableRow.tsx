@@ -1,6 +1,5 @@
 'use client';
 
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
@@ -12,23 +11,13 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
-const VenueTypeTableRow: FC<PageProps> = ({
+const SupplierTypeTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
 }) => {
   return (
     <TableRow className="h-14 w-full transition-colors">
-      <TableCell>
-        <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt="Store"
-            className="h-full w-full cursor-pointer object-cover"
-          />
-        </Avatar>
-      </TableCell>
-
       <TableCell className="text-left font-medium capitalize">
         {item?.title}
       </TableCell>
@@ -79,4 +68,4 @@ const VenueTypeTableRow: FC<PageProps> = ({
     </TableRow>
   );
 };
-export default VenueTypeTableRow;
+export default SupplierTypeTableRow;
