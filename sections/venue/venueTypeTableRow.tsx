@@ -1,5 +1,6 @@
 'use client';
 
+import { PrimaryIcon } from '@/assets/svg/svg-icon';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -12,7 +13,7 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
-const CategoriesTypeTableRow: FC<PageProps> = ({
+const VenueTypeTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
@@ -20,27 +21,26 @@ const CategoriesTypeTableRow: FC<PageProps> = ({
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
-            <AvatarImage
-              src={item.imageInfo.url}
-              alt="Store"
-              className="h-full w-full cursor-pointer object-cover"
-            />
-          ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.title?.[0]?.toUpperCase() || ''}
-            </span>
-          )}
-        </Avatar>
+        <div className="flex items-center gap-3">{item?.title || '-'}</div>
       </TableCell>
 
-      <TableCell className="text-left font-medium capitalize">
-        {item?.title}
-      </TableCell>
-
-      <TableCell className="text-left text-sm">
+      <TableCell className="text-left">
         {fDate(item?.createdAt, formatStr.paramCase.date)}
+      </TableCell>
+
+      <TableCell className="flex items-center gap-2 text-left">
+        <Avatar className="">
+          <AvatarImage
+            src="https://github.com/shadcn.png"
+            alt="Store"
+            className=""
+          />
+        </Avatar>
+        {item?.location?.fullAddress}
+      </TableCell>
+
+      <TableCell className="text-left">
+        {item?.location?.fullAddress || '-'}
       </TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
@@ -57,14 +57,26 @@ const CategoriesTypeTableRow: FC<PageProps> = ({
         </CustomBadge>
       </TableCell>
 
+      <TableCell className="text-left">
+        {fDate(item?.updatedAt, formatStr.paramCase.date)}
+      </TableCell>
+
       <TableCell className="text-end">
         <div className="flex gap-2">
           <button
             type="button"
-            title="Edit"
+            title="Select Primary"
+            className={`cursor-pointer rounded-md ${item?.pinned ? 'bg-green-600 text-white dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-800'} p-1.5 transition`}
+          >
+            <PrimaryIcon />
+          </button>
+
+          <button
+            title="View Venue"
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleEdit?.(item._id);
+              handleEdit?.(item);
             }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
@@ -72,8 +84,8 @@ const CategoriesTypeTableRow: FC<PageProps> = ({
           </button>
 
           <button
+            title="View Venue"
             type="button"
-            title="Delete"
             onClick={(e) => {
               e.stopPropagation();
               handleDelete?.(item._id);
@@ -87,4 +99,4 @@ const CategoriesTypeTableRow: FC<PageProps> = ({
     </TableRow>
   );
 };
-export default CategoriesTypeTableRow;
+export default VenueTypeTableRow;

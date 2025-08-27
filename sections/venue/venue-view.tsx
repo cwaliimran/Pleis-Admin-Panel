@@ -2,28 +2,33 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useAddSupplierMutation,
-  useDeleteSupplierMutation,
-  useGetSuppliersQuery,
-  useUpdateSupplierMutation,
-} from '@/store/Reducer/suppliers';
 import { getErrorMessage } from '@/utils/api';
+// import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import SupplierTypeModal from './suppliersTypeModal';
-import SupplierTypeTable from './suppliersTypeTable';
+import VenueTypeModal from './venueTypeModal';
+import VenueTypeTable from './venueTypeTable';
+import {
+  useAddVenueMutation,
+  useDeleteVenueMutation,
+  useGetVenuesQuery,
+  useUpdateVenueMutation,
+} from '@/store/Reducer/venue';
 
 const defaultValues = {
-  title: '',
-  status: '',
+  name: '',
+  venueType: '',
+  organization: '',
+  location: '',
+  city: '',
+  country: '',
 };
 
-const SuppliersView = () => {
+const VenueView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -37,21 +42,23 @@ const SuppliersView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
-  const [addSupplier, { isLoading: addSupplierLoading }] =
-    useAddSupplierMutation();
-  const [updateSupplier, { isLoading: updateSupplierLoading }] =
-    useUpdateSupplierMutation();
-  const [deleteSupplier, { isLoading: deleteSupplierLoading }] =
-    useDeleteSupplierMutation();
+  const [addVenue, { isLoading: addVenueLoading }] = useAddVenueMutation();
+  const [updateVenue, { isLoading: updateVenueLoading }] =
+    useUpdateVenueMutation();
+  const [deleteVenue, { isLoading: deleteVenueLoading }] =
+    useDeleteVenueMutation();
 
-  const { data: apiData, isLoading } = useGetSuppliersQuery({
+  const { data: apiData, isLoading } = useGetVenuesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? undefined : status,
     date: date ? date.toISOString() : undefined,
   });
+
+  console.log('apiData', apiData?.data);
 
   // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -77,8 +84,12 @@ const SuppliersView = () => {
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
-    title: Yup.string().required('Supplier Name is required'),
-    status: Yup.string().oneOf(['active', 'inactive']),
+    name: Yup.string().required('Venue name is required'),
+    venueType: Yup.string().required('Venue Type is required'),
+    organization: Yup.string().required('Organization is required'),
+    location: Yup.string().required('Location is required'),
+    city: Yup.string(),
+    country: Yup.string(),
   });
 
   const methods = useForm({
@@ -88,12 +99,15 @@ const SuppliersView = () => {
 
   const { handleSubmit, reset } = methods;
 
-  // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
-        title: selectedVenueType.title || '',
-        status: selectedVenueType.status || 'active',
+        name: selectedVenueType.name || '',
+        venueType: selectedVenueType.venueType || '',
+        organization: selectedVenueType.organization || '',
+        location: selectedVenueType.location || '',
+        city: selectedVenueType.city || '',
+        country: selectedVenueType.country || '',
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -116,7 +130,7 @@ const SuppliersView = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Venue type not found');
+      showError('Category type not found');
     }
   };
 
@@ -125,18 +139,51 @@ const SuppliersView = () => {
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE SUPPLIER
+  // CREATE/UPDATE VENUE TYPE
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      // let imageFileString = undefined;
+      // // If image is present and is a FileList or array
+      // if (
+      //   formData.image &&
+      //   (formData.image instanceof FileList || Array.isArray(formData.image))
+      // ) {
+      //   const file = formData.image[0];
+      //   if (file) {
+      //     setImageUploading(true);
+      //     try {
+      //       imageFileString = await uploadFileToAzure(file);
+      //     } finally {
+      //       setImageUploading(false);
+      //     }
+      //   }
+      // }
+
+      // const payload: any = {
+      //   title: formData.title,
+      // };
+      // if (imageFileString) {
+      //   payload.image = imageFileString;
+      // } else if (editModal.value && typeof formData.image === 'string') {
+      //   payload.image = formData.image;
+      // }
+      // if (editModal.value && selectedId) {
+      //   payload.status = formData.status;
+      //   payload.id = selectedId;
+      // }
+
+      const payload = {
+        title: formData.name,
+        location: formData.location,
+        city: formData.city,
+        country: formData.country,
+      }
+
       let response;
       if (editModal.value && selectedId) {
-        // Update existing supplier type, include status
-        response = await updateSupplier({
-          id: selectedId,
-          ...formData,
-        }).unwrap();
+        response = await updateVenue(payload).unwrap();
       } else {
-        response = await addSupplier({ title: formData.title }).unwrap();
+        response = await addVenue(payload).unwrap();
       }
 
       if (!response) {
@@ -171,23 +218,24 @@ const SuppliersView = () => {
         showSuccess(
           response?.message ||
             (editModal.value
-              ? 'Supplier updated successfully'
-              : 'Supplier created successfully')
+              ? 'Category updated successfully'
+              : 'Category created successfully')
         );
       }
 
       CloseModal();
     } catch (error) {
+      setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save venue type:', errorMessage);
+      console.log('Failed to save category:', errorMessage);
       showError(errorMessage);
     }
   });
 
-  // DELETE SUPPLIER
+  // DELETE CATEGORY
   const onDelete = async () => {
     try {
-      const response = await deleteSupplier(selectedId).unwrap();
+      const response = await deleteVenue(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -201,14 +249,14 @@ const SuppliersView = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Supplier deleted successfully');
+        showSuccess(response?.message || 'Category deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete supplier:', errorMessage);
+      console.log('Failed to delete category:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -229,12 +277,12 @@ const SuppliersView = () => {
             onClick={handleCreateNew}
           >
             <Plus className="" />
-            Create Suppliers
+            Create Venue
           </Button>
         </div>
       </div>
 
-      <SupplierTypeTable
+      <VenueTypeTable
         data={venueTypes}
         meta={meta}
         loading={isLoading}
@@ -270,29 +318,29 @@ const SuppliersView = () => {
         }}
       />
 
-      <SupplierTypeModal
+      <VenueTypeModal
         open={openModal.value}
         onClose={CloseModal}
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addSupplierLoading || updateSupplierLoading}
+        isLoading={addVenueLoading || updateVenueLoading || imageUploading}
         selectedVenueType={selectedVenueType}
       />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Venue Type"
-        content="Are you sure you want to delete this venue type? This action cannot be undone."
+        title="Delete Venue"
+        content="Are you sure you want to delete this venue?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteSupplierLoading}
+        isLoading={deleteVenueLoading}
       />
     </div>
   );
 };
 
-export default SuppliersView;
+export default VenueView;

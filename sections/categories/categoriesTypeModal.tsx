@@ -28,6 +28,7 @@ const CategoriesTypeModal: React.FC<CategoriesTypeModalProps> = ({
   methods,
   onSubmit,
   isLoading,
+  selectedVenueType,
 }) => {
   const handleClose = () => {
     if (!isLoading) {
@@ -55,7 +56,26 @@ const CategoriesTypeModal: React.FC<CategoriesTypeModalProps> = ({
           <FormProvider methods={methods} onSubmit={onSubmit}>
             <div className="mt-4 flex flex-col gap-4">
               <div className="space-y-2">
-                <RHFUploadAvatar name="image" label="Category Icon" />
+                <RHFUploadAvatar
+                  name="image"
+                  label="Category Icon"
+                  initialImage={(() => {
+                    if (!editMode) return null;
+                    const img =
+                      methods.getValues('image') &&
+                      typeof methods.getValues('image') === 'string'
+                        ? methods.getValues('image')
+                        : selectedVenueType?.imageInfo?.url;
+                    if (
+                      !img ||
+                      img ===
+                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
+                    ) {
+                      return null;
+                    }
+                    return img;
+                  })()}
+                />
               </div>
 
               <div className="space-y-2">
@@ -77,6 +97,7 @@ const CategoriesTypeModal: React.FC<CategoriesTypeModalProps> = ({
                   name="status"
                   placeholder="Select Status"
                   className="w-full flex-1"
+                  label="Status"
                   options={[
                     { label: 'Active', value: 'active' },
                     { label: 'Inactive', value: 'inactive' },

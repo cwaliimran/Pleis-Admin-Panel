@@ -1,5 +1,4 @@
 import TableHeadCustom from "@/components/table/table-head-custom";
-import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -18,12 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody } from "@/components/ui/table";
-import React, { FC, useState } from "react";
+import { FC } from "react";
 import { Card } from "@/components/ui/card";
 import { highlightData } from "./data";
 import HighlightTableRow from "./highlightTableRow";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
-import { TableFilters } from "@/components/table-filters";
 const headLabel = [
   { id: "title", label: "Title", align: "left" },
   { id: "organization", label: "Organization", align: "left" },
@@ -40,15 +37,15 @@ interface PageProps {
 }
 
 const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [status, setStatus] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+  // const [date, setDate] = useState<Date | undefined>(undefined);
+  // const [status, setStatus] = useState<string>("");
+  // const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const handleResetFilters = () => {
-    setDate(undefined);
-    setStatus("");
-    setSearchTerm("");
-  };
+  // const handleResetFilters = () => {
+  //   setDate(undefined);
+  //   setStatus("");
+  //   setSearchTerm("");
+  // };
 
   return (
     <div>
@@ -60,7 +57,7 @@ const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
             </h3>
           </div>
 
-          <TableFilters
+          {/* <TableFilters
             dateFilter={{
               id: "organization-date",
               placeholder: "Select date",
@@ -91,7 +88,7 @@ const HighlightTable: FC<PageProps> = ({ handleDelete, handleEdit }) => {
               showResetButton: true,
             }}
             filtersAlignment="right"
-          />
+          /> */}
 
           <div className="border rounded-lg  ">
             <Table className="w-full rounded-md border  ">

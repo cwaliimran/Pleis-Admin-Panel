@@ -7,6 +7,8 @@ import { userSlice } from './slice/userSlice';
 import { venueTypeApi } from './Reducer/venueType';
 import { suppliersApi } from './Reducer/suppliers';
 import { categoriesApi } from './Reducer/categories';
+import { tagsApi } from './Reducer/tags';
+import { venueApi } from './Reducer/venue';
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +17,8 @@ export const store = configureStore({
     [venueTypeApi.reducerPath]: venueTypeApi.reducer,
     [suppliersApi.reducerPath]: suppliersApi.reducer,
     [categoriesApi.reducerPath]: categoriesApi.reducer,
+    [tagsApi.reducerPath]: tagsApi.reducer,
+    [venueApi.reducerPath]: venueApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -22,6 +26,8 @@ export const store = configureStore({
       venueTypeApi.middleware,
       suppliersApi.middleware,
       categoriesApi.middleware,
+      tagsApi.middleware,
+      venueApi.middleware,
     ),
 });
 

@@ -1,6 +1,5 @@
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,7 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import * as React from 'react';
 
-interface VenueTypeModalProps {
+interface TagsTypeModalProps {
   open: boolean;
   onClose: () => void;
   editMode: boolean;
@@ -21,14 +20,14 @@ interface VenueTypeModalProps {
   selectedVenueType?: any;
 }
 
-const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
+const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
   open,
   onClose,
   editMode,
   methods,
   onSubmit,
   isLoading,
-  selectedVenueType,
+  // selectedVenueType,
 }) => {
   const handleClose = () => {
     if (!isLoading) {
@@ -49,60 +48,48 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
         >
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-lg font-semibold">
-              {editMode ? 'Edit Venue Type' : 'Create Venue Type'}
+              {editMode ? 'Edit Tag' : 'Create Tag'}
             </DialogTitle>
           </DialogHeader>
 
           <FormProvider methods={methods} onSubmit={onSubmit}>
             <div className="mt-4 flex flex-col gap-4">
               <div className="space-y-2">
-                <RHFUploadAvatar
-                  name="image"
-                  label="Venue Type Icon"
-                  initialImage={(() => {
-                    if (!editMode) return null;
-                    const img =
-                      methods.getValues('image') &&
-                      typeof methods.getValues('image') === 'string'
-                        ? methods.getValues('image')
-                        : selectedVenueType?.imageInfo?.url;
-                    if (
-                      !img ||
-                      img ===
-                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
-                    ) {
-                      return null;
-                    }
-                    return img;
-                  })()}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <RHFTextField
                   name="title"
-                  label="Venue Type Name"
-                  placeholder="Enter Venue Type Name"
-                  className={`${
+                  label="Tag Name"
+                  placeholder="Enter Tag Name"
+                  className={`$${
                     methods.formState.errors.title
                       ? 'border-red-400 focus:border-red-400'
                       : ''
                   }`}
                   disabled={isLoading}
                 />
-                {methods.formState.errors.title && (
-                  <p className="text-sm text-red-500">
-                    {methods.formState.errors.title.message}
-                  </p>
-                )}
+              </div>
+
+              <div className="flex w-full flex-1 flex-col">
+                <RHFSelectField
+                  name="tag"
+                  placeholder="Select Tag Type"
+                  className={`w-full flex-1 ${methods.formState.errors.tag ? 'border-red-400 focus:border-red-400' : ''}`}
+                  label="Tag Type"
+                  options={[
+                    { label: 'Primary', value: 'primary' },
+                    { label: 'Success', value: 'success' },
+                    { label: 'Warning', value: 'warning' },
+                    { label: 'Danger', value: 'danger' },
+                  ]}
+                  disabled={isLoading}
+                />
               </div>
 
               {editMode && (
                 <RHFSelectField
                   name="status"
                   placeholder="Select Status"
-                  className="w-full flex-1"
                   label="Status"
+                  className="w-full flex-1"
                   options={[
                     { label: 'Active', value: 'active' },
                     { label: 'Inactive', value: 'inactive' },
@@ -136,7 +123,7 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
                     className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
                     disabled={editMode ? !isDirty : false}
                   >
-                    {editMode ? 'Update Venue Type' : 'Create Venue Type'}
+                    {editMode ? 'Update Tag' : 'Create Tag'}
                   </Button>
                 )}
               </div>
@@ -148,4 +135,4 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
   );
 };
 
-export default VenueTypeModal;
+export default TagsTypeModal;

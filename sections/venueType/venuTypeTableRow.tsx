@@ -18,14 +18,20 @@ const VenueTypeTableRow: FC<PageProps> = ({
   handleEdit,
 }) => {
   return (
-    <TableRow className="h-14 w-full transition-colors">
+     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt="Store"
-            className="h-full w-full cursor-pointer object-cover"
-          />
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
+            <AvatarImage
+              src={item.imageInfo.url}
+              alt="Store"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+              {item?.title?.[0]?.toUpperCase() || ''}
+            </span>
+          )}
         </Avatar>
       </TableCell>
 

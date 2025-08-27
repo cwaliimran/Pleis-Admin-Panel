@@ -20,6 +20,12 @@ export const API_ROUTES = {
 
   CATEGORIES: `${API_BASE}/admin/categories`,
   CATEGORIES_BY_ID: (id: string) => `${API_BASE}/admin/categories/${id}`,
+
+  TAGS: `${API_BASE}/admin/tags`,
+  TAGS_BY_ID: (id: string) => `${API_BASE}/admin/tags/${id}`,
+
+  VENUES: `${API_BASE}/venues`,
+  VENUES_BY_ID: (id: string) => `${API_BASE}/venues/${id}`,
 };
 
 export default API_ROUTES;

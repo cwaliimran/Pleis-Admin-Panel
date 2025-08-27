@@ -1,5 +1,6 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { debounce } from 'lodash';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -91,6 +92,30 @@ const TableFilters: React.FC<TableFiltersProps> = ({
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+
+  const [localSearch, setLocalSearch] = useState(searchFilter?.value ?? '');
+
+  // keep local input in sync if parent resets/changes the value externally
+  useEffect(() => {
+    setLocalSearch(searchFilter?.value ?? '');
+  }, [searchFilter?.value]);
+
+  // stable reference to parent's onChange (avoid depending on whole object)
+  const onSearchChange = searchFilter?.onChange;
+
+  // debounced notifier (only side-effect is delayed)
+  const debouncedNotify = useMemo(
+    () =>
+      debounce((q: string) => {
+        onSearchChange?.(q);
+      }, 400),
+    [onSearchChange]
+  );
+
+  // cancel pending debounce on unmount
+  useEffect(() => {
+    return () => debouncedNotify.cancel();
+  }, [debouncedNotify]);
 
   const hasActiveFilters = () => {
     const hasDateFilter = dateFilter?.value;
@@ -293,13 +318,16 @@ const TableFilters: React.FC<TableFiltersProps> = ({
         </div>
       )}
 
-      {/* Search Filter */}
       {searchFilter && (
         <div className="search">
           <Input
             placeholder={searchFilter.placeholder}
-            value={searchFilter.value || ''}
-            onChange={(e) => searchFilter.onChange(e.target.value)}
+            value={localSearch}
+            onChange={(e) => {
+              const q = e.target.value;
+              setLocalSearch(q);
+              debouncedNotify(q);
+            }}
             className="h-10 w-full"
           />
         </div>

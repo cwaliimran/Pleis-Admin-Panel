@@ -26,6 +26,7 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import CategoriesTypeTableRow from './categoriesTypeTableRow';
+import { LoadingBar } from '@/components/table/table-bar-loading';
 
 const headLabel = [
   { id: 'icon', label: 'Icon', align: 'left' },
@@ -147,7 +148,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Suppliers...',
+                              placeholder: 'Search Categories...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -195,39 +196,47 @@ const CategoriesTypeTable: FC<PageProps> = ({
             </Sheet>
           </div>
 
-          <div className="rounded-lg border">
+          <div
+            className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
+          >
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {loading ? (
                   <tr>
-                  <td colSpan={headLabel.length} className="py-8 text-center">
-                    Loading...
-                  </td>
+                    <td colSpan={headLabel.length} className="py-0 text-center">
+                      <LoadingBar variant="default" />
+                    </td>
                   </tr>
-                ) : data.filter((item: any) => item.status !== 'deleted').length === 0 ? (
+                ) : data.filter((item: any) => item.status !== 'deleted')
+                    .length === 0 ? (
                   <tr>
-                  <td colSpan={headLabel.length} className="py-8 text-center">
-                    No data found
-                  </td>
+                    <td
+                      colSpan={headLabel.length}
+                      className="h-[40vh] border-b-0 text-center align-middle"
+                    >
+                      <div className="flex h-full w-full items-center justify-center text-xl">
+                        No data found
+                      </div>
+                    </td>
                   </tr>
                 ) : (
                   data
-                  .filter((item: any) => item.status !== 'deleted')
-                  .map((item: any, index: number) => (
-                    <CategoriesTypeTableRow
-                    key={item._id || index}
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                    />
-                  ))
+                    .filter((item: any) => item.status !== 'deleted')
+                    .map((item: any, index: number) => (
+                      <CategoriesTypeTableRow
+                        key={item._id || index}
+                        item={item}
+                        handleDelete={handleDelete}
+                        handleEdit={handleEdit}
+                      />
+                    ))
                 )}
               </TableBody>
             </Table>
           </div>
 
-          <Pagination className="mt-4 flex flex-wrsap items-center justify-end gap-4 text-sm">
+          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
             {/* <div className="flex items-center space-x-2">
               <span className="text-muted-foreground">Rows per page:</span>
               <Select

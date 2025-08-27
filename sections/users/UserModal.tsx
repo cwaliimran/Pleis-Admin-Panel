@@ -100,7 +100,14 @@ const UserModal: React.FC<UserModalProps> = ({
       'country',
       'listOfSupplier',
     ],
-    Manager: ['firstName', 'lastName', 'email', 'phone', 'password'],
+    Manager: [
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+      'password',
+      'linkedOrganization',
+    ],
     Staff: [
       'name',
       'surname',
@@ -662,7 +669,7 @@ const UserModal: React.FC<UserModalProps> = ({
                 })}
               </div>
 
-              <div className="flex justify-end gap-2">
+              <div className="mt-1 flex justify-center gap-2">
                 <Button
                   type="submit"
                   className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"

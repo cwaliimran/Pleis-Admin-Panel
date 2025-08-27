@@ -26,13 +26,14 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { VenueTableRow } from '.';
+import { LoadingBar } from '@/components/table/table-bar-loading';
 
 const headLabel = [
   { id: 'icon', label: 'Icon', align: 'left' },
   { id: 'name', label: 'Venue Type Name', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: '', align: 'right' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
 interface Meta {
@@ -159,9 +160,9 @@ const VenueTypeTable: FC<PageProps> = ({
                                 value: status,
                                 onChange: onStatusChange,
                                 options: [
+                                  { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
-                                  // { value: 'deleted', label: 'Deleted' },
                                 ],
                               },
                             ]}
@@ -195,31 +196,41 @@ const VenueTypeTable: FC<PageProps> = ({
             </Sheet>
           </div>
 
-          <div className="rounded-lg border">
+          <div
+            className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
+          >
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {loading ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="py-8 text-center">
-                      Loading...
+                    <td colSpan={headLabel.length} className="py-0 text-center">
+                      <LoadingBar variant="default" />
                     </td>
                   </tr>
-                ) : data.length === 0 ? (
+                ) : data.filter((item: any) => item.status !== 'deleted')
+                    .length === 0 ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="py-8 text-center">
-                      No data found
+                    <td
+                      colSpan={headLabel.length}
+                      className="h-[40vh] border-b-0 text-center align-middle"
+                    >
+                      <div className="flex h-full w-full items-center justify-center text-xl">
+                        No data found
+                      </div>
                     </td>
                   </tr>
                 ) : (
-                  data.map((item: any, index: number) => (
-                    <VenueTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
-                    />
-                  ))
+                  data
+                    .filter((item: any) => item.status !== 'deleted')
+                    .map((item: any, index: number) => (
+                      <VenueTableRow
+                        key={item._id || index}
+                        item={item}
+                        handleDelete={handleDelete}
+                        handleEdit={handleEdit}
+                      />
+                    ))
                 )}
               </TableBody>
             </Table>

@@ -1,19 +1,21 @@
-"use client";
-import { Camera, X } from "lucide-react";
-import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
+'use client';
+import { Camera, X } from 'lucide-react';
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 
 interface RHFUploadAvatarProps {
   name: string;
   label?: string;
   size?: number;
+  initialImage?: string | null;
 }
 
 const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
   name,
-  label = "Upload Avatar",
+  label = 'Upload Avatar',
   size = 120,
+  initialImage = null,
 }) => {
   const {
     control,
@@ -22,7 +24,7 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
     formState: { errors },
   } = useFormContext();
 
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(initialImage);
   const watchedValue = watch(name);
 
   useEffect(() => {
@@ -30,10 +32,13 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
       const objectUrl = URL.createObjectURL(watchedValue[0]);
       setPreview(objectUrl);
       return () => URL.revokeObjectURL(objectUrl);
+    } else if (initialImage) {
+      setPreview(initialImage);
     } else {
       setPreview(null);
     }
-  }, [watchedValue]);
+    // Only update preview if watchedValue or initialImage changes
+  }, [watchedValue, initialImage]);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -57,31 +62,30 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
           return (
             <>
               {/* Avatar Upload Box */}
-              <div className="relative border border-dashed rounded-full p-2">
+              <div className="relative rounded-full border border-dashed p-2">
                 <div
-                  className={`relative w-full h-full rounded-full overflow-hidden flex items-center justify-center border bg-gray-200 dark:bg-gray-700 transition hover:opacity-80 cursor-pointer ${
+                  className={`relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-gray-200 transition hover:opacity-80 dark:bg-gray-700 ${
                     errors[name]
-                      ? "border-dashed border-red-400"
-                      : "border-gray-300 dark:border-gray-600"
-                  }
-                  `}
+                      ? 'border-dashed border-red-400'
+                      : 'border-gray-300 dark:border-gray-600'
+                  } `}
                   // ${`w-[${size}] h-[${size}]`}
                   style={{ width: size, height: size }}
                 >
                   <label
                     htmlFor={`avatar-upload-${name}`}
-                    className="w-full h-full flex items-center justify-center cursor-pointer"
+                    className="flex h-full w-full cursor-pointer items-center justify-center"
                   >
                     {preview ? (
                       <Image
                         src={preview}
                         alt="Avatar"
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                         width={size}
                         height={size}
                       />
                     ) : (
-                      <Camera className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                      <Camera className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                     )}
                   </label>
 
@@ -101,10 +105,9 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
                       type="button"
                       title="Remove Avatar"
                       onClick={handleRemove}
-                      className="absolute top-[-6px] right-[-6px] bg-white dark:bg-gray-800 
-                                 rounded-full p-1 border border-gray-200 dark:border-gray-700 shadow"
+                      className="absolute top-[-6px] right-[-6px] rounded-full border border-gray-200 bg-white p-1 shadow dark:border-gray-700 dark:bg-gray-800"
                     >
-                      <X className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+                      <X className="h-3 w-3 text-gray-600 dark:text-gray-300" />
                     </button>
                   )}
                 </div>
@@ -112,7 +115,7 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
 
               {/* Validation Error */}
               {errors[name] && (
-                <p className="text-sm text-red-400 ">
+                <p className="text-sm text-red-400">
                   {(errors[name] as any).message}
                 </p>
               )}

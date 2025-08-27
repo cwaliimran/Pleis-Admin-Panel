@@ -1,11 +1,11 @@
-"use client";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import CreateVenueModal from "@/components/modals/CreateVenueModal";
-import { Button } from "@/components/ui/button";
-import { useBoolean } from "@/hooks/useBoolean";
-import VenueTable from "@/sections/venue/venueTable";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+'use client';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import CreateVenueModal from '@/components/modals/CreateVenueModal';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import VenueTable from '@/sections/venue-old/venueTable';
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
 
 interface VenueData {
   name: string;
@@ -23,21 +23,21 @@ const VenueList = () => {
   const [editData, setEditData] = useState<VenueData | null>(null);
 
   const handleEdit = (id: string) => {
-    console.log("id", id);
+    console.log('id', id);
     setEditData({
-      name: "Sample Venue",
-      venueType: "event1",
-      organization: "org-a",
-      location: "Sample Location",
-      city: "Sample City",
-      country: "Sample Country",
+      name: 'Sample Venue',
+      venueType: 'event1',
+      organization: 'org-a',
+      location: 'Sample Location',
+      city: 'Sample City',
+      country: 'Sample Country',
     });
     setIsEdit(true);
     openModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
-    console.log("id", id);
+    console.log('id', id);
     deleteModal.onTrue();
   };
 
@@ -53,15 +53,18 @@ const VenueList = () => {
 
   return (
     <div>
-      <div className=" w-full flex items-center justify-end">
+      <div className="flex w-full items-center justify-end">
         <Button
           onClick={openModal.onTrue}
-          className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary"
+          className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
         >
           <Plus className="" />
           Create Venue
         </Button>
       </div>
+
+      {/* ------------- VENUE TABLE ------------- */}
+      <VenueTable handleDelete={handleDelete} handleEdit={handleEdit} />
 
       <CreateVenueModal
         open={openModal.value}
@@ -77,9 +80,6 @@ const VenueList = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
-
-      {/* ------------- VENUE TABLE ------------- */}
-      <VenueTable handleDelete={handleDelete} handleEdit={handleEdit} />
     </div>
   );
 };

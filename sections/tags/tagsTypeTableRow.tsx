@@ -1,6 +1,5 @@
 'use client';
 
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
@@ -12,31 +11,19 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
-const CategoriesTypeTableRow: FC<PageProps> = ({
+const TagsTypeTableRow: FC<PageProps> = ({
   item,
   handleDelete,
   handleEdit,
 }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell>
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
-            <AvatarImage
-              src={item.imageInfo.url}
-              alt="Store"
-              className="h-full w-full cursor-pointer object-cover"
-            />
-          ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.title?.[0]?.toUpperCase() || ''}
-            </span>
-          )}
-        </Avatar>
+      <TableCell className="text-left font-medium capitalize">
+        {item?.title || '-'}
       </TableCell>
 
       <TableCell className="text-left font-medium capitalize">
-        {item?.title}
+        {item?.type || '-'}
       </TableCell>
 
       <TableCell className="text-left text-sm">
@@ -87,4 +74,4 @@ const CategoriesTypeTableRow: FC<PageProps> = ({
     </TableRow>
   );
 };
-export default CategoriesTypeTableRow;
+export default TagsTypeTableRow;

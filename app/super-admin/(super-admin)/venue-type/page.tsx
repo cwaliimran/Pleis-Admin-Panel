@@ -18,10 +18,13 @@ import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { useState, useEffect } from 'react';
+import { uploadFileToAzure } from '@/utils/fileUpload';
 
 const defaultValues = {
-  icon: null,
+  image: null,
+  // icon: null,
   title: '',
+  status: 'active',
 };
 
 const Page = () => {
@@ -33,11 +36,12 @@ const Page = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<string>('active');
+  const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const [addVenueType, { isLoading: addVenueTypeLoading }] =
     useAddVenueTypeMutation();
@@ -79,8 +83,9 @@ const Page = () => {
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
-    icon: Yup.mixed().nullable(),
+    image: Yup.mixed().nullable(),
     title: Yup.string().required('Venue Type is required'),
+    status: Yup.string().oneOf(['active', 'inactive']),
   });
 
   const methods = useForm({
@@ -94,8 +99,9 @@ const Page = () => {
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
-        icon: selectedVenueType.icon || null,
         title: selectedVenueType.title || '',
+        status: selectedVenueType.status || '',
+        image: selectedVenueType.image || null,
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -130,16 +136,41 @@ const Page = () => {
   // CREATE/UPDATE VENUE TYPE
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      let imageFileString = undefined;
+      // If image is present and is a FileList or array
+      if (
+        formData.image &&
+        (formData.image instanceof FileList || Array.isArray(formData.image))
+      ) {
+        const file = formData.image[0];
+        if (file) {
+          setImageUploading(true);
+          try {
+            imageFileString = await uploadFileToAzure(file);
+          } finally {
+            setImageUploading(false);
+          }
+        }
+      }
+
+      const payload: any = {
+        title: formData.title,
+      };
+      if (imageFileString) {
+        payload.image = imageFileString;
+      } else if (editModal.value && typeof formData.image === 'string') {
+        payload.image = formData.image;
+      }
+      if (editModal.value && selectedId) {
+        payload.status = formData.status;
+        payload.id = selectedId;
+      }
+
       let response;
       if (editModal.value && selectedId) {
-        // Update existing venue type
-        response = await updateVenueType({
-          id: selectedId,
-          ...formData,
-        }).unwrap();
+        response = await updateVenueType(payload).unwrap();
       } else {
-        // Create new venue type
-        response = await addVenueType(formData).unwrap();
+        response = await addVenueType(payload).unwrap();
       }
 
       if (!response) {
@@ -181,11 +212,72 @@ const Page = () => {
 
       CloseModal();
     } catch (error) {
+      setImageUploading(false);
       const errorMessage = getErrorMessage(error);
       console.log('Failed to save venue type:', errorMessage);
       showError(errorMessage);
     }
   });
+
+  // CREATE/UPDATE VENUE TYPE
+  // const onSubmit = handleSubmit(async (formData) => {
+  //   try {
+  //     let response;
+  //     if (editModal.value && selectedId) {
+  //       // Update existing venue type
+  //       response = await updateVenueType({
+  //         id: selectedId,
+  //         ...formData,
+  //       }).unwrap();
+  //     } else {
+  //       // Create new venue type
+  //       response = await addVenueType(formData).unwrap();
+  //     }
+
+  //     if (!response) {
+  //       showError('No response from server. Please try again later.');
+  //       return;
+  //     }
+
+  //     if (response.error) {
+  //       const errorMessage = getErrorMessage(response.error);
+  //       showError(errorMessage);
+  //       return;
+  //     }
+
+  //     // Handle success and update local state
+  //     if (response?.data) {
+  //       if (editModal.value && selectedId) {
+  //         // Edit: update the item in local state
+  //         setVenueTypes((prev) =>
+  //           prev.map((item) => (item._id === selectedId ? response.data : item))
+  //         );
+  //       } else {
+  //         // Add: add new item to local state
+  //         setVenueTypes((prev) => [response.data, ...prev]);
+  //         setMeta((prev: any) => ({
+  //           ...prev,
+  //           totalRecords: prev.totalRecords + 1,
+  //         }));
+  //       }
+  //     }
+
+  //     if (response?.message) {
+  //       showSuccess(
+  //         response?.message ||
+  //           (editModal.value
+  //             ? 'Venue type updated successfully'
+  //             : 'Venue type created successfully')
+  //       );
+  //     }
+
+  //     CloseModal();
+  //   } catch (error) {
+  //     const errorMessage = getErrorMessage(error);
+  //     console.log('Failed to save venue type:', errorMessage);
+  //     showError(errorMessage);
+  //   }
+  // });
 
   // DELETE VENUE TYPE
   const onDelete = async () => {
@@ -272,7 +364,7 @@ const Page = () => {
           setPage(1);
         }}
         onResetFilters={() => {
-          setStatus('active');
+          setStatus('');
           setDate(undefined);
           setSearch('');
           setPage(1);
@@ -285,7 +377,9 @@ const Page = () => {
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addVenueTypeLoading || updateVenueTypeLoading}
+        isLoading={
+          addVenueTypeLoading || updateVenueTypeLoading || imageUploading
+        }
         selectedVenueType={selectedVenueType}
       />
 

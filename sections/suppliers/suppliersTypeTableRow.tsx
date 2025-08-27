@@ -17,7 +17,7 @@ const SupplierTypeTableRow: FC<PageProps> = ({
   handleEdit,
 }) => {
   return (
-    <TableRow className="h-14 w-full transition-colors">
+    <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left font-medium capitalize">
         {item?.title}
       </TableCell>

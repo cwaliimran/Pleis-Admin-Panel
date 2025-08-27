@@ -25,15 +25,15 @@ const TableHeadCustom: FC<CustomHeaderProps> = ({ headLabel }) => {
 
   return (
     <TableHeader>
-      <TableRow className="bg-slate-100 dark:bg-slate-800 rounded-t-md">
+      <TableRow className="bg-slate-100 dark:bg-secondary">
         {headLabel.map((header: any) => (
           <TableHead
             key={header.id}
             className={cn(
               "text-[16px] py-4  ",
               "text-slate-700 dark:text-white",
-              "bg-slate-100 dark:bg-slate-800",
-              "border-b border-slate-300 dark:border-slate-700",
+              "bg-slate-100 dark:bg-[#272727]",
+              "border-b border-slate-300 dark:border-[#272727]",
               getTextAlignClass(header.align)
             )}
           >

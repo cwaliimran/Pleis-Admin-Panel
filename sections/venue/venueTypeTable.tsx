@@ -25,13 +25,16 @@ import { Table, TableBody } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import SupplierTypeTableRow from './suppliersTypeTableRow';
 import { LoadingBar } from '@/components/table/table-bar-loading';
+import VenueTypeTableRow from './venueTypeTableRow';
 
 const headLabel = [
-  { id: 'name', label: 'Supplier Name', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'dateAdded', label: 'Date Added', align: 'left' },
+  { id: 'organizaiton', label: 'Organization', align: 'left' },
+  { id: 'location', label: 'Location', align: 'left' },
+  { id: 'status', label: 'Status' },
+  { id: 'updatedAt', label: 'Last Updated' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -61,7 +64,7 @@ interface PageProps {
   onResetFilters?: () => void;
 }
 
-const SupplierTypeTable: FC<PageProps> = ({
+const VenueTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
@@ -107,9 +110,7 @@ const SupplierTypeTable: FC<PageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Supplier List
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Venue List</h3>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -147,7 +148,7 @@ const SupplierTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Suppliers...',
+                              placeholder: 'Search name, location, org...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -220,20 +221,22 @@ const SupplierTypeTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : (
-                  data.map((item: any, index: number) => (
-                    <SupplierTypeTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
-                    />
-                  ))
+                  data
+                    .filter((item: any) => item.status !== 'deleted')
+                    .map((item: any, index: number) => (
+                      <VenueTypeTableRow
+                        key={item._id || index}
+                        item={item}
+                        handleDelete={handleDelete}
+                        handleEdit={handleEdit}
+                      />
+                    ))
                 )}
               </TableBody>
             </Table>
           </div>
 
-          <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
+          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
             {/* <div className="flex items-center space-x-2">
               <span className="text-muted-foreground">Rows per page:</span>
               <Select
@@ -308,4 +311,4 @@ const SupplierTypeTable: FC<PageProps> = ({
   );
 };
 
-export default SupplierTypeTable;
+export default VenueTypeTable;

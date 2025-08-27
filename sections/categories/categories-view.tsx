@@ -65,7 +65,6 @@ const CategoriesView = () => {
     limit,
   });
 
-  // Sync local state with API data on initial load or when API data changes
   useEffect(() => {
     if (apiData?.data) {
       setVenueTypes(apiData.data);
@@ -93,12 +92,12 @@ const CategoriesView = () => {
 
   const { handleSubmit, reset } = methods;
 
-  // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        status: selectedVenueType.status || 'active',
+        status: selectedVenueType.status || '',
+        image: selectedVenueType.image || null,
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -155,6 +154,8 @@ const CategoriesView = () => {
       };
       if (imageFileString) {
         payload.image = imageFileString;
+      } else if (editModal.value && typeof formData.image === 'string') {
+        payload.image = formData.image;
       }
       if (editModal.value && selectedId) {
         payload.status = formData.status;
@@ -293,7 +294,7 @@ const CategoriesView = () => {
           setPage(1);
         }}
         onResetFilters={() => {
-          setStatus('active');
+          setStatus('');
           setDate(undefined);
           setSearch('');
           setPage(1);

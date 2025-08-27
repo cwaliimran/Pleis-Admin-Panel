@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import CustomBadge from "@/components/ui/custom-badge";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Pencil, Trash2 } from "lucide-react";
-import { FC } from "react";
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import CustomBadge from '@/components/ui/custom-badge';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Pencil, Trash2 } from 'lucide-react';
+import { FC } from 'react';
 
 interface PageProps {
   item: any;
@@ -13,16 +13,16 @@ interface PageProps {
 }
 const VenueTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
   return (
-    <TableRow className=" transition-colors h-14 w-full">
+    <TableRow className="h-14 w-full transition-colors">
       <TableCell>
         <div className="flex items-center gap-3">
-          {item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name}
+          {item.name.length > 20 ? item.name.slice(0, 20) + '...' : item.name}
         </div>
       </TableCell>
 
       <TableCell className="text-left">{item.dateAdded}</TableCell>
 
-      <TableCell className="text-left flex items-center gap-2">
+      <TableCell className="flex items-center gap-2 text-left">
         <Avatar className="">
           <AvatarImage
             src="https://github.com/shadcn.png"
@@ -36,7 +36,7 @@ const VenueTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
       <TableCell className="text-left">{item.region}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === "primary" ? "success" : "error"}>
+        <CustomBadge variant={item.status === 'primary' ? 'success' : 'error'}>
           {item.status}
         </CustomBadge>
       </TableCell>
@@ -44,11 +44,11 @@ const VenueTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
       <TableCell className="text-left">{item.createdAt}</TableCell>
 
       <TableCell className="text-end">
-        <div className="flex gap-2 ">
+        <div className="flex gap-2">
           <button
             title="Select Primary"
             type="button"
-            className="p-1.5 rounded-md bg-blue-100 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+            className="cursor-pointer rounded-md bg-blue-100 p-1.5 transition dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -72,9 +72,9 @@ const VenueTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
               e.stopPropagation();
               handleEdit?.(item);
             }}
-            className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
-            <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+            <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
           </button>
 
           <button
@@ -84,9 +84,9 @@ const VenueTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
               e.stopPropagation();
               handleDelete?.(item);
             }}
-            className="p-1.5 rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 transition cursor-pointer"
+            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >
-            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-300" />
+            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
           </button>
         </div>
       </TableCell>
