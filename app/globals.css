@@ -201,3 +201,8 @@ input[type=number] {
     @apply bg-background text-foreground;
   }
 }
+
+/* ensure Google autocomplete dropdown is above shadcn dialog */
+.pac-container {
+  z-index: 999999 !important;
+}

@@ -1,6 +1,5 @@
 'use client';
 
-import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
@@ -14,9 +13,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
-import { extractAddress } from '@/utils/format-google-address';
-import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api';
-import { useRef } from 'react';
+import { useState } from 'react';
+import { Controller } from 'react-hook-form';
+import { LoadScript } from '@react-google-maps/api';
+import dynamic from 'next/dynamic';
+const PlacesAutocomplete = dynamic(
+  () => import('@/components/google/PlacesAutocomplete'),
+  { ssr: false }
+);
 
 interface CreateVenueModalProps {
   open: boolean;
@@ -28,14 +32,10 @@ interface CreateVenueModalProps {
   selectedVenueType?: any;
 }
 
-// PLEIS CLIENT
-// const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-// PLEIS CLIENT
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries = ['places'] as any;
 
-const VenueTypeModal = ({
+const VenueTypeModalOld = ({
   open,
   onClose,
   editMode,
@@ -50,34 +50,10 @@ const VenueTypeModal = ({
     }
   };
 
-  const inputref = useRef<google.maps.places.SearchBox | null>(null);
+  const [address, setAddress] = useState<string>('');
 
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY as any,
-    libraries: googleMapsLibraries,
-  });
-
-  const handleOnPlacesChanged = async () => {
-    const places = inputref.current?.getPlaces();
-    if (places && places.length > 0) {
-      const address = await extractAddress(places[0]);
-
-      // Build location object
-      const locationPayload = {
-        fullAddress: address.address_line_1 || '',
-        state: address.province || '',
-        city: address.city || '',
-        postalCode: address.postal_code || '',
-        country: address.country || '',
-        coordinates: [address.latitude, address.longitude],
-      };
-
-      console.log('Extracted address payload:', locationPayload);
-
-      methods.setValue('location', locationPayload, { shouldValidate: true });
-    }
-  };
+  const { control, setValue, formState } = methods || {};
+  const errors = formState?.errors || {};
 
   const { data: apiData } = useGetVenueTypesQuery({
     page: 0,
@@ -96,6 +72,8 @@ const VenueTypeModal = ({
     { label: 'Organization B', value: 'org-b' },
     { label: 'Organization C', value: 'org-c' },
   ];
+
+  // inline definition removed; using reusable component via dynamic import below
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -139,7 +117,7 @@ const VenueTypeModal = ({
 
               {/* FLOOR IMAGE UPLOAD */}
               <div className="flex max-w-[10rem] items-center justify-start">
-                {/* <RHFUploadButton
+                <RHFUploadButton
                   name="floorPlan"
                   label="Upload"
                   initialImage={(() => {
@@ -158,55 +136,98 @@ const VenueTypeModal = ({
                     }
                     return img;
                   })()}
-                /> */}
-
-                <RHFUploadButton
-                  name="floorPlan"
-                  label="Upload"
-                  initialImage={
-                    editMode
-                      ? selectedVenueType?.floorPlanInfo?.url &&
-                        selectedVenueType.floorPlanInfo.url !==
-                          'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
-                        ? selectedVenueType.floorPlanInfo.url
-                        : null
-                      : null
-                  }
                 />
               </div>
 
-              <div className="input">
-                <label htmlFor="address" className="text-sm">
-                  Location
-                </label>
+              <div>
+                <LoadScript
+                  googleMapsApiKey={GOOGLE_MAPS_API_KEY as string}
+                  libraries={googleMapsLibraries}
+                >
+                  {/* <Controller
+                    name="location"
+                    control={control}
+                    defaultValue={''}
+                    render={({ field }) => (
+                      <Autocomplete
+                        onLoad={(autocomplete) =>
+                          (autocompleteRef.current = autocomplete)
+                        }
+                        onPlaceChanged={() => {
+                          const place = autocompleteRef.current?.getPlace();
+                          if (place) {
+                            const formatted =
+                              place.formatted_address || place.name || '';
+                            setAddress(formatted);
+                            console.log('Google Place result:', place);
+                            // update the visible input DOM value (helps when input is controlled)
+                            if (inputRef.current)
+                              inputRef.current.value = formatted;
+                            // update react-hook-form field so input shows selected value
+                            if (field && field.onChange)
+                              field.onChange(formatted);
+                            if (setValue)
+                              setValue('location', formatted, {
+                                shouldValidate: true,
+                              });
+                          }
+                        }}
+                      >
+                        <input
+                          {...field}
+                          ref={inputRef}
+                          value={field.value ?? ''}
+                          placeholder="Enter location"
+                          className={`w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none ${
+                            errors.location
+                              ? 'border-red-400'
+                              : 'border-gray-300'
+                          }`}
+                        />
+                      </Autocomplete>
+                    )}
+                  /> */}
 
-                {isLoaded && (
-                  <StandaloneSearchBox
-                    onLoad={(searchBox) => {
-                      inputref.current = searchBox;
-                    }}
-                    onPlacesChanged={handleOnPlacesChanged}
-                  >
-                    {/* <input
-                      id="address"
-                      type="text"
-                      placeholder="Enter Location"
-                      className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
-                    /> */}
-                    <input
-                      id="address"
-                      type="text"
-                      placeholder="Enter Location"
-                      defaultValue={
-                        editMode
-                          ? selectedVenueType?.location?.fullAddress || ''
-                          : methods.getValues('location.fullAddress')
-                      }
-                      className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
-                    />
-                  </StandaloneSearchBox>
-                )}
+                  <Controller
+                    name="location"
+                    control={control}
+                    defaultValue=""
+                    render={({ field }) => (
+                      <PlacesAutocomplete
+                        value={field.value}
+                        onChange={(v: string) => field.onChange(v)}
+                        onBlur={() => field.onBlur()}
+                        placeholder="Enter location"
+                        className={`w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none ${
+                          errors.location ? 'border-red-400' : 'border-gray-300'
+                        }`}
+                        setValue={setValue}
+                        name="location"
+                        onPlaceSelected={(place: any) => {
+                          const formatted =
+                            place?.formatted_address || place?.name || '';
+                          setAddress(formatted);
+                          console.log('Google Place result:', place);
+                        }}
+                        error={errors.location}
+                      />
+                    )}
+                  />
+
+                  {/* Quick map preview address text for visual confirmation */}
+                  {address ? (
+                    <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                      Selected: {address}
+                    </div>
+                  ) : null}
+                </LoadScript>
               </div>
+
+              {/* <RHFTextField
+                name="location"
+                label="Location"
+                placeholder="Enter Location"
+              /> */}
 
               {/* <div className="w-full">
                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -232,24 +253,13 @@ const VenueTypeModal = ({
                 >
                   Cancel
                 </Button>
-
-                {isLoading ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
-                  >
-                    <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
-                    disabled={isLoading || !methods.formState.isValid}
-                  >
-                    {editMode ? 'Update Venue' : 'Add Venue'}
-                  </Button>
-                )}
+                <Button
+                  type="submit"
+                  className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
+                  disabled={isLoading}
+                >
+                  {editMode ? 'Update Venue' : 'Add Venue'}
+                </Button>
               </div>
             </div>
           </FormProvider>
@@ -259,4 +269,4 @@ const VenueTypeModal = ({
   );
 };
 
-export default VenueTypeModal;
+export default VenueTypeModalOld;

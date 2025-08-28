@@ -3,6 +3,13 @@
 import { PrimaryIcon } from '@/assets/svg/svg-icon';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -36,11 +43,34 @@ const VenueTypeTableRow: FC<PageProps> = ({
             className=""
           />
         </Avatar>
-        {item?.location?.fullAddress}
+        {item?.organization || 'Unknown'}
       </TableCell>
 
       <TableCell className="text-left">
-        {item?.location?.fullAddress || '-'}
+        {item?.location?.fullAddress.length > 39 ? (
+          <Dialog>
+            <DialogTrigger asChild>
+              <span
+                className="cursor-pointer hover:text-blue-600"
+                title="Click to view full description"
+              >
+                {item?.location?.fullAddress?.slice(0, 30) + '...'}
+              </span>
+            </DialogTrigger>
+            <DialogContent className="max-w-md dark:bg-secondary">
+              <DialogHeader>
+                <DialogTitle>Description</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                  {item?.location?.fullAddress}
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          item.description
+        )}
       </TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
@@ -76,7 +106,7 @@ const VenueTypeTableRow: FC<PageProps> = ({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleEdit?.(item);
+              handleEdit?.(item?._id);
             }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >

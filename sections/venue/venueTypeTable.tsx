@@ -148,7 +148,7 @@ const VenueTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, location, org...',
+                              placeholder: 'Search name, location, organization...',
                               value: search,
                               onChange: onSearch,
                             }}

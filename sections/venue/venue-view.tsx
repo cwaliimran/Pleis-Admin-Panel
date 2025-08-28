@@ -4,28 +4,36 @@ import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
 // import { uploadFileToAzure } from '@/utils/fileUpload';
-import { showError, showSuccess } from '@/utils/toast';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import * as Yup from 'yup';
-import VenueTypeModal from './venueTypeModal';
-import VenueTypeTable from './venueTypeTable';
 import {
   useAddVenueMutation,
   useDeleteVenueMutation,
   useGetVenuesQuery,
   useUpdateVenueMutation,
 } from '@/store/Reducer/venue';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+import VenueTypeTable from './venueTypeTable';
+import VenueTypeModal from './venueTypeModal';
 
 const defaultValues = {
-  name: '',
+  title: '',
   venueType: '',
   organization: '',
-  location: '',
-  city: '',
-  country: '',
+  floorPlan: undefined,
+  status: 'active',
+  location: {
+    fullAddress: '',
+    state: '',
+    city: '',
+    postalCode: '',
+    country: '',
+    coordinates: [],
+  },
 };
 
 const VenueView = () => {
@@ -58,7 +66,7 @@ const VenueView = () => {
     date: date ? date.toISOString() : undefined,
   });
 
-  console.log('apiData', apiData?.data);
+  // console.log('apiData', apiData?.data);
 
   // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -84,12 +92,23 @@ const VenueView = () => {
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
-    name: Yup.string().required('Venue name is required'),
+    title: Yup.string().required('Venue name is required'),
     venueType: Yup.string().required('Venue Type is required'),
     organization: Yup.string().required('Organization is required'),
-    location: Yup.string().required('Location is required'),
-    city: Yup.string(),
-    country: Yup.string(),
+    status: Yup.string().oneOf(['active', 'inactive']),
+    floorPlan: Yup.mixed().nullable(),
+    // location: Yup.string().required('Location is required'),
+    location: Yup.object().shape({
+      fullAddress: Yup.string().required('Full address is required'),
+      city: Yup.string().required('City is required'),
+      state: Yup.string().required('State/Province is required'),
+      country: Yup.string().required('Country is required'),
+      postalCode: Yup.string().nullable(),
+      coordinates: Yup.array()
+        .of(Yup.number())
+        .length(2, 'Coordinates must be [lat, lng]')
+        .required(),
+    }),
   });
 
   const methods = useForm({
@@ -97,22 +116,52 @@ const VenueView = () => {
     defaultValues: defaultValues,
   });
 
-  const { handleSubmit, reset } = methods;
+  const {
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = methods;
+  console.log('errors', errors);
+
+  // useEffect(() => {
+  //   if (editModal.value && selectedVenueType) {
+  //     reset({
+  //       title: selectedVenueType.title || '',
+  //       venueType: selectedVenueType.venueType?._id || '',
+  //       organization: selectedVenueType.organization || '',
+  //       location: selectedVenueType.location || '',
+  //       floorPlan: undefined,
+  //     });
+  //   } else if (!editModal.value) {
+  //     reset(defaultValues);
+  //   }
+  // }, [editModal.value, selectedVenueType, reset]);
 
   useEffect(() => {
-    if (editModal.value && selectedVenueType) {
-      reset({
-        name: selectedVenueType.name || '',
-        venueType: selectedVenueType.venueType || '',
-        organization: selectedVenueType.organization || '',
-        location: selectedVenueType.location || '',
-        city: selectedVenueType.city || '',
-        country: selectedVenueType.country || '',
-      });
-    } else if (!editModal.value) {
-      reset(defaultValues);
-    }
-  }, [editModal.value, selectedVenueType, reset]);
+  if (editModal.value && selectedVenueType) {
+    reset({
+      title: selectedVenueType.title || '',
+      venueType: selectedVenueType.venueType?._id || '',
+      organization: selectedVenueType.organization || '',
+      location: {
+        fullAddress: selectedVenueType.location?.fullAddress || '',
+        state: selectedVenueType.location?.state || '',
+        city: selectedVenueType.location?.city || '',
+        postalCode: selectedVenueType.location?.postalCode || '',
+        country: selectedVenueType.location?.country || '',
+        coordinates: selectedVenueType.location?.coordinates || [],
+      },
+      floorPlan:
+        selectedVenueType.floorPlanInfo?.url ||
+        selectedVenueType.imageInfo?.url ||
+        undefined,
+      status: selectedVenueType.status || 'active',
+    });
+  } else if (!editModal.value) {
+    reset(defaultValues);
+  }
+}, [editModal.value, selectedVenueType, reset]);
+
 
   const CloseModal = () => {
     methods.reset(defaultValues);
@@ -124,13 +173,14 @@ const VenueView = () => {
 
   const handleEdit = (id: string) => {
     const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
+
     if (venueTypeToEdit) {
       setSelectedVenueType(venueTypeToEdit);
       setSelectedId(id);
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Category type not found');
+      showError('Venue not found');
     }
   };
 
@@ -139,45 +189,46 @@ const VenueView = () => {
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE VENUE TYPE
+  // CREATE/UPDATE VENUE
   const onSubmit = handleSubmit(async (formData) => {
     try {
-      // let imageFileString = undefined;
-      // // If image is present and is a FileList or array
-      // if (
-      //   formData.image &&
-      //   (formData.image instanceof FileList || Array.isArray(formData.image))
-      // ) {
-      //   const file = formData.image[0];
-      //   if (file) {
-      //     setImageUploading(true);
-      //     try {
-      //       imageFileString = await uploadFileToAzure(file);
-      //     } finally {
-      //       setImageUploading(false);
-      //     }
-      //   }
-      // }
+      let imageFileString = undefined;
 
-      // const payload: any = {
-      //   title: formData.title,
-      // };
-      // if (imageFileString) {
-      //   payload.image = imageFileString;
-      // } else if (editModal.value && typeof formData.image === 'string') {
-      //   payload.image = formData.image;
-      // }
-      // if (editModal.value && selectedId) {
-      //   payload.status = formData.status;
-      //   payload.id = selectedId;
-      // }
-
-      const payload = {
-        title: formData.name,
-        location: formData.location,
-        city: formData.city,
-        country: formData.country,
+      if (
+        formData.floorPlan &&
+        (formData.floorPlan instanceof FileList ||
+          Array.isArray(formData.floorPlan))
+      ) {
+        const file = formData.floorPlan[0];
+        if (file) {
+          setImageUploading(true);
+          try {
+            imageFileString = await uploadFileToAzure(file);
+          } finally {
+            setImageUploading(false);
+          }
+        }
       }
+
+      const payload: any = {
+        title: formData.title,
+        venueType: formData.venueType,
+        // organization: formData.organization,
+        organization: '6884bc2cea0037a3d1263cff',
+        location: formData.location,
+      };
+
+      if (imageFileString) {
+        payload.floorPlan = imageFileString;
+      } else if (editModal.value && typeof formData.floorPlan === 'string') {
+        payload.floorPlan = formData.floorPlan;
+      }
+      if (editModal.value && selectedId) {
+        payload.status = formData.status;
+        payload.id = selectedId;
+      }
+
+      console.log('Payload:', payload);
 
       let response;
       if (editModal.value && selectedId) {
@@ -218,8 +269,8 @@ const VenueView = () => {
         showSuccess(
           response?.message ||
             (editModal.value
-              ? 'Category updated successfully'
-              : 'Category created successfully')
+              ? 'Venue updated successfully'
+              : 'Venue created successfully')
         );
       }
 
@@ -227,12 +278,12 @@ const VenueView = () => {
     } catch (error) {
       setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save category:', errorMessage);
+      console.log('Failed to save venue:', errorMessage);
       showError(errorMessage);
     }
   });
 
-  // DELETE CATEGORY
+  // DELETE VENUE
   const onDelete = async () => {
     try {
       const response = await deleteVenue(selectedId).unwrap();
