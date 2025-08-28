@@ -18,6 +18,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import CategoriesTypeModal from './categoriesTypeModal';
 import CategoriesTypeTable from './categoriesTypeTable';
+import { formatDate } from '@/utils/format-time';
 
 const defaultValues = {
   image: null,
@@ -53,7 +54,7 @@ const CategoriesView = () => {
     search,
     limit,
     status: status === 'all' ? undefined : status,
-    date: date ? date.toISOString() : undefined,
+    date: date ? formatDate(date) : undefined,
   });
 
   // Local state for venue types and meta

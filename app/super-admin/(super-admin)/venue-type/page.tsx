@@ -19,6 +19,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { useState, useEffect } from 'react';
 import { uploadFileToAzure } from '@/utils/fileUpload';
+import { formatDate } from '@/utils/format-time';
 
 const defaultValues = {
   image: null,
@@ -55,7 +56,7 @@ const Page = () => {
     search,
     limit,
     status,
-    date: date ? date.toISOString() : undefined,
+    date: date ? formatDate(date) : undefined,
   });
 
   // Local state for venue types and meta

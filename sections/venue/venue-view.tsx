@@ -19,6 +19,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import VenueTypeTable from './venueTypeTable';
 import VenueTypeModal from './venueTypeModal';
+import { formatDate } from '@/utils/format-time';
 
 const defaultValues = {
   title: '',
@@ -63,7 +64,7 @@ const VenueView = () => {
     search,
     limit,
     status: status === 'all' ? undefined : status,
-    date: date ? date.toISOString() : undefined,
+    date: date ? formatDate(date) : undefined,
   });
 
   // console.log('apiData', apiData?.data);
@@ -138,30 +139,29 @@ const VenueView = () => {
   // }, [editModal.value, selectedVenueType, reset]);
 
   useEffect(() => {
-  if (editModal.value && selectedVenueType) {
-    reset({
-      title: selectedVenueType.title || '',
-      venueType: selectedVenueType.venueType?._id || '',
-      organization: selectedVenueType.organization || '',
-      location: {
-        fullAddress: selectedVenueType.location?.fullAddress || '',
-        state: selectedVenueType.location?.state || '',
-        city: selectedVenueType.location?.city || '',
-        postalCode: selectedVenueType.location?.postalCode || '',
-        country: selectedVenueType.location?.country || '',
-        coordinates: selectedVenueType.location?.coordinates || [],
-      },
-      floorPlan:
-        selectedVenueType.floorPlanInfo?.url ||
-        selectedVenueType.imageInfo?.url ||
-        undefined,
-      status: selectedVenueType.status || 'active',
-    });
-  } else if (!editModal.value) {
-    reset(defaultValues);
-  }
-}, [editModal.value, selectedVenueType, reset]);
-
+    if (editModal.value && selectedVenueType) {
+      reset({
+        title: selectedVenueType.title || '',
+        venueType: selectedVenueType.venueType?._id || '',
+        organization: selectedVenueType.organization || '',
+        location: {
+          fullAddress: selectedVenueType.location?.fullAddress || '',
+          state: selectedVenueType.location?.state || '',
+          city: selectedVenueType.location?.city || '',
+          postalCode: selectedVenueType.location?.postalCode || '',
+          country: selectedVenueType.location?.country || '',
+          coordinates: selectedVenueType.location?.coordinates || [],
+        },
+        floorPlan:
+          selectedVenueType.floorPlanInfo?.url ||
+          selectedVenueType.imageInfo?.url ||
+          undefined,
+        status: selectedVenueType.status || 'active',
+      });
+    } else if (!editModal.value) {
+      reset(defaultValues);
+    }
+  }, [editModal.value, selectedVenueType, reset]);
 
   const CloseModal = () => {
     methods.reset(defaultValues);

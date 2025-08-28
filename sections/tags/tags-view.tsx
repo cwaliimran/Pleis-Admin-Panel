@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TagsTypeModal from './tagsTypeModal';
 import TagsTypeTable from './tagsTypeTable';
+import { formatDate } from '@/utils/format-time';
 
 const defaultValues = {
   title: '',
@@ -48,7 +49,7 @@ const TagsView = () => {
     search,
     limit,
     status: status === 'all' ? undefined : status,
-    date: date ? date.toISOString() : undefined,
+    date: date ? formatDate(date) : undefined,
   });
 
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -85,7 +86,7 @@ const TagsView = () => {
   });
 
   const { handleSubmit, reset } = methods;
- 
+
   // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {

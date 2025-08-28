@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import SupplierTypeModal from './suppliersTypeModal';
 import SupplierTypeTable from './suppliersTypeTable';
+import { formatDate } from '@/utils/format-time';
 
 const defaultValues = {
   title: '',
@@ -50,7 +51,7 @@ const SuppliersView = () => {
     search,
     limit,
     status: status === 'all' ? undefined : status,
-    date: date ? date.toISOString() : undefined,
+    date: date ? formatDate(date) : undefined,
   });
 
   // Local state for venue types and meta
