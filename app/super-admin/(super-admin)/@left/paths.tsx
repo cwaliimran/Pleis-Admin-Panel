@@ -54,6 +54,11 @@ export const paths = {
       create: '/super-admin/suppliers/create',
       list: '/super-admin/suppliers/supplier-list',
     },
+    userAccess: {
+      default: '/super-admin/user-access',
+      create: '/super-admin/user-access/create',
+      list: '/super-admin/user-access/user-access-list',
+    },
     region: {
       default: '/super-admin/region',
       create: '/super-admin/region/create-region',

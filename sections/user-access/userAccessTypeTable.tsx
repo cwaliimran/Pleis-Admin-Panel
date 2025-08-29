@@ -26,15 +26,13 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { LoadingBar } from '@/components/table/table-bar-loading';
-import VenueTypeTableRow from './venueTypeTableRow';
+import UserAccessTypeTableRow from './userAccessTypeTableRow';
 
 const headLabel = [
   { id: 'name', label: 'Name', align: 'left' },
-  { id: 'dateAdded', label: 'Date Added', align: 'left' },
-  { id: 'organizaiton', label: 'Organization', align: 'left' },
-  { id: 'location', label: 'Location', align: 'left' },
-  { id: 'status', label: 'Status' },
-  { id: 'updatedAt', label: 'Last Updated' },
+  { id: 'key', label: 'Key', align: 'left' },
+  { id: 'createdAt', label: 'Created At', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -51,7 +49,6 @@ interface PageProps {
   meta: Meta;
   loading?: boolean;
   handleDelete?: (id: string) => void;
-  handlePinned?: (id: string) => void;
   handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
@@ -65,11 +62,10 @@ interface PageProps {
   onResetFilters?: () => void;
 }
 
-const VenueTypeTable: FC<PageProps> = ({
+const UserAccessTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
-  handlePinned,
   handleDelete,
   handleEdit,
   onPageChange,
@@ -112,7 +108,9 @@ const VenueTypeTable: FC<PageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Venue List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">
+              User Access List
+            </h3>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -150,7 +148,7 @@ const VenueTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, location, organization...',
+                              placeholder: 'Search access...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -223,23 +221,20 @@ const VenueTypeTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : (
-                  data
-                    .filter((item: any) => item.status !== 'deleted')
-                    .map((item: any, index: number) => (
-                      <VenueTypeTableRow
-                        key={item._id || index}
-                        item={item}
-                        handleDelete={handleDelete}
-                        handleEdit={handleEdit}
-                        handlePinned={handlePinned}
-                      />
-                    ))
+                  data.map((item: any, index: number) => (
+                    <UserAccessTypeTableRow
+                      key={item._id || index}
+                      item={item}
+                      handleDelete={handleDelete}
+                      handleEdit={handleEdit}
+                    />
+                  ))
                 )}
               </TableBody>
             </Table>
           </div>
 
-          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
+          <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
             {/* <div className="flex items-center space-x-2">
               <span className="text-muted-foreground">Rows per page:</span>
               <Select
@@ -314,4 +309,4 @@ const VenueTypeTable: FC<PageProps> = ({
   );
 };
 
-export default VenueTypeTable;
+export default UserAccessTypeTable;

@@ -26,6 +26,9 @@ export const API_ROUTES = {
 
   VENUES: `${API_BASE}/venues`,
   VENUES_BY_ID: (id: string) => `${API_BASE}/venues/${id}`,
+
+  USER_ACCESS: `${API_BASE}/admin/features`,
+  USER_ACCESS_BY_ID: (id: string) => `${API_BASE}/admin/features/${id}`,
 };
 
 export default API_ROUTES;

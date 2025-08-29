@@ -1,34 +1,31 @@
 'use client';
-import Header from '@/app/common/header';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { VenueTypeTable } from '@/sections/venueType';
-import VenueTypeModal from '@/sections/venueType/VenueTypeModal';
 import {
-  useAddVenueTypeMutation,
-  useDeleteVenueTypeMutation,
-  useGetVenueTypesQuery,
-  useUpdateVenueTypeMutation,
-} from '@/store/Reducer/venueType';
+  useAddUserAccessMutation,
+  useDeleteUserAccessMutation,
+  useGetUserAccessQuery,
+  useUpdateUserAccessMutation,
+} from '@/store/Reducer/user-access';
 import { getErrorMessage } from '@/utils/api';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { useState, useEffect } from 'react';
-import { uploadFileToAzure } from '@/utils/fileUpload';
-import { formatDate } from '@/utils/format-time';
+import UserAccessTypeModal from './userAccessTypeModal';
+import UserAccessTypeTable from './userAccessTypeTable';
 
 const defaultValues = {
-  image: null,
-  // icon: null,
   title: '',
-  status: 'active',
+  key: '',
+  status: '',
 };
 
-const Page = () => {
+const UserAccessView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -42,20 +39,19 @@ const Page = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
-  const [imageUploading, setImageUploading] = useState(false);
 
-  const [addVenueType, { isLoading: addVenueTypeLoading }] =
-    useAddVenueTypeMutation();
-  const [updateVenueType, { isLoading: updateVenueTypeLoading }] =
-    useUpdateVenueTypeMutation();
-  const [deleteVenueType, { isLoading: deleteVenueTypeLoading }] =
-    useDeleteVenueTypeMutation();
+  const [addUserAccess, { isLoading: addUserAccessLoading }] =
+    useAddUserAccessMutation();
+  const [updateUserAccess, { isLoading: updateUserAccessLoading }] =
+    useUpdateUserAccessMutation();
+  const [deleteUserAccess, { isLoading: deleteUserAccessLoading }] =
+    useDeleteUserAccessMutation();
 
-  const { data: apiData, isLoading } = useGetVenueTypesQuery({
+  const { data: apiData, isLoading, refetch } = useGetUserAccessQuery({
     page: page - 1,
     search,
     limit,
-    status,
+    status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
   });
 
@@ -68,7 +64,6 @@ const Page = () => {
     limit,
   });
 
-  // Sync local state with API data on initial load or when API data changes
   useEffect(() => {
     if (apiData?.data) {
       setVenueTypes(apiData.data);
@@ -84,9 +79,9 @@ const Page = () => {
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
-    image: Yup.mixed().nullable(),
-    title: Yup.string().required('Venue Type is required'),
-    status: Yup.string().oneOf(['active', 'inactive']),
+    title: Yup.string().required('Access Name is required'),
+    key: Yup.string().required('Access Key is required'),
+    status: Yup.string(),
   });
 
   const methods = useForm({
@@ -94,15 +89,20 @@ const Page = () => {
     defaultValues: defaultValues,
   });
 
-  const { handleSubmit, reset } = methods;
+  const {
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = methods;
+  console.log('errors', errors);
 
   // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        status: selectedVenueType.status || '',
-        image: selectedVenueType.image || null,
+        key: selectedVenueType.key || '',
+        status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -125,7 +125,7 @@ const Page = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Venue type not found');
+      showError('Access not found');
     }
   };
 
@@ -134,44 +134,18 @@ const Page = () => {
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE VENUE TYPE
+  // CREATE/UPDATE ACCESS
   const onSubmit = handleSubmit(async (formData) => {
     try {
-      let imageFileString = undefined;
-      // If image is present and is a FileList or array
-      if (
-        formData.image &&
-        (formData.image instanceof FileList || Array.isArray(formData.image))
-      ) {
-        const file = formData.image[0];
-        if (file) {
-          setImageUploading(true);
-          try {
-            imageFileString = await uploadFileToAzure(file);
-          } finally {
-            setImageUploading(false);
-          }
-        }
-      }
-
-      const payload: any = {
-        title: formData.title,
-      };
-      if (imageFileString) {
-        payload.image = imageFileString;
-      } else if (editModal.value && typeof formData.image === 'string') {
-        payload.image = formData.image;
-      }
-      if (editModal.value && selectedId) {
-        payload.status = formData.status;
-        payload.id = selectedId;
-      }
-
       let response;
       if (editModal.value && selectedId) {
-        response = await updateVenueType(payload).unwrap();
+        // Update existing access type, include status
+        response = await updateUserAccess({
+          id: selectedId,
+          ...formData,
+        }).unwrap();
       } else {
-        response = await addVenueType(payload).unwrap();
+        response = await addUserAccess({ title: formData.title, key: formData.key }).unwrap();
       }
 
       if (!response) {
@@ -186,23 +160,6 @@ const Page = () => {
       }
 
       // Handle success and update local state
-      // if (response?.data) {
-      //   if (editModal.value && selectedId) {
-      //     // Edit: update the item in local state
-      //     setVenueTypes((prev) =>
-      //       prev.map((item) => (item._id === selectedId ? response.data : item))
-      //     );
-      //   } else {
-      //     // Add: add new item to local state
-      //     setVenueTypes((prev) => [response.data, ...prev]);
-      //     setMeta((prev: any) => ({
-      //       ...prev,
-      //       totalRecords: prev.totalRecords + 1,
-      //     }));
-      //   }
-      // }
-
-      // Handle success and update local state
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
@@ -210,12 +167,8 @@ const Page = () => {
             prev.map((item) => (item._id === selectedId ? response.data : item))
           );
         } else {
-          // Add: add new item to local state, keep max 10
-          setVenueTypes((prev) => {
-            const updated = [response.data, ...prev];
-            return updated.slice(0, 10); // maintain max 10
-          });
-
+          // Add: add new item to local state
+          setVenueTypes((prev) => [response.data, ...prev]);
           setMeta((prev: any) => ({
             ...prev,
             totalRecords: prev.totalRecords + 1,
@@ -227,24 +180,23 @@ const Page = () => {
         showSuccess(
           response?.message ||
             (editModal.value
-              ? 'Venue type updated successfully'
-              : 'Venue type created successfully')
+              ? 'Access updated successfully'
+              : 'Access created successfully')
         );
       }
 
       CloseModal();
     } catch (error) {
-      setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save venue type:', errorMessage);
+      console.log('Failed to save access:', errorMessage);
       showError(errorMessage);
     }
   });
 
-  // DELETE VENUE TYPE
+  // DELETE ACCESS
   const onDelete = async () => {
     try {
-      const response = await deleteVenueType(selectedId).unwrap();
+      const response = await deleteUserAccess(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -258,14 +210,15 @@ const Page = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Venue type deleted successfully');
+        showSuccess(response?.message || 'Access deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
+      refetch();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete venue type:', errorMessage);
+      console.log('Failed to delete access:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -279,12 +232,6 @@ const Page = () => {
 
   return (
     <div>
-      <Header
-        links={[
-          { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Venues Type', href: '' },
-        ]}
-      />
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button
@@ -292,12 +239,12 @@ const Page = () => {
             onClick={handleCreateNew}
           >
             <Plus className="" />
-            Create Venue Type
+            Create User Access
           </Button>
         </div>
       </div>
 
-      <VenueTypeTable
+      <UserAccessTypeTable
         data={venueTypes}
         meta={meta}
         loading={isLoading}
@@ -333,31 +280,29 @@ const Page = () => {
         }}
       />
 
-      <VenueTypeModal
+      <UserAccessTypeModal
         open={openModal.value}
         onClose={CloseModal}
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={
-          addVenueTypeLoading || updateVenueTypeLoading || imageUploading
-        }
+        isLoading={addUserAccessLoading || updateUserAccessLoading}
         selectedVenueType={selectedVenueType}
       />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Venue Type"
-        content="Are you sure you want to delete this venue type?"
+        title="Delete User Access"
+        content="Are you sure you want to delete this user access?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteVenueTypeLoading}
+        isLoading={deleteUserAccessLoading}
       />
     </div>
   );
 };
 
-export default Page;
+export default UserAccessView;

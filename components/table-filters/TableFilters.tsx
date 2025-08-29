@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { ChevronDownIcon } from 'lucide-react';
+import { fDate, formatStr } from '@/utils/format-time';
 
 export interface FilterOption {
   value: string;
@@ -175,8 +176,9 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                     className="w-full justify-between font-normal"
                   >
                     {dateFilter.value
-                      ? dateFilter.value.toLocaleDateString()
+                      ? fDate(dateFilter.value, formatStr.paramCase.date)
                       : dateFilter.placeholder}
+
                     <ChevronDownIcon className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
@@ -222,8 +224,12 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                       className="w-44 justify-between font-normal"
                     >
                       {dateRangeFilter.startDate.value
-                        ? dateRangeFilter.startDate.value.toLocaleDateString()
+                        ? fDate(
+                            dateRangeFilter.startDate.value,
+                            formatStr.paramCase.date
+                          )
                         : dateRangeFilter.startDate.placeholder}
+
                       <ChevronDownIcon className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
@@ -265,8 +271,12 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                       className="w-44 justify-between font-normal"
                     >
                       {dateRangeFilter.endDate.value
-                        ? dateRangeFilter.endDate.value.toLocaleDateString()
+                        ? fDate(
+                            dateRangeFilter.endDate.value,
+                            formatStr.paramCase.date
+                          )
                         : dateRangeFilter.endDate.placeholder}
+
                       <ChevronDownIcon className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>

@@ -118,34 +118,38 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.tags.default,
     icon: Hash,
   },
-  {
-    label: 'User List',
-    key: paths.superAdmin.users.list,
-    icon: UsersRound,
-  },
-  {
-    label: 'Pending User List',
-    key: paths.superAdmin.users.pendingList,
-    icon: User,
-  },
-
   // {
   //   label: 'User List',
   //   key: paths.superAdmin.users.list,
-  //   icon: User,
-  //   items: [
-  //     {
-  //       title: 'User List',
-  //       url: paths.superAdmin.users.list,
-  //       icon: UsersRound,
-  //     },
-  //     {
-  //       title: 'Pending User List',
-  //       url: paths.superAdmin.users.pendingList,
-  //       icon: UsersRound,
-  //     },
-  //   ],
+  //   icon: UsersRound,
   // },
+  // {
+  //   label: 'Pending User List',
+  //   key: paths.superAdmin.users.pendingList,
+  //   icon: User,
+  // },
+
+  {
+    label: 'User List',
+    key: paths.superAdmin.users.list,
+    icon: User,
+    items: [
+      {
+        title: 'User List',
+        url: paths.superAdmin.users.list,
+        icon: UsersRound,
+      }, {
+        title: 'User Access',
+        url: paths.superAdmin.userAccess.default,
+        icon: UsersRound,
+      },
+      {
+        title: 'Pending User List',
+        url: paths.superAdmin.users.pendingList,
+        icon: UsersRound,
+      },
+    ],
+  },
   // {
   //   label: "Marketing Requests",
   //   key: paths.superAdmin.marketing.detault,

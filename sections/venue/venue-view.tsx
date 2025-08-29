@@ -140,9 +140,15 @@ const VenueView = () => {
 
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
+      console.log('Selected Venue Type', selectedVenueType);
+
       reset({
         title: selectedVenueType.title || '',
-        venueType: selectedVenueType.venueType?._id || '',
+        venueType:
+          typeof selectedVenueType.venueType === 'string'
+            ? selectedVenueType.venueType
+            : selectedVenueType.venueType?._id?.toString() || '',
+
         organization: selectedVenueType.organization || '',
         location: {
           fullAddress: selectedVenueType.location?.fullAddress || '',
@@ -283,6 +289,46 @@ const VenueView = () => {
     }
   });
 
+  const onSetAsPinned = async (_id: string) => {
+    try {
+      const payload = {
+        id: _id,
+        pinned: true,
+      };
+
+      const response = await updateVenue(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      if (editModal.value && _id) {
+        // Edit: update the item in local state
+        setVenueTypes((prev) =>
+          prev.map((item) => (item._id === selectedId ? response.data : item))
+        );
+      }
+
+      if (response?.message) {
+        showSuccess(response?.message || 'Venue updated successfully');
+      }
+
+      setSelectedId(null);
+      CloseModal();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.log('Failed to delete category:', errorMessage);
+      showError(errorMessage);
+    }
+  };
+
   // DELETE VENUE
   const onDelete = async () => {
     try {
@@ -300,14 +346,14 @@ const VenueView = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Category deleted successfully');
+        showSuccess(response?.message || 'Venue deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete category:', errorMessage);
+      console.log('Failed to delete venue:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -316,6 +362,10 @@ const VenueView = () => {
     setSelectedVenueType(null);
     setSelectedId(null);
     editModal.onFalse();
+
+    methods.reset(defaultValues);
+    methods.setValue('floorPlan', null);
+
     openModal.onTrue();
   };
 
@@ -338,6 +388,7 @@ const VenueView = () => {
         meta={meta}
         loading={isLoading}
         handleDelete={handleDelete}
+        handlePinned={onSetAsPinned}
         handleEdit={handleEdit}
         onPageChange={setPage}
         onLimitChange={(l) => {

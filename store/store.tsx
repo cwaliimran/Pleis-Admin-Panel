@@ -1,14 +1,15 @@
 'use client';
 
 import { configureStore } from '@reduxjs/toolkit';
-import { userApi } from './Reducer/user';
 import { useSelector } from 'react-redux';
-import { userSlice } from './slice/userSlice';
-import { venueTypeApi } from './Reducer/venueType';
-import { suppliersApi } from './Reducer/suppliers';
 import { categoriesApi } from './Reducer/categories';
+import { suppliersApi } from './Reducer/suppliers';
 import { tagsApi } from './Reducer/tags';
+import { userApi } from './Reducer/user';
+import { userAccessApi } from './Reducer/user-access';
 import { venueApi } from './Reducer/venue';
+import { venueTypeApi } from './Reducer/venueType';
+import { userSlice } from './slice/userSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     [categoriesApi.reducerPath]: categoriesApi.reducer,
     [tagsApi.reducerPath]: tagsApi.reducer,
     [venueApi.reducerPath]: venueApi.reducer,
+    [userAccessApi.reducerPath]: userAccessApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -28,6 +30,7 @@ export const store = configureStore({
       categoriesApi.middleware,
       tagsApi.middleware,
       venueApi.middleware,
+      userAccessApi.middleware,
     ),
 });
 

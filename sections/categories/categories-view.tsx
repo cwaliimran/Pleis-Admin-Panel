@@ -112,6 +112,7 @@ const CategoriesView = () => {
     openModal.onFalse();
     editModal.onFalse();
   };
+  
 
   const handleEdit = (id: string) => {
     const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
@@ -134,6 +135,7 @@ const CategoriesView = () => {
   const onSubmit = handleSubmit(async (formData) => {
     try {
       let imageFileString = undefined;
+
       // If image is present and is a FileList or array
       if (
         formData.image &&
@@ -153,11 +155,13 @@ const CategoriesView = () => {
       const payload: any = {
         title: formData.title,
       };
+
       if (imageFileString) {
         payload.image = imageFileString;
       } else if (editModal.value && typeof formData.image === 'string') {
         payload.image = formData.image;
       }
+
       if (editModal.value && selectedId) {
         payload.status = formData.status;
         payload.id = selectedId;
@@ -189,8 +193,12 @@ const CategoriesView = () => {
             prev.map((item) => (item._id === selectedId ? response.data : item))
           );
         } else {
-          // Add: add new item to local state
-          setVenueTypes((prev) => [response.data, ...prev]);
+          // Add: add new item to local state but keep only first `limit`
+          setVenueTypes((prev) => {
+            const updated = [response.data, ...prev];
+            return updated.slice(0, limit); 
+          });
+
           setMeta((prev: any) => ({
             ...prev,
             totalRecords: prev.totalRecords + 1,

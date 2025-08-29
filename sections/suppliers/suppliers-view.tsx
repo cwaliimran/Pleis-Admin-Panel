@@ -79,7 +79,7 @@ const SuppliersView = () => {
 
   const schema = Yup.object().shape({
     title: Yup.string().required('Supplier Name is required'),
-    status: Yup.string().oneOf(['active', 'inactive']),
+    status: Yup.string(),
   });
 
   const methods = useForm({
@@ -117,7 +117,7 @@ const SuppliersView = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Venue type not found');
+      showError('Supplier not found');
     }
   };
 
@@ -152,6 +152,23 @@ const SuppliersView = () => {
       }
 
       // Handle success and update local state
+      // if (response?.data) {
+      //   if (editModal.value && selectedId) {
+      //     // Edit: update the item in local state
+      //     setVenueTypes((prev) =>
+      //       prev.map((item) => (item._id === selectedId ? response.data : item))
+      //     );
+      //   } else {
+      //     // Add: add new item to local state
+      //     setVenueTypes((prev) => [response.data, ...prev]);
+      //     setMeta((prev: any) => ({
+      //       ...prev,
+      //       totalRecords: prev.totalRecords + 1,
+      //     }));
+      //   }
+      // }
+
+      // Handle success and update local state
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
@@ -159,8 +176,12 @@ const SuppliersView = () => {
             prev.map((item) => (item._id === selectedId ? response.data : item))
           );
         } else {
-          // Add: add new item to local state
-          setVenueTypes((prev) => [response.data, ...prev]);
+          // Add: add new item to local state but keep only first `limit`
+          setVenueTypes((prev) => {
+            const updated = [response.data, ...prev];
+            return updated.slice(0, limit); // ✅ ensures max `limit`
+          });
+
           setMeta((prev: any) => ({
             ...prev,
             totalRecords: prev.totalRecords + 1,
@@ -180,7 +201,7 @@ const SuppliersView = () => {
       CloseModal();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save venue type:', errorMessage);
+      console.log('Failed to save supplier:', errorMessage);
       showError(errorMessage);
     }
   });
@@ -283,8 +304,8 @@ const SuppliersView = () => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Venue Type"
-        content="Are you sure you want to delete this venue type? This action cannot be undone."
+        title="Delete Supplier"
+        content="Are you sure you want to delete this supplier?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

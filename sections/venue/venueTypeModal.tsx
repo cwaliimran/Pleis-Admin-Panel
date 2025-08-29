@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
@@ -87,7 +87,7 @@ const VenueTypeModal = ({
   });
 
   const venueTypeOptions = (apiData?.data || []).map((v: any) => ({
-    value: v._id,
+    value: v._id.toString(),
     label: v.title,
   }));
 
@@ -136,6 +136,20 @@ const VenueTypeModal = ({
                 placeholder="Select Organization"
                 options={organizationOptions}
               />
+
+              {editMode && (
+                <RHFSelectField
+                  name="status"
+                  placeholder="Select Status"
+                  label="Status"
+                  className="w-full flex-1"
+                  options={[
+                    { label: 'Active', value: 'active' },
+                    { label: 'Inactive', value: 'inactive' },
+                  ]}
+                  disabled={isLoading}
+                />
+              )}
 
               {/* FLOOR IMAGE UPLOAD */}
               <div className="flex max-w-[10rem] items-center justify-start">
@@ -187,12 +201,6 @@ const VenueTypeModal = ({
                     }}
                     onPlacesChanged={handleOnPlacesChanged}
                   >
-                    {/* <input
-                      id="address"
-                      type="text"
-                      placeholder="Enter Location"
-                      className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
-                    /> */}
                     <input
                       id="address"
                       type="text"
@@ -208,19 +216,25 @@ const VenueTypeModal = ({
                 )}
               </div>
 
-              {/* <div className="w-full">
+              <div className="w-full">
                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Map Preview
                 </label>
                 <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
-                  <iframe
-                    title="Venue Location Map"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s"
-                    className="h-full w-full border-0"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  ></iframe>
+                  {methods.watch('location.coordinates')?.length === 2 ? (
+                    <iframe
+                      title="Venue Location Map"
+                      src={`https://www.google.com/maps?q=${methods.watch('location.coordinates')[0]},${methods.watch('location.coordinates')[1]}&hl=es;z=14&output=embed`}
+                      className="h-full w-full border-0"
+                      referrerPolicy="no-referrer-when-downgrade"
+                    ></iframe>
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-gray-400">
+                      No location selected
+                    </div>
+                  )}
                 </div>
-              </div> */}
+              </div>
 
               <div className="flex justify-end gap-2">
                 <Button

@@ -18,11 +18,13 @@ import { FC } from 'react';
 interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
+  handlePinned?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
 const VenueTypeTableRow: FC<PageProps> = ({
   item,
   handleDelete,
+  handlePinned,
   handleEdit,
 }) => {
   return (
@@ -57,7 +59,7 @@ const VenueTypeTableRow: FC<PageProps> = ({
                 {item?.location?.fullAddress?.slice(0, 30) + '...'}
               </span>
             </DialogTrigger>
-            <DialogContent className="max-w-md dark:bg-secondary">
+            <DialogContent className="dark:bg-secondary max-w-md">
               <DialogHeader>
                 <DialogTitle>Description</DialogTitle>
               </DialogHeader>
@@ -96,6 +98,10 @@ const VenueTypeTableRow: FC<PageProps> = ({
           <button
             type="button"
             title="Select Primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePinned?.(item?._id);
+            }}
             className={`cursor-pointer rounded-md ${item?.pinned ? 'bg-green-600 text-white dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-800'} p-1.5 transition`}
           >
             <PrimaryIcon />

@@ -237,27 +237,6 @@ const VenueTypeTable: FC<PageProps> = ({
           </div>
 
           <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
-            {/* <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground">Rows per page:</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(v) => onLimitChange?.(Number(v))}
-              >
-                <SelectTrigger className="h-8 w-[70px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {[5, 10, 20, 50, 100].map((opt) => (
-                      <SelectItem key={opt} value={String(opt)}>
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
-
             <div className="text-muted-foreground">
               Page {currentPage} of {totalPages} | Total: {totalRecords}
             </div>
