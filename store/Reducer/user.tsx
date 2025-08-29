@@ -12,6 +12,7 @@ export const userApi = createApi({
     // -------------- SUPER ADMIN --------------
     adminLogin: builder.mutation({
       query: (login) => ({
+        // url: API_ROUTES.LOGIN,
         url: API_ROUTES.LOGIN,
         method: 'POST',
         body: login,

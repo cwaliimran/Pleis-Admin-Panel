@@ -153,27 +153,6 @@ const VenueTypeModal = ({
 
               {/* FLOOR IMAGE UPLOAD */}
               <div className="flex max-w-[10rem] items-center justify-start">
-                {/* <RHFUploadButton
-                  name="floorPlan"
-                  label="Upload"
-                  initialImage={(() => {
-                    if (!editMode) return null;
-                    const img =
-                      methods.getValues('floorPlan') &&
-                      typeof methods.getValues('floorPlan') === 'string'
-                        ? methods.getValues('floorPlan')
-                        : selectedVenueType?.imageInfo?.url;
-                    if (
-                      !img ||
-                      img ===
-                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
-                    ) {
-                      return null;
-                    }
-                    return img;
-                  })()}
-                /> */}
-
                 <RHFUploadButton
                   name="floorPlan"
                   label="Upload"
