@@ -251,7 +251,7 @@ const LocationAutocomplete = <T extends FieldValues>({
               } ${className}`}
               autoComplete="off"
               onChange={(e) => handleInputChange(e.target.value, onChange)}
-              onBlur={(e) => {
+              onBlur={() => {
                 // Delay the blur to allow clicking on suggestions
                 setTimeout(() => {
                   onBlur();

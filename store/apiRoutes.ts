@@ -27,6 +27,12 @@ export const API_ROUTES = {
 
   USER_ACCESS: `/admin/features`,
   USER_ACCESS_BY_ID: (id: string) => `/admin/features/${id}`,
+
+  ORGANIZATION: `/organizations`,
+  ORGANIZATION_BY_ID: (id: string) => `/organizations/${id}`,
+
+  USER_LIST: `/users`,
+  USER_LIST_BY_ID: (id: string) => `/users/${id}`,
 };
 
 export default API_ROUTES;

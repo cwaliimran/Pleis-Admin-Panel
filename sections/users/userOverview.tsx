@@ -31,11 +31,13 @@ import {
   userTags,
   venueTypes,
 } from '../users/data';
+import { fDate, formatStr } from '@/utils/format-time';
 
-const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
-  userType,
-  user,
-}) => {
+const UserOverView: React.FC<{
+  userType: string | null;
+  user: any;
+  apiData: any;
+}> = ({ userType, apiData, user }) => {
   const permissionList = [
     'Ticketing',
     'Loyalty',
@@ -124,34 +126,40 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                   {/* Name */}
                   <div className="">
                     <span className="w-28 font-semibold text-gray-500">
-                      Name:
+                      Name:{' '}
                     </span>
                     <span className="text-gray-800 dark:text-white">
-                      {user.businessDetails.name}
+                      {apiData?.basicInfo?.companyDetails?.name || '-'}
                     </span>
                   </div>
 
                   {/* Description */}
                   <div className=" ">
                     <span className="w-28 font-semibold text-gray-500">
-                      Description:
+                      Description:{' '}
                     </span>
                     <span className="text-gray-800 dark:text-white">
-                      {user.businessDetails.description}
+                      {/* {user.businessDetails.description} */}
+                      {apiData?.basicInfo?.companyDetails?.description || '-'}
                     </span>
                   </div>
 
                   {/* Website */}
                   <div className="flex items-center gap-2">
-                    <Globe size={16} />
-                    <a
-                      href={user.businessDetails.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium break-all text-blue-600 hover:underline"
-                    >
-                      {user.businessDetails.website}
-                    </a>
+                    {/* <Globe size={16} /> */}
+                    <span className="w-28 font-semibold text-gray-500">
+                      Website:
+                    </span>
+                    <span className="text-gray-800 dark:text-white">
+                      <a
+                        href={user.businessDetails.website || '-'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium break-all text-gray-600 hover:underline"
+                      >
+                        {user.businessDetails.website || '-'}
+                      </a>
+                    </span>
                   </div>
 
                   {/* Social Links */}
@@ -247,7 +255,8 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-slate-500">IBAN:</p>
                     <p className="text-gray-800 dark:text-white">
-                      {user.bankDetails?.iban || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.bankAccountNumber ||
+                        'N/A'}
                     </p>
                   </div>
 
@@ -265,14 +274,16 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                       Representative Full Name:
                     </p>
                     <p className="font-semibold text-gray-800 dark:text-white">
-                      {user.bankDetails?.representativeFullName || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.representativeName ||
+                        'N/A'}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-gray-500">Address:</p>
                     <p className="text-gray-800 dark:text-white">
-                      {user.bankDetails?.address || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.location
+                        ?.fullAddress || 'N/A'}
                     </p>
                   </div>
 
@@ -299,7 +310,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                 </CardContent>
               </Card>
 
-              <Card className="dark:bg-secondary mt-6 mb-6 w-full max-w-4xl rounded-2xl bg-white shadow-sm transition hover:shadow-md">
+              <Card className="dark:bg-secondary mt-6 mb-6 w-full max-w-4xl gap-2 rounded-2xl bg-white shadow-sm transition hover:shadow-md">
                 <CardHeader>
                   <CardTitle className="text-muted-foreground text-lg font-semibold">
                     Event Details
@@ -309,20 +320,39 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                   {/* Left: Event Info */}
                   <div className="flex flex-col justify-center space-y-2">
                     <h2 className="text-primary mb-1 text-2xl font-extrabold">
-                      Tech Summit 2025
+                      {apiData?.basicInfo?.eventDetails?.name || 'Event Name'}
                     </h2>
                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <MapPin className="h-5 w-5" />
-                      <span className="font-medium">Expo Center, Lahore</span>
+                      <span className="flex items-center gap-x-1">
+                        <MapPin className="h-5 w-5" />
+                        <span className="font-medium">Location:</span>{' '}
+                      </span>
+
+                      <span className="font-medium">
+                        {apiData?.basicInfo?.eventDetails?.location || '-'}
+                      </span>
                     </div>
                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Users className="h-5 w-5" />
-                      <span className="font-medium">By: InnovateX</span>
+                      <span className="font-medium">
+                        By: {apiData?.basicInfo?.eventDetails?.organizer || '-'}
+                      </span>
                     </div>
                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <CalendarDays className="h-5 w-5" />
+                      <span className="flex items-center gap-x-1">
+                        <CalendarDays className="h-5 w-5" />
+                        <span className="font-medium">Date:</span>{' '}
+                      </span>
                       <span className="font-medium">
-                        Aug 1, 2025 – Aug 3, 2025
+                        {fDate(
+                          apiData?.basicInfo?.eventDetails?.startDate,
+                          formatStr.paramCase.date
+                        )}{' '}
+                        –{' '}
+                        {fDate(
+                          apiData?.basicInfo?.eventDetails?.endDate,
+                          formatStr.paramCase.date
+                        )}
                       </span>
                     </div>
                   </div>
@@ -333,14 +363,14 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                         <DollarSign className="h-5 w-5" />
                         <span>
                           <span className="font-medium">Budget:</span>{' '}
-                          <strong className="text-foreground">$5000</strong>
+                          <strong className="text-foreground">-</strong>
                         </span>
                       </div>
                       <div className="items- flex gap-2">
                         <UserRound className="h-5 w-5" />
                         <span>
                           <span className="font-medium">Attendees:</span>{' '}
-                          <strong className="text-foreground">1500</strong>
+                          <strong className="text-foreground">-</strong>
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -348,7 +378,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                         <span>
                           <span className="font-medium">Region:</span>{' '}
                           <strong className="text-foreground">
-                            North America
+                            {apiData?.basicInfo?.eventDetails?.region || '-'}
                           </strong>
                         </span>
                       </div>
@@ -364,12 +394,12 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
               <CardHeader>
                 <h1 className="font-semibold text-slate-500">CATEGORIES</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {userTags.map((item, index) => (
+                  {userTags.slice(0, 1).map((item, index) => (
                     <Badge
                       key={index}
                       className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
                     >
-                      {item}
+                      -
                     </Badge>
                   ))}
                 </div>
@@ -383,7 +413,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
               <CardHeader>
                 <h1 className="font-semibold text-slate-500">TAGS</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {userTags.map((item, index) => (
+                  {userTags?.slice(0, 1)?.map((item, index) => (
                     <Badge
                       key={index}
                       className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
@@ -402,7 +432,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
               <CardHeader>
                 <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {venueTypes.map((item, index) => (
+                  {venueTypes?.slice(0, 9)?.map((item, index) => (
                     <Badge
                       key={index}
                       className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
@@ -424,7 +454,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
             <CardContent className="text-sm">
               <p className="flex items-center gap-2 text-xl">
                 <strong className="text-slate-500">Balance:</strong>{' '}
-                <span className="text-3xl font-bold">$95.00</span>
+                <span className="text-3xl font-bold">$0</span>
               </p>
               <p>
                 <strong className="text-slate-500">Recent Transactions:</strong>{' '}
@@ -433,13 +463,13 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
 
               <div className="mt-4 space-y-2">
                 <div>
-                  <p className="text-sm">Tickets: 10</p>
+                  <p className="text-sm">Tickets: 0</p>
                 </div>
                 <div>
-                  <p className="text-sm">Rewards: 5</p>
+                  <p className="text-sm">Rewards: 0</p>
                 </div>
                 <div>
-                  <p className="text-sm">Loyalty Cards: 3</p>
+                  <p className="text-sm">Loyalty Cards: 0</p>
                 </div>
               </div>
             </CardContent>
@@ -471,7 +501,7 @@ const UserOverView: React.FC<{ userType: string | null; user: any }> = ({
                             {item.label}
                           </h2>
                           <p className="text-primary text-2xl font-extrabold">
-                            {item.value}
+                            0
                           </p>
                         </div>
                       </div>

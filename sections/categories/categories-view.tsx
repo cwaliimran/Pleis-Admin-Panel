@@ -112,7 +112,6 @@ const CategoriesView = () => {
     openModal.onFalse();
     editModal.onFalse();
   };
-  
 
   const handleEdit = (id: string) => {
     const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
@@ -196,7 +195,7 @@ const CategoriesView = () => {
           // Add: add new item to local state but keep only first `limit`
           setVenueTypes((prev) => {
             const updated = [response.data, ...prev];
-            return updated.slice(0, limit); 
+            return updated.slice(0, limit);
           });
 
           setMeta((prev: any) => ({

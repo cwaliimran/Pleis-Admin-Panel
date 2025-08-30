@@ -22,8 +22,6 @@ const Account = () => {
 
   const { user } = useSelector((state: RootState) => state.userSlice);
 
-  console.log('user', user);
-
   const handleProfileClick = () => {
     if (user?.role === 'admin') {
       router.push('/super-admin/admin-profile');

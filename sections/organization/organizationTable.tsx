@@ -13,13 +13,11 @@ import {
   Select,
   SelectContent,
   SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
+  SelectItem, SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import { Table, TableBody } from "@/components/ui/table";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { organizationListData } from "./data";
 import OrganizationTableRow from "./organizationTableRow";

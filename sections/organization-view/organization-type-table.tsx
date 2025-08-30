@@ -20,20 +20,25 @@ import {
 } from '@/components/ui/sheet';
 
 import { TableFilters } from '@/components/table-filters';
+import { LoadingBar } from '@/components/table/table-bar-loading';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import CategoriesTypeTableRow from './categoriesTypeTableRow';
-import { LoadingBar } from '@/components/table/table-bar-loading';
+import OrganizationTypeTableRow from './organization-type-table-row';
 
 const headLabel = [
-  { id: 'icon', label: 'Icon', align: 'left' },
-  { id: 'name', label: 'Category Name', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'log', label: 'Logo', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'createdDate', label: 'Created Date', align: 'left' },
+  { id: 'subscriptionType', label: 'Sub Type', align: 'left' },
+  { id: 'subscriptionValidity', label: 'Sub End Date', align: 'left' },
+  { id: 'commission', label: 'Commission (%)', align: 'left' },
+  { id: 'totalViews', label: 'T. Views', align: 'left' },
+  { id: 'totalRevenue', label: 'Total Revenue', align: 'left' },
+  { id: 'status', label: 'Status' },
+  { id: 'actions', label: 'Action' },
 ];
 
 interface Meta {
@@ -62,7 +67,7 @@ interface PageProps {
   onResetFilters?: () => void;
 }
 
-const CategoriesTypeTable: FC<PageProps> = ({
+const OrganizationTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
@@ -109,7 +114,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Category List
+              Organization List
             </h3>
 
             <Sheet>
@@ -148,7 +153,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Categories...',
+                              placeholder: 'Search Organization...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -175,6 +180,21 @@ const CategoriesTypeTable: FC<PageProps> = ({
                         </div>
                       </div>
                     </div>
+                    {/* <div className="mt-4 flex gap-3">
+                      <button
+                        className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-md py-2 font-semibold text-white transition"
+                        type="button"
+                      >
+                        Apply
+                      </button>
+                      <button
+                        className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
+                        type="button"
+                        onClick={onResetFilters}
+                      >
+                        Reset
+                      </button>
+                    </div> */}
                   </form>
                 </FormProvider>
               </SheetContent>
@@ -209,7 +229,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
                   data
                     .filter((item: any) => item.status !== 'deleted')
                     .map((item: any, index: number) => (
-                      <CategoriesTypeTableRow
+                      <OrganizationTypeTableRow
                         key={item._id || index}
                         item={item}
                         handleDelete={handleDelete}
@@ -222,6 +242,27 @@ const CategoriesTypeTable: FC<PageProps> = ({
           </div>
 
           <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
+            {/* <div className="flex items-center space-x-2">
+              <span className="text-muted-foreground">Rows per page:</span>
+              <Select
+                value={String(limit)}
+                onValueChange={(v) => onLimitChange?.(Number(v))}
+              >
+                <SelectTrigger className="h-8 w-[70px] text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {[5, 10, 20, 50, 100].map((opt) => (
+                      <SelectItem key={opt} value={String(opt)}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div> */}
+
             <div className="text-muted-foreground">
               Page {currentPage} of {totalPages} | Total: {totalRecords}
             </div>
@@ -275,4 +316,4 @@ const CategoriesTypeTable: FC<PageProps> = ({
   );
 };
 
-export default CategoriesTypeTable;
+export default OrganizationTypeTable;

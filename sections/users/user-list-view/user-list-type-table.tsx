@@ -20,20 +20,25 @@ import {
 } from '@/components/ui/sheet';
 
 import { TableFilters } from '@/components/table-filters';
+import { LoadingBar } from '@/components/table/table-bar-loading';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import CategoriesTypeTableRow from './categoriesTypeTableRow';
-import { LoadingBar } from '@/components/table/table-bar-loading';
+import UserListTypeTableRow from './user-list-type-table-row';
 
 const headLabel = [
-  { id: 'icon', label: 'Icon', align: 'left' },
-  { id: 'name', label: 'Category Name', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
+  { id: 'image', label: 'Image', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'username', label: 'Username', align: 'left' },
+  { id: 'role', label: 'Role', align: 'left' },
+  { id: 'globalStatus', label: 'Global Status', align: 'left' },
+  { id: 'totalPoints', label: 'Points Earned', align: 'left' },
+  { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'region', label: 'Region', align: 'left' },
+  { id: 'action', label: 'Action', align: 'left' },
 ];
 
 interface Meta {
@@ -60,15 +65,17 @@ interface PageProps {
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
+  userType?: any;
 }
 
-const CategoriesTypeTable: FC<PageProps> = ({
+const UserListTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
   handleDelete,
   handleEdit,
   onPageChange,
+  userType,
   // onLimitChange,
   onSearch = () => {},
   search = '',
@@ -108,9 +115,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Category List
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">User List</h3>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -148,7 +153,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Categories...',
+                              placeholder: 'Search Organization...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -209,11 +214,12 @@ const CategoriesTypeTable: FC<PageProps> = ({
                   data
                     .filter((item: any) => item.status !== 'deleted')
                     .map((item: any, index: number) => (
-                      <CategoriesTypeTableRow
+                      <UserListTypeTableRow
                         key={item._id || index}
                         item={item}
                         handleDelete={handleDelete}
                         handleEdit={handleEdit}
+                        userType={userType}
                       />
                     ))
                 )}
@@ -275,4 +281,4 @@ const CategoriesTypeTable: FC<PageProps> = ({
   );
 };
 
-export default CategoriesTypeTable;
+export default UserListTypeTable;

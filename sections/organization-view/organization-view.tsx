@@ -3,29 +3,35 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useAddTagMutation,
-  useDeleteTagMutation,
-  useGetTagsQuery,
-  useUpdateTagMutation,
-} from '@/store/Reducer/tags';
+  useAddCategoryMutation,
+  useDeleteCategoryMutation, useUpdateCategoryMutation
+} from '@/store/Reducer/categories';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import TagsTypeModal from './tagsTypeModal';
-import TagsTypeTable from './tagsTypeTable';
-import { formatDate } from '@/utils/format-time';
+import OrganizationTypeModal from './organization-type-modal';
+import OrganizationTypeTable from './organization-type-table';
 
 const defaultValues = {
+  image: null,
   title: '',
-  tag: '',
   status: 'active',
 };
 
-const TagsView = () => {
+type OrganizationListProps = {
+  userType?: 'organizer' | 'super-admin';
+};
+
+const OrganizationView = ({ userType }: OrganizationListProps) => {
+  const router = useRouter();
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -39,16 +45,16 @@ const TagsView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
-  const [addTag, { isLoading: addTagLoading }] = useAddTagMutation();
-  const [updateTag, { isLoading: updateTagLoading }] = useUpdateTagMutation();
-  const [deleteTag, { isLoading: deleteTagLoading }] = useDeleteTagMutation();
+  const [addCategory, { isLoading: addCategoryLoading }] =
+    useAddCategoryMutation();
+  const [updateCategory, { isLoading: updateCategoryLoading }] =
+    useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: deleteCategoryLoading }] =
+    useDeleteCategoryMutation();
 
-  const {
-    data: apiData,
-    isLoading,
-    refetch,
-  } = useGetTagsQuery({
+  const { data: apiData, isLoading } = useGetOrganizationQuery({
     page: page - 1,
     search,
     limit,
@@ -56,6 +62,9 @@ const TagsView = () => {
     date: date ? formatDate(date) : undefined,
   });
 
+  console.log("apiData", apiData?.data);
+
+  // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({
     currentPage: page,
@@ -66,23 +75,21 @@ const TagsView = () => {
 
   useEffect(() => {
     if (apiData?.data) {
-      // setVenueTypes(apiData.data);
-      // setMeta(
-      //   apiData.meta || {
-      //     currentPage: page,
-      //     totalPages: 1,
-      //     totalRecords: 0,
-      //     limit,
-      //   }
-      // );
-      setVenueTypes([...apiData.data]); // make a new array copy
-      setMeta({ ...apiData.meta });
+      setVenueTypes(apiData.data);
+      setMeta(
+        apiData.meta || {
+          currentPage: page,
+          totalPages: 1,
+          totalRecords: 0,
+          limit,
+        }
+      );
     }
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
-    title: Yup.string().required('Tag Name is required'),
-    tag: Yup.string().required('Tag Type is required'),
+    image: Yup.mixed().nullable(),
+    title: Yup.string().required('Category Name is required'),
     status: Yup.string().oneOf(['active', 'inactive']),
   });
 
@@ -93,13 +100,12 @@ const TagsView = () => {
 
   const { handleSubmit, reset } = methods;
 
-  // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        tag: selectedVenueType.tag || '',
-        status: selectedVenueType.status || 'active',
+        status: selectedVenueType.status || '',
+        image: selectedVenueType.image || null,
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -114,6 +120,14 @@ const TagsView = () => {
     editModal.onFalse();
   };
 
+  const handleNavigateToCreate = () => {
+    if (userType === 'super-admin') {
+      router.push('/super-admin/organization/create-organization');
+    } else {
+      router.push('/organizer/organization/create-organization');
+    }
+  };
+
   const handleEdit = (id: string) => {
     const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
     if (venueTypeToEdit) {
@@ -122,7 +136,7 @@ const TagsView = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Tag not found');
+      showError('Category type not found');
     }
   };
 
@@ -131,21 +145,47 @@ const TagsView = () => {
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE TAGS
+  // CREATE/UPDATE VENUE TYPE
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      let imageFileString = undefined;
+
+      // If image is present and is a FileList or array
+      if (
+        formData.image &&
+        (formData.image instanceof FileList || Array.isArray(formData.image))
+      ) {
+        const file = formData.image[0];
+        if (file) {
+          setImageUploading(true);
+          try {
+            imageFileString = await uploadFileToAzure(file);
+          } finally {
+            setImageUploading(false);
+          }
+        }
+      }
+
+      const payload: any = {
+        title: formData.title,
+      };
+
+      if (imageFileString) {
+        payload.image = imageFileString;
+      } else if (editModal.value && typeof formData.image === 'string') {
+        payload.image = formData.image;
+      }
+
+      if (editModal.value && selectedId) {
+        payload.status = formData.status;
+        payload.id = selectedId;
+      }
+
       let response;
       if (editModal.value && selectedId) {
-        // Update existing tag, include status
-        response = await updateTag({
-          id: selectedId,
-          ...formData,
-        }).unwrap();
+        response = await updateCategory(payload).unwrap();
       } else {
-        response = await addTag({
-          title: formData.title,
-          type: formData.tag,
-        }).unwrap();
+        response = await addCategory(payload).unwrap();
       }
 
       if (!response) {
@@ -167,8 +207,12 @@ const TagsView = () => {
             prev.map((item) => (item._id === selectedId ? response.data : item))
           );
         } else {
-          // Add: add new item to local state
-          setVenueTypes((prev) => [response.data, ...prev]);
+          // Add: add new item to local state but keep only first `limit`
+          setVenueTypes((prev) => {
+            const updated = [response.data, ...prev];
+            return updated.slice(0, limit);
+          });
+
           setMeta((prev: any) => ({
             ...prev,
             totalRecords: prev.totalRecords + 1,
@@ -180,23 +224,24 @@ const TagsView = () => {
         showSuccess(
           response?.message ||
             (editModal.value
-              ? 'Tags updated successfully'
-              : 'Tags created successfully')
+              ? 'Category updated successfully'
+              : 'Category created successfully')
         );
       }
 
       CloseModal();
     } catch (error) {
+      setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save tag:', errorMessage);
+      console.log('Failed to save category:', errorMessage);
       showError(errorMessage);
     }
   });
 
-  // DELETE TAG
+  // DELETE CATEGORY
   const onDelete = async () => {
     try {
-      const response = await deleteTag(selectedId).unwrap();
+      const response = await deleteCategory(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -210,25 +255,24 @@ const TagsView = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Tag deleted successfully');
+        showSuccess(response?.message || 'Category deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
-      refetch();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete tag:', errorMessage);
+      console.log('Failed to delete category:', errorMessage);
       showError(errorMessage);
     }
   };
 
-  const handleCreateNew = () => {
-    setSelectedVenueType(null);
-    setSelectedId(null);
-    editModal.onFalse();
-    openModal.onTrue();
-  };
+  // const handleCreateNew = () => {
+  //   setSelectedVenueType(null);
+  //   setSelectedId(null);
+  //   editModal.onFalse();
+  //   openModal.onTrue();
+  // };
 
   return (
     <div>
@@ -236,15 +280,15 @@ const TagsView = () => {
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button
             className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
+            onClick={handleNavigateToCreate}
           >
-            <Plus className="" />
-            Create Tag
+            <Plus />
+            Create Organization
           </Button>
         </div>
       </div>
 
-      <TagsTypeTable
+      <OrganizationTypeTable
         data={venueTypes}
         meta={meta}
         loading={isLoading}
@@ -280,29 +324,31 @@ const TagsView = () => {
         }}
       />
 
-      <TagsTypeModal
+      <OrganizationTypeModal
         open={openModal.value}
         onClose={CloseModal}
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addTagLoading || updateTagLoading}
+        isLoading={
+          addCategoryLoading || updateCategoryLoading || imageUploading
+        }
         selectedVenueType={selectedVenueType}
       />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Tag"
-        content="Are you sure you want to delete this tag?"
+        title="Delete Category"
+        content="Are you sure you want to delete this category?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteTagLoading}
+        isLoading={deleteCategoryLoading}
       />
     </div>
   );
 };
 
-export default TagsView;
+export default OrganizationView;
