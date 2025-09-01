@@ -36,6 +36,7 @@ export const venueApi = createApi({
         method: 'POST',
         body: newVenue,
       }),
+      invalidatesTags: ['venue'],
     }),
 
     updateVenue: builder.mutation({
@@ -44,6 +45,7 @@ export const venueApi = createApi({
         method: 'PUT',
         body: updatedVenue,
       }),
+      invalidatesTags: ['venue'],
     }),
 
     deleteVenue: builder.mutation({

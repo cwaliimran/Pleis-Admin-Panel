@@ -21,7 +21,7 @@ import { formatDate } from '@/utils/format-time';
 
 const defaultValues = {
   title: '',
-  tag: '',
+  type: '',
   status: 'active',
 };
 
@@ -82,7 +82,7 @@ const TagsView = () => {
 
   const schema = Yup.object().shape({
     title: Yup.string().required('Tag Name is required'),
-    tag: Yup.string().required('Tag Type is required'),
+    type: Yup.string().required('Tag Type is required'),
     status: Yup.string().oneOf(['active', 'inactive']),
   });
 
@@ -98,7 +98,7 @@ const TagsView = () => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        tag: selectedVenueType.tag || '',
+        type: selectedVenueType.type || '',
         status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
@@ -144,7 +144,7 @@ const TagsView = () => {
       } else {
         response = await addTag({
           title: formData.title,
-          type: formData.tag,
+          type: formData.type,
         }).unwrap();
       }
 

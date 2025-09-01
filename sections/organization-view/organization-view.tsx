@@ -295,6 +295,7 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
+        userType={userType}
         onLimitChange={(l) => {
           setLimit(l);
           setPage(1);

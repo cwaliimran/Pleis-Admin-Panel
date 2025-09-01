@@ -3,15 +3,6 @@
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -20,22 +11,22 @@ import {
 } from '@/components/ui/sheet';
 
 import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
+import { LoadingBar } from '@/components/table/table-bar-loading';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { LoadingBar } from '@/components/table/table-bar-loading';
-import VenueTypeTableRow from './venueTypeTableRow';
+import HighlightTypeTableRow from './highlight-type-table-row';
 
 const headLabel = [
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'dateAdded', label: 'Date Added', align: 'left' },
-  { id: 'organizaiton', label: 'Organization', align: 'left' },
-  { id: 'floorplan', label: 'Floor Plan', align: 'left' },
-  { id: 'location', label: 'Location', align: 'left' },
-  { id: 'status', label: 'Status' },
-  { id: 'updatedAt', label: 'Last Updated' },
+  { id: 'title', label: 'Title', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'event', label: 'Event' },
+  { id: 'video', label: 'Video', align: 'left' },
+  { id: 'createdAt', label: 'CreatedAt' },
+  { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -52,7 +43,6 @@ interface PageProps {
   meta: Meta;
   loading?: boolean;
   handleDelete?: (id: string) => void;
-  handlePinned?: (id: string) => void;
   handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
@@ -66,11 +56,10 @@ interface PageProps {
   onResetFilters?: () => void;
 }
 
-const VenueTypeTable: FC<PageProps> = ({
+const HighlightTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
-  handlePinned,
   handleDelete,
   handleEdit,
   onPageChange,
@@ -90,30 +79,23 @@ const VenueTypeTable: FC<PageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
+  // console.log('Data', data);
+
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
     },
   });
 
-  // Generate page numbers for pagination (show max 5 pages)
-  const getPageNumbers = () => {
-    const maxPagesToShow = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let end = start + maxPagesToShow - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxPagesToShow + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
 
   return (
     <div>
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Venue List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">
+              Highlight List
+            </h3>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -151,7 +133,7 @@ const VenueTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, location, organization...',
+                              placeholder: 'Search Categories...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -178,21 +160,6 @@ const VenueTypeTable: FC<PageProps> = ({
                         </div>
                       </div>
                     </div>
-                    {/* <div className="mt-4 flex gap-3">
-                      <button
-                        className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-md py-2 font-semibold text-white transition"
-                        type="button"
-                      >
-                        Apply
-                      </button>
-                      <button
-                        className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
-                        type="button"
-                        onClick={onResetFilters}
-                      >
-                        Reset
-                      </button>
-                    </div> */}
                   </form>
                 </FormProvider>
               </SheetContent>
@@ -227,12 +194,11 @@ const VenueTypeTable: FC<PageProps> = ({
                   data
                     .filter((item: any) => item.status !== 'deleted')
                     .map((item: any, index: number) => (
-                      <VenueTypeTableRow
+                      <HighlightTypeTableRow
                         key={item._id || index}
                         item={item}
                         handleDelete={handleDelete}
                         handleEdit={handleEdit}
-                        handlePinned={handlePinned}
                       />
                     ))
                 )}
@@ -240,79 +206,17 @@ const VenueTypeTable: FC<PageProps> = ({
             </Table>
           </div>
 
-          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
-            {/* <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground">Rows per page:</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(v) => onLimitChange?.(Number(v))}
-              >
-                <SelectTrigger className="h-8 w-[70px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {[5, 10, 20, 50, 100].map((opt) => (
-                      <SelectItem key={opt} value={String(opt)}>
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
-
-            <div className="text-muted-foreground">
-              Page {currentPage} of {totalPages} | Total: {totalRecords}
-            </div>
-
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange?.(currentPage - 1);
-                  }}
-                  aria-disabled={currentPage === 1}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNum === currentPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (pageNum !== currentPage) onPageChange?.(pageNum);
-                    }}
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {totalPages > 5 && (
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages)
-                      onPageChange?.(currentPage + 1);
-                  }}
-                  aria-disabled={currentPage === totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            limit={10}
+            onPageChange={(p) => onPageChange?.(p)}
+          />
         </Card>
       </div>
     </div>
   );
 };
 
-export default VenueTypeTable;
+export default HighlightTypeTable;

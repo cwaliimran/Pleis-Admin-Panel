@@ -2,6 +2,8 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
 import { customFetchBaseQuery } from '../customFetchBaseQuery';
 
+const ADMIN_ACCESS_TOKEN = process.env.NEXT_PUBLIC_ADMIN_ACCESS_TOKEN;
+
 export const userListApi = createApi({
   reducerPath: 'userListApi',
   baseQuery: customFetchBaseQuery(),
@@ -38,12 +40,25 @@ export const userListApi = createApi({
       transformResponse: (res) => res.data,
     }),
 
+    addUserSuperAdminAndGuest: builder.mutation({
+      query: (newUser) => ({
+        url: API_ROUTES.USER_LIST,
+        method: 'POST',
+        body: newUser,
+        headers: {
+          'x-admin-access-token': ADMIN_ACCESS_TOKEN,
+        },
+      }),
+      invalidatesTags: ['userList'],
+    }),
+
     addUser: builder.mutation({
       query: (newUser) => ({
         url: API_ROUTES.USER_LIST,
         method: 'POST',
         body: newUser,
       }),
+      invalidatesTags: ['userList'],
     }),
 
     updateUser: builder.mutation({
@@ -60,5 +75,6 @@ export const {
   useGetUserListQuery,
   useGetUserByIdQuery,
   useAddUserMutation,
+  useAddUserSuperAdminAndGuestMutation,
   useUpdateUserMutation,
 } = userListApi;

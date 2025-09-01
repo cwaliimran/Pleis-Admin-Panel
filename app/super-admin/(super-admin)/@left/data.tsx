@@ -138,11 +138,12 @@ export const menuGroups: MenuGroup[] = [
         title: 'User List',
         url: paths.superAdmin.users.list,
         icon: UsersRound,
-      }, {
-        title: 'User Access',
-        url: paths.superAdmin.userAccess.default,
-        icon: UsersRound,
       },
+      // {
+      //   title: 'User Access',
+      //   url: paths.superAdmin.userAccess.default,
+      //   icon: UsersRound,
+      // },
       {
         title: 'Pending User List',
         url: paths.superAdmin.users.pendingList,

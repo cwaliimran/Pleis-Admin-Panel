@@ -117,12 +117,7 @@ const VenueView = () => {
     defaultValues: defaultValues,
   });
 
-  const {
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = methods;
-  console.log('errors', errors);
+  const { handleSubmit, reset } = methods;
 
   // useEffect(() => {
   //   if (editModal.value && selectedVenueType) {
@@ -149,7 +144,12 @@ const VenueView = () => {
             ? selectedVenueType.venueType
             : selectedVenueType.venueType?._id?.toString() || '',
 
-        organization: selectedVenueType.organization || '',
+        // organization: selectedVenueType.organization || '',
+        organization:
+          typeof selectedVenueType.organization === 'string'
+            ? selectedVenueType.organization
+            : selectedVenueType.organization?._id?.toString() || '',
+
         location: {
           fullAddress: selectedVenueType.location?.fullAddress || '',
           state: selectedVenueType.location?.state || '',
@@ -219,8 +219,7 @@ const VenueView = () => {
       const payload: any = {
         title: formData.title,
         venueType: formData.venueType,
-        // organization: formData.organization,
-        organization: '6884bc2cea0037a3d1263cff',
+        organization: formData.organization,
         location: formData.location,
       };
 
@@ -233,8 +232,6 @@ const VenueView = () => {
         payload.status = formData.status;
         payload.id = selectedId;
       }
-
-      console.log('Payload:', payload);
 
       let response;
       if (editModal.value && selectedId) {
@@ -289,11 +286,12 @@ const VenueView = () => {
     }
   });
 
-  const onSetAsPinned = async (_id: string) => {
+  const onSetAsPinned = async (item: any) => {
     try {
       const payload = {
-        id: _id,
-        pinned: true,
+        id: item?._id,
+        isPrimary: true,
+        venueType: item?.venueType,
       };
 
       const response = await updateVenue(payload).unwrap();
@@ -309,12 +307,12 @@ const VenueView = () => {
         return;
       }
 
-      if (editModal.value && _id) {
-        // Edit: update the item in local state
-        setVenueTypes((prev) =>
-          prev.map((item) => (item._id === selectedId ? response.data : item))
-        );
-      }
+      // if (editModal.value && _id) {
+      //   // Edit: update the item in local state
+      //   setVenueTypes((prev) =>
+      //     prev.map((item) => (item._id === selectedId ? response.data : item))
+      //   );
+      // }
 
       if (response?.message) {
         showSuccess(response?.message || 'Venue updated successfully');

@@ -2,7 +2,7 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
+import RHFSelectScrollable from '@/components/rhf/rhf-select-scrollable';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,10 +13,11 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
 import { extractAddress } from '@/utils/format-google-address';
 import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api';
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 
 interface CreateVenueModalProps {
   open: boolean;
@@ -86,16 +87,26 @@ const VenueTypeModal = ({
     status: '',
   });
 
+  const { data: orgData } = useGetOrganizationQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
+
   const venueTypeOptions = (apiData?.data || []).map((v: any) => ({
     value: v._id.toString(),
     label: v.title,
   }));
 
-  const organizationOptions = [
-    { label: 'Organization A', value: 'org-a' },
-    { label: 'Organization B', value: 'org-b' },
-    { label: 'Organization C', value: 'org-c' },
-  ];
+  const organizationOptions = React.useMemo(
+    () =>
+      orgData?.data?.map((org: any) => ({
+        value: org._id,
+        label: org?.basicInfo?.name,
+      })) || [],
+    [orgData]
+  );
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -123,14 +134,14 @@ const VenueTypeModal = ({
                 }
               />
 
-              <RHFTextfieldWithSelect
+              <RHFSelectScrollable
                 name="venueType"
                 label="Venue Type"
-                placeholder="Select Venue Type"
+                placeholder="Select a venue type"
                 options={venueTypeOptions}
               />
 
-              <RHFTextfieldWithSelect
+              <RHFSelectScrollable
                 name="organization"
                 label="Organization"
                 placeholder="Select Organization"
@@ -155,7 +166,7 @@ const VenueTypeModal = ({
               <div className="flex max-w-[10rem] items-center justify-start">
                 <RHFUploadButton
                   name="floorPlan"
-                  label="Upload"
+                  label="Upload Floor Plan"
                   initialImage={
                     editMode
                       ? selectedVenueType?.floorPlanInfo?.url &&
@@ -190,6 +201,11 @@ const VenueTypeModal = ({
                           : methods.getValues('location.fullAddress')
                       }
                       className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault(); // stops form submission
+                        }
+                      }}
                     />
                   </StandaloneSearchBox>
                 )}

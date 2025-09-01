@@ -33,6 +33,9 @@ export const API_ROUTES = {
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
+
+  HIGHLIGHT_LIST: `/highlights`,
+  HIGHLIGHT_LIST_BY_ID: (id: string) => `/highlights/${id}`,
 };
 
 export default API_ROUTES;

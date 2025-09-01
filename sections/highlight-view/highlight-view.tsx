@@ -3,28 +3,40 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useAddSupplierMutation,
-  useDeleteSupplierMutation,
-  useGetSuppliersQuery,
-  useUpdateSupplierMutation,
-} from '@/store/Reducer/suppliers';
+  useAddHighlightsMutation,
+  useDeleteHighlightsMutation,
+  useGetHighlightsQuery,
+  useUpdateHighlightsMutation,
+} from '@/store/Reducer/highlights';
 import { getErrorMessage } from '@/utils/api';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import SupplierTypeModal from './suppliersTypeModal';
-import SupplierTypeTable from './suppliersTypeTable';
-import { formatDate } from '@/utils/format-time';
+import HighlightTypeModal from './highlight-type-modal';
+import HighlightTypeTable from './highlight-type-table';
 
-const defaultValues = {
-  title: '',
-  status: '',
+type HighlightFormValues = {
+  video: any;
+  title: string;
+  event: string;
+  status: string;
+  organization: string;
 };
 
-const SuppliersView = () => {
+const defaultValues = {
+  video: null,
+  title: '',
+  event: '',
+  status: '',
+  organization: '',
+};
+
+const HighlightsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -38,15 +50,20 @@ const SuppliersView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
-  const [addSupplier, { isLoading: addSupplierLoading }] =
-    useAddSupplierMutation();
-  const [updateSupplier, { isLoading: updateSupplierLoading }] =
-    useUpdateSupplierMutation();
-  const [deleteSupplier, { isLoading: deleteSupplierLoading }] =
-    useDeleteSupplierMutation();
+  const [addHighlights, { isLoading: addHighlightsLoading }] =
+    useAddHighlightsMutation();
+  const [updateHighlights, { isLoading: updateHighlightsLoading }] =
+    useUpdateHighlightsMutation();
+  const [deleteHighlights, { isLoading: deleteHighlightsLoading }] =
+    useDeleteHighlightsMutation();
 
-  const { data: apiData, isLoading } = useGetSuppliersQuery({
+  const {
+    data: apiData,
+    isLoading,
+    refetch,
+  } = useGetHighlightsQuery({
     page: page - 1,
     search,
     limit,
@@ -77,24 +94,34 @@ const SuppliersView = () => {
     }
   }, [apiData, page, limit]);
 
-  const schema = Yup.object().shape({
-    title: Yup.string().required('Supplier Name is required'),
-    status: Yup.string(),
+  const schema = Yup.object({
+    video: Yup.mixed().nullable().required('Video is required'),
+    title: Yup.string().required('Title is required'),
+    event: Yup.string().required('Event is required'),
+    status: Yup.string().required('Status is required'),
+    organization: Yup.string().required('Organization is required'),
   });
 
-  const methods = useForm({
+  const methods = useForm<HighlightFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: defaultValues,
+    defaultValues,
   });
 
-  const { handleSubmit, reset } = methods;
+  const {
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = methods;
+  
+  console.log('errors', errors);
 
-  // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        status: selectedVenueType.status || 'active',
+        event: selectedVenueType.event || '',
+        status: selectedVenueType.status || '',
+        organization: selectedVenueType.organization || '',
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -117,7 +144,7 @@ const SuppliersView = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Supplier not found');
+      showError('Highlight type not found');
     }
   };
 
@@ -126,31 +153,68 @@ const SuppliersView = () => {
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE SUPPLIER
+  // CREATE/UPDATE HIGHLIGHT
   const onSubmit = handleSubmit(async (formData) => {
+    console.log('formData', formData);
     try {
-      let response;
-      if (editModal.value && selectedId) {
-        // Update existing supplier type, include status
-        response = await updateSupplier({
-          id: selectedId,
-          ...formData,
-        }).unwrap();
-      } else {
-        response = await addSupplier({ title: formData.title }).unwrap();
+      let videoFileString = undefined;
+      // If video is present and is a FileList or array
+      if (
+        formData.video &&
+        (formData.video instanceof FileList || Array.isArray(formData.video))
+      ) {
+        const file = formData.video[0];
+        if (file) {
+          setImageUploading(true);
+          try {
+            videoFileString = await uploadFileToAzure(file);
+          } finally {
+            setImageUploading(false);
+          }
+        }
       }
 
+      const payload: any = {
+        title: formData.title,
+        event: formData.event,
+        status: formData.status,
+        organization: formData.organization,
+      };
+
+      if (videoFileString) {
+        // payload.video = videoFileString;
+        payload.media = {
+          type: 'video',
+          name: videoFileString,
+        };
+      } else if (editModal.value && typeof formData.video === 'string') {
+        // payload.video = formData.video;
+
+        payload.media = {
+          type: 'video',
+          name: videoFileString,
+        };
+      }
+      if (editModal.value && selectedId) {
+        payload.status = formData.status;
+        payload.id = selectedId;
+      }
+      let response;
+      if (editModal.value && selectedId) {
+        response = await updateHighlights(payload).unwrap();
+      } else {
+        response = await addHighlights(payload).unwrap();
+      }
       if (!response) {
         showError('No response from server. Please try again later.');
         return;
       }
-
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
         showError(errorMessage);
         return;
       }
-
+      // Handle success and update local state
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
@@ -158,44 +222,39 @@ const SuppliersView = () => {
             prev.map((item) => (item._id === selectedId ? response.data : item))
           );
         } else {
-          // Add: keep only first 10 on the current page
+          // Add: add new item to local state but keep only first `limit`
           setVenueTypes((prev) => {
             const updated = [response.data, ...prev];
             return updated.slice(0, limit);
           });
-
-          setMeta((prev: any) => {
-            const newTotalRecords = prev.totalRecords + 1;
-            return {
-              ...prev,
-              totalRecords: newTotalRecords,
-              totalPages: Math.ceil(newTotalRecords / limit),
-            };
-          });
+          setMeta((prev: any) => ({
+            ...prev,
+            totalRecords: prev.totalRecords + 1,
+          }));
         }
       }
-
       if (response?.message) {
         showSuccess(
           response?.message ||
             (editModal.value
-              ? 'Supplier updated successfully'
-              : 'Supplier created successfully')
+              ? 'Highlight updated successfully'
+              : 'Highlight created successfully')
         );
       }
-
       CloseModal();
+      refetch();
     } catch (error) {
+      setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save supplier:', errorMessage);
+      console.log('Failed to save highlight:', errorMessage);
       showError(errorMessage);
     }
   });
 
-  // DELETE SUPPLIER
+  // DELETE CATEGORY
   const onDelete = async () => {
     try {
-      const response = await deleteSupplier(selectedId).unwrap();
+      const response = await deleteHighlights(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -209,14 +268,14 @@ const SuppliersView = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Supplier deleted successfully');
+        showSuccess(response?.message || 'Highlight deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete supplier:', errorMessage);
+      console.log('Failed to delete highlight:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -237,12 +296,12 @@ const SuppliersView = () => {
             onClick={handleCreateNew}
           >
             <Plus className="" />
-            Create Suppliers
+            Create Highlight
           </Button>
         </div>
       </div>
 
-      <SupplierTypeTable
+      <HighlightTypeTable
         data={venueTypes}
         meta={meta}
         loading={isLoading}
@@ -278,29 +337,31 @@ const SuppliersView = () => {
         }}
       />
 
-      <SupplierTypeModal
+      <HighlightTypeModal
         open={openModal.value}
         onClose={CloseModal}
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addSupplierLoading || updateSupplierLoading}
+        isLoading={
+          addHighlightsLoading || updateHighlightsLoading || imageUploading
+        }
         selectedVenueType={selectedVenueType}
       />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Supplier"
-        content="Are you sure you want to delete this supplier?"
+        title="Delete Highlight"
+        content="Are you sure you want to delete this highlight?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteSupplierLoading}
+        isLoading={deleteHighlightsLoading}
       />
     </div>
   );
 };
 
-export default SuppliersView;
+export default HighlightsView;

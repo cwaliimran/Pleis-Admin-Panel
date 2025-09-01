@@ -6,22 +6,26 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 import ButtonLoading from '@/components/common/button-loading';
-import { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
+import { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogOverlay,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError } from '@/utils/toast';
 import PhoneInput from 'react-phone-input-2';
+import { formatDobDMY, splitPhoneByDial } from './helpers';
+import RHFDatePickerWithDropdown from '@/components/rhf/rhf-date-custom';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useGetSuppliersQuery } from '@/store/Reducer/suppliers';
 
 /* ---------------------------------- TYPES --------------------------------- */
 
@@ -125,10 +129,7 @@ const roleConfigs: RoleConfigMap = {
         type: 'multi-select',
         label: 'Suppliers',
         required: true,
-        options: [
-          { value: '6881002e5b438e9b241870f9', label: 'Supplier A' },
-          { value: '68810088acb33f97130688f4', label: 'Supplier B' },
-        ],
+        options: [],
         fullWidth: true,
       },
     },
@@ -146,10 +147,7 @@ const roleConfigs: RoleConfigMap = {
         type: 'multi-select',
         label: 'Organizations',
         required: true,
-        options: [
-          { value: '68b11b3dda9c956a543970ab', label: 'Org 1' },
-          { value: '68932a0dce6408026b883458', label: 'Org 2' },
-        ],
+        options: [],
         fullWidth: true,
       },
     },
@@ -167,10 +165,7 @@ const roleConfigs: RoleConfigMap = {
         type: 'multi-select',
         label: 'Organizations',
         required: true,
-        options: [
-          { value: '68b11b3dda9c956a543970ab', label: 'Org 1' },
-          { value: '68932a0dce6408026b883458', label: 'Org 2' },
-        ],
+        options: [],
         fullWidth: true,
       },
       modules: {
@@ -213,19 +208,16 @@ const roleConfigs: RoleConfigMap = {
         label: 'Gender',
         required: true,
         options: [
-          { value: 'male', label: 'Male' },
-          { value: 'female', label: 'Female' },
-          { value: 'other', label: 'Other' },
+          { value: 'Male', label: 'Male' },
+          { value: 'Female', label: 'Female' },
+          { value: 'Other', label: 'Other' },
         ],
       },
       password: { type: 'password', label: 'Password', required: true },
       organizations: {
         type: 'multi-select',
-        label: 'Organizations (optional)',
-        options: [
-          { value: '68b11b3dda9c956a543970ab', label: 'Org 1' },
-          { value: '68932a0dce6408026b883458', label: 'Org 2' },
-        ],
+        label: 'Organizations',
+        options: [],
         fullWidth: true,
       },
     },
@@ -281,22 +273,6 @@ const generateValidationSchema = (role: RoleKey) => {
 };
 
 /* ---------------------------- PAYLOAD MAPPING ------------------------------ */
-
-const formatDobDMY = (d?: Date) => {
-  if (!d) return '';
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${dd}-${mm}-${yyyy}`;
-};
-
-const splitPhoneByDial = (raw: string, code: string) => {
-  // raw from react-phone-input-2 is digits without '+'
-  const dial = (code || '').replace('+', '');
-  if (!raw || !dial) return { code, number: raw || '' };
-  const number = raw.startsWith(dial) ? raw.slice(dial.length) : raw;
-  return { code, number };
-};
 
 const mapFormToPayload = (role: RoleKey, data: any) => {
   const { phone, phoneCode } = data || {};
@@ -462,6 +438,39 @@ const CustomUserModal: React.FC<UserModalProps> = ({
     getDefaultRole(userType)
   );
 
+  const { data: orgData } = useGetOrganizationQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
+
+  const { data: supplierData } = useGetSuppliersQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
+
+  // Map API data to dropdown options with useMemo
+  const organizationOptions = React.useMemo(
+    () =>
+      orgData?.data?.map((org: any) => ({
+        value: org._id,
+        label: org?.basicInfo?.name,
+      })) || [],
+    [orgData]
+  );
+
+  const supplierOptions = React.useMemo(
+    () =>
+      supplierData?.data?.map((sup: any) => ({
+        value: sup._id,
+        label: sup?.title,
+      })) || [],
+    [supplierData]
+  );
+
   // Dynamic resolver that always uses the latest schema
   const resolver = React.useCallback(
     (values: any, context: any, options: any) =>
@@ -531,7 +540,26 @@ const CustomUserModal: React.FC<UserModalProps> = ({
     }
   };
 
-  const fields = roleConfigs[currentRole].fields;
+  // const fields = roleConfigs[currentRole].fields;
+  const fields = React.useMemo(() => {
+    const roleFields = { ...roleConfigs[currentRole].fields };
+
+    if (roleFields.suppliers) {
+      roleFields.suppliers = {
+        ...roleFields.suppliers,
+        options: supplierOptions,
+      };
+    }
+
+    if (roleFields.organizations) {
+      roleFields.organizations = {
+        ...roleFields.organizations,
+        options: organizationOptions,
+      };
+    }
+
+    return roleFields;
+  }, [currentRole, organizationOptions, supplierOptions]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -553,7 +581,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
             {fields.profileIcon && (
               <RHFUploadAvatar
                 name="image"
-                label="Category Icon"
+                label="Profile Image"
                 initialImage={(() => {
                   if (!isEdit) return null;
                   const img = methods.getValues('image');
@@ -604,11 +632,17 @@ const CustomUserModal: React.FC<UserModalProps> = ({
                       className={`${formState.errors[name] ? 'border-red-400' : ''}`}
                     />
                   ) : cfg.type === 'date' ? (
-                    <RHFDate
+                    // <RHFDate
+                    //   key={name}
+                    //   name={name}
+                    //   label={cfg.label}
+                    //   className={`${formState.errors[name] ? 'border-red-400' : ''}`}
+                    // />
+                    <RHFDatePickerWithDropdown
                       key={name}
-                      name={name}
-                      label={cfg.label}
-                      className={`${formState.errors[name] ? 'border-red-400' : ''}`}
+                      name="dob"
+                      label="Date of Birth"
+                      placeholder="Select your date"
                     />
                   ) : cfg.type === 'select' ? (
                     <RHFSelectField

@@ -1,6 +1,6 @@
 'use client';
 
-import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+// import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 // import { UserTable } from '@/sections/users';
@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react';
 import { formatDate } from '@/utils/format-time';
 import {
   useAddUserMutation,
+  useAddUserSuperAdminAndGuestMutation,
   useGetUserListQuery,
 } from '@/store/Reducer/user-list';
 import { useEffect, useState } from 'react';
@@ -34,6 +35,10 @@ const UserListView = ({ usertype }: { usertype: any }) => {
   const [imageUploading, setImageUploading] = useState(false);
 
   const [addUser, { isLoading: addUserLoading }] = useAddUserMutation();
+  const [
+    addUserSuperAdminAndGuest,
+    { isLoading: addUserSuperAdminAndGuestLoading },
+  ] = useAddUserSuperAdminAndGuestMutation();
 
   const { data: apiData, isLoading } = useGetUserListQuery({
     page: page - 1,
@@ -69,8 +74,14 @@ const UserListView = ({ usertype }: { usertype: any }) => {
   // CREATE/UPDATE USER
   const onSubmit = async (formData: any) => {
     try {
+      console.log('formData', formData);
       // Call API
-      const response = await addUser(formData).unwrap();
+      let response;
+      if (formData?.userType === 'admin' || formData?.userType === 'guest') {
+        response = await addUserSuperAdminAndGuest(formData).unwrap();
+      } else {
+        response = await addUser(formData).unwrap();
+      }
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -121,9 +132,9 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    deleteModal.onFalse();
-  };
+  // const onDelete = () => {
+  //   deleteModal.onFalse();
+  // };
 
   return (
     <div>
@@ -189,7 +200,9 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         onClose={CloseModal}
         userType={usertype}
         onSubmit={onSubmit}
-        isLoading={addUserLoading || imageUploading}
+        isLoading={
+          addUserLoading || imageUploading || addUserSuperAdminAndGuestLoading
+        }
       />
 
       {/* <UserModal
@@ -200,13 +213,13 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         userType={usertype}
       /> */}
 
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={deleteModal.value}
         title="Delete User"
         content="Are you sure you want to delete this?"
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
-      />
+      /> */}
     </div>
   );
 };

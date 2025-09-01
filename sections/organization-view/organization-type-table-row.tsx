@@ -5,20 +5,31 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { FC } from 'react';
 
 interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  userType?: any;
 }
 const OrganizationTypeTableRow: FC<PageProps> = ({
   item,
   handleDelete,
-  handleEdit,
+  userType,
 }) => {
+  const router = useRouter();
+
   return (
-    <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
+    <TableRow
+      className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
+      onClick={() =>
+        userType === 'organizer'
+          ? router.push(`/organizer/organization/${item?._id}`)
+          : router.push(`/super-admin/organization/${item?._id}`)
+      }
+    >
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
@@ -48,7 +59,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({
       <TableCell className="text-left text-sm">-</TableCell>
 
       <TableCell className="text-left text-sm">-</TableCell>
-      
+
       <TableCell className="text-left text-sm">-</TableCell>
 
       <TableCell className="text-left text-sm">-</TableCell>
@@ -72,10 +83,6 @@ const OrganizationTypeTableRow: FC<PageProps> = ({
           <button
             type="button"
             title="Edit"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEdit?.(item._id);
-            }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />

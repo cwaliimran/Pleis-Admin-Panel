@@ -52,6 +52,7 @@ interface PageProps {
   page: any;
   data: any[];
   meta: Meta;
+  userType?: any;
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
@@ -74,6 +75,7 @@ const OrganizationTypeTable: FC<PageProps> = ({
   handleDelete,
   handleEdit,
   onPageChange,
+  userType,
   // onLimitChange,
   onSearch = () => {},
   search = '',
@@ -234,6 +236,7 @@ const OrganizationTypeTable: FC<PageProps> = ({
                         item={item}
                         handleDelete={handleDelete}
                         handleEdit={handleEdit}
+                        userType={userType}
                       />
                     ))
                 )}

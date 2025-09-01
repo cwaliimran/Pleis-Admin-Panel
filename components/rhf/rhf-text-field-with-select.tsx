@@ -38,11 +38,16 @@ const RHFTextfieldWithSelect: FC<PageProps> = ({
     <Controller
       name={name}
       control={control}
-      render={({ field }) => {
+      rules={{ required: `${label} is required` }}
+      render={({ field, fieldState }) => {
         const selected = options.find((opt) => opt.value === field.value);
         return (
           <>
-            {label && <FormLabel className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</FormLabel>}
+            {label && (
+              <FormLabel className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {label}
+              </FormLabel>
+            )}
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -109,6 +114,12 @@ const RHFTextfieldWithSelect: FC<PageProps> = ({
                 </Command>
               </PopoverContent>
             </Popover>
+
+            {fieldState.error && (
+              <p className="-mt-2 text-sm text-red-400">
+                {fieldState.error.message}
+              </p>
+            )}
           </>
         );
       }}

@@ -15,6 +15,9 @@ import { fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 
+import placeHolderImg from '../../assets/profile/placeholder.png';
+import Image from 'next/image';
+
 interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
@@ -39,13 +42,45 @@ const VenueTypeTableRow: FC<PageProps> = ({
 
       <TableCell className="flex items-center gap-2 text-left">
         <Avatar className="">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt="Store"
-            className=""
-          />
+          {item?.organization?.basicInfo?.media?.logo?.url &&
+          item?.organization?.basicInfo?.media?.logo?.name !== 'noimage.png' ? (
+            <AvatarImage
+              src={item?.organization?.basicInfo?.media?.logo?.url}
+              alt="organization logo"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <Image
+              src={placeHolderImg}
+              alt="placeholder img"
+              className="h-full w-full cursor-pointer object-cover"
+              height={10}
+              width={10}
+            />
+          )}
         </Avatar>
-        {item?.organization || 'Unknown'}
+        {item?.organization?.basicInfo?.name || 'Unknown'}
+      </TableCell>
+
+      <TableCell className="text-left">
+        <Avatar className="">
+          {item?.floorPlanInfo?.url &&
+          item?.floorPlanInfo?.name !== 'noimage.png' ? (
+            <AvatarImage
+              src={item?.floorPlanInfo?.url}
+              alt="Store"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <Image
+              src={placeHolderImg}
+              alt="placeholder img"
+              className="h-full w-full cursor-pointer object-cover"
+              height={10}
+              width={10}
+            />
+          )}
+        </Avatar>
       </TableCell>
 
       <TableCell className="text-left">
@@ -61,7 +96,7 @@ const VenueTypeTableRow: FC<PageProps> = ({
             </DialogTrigger>
             <DialogContent className="dark:bg-secondary max-w-md">
               <DialogHeader>
-                <DialogTitle>Description</DialogTitle>
+                <DialogTitle>Location</DialogTitle>
               </DialogHeader>
               <div className="py-4">
                 <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
@@ -71,7 +106,7 @@ const VenueTypeTableRow: FC<PageProps> = ({
             </DialogContent>
           </Dialog>
         ) : (
-          item.description
+          item?.location?.fullAddress
         )}
       </TableCell>
 
@@ -100,9 +135,9 @@ const VenueTypeTableRow: FC<PageProps> = ({
             title="Select Primary"
             onClick={(e) => {
               e.stopPropagation();
-              handlePinned?.(item?._id);
+              handlePinned?.(item);
             }}
-            className={`cursor-pointer rounded-md ${item?.pinned ? 'bg-green-600 text-white dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-800'} p-1.5 transition`}
+            className={`cursor-pointer rounded-md ${item?.isPrimary ? 'bg-green-600 text-white dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-800'} p-1.5 transition`}
           >
             <PrimaryIcon />
           </button>

@@ -83,7 +83,7 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
                   disabled={isLoading}
                 /> */}
                 <RHFTextField
-                  name="tag"
+                  name="type"
                   label="Tag Type"
                   placeholder="Enter Tag Type"
                   className={`$${

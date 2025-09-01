@@ -12,14 +12,16 @@ export function capitalizeFirst(str: string): string {
 }
 
 export const getStatusVariant = (status?: string) => {
-    switch (status) {
-      case 'active':
-        return 'success';
-      case 'inactive':
-        return 'error';
-      case 'pending':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
+  switch (status) {
+    case 'active':
+      return 'success';
+    case 'inactive':
+      return 'error';
+    case 'pending':
+      return 'warning';
+    case 'scheduled':
+      return 'info';
+    default:
+      return 'default';
+  }
+};

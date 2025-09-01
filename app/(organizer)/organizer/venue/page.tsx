@@ -1,5 +1,6 @@
 import Header from '@/app/common/header';
-import VenueList from '@/sections/venue-old/venue-list';
+// import VenueList from '@/sections/venue-old/venue-list';
+import VenueView from '@/sections/venue/venue-view';
 
 const Page = () => {
   return (
@@ -11,7 +12,7 @@ const Page = () => {
         ]}
       />
 
-      <VenueList />
+      <VenueView />
     </div>
   );
 };
