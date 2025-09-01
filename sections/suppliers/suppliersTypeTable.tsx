@@ -61,14 +61,14 @@ const SupplierTypeTable: FC<PageProps> = ({
   handleEdit,
   onPageChange,
   // onLimitChange,
-  onSearch = () => {},
+  onSearch = () => { },
   search = '',
   // limit = 10,
   status = '',
-  onStatusChange = () => {},
+  onStatusChange = () => { },
   date,
-  onDateChange = () => {},
-  onResetFilters = () => {},
+  onDateChange = () => { },
+  onResetFilters = () => { },
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -188,7 +188,7 @@ const SupplierTypeTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : data.filter((item: any) => item.status !== 'deleted')
-                    .length === 0 ? (
+                  .length === 0 ? (
                   <tr>
                     <td
                       colSpan={headLabel.length}

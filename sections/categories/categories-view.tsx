@@ -132,6 +132,7 @@ const CategoriesView = () => {
 
   // CREATE/UPDATE VENUE TYPE
   const onSubmit = handleSubmit(async (formData) => {
+    console.log('formData', formData);
     try {
       let imageFileString = undefined;
 
@@ -154,6 +155,8 @@ const CategoriesView = () => {
       const payload: any = {
         title: formData.title,
       };
+
+      console.log('payload', payload);
 
       if (imageFileString) {
         payload.image = imageFileString;
@@ -208,9 +211,9 @@ const CategoriesView = () => {
       if (response?.message) {
         showSuccess(
           response?.message ||
-            (editModal.value
-              ? 'Category updated successfully'
-              : 'Category created successfully')
+          (editModal.value
+            ? 'Category updated successfully'
+            : 'Category created successfully')
         );
       }
 
