@@ -1,116 +1,130 @@
 import { Button } from '@/components/ui/button';
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from '@/components/ui/popover';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { FC, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
 } from '../ui/command';
 import { FormLabel } from '../ui/form';
 
 interface PageProps {
-    label?: string
-    name: string;
-    options: { value: string; label: string; disabled?: boolean }[];
-    placeholder?: string;
+  label?: string;
+  name: string;
+  options: { value: string; label: string; disabled?: boolean }[];
+  placeholder?: string;
 }
 
 const RHFTextfieldWithSelect: FC<PageProps> = ({
-    name,
-    label,
-    options,
-    placeholder = 'Select',
+  name,
+  label,
+  options,
+  placeholder = 'Select',
 }) => {
-    const { control } = useFormContext();
-    const [open, setOpen] = useState(false);
+  const { control } = useFormContext();
+  const [open, setOpen] = useState(false);
 
-    return (
-        <Controller
-            name={name}
-            control={control}
-            render={({ field }) => {
-                const selected = options.find((opt) => opt.value === field.value);
-                return (
-                    <>
-                         {label && <FormLabel className="">{label}</FormLabel>}
-                        <Popover open={open} onOpenChange={setOpen}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className="w-full justify-between"
-                                >
-                                    {selected ? selected.label : <span className="text-muted-foreground">{placeholder}</span>}
-                                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 ">
-                                <Command className='dark:bg-[#171717]'>
-                                    <CommandInput placeholder="Search" />
-                                    <CommandList>
-                                        <CommandEmpty>No results found.</CommandEmpty>
+  return (
+    <Controller
+      name={name}
+      control={control}
+      rules={{ required: `${label} is required` }}
+      render={({ field, fieldState }) => {
+        const selected = options.find((opt) => opt.value === field.value);
+        return (
+          <>
+            {label && (
+              <FormLabel className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {label}
+              </FormLabel>
+            )}
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                >
+                  {selected ? (
+                    selected.label
+                  ) : (
+                    <span className="text-muted-foreground">{placeholder}</span>
+                  )}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                <Command className="dark:bg-[#171717]">
+                  <CommandInput placeholder="Search" />
+                  <CommandList>
+                    <CommandEmpty>No results found.</CommandEmpty>
 
-                                        <CommandGroup >
-                                            {options.slice(0, 3).map((opt) => (
-                                                <CommandItem
-                                                    key={opt.value}
-                                                    onSelect={() => {
-                                                        if (!opt.disabled) {
-                                                            field.onChange(opt.value);
-                                                            setOpen(false);
-                                                        }
-                                                    }}
-                                                    disabled={opt.disabled}
-                                                    className={clsx({
-                                                        'opacity-50 pointer-events-none': opt.disabled,
-                                                        'bg-muted': opt.value === field.value,
-                                                    })}
-                                                >
-                                                    {opt.label}
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
+                    <CommandGroup>
+                      {options.slice(0, 3).map((opt) => (
+                        <CommandItem
+                          key={opt.value}
+                          onSelect={() => {
+                            if (!opt.disabled) {
+                              field.onChange(opt.value);
+                              setOpen(false);
+                            }
+                          }}
+                          disabled={opt.disabled}
+                          className={clsx({
+                            'pointer-events-none opacity-50': opt.disabled,
+                            'bg-muted': opt.value === field.value,
+                          })}
+                        >
+                          {opt.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
 
+                    <CommandGroup>
+                      {options.slice(3).map((opt) => (
+                        <CommandItem
+                          key={opt.value}
+                          onSelect={() => {
+                            if (!opt.disabled) {
+                              field.onChange(opt.value);
+                              setOpen(false);
+                            }
+                          }}
+                          disabled={opt.disabled}
+                          className={clsx({
+                            'pointer-events-none opacity-50': opt.disabled,
+                            'bg-muted': opt.value === field.value,
+                          })}
+                        >
+                          {opt.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
 
-                                        <CommandGroup>
-                                            {options.slice(3).map((opt) => (
-                                                <CommandItem
-                                                    key={opt.value}
-                                                    onSelect={() => {
-                                                        if (!opt.disabled) {
-                                                            field.onChange(opt.value);
-                                                            setOpen(false);
-                                                        }
-                                                    }}
-                                                    disabled={opt.disabled}
-                                                    className={clsx({
-                                                        'opacity-50 pointer-events-none': opt.disabled,
-                                                        'bg-muted': opt.value === field.value,
-                                                    })}
-                                                >
-                                                    {opt.label}
-                                                </CommandItem>
-                                            ))}
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-                    </>
-                );
-            }}
-        />
-    );
+            {fieldState.error && (
+              <p className="-mt-2 text-sm text-red-400">
+                {fieldState.error.message}
+              </p>
+            )}
+          </>
+        );
+      }}
+    />
+  );
 };
 
 export default RHFTextfieldWithSelect;

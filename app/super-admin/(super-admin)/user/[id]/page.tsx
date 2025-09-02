@@ -4,7 +4,6 @@ import UserDetailPage from '@/sections/users/userDetailPage';
 import Header from '../../../../common/header';
 
 const Page = () => {
-
   return (
     <div>
       <Header

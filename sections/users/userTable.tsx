@@ -25,7 +25,7 @@ import { FC, useState } from 'react';
 import { usersList } from './data';
 import UserListTableRow from './userListTableRow';
 
-type Option = { id: string; label: string };
+// type Option = { id: string; label: string };
 interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
@@ -77,20 +77,20 @@ const UserTable: FC<PageProps> = ({
     Boolean(item)
   );
 
-  const options: Option[] = [
-    { id: 'fname', label: 'First Name' },
-    { id: 'lname', label: 'Last Name' },
-    pendingUser ? { id: 'organization', label: 'Organization' } : null,
-    !pendingUser ? { id: 'username', label: 'Username' } : null,
-    pendingUser ? { id: 'phone', label: 'Phone' } : null,
-    !pendingUser ? { id: 'role', label: 'Role' } : null,
-    !pendingUser ? { id: 'status', label: 'Status' } : null,
-    !pendingUser ? { id: 'totalPoints', label: 'Total Points Earned' } : null,
-    !pendingUser
-      ? { id: 'totalRevenue', label: 'Total Revenue From User' }
-      : null,
-    !pendingUser ? { id: 'region', label: 'Region' } : null,
-  ].filter((opt): opt is Option => Boolean(opt));
+  // const options: Option[] = [
+  //   { id: 'fname', label: 'First Name' },
+  //   { id: 'lname', label: 'Last Name' },
+  //   pendingUser ? { id: 'organization', label: 'Organization' } : null,
+  //   !pendingUser ? { id: 'username', label: 'Username' } : null,
+  //   pendingUser ? { id: 'phone', label: 'Phone' } : null,
+  //   !pendingUser ? { id: 'role', label: 'Role' } : null,
+  //   !pendingUser ? { id: 'status', label: 'Status' } : null,
+  //   !pendingUser ? { id: 'totalPoints', label: 'Total Points Earned' } : null,
+  //   !pendingUser
+  //     ? { id: 'totalRevenue', label: 'Total Revenue From User' }
+  //     : null,
+  //   !pendingUser ? { id: 'region', label: 'Region' } : null,
+  // ].filter((opt): opt is Option => Boolean(opt));
 
   return (
     <div>

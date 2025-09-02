@@ -1,7 +1,6 @@
 'use client';
 
-import { Avatar } from '@/components/ui/avatar';
-import { AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,24 +9,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import React from 'react';
-import { useDispatch } from 'react-redux';
-import { showError } from '@/utils/toast';
 import { logout } from '@/store/slice/userSlice';
+import type { RootState } from '@/store/store';
+import { showError } from '@/utils/toast';
+import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import placeHolderImage from '../../assets/profile/user.png';
 
 const Account = () => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const {
-    user,
-    // getDashboardRoute
-  } = useAuth();
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
   const handleProfileClick = () => {
-    if (user?.role === 'superAdmin') {
+    if (user?.role === 'admin') {
       router.push('/super-admin/admin-profile');
     } else if (user?.role === 'organizer') {
       router.push('/organizer/organizer-profile');
@@ -46,27 +42,29 @@ const Account = () => {
     }
   };
 
-  // const handleDashboardClick = () => {
-  //   router.push(getDashboardRoute());
-  // };
-
   if (!user) {
     return null;
   }
+
+  const profileImage =
+    user?.basicInfo?.profileIcon ===
+    'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png'
+      ? placeHolderImage.src
+      : user?.basicInfo?.profileIcon;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="cursor-pointer">
           <AvatarImage
-            src={user.image || 'https://github.com/shadcn.png'}
-            alt={user.name || 'User Avatar'}
+            src={profileImage}
+            alt={user?.basicInfo?.firstName || 'Unknown'}
             className="object-cover"
             width={100}
             height={100}
           />
           <AvatarFallback>
-            {user?.basicInfo?.firstName?.charAt(0).toUpperCase()}
+            {user?.basicInfo?.firstName?.charAt(0).toUpperCase() || '-'}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

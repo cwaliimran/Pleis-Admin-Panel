@@ -1,5 +1,5 @@
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,12 +28,17 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
   methods,
   onSubmit,
   isLoading,
+  selectedVenueType,
 }) => {
   const handleClose = () => {
     if (!isLoading) {
       onClose();
     }
   };
+
+  // Get isDirty from formState
+  const { formState } = methods;
+  const isDirty = formState?.isDirty;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -51,7 +56,26 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
           <FormProvider methods={methods} onSubmit={onSubmit}>
             <div className="mt-4 flex flex-col gap-4">
               <div className="space-y-2">
-                <RHFUploadAvatar name="icon" label="Venue Type Icon" />
+                <RHFUploadAvatar
+                  name="image"
+                  label="Venue Type Icon"
+                  initialImage={(() => {
+                    if (!editMode) return null;
+                    const img =
+                      methods.getValues('image') &&
+                      typeof methods.getValues('image') === 'string'
+                        ? methods.getValues('image')
+                        : selectedVenueType?.imageInfo?.url;
+                    if (
+                      !img ||
+                      img ===
+                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
+                    ) {
+                      return null;
+                    }
+                    return img;
+                  })()}
+                />
               </div>
 
               <div className="space-y-2">
@@ -73,7 +97,21 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
                 )}
               </div>
 
-              <div className="flex justify-end gap-2 border-t pt-4">
+              {editMode && (
+                <RHFSelectField
+                  name="status"
+                  placeholder="Select Status"
+                  className="w-full flex-1"
+                  label="Status"
+                  options={[
+                    { label: 'Active', value: 'active' },
+                    { label: 'Inactive', value: 'inactive' },
+                  ]}
+                  disabled={isLoading}
+                />
+              )}
+
+              <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -96,6 +134,7 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({
                   <Button
                     type="submit"
                     className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
+                    disabled={editMode ? !isDirty : false}
                   >
                     {editMode ? 'Update Venue Type' : 'Create Venue Type'}
                   </Button>

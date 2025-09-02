@@ -1,21 +1,21 @@
-import * as React from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import * as React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import {
   FormControl,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { Command, CommandGroup, CommandItem } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 type Option = {
   label: string;
@@ -32,7 +32,7 @@ type Props = {
 export function RHFMultiSelect({
   name,
   label,
-  placeholder = "Select",
+  placeholder = 'Select',
   options,
 }: Props) {
   const { control } = useFormContext();
@@ -62,11 +62,11 @@ export function RHFMultiSelect({
                     variant="outline"
                     role="combobox"
                     className={cn(
-                      "w-full justify-between h-[40px] dark:bg-input/30 border-input bg-transparent shadow-xs",
-                      !selectedValues.length && "text-muted-foreground"
+                      'dark:bg-secondary border-input h-[40px] w-full justify-between bg-transparent shadow-xs',
+                      !selectedValues.length && 'text-muted-foreground'
                     )}
                   >
-                    <div className="flex gap-1 flex-wrap">
+                    <div className="flex flex-wrap gap-1">
                       {selectedValues.length ? (
                         selectedValues.map((val: string) => {
                           const item = options.find((o) => o.value === val);
@@ -90,10 +90,10 @@ export function RHFMultiSelect({
                 <PopoverContent
                   align="start"
                   sideOffset={4}
-                  className="w-[var(--radix-popover-trigger-width)] max-h-[300px] p-0 z-[9999]"
+                  className="dark:bg-secondary z-[9999] max-h-[300px] w-[var(--radix-popover-trigger-width)] p-0"
                 >
                   <Command>
-                    <CommandGroup className="w-full">
+                    <CommandGroup className="dark:bg-secondary w-full">
                       {options.map((option) => (
                         <CommandItem
                           key={option.value}
@@ -101,10 +101,10 @@ export function RHFMultiSelect({
                         >
                           <div
                             className={cn(
-                              "mr-2 flex h-4 w-4 items-center justify-center rounded-sm",
+                              'mr-2 flex h-4 w-4 items-center justify-center rounded-sm',
                               selectedValues.includes(option.value)
-                                ? ""
-                                : "opacity-50"
+                                ? ''
+                                : 'opacity-50'
                             )}
                           >
                             {selectedValues.includes(option.value) && (

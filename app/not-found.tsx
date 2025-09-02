@@ -14,13 +14,13 @@ const NotFound = () => {
     } else if (user?.role === "organizer") {
       router.push("/organizer/dashboard");
     } else {
-      router.push("/user/signIn");
+      router.push("/");
     }
   };
 
   return (
     <>
-      <section className="bg-white min-h-screen flex items-center justify-center dark:bg-gray-900">
+      <section className="bg-white min-h-screen flex items-center justify-center dark:bg-black">
         <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
           <div className="mx-auto max-w-screen-sm text-center">
             <h1 className="mb-4 text-7xl tracking-tight font-extrabold lg:text-9xl text-primary-600 dark:text-primary-500">

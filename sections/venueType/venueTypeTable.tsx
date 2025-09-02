@@ -1,3 +1,5 @@
+'use client';
+
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';
 import {
@@ -10,35 +12,29 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Sheet,
-  SheetTrigger,
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from '@/components/ui/sheet';
 
-import { Table, TableBody } from '@/components/ui/table';
-import { FC, useState } from 'react';
-import { VenueTableRow } from '.';
-import { Badge } from '@/components/ui/badge';
-import { Settings2 } from 'lucide-react';
 import { TableFilters } from '@/components/table-filters';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody } from '@/components/ui/table';
+import { Settings2 } from 'lucide-react';
+import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { VenueTableRow } from '.';
+import { LoadingBar } from '@/components/table/table-bar-loading';
+import PaginationControls from '@/components/table/pagination-controls';
 
 const headLabel = [
   { id: 'icon', label: 'Icon', align: 'left' },
   { id: 'name', label: 'Venue Type Name', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
-  { id: 'actions', label: '', align: 'right' },
+  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
 interface Meta {
@@ -60,6 +56,11 @@ interface PageProps {
   onSearch?: (search: string) => void;
   search?: string;
   limit?: number;
+  status?: string;
+  onStatusChange?: (status: string) => void;
+  date?: Date;
+  onDateChange?: (date: Date | undefined) => void;
+  onResetFilters?: () => void;
 }
 
 const VenueTypeTable: FC<PageProps> = ({
@@ -69,40 +70,27 @@ const VenueTypeTable: FC<PageProps> = ({
   handleDelete,
   handleEdit,
   onPageChange,
-  onLimitChange,
-  // onSearch,
-  // search = '',
-  limit = 10,
-  // page prop removed
+  // onLimitChange,
+  onSearch = () => { },
+  search = '',
+  // limit = 10,
+  status = '',
+  onStatusChange = () => { },
+  date,
+  onDateChange = () => { },
+  onResetFilters = () => { },
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
-
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [status, setStatus] = useState<string>('');
-  // const [location, setLocation] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  // For sheet multi-select
-  const [sheetLocation, setSheetLocation] = useState<string[]>([]);
+  const [sheetLocation] = useState<string[]>([]);
 
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
     },
   });
-
-  const handleResetFilters = () => {
-    setStartDate(undefined);
-    setEndDate(undefined);
-    setStatus('');
-    // setLocation('');
-    setSearchTerm('');
-    setSheetLocation([]);
-    methods.reset({ location: [] });
-  };
 
   // Generate page numbers for pagination (show max 5 pages)
   const getPageNumbers = () => {
@@ -132,7 +120,11 @@ const VenueTypeTable: FC<PageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent side="right" className="p-0">
+              <SheetContent
+                aria-describedby={undefined}
+                side="right"
+                className="dark:bg-secondary p-0"
+              >
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -145,199 +137,113 @@ const VenueTypeTable: FC<PageProps> = ({
                           htmlFor="sheet-event-start-date"
                           className="px-1 text-sm font-medium"
                         >
-                          Start Date
+                          Select Date
                         </label>
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateRangeFilter={{
-                              startDate: {
-                                id: 'sheet-event-start-date',
-                                label: '',
-                                placeholder: 'Select start date',
-                                value: startDate,
-                                onChange: setStartDate,
-                              },
-                              endDate: {
-                                id: 'sheet-event-end-date',
-                                label: '',
-                                placeholder: 'Select end date',
-                                value: endDate,
-                                onChange: setEndDate,
-                              },
+                            dateFilter={{
+                              id: 'organization-date',
+                              placeholder: 'Select date',
+                              value: date,
+                              onChange: onDateChange,
+                            }}
+                            searchFilter={{
+                              placeholder: 'Search Venue Type...',
+                              value: search,
+                              onChange: onSearch,
                             }}
                             selectFilters={[
                               {
                                 id: 'sheet-revenue',
-                                label: 'Revenue',
-                                placeholder: 'Select by revenue',
+                                label: 'Status',
+                                placeholder: 'Select by Status',
                                 value: status,
-                                onChange: setStatus,
+                                onChange: onStatusChange,
                                 options: [
-                                  { value: 'lessThan10', label: '< $10k' },
-                                  { value: '10to50', label: '$10k - $50k' },
-                                  { value: '50to100', label: '$50k - $100k' },
+                                  { value: 'all', label: 'All' },
+                                  { value: 'active', label: 'Active' },
+                                  { value: 'inactive', label: 'Inactive' },
                                 ],
                               },
                             ]}
-                            searchFilter={{
-                              placeholder: 'Search Event',
-                              value: searchTerm,
-                              onChange: setSearchTerm,
-                            }}
                             resetFilter={{
-                              onReset: handleResetFilters,
-                              showResetButton: false,
+                              onReset: onResetFilters,
+                              showResetButton: true,
                             }}
                             filtersAlignment="left"
                           />
                         </div>
                       </div>
-                      {/* Location MultiSelect */}
-                      <div className="flex w-full flex-col gap-3">
-                        <RHFMultiSelect
-                          name="location"
-                          label=""
-                          placeholder="Select Location"
-                          options={[
-                            { value: 'punjab', label: 'Punjab' },
-                            { value: 'sindh', label: 'Sindh' },
-                            { value: 'kashmir', label: 'Kashmir' },
-                          ]}
-                        />
-                      </div>
                     </div>
-                    <div className="mt-4 flex gap-3">
+                    {/* <div className="mt-4 flex gap-3">
                       <button
                         className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-md py-2 font-semibold text-white transition"
                         type="button"
-                        // onClick={...} // Add your apply logic here if needed
                       >
                         Apply
                       </button>
                       <button
                         className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
                         type="button"
-                        onClick={handleResetFilters}
+                        onClick={onResetFilters}
                       >
                         Reset
                       </button>
-                    </div>
+                    </div> */}
                   </form>
                 </FormProvider>
               </SheetContent>
             </Sheet>
           </div>
 
-          {/* <div className="mb-4 w-full">
-            <Input
-              placeholder="Search Venue Type"
-              className="h-10 w-full"
-              value={search}
-              onChange={(e) => onSearch?.(e.target.value)}
-              disabled={loading}
-            />
-          </div> */}
-
-          <div className="rounded-lg border">
+          <div
+            className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
+          >
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {loading ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="py-8 text-center">
-                      Loading...
+                    <td colSpan={headLabel.length} className="py-0 text-center">
+                      <LoadingBar variant="default" />
                     </td>
                   </tr>
-                ) : data.length === 0 ? (
+                ) : data.filter((item: any) => item.status !== 'deleted')
+                  .length === 0 ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="py-8 text-center">
-                      No data found
+                    <td
+                      colSpan={headLabel.length}
+                      className="h-[40vh] border-b-0 text-center align-middle"
+                    >
+                      <div className="flex h-full w-full items-center justify-center text-xl">
+                        No data found
+                      </div>
                     </td>
                   </tr>
                 ) : (
-                  data.map((item: any, index: number) => (
-                    <VenueTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
-                    />
-                  ))
+                  data
+                    .filter((item: any) => item.status !== 'deleted')
+                    .map((item: any, index: number) => (
+                      <VenueTableRow
+                        key={item._id || index}
+                        item={item}
+                        handleDelete={handleDelete}
+                        handleEdit={handleEdit}
+                      />
+                    ))
                 )}
               </TableBody>
             </Table>
           </div>
 
-          <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground">Rows per page:</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(v) => onLimitChange?.(Number(v))}
-              >
-                <SelectTrigger className="h-8 w-[70px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {[5, 10, 20, 50, 100].map((opt) => (
-                      <SelectItem key={opt} value={String(opt)}>
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="text-muted-foreground">
-              Page {currentPage} of {totalPages} | Total: {totalRecords}
-            </div>
-
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange?.(currentPage - 1);
-                  }}
-                  aria-disabled={currentPage === 1}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNum === currentPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (pageNum !== currentPage) onPageChange?.(pageNum);
-                    }}
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {totalPages > 5 && (
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages)
-                      onPageChange?.(currentPage + 1);
-                  }}
-                  aria-disabled={currentPage === totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            limit={10}
+            onPageChange={(p) => onPageChange?.(p)}
+          />
         </Card>
       </div>
     </div>

@@ -1,17 +1,19 @@
-import Header from "@/app/common/header";
-import OrganizationList from "@/sections/organization-section/organization-list";
+import Header from '@/app/common/header';
+// import OrganizationList from '@/sections/organization-section/organization-list';
+import OrganizationView from '@/sections/organization-view/organization-view';
 
 const Page = () => {
   return (
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Organizations List", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Organizations List', href: '' },
         ]}
       />
 
-      <OrganizationList userType="super-admin" />
+      <OrganizationView userType="super-admin" />
+      {/* <OrganizationList userType="super-admin" /> */}
     </div>
   );
 };

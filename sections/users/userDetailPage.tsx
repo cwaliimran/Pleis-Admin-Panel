@@ -30,14 +30,16 @@ import Loyalty from '@/sections/users/loyalty';
 import LoyaltyAndOrderTransaction from '@/sections/users/loyaltyAndOrderTransaction';
 import UserCard from '@/sections/users/userCard';
 import UserOverView from '@/sections/users/userOverview';
+import { useGetUserByIdQuery } from '@/store/Reducer/user-list';
+import { fDate, formatStr } from '@/utils/format-time';
 import { Calendar, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
 const UserDetailPage = () => {
-  // const { id } = useParams();
+  const { id } = useParams();
   const deleteModal = useBoolean();
   const openModal = useBoolean();
   const data = useSearchParams();
@@ -46,6 +48,9 @@ const UserDetailPage = () => {
   const [active, setActive] = React.useState('overview');
   const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+
+  const { data: apiData = {} } = useGetUserByIdQuery({ id });
+  console.log('apiData', apiData);
 
   const methods = useForm({
     defaultValues: {
@@ -71,40 +76,76 @@ const UserDetailPage = () => {
     { value: 'booking&loyalty', label: 'Booking & Loyalty' },
   ];
 
+  // const user = {
+  //   id: '1',
+  //   fullName: 'John Doe',
+  //   surname: 'Doe',
+  //   email: 'john.doe@example.com',
+  //   createdAt: '2025-03-23T13:00:00Z',
+  //   phoneNumber: '+1234567890',
+  //   gender: 'Male',
+  //   dateOfBirth: '1990-01-01',
+  //   region: 'North America',
+  //   dateOfAccountCreation: '2025-01-01',
+  //   lastActivity: '2025-03-01',
+  //   image: '/images/eventImage.png',
+  //   linkedOrganization: 'Doe Events Ltd.',
+  //   businessDetails: {
+  //     name: 'Doe Events',
+  //     description: 'Organizing events since 2020',
+  //     website: 'https://doeevents.com',
+  //     socialLinks: {
+  //       facebook: 'https://facebook.com/doeevents',
+  //       instagram: 'https://instagram.com/doeevents',
+  //       twitter: 'https://twitter.com/doeevents',
+  //     },
+  //   },
+
+  //   bankDetails: {
+  //     oib: '12345678901',
+  //     bankAccountNumber: 'HR1234567890123456789',
+  //     bankAccountName: 'Doe Events Ltd.',
+  //     representativeFullName: 'John Doe',
+  //     address: '123 Event St, City, Country',
+  //     postalCode: '10000',
+  //     city: 'City',
+  //     country: 'Country',
+  //   },
+  // };
+
   const user = {
-    id: '1',
-    fullName: 'John Doe',
-    surname: 'Doe',
-    email: 'john.doe@example.com',
-    createdAt: '2025-03-23T13:00:00Z',
-    phoneNumber: '+1234567890',
-    gender: 'Male',
-    dateOfBirth: '1990-01-01',
-    region: 'North America',
-    dateOfAccountCreation: '2025-01-01',
-    lastActivity: '2025-03-01',
-    image: '/images/eventImage.png',
-    linkedOrganization: 'Doe Events Ltd.',
+    id: '-',
+    fullName: '-',
+    surname: '-',
+    email: '-',
+    createdAt: '-',
+    phoneNumber: '-',
+    gender: '-',
+    dateOfBirth: '-',
+    region: '-',
+    dateOfAccountCreation: '-',
+    lastActivity: '-',
+    image: '-',
+    linkedOrganization: '-',
     businessDetails: {
-      name: 'Doe Events',
-      description: 'Organizing events since 2020',
-      website: 'https://doeevents.com',
+      name: '-',
+      description: '-',
+      website: '-',
       socialLinks: {
-        facebook: 'https://facebook.com/doeevents',
-        instagram: 'https://instagram.com/doeevents',
-        twitter: 'https://twitter.com/doeevents',
+        facebook: '-',
+        instagram: '-',
+        twitter: '-',
       },
     },
-
     bankDetails: {
-      oib: '12345678901',
-      bankAccountNumber: 'HR1234567890123456789',
-      bankAccountName: 'Doe Events Ltd.',
-      representativeFullName: 'John Doe',
-      address: '123 Event St, City, Country',
-      postalCode: '10000',
-      city: 'City',
-      country: 'Country',
+      oib: '-',
+      bankAccountNumber: '-',
+      bankAccountName: '-',
+      representativeFullName: '-',
+      address: '-',
+      postalCode: '-',
+      city: '-',
+      country: '-',
     },
   };
 
@@ -125,29 +166,38 @@ const UserDetailPage = () => {
                     <div className="flex flex-col gap-6 lg:flex-row">
                       {/* Profile Image */}
                       <div className="w-full lg:w-1/3">
-                        <Image
-                          src={user.image}
-                          alt={user.fullName}
-                          className="h-56 w-full rounded-lg object-cover shadow sm:h-auto"
-                          width={20}
-                          height={20}
-                        />
+                        {apiData?.basicInfo?.profileIcon &&
+                        apiData?.basicInfo?.profileIcon !==
+                          'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' ? (
+                          <Image
+                            src={apiData?.basicInfo?.profileIcon || '-'}
+                            alt={user.fullName}
+                            className="h-56 w-full rounded-lg object-cover shadow sm:h-auto"
+                            width={20}
+                            height={20}
+                          />
+                        ) : (
+                          <div className="flex h-56 items-center justify-center border text-center text-4xl rounded-md font-semibold text-gray-500 dark:text-gray-300">
+                            {apiData?.basicInfo?.firstName?.[0]?.toUpperCase() ||
+                              ''}
+                          </div>
+                        )}
                       </div>
+
                       {/* Right Content */}
                       <div className="flex w-full flex-col gap-4 lg:w-2/3">
                         {/* Actions and Role Info */}
                         <div className="flex items-start justify-between text-sm text-gray-500 dark:text-gray-400">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800">
-                              {userType &&
-                                userType?.slice(0, 1).toUpperCase() +
-                                  userType?.slice(1)}
+                            <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800 capitalize">
+                              {apiData?.accountState?.userType || '-'}
                             </span>
                             <span>
                               Joined:{' '}
-                              {new Date(
-                                user.dateOfAccountCreation
-                              ).toLocaleDateString()}
+                              {fDate(
+                                apiData?.metadata?.createdAt,
+                                formatStr.paramCase.date
+                              )}
                             </span>
                           </div>
                           <div className="flex gap-3">
@@ -164,16 +214,17 @@ const UserDetailPage = () => {
 
                         {/* User Name */}
                         <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
-                          {user.fullName}
+                          {apiData?.basicInfo?.firstName || '-'}{' '}
+                          {apiData?.basicInfo?.lastName || '-'}
                         </h2>
-                        {userType === 'staff' && (
+                        {/* {userType === 'staff' && (
                           <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
                             {user.surname}
                           </h2>
-                        )}
+                        )} */}
                         {userType === 'staff' && (
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Linked Organization: {user.linkedOrganization}
+                            Linked Organization: -
                           </p>
                         )}
 
@@ -182,37 +233,32 @@ const UserDetailPage = () => {
                           <h4 className="text-xs font-bold tracking-wide text-gray-500 dark:text-gray-400">
                             USER INFO
                           </h4>
-                          <div className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-gray-800 md:grid-cols-2 dark:text-white">
+                          <div className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-gray-800 lg:grid-cols-2 dark:text-white">
                             <p>
                               <span className="font-medium">Email:</span>{' '}
-                              {user.email}
+                              {apiData?.basicInfo?.email || '-'}
                             </p>
                             <p>
                               <span className="font-medium">Phone:</span>{' '}
-                              {user.phoneNumber}
+                              {apiData?.basicInfo?.phoneNumber?.code || ''}
+                              {apiData?.basicInfo?.phoneNumber?.number || ''}
                             </p>
                             {userType === 'user' && (
                               <>
                                 <p>
-                                  <span className="font-medium">Gender:</span>{' '}
-                                  {user.gender}
+                                  <span className="font-medium">Gender:</span> -
                                 </p>
                                 <p>
-                                  <span className="font-medium">DOB:</span>{' '}
-                                  {new Date(
-                                    user.dateOfBirth
-                                  ).toLocaleDateString()}
+                                  <span className="font-medium">DOB:</span> -
                                 </p>
                                 <p>
-                                  <span className="font-medium">Region:</span>{' '}
-                                  {user.region}
+                                  <span className="font-medium">Region:</span> -
                                 </p>
                               </>
                             )}
                             {userType === 'staff' && (
                               <p>
-                                <span className="font-medium">Surname:</span>{' '}
-                                {user.surname}
+                                <span className="font-medium">Surname:</span> -
                               </p>
                             )}
                           </div>
@@ -272,7 +318,11 @@ const UserDetailPage = () => {
               <div className="rounded-lg">
                 {/* ---------------- OVERVIEW ---------------- */}
                 {active === 'overview' && (
-                  <UserOverView userType={userType} user={user} />
+                  <UserOverView
+                    userType={userType}
+                    user={user}
+                    apiData={apiData}
+                  />
                 )}
 
                 {/* ---------------- TRANSACTION ---------------- */}
@@ -426,7 +476,7 @@ const UserDetailPage = () => {
                         </p>
                       </div>
                       <p className="text-sm font-medium text-black dark:text-white">
-                        March 23, 25, 13:00
+                        -
                       </p>
                     </div>
 
@@ -439,7 +489,7 @@ const UserDetailPage = () => {
                         </p>
                       </div>
                       <p className="text-sm font-medium text-black dark:text-white">
-                        March 23, 25, 13:00
+                        -
                       </p>
                     </div>
                   </div>

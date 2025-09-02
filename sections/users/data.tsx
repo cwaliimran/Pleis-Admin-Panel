@@ -158,20 +158,20 @@ export const organizerCardData = [
   {
     _id: 1,
     title: "Total Revenue",
-    value: 1250, // in USD or your currency
+    value: 0, // in USD or your currency
     status: "up",
   },
   {
     _id: 2,
     title: "Total Purchases",
-    value: 6, // Total of tickets, experiences, orders
+    value: 0, // Total of tickets, experiences, orders
     status: "down",
     total: 10, // Optional: could represent comparison with last period
   },
   {
     _id: 3,
     title: "Follows",
-    value: 11, // Followed Organizations + Events
+    value: 0, // Followed Organizations + Events
     status: "up",
   },
 ];

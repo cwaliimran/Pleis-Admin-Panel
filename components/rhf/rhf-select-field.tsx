@@ -62,6 +62,7 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
                             ))}
                         </SelectContent>
                     </Select>
+                    <input type="hidden" onBlur={field.onBlur} />
                     <FormMessage />
                 </FormItem>
             )}

@@ -1,17 +1,17 @@
-import Header from "@/app/common/header";
-import VenueList from "@/sections/venue/venue-list";
+import Header from '@/app/common/header';
+import VenueView from '@/sections/venue/venue-view';
 
 const Page = () => {
   return (
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Venues", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Venues', href: '' },
         ]}
       />
 
-      <VenueList />
+      <VenueView />
     </div>
   );
 };

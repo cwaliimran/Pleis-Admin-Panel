@@ -1,6 +1,7 @@
 'use client';
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -17,21 +18,41 @@ const VenueTypeTableRow: FC<PageProps> = ({
   handleEdit,
 }) => {
   return (
-    <TableRow className="h-14 w-full transition-colors">
+     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt="Store"
-            className="h-full w-full cursor-pointer object-cover"
-          />
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
+            <AvatarImage
+              src={item.imageInfo.url}
+              alt="Store"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+              {item?.title?.[0]?.toUpperCase() || ''}
+            </span>
+          )}
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left font-medium">{item?.title}</TableCell>
-      <TableCell className="text-muted-foreground text-left text-sm">
-        {/* {item?.createdAt} */}
+      <TableCell className="text-left font-medium capitalize">
+        {item?.title}
+      </TableCell>
+      <TableCell className="text-left text-sm">
         {fDate(item?.createdAt, formatStr.paramCase.date)}
+      </TableCell>
+      <TableCell className="text-muted-foreground text-left text-sm">
+        <CustomBadge
+          variant={
+            item?.status === 'active'
+              ? 'success'
+              : item?.status === 'inactive'
+                ? 'error'
+                : 'default'
+          }
+        >
+          {item?.status}
+        </CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

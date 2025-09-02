@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "pleisstorage.blob.core.windows.net",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

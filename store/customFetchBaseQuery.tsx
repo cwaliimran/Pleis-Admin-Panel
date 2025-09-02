@@ -3,7 +3,8 @@ import { handleApiError } from './handleApiError';
 
 export const customFetchBaseQuery = () => {
   const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
+    baseUrl: process.env.NEXT_PUBLIC_LIVE_URL,
+    // baseUrl: process.env.NEXT_PUBLIC_LOCAL_URL,
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as any;
       const token = state?.userSlice?.user?.token;

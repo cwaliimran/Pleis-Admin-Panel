@@ -4,15 +4,17 @@ import {
   ChartColumnBig,
   Hash,
   Highlighter,
-  Home,
+  // Home,
   List,
+  Package,
   Settings,
-  Tags,
+  // Tags,
   User,
   UsersRound,
-  VenetianMask
-} from "lucide-react";
-import { paths } from "./paths";
+  // UsersRound,
+  VenetianMask,
+} from 'lucide-react';
+import { paths } from './paths';
 
 type MenuItem = {
   title: string;
@@ -30,88 +32,120 @@ type MenuGroup = {
 
 export const menuGroups: MenuGroup[] = [
   {
-    label: "Dashboard",
+    label: 'Dashboard',
     key: paths.superAdmin.default,
     icon: ChartColumnBig,
   },
   {
-    label: "Organizations",
-    key: paths.superAdmin.organizations.default,
+    label: 'Organizations',
+    key: paths.superAdmin.organizations.list,
     icon: Building,
-    items: [
-      {
-        title: "Create Organization",
-        url: paths.superAdmin.organizations.create,
-        icon: Home,
-      },
-      {
-        title: "Organization List",
-        url: paths.superAdmin.organizations.list,
-        icon: Home,
-      },
-    ],
   },
+  // {
+  //   label: 'Organizations',
+  //   key: paths.superAdmin.organizations.default,
+  //   icon: Building,
+  //   items: [
+  //     {
+  //       title: 'Create Organization',
+  //       url: paths.superAdmin.organizations.create,
+  //       icon: Home,
+  //     },
+  //     {
+  //       title: 'Organization List',
+  //       url: paths.superAdmin.organizations.list,
+  //       icon: Home,
+  //     },
+  //   ],
+  // },
+
   {
-    label: "Events",
+    label: 'Events',
     key: paths.superAdmin.events.default,
     icon: Calendar,
-    items: [
-      {
-        title: "Create Event",
-        url: paths.superAdmin.events.create,
-        icon: Tags,
-      },
-      {
-        title: "Events List",
-        url: paths.superAdmin.events.list, // Example ID
-        icon: Tags,
-      },
-    ],
   },
+
+  // {
+  //   label: 'Events',
+  //   key: paths.superAdmin.events.default,
+  //   icon: Calendar,
+  //   items: [
+  //     {
+  //       title: 'Create Event',
+  //       url: paths.superAdmin.events.create,
+  //       icon: Tags,
+  //     },
+  //     {
+  //       title: 'Events List',
+  //       url: paths.superAdmin.events.list, // Example ID
+  //       icon: Tags,
+  //     },
+  //   ],
+  // },
   {
-    label: "Venue",
+    label: 'Venue',
     key: paths.superAdmin.venue.default,
     icon: VenetianMask,
   },
 
   {
-    label: "Highlights",
+    label: 'Highlights',
     key: paths.superAdmin.hightLight.default,
     icon: Highlighter,
   },
   {
-    label: "Categories",
+    label: 'Categories',
     key: paths.superAdmin.category.default,
     icon: List,
   },
   {
-    label: "Venue Type",
-    key: paths.superAdmin.vanueType.default,
+    label: 'Supplier',
+    key: paths.superAdmin.suppliers.default,
+    icon: Package,
+  },
+  {
+    label: 'Venue Type',
+    key: paths.superAdmin.venueType.default,
     icon: VenetianMask,
   },
   {
-    label: "Browser Control",
+    label: 'Browser Control',
     key: paths.superAdmin.browserControl.default,
     icon: Settings,
   },
   {
-    label: "Tags",
+    label: 'Tags',
     key: paths.superAdmin.tags.default,
     icon: Hash,
   },
+  // {
+  //   label: 'User List',
+  //   key: paths.superAdmin.users.list,
+  //   icon: UsersRound,
+  // },
+  // {
+  //   label: 'Pending User List',
+  //   key: paths.superAdmin.users.pendingList,
+  //   icon: User,
+  // },
 
   {
-    label: "User",
-    key: paths.superAdmin.users.default,
+    label: 'User List',
+    key: paths.superAdmin.users.list,
     icon: User,
     items: [
       {
-        title: "User List",
+        title: 'User List',
         url: paths.superAdmin.users.list,
         icon: UsersRound,
       },
+      // {
+      //   title: 'User Access',
+      //   url: paths.superAdmin.userAccess.default,
+      //   icon: UsersRound,
+      // },
       {
-        title: "Pending User List",
+        title: 'Pending User List',
         url: paths.superAdmin.users.pendingList,
         icon: UsersRound,
       },

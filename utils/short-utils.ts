@@ -10,3 +10,18 @@ export function capitalizeFirst(str: string): string {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+export const getStatusVariant = (status?: string) => {
+  switch (status) {
+    case 'active':
+      return 'success';
+    case 'inactive':
+      return 'error';
+    case 'pending':
+      return 'warning';
+    case 'scheduled':
+      return 'info';
+    default:
+      return 'default';
+  }
+};

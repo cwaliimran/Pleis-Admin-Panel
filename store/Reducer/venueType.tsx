@@ -9,16 +9,20 @@ export const venueTypeApi = createApi({
 
   endpoints: (builder) => ({
     getVenueTypes: builder.query({
-      query: ({ search, pageno, type, status }) => ({
-        url: API_ROUTES.VENUES_TYPES,
-        method: 'GET',
-        params: {
+      query: ({ search, page, status, date, limit }) => {
+        const params: any = {
           keyword: search,
-          type,
           status,
-          page: pageno + 1,
-        },
-      }),
+          page: page + 1,
+          limit,
+        };
+        if (date) (params as any).date = date;
+        return {
+          url: API_ROUTES.VENUES_TYPES,
+          method: 'GET',
+          params,
+        };
+      },
       transformResponse: (res) => ({
         data: res.data,
         meta: res.meta,
@@ -32,6 +36,7 @@ export const venueTypeApi = createApi({
         method: 'POST',
         body: newVenueType,
       }),
+      invalidatesTags: ['venueType'],
     }),
 
     updateVenueType: builder.mutation({
@@ -40,17 +45,14 @@ export const venueTypeApi = createApi({
         method: 'PUT',
         body: updatedVenueType,
       }),
-      invalidatesTags: ['venueType'],
     }),
 
     deleteVenueType: builder.mutation({
-      query: (id) => (
-        console.log('id', id),
-        {
-          url: API_ROUTES.VENUES_TYPE_By_ID(id),
-          method: 'DELETE',
-        }
-      ),
+      query: (id) => ({
+        url: API_ROUTES.VENUES_TYPE_By_ID(id),
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['venueType'],
     }),
   }),
 });
