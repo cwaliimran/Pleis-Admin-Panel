@@ -36,6 +36,7 @@ export const categoriesApi = createApi({
         method: 'POST',
         body: newCategory,
       }),
+      invalidatesTags: ['category'],
     }),
 
     updateCategory: builder.mutation({

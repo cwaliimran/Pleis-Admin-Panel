@@ -86,14 +86,14 @@ const UserListView = ({ usertype }: { usertype: any }) => {
   const onSubmit = async (formData: any) => {
     console.log('formData', formData);
 
-    let uploadedFileKey: string | null = null; // keep track of uploaded image
+    let uploadedFileKey: string | null = null;
     try {
       let profileIconUrl: any = formData.profileIcon;
 
       // Upload new image if provided
       if (formData.profileIcon instanceof File) {
         uploadedFileKey = await uploadFileToAzure(formData.profileIcon);
-        if (!uploadedFileKey) return; // stop if upload failed
+        if (!uploadedFileKey) return; 
         profileIconUrl = uploadedFileKey;
       }
 
