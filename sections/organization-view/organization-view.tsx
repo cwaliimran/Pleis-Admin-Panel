@@ -3,10 +3,12 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useAddCategoryMutation,
-  useDeleteCategoryMutation, useUpdateCategoryMutation
+  useAddCategoryMutation, useUpdateCategoryMutation
 } from '@/store/Reducer/categories';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import {
+  useDeleteOrganizationMutation,
+  useGetOrganizationQuery,
+} from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { formatDate } from '@/utils/format-time';
@@ -51,8 +53,8 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     useAddCategoryMutation();
   const [updateCategory, { isLoading: updateCategoryLoading }] =
     useUpdateCategoryMutation();
-  const [deleteCategory, { isLoading: deleteCategoryLoading }] =
-    useDeleteCategoryMutation();
+  const [deleteOrganization, { isLoading: deleteOrganizationLoading }] =
+    useDeleteOrganizationMutation();
 
   const { data: apiData, isLoading } = useGetOrganizationQuery({
     page: page - 1,
@@ -62,7 +64,7 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     date: date ? formatDate(date) : undefined,
   });
 
-  console.log("apiData", apiData?.data);
+  console.log('apiData', apiData?.data);
 
   // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -240,8 +242,9 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
 
   // DELETE CATEGORY
   const onDelete = async () => {
+    console.log('selectedId', selectedId);
     try {
-      const response = await deleteCategory(selectedId).unwrap();
+      const response = await deleteOrganization(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -255,14 +258,14 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Category deleted successfully');
+        showSuccess(response?.message || 'Organization deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete category:', errorMessage);
+      console.log('Failed to delete organization:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -339,14 +342,14 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Category"
-        content="Are you sure you want to delete this category?"
+        title="Delete Organization"
+        content="Are you sure you want to delete this organization?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteCategoryLoading}
+        isLoading={deleteOrganizationLoading}
       />
     </div>
   );

@@ -3,15 +3,6 @@
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -78,14 +69,14 @@ const OrganizationTypeTable: FC<PageProps> = ({
   onPageChange,
   userType,
   // onLimitChange,
-  onSearch = () => { },
+  onSearch = () => {},
   search = '',
   // limit = 10,
   status = '',
-  onStatusChange = () => { },
+  onStatusChange = () => {},
   date,
-  onDateChange = () => { },
-  onResetFilters = () => { },
+  onDateChange = () => {},
+  onResetFilters = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -100,16 +91,16 @@ const OrganizationTypeTable: FC<PageProps> = ({
   });
 
   // Generate page numbers for pagination (show max 5 pages)
-  const getPageNumbers = () => {
-    const maxPagesToShow = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let end = start + maxPagesToShow - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxPagesToShow + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
+  // const getPageNumbers = () => {
+  //   const maxPagesToShow = 5;
+  //   let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+  //   let end = start + maxPagesToShow - 1;
+  //   if (end > totalPages) {
+  //     end = totalPages;
+  //     start = Math.max(1, end - maxPagesToShow + 1);
+  //   }
+  //   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  // };
 
   return (
     <div>
@@ -217,7 +208,7 @@ const OrganizationTypeTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : data.filter((item: any) => item.status !== 'deleted')
-                  .length === 0 ? (
+                    .length === 0 ? (
                   <tr>
                     <td
                       colSpan={headLabel.length}
