@@ -36,6 +36,9 @@ export const API_ROUTES = {
 
   HIGHLIGHT_LIST: `/highlights`,
   HIGHLIGHT_LIST_BY_ID: (id: string) => `/highlights/${id}`,
+
+  EVENTS: `/events`,
+  EVENTS_BY_ID: (id: string) => `/events/${id}`,
 };
 
 export default API_ROUTES;

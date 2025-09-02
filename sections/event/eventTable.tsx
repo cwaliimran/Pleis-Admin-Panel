@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { TableFilters } from '@/components/table-filters';
-import TableHeadCustom from '@/components/table/table-head-custom';
-import { Card } from '@/components/ui/card';
+import { TableFilters } from "@/components/table-filters";
+import TableHeadCustom from "@/components/table/table-head-custom";
+import { Card } from "@/components/ui/card";
 import {
   Pagination,
   PaginationContent,
@@ -11,70 +11,93 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Table, TableBody } from '@/components/ui/table';
-import { FC, useState } from 'react';
-import { eventData } from './data';
-import EventTableRow from './eventTAbleRow';
-import { Badge } from '@/components/ui/badge';
-import { Settings2 } from 'lucide-react';
-import {
-  Sheet,
-  SheetTrigger,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
-import { useForm, FormProvider } from 'react-hook-form';
+} from "@/components/ui/pagination";
+import { Table, TableBody } from "@/components/ui/table";
+import { FC} from "react";
+import EventTableRow from "./eventTAbleRow"; // Import EventTableRow to handle table rows
+import { Badge } from "@/components/ui/badge";
+import { Settings2 } from "lucide-react";
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useForm, FormProvider } from "react-hook-form";
+import { LoadingBar } from "@/components/table/table-bar-loading";
 
+// Define headers for the table
 const headLabel = [
-  { id: 'image', label: 'Image', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'Organization', label: 'Organization', align: 'left' },
-  { id: 'venue', label: 'Venue', align: 'left' },
-  { id: 'startDate', label: 'Start Date', align: 'left' },
-  { id: 'endDate', label: 'End Date', align: 'left' },
-  { id: 'totalRevenue', label: 'Revenue', align: 'left' },
-  { id: 'totalViews', label: 'Views', align: 'left' },
-  { id: 'region', label: 'Region', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: "image", label: "Image", align: "left" },
+  { id: "name", label: "Name", align: "left" },
+  { id: "organization", label: "Organization", align: "left" },
+  { id: "venue", label: "Venue", align: "left" },
+  { id: "startDate", label: "Start Date", align: "left" },
+  { id: "endDate", label: "End Date", align: "left" },
+  { id: "totalRevenue", label: "Revenue", align: "left" },
+  { id: "totalViews", label: "Views", align: "left" },
+  { id: "region", label: "Region", align: "left" },
+  { id: "actions", label: "Action", align: "left" },
 ];
-interface PageProps {
-  handleDelete?: (id: string) => void;
-  userType?: string;
+
+interface Meta {
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  limit: number;
 }
-const EventTable: FC<PageProps> = ({ handleDelete, userType }) => {
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [status, setStatus] = useState<string>('');
-  // const [location, setLocation] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  // For sheet multi-select
-  const [sheetLocation, setSheetLocation] = useState<string[]>([]);
+
+interface PageProps {
+  page: any;
+  data: any[];
+  meta: Meta;
+  loading?: boolean;
+  handleDelete?: (id: string) => void;
+  handleEdit?: (id: string) => void;
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
+  onSearch?: (search: string) => void;
+  search?: string;
+  limit?: number;
+  status?: string;
+  onStatusChange?: (status: string) => void;
+  startDate?: Date;
+  endDate?: Date;
+  onDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
+  onResetFilters?: () => void;
+}
+
+const EventTable: FC<PageProps> = ({
+  data = [],
+  meta,
+  loading,
+  handleDelete,
+  onPageChange,
+  onSearch = () => {},
+  search = "",
+  status = "",
+  onStatusChange = () => {},
+  startDate,
+  endDate,
+  onDateChange = () => {},
+  onResetFilters = () => {},
+}) => {
+  // Pagination logic
+  const totalPages = meta?.totalPages || 1;
+  const currentPage = meta?.currentPage || 1;
+  const totalRecords = meta?.totalRecords || 0;
 
   const methods = useForm({
     defaultValues: {
-      location: sheetLocation,
+      location: [],
     },
   });
 
-  const handleResetFilters = () => {
-    setStartDate(undefined);
-    setEndDate(undefined);
-    setStatus('');
-    // setLocation('');
-    setSearchTerm('');
-    setSheetLocation([]);
-    methods.reset({ location: [] });
+  // Generate page numbers for pagination (show max 5 pages)
+  const getPageNumbers = () => {
+    const maxPagesToShow = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    let end = start + maxPagesToShow - 1;
+    if (end > totalPages) {
+      end = totalPages;
+      start = Math.max(1, end - maxPagesToShow + 1);
+    }
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
   return (
@@ -84,6 +107,7 @@ const EventTable: FC<PageProps> = ({ handleDelete, userType }) => {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h3 className="ml-2 text-xl font-semibold md:ml-0">Event List</h3>
 
+            {/* Filter Trigger */}
             <Sheet>
               <SheetTrigger asChild>
                 <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-3xl border border-gray-300 bg-white px-4 py-2 text-black">
@@ -91,210 +115,136 @@ const EventTable: FC<PageProps> = ({ handleDelete, userType }) => {
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent side="right" className="p-0">
+              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
                 <FormProvider {...methods}>
                   <form className="flex flex-col gap-6 px-4 py-2">
-                    {/* Date Range Filters full width */}
-                    <div className="flex w-full flex-col gap-3">
-                      <div className="flex w-full flex-col gap-3">
-                        <label
-                          htmlFor="sheet-event-start-date"
-                          className="px-1 text-sm font-medium"
-                        >
-                          Start Date
-                        </label>
-                        <div className="w-full">
-                          <TableFilters
-                            className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateRangeFilter={{
-                              startDate: {
-                                id: 'sheet-event-start-date',
-                                label: '',
-                                placeholder: 'Select start date',
-                                value: startDate,
-                                onChange: setStartDate,
-                              },
-                              endDate: {
-                                id: 'sheet-event-end-date',
-                                label: '',
-                                placeholder: 'Select end date',
-                                value: endDate,
-                                onChange: setEndDate,
-                              },
-                            }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Revenue',
-                                placeholder: 'Select by revenue',
-                                value: status,
-                                onChange: setStatus,
-                                options: [
-                                  { value: 'lessThan10', label: '< $10k' },
-                                  { value: '10to50', label: '$10k - $50k' },
-                                  { value: '50to100', label: '$50k - $100k' },
-                                ],
-                              },
-                            ]}
-                            searchFilter={{
-                              placeholder: 'Search Event',
-                              value: searchTerm,
-                              onChange: setSearchTerm,
-                            }}
-                            resetFilter={{
-                              onReset: handleResetFilters,
-                              showResetButton: false,
-                            }}
-                            filtersAlignment="left"
-                          />
-                        </div>
-                      </div>
-                      {/* Location MultiSelect */}
-                      <div className="flex w-full flex-col gap-3">
-                        <RHFMultiSelect
-                          name="location"
-                          label=""
-                          placeholder="Select Location"
-                          options={[
-                            { value: 'punjab', label: 'Punjab' },
-                            { value: 'sindh', label: 'Sindh' },
-                            { value: 'kashmir', label: 'Kashmir' },
-                          ]}
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4 flex gap-3">
-                      <button
-                        className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-md py-2 font-semibold text-white transition"
-                        type="button"
-                        // onClick={...} // Add your apply logic here if needed
-                      >
-                        Apply
-                      </button>
-                      <button
-                        className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
-                        type="button"
-                        onClick={handleResetFilters}
-                      >
-                        Reset
-                      </button>
-                    </div>
+                    {/* Date Range Filters */}
+                    <TableFilters
+                    className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                      dateRangeFilter={{
+                        startDate: {
+                          id: "start-date",
+                          placeholder: "Select start date",
+                          value: startDate,
+                          onChange: (newStartDate) => onDateChange(newStartDate, endDate),
+                        },
+                        endDate: {
+                          id: "end-date",
+                          placeholder: "Select end date",
+                          value: endDate,
+                          onChange: (newEndDate) => onDateChange(startDate, newEndDate),
+                        },
+                      }}
+                      selectFilters={[
+                        {
+                          id: "status",
+                          label: "Status",
+                          placeholder: "Select by Status",
+                          value: status,
+                          onChange: onStatusChange,
+                          options: [
+                            { value: "all", label: "All" },
+                            { value: "active", label: "Active" },
+                            { value: "inactive", label: "Inactive" },
+                          ],
+                        },
+                      ]}
+                      searchFilter={{
+                        placeholder: "Search Events...",
+                        value: search,
+                        onChange: onSearch,
+                      }}
+                      resetFilter={{
+                        onReset: onResetFilters,
+                        showResetButton: true,
+                      }}
+                    />
                   </form>
                 </FormProvider>
               </SheetContent>
             </Sheet>
           </div>
 
-          {/* <TableFilters
-            dateRangeFilter={{
-              startDate: {
-                id: 'event-start-date',
-                label: 'Start Date',
-                placeholder: 'Select start date',
-                value: startDate,
-                onChange: setStartDate,
-              },
-              endDate: {
-                id: 'event-end-date',
-                label: 'End Date',
-                placeholder: 'Select end date',
-                value: endDate,
-                onChange: setEndDate,
-              },
-            }}
-            selectFilters={[
-              {
-                id: 'revenue',
-                label: 'Revenue',
-                placeholder: 'Select by revenue',
-                value: status,
-                onChange: setStatus,
-                options: [
-                  { value: 'lessThan10', label: '< $10k' },
-                  { value: '10to50', label: '$10k - $50k' },
-                  { value: '50to100', label: '$50k - $100k' },
-                ],
-              },
-              {
-                id: 'location',
-                label: 'Location',
-                placeholder: 'Select Location',
-                value: location,
-                onChange: setLocation,
-                options: [
-                  { value: 'punjab', label: 'Punjab' },
-                  { value: 'sindh', label: 'Sindh' },
-                  { value: 'kashmir', label: 'Kashmir' },
-                ],
-              },
-            ]}
-            searchFilter={{
-              placeholder: 'Search Event',
-              value: searchTerm,
-              onChange: setSearchTerm,
-            }}
-            resetFilter={{
-              onReset: handleResetFilters,
-              showResetButton: true,
-            }}
-            filtersAlignment="right"
-          /> */}
-
+          {/* Table with event data */}
           <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
-                {eventData.map((item, index) => (
-                  <EventTableRow
-                    key={index}
-                    active={index === 0}
-                    item={item}
-                    handleDelete={handleDelete}
-                    userType={userType}
-                  />
-                ))}
+                {loading ? (
+                                  <tr>
+                                    <td colSpan={headLabel.length} className="py-0 text-center">
+                                      <LoadingBar variant="default" />
+                                    </td>
+                                  </tr>
+                ) : data.length === 0 ? (
+                  <tr>
+                    <td colSpan={headLabel.length} className="text-center py-4">
+                      No data found
+                    </td>
+                  </tr>
+                ) : (
+                  data.map((item, index) => (
+                    <EventTableRow
+                      key={item._id || index}
+                      item={item}
+                      handleDelete={handleDelete}
+                      userType={"organizer"}
+                    />
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
 
-          <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground">Rows per page:</span>
-              <Select defaultValue="10">
-                <SelectTrigger className="h-8 w-[70px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+          {/* Pagination */}
+          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
+            <div className="text-muted-foreground">
+              Page {currentPage} of {totalPages} | Total: {totalRecords}
             </div>
 
-            {/* Page info */}
-            <div className="text-muted-foreground">Page 1 of 1</div>
-
-            {/* Pagination controls */}
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious href="#" />
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) onPageChange?.(currentPage - 1);
+                  }}
+                  aria-disabled={currentPage === 1}
+                />
               </PaginationItem>
+              {getPageNumbers().map((pageNum) => (
+                <PaginationItem key={pageNum}>
+                  <PaginationLink
+                    href="#"
+                    isActive={pageNum === currentPage}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (pageNum !== currentPage) onPageChange?.(pageNum);
+                    }}
+                  >
+                    {pageNum}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              {totalPages > 5 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
               <PaginationItem>
-                <PaginationLink href="#">1</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext href="#" />
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages)
+                      onPageChange?.(currentPage + 1);
+                  }}
+                  aria-disabled={currentPage === totalPages}
+                />
               </PaginationItem>
             </PaginationContent>
           </Pagination>

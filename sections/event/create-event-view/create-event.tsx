@@ -19,7 +19,7 @@ import { Separator } from '@/components/ui/separator';
 import { useBoolean } from '@/hooks/useBoolean';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CalendarIcon, ChevronDown, Clock, Plus, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
@@ -129,10 +129,11 @@ const VenueDefaultValues = {
   country: '',
 };
 
-const CreateEventView = () => {
+const CreateEventView = (props:any) => {
+  const { title='Create' } = props;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const openModal = useBoolean();
-
+  // const {id} = useParams();
   const [step, setStep] = useState(1);
   const [version, setVersion] = useState(1);
   const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
@@ -261,13 +262,6 @@ const CreateEventView = () => {
 
   return (
     <div>
-      <Header
-        links={[
-          { name: 'Dashboard', href: '/super-admin' },
-          { name: 'New Event', href: '' },
-        ]}
-      />
-
       <div className="font['Inter'] flex min-h-screen w-full flex-col items-center bg-[#f8f6f7] py-4 dark:bg-black">
         <div className="mb-2 flex w-full justify-end"></div>
 
@@ -277,7 +271,7 @@ const CreateEventView = () => {
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-foreground mb-6 text-2xl font-bold">
-                  Create a new event
+                  {title} Event
                 </h1>
                 {/* Step text above progress bar */}
                 <div className="mb-6 w-full">
