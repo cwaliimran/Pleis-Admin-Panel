@@ -1,12 +1,6 @@
 'use client';
 
-import FormProvider, {
-  RHFCombobox,
-  RHFMultiFileUpload,
-  RHFSelectField,
-  RHFTextField,
-} from '@/components/rhf';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import FormProvider, { RHFTextField } from '@/components/rhf';
 import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
@@ -19,12 +13,19 @@ import {
 } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
+import { showError } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Pencil } from 'lucide-react';
 import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import AddOtherDetailsModal from '../organization-section/add-other-details-modal';
 
-const UserInfo = () => {
+interface UserInfoProps {
+  newOrganization?: any;
+  setNewOrganization?: any;
+}
+
+const UserInfo = ({ newOrganization, setNewOrganization }: UserInfoProps) => {
   // const totalDays = 30;
   // const remainingDays = 5;
   // const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
@@ -55,15 +56,27 @@ const UserInfo = () => {
 
   const onSubmit = () => {};
 
+  const showtoast = () => {
+    showError('Please create an organization first!');
+  };
+
   return (
     <>
       <div>
         <div className="flex justify-end">
-          <Pencil
-            width={22}
-            className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
-            onClick={openModal.onTrue}
-          />
+          {!newOrganization ? (
+            <Pencil
+              width={22}
+              className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
+              onClick={openModal.onTrue}
+            />
+          ) : (
+            <Pencil
+              width={22}
+              className="mr-2 cursor-not-allowed text-gray-500 transition-colors hover:text-gray-700"
+              onClick={showtoast}
+            />
+          )}
         </div>
 
         <div className="mt-4 grid grid-cols-12 gap-4">
@@ -349,13 +362,24 @@ const UserInfo = () => {
           </div>
         </div>
 
+        <AddOtherDetailsModal
+          open={openModal.value}
+          newOrganization={newOrganization}
+          onClose={CloseModal}
+          onSubmitSuccess={(data) => setNewOrganization(data)}
+        />
+
         {/* ADD OTHER DETAILS */}
-        <Dialog open={openModal.value} onOpenChange={CloseModal}>
-          <DialogOverlay className="bg-opacity-30 fixed inset-0 bg-white">
-            <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[86vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
-              <DialogHeader>
-                <DialogTitle> Add Other Details </DialogTitle>
-              </DialogHeader>
+        {/* <Dialog open={openModal.value} onOpenChange={CloseModal}>
+          <DialogOverlay className="bg-opacity-30 fixed inset-0" />
+          <DialogContent
+            aria-describedby={undefined}
+            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+          >
+            <DialogHeader>
+              <DialogTitle> Add Other Details </DialogTitle>
+            </DialogHeader>
+            <div className="w-full px-4">
               <FormProvider
                 methods={methods}
                 onSubmit={methods.handleSubmit(onSubmit)}
@@ -421,7 +445,6 @@ const UserInfo = () => {
                     />
                   </div>
 
-                  {/* Gallery Images Upload */}
                   <div className="w-full">
                     <RHFMultiFileUpload
                       name="galleryImages"
@@ -429,7 +452,6 @@ const UserInfo = () => {
                     />
                   </div>
 
-                  {/* Operating Hours Section */}
                   <div className="w-full">
                     <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">
                       Operating Hours
@@ -481,9 +503,9 @@ const UserInfo = () => {
                   </Button>
                 </div>
               </FormProvider>
-            </DialogContent>
-          </DialogOverlay>
-        </Dialog>
+            </div>
+          </DialogContent>
+        </Dialog> */}
 
         {/* VENUE MODAL */}
         <Dialog open={openVenueModal.value} onOpenChange={CloseVenueModal}>

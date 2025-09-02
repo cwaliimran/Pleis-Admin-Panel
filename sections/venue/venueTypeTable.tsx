@@ -27,6 +27,7 @@ import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { LoadingBar } from '@/components/table/table-bar-loading';
 import VenueTypeTableRow from './venueTypeTableRow';
+import PaginationControls from '@/components/table/pagination-controls';
 
 const headLabel = [
   { id: 'name', label: 'Name', align: 'left' },
@@ -75,14 +76,14 @@ const VenueTypeTable: FC<PageProps> = ({
   handleEdit,
   onPageChange,
   // onLimitChange,
-  onSearch = () => {},
+  onSearch = () => { },
   search = '',
   // limit = 10,
   status = '',
-  onStatusChange = () => {},
+  onStatusChange = () => { },
   date,
-  onDateChange = () => {},
-  onResetFilters = () => {},
+  onDateChange = () => { },
+  onResetFilters = () => { },
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -212,7 +213,7 @@ const VenueTypeTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : data.filter((item: any) => item.status !== 'deleted')
-                    .length === 0 ? (
+                  .length === 0 ? (
                   <tr>
                     <td
                       colSpan={headLabel.length}
@@ -240,75 +241,13 @@ const VenueTypeTable: FC<PageProps> = ({
             </Table>
           </div>
 
-          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
-            {/* <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground">Rows per page:</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(v) => onLimitChange?.(Number(v))}
-              >
-                <SelectTrigger className="h-8 w-[70px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {[5, 10, 20, 50, 100].map((opt) => (
-                      <SelectItem key={opt} value={String(opt)}>
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
-
-            <div className="text-muted-foreground">
-              Page {currentPage} of {totalPages} | Total: {totalRecords}
-            </div>
-
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange?.(currentPage - 1);
-                  }}
-                  aria-disabled={currentPage === 1}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNum === currentPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (pageNum !== currentPage) onPageChange?.(pageNum);
-                    }}
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {totalPages > 5 && (
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages)
-                      onPageChange?.(currentPage + 1);
-                  }}
-                  aria-disabled={currentPage === totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            limit={10}
+            onPageChange={(p) => onPageChange?.(p)}
+          />
         </Card>
       </div>
     </div>

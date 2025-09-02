@@ -39,7 +39,8 @@ const LocationAutocomplete = <T extends FieldValues>({
   const [isSearching, setIsSearching] = useState(false);
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   
-  const debounceRef = useRef<NodeJS.Timeout>();
+  // const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);

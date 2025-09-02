@@ -29,7 +29,7 @@ const UserListView = ({ usertype }: { usertype: any }) => {
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const [imageUploading, setImageUploading] = useState(false);
+  // const [imageUploading, setImageUploading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null); // Track selected user ID for edit
 
   const [addUser, { isLoading: addUserLoading }] = useAddUserMutation();
@@ -68,32 +68,17 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     }
   }, [apiData, page, limit]);
 
-  // Handle image upload
-  const handleImageUpload = async (file: File) => {
-    setImageUploading(true);
-    try {
-      const url = await uploadFileToAzure(file);
-      return url;
-    } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      showError(errorMessage);
-      return null;
-    } finally {
-      setImageUploading(false);
-    }
-  };
-
   const onSubmit = async (formData: any) => {
     console.log('formData', formData);
 
-    let uploadedFileKey: string | null = null; // keep track of uploaded image
+    let uploadedFileKey: string | null = null;
     try {
       let profileIconUrl: any = formData.profileIcon;
 
       // Upload new image if provided
       if (formData.profileIcon instanceof File) {
         uploadedFileKey = await uploadFileToAzure(formData.profileIcon);
-        if (!uploadedFileKey) return; // stop if upload failed
+        if (!uploadedFileKey) return;
         profileIconUrl = uploadedFileKey;
       }
 
@@ -148,7 +133,7 @@ const UserListView = ({ usertype }: { usertype: any }) => {
       if (response?.message) {
         showSuccess(
           response?.message ||
-          (editModal.value ? 'Updated successfully' : 'Created successfully')
+            (editModal.value ? 'Updated successfully' : 'Created successfully')
         );
       }
 
@@ -158,7 +143,6 @@ const UserListView = ({ usertype }: { usertype: any }) => {
       console.log('Failed to save user:', errorMessage);
       showError(errorMessage);
 
-      // ⚠️ rollback uploaded image if API failed
       if (uploadedFileKey) {
         console.log('Rolling back uploaded image:', uploadedFileKey);
         await deleteFileFromAzure(uploadedFileKey);
@@ -166,92 +150,16 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     }
   };
 
-  // const onSubmit = async (formData: any) => {
-  //   console.log('formData', formData);
-
-  //   try {
-  //     let profileIconUrl: any = formData.profileIcon;
-
-  //     // Check and upload image if a new file is provided
-  //     if (formData.profileIcon instanceof File) {
-  //       profileIconUrl = await handleImageUpload(formData.profileIcon);
-  //       if (!profileIconUrl) return; // Stop if upload failed
-  //     }
-
-  //     const payload: any = {
-  //       ...formData,
-  //       profileIcon: profileIconUrl || (editModal.value && typeof formData.profileIcon === 'string' ? formData.profileIcon : ''),
-  //     };
-
-  //     // Include id for edit mode
-  //     if (editModal.value && selectedId) {
-  //       payload.id = selectedId;
-  //     }
-
-  //     console.log('Submitted payload:', payload);
-
-  //     // Call API
-  //     let response;
-  //     if (payload.userType === 'admin' || payload.userType === 'guest') {
-  //       response = editModal.value && selectedId
-  //         ? await addUserSuperAdminAndGuest(payload).unwrap() // Assuming update uses the same mutation
-  //         : await addUserSuperAdminAndGuest(payload).unwrap();
-  //     } else {
-  //       response = editModal.value && selectedId
-  //         ? await addUser(payload).unwrap() // Assuming update uses the same mutation
-  //         : await addUser(payload).unwrap();
-  //     }
-
-  //     if (!response) {
-  //       showError('No response from server. Please try again later.');
-  //       return;
-  //     }
-
-  //     if (response.error) {
-  //       const errorMessage = getErrorMessage(response.error);
-  //       showError(errorMessage);
-  //       return;
-  //     }
-
-  //     // Success
-  //     if (response?.data) {
-  //       if (editModal.value && selectedId) {
-  //         // Update existing user in local state
-  //         setVenueTypes((prev) =>
-  //           prev.map((item) =>
-  //             item._id === selectedId ? { ...item, ...response.data } : item
-  //           )
-  //         );
-  //       } else {
-  //         // Add new user to local state
-  //         setVenueTypes((prev) => [response.data, ...prev].slice(0, limit));
-  //         setMeta((prev: any) => ({
-  //           ...prev,
-  //           totalRecords: prev.totalRecords + 1,
-  //         }));
-  //       }
-  //     }
-
-  //     if (response?.message) {
-  //       showSuccess(response?.message || (editModal.value ? 'Updated successfully' : 'Created successfully'));
-  //     }
-
-  //     CloseModal();
-  //   } catch (error) {
-  //     const errorMessage = getErrorMessage(error);
-  //     console.log('Failed to save user:', errorMessage);
-  //     showError(errorMessage);
-  //   }
-  // };
-
   const CloseModal = () => {
     openModal.onFalse();
     editModal.onFalse();
-    setSelectedId(null); // Reset selected ID
+    setSelectedId(null);
   };
 
   const handleEdit = (id: string) => {
-    const userToEdit = venueTypes.find((item: any) => item?.basicInfo?._id === id);
+    const userToEdit = venueTypes.find(
+      (item: any) => item?.basicInfo?._id === id
+    );
     if (userToEdit) {
       setSelectedId(id);
       openModal.onTrue();
@@ -323,8 +231,12 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         onClose={CloseModal}
         userType={usertype}
         onSubmit={onSubmit}
-        isLoading={addUserLoading || imageUploading || addUserSuperAdminAndGuestLoading}
-        initialData={editModal.value && selectedId ? venueTypes.find((item: any) => item._id === selectedId) : undefined}
+        isLoading={addUserLoading || addUserSuperAdminAndGuestLoading}
+        initialData={
+          editModal.value && selectedId
+            ? venueTypes.find((item: any) => item._id === selectedId)
+            : undefined
+        }
       />
     </div>
   );

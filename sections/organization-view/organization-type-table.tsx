@@ -3,15 +3,6 @@
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -27,6 +18,7 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import OrganizationTypeTableRow from './organization-type-table-row';
+import PaginationControls from '@/components/table/pagination-controls';
 
 const headLabel = [
   { id: 'log', label: 'Logo', align: 'left' },
@@ -99,16 +91,16 @@ const OrganizationTypeTable: FC<PageProps> = ({
   });
 
   // Generate page numbers for pagination (show max 5 pages)
-  const getPageNumbers = () => {
-    const maxPagesToShow = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let end = start + maxPagesToShow - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxPagesToShow + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
+  // const getPageNumbers = () => {
+  //   const maxPagesToShow = 5;
+  //   let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+  //   let end = start + maxPagesToShow - 1;
+  //   if (end > totalPages) {
+  //     end = totalPages;
+  //     start = Math.max(1, end - maxPagesToShow + 1);
+  //   }
+  //   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  // };
 
   return (
     <div>
@@ -244,75 +236,13 @@ const OrganizationTypeTable: FC<PageProps> = ({
             </Table>
           </div>
 
-          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
-            {/* <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground">Rows per page:</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(v) => onLimitChange?.(Number(v))}
-              >
-                <SelectTrigger className="h-8 w-[70px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    {[5, 10, 20, 50, 100].map((opt) => (
-                      <SelectItem key={opt} value={String(opt)}>
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
-
-            <div className="text-muted-foreground">
-              Page {currentPage} of {totalPages} | Total: {totalRecords}
-            </div>
-
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange?.(currentPage - 1);
-                  }}
-                  aria-disabled={currentPage === 1}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNum === currentPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (pageNum !== currentPage) onPageChange?.(pageNum);
-                    }}
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {totalPages > 5 && (
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages)
-                      onPageChange?.(currentPage + 1);
-                  }}
-                  aria-disabled={currentPage === totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            limit={10}
+            onPageChange={(p) => onPageChange?.(p)}
+          />
         </Card>
       </div>
     </div>
