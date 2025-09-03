@@ -280,6 +280,7 @@ const CreateOrganizationPage = () => {
                   <Image
                     src={newOrganization?.basicInfo?.mediaInfo?.logo?.url}
                     alt="User Avatar"
+                    priority
                     className="z-10 h-20 w-20 rounded-full bg-white shadow-lg md:h-30 md:w-30"
                     width={100}
                     height={100}
@@ -288,6 +289,7 @@ const CreateOrganizationPage = () => {
                   <Image
                     src="/images/blank-profile2.png"
                     alt="User Avatar"
+                    priority
                     className="z-10 h-20 w-20 rounded-full bg-white shadow-lg md:h-30 md:w-30"
                     width={100}
                     height={100}

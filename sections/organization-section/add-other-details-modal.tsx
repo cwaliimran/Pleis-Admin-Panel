@@ -23,22 +23,19 @@ import { showSuccess, showError } from '@/utils/toast';
 import { getErrorMessage } from '@/utils/api';
 import { useUpdateOrganizationMutation } from '@/store/Reducer/organization';
 
-// Define TypeScript interfaces
-interface OperatingHours {
-  from: string;
-  to: string;
-  break: { from: string; to: string };
-  isOpen: string; // String to match RHFSelectField values
-}
-
 interface Location {
   address: string;
   coordinates: [number, number];
 }
 
+interface OperatingHours {
+  from: string;
+  to: string;
+  isOpen: boolean;
+}
 interface FormValues extends FieldValues {
   description: string;
-  minAge: number | null;
+  minAge: string;
   tags: string[];
   categories: string[];
   galleryImages: FileList | File[];
@@ -56,48 +53,18 @@ interface FormValues extends FieldValues {
 
 const defaultValues: FormValues = {
   description: '',
-  minAge: null,
+  minAge: '',
   tags: [],
   categories: [],
   galleryImages: [],
   venue: '',
-  monday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  tuesday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  wednesday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  thursday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  friday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  saturday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  sunday: { from: '', to: '', break: { from: '', to: '' }, isOpen: 'true' },
+  monday: { from: '00:00', to: '00:00', isOpen: false },
+  tuesday: { from: '00:00', to: '00:00', isOpen: false },
+  wednesday: { from: '00:00', to: '00:00', isOpen: false },
+  thursday: { from: '00:00', to: '00:00', isOpen: false },
+  friday: { from: '00:00', to: '00:00', isOpen: false },
+  saturday: { from: '00:00', to: '00:00', isOpen: false },
+  sunday: { from: '00:00', to: '00:00', isOpen: false },
   status: 'active',
   location: { address: '', coordinates: [0, 0] },
 };
@@ -106,10 +73,7 @@ const schema = Yup.object().shape({
   description: Yup.string()
     .required('Description is required')
     .max(500, 'Description must be at most 500 characters'),
-  minAge: Yup.number()
-    .nullable()
-    .min(0, 'Age cannot be negative')
-    .transform((value, originalValue) => (originalValue === '' ? null : value)),
+  minAge: Yup.string(),
   tags: Yup.array().of(Yup.string()).min(0).max(10, 'Maximum 10 tags allowed'),
   categories: Yup.array()
     .of(Yup.string())
@@ -120,65 +84,37 @@ const schema = Yup.object().shape({
   monday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.boolean().required('Required'),
   }),
   tuesday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.boolean().required('Required'),
   }),
   wednesday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.boolean().required('Required'),
   }),
   thursday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.boolean().required('Required'),
   }),
   friday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.boolean().required('Required'),
   }),
   saturday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.boolean().required('Required'),
   }),
   sunday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.boolean().required('Required'),
   }),
   status: Yup.string().required('Status is required'),
   location: Yup.object().shape({
@@ -206,45 +142,68 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
   const [updateOrganization, { isLoading }] = useUpdateOrganizationMutation();
 
   const methods = useForm<FormValues>({
-    resolver: yupResolver(schema) as any, // Type assertion due to complex schema
+    resolver: yupResolver(schema) as any,
     defaultValues: newOrganization?.otherInfo
       ? {
           ...defaultValues,
           description: newOrganization.otherInfo.description || '',
-          minAge: newOrganization.otherInfo.minAge || null,
+          minAge: newOrganization.otherInfo.minAge ?? '',
           tags: newOrganization.otherInfo.tags || [],
           categories: newOrganization.otherInfo.categories || [],
           venue: newOrganization.venue || '',
           monday: {
-            ...defaultValues.monday,
-            ...newOrganization.operatingHours?.monday,
+            from: newOrganization.operatingHours?.monday?.from || '00:00',
+            to: newOrganization.operatingHours?.monday?.to || '00:00',
+            isOpen:
+              newOrganization.operatingHours?.monday?.isOpen === 'true' ||
+              false,
           },
           tuesday: {
-            ...defaultValues.tuesday,
-            ...newOrganization.operatingHours?.tuesday,
+            from: newOrganization.operatingHours?.tuesday?.from || '00:00',
+            to: newOrganization.operatingHours?.tuesday?.to || '00:00',
+            isOpen:
+              newOrganization.operatingHours?.tuesday?.isOpen === 'true' ||
+              false,
           },
           wednesday: {
-            ...defaultValues.wednesday,
-            ...newOrganization.operatingHours?.wednesday,
+            from: newOrganization.operatingHours?.wednesday?.from || '00:00',
+            to: newOrganization.operatingHours?.wednesday?.to || '00:00',
+            isOpen:
+              newOrganization.operatingHours?.wednesday?.isOpen === 'true' ||
+              false,
           },
           thursday: {
-            ...defaultValues.thursday,
-            ...newOrganization.operatingHours?.thursday,
+            from: newOrganization.operatingHours?.thursday?.from || '00:00',
+            to: newOrganization.operatingHours?.thursday?.to || '00:00',
+            isOpen:
+              newOrganization.operatingHours?.thursday?.isOpen === 'true' ||
+              false,
           },
           friday: {
-            ...defaultValues.friday,
-            ...newOrganization.operatingHours?.friday,
+            from: newOrganization.operatingHours?.friday?.from || '00:00',
+            to: newOrganization.operatingHours?.friday?.to || '00:00',
+            isOpen:
+              newOrganization.operatingHours?.friday?.isOpen === 'true' ||
+              false,
           },
           saturday: {
-            ...defaultValues.saturday,
-            ...newOrganization.operatingHours?.saturday,
+            from: newOrganization.operatingHours?.saturday?.from || '00:00',
+            to: newOrganization.operatingHours?.saturday?.to || '00:00',
+            isOpen:
+              newOrganization.operatingHours?.saturday?.isOpen === 'true' ||
+              false,
           },
           sunday: {
-            ...defaultValues.sunday,
-            ...newOrganization.operatingHours?.sunday,
+            from: newOrganization.operatingHours?.sunday?.from || '00:00',
+            to: newOrganization.operatingHours?.sunday?.to || '00:00',
+            isOpen:
+              newOrganization.operatingHours?.sunday?.isOpen === 'true' || true,
           },
           status: newOrganization.status || 'active',
-          location: newOrganization.location || defaultValues.location,
+          location: {
+            address: newOrganization.location?.address || '',
+            coordinates: newOrganization.location?.coordinates || [0, 0],
+          },
         }
       : defaultValues,
   });
@@ -274,45 +233,37 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
     try {
       if (formData.galleryImages && formData.galleryImages.length > 0) {
         galleryMedia = await handleImageUpload(formData.galleryImages);
-        // Clear galleryImages after upload to prevent resubmission
         setValue('galleryImages', []);
       }
 
       const operatingHours = {
-        monday:
-          formData.monday.isOpen === 'true'
-            ? formData.monday
-            : { ...defaultValues.monday, isOpen: 'false' },
-        tuesday:
-          formData.tuesday.isOpen === 'true'
-            ? formData.tuesday
-            : { ...defaultValues.tuesday, isOpen: 'false' },
-        wednesday:
-          formData.wednesday.isOpen === 'true'
-            ? formData.wednesday
-            : { ...defaultValues.wednesday, isOpen: 'false' },
-        thursday:
-          formData.thursday.isOpen === 'true'
-            ? formData.thursday
-            : { ...defaultValues.thursday, isOpen: 'false' },
-        friday:
-          formData.friday.isOpen === 'true'
-            ? formData.friday
-            : { ...defaultValues.friday, isOpen: 'false' },
-        saturday:
-          formData.saturday.isOpen === 'true'
-            ? formData.saturday
-            : { ...defaultValues.saturday, isOpen: 'false' },
-        sunday:
-          formData.sunday.isOpen === 'true'
-            ? formData.sunday
-            : { ...defaultValues.sunday, isOpen: 'true' },
+        monday: formData.monday.isOpen
+          ? { ...formData.monday }
+          : { ...defaultValues.monday, isOpen: false },
+        tuesday: formData.tuesday.isOpen
+          ? { ...formData.tuesday }
+          : { ...defaultValues.tuesday, isOpen: false },
+        wednesday: formData.wednesday.isOpen
+          ? { ...formData.wednesday }
+          : { ...defaultValues.wednesday, isOpen: false },
+        thursday: formData.thursday.isOpen
+          ? { ...formData.thursday }
+          : { ...defaultValues.thursday, isOpen: false },
+        friday: formData.friday.isOpen
+          ? { ...formData.friday }
+          : { ...defaultValues.friday, isOpen: false },
+        saturday: formData.saturday.isOpen
+          ? { ...formData.saturday }
+          : { ...defaultValues.saturday, isOpen: false },
+        sunday: formData.sunday.isOpen
+          ? { ...formData.sunday }
+          : { ...defaultValues.sunday, isOpen: true },
       };
 
       const payload = {
         otherInfo: {
           description: formData.description,
-          minAge: formData.minAge,
+          minAge: formData.minAge ? Number(formData.minAge) : undefined,
           tags: formData.tags,
           categories: formData.categories,
           galleryMedia,
@@ -326,23 +277,26 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
         },
       };
 
-      if (!newOrganization?._id) {
-        throw new Error('Organization ID is missing');
-      }
+      console.log('payload', payload);
 
-      const response = await updateOrganization({
-        id: newOrganization._id,
-        ...payload,
-      }).unwrap();
+      // if (!newOrganization?._id) {
+      //   throw new Error('Organization ID is missing');
+      // }
 
-      if (response?.data) {
-        onSubmitSuccess(response.data);
-        showSuccess('Details updated successfully');
-      }
+      // const response = await updateOrganization({
+      //   id: newOrganization._id,
+      //   ...payload,
+      // }).unwrap();
 
-      if (response?.error) {
-        throw new Error(getErrorMessage(response.error));
-      }
+      // if (response?.data) {
+      //   onSubmitSuccess(response.data);
+      //   showSuccess('Details updated successfully');
+      // }
+
+      // if (response?.error) {
+      //   throw new Error(getErrorMessage(response.error));
+      // }
+      
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.error('Failed to update details:', errorMessage);
@@ -382,11 +336,9 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
 
               <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                 <RHFTextField
-                  type="number"
                   name="minAge"
                   label="Age (optional)"
                   placeholder="Min Age 5"
-                  min={5}
                 />
               </div>
 
@@ -435,61 +387,79 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
                 <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">
                   Operating Hours
                 </h3>
-                <div className="space-y-4">
-                  {[
-                    { day: 'Monday', dayKey: 'monday' },
-                    { day: 'Tuesday', dayKey: 'tuesday' },
-                    { day: 'Wednesday', dayKey: 'wednesday' },
-                    { day: 'Thursday', dayKey: 'thursday' },
-                    { day: 'Friday', dayKey: 'friday' },
-                    { day: 'Saturday', dayKey: 'saturday' },
-                    { day: 'Sunday', dayKey: 'sunday' },
-                  ].map((dayInfo) => (
-                    <div
-                      key={dayInfo.dayKey}
-                      className="flex items-center gap-4"
-                    >
-                      <span className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {dayInfo.day}
-                      </span>
-                      <div className="flex flex-1 items-center gap-2">
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.from`}
-                          placeholder="09:00"
-                          className="flex-1"
-                        />
-                        <span className="text-xs text-gray-500">to</span>
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.to`}
-                          placeholder="23:00"
-                          className="flex-1"
-                        />
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.break.from`}
-                          placeholder="13:00"
-                          className="flex-1"
-                        />
-                        <span className="text-xs text-gray-500">to</span>
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.break.to`}
-                          placeholder="14:00"
-                          className="flex-1"
-                        />
-                        <RHFSelectField
-                          name={`${dayInfo.dayKey}.isOpen`}
-                          className="flex-1"
-                          options={[
-                            { label: 'Open', value: 'true' },
-                            { label: 'Closed', value: 'false' },
-                          ]}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100 dark:bg-[#272727]">
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Day
+                        </th>
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Opening
+                        </th>
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Closing
+                        </th>
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { day: 'Monday', dayKey: 'monday' },
+                        { day: 'Tuesday', dayKey: 'tuesday' },
+                        { day: 'Wednesday', dayKey: 'wednesday' },
+                        { day: 'Thursday', dayKey: 'thursday' },
+                        { day: 'Friday', dayKey: 'friday' },
+                        { day: 'Saturday', dayKey: 'saturday' },
+                        { day: 'Sunday', dayKey: 'sunday' },
+                      ].map((dayInfo) => (
+                        <tr
+                          key={dayInfo.dayKey}
+                          className="border-t dark:border-gray-700"
+                        >
+                          <td className="p-2 text-sm text-gray-700 dark:text-gray-300">
+                            {dayInfo.day}
+                          </td>
+                          <td className="p-2">
+                            <RHFTextField
+                              type="time"
+                              name={`${dayInfo.dayKey}.from`}
+                              placeholder="09:00"
+                              className="w-full rounded border p-1"
+                            />
+                          </td>
+                          <td className="p-2">
+                            <RHFTextField
+                              type="time"
+                              name={`${dayInfo.dayKey}.to`}
+                              placeholder="23:00"
+                              className="w-full rounded border p-1"
+                            />
+                          </td>
+                          <td className="p-2">
+                            {/* <RHFSelectField
+                              name={`${dayInfo.dayKey}.isOpen`}
+                              className="w-full rounded border p-1"
+                              options={[
+                                { label: 'Open', value: 'true' },
+                                { label: 'Closed', value: 'false' },
+                              ]}
+                            /> */}
+                            <RHFSelectField
+                              name={`${dayInfo.dayKey}.isOpen`}
+                              className="w-full rounded border p-1"
+                              options={[
+                                { label: 'Open', value: 'true' },
+                                { label: 'Closed', value: 'false' },
+                              ]}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -514,7 +484,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
             <div className="mt-2 flex w-full items-center justify-center">
               <Button
                 type="submit"
-                className="mt-3 cursor-pointer bg-blue-700 px-7 text-white hover:bg-blue-800"
+                className="bg-primary hover:bg-primary/80 mt-3 cursor-pointer px-7 text-white"
                 disabled={isLoading || imageUploading}
               >
                 {isLoading || imageUploading ? 'Saving...' : 'Save'}
