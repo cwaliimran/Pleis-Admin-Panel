@@ -106,7 +106,7 @@ const Page = () => {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 md:gap-x-4 md:gap-y-4 gap-2 mt-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-x-4 md:gap-y-4 gap-2 mt-5">
           {invoicesData.map((item: any) => (
             <InvoiceCard key={item?._id} item={item} />
           ))}
