@@ -16,9 +16,11 @@ import {
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
 import { extractAddress } from '@/utils/format-google-address';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api';
 import React, { useRef } from 'react';
-
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 interface CreateVenueModalProps {
   open: boolean;
   onClose: () => void;
@@ -40,7 +42,7 @@ const VenueTypeModal = ({
   open,
   onClose,
   editMode,
-  methods,
+  methods:defaultMethods,
   onSubmit,
   isLoading,
   selectedVenueType,
@@ -58,6 +60,45 @@ const VenueTypeModal = ({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY as any,
     libraries: googleMapsLibraries,
   });
+  const schema = Yup.object().shape({
+    title: Yup.string().required('Venue name is required'),
+    venueType: Yup.string().required('Venue Type is required'),
+    organization: Yup.string().required('Organization is required'),
+    status: Yup.string().oneOf(['active', 'inactive']),
+    floorPlan: Yup.mixed().nullable(),
+    location: Yup.object().shape({
+      fullAddress: Yup.string().required('Full address is required'),
+      city: Yup.string(),
+      state: Yup.string().required('State/Province is required'),
+      country: Yup.string().required('Country is required'),
+      postalCode: Yup.string().nullable(),
+      coordinates: Yup.array()
+        .of(Yup.number())
+        .length(2, 'Coordinates must be [lat, lng]')
+        .required(),
+    }),
+  });
+
+  const defaultValues = {
+    title: '',
+    venueType: '',
+    organization: '',
+    floorPlan: undefined,
+    status: 'active',
+    location: {
+      fullAddress: '',
+      state: '',
+      city: '',
+      postalCode: '',
+      country: '',
+      coordinates: [],
+    },
+  };
+  const internalMethods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: defaultValues,
+  });
+  const methods = defaultMethods || internalMethods;
 
   const handleOnPlacesChanged = async () => {
     const places = inputref.current?.getPlaces();
@@ -171,7 +212,7 @@ const VenueTypeModal = ({
                     editMode
                       ? selectedVenueType?.floorPlanInfo?.url &&
                         selectedVenueType.floorPlanInfo.url !==
-                          'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
+                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
                         ? selectedVenueType.floorPlanInfo.url
                         : null
                       : null

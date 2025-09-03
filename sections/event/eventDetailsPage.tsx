@@ -1,6 +1,7 @@
 "use client";
 
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
+import ImageWithFallback from "@/components/common/img-with-fallback";
 import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -24,26 +25,29 @@ import EventTicket from "@/sections/event/eventTicket";
 import LastTransaction from "@/sections/event/lastTransaction";
 import { TransactionHistory } from "@/sections/invoices";
 import UserCard from "@/sections/users/userCard";
+import { useGeteventByIdQuery } from "@/store/Reducer/events";
+import { fDate } from "@/utils/format-time";
+import { capitalizeFirst } from "@/utils/short-utils";
 import { Calendar, Copy, Pencil, Trash2 } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React from "react";
 
 const EventDetailsPage = () => {
   // const [tabActive, setTabActive] = React.useState("all");
   const router = useRouter();
   const deleteModal = useBoolean();
-
+  const { id } = useParams();
   const [active, setActive] = React.useState("overview");
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+  const { data: event = {} } = useGeteventByIdQuery(id);
 
-  const event = {
-    id: "1",
-    name: "Summer Music Festival 2025",
-    published: true,
-    fromDate: "2025-03-23T13:00:00Z",
-    endDate: "2025-03-25T13:00:00Z",
-  };
+  // const event = {
+  //   id: "1",
+  //   name: "Summer Music Festival 2025",
+  //   published: true,
+  //   fromDate: "2025-03-23T13:00:00Z",
+  //   endDate: "2025-03-25T13:00:00Z",
+  // };
 
   const onDelete = () => {
     deleteModal.onFalse();
@@ -68,13 +72,7 @@ const EventDetailsPage = () => {
                 <CardContent>
                   <div className="flex flex-col sm:flex-row gap-3 ">
                     <div className="w-full sm:w-1/3">
-                      <Image
-                        src="/images/eventImage.png"
-                        alt="Event"
-                        className="rounded-md w-full h-auto object-contain object-top"
-                        width={100}
-                        height={100}
-                      />
+                      <ImageWithFallback url={event?.basicInfo?.mediaInfo?.url} size={100} alt={event?.basicInfo?.title} className="rounded-md w-full h-auto object-contain object-top" />
                     </div>
 
                     {/* Right Content */}
@@ -83,37 +81,32 @@ const EventDetailsPage = () => {
                       <div className="flex items-center justify-between gap-3 text-sm text-gray-500">
                         <div className="flex items-center md:flex-row flex-col gap-2">
                           <span className="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-xs font-medium">
-                            Upcoming
+                            {capitalizeFirst(event?.status) || "Upcoming"}
                           </span>
-                          <span>Sat, 26 Feb</span>
+                          <span>{fDate(event?.schedule?.endDateTime) || "-"}</span>
                         </div>
                         <div className="flex items-center">
                           <Pencil
-                            className="md:w-5 md:h-5 w-4 h-4  text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
-                            onClick={() =>
-                              router.push("/super-admin/events/edit-event/1")
-                            }
+                          className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+                          onClick={() =>
+                            router.push(`/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`)
+                          }
                           />
                           <Trash2
-                            className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors md:ml-4 ml-1"
-                            onClick={deleteModal.onTrue}
+                          className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors md:ml-4 ml-1"
+                          onClick={deleteModal.onTrue}
                           />
                         </div>
                       </div>
 
                       {/* Title */}
                       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        Summer Music Festival 2025
+                        {event?.basicInfo?.title || "Untitled Event"}
                       </h2>
 
                       {/* Description */}
                       <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Svirati ploče bez pritiska, jednostavno iz ljubavi prema
-                        zvukovima te njegovati umjetnost slušanja muzike. Misija
-                        je to jedinstvenog kluba Kasheme u Zürichu. S ovim
-                        audiofilskim barom posebne koncepcije i uređenja
-                        upoznali smo se proljetos pri gostovanju njihove sjajne
-                        ekipe u Kupeu.
+                        {event?.basicInfo?.description || "No description available."}
                       </p>
 
                       {/* Organizer */}
@@ -122,15 +115,10 @@ const EventDetailsPage = () => {
                           ORGANIZER
                         </h4>
                         <div className="flex items-center gap-2 mt-1">
-                          <Image
-                            src="/images/eventImage.png"
-                            alt="Peti Kupe"
-                            className="w-6 h-6 rounded-full"
-                            width={6}
-                            height={6}
-                          />
+                          <ImageWithFallback url={event?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url} alt={event?.basicInfo?.organization?.basicInfo?.name} className="w-6 h-6 rounded-full" />
+
                           <span className="text-sm font-medium text-gray-800 dark:text-white">
-                            Peti Kupe
+                            {event?.basicInfo?.organization?.basicInfo?.name || "Unknown Organizer"}
                           </span>
                         </div>
                       </div>
@@ -216,12 +204,11 @@ const EventDetailsPage = () => {
                               value={tab.value}
                               className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
                                                                     !shadow-none dark:!bg-transparent cursor-pointer border-none
-                                                                  ${
-                                                                    active ===
-                                                                    tab.value
-                                                                      ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                                                      : "text-muted-foreground"
-                                                                  }`}
+                                                                  ${active ===
+                                  tab.value
+                                  ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
+                                  : "text-muted-foreground"
+                                }`}
                             >
                               {tab.label}
                             </TabsTrigger>
@@ -234,7 +221,7 @@ const EventDetailsPage = () => {
               </Card>
 
               <div className=" mt-4 rounded-lg">
-                {active === "overview" && <EventOverView />}
+                {active === "overview" && <EventOverView event={event} />}
 
                 {active === "analytics" && <EventAnalytics />}
 
@@ -266,7 +253,7 @@ const EventDetailsPage = () => {
                         </p>
                       </div>
                       <p className="text-sm text-black dark:text-white font-medium">
-                        March 23, 25, 13:00
+                        {fDate(event?.schedule?.startDateTime) || "N/A"}
                       </p>
                     </div>
 
@@ -279,7 +266,7 @@ const EventDetailsPage = () => {
                         </p>
                       </div>
                       <p className="text-sm text-black dark:text-white font-medium">
-                        March 23, 25, 13:00
+                        {fDate(event?.schedule?.endDateTime) || "N/A"}
                       </p>
                     </div>
                   </div>

@@ -31,6 +31,15 @@ export const eventApi = createApi({
             providesTags: ['event'],
         }),
 
+        geteventById: builder.query({
+            query: (id) => ({
+                url: API_ROUTES.EVENTS_BY_ID(id),
+                method: 'GET',
+            }),
+            transformResponse: (res) => res.data,
+            providesTags: ['event'],
+        }),
+
         addevent: builder.mutation({
             query: (newevent) => ({
                 url: API_ROUTES.EVENTS,
@@ -61,6 +70,7 @@ export const eventApi = createApi({
 
 export const {
   useGeteventsQuery,
+  useGeteventByIdQuery,
   useAddeventMutation,
   useUpdateeventMutation,
   useDeleteeventMutation,

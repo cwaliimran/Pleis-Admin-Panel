@@ -17,15 +17,23 @@ import {
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useBoolean } from '@/hooks/useBoolean';
+import VenueTypeModal from '@/sections/venue/venueTypeModal';
+import { useGetCategoriesQuery } from '@/store/Reducer/categories';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useGetTagsQuery } from '@/store/Reducer/tags';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CalendarIcon, ChevronDown, Clock, Plus, X } from 'lucide-react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 interface EventFormValues {
   image: File | null;
+  mediaUrl?: string;
+  mediaType?: string;
   name: string;
   venue: string;
   category: string[];
@@ -52,38 +60,7 @@ interface EventFormValues {
   organization?: string;
 }
 
-const defaultValues: EventFormValues = {
-  image: null,
-  name: '',
-  venue: '',
-  category: [],
-  tag: [],
-  organization: '',
-  organizers: [],
-  partnerOrganizers: [],
-  fromDate: new Date(),
-  fromTime: '10:00',
-  endDate: new Date(),
-  endTime: '23:00',
-  description: '',
-  eventType: 'one-time',
-  recurring: false,
-  recurringType: 'weekly',
-  recurringInterval: 1,
-  recurringDays: [],
-  recurringEnd: 'never',
-  recurringEndDate: null,
-  recurringEndCount: 13,
-  categoryInput: '',
-  tagInput: '',
-  organizerInput: '',
-  partnerOrganizerInput: '',
-};
-const organizationOptions = [
-  { label: 'Organization A', value: 'orgA' },
-  { label: 'Organization B', value: 'orgB' },
-  { label: 'Organization C', value: 'orgC' },
-];
+
 
 const venueOptions = [
   { label: 'Suggested Venue', value: 'suggested-venue' },
@@ -119,25 +96,55 @@ const weekDays = [
   { label: 'SUN', value: 'sunday' },
 ];
 
-const VenueDefaultValues = {
-  // image: null,
-  name: '',
-  venueType: '',
-  organization: '',
-  location: '',
-  clity: '',
-  country: '',
-};
 
-const CreateEventView = (props:any) => {
-  const { title='Create' } = props;
+
+const CreateEventView = (props: any) => {
+  const { title = 'Create' } = props;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const openModal = useBoolean();
   // const {id} = useParams();
   const [step, setStep] = useState(1);
   const [version, setVersion] = useState(1);
   const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [venueModal, setVenueModal] = useState<boolean>(false);
+  const { data: { data: organizations = [] } = {} } = useGetOrganizationQuery({ page: 0, limit: 100 });
+  const { data: { data: venues = [] } = {} } = useGetVenuesQuery({ page: 0, limit: 100 });
+  const { data: { data: categories = [] } = {} } = useGetCategoriesQuery({ page: 0, limit: 100 });
+  const { data: { data: tags = [] } = {} } = useGetTagsQuery({ page: 0, limit: 100 });
+
+  console.log({ organizations, venues, categories, tags });
+
+
+  const defaultValues = useMemo<EventFormValues>(() => ({
+    image: null,
+    mediaUrl: '',
+    mediaType: 'image',
+    name: '',
+    venue: '',
+    category: [],
+    tag: [],
+    organizers: [],
+    partnerOrganizers: [],
+    fromDate: null,
+    fromTime: '',
+    endDate: null,
+    endTime: '',
+    description: '',
+    eventType: 'one-time',
+    recurring: false,
+    recurringType: '',
+    recurringInterval: 1,
+    recurringDays: [],
+    recurringEnd: 'never',
+    recurringEndDate: null,
+    recurringEndCount: 1,
+    categoryInput: '',
+    tagInput: '',
+    organizerInput: '',
+    partnerOrganizerInput: '',
+    organization: '',
+  }), []);
   const methods = useForm<EventFormValues>({ defaultValues });
   const router = useRouter();
   const {
@@ -151,34 +158,54 @@ const CreateEventView = (props:any) => {
   }, [step, version]);
 
   const schema = Yup.object().shape({
+    mediaUrl: Yup.string()
+      .required('Event media is required'),
+    mediaType: Yup.string(),
     name: Yup.string().required('Venue name is required'),
-    venueType: Yup.string().required('Venue Type is required'),
+    description: Yup.string(),
+    venue: Yup.string(),
+    category: Yup.string(),
+    tags: Yup.array().of(Yup.string()),
     organization: Yup.string().required('Organization is required'),
-    location: Yup.string().required('Location is required'),
-    clity: Yup.string(),
-    country: Yup.string(),
+    partnerOrganizers: Yup.array().of(Yup.string()),
+    startDateTime: Yup.date(),
+    endDateTime: Yup.date(),
+    eventType: Yup.string().oneOf(['oneTime', 'slots']),
+    recurring: Yup.boolean(),
+    recurringType: Yup.string().oneOf(['weekly', 'monthly', 'daily']),
+    recurringInterval: Yup.number().min(1),
+    recurringDays: Yup.array().of(Yup.string()),
+    recurringEnd: Yup.string().oneOf(['never', 'onDate', 'afterOccurrences']),
+    recurringEndDate: Yup.date().nullable(),
+    recurringEndCount: Yup.number().min(1),
+    daysOfWeek: Yup.array().of(Yup.string()),
+    endDate: Yup.string(),
   });
+
 
   const venueMethods = useForm({
     resolver: yupResolver(schema),
-    defaultValues: VenueDefaultValues,
+    defaultValues: defaultValues,
   });
 
-  const venue = watch('venue');
-  const category = watch('category');
-  const tag = watch('tag');
-  const organizers = watch('organizers');
-  const partnerOrganizers = watch('partnerOrganizers');
-  const eventType = watch('eventType');
-  const recurring = watch('recurring');
-  const recurringType = watch('recurringType');
-  const recurringDays = watch('recurringDays');
-  const recurringEnd = watch('recurringEnd');
-
-  const categoryInput = watch('categoryInput') || '';
-  const tagInput = watch('tagInput') || '';
-  const organizerInput = watch('organizerInput') || '';
-  const partnerOrganizerInput = watch('partnerOrganizerInput') || '';
+  const {
+    mediaUrl,
+    mediaType,
+    venue,
+    category,
+    tag,
+    organizers,
+    partnerOrganizers,
+    eventType,
+    recurring,
+    recurringType,
+    recurringDays,
+    recurringEnd,
+    categoryInput = '',
+    tagInput = '',
+    organizerInput = '',
+    partnerOrganizerInput = '',
+  } = watch();
 
   //   const progress = step === 1 ? 50 : 100;
 
@@ -292,13 +319,12 @@ const CreateEventView = (props:any) => {
                   </div> */}
                   <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-800">
                     <div
-                      className={`h-2 rounded-full bg-blue-700 transition-all duration-300 ${
-                        step === 1
-                          ? 'w-[33%]'
-                          : step === 2
-                            ? 'w-[66%]'
-                            : 'w-full'
-                      }`}
+                      className={`h-2 rounded-full bg-blue-700 transition-all duration-300 ${step === 1
+                        ? 'w-[33%]'
+                        : step === 2
+                          ? 'w-[66%]'
+                          : 'w-full'
+                        }`}
                     />
                   </div>
                 </div>
@@ -306,7 +332,7 @@ const CreateEventView = (props:any) => {
 
               <FormProvider
                 methods={methods}
-                onSubmit={methods.handleSubmit(() => {})}
+                onSubmit={methods.handleSubmit(() => { })}
               >
                 {step === 1 && (
                   <div className="space-y-8">
@@ -320,12 +346,20 @@ const CreateEventView = (props:any) => {
                           render={({ field }) => (
                             <div className="space-y-2">
                               <label className="relative flex h-80 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-gray-300 bg-[#F8F6F7] transition-colors hover:border-gray-400 dark:border-zinc-700 dark:bg-[#171717] dark:hover:border-zinc-500">
-                                {preview ? (
-                                  <img
-                                    src={preview || '/placeholder.svg'}
-                                    alt="Preview"
-                                    className="h-full w-full object-cover"
-                                  />
+                                {mediaUrl ? (
+                                  mediaType === 'video' ? (
+                                    <video
+                                      src={mediaUrl}
+                                      controls
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <Image
+                                      src={mediaUrl}
+                                      alt="Preview"
+                                      className="h-full w-full object-cover"
+                                    />
+                                  )
                                 ) : (
                                   <div className="flex flex-row text-gray-400">
                                     <span className="mr-2 text-3xl"> + </span>
@@ -346,9 +380,12 @@ const CreateEventView = (props:any) => {
                                   onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) {
+                                      setFile(file);
                                       const reader = new FileReader();
                                       reader.onloadend = () => {
-                                        setPreview(reader.result as string);
+                                        const result = reader.result as string;
+                                        setValue('mediaUrl', result);
+                                        setValue('mediaType', file.type.startsWith('video/') ? 'video' : 'image');
                                       };
                                       reader.readAsDataURL(file);
                                       field.onChange(file);
@@ -397,7 +434,10 @@ const CreateEventView = (props:any) => {
                         <RHFSelectField
                           name="organization"
                           placeholder="Choose Organization"
-                          options={organizationOptions}
+                          options={organizations?.map((org: any) => ({
+                            value: org._id,
+                            label: org.basicInfo?.name,
+                          }))}
                           value={watch('organization')}
                           onChange={(e: any) =>
                             setValue('organization', e.target.value)
@@ -415,7 +455,10 @@ const CreateEventView = (props:any) => {
                         <RHFSelectField
                           name="venue"
                           placeholder="Suggested Venue"
-                          options={venueOptions}
+                          options={venues?.map((val: any) => ({
+                            value: val._id,
+                            label: val.title,
+                          }))}
                           value={venue}
                           onChange={(e: any) =>
                             setValue('venue', e.target.value)
@@ -425,7 +468,7 @@ const CreateEventView = (props:any) => {
 
                         <Button
                           className="bg-primary hover:bg-primary mt-2 cursor-pointer rounded-4xl py-2 text-white"
-                          onClick={openModal.onTrue}
+                          onClick={() => setVenueModal(true)}
                         >
                           Add Venue
                         </Button>
@@ -436,17 +479,20 @@ const CreateEventView = (props:any) => {
                         </label>
                         <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
                           <RHFSelectField
-                            name="categoryInput"
+                            name="category"
                             placeholder="Choose Category"
-                            options={categoryOptions}
-                            value={categoryInput}
+                            options={categories?.map((val: any) => ({
+                              value: val._id,
+                              label: val.title,
+                            }))}
+                            value={category}
                             onChange={(e: any) =>
-                              setValue('categoryInput', e.target.value)
+                              setValue('category', e.target.value)
                             }
                             className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
                           />
                         </div>
-                        {category.length > 0 && (
+                        {/* {category.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-2 rounded-2xl">
                             {category.map((c: string) => (
                               <Badge
@@ -466,7 +512,7 @@ const CreateEventView = (props:any) => {
                               </Badge>
                             ))}
                           </div>
-                        )}
+                        )} */}
                       </div>
                     </div>
 
@@ -476,21 +522,36 @@ const CreateEventView = (props:any) => {
                         TAGS
                       </label>
                       <div className="mt-2 w-full items-center gap-2 md:flex md:w-[70%]">
-                        <input
+
+                        <RHFSelectField
+                          name="tags"
+                          placeholder="Choose Tag"
+                          options={tags?.map((val: any) => ({
+                            value: val._id,
+                            label: val.title,
+                          }))}
+                          value={tag[-1]}
+                          onChange={(e: any) =>
+                            setValue('tag', tag.push(e.target.value))
+                          }
+                          className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                        />
+
+                        {/* <input
                           type="text"
                           placeholder="Search for tag"
                           value={tagInput}
                           onChange={(e) => setValue('tagInput', e.target.value)}
                           className="h-[40px] w-full max-w-md cursor-pointer rounded-4xl border border-gray-200 px-5 py-[8px] text-[14px] focus:border-blue-600 focus:outline-none"
-                        />
+                        /> */}
 
-                        <Button
+                        {/* <Button
                           type="button"
                           onClick={addTag}
                           className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
                         >
                           Add
-                        </Button>
+                        </Button> */}
                       </div>
                       {tag.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
@@ -499,12 +560,12 @@ const CreateEventView = (props:any) => {
                               key={t}
                               className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black"
                             >
-                              {tagOptions.find((opt) => opt.value === t)
-                                ?.label || t}
+                              {tags.find((opt:any) => opt._id === t)
+                                ?.title}
                               <button
                                 type="button"
                                 title="Remove Tag"
-                                onClick={() => removeTag(t)}
+                                onClick={() => setValue('tag', tag.filter((v) => v !== t))}
                                 className="ml-1 rounded-full p-0.5 hover:bg-gray-200"
                               >
                                 <X className="h-3 w-3 cursor-pointer" />
@@ -606,11 +667,10 @@ const CreateEventView = (props:any) => {
                           type="button"
                           variant="outline"
                           onClick={() => setValue('eventType', 'one-time')}
-                          className={`border-2 ${
-                            eventType === 'one-time'
-                              ? 'border-blue-700 text-blue-700'
-                              : 'border-gray-300 dark:border-zinc-700'
-                          } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
+                          className={`border-2 ${eventType === 'one-time'
+                            ? 'border-blue-700 text-blue-700'
+                            : 'border-gray-300 dark:border-zinc-700'
+                            } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
                         >
                           One time
                         </Button>
@@ -618,11 +678,10 @@ const CreateEventView = (props:any) => {
                           type="button"
                           variant="outline"
                           onClick={() => setValue('eventType', 'slots')}
-                          className={`border-2 ${
-                            eventType === 'slots'
-                              ? 'border-blue-700 text-blue-700'
-                              : 'border-gray-300 dark:border-zinc-700'
-                          } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
+                          className={`border-2 ${eventType === 'slots'
+                            ? 'border-blue-700 text-blue-700'
+                            : 'border-gray-300 dark:border-zinc-700'
+                            } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
                         >
                           Slots
                         </Button>
@@ -787,11 +846,10 @@ const CreateEventView = (props:any) => {
                                   }
                                   size="sm"
                                   onClick={() => toggleRecurringDay(day.value)}
-                                  className={`h-8 w-12 cursor-pointer text-xs ${
-                                    recurringDays.includes(day.value)
-                                      ? 'bg-blue-600 text-white'
-                                      : 'text-gray-600 dark:text-white'
-                                  }`}
+                                  className={`h-8 w-12 cursor-pointer text-xs ${recurringDays.includes(day.value)
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-gray-600 dark:text-white'
+                                    }`}
                                 >
                                   {day.label}
                                 </Button>
@@ -972,11 +1030,10 @@ const CreateEventView = (props:any) => {
                           <Button
                             variant={'outline'}
                             onClick={() => setVersion(index + 1)}
-                            className={`cursor-pointer px-10 py-5 transition-all md:max-w-[140px] md:min-w-[140px] ${
-                              version === index + 1
-                                ? 'border-primary dark:border-primary border'
-                                : ''
-                            }`}
+                            className={`cursor-pointer px-10 py-5 transition-all md:max-w-[140px] md:min-w-[140px] ${version === index + 1
+                              ? 'border-primary dark:border-primary border'
+                              : ''
+                              }`}
                           >
                             {item}
                           </Button>
@@ -1255,96 +1312,16 @@ const CreateEventView = (props:any) => {
           </Card>
         </div>
       </div>
-      <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center bg-white md:w-lg">
-          <DialogContent className="mx-auto max-h-[90vh] min-h-[86vh] overflow-y-auto dark:bg-[#171717]">
-            <DialogHeader>
-              <DialogTitle>Create Venue </DialogTitle>
-            </DialogHeader>
-            <FormProvider
-              methods={venueMethods}
-              onSubmit={venueMethods.handleSubmit(() => {})}
-            >
-              <div className="mt-4 flex flex-col gap-4">
-                {/* <RHFUploadAvatar name="image" label="Venue Image" /> */}
-
-                <RHFTextField
-                  name="name"
-                  label="Venue Name"
-                  placeholder="Enter Venue Name"
-                  className={` ${
-                    methods.formState.errors.name ? 'border-red-400' : ''
-                  }`}
-                />
-
-                <RHFTextfieldWithSelect
-                  name="venueType"
-                  label="Venue Type"
-                  placeholder="Select Venue Type"
-                  options={[
-                    { value: 'event1', label: 'Event 1' },
-                    { value: 'event2', label: 'Event 2' },
-                    { value: 'event3', label: 'Event 3' },
-                  ]}
-                />
-                <RHFTextfieldWithSelect
-                  name="organization"
-                  label="Organization"
-                  placeholder="Select Organization"
-                  options={[
-                    { label: 'Organization A', value: 'org-a' },
-                    { label: 'Organization B', value: 'org-b' },
-                    { label: 'Organization C', value: 'org-c' },
-                  ]}
-                />
-
-                <RHFTextField
-                  name="location"
-                  label="Location"
-                  placeholder="Enter Location"
-                />
-
-                <div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAvatarChange}
-                    className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                  >
-                    Upload Floor Plan
-                  </Button>
-                  <p className="mt-2 text-sm text-gray-500">
-                    JPG or PNG. 1MB max.
-                  </p>
-                </div>
-
-                <div className="w-full">
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Map Preview
-                  </label>
-                  <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
-                    <iframe
-                      title="Venue Location Map"
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463.9634089519931!2d14.611164251664785!3d45.23098434778954!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x476363d3cb88c945%3A0x7b1900b8b651a903!2sObala!5e1!3m2!1sen!2s!4v1752833828572!5m2!1sen!2s"
-                      className="h-full w-full border-0"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    ></iframe>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="submit"
-                    className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
-                  >
-                    Add Venu
-                  </Button>
-                </div>
-              </div>
-            </FormProvider>
-          </DialogContent>
-        </DialogOverlay>
-      </Dialog>
+      <VenueTypeModal
+        open={venueModal}
+        onClose={() => setVenueModal(false)}
+        editMode={false}
+        isLoading={false}
+        methods={null}
+        onSubmit={(values) => {
+          console.log('Submitted values:', values);
+        }}
+      />
     </div>
   );
 };
