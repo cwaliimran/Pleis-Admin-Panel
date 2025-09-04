@@ -32,10 +32,15 @@ export const API_ROUTES = {
   ORGANIZATION_BY_ID: (id: string) => `/organizations/${id}`,
 
   USER_LIST: `/users`,
+  CHANGE_PASSWORD: `/auth/change-password`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
+  PENDING_USER_LIST_BY_ID: (id: string) => `/users/${id}`,
 
   HIGHLIGHT_LIST: `/highlights`,
   HIGHLIGHT_LIST_BY_ID: (id: string) => `/highlights/${id}`,
+
+  EVENTS: `/events`,
+  EVENTS_BY_ID: (id: string) => `/events/${id}`,
 };
 
 export default API_ROUTES;

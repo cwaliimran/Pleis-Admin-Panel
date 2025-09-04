@@ -1,10 +1,10 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { handleApiError } from './handleApiError';
+import { CurrentUrl } from '@/constant/constant';
 
 export const customFetchBaseQuery = () => {
   const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_LIVE_URL,
-    // baseUrl: process.env.NEXT_PUBLIC_LOCAL_URL,
+    baseUrl: CurrentUrl,
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as any;
       const token = state?.userSlice?.user?.token;

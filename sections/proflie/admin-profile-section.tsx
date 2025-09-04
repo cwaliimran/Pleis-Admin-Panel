@@ -1,128 +1,187 @@
-"use client";
-import FormProvider, { RHFTextField } from "@/components/rhf";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+'use client';
+import ButtonLoading from '@/components/common/button-loading';
+import FormProvider, { RHFTextField } from '@/components/rhf';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useUpdateUserMutation } from '@/store/Reducer/user-list';
+import { setUser } from '@/store/slice/userSlice';
+import { RootState } from '@/store/store';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+import { useDispatch, useSelector } from 'react-redux';
+import * as Yup from 'yup';
+import PasswordUpdateModal from './update-password-modal';
 
-interface AdminProfileFormData {
-  firstName: string;
-  lastName: string;
-  phoneNo: string;
-  address: string;
-  role: string;
-  email: string;
-  password: string;
-  avatar?: string;
-}
-
-interface PasswordUpdateFormData {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
+const profileSchema = Yup.object({
+  firstName: Yup.string().required('First name is required'),
+  lastName: Yup.string().required('Last name is required'),
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  phone: Yup.string()
+    .matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
+    .required('Phone number is required'),
+  phoneCode: Yup.string(),
+  avatar: Yup.string().nullable(),
+});
 
 const AdminProfileSection = () => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = React.useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
-  const methods = useForm<AdminProfileFormData>({
+  const [updateUser, { isLoading: updateUserLoading }] =
+    useUpdateUserMutation();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(
+    user?.accountState?.twoFactorAuth || false
+  );
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+
+  const methods = useForm({
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      phoneNo: "",
-      address: "",
-      role: "Admin",
-      email: "",
-      password: "",
-      avatar: "https://github.com/shadcn.png",
+      firstName: user?.basicInfo?.firstName || '',
+      lastName: user?.basicInfo?.lastName || '',
+      email: user?.basicInfo?.email || '',
+      phone: `${user?.basicInfo?.phoneNumber?.code || ''}${user?.basicInfo?.phoneNumber?.number || ''}`,
+      avatar: user?.basicInfo?.profileIcon || '',
+      phoneCode: user?.basicInfo?.phoneNumber?.code || '',
     },
+    resolver: yupResolver(profileSchema),
   });
 
-  const { handleSubmit, watch, setValue } = methods;
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    control,
+    formState: { isDirty, dirtyFields },
+  } = methods;
 
-  const avatarUrl = watch("avatar");
+  const avatarUrl = watch('avatar');
 
-  const onSubmit = (data: AdminProfileFormData) => {};
+  const onSubmit = handleSubmit(async (formData) => {
+    if (!isDirty) {
+      showSuccess('No changes to save');
+      return;
+    }
+
+    let uploadedFileKey: string | null = null;
+    try {
+      const payload: any = {};
+
+      if (dirtyFields.firstName) {
+        payload.firstName = formData.firstName;
+      }
+      if (dirtyFields.lastName) {
+        payload.lastName = formData.lastName;
+      }
+      if (dirtyFields.email) {
+        payload.email = formData.email;
+      }
+      if (dirtyFields.phone || dirtyFields.phoneCode) {
+        payload.phoneNumber = {
+          code: formData.phoneCode || '',
+          number: formData.phone.replace(formData.phoneCode || '', ''),
+        };
+      }
+      if (selectedFile) {
+        setImageUploading(true);
+        try {
+          uploadedFileKey = await uploadFileToAzure(selectedFile);
+          payload.profileIcon = uploadedFileKey;
+        } finally {
+          setImageUploading(false);
+        }
+      }
+
+      const response = await updateUser({
+        id: user?.basicInfo?._id,
+        body: payload,
+      }).unwrap();
+
+      const updatedUser = response?.data;
+
+      if (!updatedUser) {
+        showError('No updated user returned from server');
+      }
+
+      const role = updatedUser?.accountState?.userType || user?.role || '';
+
+      const newUser = {
+        ...user,
+        ...updatedUser,
+        role,
+        key: process.env.NEXT_PUBLIC_PROJECT_KEY,
+      };
+
+      dispatch(setUser(newUser));
+
+      showSuccess(response?.message || 'Profile updated successfully');
+    } catch (error) {
+      setImageUploading(false);
+      const errorMessage = getErrorMessage(error);
+      console.error('Failed to update profile:', errorMessage);
+      showError(errorMessage);
+
+      if (uploadedFileKey) {
+        console.log('Rolling back uploaded image:', uploadedFileKey);
+        await deleteFileFromAzure(uploadedFileKey);
+      }
+    }
+  });
 
   const handleAvatarChange = () => {
     fileInputRef.current?.click();
   };
 
-  const passwordMethods = useForm<PasswordUpdateFormData>({
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
-
-  const handlePasswordModalClose = () => {
-    setIsPasswordModalOpen(false);
-    passwordMethods.reset();
-  };
-
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageUrl = e.target?.result as string;
-        setValue("avatar", imageUrl);
+        setValue('avatar', imageUrl, { shouldDirty: true });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handlePasswordModalOpen = () => {
-    setIsPasswordModalOpen(true);
-  };
-
-  const onPasswordSubmit = (data: PasswordUpdateFormData) => {
-    if (data.newPassword !== data.confirmPassword) {
-      alert("New password and confirm password do not match!");
-      return;
-    }
-    console.log("Password update data:", data);
-    // Here you would typically call your API to update the password
-    setIsPasswordModalOpen(false);
-    passwordMethods.reset();
-    alert("Password updated successfully!");
-  };
-
   const handleToggleChange = () => {
     setIsTwoFactorEnabled(!isTwoFactorEnabled);
+    // TODO: Call API to update twoFactorAuth if needed
   };
 
   return (
-    <div className="min-h-[87vh] md:p-6 md:mt-0 mt-5">
+    <div className="mt-5 min-h-[87vh] md:mt-0 md:p-6">
       <div className="max-w-4xl md:mx-auto">
-        <Card className="bg-white dark:bg-secondary border-gray-200 dark:border-none shadow-sm">
-          <CardHeader className="flex md:flex-row flex-col-reverse items-center justify-between">
+        <Card className="dark:bg-secondary border-gray-200 bg-white shadow-sm dark:border-none">
+          <CardHeader className="flex flex-col-reverse items-center justify-between md:flex-row">
             <div>
-              <CardTitle className="text-gray-900 dark:text-white text-2xl font-semibold">
+              <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Personal Information
               </CardTitle>
-              <p className="text-gray-600 dark:text-white mt-1 text-sm">
+              <p className="mt-1 text-sm text-gray-600 dark:text-white">
                 Use a permanent address where you can receive mail.
               </p>
             </div>
             <div className="flex items-center space-x-3">
               <Label
                 htmlFor="two-factor"
-                className="text-gray-700 dark:text-white cursor-pointer"
+                className="cursor-pointer text-gray-700 dark:text-white"
                 onClick={handleToggleChange}
               >
                 Enable two factor
@@ -133,13 +192,13 @@ const AdminProfileSection = () => {
                   type="checkbox"
                   checked={isTwoFactorEnabled}
                   onChange={handleToggleChange}
-                  className="sr-only peer"
+                  className="peer sr-only"
                 />
                 <div
-                  className={`relative w-11 h-6 rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all cursor-pointer ${
+                  className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
                     isTwoFactorEnabled
-                      ? "bg-primary after:translate-x-full after:border-white"
-                      : "bg-gray-200 "
+                      ? 'bg-primary after:translate-x-full after:border-white'
+                      : 'bg-gray-200'
                   }`}
                   onClick={handleToggleChange}
                 ></div>
@@ -147,8 +206,8 @@ const AdminProfileSection = () => {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-6 md:px-8 pt-0 pb-3">
-            <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+          <CardContent className="space-y-6 pt-0 pb-3 md:px-8">
+            <FormProvider methods={methods} onSubmit={onSubmit}>
               {/* Hidden file input */}
               <Input
                 ref={fileInputRef}
@@ -159,11 +218,13 @@ const AdminProfileSection = () => {
               />
 
               {/* Avatar Section */}
-              <div className="flex items-center md:space-x-8 space-x-2 pb-6 border-b border-gray-200">
-                <Avatar className="w-24 h-24">
+              <div className="flex items-center space-x-2 border-b border-gray-200 pb-6 md:space-x-8">
+                <Avatar className="h-24 w-24">
                   <AvatarImage src={avatarUrl} />
                   <AvatarFallback className="bg-gray-100 text-gray-700">
-                    AD
+                    <span className="text-2xl font-semibold">
+                      {user?.basicInfo?.firstName[0]}
+                    </span>
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -171,18 +232,18 @@ const AdminProfileSection = () => {
                     type="button"
                     variant="outline"
                     onClick={handleAvatarChange}
-                    className="bg-white border-gray-300 text-gray-700 dark:text-white hover:bg-gray-50"
+                    className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:text-white"
                   >
                     Change avatar
                   </Button>
-                  <p className="text-gray-500 text-sm mt-2">
+                  <p className="mt-2 text-sm text-gray-500">
                     JPG or PNG. 1MB max.
                   </p>
                 </div>
               </div>
 
               {/* Form Fields */}
-              <div className="w-full mt-6 mb-4 grid md:grid-cols-2 grid-cols-1 gap-4">
+              <div className="mt-6 mb-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                 <RHFTextField
                   name="firstName"
                   label="First Name"
@@ -202,92 +263,86 @@ const AdminProfileSection = () => {
                   placeholder="Enter your email address"
                 />
 
-                <RHFTextField
-                  name="phoneNo"
-                  label="Phone Number"
-                  type="tel"
-                  placeholder="Enter your phone number"
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <div>
+                      <p className="mb-0.5 text-sm font-medium">Phone</p>
+                      <PhoneInput
+                        {...field}
+                        country="pk"
+                        onChange={(value, country: any) => {
+                          field.onChange(value);
+                          setValue('phoneCode', `+${country?.dialCode || ''}`, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        }}
+                        placeholder="Phone Number"
+                        inputProps={{
+                          required: true,
+                          'aria-invalid': fieldState.invalid,
+                        }}
+                        containerClass="w-full"
+                        dropdownStyle={{
+                          zIndex: 9999,
+                          position: 'fixed',
+                          width: '16rem',
+                        }}
+                        buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                        inputClass={`file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input !border-gray-100 !shadow-sm flex !h-[34px] !w-full min-w-0 rounded-md !bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive ${
+                          fieldState.invalid
+                            ? 'border-destructive ring-destructive/40'
+                            : ''
+                        }`}
+                      />
+                      {fieldState.error && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 />
               </div>
 
               {/* Save Button */}
-              <div className="pt-4 flex justify-end gap-4 items-center">
+              <div className="flex items-center justify-end gap-4 pt-4">
                 <Button
                   type="button"
-                  onClick={handlePasswordModalOpen}
-                  className="bg-gray-200 text-black hover:bg-gray-300 px-7 h-11"
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="h-10 bg-gray-200 px-5 text-black hover:bg-gray-300"
                 >
                   Update Password
                 </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary text-white hover:bg-primary px-7 h-11"
-                >
-                  Save Changes
-                </Button>
+
+                {updateUserLoading || imageUploading ? (
+                  <Button
+                    type="button"
+                    className="bg-primary hover:bg-primary h-10 cursor-not-allowed px-7 text-white"
+                  >
+                    <ButtonLoading title="Saving" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={updateUserLoading || imageUploading || !isDirty}
+                    className="bg-primary hover:bg-primary h-10 px-7 text-white"
+                  >
+                    Save Changes
+                  </Button>
+                )}
               </div>
             </FormProvider>
           </CardContent>
         </Card>
 
         {/* Password Update Modal */}
-        <Dialog
-          open={isPasswordModalOpen}
-          onOpenChange={setIsPasswordModalOpen}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Update Password</DialogTitle>
-              <DialogDescription>
-                Enter your current password and choose a new password.
-              </DialogDescription>
-            </DialogHeader>
-
-            <FormProvider
-              methods={passwordMethods}
-              onSubmit={passwordMethods.handleSubmit(onPasswordSubmit)}
-            >
-              <div className="space-y-4">
-                <RHFTextField
-                  name="currentPassword"
-                  type="password"
-                  label="Current Password"
-                  placeholder="Enter your current password"
-                />
-
-                <RHFTextField
-                  name="newPassword"
-                  type="password"
-                  label="New Password"
-                  placeholder="Enter your new password"
-                />
-
-                <RHFTextField
-                  name="confirmPassword"
-                  type="password"
-                  label="Confirm New Password"
-                  placeholder="Confirm your new password"
-                />
-              </div>
-
-              <DialogFooter className="mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePasswordModalClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary text-white hover:bg-primary"
-                >
-                  Update Password
-                </Button>
-              </DialogFooter>
-            </FormProvider>
-          </DialogContent>
-        </Dialog>
+        <PasswordUpdateModal
+          isOpen={isPasswordModalOpen}
+          onClose={() => setIsPasswordModalOpen(false)}
+        />
       </div>
     </div>
   );

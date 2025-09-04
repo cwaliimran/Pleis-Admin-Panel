@@ -1,18 +1,18 @@
-import * as React from "react";
-import { Controller, useFormContext } from "react-hook-form";
+import * as React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import {
   FormControl,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
   Command,
   CommandEmpty,
@@ -20,9 +20,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
-import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/command';
+import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Option = {
   label: string;
@@ -42,7 +42,7 @@ type Props = {
 export function RHFCombobox({
   name,
   label,
-  placeholder = "Select or type to add...",
+  placeholder = 'Select or type to add...',
   options,
   multiple = false,
   allowCustom = true,
@@ -50,11 +50,11 @@ export function RHFCombobox({
 }: Props) {
   const { control } = useFormContext();
   const [open, setOpen] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState("");
+  const [inputValue, setInputValue] = React.useState('');
 
   const createNewOption = (value: string): Option => ({
     label: value,
-    value: value.toLowerCase().replace(/\s+/g, "-"),
+    value: value.toLowerCase().replace(/\s+/g, '-'),
   });
 
   const handleAddCustom = (
@@ -75,7 +75,7 @@ export function RHFCombobox({
       onChange(newOption.value);
     }
 
-    setInputValue("");
+    setInputValue('');
     setOpen(false);
   };
 
@@ -87,8 +87,8 @@ export function RHFCombobox({
         const selectedValues = multiple
           ? field.value || []
           : field.value
-          ? [field.value]
-          : [];
+            ? [field.value]
+            : [];
 
         const handleSelect = (optionValue: string) => {
           if (multiple) {
@@ -109,7 +109,7 @@ export function RHFCombobox({
             );
             field.onChange(newValue);
           } else {
-            field.onChange("");
+            field.onChange('');
           }
         };
 
@@ -119,9 +119,9 @@ export function RHFCombobox({
           if (!allOptions.find((opt) => opt.value === value)) {
             allOptions.push({
               label: value
-                .split("-")
+                .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" "),
+                .join(' '),
               value: value,
             });
           }
@@ -139,7 +139,7 @@ export function RHFCombobox({
           );
 
         return (
-          <FormItem className={cn("w-full", className)}>
+          <FormItem className={cn('w-full', className)}>
             {label && <FormLabel>{label}</FormLabel>}
             <FormControl>
               <Popover open={open} onOpenChange={setOpen}>
@@ -149,11 +149,11 @@ export function RHFCombobox({
                     role="combobox"
                     aria-expanded={open}
                     className={cn(
-                      "w-full justify-between min-h-9 h-auto py-2",
-                      !selectedValues.length && "text-muted-foreground"
+                      'h-auto min-h-9 w-full justify-between py-2',
+                      !selectedValues.length && 'text-muted-foreground'
                     )}
                   >
-                    <div className="flex gap-1 flex-wrap items-center flex-1 text-left overflow-hidden">
+                    <div className="flex flex-1 flex-wrap items-center gap-1 overflow-hidden text-left">
                       {selectedValues.length > 0 ? (
                         multiple ? (
                           selectedValues.length > 5 ? (
@@ -168,13 +168,13 @@ export function RHFCombobox({
                                     <Badge
                                       key={value}
                                       variant="outline"
-                                      className="text-xs flex items-center gap-1 max-w-[80px]"
+                                      className="flex max-w-[80px] items-center gap-1 text-xs"
                                     >
                                       <span className="truncate">
                                         {option?.label || value}
                                       </span>
                                       <X
-                                        className="h-3 w-3 cursor-pointer hover:text-red-500 flex-shrink-0"
+                                        className="h-3 w-3 flex-shrink-0 cursor-pointer hover:text-red-500"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           e.stopPropagation();
@@ -186,7 +186,7 @@ export function RHFCombobox({
                                 })}
                               <Badge
                                 variant="secondary"
-                                className="text-xs bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                                className="bg-gray-100 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300"
                               >
                                 +{selectedValues.length - 4} more
                               </Badge>
@@ -200,13 +200,13 @@ export function RHFCombobox({
                                 <Badge
                                   key={value}
                                   variant="outline"
-                                  className="text-xs flex items-center gap-1 max-w-[100px]"
+                                  className="flex max-w-[100px] items-center gap-1 text-xs"
                                 >
                                   <span className="truncate">
                                     {option?.label || value}
                                   </span>
                                   <X
-                                    className="h-3 w-3 cursor-pointer hover:text-red-500 flex-shrink-0"
+                                    className="h-3 w-3 flex-shrink-0 cursor-pointer hover:text-red-500"
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
@@ -231,11 +231,12 @@ export function RHFCombobox({
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
+
                 <PopoverContent
                   className="w-[var(--radix-popover-trigger-width)] p-0"
                   align="start"
                 >
-                  <Command>
+                  <Command className="dark:bg-secondary">
                     <CommandInput
                       placeholder="Search or type to add..."
                       value={inputValue}
@@ -276,11 +277,11 @@ export function RHFCombobox({
                     )} */}
                     <CommandEmpty>
                       {allowCustom && inputValue.trim() ? (
-                        <div className="px-2 py-1 text-sm text-muted-foreground">
+                        <div className="text-muted-foreground px-2 py-1 text-sm">
                           No results found.
                         </div>
                       ) : (
-                        "No results found."
+                        'No results found.'
                       )}
                     </CommandEmpty>
                     <CommandList className="max-h-[200px] overflow-y-auto">
@@ -293,10 +294,10 @@ export function RHFCombobox({
                           >
                             <Check
                               className={cn(
-                                "mr-2 h-4 w-4",
+                                'mr-2 h-4 w-4',
                                 selectedValues.includes(option.value)
-                                  ? "opacity-100"
-                                  : "opacity-0"
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
                               )}
                             />
                             {option.label}
@@ -312,7 +313,7 @@ export function RHFCombobox({
                                 field.onChange
                               )
                             }
-                            className="text-blue-600 cursor-pointer"
+                            className="cursor-pointer text-blue-600"
                           >
                             <Plus className="mr-2 h-4 w-4" />
                             Add &quot;{inputValue.trim()}&quot;

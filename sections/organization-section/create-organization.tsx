@@ -1,221 +1,382 @@
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import FormProvider, { RHFTextField } from "@/components/rhf";
-import RHFUploadAvatar from "@/components/rhf/rhf-upload-avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+'use client';
+
+import ButtonLoading from '@/components/common/button-loading';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { noImageUrl } from '@/constant/constant';
+import { useBoolean } from '@/hooks/useBoolean';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useBoolean } from "@/hooks/useBoolean";
-import { defaultValues, schema } from "@/lib/schemas/organization-schema";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Camera, Pencil, Trash2 } from "lucide-react";
-import { FC, useState } from "react";
-import { useForm } from "react-hook-form";
-import { UserInfo } from "../users";
+  useUpdateOrganizationMutation
+} from '@/store/Reducer/organization';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Camera, Pencil } from 'lucide-react';
+import Image from 'next/image';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+import { UserInfo } from '../users';
+import OrganizationModal from './create-edit-organization-modal';
 
-interface UserDetailPageProps {
-  id: string;
-}
+const defaultValues = {
+  image: null,
+  name: '',
+  instagram: '',
+  facebook: '',
+  youtube: '',
+  linkedin: '',
+};
 
-const CreateOrganizationPage: FC<UserDetailPageProps> = () => {
+const CreateOrganizationPage = () => {
   const openModal = useBoolean();
-  const deleteModal = useBoolean();
+  const [updateOrganization] = useUpdateOrganizationMutation();
 
-  const [active] = useState("info");
-  const [activeTab, setActiveTab] = useState("basicInfo");
-
-  const methods = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: defaultValues,
-  });
-
-  const onSubmit = () => {};
+  const [newOrganization, setNewOrganization] = useState<any>();
+  const [coverImageUploading, setCoverImageUploading] = useState(false);
 
   const CloseModal = () => {
     methods.reset(defaultValues);
     openModal.onFalse();
   };
 
-  const handleNextTab = async () => {
-    if (activeTab === "basicInfo") {
-      const isValid = await methods.trigger(["name", "location"]);
-      if (!isValid) {
-        return;
+  const schema = Yup.object().shape({
+    image: Yup.mixed().nullable(),
+    name: Yup.string()
+      .required('Organization Name is required')
+      .trim()
+      .min(2, 'Organization Name must be at least 2 characters'),
+    instagram: Yup.string().nullable().optional(),
+    facebook: Yup.string().nullable().optional(),
+    youtube: Yup.string().nullable().optional(),
+    linkedin: Yup.string().nullable().optional(),
+  });
+
+  const methods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: defaultValues,
+  });
+
+  // Handle cover image upload
+  const handleCoverImageUpload = async (file: File) => {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+
+    if (!allowedTypes.includes(file.type)) {
+      showError('Only JPEG, PNG, or GIF images are allowed.');
+      return;
+    }
+
+    if (file.size > maxSize) {
+      showError('Image size must be less than 5MB.');
+      return;
+    }
+
+    let uploadedFileKey: string | null = null;
+    try {
+      setCoverImageUploading(true);
+      uploadedFileKey = await uploadFileToAzure(file);
+
+      const payload = {
+        basicInfo: {
+          media: {
+            cover: uploadedFileKey || null,
+          },
+        },
+      };
+
+      const response = await updateOrganization({
+        id: newOrganization?._id,
+        ...payload,
+      }).unwrap();
+
+      if (response?.data) {
+        setNewOrganization(response?.data);
+        showSuccess('Cover image updated successfully');
       }
-      setActiveTab("socialLinks");
-    } else if (activeTab === "socialLinks") {
-      setActiveTab("businessDetails");
-    } else if (activeTab === "businessDetails") {
-      setActiveTab("bankDetails");
+
+      if (response?.error) {
+        throw new Error(getErrorMessage(response.error));
+      }
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.log('Failed to upload cover image:', errorMessage);
+      showError(errorMessage);
+
+      if (uploadedFileKey) {
+        console.log('Rolling back uploaded cover image:', uploadedFileKey);
+        await deleteFileFromAzure(uploadedFileKey);
+      }
+    } finally {
+      setCoverImageUploading(false);
     }
   };
 
-  const onDelete = () => {
-    deleteModal.onFalse();
+  const showToast = () => {
+    showError('Please create an organization first!');
+  };
+
+  const handleSuccess = (org: any) => {
+    setNewOrganization(org);
+    CloseModal();
   };
 
   return (
-    <div className="md:mt-10 mt-5 h-full bg-[#f8f6f7] dark:bg-black">
-      <div className="grid grid-cols-12 ">
+    <div className="mt-5 h-full bg-[#f8f6f7] md:mt-10 dark:bg-black">
+      <div className="grid grid-cols-12">
         {/* --------------- UPPER SECTION --------------- */}
-        <div className="lg:col-span-12 col-span-12">
-          <Card className="overflow-hidden p-4  shadow-md dark:bg-secondary">
+        <div className="col-span-12 lg:col-span-12">
+          <Card className="dark:bg-secondary overflow-hidden p-4 shadow-md">
             <div className="relative w-full">
-              <div className="h-72 bg-[url('/images/blank-img.png')] bg-cover bg-center rounded-lg" />
-              <label
-                htmlFor="banner-upload"
-                className="absolute right-4 top-4 bg-white rounded-full cursor-pointer shadow-lg p-2 flex items-center justify-center hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="Edit cover image"
-              >
-                <Camera className="text-gray-500 hover:text-blue-700 w-5 h-5" />
-                <input
-                  id="banner-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                    }
-                  }}
-                />
-              </label>
-              <div className="absolute left-5 bottom-[-30]">
-                <img
-                  src="/images/blank-profile2.png"
-                  alt="User Avatar"
-                  className="md:w-30 w-20  md:h-30 h-20 rounded-full bg-white shadow-lg z-10"
-                />
+              <div className="relative h-72 rounded-lg bg-cover bg-center">
+                {newOrganization?.basicInfo?.mediaInfo?.cover?.url &&
+                newOrganization?.basicInfo?.mediaInfo?.cover?.url !==
+                  noImageUrl ? (
+                  <Image
+                    src={newOrganization?.basicInfo?.mediaInfo?.cover?.url}
+                    alt="Cover Image"
+                    fill
+                    className="rounded-lg object-cover"
+                    priority
+                  />
+                ) : (
+                  <Image
+                    src="/images/blank-img.png"
+                    alt="Cover Image"
+                    fill
+                    className="rounded-lg object-cover"
+                    priority
+                  />
+                )}
+
+                {coverImageUploading && (
+                  <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-lg bg-black">
+                    <ButtonLoading title="Uploading..." />
+                  </div>
+                )}
+              </div>
+
+              {newOrganization === undefined ? (
+                <label
+                  htmlFor="banner-upload"
+                  className="absolute top-4 right-4 flex cursor-not-allowed items-center justify-center rounded-full bg-white p-2 shadow-lg transition-colors hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  aria-label="Edit cover image"
+                  onClick={showToast}
+                >
+                  <Camera className="h-5 w-5 text-gray-500" />
+                </label>
+              ) : (
+                <label
+                  htmlFor="banner-upload"
+                  className={`absolute top-4 right-4 flex items-center justify-center rounded-full bg-white p-2 shadow-lg transition-colors hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+                  aria-label="Edit cover image"
+                >
+                  <Camera className="h-5 w-5 cursor-pointer text-gray-500 hover:text-blue-700" />
+                  <input
+                    id="banner-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && newOrganization?._id) {
+                        handleCoverImageUpload(file);
+                      } else if (!newOrganization?._id) {
+                        showError('Please create an organization first.');
+                      }
+                    }}
+                  />
+                </label>
+              )}
+
+              <div className="absolute bottom-[-30] left-5">
+                {newOrganization?.basicInfo?.mediaInfo?.logo?.url &&
+                newOrganization?.basicInfo?.mediaInfo?.logo?.url !==
+                  'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' ? (
+                  <Image
+                    src={newOrganization?.basicInfo?.mediaInfo?.logo?.url}
+                    alt="User Avatar"
+                    priority
+                    className="z-10 h-20 w-20 rounded-full bg-white shadow-lg md:h-30 md:w-30"
+                    width={100}
+                    height={100}
+                  />
+                ) : (
+                  <Image
+                    src="/images/blank-profile2.png"
+                    alt="User Avatar"
+                    priority
+                    className="z-10 h-20 w-20 rounded-full bg-white shadow-lg md:h-30 md:w-30"
+                    width={100}
+                    height={100}
+                  />
+                )}
               </div>
             </div>
 
             <div className="flex justify-end">
               <Pencil
                 width={22}
-                className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+                className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
                 onClick={openModal.onTrue}
               />
-              <Trash2
+              {/* <Trash2
                 width={22}
-                className="text-gray-500 cursor-pointer hover:text-gray-700 transition-colors ml-4"
+                className="ml-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
                 onClick={deleteModal.onTrue}
-              />
+              /> */}
             </div>
 
-            <div className="md:flex items-center gap-2  pt-0 md:mt-0 mt-2">
-              <h1 className="md:text-3xl text-2xl font-bold md:ml-2 pt-0 mt-0">
-                Organization Name
+            <div className="mt-2 items-center gap-2 pt-0 md:mt-0 md:flex">
+              <h1 className="mt-0 pt-0 text-2xl font-bold md:ml-2 md:text-3xl">
+                {newOrganization
+                  ? newOrganization?.basicInfo?.name
+                  : 'Organization Name'}
               </h1>
               <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium md:mt-0 mt-2`}
+                className={`mt-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black md:mt-0`}
               >
                 Basic
               </Badge>
             </div>
 
             <Badge
-              className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
+              className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
             >
               0 Subscriptions
             </Badge>
 
-            <div className="flex items-center gap-2 ">
+            <div className="flex items-center gap-2">
               <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
+                className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
               >
                 0% Commission
               </Badge>
               <Badge
-                className={`bg-blue-100 text-black  rounded-full px-3 py-1 text-xs font-medium`}
+                className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
               >
                 0 Boost
               </Badge>
             </div>
-            <div className="-mb-3 flex md:items-center md:justify-end mt-4 md:flex-row flex-col gap-4"></div>
+            <div className="mt-4 -mb-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-end"></div>
           </Card>
 
-          <div className=" mt-4 rounded-lg">
-            {active === "info" && <UserInfo />}
+          <div className="mt-4 rounded-lg">
+            {/* {active === "info" && <UserInfo />} */}
+            <UserInfo
+              newOrganization={newOrganization}
+              setNewOrganization={setNewOrganization}
+            />
           </div>
         </div>
       </div>
 
-      {/* update Organization */}
-      <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30">
-          <DialogContent className="md:!max-w-[550px] mx-auto min-h-[65vh] max-h-[90vh] w-full overflow-y-auto flex flex-col items-center dark:bg-secondary">
-            <DialogHeader>
-              <DialogTitle> Create Organization </DialogTitle>
+      {/* ------------- CREATE ORG MODAL ------------- */}
+      {/* <Dialog open={openModal.value} onOpenChange={CloseModal}>
+        <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
+          <DialogContent
+            aria-describedby={undefined}
+            className="mx-4 w-full max-w-md dark:bg-[#171717]"
+          >
+            <DialogHeader className="flex flex-row items-center justify-between">
+              <DialogTitle className="text-lg font-semibold">
+                Create Organization
+              </DialogTitle>
             </DialogHeader>
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(onSubmit)}
-            >
-              <div className="flex flex-col gap-4 mt-4 w-full">
-                <RHFUploadAvatar name="image" label="Organization Image" />
 
-                <RHFTextField
-                  name="name"
-                  label=" Organization Name"
-                  placeholder="Enter Organization Name"
-                  className={` ${
-                    methods.formState.errors.name ? "border-red-400" : ""
-                  }`}
-                />
+            <FormProvider methods={methods} onSubmit={onSubmit}>
+              <div className="mt-4 flex flex-col gap-4">
+                <div className="space-y-2">
+                  <RHFUploadAvatar
+                    name="image"
+                    label="Organization Icon"
+                    initialImage={(() => {
+                      const img = methods.getValues('image');
+                      if (
+                        typeof img === 'string' &&
+                        img &&
+                        img !== noImageUrl
+                      ) {
+                        return img;
+                      }
+                      return null;
+                    })()}
+                  />
+                </div>
 
-                <div className="w-full  grid md:grid-cols-2 grid-cols-1 gap-4">
+                <div className="space-y-5">
+                  <RHFTextField
+                    name="name"
+                    label="Organization Name"
+                    placeholder="Enter Organization Name"
+                  />
+
                   <RHFTextField
                     name="instagram"
                     label="Instagram Link"
                     placeholder="Enter Instagram Link"
                   />
+
                   <RHFTextField
                     name="facebook"
                     label="Facebook Link"
                     placeholder="Enter Facebook Link"
                   />
+
                   <RHFTextField
                     name="youtube"
                     label="You Tube Link"
                     placeholder="Enter You Tube Link"
                   />
+
                   <RHFTextField
                     name="linkedin"
                     label="LinkedIn Link"
                     placeholder="Enter LinkedIn Link"
                   />
                 </div>
-              </div>
 
-              <div className="flex justify-end mt-4 items-center gap-2">
-                <div className="w-full flex justify-center items-center">
+                <div className="flex justify-end gap-2 pt-4">
                   <Button
                     type="button"
-                    className="bg-primary text-white hover:bg-primary px-7 mt-3 cursor-pointer"
-                    onClick={handleNextTab}
+                    variant="outline"
+                    onClick={CloseModal}
+                    disabled={isLoading}
+                    className="px-4 py-2"
                   >
-                    Save
+                    Cancel
                   </Button>
+
+                  {isLoading || imageUploading ? (
+                    <Button
+                      type="button"
+                      disabled
+                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
+                    >
+                      <ButtonLoading title="Saving" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
+                    >
+                      Save
+                    </Button>
+                  )}
                 </div>
               </div>
             </FormProvider>
           </DialogContent>
         </DialogOverlay>
-      </Dialog>
+      </Dialog> */}
 
-      {/* delete Organization */}
-      <ConfirmDialog
-        open={deleteModal.value}
-        title="Delete Organization"
-        content="Are you sure you want to delete this?"
-        onClose={deleteModal.onFalse}
-        onConfirm={onDelete}
+      <OrganizationModal
+        open={openModal.value}
+        onClose={CloseModal}
+        organization={newOrganization}
+        onSuccess={handleSuccess}
       />
     </div>
   );

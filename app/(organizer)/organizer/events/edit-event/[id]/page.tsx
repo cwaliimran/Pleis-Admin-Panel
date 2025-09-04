@@ -9,11 +9,10 @@ const Page = () => {
      <Header
             links={[
               { name: 'Dashboard', href: '/super-admin' },
-              { name: 'New Event', href: '' },
+              { name: 'Edit Event', href: '' },
             ]}
           />
-  
-      <CreateEventView />
+      <CreateEventView title={'Edit'} />
     </>
   );
 };

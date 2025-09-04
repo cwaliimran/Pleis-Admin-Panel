@@ -13,6 +13,7 @@ import { venueTypeApi } from './Reducer/venueType';
 import { userSlice } from './slice/userSlice';
 import { userListApi } from './Reducer/user-list';
 import { highlightsApi } from './Reducer/highlights';
+import { eventApi } from './Reducer/events';
 
 export const store = configureStore({
   reducer: {
@@ -27,6 +28,7 @@ export const store = configureStore({
     [organizationApi.reducerPath]: organizationApi.reducer,
     [userListApi.reducerPath]: userListApi.reducer,
     [highlightsApi.reducerPath]: highlightsApi.reducer,
+    [eventApi.reducerPath]: eventApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -39,7 +41,8 @@ export const store = configureStore({
       userAccessApi.middleware,
       organizationApi.middleware,
       userListApi.middleware,
-      highlightsApi.middleware
+      highlightsApi.middleware,
+      eventApi.middleware
     ),
 });
 

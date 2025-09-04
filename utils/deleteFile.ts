@@ -1,13 +1,11 @@
+import { CurrentUrl } from '@/constant/constant';
 import axios from 'axios';
 
 export async function deleteFileFromAzure(fileUrl: string): Promise<boolean> {
   try {
-    const response = await axios.delete(
-      `${process.env.NEXT_PUBLIC_LIVE_URL}/upload/azure`,
-      {
-        data: { fileKey: fileUrl }, // send file reference in body
-      }
-    );
+    const response = await axios.delete(`${CurrentUrl}/upload/azure`, {
+      data: { fileKey: fileUrl }, 
+    });
 
     return response.data?.success ?? true;
   } catch (error) {

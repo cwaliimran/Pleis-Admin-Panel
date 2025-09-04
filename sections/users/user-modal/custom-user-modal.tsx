@@ -15,15 +15,14 @@ import {
     DialogOverlay,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { useBoolean } from '@/hooks/useBoolean';
-import { getErrorMessage } from '@/utils/api';
-import { showError } from '@/utils/toast';
-import { formatDobDMY, splitPhoneByDial } from './helpers'; // assume path
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetSuppliersQuery } from '@/store/Reducer/suppliers';
-import { generateValidationSchema } from './validation'; // assume path
+import { getErrorMessage } from '@/utils/api';
+import { showError } from '@/utils/toast';
 import CommonFields from './common-fields'; // assume path
+import { formatDobDMY, splitPhoneByDial } from './helpers'; // assume path
 import RoleSpecificFields from './role-specific-fields'; // assume path
+import { generateValidationSchema } from './validation'; // assume path
 
 type RoleKey = 'admin' | 'organizer' | 'manager' | 'staff' | 'guest' | 'user';
 

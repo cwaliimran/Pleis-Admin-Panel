@@ -3,8 +3,11 @@ import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { useBoolean } from "@/hooks/useBoolean";
 import { EventTable } from "@/sections/event";
+import { useGeteventsQuery } from "@/store/Reducer/events";
+import { formatDate } from "@/utils/format-time";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type OrganizationListProps = {
   userType?: "organizer" | "super-admin";
@@ -14,13 +17,38 @@ const EventList = ({ userType }: OrganizationListProps) => {
   const router = useRouter();
   const deleteModal = useBoolean();
 
+  // Unified filter state
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 10,
+    search: "",
+    status: "",
+    startDate: undefined as Date | undefined,
+    endDate: undefined as Date | undefined,
+  });
+
+  const { data: apiData, isLoading } = useGeteventsQuery({
+    page: filters.page - 1,
+    search: filters.search,
+    limit: filters.limit,
+    status: filters.status === "all" ? undefined : filters.status,
+    startDate: filters.startDate ? formatDate(filters.startDate) : undefined,
+    endDate: filters.endDate ? formatDate(filters.endDate) : undefined,
+  });
+
   const handleDelete = (id: string) => {
-    console.log("id", id);
+    console.log("Deleting event with ID:", id);
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    deleteModal.onFalse();
+  const onDelete = async () => {
+    try {
+      // Call the delete function from your API or store
+      // console.log("Confirmed delete for event:", id);
+      deleteModal.onFalse(); // Close the confirmation modal after deletion
+    } catch (error) {
+      console.error("Failed to delete event", error);
+    }
   };
 
   const handleNavigateToCreate = () => {
@@ -31,18 +59,47 @@ const EventList = ({ userType }: OrganizationListProps) => {
     }
   };
 
+  // Update filter state
+  const updateFilter = (key: string, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+  };
+
+  // Pagination handlers
+  const onPageChange = (newPage: number) => updateFilter("page", newPage);
+  const onLimitChange = (newLimit: number) => updateFilter("limit", newLimit);
+  const onSearchChange = (searchTerm: string) => updateFilter("search", searchTerm);
+  const onStatusChange = (newStatus: string) => updateFilter("status", newStatus);
+  const onDateChange = (newStartDate: Date | undefined, newEndDate: Date | undefined) => {
+    console.log("Date range changed:", newStartDate, newEndDate);
+    updateFilter("startDate", newStartDate);
+    updateFilter("endDate", newEndDate);
+  };
+
+  const onResetFilters = () => {
+    setFilters({
+      page: 1,
+      limit: 10,
+      search: "",
+      status: "",
+      startDate: undefined,
+      endDate: undefined,
+    });
+  };
+
   return (
     <div>
-      <div className=" w-full flex items-center justify-end md:mt-0 mt-3">
+      {/* Create Event Button */}
+      <div className="w-full flex items-center justify-end md:mt-0 mt-3">
         <Button
           className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary/80"
           onClick={handleNavigateToCreate}
         >
-          <Plus className="" />
+          <Plus />
           Create Event
         </Button>
       </div>
 
+      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Event"
@@ -51,8 +108,25 @@ const EventList = ({ userType }: OrganizationListProps) => {
         onConfirm={onDelete}
       />
 
-      {/* ------------- EVENT TABLE ------------- */}
-      <EventTable handleDelete={handleDelete} userType={userType} />
+      {/* Event Table */}
+      <EventTable
+        data={apiData?.data}
+        loading={isLoading}
+        handleDelete={handleDelete}
+        onPageChange={onPageChange}
+        onLimitChange={onLimitChange}
+        onSearch={onSearchChange}
+        search={filters.search}
+        limit={filters.limit}
+        page={filters.page}
+        status={filters.status}
+        onStatusChange={onStatusChange}
+        startDate={filters.startDate}
+        endDate={filters.endDate}
+        onDateChange={onDateChange}
+        onResetFilters={onResetFilters}
+        meta={apiData?.meta}
+      />
     </div>
   );
 };

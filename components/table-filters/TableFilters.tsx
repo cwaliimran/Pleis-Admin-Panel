@@ -202,9 +202,9 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
           {/* Date Range Filter */}
           {dateRangeFilter && (
-            <>
+            <div className="flex justify-between w-full gap-2">
               {/* Start Date */}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 w-full">
                 {/* {dateRangeFilter.startDate.label && (
                   <label
                     htmlFor={dateRangeFilter.startDate.id}
@@ -251,7 +251,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               </div>
 
               {/* End Date */}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 w-full">
                 {/* {dateRangeFilter.endDate.label && (
                   <label
                     htmlFor={dateRangeFilter.endDate.id}
@@ -296,7 +296,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                   </PopoverContent>
                 </Popover>
               </div>
-            </>
+            </div>
           )}
 
           {/* Select Filters */}
