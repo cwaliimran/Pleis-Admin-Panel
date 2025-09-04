@@ -29,6 +29,7 @@ interface CreateVenueModalProps {
   methods: any;
   onSubmit: (data: any) => void;
   selectedVenueType?: any;
+  buttonType?: 'button' | 'submit';
 }
 
 // PLEIS CLIENT
@@ -46,6 +47,7 @@ const VenueTypeModal = ({
   onSubmit,
   isLoading,
   selectedVenueType,
+  buttonType='submit'
 }: CreateVenueModalProps) => {
   const handleClose = () => {
     if (!isLoading) {
@@ -293,7 +295,8 @@ const VenueTypeModal = ({
                   </Button>
                 ) : (
                   <Button
-                    type="submit"
+                    type={buttonType}
+                    onClick={buttonType==='button' ? methods.handleSubmit(onSubmit) : undefined}
                     className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
                     disabled={isLoading || !methods.formState.isValid}
                   >

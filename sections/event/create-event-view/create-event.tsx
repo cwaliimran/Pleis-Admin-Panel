@@ -4,40 +4,40 @@ import Header from '@/app/common/header';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFDate from '@/components/rhf/rhf-date';
 import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
+import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { useBoolean } from '@/hooks/useBoolean';
 import VenueTypeModal from '@/sections/venue/venueTypeModal';
 import { useGetCategoriesQuery } from '@/store/Reducer/categories';
+import { useAddeventMutation, useGeteventByIdQuery } from '@/store/Reducer/events';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { useAddVenueMutation, useGetVenuesQuery } from '@/store/Reducer/venue';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CalendarIcon, ChevronDown, Clock, Plus, X } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
-
+import type { RootState } from '@/store/store';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { AppLoading } from '@/components/atoms/app-loading';
+import { skipToken } from '@reduxjs/toolkit/query';
 interface EventFormValues {
   image: File | null;
   mediaUrl?: string;
   mediaType?: string;
   name: string;
   venue: string;
-  category: string[];
-  tag: string[];
+  category: string;
+  tags: string[];
   organizers: string[];
   partnerOrganizers: string[];
   fromDate: Date | null;
@@ -45,12 +45,12 @@ interface EventFormValues {
   endDate: Date | null;
   endTime: string;
   description: string;
-  eventType: 'one-time' | 'slots';
+  eventType: 'oneTime' | 'slots';
   recurring: boolean;
   recurringType: string;
   recurringInterval: number;
   recurringDays: string[];
-  recurringEnd: 'never' | 'on-day' | 'after';
+  recurringEnd: 'never' | 'onDate' | 'afterOccurrences';
   recurringEndDate: Date | null;
   recurringEndCount: number;
   categoryInput?: string;
@@ -58,27 +58,10 @@ interface EventFormValues {
   organizerInput?: string;
   partnerOrganizerInput?: string;
   organization?: string;
+  startDateTime?: Date;
+  endDateTime?: Date;
+  daysOfWeek?: string[];
 }
-
-
-
-const venueOptions = [
-  { label: 'Suggested Venue', value: 'suggested-venue' },
-  { label: 'Conference Center', value: 'conference-center' },
-  { label: 'Community Hall', value: 'community-hall' },
-];
-
-const categoryOptions = [
-  { label: 'Music', value: 'music' },
-  { label: 'Sports', value: 'sports' },
-];
-
-const tagOptions = [
-  { label: 'Technology', value: 'technology' },
-  { label: 'Business', value: 'business' },
-  { label: 'Health', value: 'health' },
-  { label: 'Music', value: 'music' },
-];
 
 const organizerOptions = [
   { label: 'Organization A', value: 'orgA' },
@@ -100,20 +83,20 @@ const weekDays = [
 
 const CreateEventView = (props: any) => {
   const { title = 'Create' } = props;
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const openModal = useBoolean();
   // const {id} = useParams();
   const [step, setStep] = useState(1);
   const [version, setVersion] = useState(1);
   const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [venueModal, setVenueModal] = useState<boolean>(false);
+  const { id } = useParams();
+  const { data: event = {} } = useGeteventByIdQuery(id ?? skipToken);
   const { data: { data: organizations = [] } = {} } = useGetOrganizationQuery({ page: 0, limit: 100 });
-  const { data: { data: venues = [] } = {} } = useGetVenuesQuery({ page: 0, limit: 100 });
+  const { data: { data: venues = [] } = {}, refetch: refetchVenues } = useGetVenuesQuery({ page: 0, limit: 100 });
   const { data: { data: categories = [] } = {} } = useGetCategoriesQuery({ page: 0, limit: 100 });
-  const { data: { data: tags = [] } = {} } = useGetTagsQuery({ page: 0, limit: 100 });
-
-  console.log({ organizations, venues, categories, tags });
+  const { data: { data: tagsd = [] } = {} } = useGetTagsQuery({ page: 0, limit: 100 });
+  const [addVenue] = useAddVenueMutation();
+  const [addEvent] = useAddeventMutation();
 
 
   const defaultValues = useMemo<EventFormValues>(() => ({
@@ -122,8 +105,8 @@ const CreateEventView = (props: any) => {
     mediaType: 'image',
     name: '',
     venue: '',
-    category: [],
-    tag: [],
+    category: '',
+    tags: [],
     organizers: [],
     partnerOrganizers: [],
     fromDate: null,
@@ -131,9 +114,9 @@ const CreateEventView = (props: any) => {
     endDate: null,
     endTime: '',
     description: '',
-    eventType: 'one-time',
+    eventType: 'oneTime',
     recurring: false,
-    recurringType: '',
+    recurringType: 'weekly',
     recurringInterval: 1,
     recurringDays: [],
     recurringEnd: 'never',
@@ -145,14 +128,9 @@ const CreateEventView = (props: any) => {
     partnerOrganizerInput: '',
     organization: '',
   }), []);
-  const methods = useForm<EventFormValues>({ defaultValues });
   const router = useRouter();
-  const {
-    watch,
-    setValue,
-    //   getValues
-  } = methods;
-
+  const { user } = useSelector((state: RootState) => state.userSlice);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step, version]);
@@ -161,15 +139,17 @@ const CreateEventView = (props: any) => {
     mediaUrl: Yup.string()
       .required('Event media is required'),
     mediaType: Yup.string(),
-    name: Yup.string().required('Venue name is required'),
+    name: Yup.string().required('Name is required'),
     description: Yup.string(),
     venue: Yup.string(),
     category: Yup.string(),
     tags: Yup.array().of(Yup.string()),
     organization: Yup.string().required('Organization is required'),
     partnerOrganizers: Yup.array().of(Yup.string()),
-    startDateTime: Yup.date(),
-    endDateTime: Yup.date(),
+    fromDate: Yup.date(),
+    fromTime: Yup.string().required('Start time is required'),
+    endDate: Yup.date(),
+    endTime: Yup.string().required('End time is required'),
     eventType: Yup.string().oneOf(['oneTime', 'slots']),
     recurring: Yup.boolean(),
     recurringType: Yup.string().oneOf(['weekly', 'monthly', 'daily']),
@@ -179,77 +159,30 @@ const CreateEventView = (props: any) => {
     recurringEndDate: Yup.date().nullable(),
     recurringEndCount: Yup.number().min(1),
     daysOfWeek: Yup.array().of(Yup.string()),
-    endDate: Yup.string(),
+    endOnDate: Yup.string(),
   });
 
-
-  const venueMethods = useForm({
+  const methods = useForm<EventFormValues>({
+    defaultValues,
     resolver: yupResolver(schema),
-    defaultValues: defaultValues,
   });
-
+  const {
+    watch,
+    setValue,reset
+  } = methods;
   const {
     mediaUrl,
     mediaType,
     venue,
     category,
-    tag,
-    organizers,
     partnerOrganizers,
     eventType,
     recurring,
     recurringType,
     recurringDays,
     recurringEnd,
-    categoryInput = '',
-    tagInput = '',
-    organizerInput = '',
     partnerOrganizerInput = '',
   } = watch();
-
-  //   const progress = step === 1 ? 50 : 100;
-
-  //   const addCategory = () => {
-  //     if (categoryInput && !category.includes(categoryInput)) {
-  //       setValue("category", [...category, categoryInput]);
-  //       setValue("categoryInput", "");
-  //     }
-  //   };
-
-  const removeCategory = (val: string) => {
-    setValue(
-      'category',
-      category.filter((v) => v !== val)
-    );
-  };
-
-  const addTag = () => {
-    if (tagInput && !tag.includes(tagInput)) {
-      setValue('tag', [...tag, tagInput]);
-      setValue('tagInput', '');
-    }
-  };
-
-  const removeTag = (val: string) => {
-    setValue(
-      'tag',
-      tag.filter((v) => v !== val)
-    );
-  };
-
-  //   const addOrganizer = () => {
-  //     if (organizerInput && !organizers.includes(organizerInput)) {
-  //       setValue("organizers", [...organizers, organizerInput]);
-  //       setValue("organizerInput", "");
-  //     }
-  //   };
-
-  //   const removeOrganizer = (val: string) => {
-  //     setValue(
-  //       "organizers",
-  //       organizers.filter((v) => v !== val)
-  //     );
-  //   };
 
   const addPartnerOrganizer = () => {
     if (
@@ -278,14 +211,175 @@ const CreateEventView = (props: any) => {
     setValue('recurringDays', newDays);
   };
 
-  const handleAvatarChange = () => {
-    fileInputRef.current?.click();
+  const isStepValid = (step: number) => {
+    if (step === 1) {
+      return [
+        mediaUrl,
+        mediaType,
+        watch('name'),
+        watch('description'),
+        venue,
+        category,
+        watch('tags').length > 0,
+        watch('organization')
+      ].every(Boolean);
+    }
+    if (step === 2) {
+      // Validate required fields for step 2
+      const hasBasicFields = [
+        watch('fromDate'),
+        watch('endDate'),
+        watch('fromTime'),
+        watch('endTime'),
+        eventType,
+      ].every(Boolean);
+
+      // Recurring event validation
+      if (recurring) {
+        const freq = watch('recurringType');
+        const interval = watch('recurringInterval');
+        const daysOfWeek = watch('recurringDays');
+        const endType = watch('recurringEnd');
+        const endDate = watch('recurringEndDate');
+        const occurrences = watch('recurringEndCount');
+
+        if (!freq || !interval || !endType || !daysOfWeek) return false;
+
+        if (endType === 'never') {
+          return hasBasicFields && freq && interval && endType;
+        }
+        if (endType === 'onDate') {
+          return hasBasicFields && freq && interval && endType && !!endDate;
+        }
+        if (endType === 'afterOccurrences') {
+          return hasBasicFields && freq && interval && endType && !!occurrences;
+        }
+        return false;
+      }
+
+      // Non-recurring event
+      return hasBasicFields;
+    }
   };
 
-  const CloseModal = () => {
-    methods.reset(defaultValues);
-    openModal.onFalse();
+  const addNewVenue = async (values: any) => {
+    try {
+      let imageFileString = "";
+      if (
+        values.floorPlan &&
+        (values.floorPlan instanceof FileList ||
+          Array.isArray(values.floorPlan))
+      ) {
+        const file = values.floorPlan[0];
+        if (file) {
+          imageFileString = await uploadFileToAzure(file);
+        }
+        const res: any = await addVenue({ ...values, floorPlan: imageFileString }).unwrap();
+        if (res?.status < 400) {
+          refetchVenues();
+          setValue('venue', res?.data?._id);
+        }
+      }
+    } catch (err) {
+      console.log("Error adding venue:", err);
+    }
   };
+
+  const onSubmit = async (data: EventFormValues) => {
+    let imageFileString = "";
+    try {
+      setLoading(true);
+      if (file) {
+        imageFileString = await uploadFileToAzure(file);
+        console.log("Uploaded file URL:", imageFileString);
+
+      }
+      const payload = {
+        basicInfo: {
+          media: {
+            type: data.mediaType,
+            name: imageFileString,
+          },
+          title: data.name,
+          description: data.description,
+          organization: data.organization,
+          venue: data.venue,
+          category: data.category,
+          tags: data.tags
+        },
+        schedule: {
+          type: data.eventType, // "oneTime"
+          startDateTime: data.fromDate ? `${fDate(data.fromDate,formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}` : '', // "2025-09-03 16:35"
+          endDateTime: data.endDate ? `${fDate(data.endDate,formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}` : '', // "2025-09-03 16:37"
+          ...(data.recurring ? {
+            recurringDetails: {
+              isEnabled: data.recurring, // true
+              frequency: data.recurringType, // "weekly"
+              interval: data.recurringInterval, // 1
+              daysOfWeek: data.recurringDays.map(day => day.substring(0, 3).toLowerCase()), // ["mon", "tue", "wed"]
+              endType: data.recurringEnd, // "never"
+              endDate: data.recurringEndDate, // null
+              occurrences: data.recurringEndCount // 1
+            }
+          } : {})
+        }
+      };
+
+      console.log("Final Payload:", payload);
+      const res = await addEvent(payload).unwrap();
+      if (res?.data) {
+        router.push(`/${user?.role}/events/${res?.data?._id}`);
+      }
+    } catch (error) {
+      if (imageFileString) {
+       await deleteFileFromAzure(imageFileString);
+      }
+      console.log("Error adding event:", error);
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
+//   useEffect(() => {
+//   if (event && event._id) {
+//     console.log('Event has changed:', event);
+
+//     reset({
+//       image: event?.mediaInfo?.url || null, // Example of mediaUrl
+//       mediaUrl: event?.mediaInfo?.url || '',
+//       mediaType: event?.mediaInfo?.type || 'image',
+//       name: event?.basicInfo?.title || '',
+//       venue: event?.venue?._id || '',
+//       category: event?.category?._id || '',
+//       tags: event?.tags?.map((tag: any) => tag._id) || [],
+//       organizers: [event?.basicInfo?.organization?.basicInfo?.name || ''],
+//       partnerOrganizers: event?.partnerOrganizer ? [event.partnerOrganizer] : [],
+//       fromDate: event?.schedule?.startDateTime ? new Date(event.schedule.startDateTime) : null,
+//       fromTime: event?.schedule?.startDateTime ? event.schedule.startDateTime.split(' ')[1] : '',
+//       endDate: event?.schedule?.endDateTime ? new Date(event.schedule.endDateTime) : null,
+//       endTime: event?.schedule?.endDateTime ? event.schedule.endDateTime.split(' ')[1] : '',
+//       description: event?.basicInfo?.description || '',
+//       eventType: event?.schedule?.type || 'oneTime',
+//       recurring: event?.schedule?.recurringDetails?.isEnabled || false,
+//       recurringType: event?.schedule?.recurringDetails?.frequency || 'weekly',
+//       recurringInterval: event?.schedule?.recurringDetails?.interval || 1,
+//       recurringDays: event?.schedule?.recurringDetails?.daysOfWeek || [],
+//       recurringEnd: event?.schedule?.recurringDetails?.endType || 'never',
+//       recurringEndDate: event?.schedule?.recurringDetails?.endDate || null,
+//       recurringEndCount: event?.schedule?.recurringDetails?.occurrences || 1,
+//       categoryInput: '',
+//       tagInput: '',
+//       organizerInput: '',
+//       partnerOrganizerInput: '',
+//       organization: event?.basicInfo?.organization?._id || '',
+//     });
+//   } else {
+//     // If no event or if event _id is not set, reset to default values
+//     reset(defaultValues);
+//   }
+// }, [event, reset]);
+
 
   return (
     <div>
@@ -332,7 +426,7 @@ const CreateEventView = (props: any) => {
 
               <FormProvider
                 methods={methods}
-                onSubmit={methods.handleSubmit(() => { })}
+                onSubmit={methods.handleSubmit(onSubmit)}
               >
                 {step === 1 && (
                   <div className="space-y-8">
@@ -354,7 +448,7 @@ const CreateEventView = (props: any) => {
                                       className="h-full w-full object-cover"
                                     />
                                   ) : (
-                                    <Image
+                                    <img
                                       src={mediaUrl}
                                       alt="Preview"
                                       className="h-full w-full object-cover"
@@ -485,7 +579,7 @@ const CreateEventView = (props: any) => {
                               value: val._id,
                               label: val.title,
                             }))}
-                            value={category}
+                            defaultValue={category}
                             onChange={(e: any) =>
                               setValue('category', e.target.value)
                             }
@@ -523,18 +617,15 @@ const CreateEventView = (props: any) => {
                       </label>
                       <div className="mt-2 w-full items-center gap-2 md:flex md:w-[70%]">
 
-                        <RHFSelectField
+                        <RHFMultiSelectField
                           name="tags"
                           placeholder="Choose Tag"
-                          options={tags?.map((val: any) => ({
+                          options={tagsd?.map((val: any) => ({
                             value: val._id,
                             label: val.title,
                           }))}
-                          value={tag[-1]}
-                          onChange={(e: any) =>
-                            setValue('tag', tag.push(e.target.value))
-                          }
-                          className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                          className="h-[40px] text-left cursor-pointer rounded-4xl border-gray-200 px-5 text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+
                         />
 
                         {/* <input
@@ -553,19 +644,19 @@ const CreateEventView = (props: any) => {
                           Add
                         </Button> */}
                       </div>
-                      {tag.length > 0 && (
+                      {/* {tags?.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {tag.map((t: string) => (
+                          {tags?.map((t: string) => (
                             <Badge
                               key={t}
                               className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black"
                             >
-                              {tags.find((opt:any) => opt._id === t)
+                              {tags?.find((opt:any) => opt._id === t)
                                 ?.title}
                               <button
                                 type="button"
                                 title="Remove Tag"
-                                onClick={() => setValue('tag', tag.filter((v) => v !== t))}
+                                onClick={() => setValue('tags', tags.filter((v) => v !== t))}
                                 className="ml-1 rounded-full p-0.5 hover:bg-gray-200"
                               >
                                 <X className="h-3 w-3 cursor-pointer" />
@@ -573,7 +664,7 @@ const CreateEventView = (props: any) => {
                             </Badge>
                           ))}
                         </div>
-                      )}
+                      )} */}
                     </div>
 
                     {/* Organizer */}
@@ -648,6 +739,7 @@ const CreateEventView = (props: any) => {
 
                       <Button
                         type="button"
+                        disabled={!isStepValid(1)}
                         onClick={() => setStep(2)}
                         className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-[90px]"
                       >
@@ -666,8 +758,8 @@ const CreateEventView = (props: any) => {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => setValue('eventType', 'one-time')}
-                          className={`border-2 ${eventType === 'one-time'
+                          onClick={() => setValue('eventType', 'oneTime')}
+                          className={`border-2 ${eventType === 'oneTime'
                             ? 'border-blue-700 text-blue-700'
                             : 'border-gray-300 dark:border-zinc-700'
                             } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
@@ -738,6 +830,7 @@ const CreateEventView = (props: any) => {
                             </label>
                             <RHFDate
                               name="endDate"
+                              minDate={new Date()}
                               className="h-10 w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600"
                             />
                           </div>
@@ -887,8 +980,8 @@ const CreateEventView = (props: any) => {
                                   <input
                                     type="radio"
                                     name="recurringEnd"
-                                    value="on-day"
-                                    checked={recurringEnd === 'on-day'}
+                                    value="onDate"
+                                    checked={recurringEnd === 'onDate'}
                                     onChange={(e) =>
                                       setValue(
                                         'recurringEnd',
@@ -899,7 +992,7 @@ const CreateEventView = (props: any) => {
                                   />
                                   <span className="text-sm">On Day</span>
                                 </label>
-                                {recurringEnd === 'on-day' && (
+                                {recurringEnd === 'onDate' && (
                                   <div className="mt-3 w-full bg-white md:mt-0 md:w-[30%] dark:bg-[#23272f]">
                                     <RHFDate
                                       name="recurringEndDate"
@@ -914,8 +1007,8 @@ const CreateEventView = (props: any) => {
                                   <input
                                     type="radio"
                                     name="recurringEnd"
-                                    value="after"
-                                    checked={recurringEnd === 'after'}
+                                    value="afterOccurrences"
+                                    checked={recurringEnd === 'afterOccurrences'}
                                     onChange={(e) =>
                                       setValue(
                                         'recurringEnd',
@@ -926,7 +1019,7 @@ const CreateEventView = (props: any) => {
                                   />
                                   <span className="text-sm">After</span>
                                 </label>
-                                {recurringEnd === 'after' && (
+                                {recurringEnd === 'afterOccurrences' && (
                                   <div className="mt-3 flex w-full items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2 md:mt-0 md:w-[30%] dark:border-zinc-700 dark:bg-[#23272f]">
                                     <input
                                       title="Set Recurring Count"
@@ -955,21 +1048,6 @@ const CreateEventView = (props: any) => {
 
                     {/* Navigation buttons */}
                     <div className="mt-22 flex flex-wrap items-center justify-end gap-2">
-                      {/* <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setStep(1)}
-                        className="w-22 rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        // type="submit"
-                        onClick={() => setStep(3)}
-                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
-                      >
-                        Next
-                      </Button> */}
                       <Button
                         type="button"
                         variant="outline"
@@ -978,15 +1056,9 @@ const CreateEventView = (props: any) => {
                       >
                         Back
                       </Button>
-                      {/* <Button
-                        type="button"
-                        onClick={() => setStep(2)}
-                        className="w-22 bg-blue-600 hover:bg-blue-700 text-white rounded-4xl cursor-pointer mt-2 md:py-6 py-3  md:px-18 px-5"
-                      >
-                        Next
-                      </Button> */}
                       <Button
                         type="button"
+                        disabled={!isStepValid(2)}
                         onClick={() => setStep(3)}
                         className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-[90px]"
                       >
@@ -1042,7 +1114,7 @@ const CreateEventView = (props: any) => {
                     </div>
                     <div className="relative mt-5 w-full md:w-[66%]">
                       <RHFTextField
-                        name="name"
+                        name="name_"
                         placeholder="General Admission"
                         className="rounded-4xl border border-gray-200 bg-[#F8F6F7] px-4 text-sm font-medium"
                       />
@@ -1058,7 +1130,7 @@ const CreateEventView = (props: any) => {
                     <div className="mt-4 grid w-full grid-cols-12 gap-4">
                       <div className="col-span-12 md:col-span-8">
                         <RHFTextField
-                          name="description"
+                          name="description_"
                           multiline
                           rows={4}
                           placeholder="Type Ticket Description"
@@ -1115,7 +1187,7 @@ const CreateEventView = (props: any) => {
                             START DATE
                           </label>
                           <RHFDate
-                            name="fromDate"
+                            name="fromDate_"
                             className="w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600"
                           />
                         </div>
@@ -1128,10 +1200,10 @@ const CreateEventView = (props: any) => {
                             title="Select Start Time"
                             type="time"
                             step="1800"
-                            value={watch('fromTime')}
-                            onChange={(e) =>
-                              setValue('fromTime', e.target.value)
-                            }
+                            // value={watch('fromTime')}
+                            // onChange={(e) =>
+                            //   setValue('fromTime', e.target.value)
+                            // }
                             className="w-25 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
                           />
                         </div>
@@ -1146,7 +1218,7 @@ const CreateEventView = (props: any) => {
                             END DATE
                           </label>
                           <RHFDate
-                            name="endDate"
+                            name="endDate_"
                             className="w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600"
                           />
                         </div>
@@ -1159,10 +1231,10 @@ const CreateEventView = (props: any) => {
                             title="Select End Time"
                             type="time"
                             step="1800"
-                            value={watch('endTime')}
-                            onChange={(e) =>
-                              setValue('endTime', e.target.value)
-                            }
+                            // value={watch('endTime')}
+                            // onChange={(e) =>
+                            //   setValue('endTime', e.target.value)
+                            // }
                             className="w-25 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
                           />
                         </div>
@@ -1298,8 +1370,8 @@ const CreateEventView = (props: any) => {
                       </Button>
 
                       <Button
-                        type="button"
-                        onClick={() => router.push('/organizer/events/1')}
+                        type="submit"
+                        // onClick={() => router.push('/organizer/events/1')}
                         className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-[90px]"
                       >
                         Publish
@@ -1318,9 +1390,8 @@ const CreateEventView = (props: any) => {
         editMode={false}
         isLoading={false}
         methods={null}
-        onSubmit={(values) => {
-          console.log('Submitted values:', values);
-        }}
+        buttonType={'button'}
+        onSubmit={addNewVenue}
       />
     </div>
   );
