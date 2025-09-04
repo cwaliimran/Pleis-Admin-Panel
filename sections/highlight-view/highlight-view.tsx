@@ -20,20 +20,12 @@ import * as Yup from 'yup';
 import HighlightTypeModal from './highlight-type-modal';
 import HighlightTypeTable from './highlight-type-table';
 
-type HighlightFormValues = {
-  video: any;
-  title: string;
-  event: string;
-  status: string;
-  organization: string;
-};
-
 const defaultValues = {
   video: null,
   title: '',
-  event: '',
+  event: undefined,
   status: '',
-  organization: '',
+  organization: undefined,
 };
 
 const HighlightsView = () => {
@@ -94,15 +86,36 @@ const HighlightsView = () => {
     }
   }, [apiData, page, limit]);
 
-  const schema = Yup.object({
-    video: Yup.mixed().nullable().required('Video is required'),
-    title: Yup.string().required('Title is required'),
-    event: Yup.string().required('Event is required'),
-    status: Yup.string().required('Status is required'),
-    organization: Yup.string().required('Organization is required'),
-  });
+  // const schema = Yup.object({
+  //   video: Yup.mixed().nullable().required('Video is required'),
+  //   title: Yup.string().required('Title is required'),
+  //   event: Yup.string().required('Event is required'),
+  //   status: Yup.string().required('Status is required'),
+  //   organization: Yup.string().required('Organization is required'),
+  // });
 
-  const methods = useForm<HighlightFormValues>({
+  const schema = Yup.object({
+    video: Yup.mixed()
+      .nullable()
+      .notRequired()
+      .test('video-required', 'Video is required', function (value) {
+        // Allow null/undefined initially, but require actual file when submitting
+        return value !== null && value !== undefined;
+      }),
+    title: Yup.string().required('Title is required'),
+    status: Yup.string().required('Status is required'),
+    event: Yup.string().notRequired(),
+    organization: Yup.string().notRequired(),
+  }).test(
+    'event-or-organization',
+    'Either Event or Organization is required',
+    function (value) {
+      const { event, organization } = value;
+      return !!(event || organization);
+    }
+  );
+
+  const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues,
   });
@@ -110,18 +123,25 @@ const HighlightsView = () => {
   const {
     handleSubmit,
     reset,
-    formState: { errors },
+    // formState: { errors },
   } = methods;
-  
-  console.log('errors', errors);
+
+  // console.log('errors', errors);
 
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
+        video: selectedVenueType.media?.name || null,
         title: selectedVenueType.title || '',
-        event: selectedVenueType.event || '',
         status: selectedVenueType.status || '',
-        organization: selectedVenueType.organization || '',
+        event:
+          selectedVenueType.type === 'event'
+            ? selectedVenueType.object._id
+            : undefined,
+        organization:
+          selectedVenueType.type === 'organization'
+            ? selectedVenueType.object._id
+            : undefined,
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -154,11 +174,109 @@ const HighlightsView = () => {
   };
 
   // CREATE/UPDATE HIGHLIGHT
+  // const onSubmit = handleSubmit(async (formData) => {
+  //   console.log('formData', formData);
+  //   try {
+  //     let videoFileString = undefined;
+  //     // If video is present and is a FileList or array
+  //     if (
+  //       formData.video &&
+  //       (formData.video instanceof FileList || Array.isArray(formData.video))
+  //     ) {
+  //       const file = formData.video[0];
+  //       if (file) {
+  //         setImageUploading(true);
+  //         try {
+  //           videoFileString = await uploadFileToAzure(file);
+  //         } finally {
+  //           setImageUploading(false);
+  //         }
+  //       }
+  //     }
+
+  //     const payload: any = {
+  //       title: formData.title,
+  //       event: formData.event,
+  //       status: formData.status,
+  //       organization: formData.organization,
+  //     };
+
+  //     if (videoFileString) {
+  //       // payload.video = videoFileString;
+  //       payload.media = {
+  //         type: 'video',
+  //         name: videoFileString,
+  //       };
+  //     } else if (editModal.value && typeof formData.video === 'string') {
+  //       // payload.video = formData.video;
+
+  //       payload.media = {
+  //         type: 'video',
+  //         name: videoFileString,
+  //       };
+  //     }
+  //     if (editModal.value && selectedId) {
+  //       payload.status = formData.status;
+  //       payload.id = selectedId;
+  //     }
+  //     let response;
+  //     if (editModal.value && selectedId) {
+  //       response = await updateHighlights(payload).unwrap();
+  //     } else {
+  //       response = await addHighlights(payload).unwrap();
+  //     }
+  //     if (!response) {
+  //       showError('No response from server. Please try again later.');
+  //       return;
+  //     }
+  //     if (response.error) {
+  //       const errorMessage = getErrorMessage(response.error);
+  //       showError(errorMessage);
+  //       return;
+  //     }
+  //     // Handle success and update local state
+  //     if (response?.data) {
+  //       if (editModal.value && selectedId) {
+  //         // Edit: update the item in local state
+  //         setVenueTypes((prev) =>
+  //           prev.map((item) => (item._id === selectedId ? response.data : item))
+  //         );
+  //       } else {
+  //         // Add: add new item to local state but keep only first `limit`
+  //         setVenueTypes((prev) => {
+  //           const updated = [response.data, ...prev];
+  //           return updated.slice(0, limit);
+  //         });
+  //         setMeta((prev: any) => ({
+  //           ...prev,
+  //           totalRecords: prev.totalRecords + 1,
+  //         }));
+  //       }
+  //     }
+  //     if (response?.message) {
+  //       showSuccess(
+  //         response?.message ||
+  //           (editModal.value
+  //             ? 'Highlight updated successfully'
+  //             : 'Highlight created successfully')
+  //       );
+  //     }
+  //     CloseModal();
+  //     refetch();
+  //   } catch (error) {
+  //     setImageUploading(false);
+  //     const errorMessage = getErrorMessage(error);
+  //     console.log('Failed to save highlight:', errorMessage);
+  //     showError(errorMessage);
+  //   }
+  // });
+
   const onSubmit = handleSubmit(async (formData) => {
     console.log('formData', formData);
     try {
-      let videoFileString = undefined;
-      // If video is present and is a FileList or array
+      let videoFileString: string | undefined = undefined;
+
+      // Upload new video if provided
       if (
         formData.video &&
         (formData.video instanceof FileList || Array.isArray(formData.video))
@@ -175,36 +293,46 @@ const HighlightsView = () => {
       }
 
       const payload: any = {
-        title: formData.title,
-        event: formData.event,
         status: formData.status,
-        organization: formData.organization,
       };
 
+      // add type + object based on selection
+      if (formData.event) {
+        payload.type = 'event';
+        payload.object = formData.event;
+      } else if (formData.organization) {
+        payload.type = 'organization';
+        payload.object = formData.organization;
+      }
+
+      if (formData.title) {
+        payload.title = formData.title;
+      }
+
       if (videoFileString) {
-        // payload.video = videoFileString;
         payload.media = {
           type: 'video',
           name: videoFileString,
         };
       } else if (editModal.value && typeof formData.video === 'string') {
-        // payload.video = formData.video;
-
         payload.media = {
           type: 'video',
-          name: videoFileString,
+          name: formData.video,
         };
       }
+
       if (editModal.value && selectedId) {
-        payload.status = formData.status;
         payload.id = selectedId;
       }
+
+      // API Call
       let response;
       if (editModal.value && selectedId) {
         response = await updateHighlights(payload).unwrap();
       } else {
         response = await addHighlights(payload).unwrap();
       }
+
       if (!response) {
         showError('No response from server. Please try again later.');
         return;
@@ -214,15 +342,14 @@ const HighlightsView = () => {
         showError(errorMessage);
         return;
       }
-      // Handle success and update local state
+
+      // Handle success
       if (response?.data) {
         if (editModal.value && selectedId) {
-          // Edit: update the item in local state
           setVenueTypes((prev) =>
             prev.map((item) => (item._id === selectedId ? response.data : item))
           );
         } else {
-          // Add: add new item to local state but keep only first `limit`
           setVenueTypes((prev) => {
             const updated = [response.data, ...prev];
             return updated.slice(0, limit);
@@ -233,6 +360,7 @@ const HighlightsView = () => {
           }));
         }
       }
+
       if (response?.message) {
         showSuccess(
           response?.message ||
@@ -241,6 +369,7 @@ const HighlightsView = () => {
               : 'Highlight created successfully')
         );
       }
+
       CloseModal();
       refetch();
     } catch (error) {

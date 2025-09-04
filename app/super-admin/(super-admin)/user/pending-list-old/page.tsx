@@ -1,7 +1,7 @@
 'use client';
 import Header from '@/app/common/header';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
-import QueryDialog from '@/components/comfirm-dialog/query-dialog';
+// import QueryDialog from '@/components/comfirm-dialog/query-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { UserTable } from '@/sections/users';
 // import { yupResolver } from "@hookform/resolvers/yup";
@@ -72,9 +72,9 @@ const Page = () => {
     pendingModal.onTrue();
   };
 
-  const onPending = () => {
-    pendingModal.onFalse();
-  };
+  // const onPending = () => {
+  //   pendingModal.onFalse();
+  // };
 
   return (
     <div>
@@ -86,13 +86,13 @@ const Page = () => {
       />
       <div></div>
 
-      <QueryDialog
+      {/* <QueryDialog
         open={pendingModal.value}
         title="Active User"
         content="Are you sure you want to active this user?"
         onClose={pendingModal.onFalse}
         onConfirm={onPending}
-      />
+      /> */}
 
       <ConfirmDialog
         open={deleteModal.value}

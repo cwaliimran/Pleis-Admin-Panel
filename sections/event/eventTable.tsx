@@ -43,9 +43,9 @@ interface Meta {
 }
 
 interface PageProps {
-  page: any;
-  data: any[];
-  meta: Meta;
+  page?: any;
+  data?: any[];
+  meta?: Meta;
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;

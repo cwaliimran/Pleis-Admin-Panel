@@ -566,7 +566,8 @@ import FormProvider, {
   RHFSelectField,
   RHFTextField,
 } from '@/components/rhf';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -726,7 +727,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
     status: '',
   });
 
-  const { data: venueData } = useGetVenuesQuery({
+  const { data: venueData, isLoading: venueLoading } = useGetVenuesQuery({
     page: 0,
     search: '',
     limit: '10000',
@@ -1004,25 +1005,52 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
                   options={tagOptions}
                 /> */}
 
-                <RHFMultiSelect
+                {/* <RHFMultiSelect
                   name="tags"
                   label="Select Tags"
                   placeholder="Select Tag"
                   options={tagOptions}
-                />
+                /> */}
 
-                <RHFSelectField
+                <RHFCustomDropdown
                   name="venue"
                   label="Venue"
                   placeholder="Select Venue"
-                  className="w-full flex-1"
                   options={venueOptions}
+                  isLoading={venueLoading}
                 />
 
-                <RHFMultiSelect
+                {/* <RHFMultiSelect
                   name="categories"
                   label="Select Categories"
                   placeholder="Select Category"
+                  options={categoryOptions}
+                /> */}
+
+                {/* <RHFCustomMultiSelect
+                  name="categories"
+                  label="Select Categories"
+                  options={categoryOptions}
+                  placeholder="Choose categories..."
+                /> */}
+
+                <RHFCustomCombobox
+                  name="tags"
+                  label="Select Tags"
+                  placeholder="Select tags"
+                  className="w-full flex-1"
+                  multiple={true}
+                  allowCustom={false}
+                  options={tagOptions}
+                />
+
+                <RHFCustomCombobox
+                  name="categories"
+                  label="Select Categories"
+                  placeholder="Select categories"
+                  className="w-full flex-1"
+                  multiple={true}
+                  allowCustom={false}
                   options={categoryOptions}
                 />
               </div>
@@ -1123,7 +1151,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
             <div className="mt-2 flex w-full items-center justify-center">
               <Button
                 type="submit"
-                className="bg-primary hover:bg-primary/80 mt-3 cursor-pointer px-10 h-10 text-white"
+                className="bg-primary hover:bg-primary/80 mt-3 h-10 cursor-pointer px-10 text-white"
                 disabled={
                   isLoading || imageUploading || !methods.formState.isValid
                 }
