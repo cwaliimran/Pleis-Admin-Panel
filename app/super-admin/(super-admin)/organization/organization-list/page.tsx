@@ -1,5 +1,4 @@
 import Header from '@/app/common/header';
-// import OrganizationList from '@/sections/organization-section/organization-list';
 import OrganizationView from '@/sections/organization-view/organization-view';
 
 const Page = () => {
@@ -13,7 +12,6 @@ const Page = () => {
       />
 
       <OrganizationView userType="super-admin" />
-      {/* <OrganizationList userType="super-admin" /> */}
     </div>
   );
 };

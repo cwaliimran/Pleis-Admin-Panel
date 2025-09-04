@@ -1,22 +1,12 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
-import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { noImageUrl } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useAddOrganizationMutation,
-  useUpdateOrganizationMutation,
+  useUpdateOrganizationMutation
 } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
@@ -29,6 +19,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { UserInfo } from '../users';
+import OrganizationModal from './create-edit-organization-modal';
 
 const defaultValues = {
   image: null,
@@ -41,16 +32,10 @@ const defaultValues = {
 
 const CreateOrganizationPage = () => {
   const openModal = useBoolean();
-
-  const [imageUploading, setImageUploading] = useState(false);
-  const [coverImageUploading, setCoverImageUploading] = useState(false);
-
-  const [addOrganization, { isLoading }] = useAddOrganizationMutation();
   const [updateOrganization] = useUpdateOrganizationMutation();
 
   const [newOrganization, setNewOrganization] = useState<any>();
-
-  console.log('newOrganization', newOrganization);
+  const [coverImageUploading, setCoverImageUploading] = useState(false);
 
   const CloseModal = () => {
     methods.reset(defaultValues);
@@ -73,8 +58,6 @@ const CreateOrganizationPage = () => {
     resolver: yupResolver(schema),
     defaultValues: defaultValues,
   });
-
-  const { handleSubmit, reset } = methods;
 
   // Handle cover image upload
   const handleCoverImageUpload = async (file: File) => {
@@ -131,80 +114,14 @@ const CreateOrganizationPage = () => {
     }
   };
 
-  // / CREATE ORGANIZATION
-  const onSubmit = handleSubmit(async (formData) => {
-    let uploadedFileKey: string | null = null;
-    try {
-      let imageFileString = undefined;
+  const showToast = () => {
+    showError('Please create an organization first!');
+  };
 
-      if (
-        formData.image &&
-        (formData.image instanceof FileList || Array.isArray(formData.image))
-      ) {
-        const file = formData.image[0];
-        if (file) {
-          setImageUploading(true);
-          try {
-            uploadedFileKey = await uploadFileToAzure(file);
-            imageFileString = uploadedFileKey;
-          } finally {
-            setImageUploading(false);
-          }
-        }
-      }
-
-      const payload = {
-        basicInfo: {
-          media: {
-            logo: imageFileString || null,
-          },
-          name: formData.name,
-          socialLinks: {
-            youtube: formData.youtube || '',
-            facebook: formData.facebook || '',
-            instagram: formData.instagram || '',
-            linkedin: formData.linkedin || '',
-          },
-        },
-      };
-
-      if (imageFileString) {
-        payload.basicInfo.media.logo = imageFileString;
-      }
-
-      const response = await addOrganization(payload).unwrap();
-
-      if (response.data) {
-        console.log('Response::', response?.data);
-        setNewOrganization(response?.data);
-      }
-
-      if (!response) {
-        throw new Error('No response from server. Please try again later.');
-      }
-
-      if (response.error) {
-        throw new Error(getErrorMessage(response.error));
-      }
-
-      if (response?.message) {
-        showSuccess(response?.message || 'Organization updated successfully');
-      }
-
-      CloseModal();
-      reset();
-    } catch (error) {
-      setImageUploading(false);
-      const errorMessage = getErrorMessage(error);
-      console.log('Failed to save organization:', errorMessage);
-      showError(errorMessage);
-
-      if (uploadedFileKey) {
-        console.log('Rolling back uploaded image:', uploadedFileKey);
-        await deleteFileFromAzure(uploadedFileKey);
-      }
-    }
-  });
+  const handleSuccess = (org: any) => {
+    setNewOrganization(org);
+    CloseModal();
+  };
 
   return (
     <div className="mt-5 h-full bg-[#f8f6f7] md:mt-10 dark:bg-black">
@@ -216,7 +133,7 @@ const CreateOrganizationPage = () => {
               <div className="relative h-72 rounded-lg bg-cover bg-center">
                 {newOrganization?.basicInfo?.mediaInfo?.cover?.url &&
                 newOrganization?.basicInfo?.mediaInfo?.cover?.url !==
-                  'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' ? (
+                  noImageUrl ? (
                   <Image
                     src={newOrganization?.basicInfo?.mediaInfo?.cover?.url}
                     alt="Cover Image"
@@ -246,6 +163,7 @@ const CreateOrganizationPage = () => {
                   htmlFor="banner-upload"
                   className="absolute top-4 right-4 flex cursor-not-allowed items-center justify-center rounded-full bg-white p-2 shadow-lg transition-colors hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   aria-label="Edit cover image"
+                  onClick={showToast}
                 >
                   <Camera className="h-5 w-5 text-gray-500" />
                 </label>
@@ -255,7 +173,7 @@ const CreateOrganizationPage = () => {
                   className={`absolute top-4 right-4 flex items-center justify-center rounded-full bg-white p-2 shadow-lg transition-colors hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
                   aria-label="Edit cover image"
                 >
-                  <Camera className="h-5 w-5 text-gray-500 hover:text-blue-700" />
+                  <Camera className="h-5 w-5 cursor-pointer text-gray-500 hover:text-blue-700" />
                   <input
                     id="banner-upload"
                     type="file"
@@ -356,7 +274,7 @@ const CreateOrganizationPage = () => {
       </div>
 
       {/* ------------- CREATE ORG MODAL ------------- */}
-      <Dialog open={openModal.value} onOpenChange={CloseModal}>
+      {/* <Dialog open={openModal.value} onOpenChange={CloseModal}>
         <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
           <DialogContent
             aria-describedby={undefined}
@@ -379,8 +297,7 @@ const CreateOrganizationPage = () => {
                       if (
                         typeof img === 'string' &&
                         img &&
-                        img !==
-                          'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
+                        img !== noImageUrl
                       ) {
                         return img;
                       }
@@ -453,7 +370,14 @@ const CreateOrganizationPage = () => {
             </FormProvider>
           </DialogContent>
         </DialogOverlay>
-      </Dialog>
+      </Dialog> */}
+
+      <OrganizationModal
+        open={openModal.value}
+        onClose={CloseModal}
+        organization={newOrganization}
+        onSuccess={handleSuccess}
+      />
     </div>
   );
 };

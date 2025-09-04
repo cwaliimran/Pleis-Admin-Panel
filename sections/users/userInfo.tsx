@@ -25,7 +25,7 @@ interface UserInfoProps {
   setNewOrganization?: any;
 }
 
-const UserInfo = ({ newOrganization, setNewOrganization }: UserInfoProps) => {
+const UserInfo = ({ newOrganization }: UserInfoProps) => {
   // const totalDays = 30;
   // const remainingDays = 5;
   // const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
@@ -56,7 +56,7 @@ const UserInfo = ({ newOrganization, setNewOrganization }: UserInfoProps) => {
 
   const onSubmit = () => {};
 
-  const showtoast = () => {
+  const showToast = () => {
     showError('Please create an organization first!');
   };
 
@@ -74,7 +74,7 @@ const UserInfo = ({ newOrganization, setNewOrganization }: UserInfoProps) => {
             <Pencil
               width={22}
               className="mr-2 cursor-not-allowed text-gray-500 transition-colors hover:text-gray-700"
-              onClick={showtoast}
+              onClick={showToast}
             />
           )}
         </div>
@@ -114,6 +114,7 @@ const UserInfo = ({ newOrganization, setNewOrganization }: UserInfoProps) => {
                   <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
                   <Button
                     variant="default"
+                    disabled
                     className="cursor-pointer rounded-full"
                     onClick={openVenueModal.onTrue}
                   >
@@ -366,7 +367,6 @@ const UserInfo = ({ newOrganization, setNewOrganization }: UserInfoProps) => {
           open={openModal.value}
           onClose={CloseModal}
           newOrganization={newOrganization}
-          onSubmitSuccess={(data) => setNewOrganization(data)}
         />
 
         {/* VENUE MODAL */}

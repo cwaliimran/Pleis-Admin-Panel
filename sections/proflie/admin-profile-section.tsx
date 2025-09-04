@@ -6,9 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  useUpdateUserMutation
-} from '@/store/Reducer/user-list';
+import { useUpdateUserMutation } from '@/store/Reducer/user-list';
 import { setUser } from '@/store/slice/userSlice';
 import { RootState } from '@/store/store';
 import { getErrorMessage } from '@/utils/api';
@@ -224,7 +222,9 @@ const AdminProfileSection = () => {
                 <Avatar className="h-24 w-24">
                   <AvatarImage src={avatarUrl} />
                   <AvatarFallback className="bg-gray-100 text-gray-700">
-                    AD
+                    <span className="text-2xl font-semibold">
+                      {user?.basicInfo?.firstName[0]}
+                    </span>
                   </AvatarFallback>
                 </Avatar>
                 <div>

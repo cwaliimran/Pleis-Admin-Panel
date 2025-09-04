@@ -7,11 +7,9 @@ import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api';
 import { extractAddress } from '@/utils/format-google-address'; // Assuming this utility exists
 import type { Option } from './types';
 
-// Define libraries as a static constant outside the component
-const googleMapsLibraries: ('places')[] = ['places'];
-
 // PLEIS CLIENT
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
+const googleMapsLibraries: ('places')[] = ['places'];
 
 interface OrganizerFieldsProps {
     supplierOptions: Option[];

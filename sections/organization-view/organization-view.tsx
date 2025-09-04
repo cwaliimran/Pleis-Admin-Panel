@@ -3,7 +3,8 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useAddCategoryMutation, useUpdateCategoryMutation
+  useAddCategoryMutation,
+  useUpdateCategoryMutation,
 } from '@/store/Reducer/categories';
 import {
   useDeleteOrganizationMutation,
@@ -63,8 +64,6 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
   });
-
-  console.log('apiData', apiData?.data);
 
   // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);

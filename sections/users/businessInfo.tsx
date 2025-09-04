@@ -17,25 +17,25 @@ const BusinessInfo = () => {
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 First Name
               </span>
-              <span className="text-slate-500">John</span>
+              <span className="text-slate-500">-</span>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Last Name
               </span>
-              <span className="text-slate-500">Doe</span>
+              <span className="text-slate-500">-</span>
             </div>
             <div className="col-span-2 flex flex-col gap-1">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Email
               </span>
-              <span className="text-slate-500">john.doe@example.com</span>
+              <span className="text-slate-500">-</span>
             </div>
             <div className="col-span-2 flex flex-col gap-1">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 Phone Number
               </span>
-              <span className="text-slate-500">+385 98 123 4567</span>
+              <span className="text-slate-500">-</span>
             </div>
 
             {showAll && (
@@ -44,76 +44,70 @@ const BusinessInfo = () => {
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Organization Name
                   </span>
-                  <span className="text-slate-500">Example Organization</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="col-span-2 flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Company Name
                   </span>
-                  <span className="text-slate-500">Example Company Ltd.</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     OIB
                   </span>
-                  <span className="text-slate-500">12345678901</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="col-span-2 flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Bank Account Number
                   </span>
-                  <span className="text-slate-500">HR1234567890123456789</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Postal Code
                   </span>
-                  <span className="text-slate-500">10000</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Country
                   </span>
-                  <span className="text-slate-500">Croatia</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     City
                   </span>
-                  <span className="text-slate-500">Zadar</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="col-span-2 flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Representative Full Name
                   </span>
-                  <span className="text-slate-500">John Doe</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="col-span-2 flex flex-col gap-1">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Subscription Status
                   </span>
-                  <span className="text-slate-500">Basic</span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="flex flex-col gap-1 md:col-span-2">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Address
                   </span>
-                  <span className="text-slate-500">
-                    123 Main Street, Zagreb
-                  </span>
+                  <span className="text-slate-500">-</span>
                 </div>
                 <div className="flex flex-col gap-1 md:col-span-2">
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     List of Suppliers
                   </span>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded bg-slate-100 px-2 py-1 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                      Clubbing
-                    </span>
-                    <span className="rounded bg-slate-100 px-2 py-1 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                      Techno
-                    </span>
-                  </div>
+                  <div className="flex flex-wrap gap-2"></div>
+                  <span className="rounded bg-slate-100 px-2 py-1 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                    -
+                  </span>
                 </div>
               </>
             )}
