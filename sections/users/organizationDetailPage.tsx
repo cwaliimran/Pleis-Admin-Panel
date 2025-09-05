@@ -292,7 +292,7 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold md:text-3xl">
+                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold md:text-3xl capitalize">
                     {organizationData?.basicInfo?.name || '-'}
                   </h1>
                   <Badge

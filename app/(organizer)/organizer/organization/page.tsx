@@ -1,17 +1,17 @@
-import Header from "@/app/common/header";
-import OrganizationList from "@/sections/organization-section/organization-list";
+import Header from '@/app/common/header';
+import OrganizationView from '@/sections/organization-view/organization-view';
 
 const Page = () => {
   return (
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: "Dashboard", href: "/organizer/dashboard" },
-          { name: "Organizations", href: "" },
+          { name: 'Dashboard', href: '/organizer/dashboard' },
+          { name: 'Organizations', href: '' },
         ]}
       />
 
-      <OrganizationList userType="organizer" />
+      <OrganizationView userType="organizer" />
     </div>
   );
 };

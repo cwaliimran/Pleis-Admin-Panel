@@ -230,7 +230,7 @@ const CreateOrganizationPage = () => {
             </div>
 
             <div className="mt-2 items-center gap-2 pt-0 md:mt-0 md:flex">
-              <h1 className="mt-0 pt-0 text-2xl font-bold md:ml-2 md:text-3xl">
+              <h1 className="mt-0 pt-0 text-2xl font-bold md:ml-2 md:text-3xl capitalize">
                 {newOrganization
                   ? newOrganization?.basicInfo?.name
                   : 'Organization Name'}
