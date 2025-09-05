@@ -21,6 +21,7 @@ export const formatStr = {
   paramCase: {
     dateTime: "DD-MM-YYYY h:mm a", // 17-04-2022 12:00 am
     date: "DD-MM-YYYY", // 17-04-2022
+    db: "YYYY-MM-DD", // 2022-04-17
   },
 };
 
@@ -291,3 +292,23 @@ export const formatDate = (date?: Date): string | undefined => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+
+export function convertTimeFormat(time, to24Hour = false) {
+    if (to24Hour) {
+        // Convert 12-hour format (e.g., "6:15 PM") to 24-hour format (e.g., "18:15")
+        const [timePart, period] = time.split(" ");
+        let [hours, minutes] = timePart.split(":");
+        hours = parseInt(hours);
+        if (period === "PM" && hours !== 12) hours += 12;
+        if (period === "AM" && hours === 12) hours = 0;
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    } else {
+        // Convert 24-hour format (e.g., "18:15") to 12-hour format (e.g., "6:15 PM")
+        let [hours, minutes] = time.split(":");
+        hours = parseInt(hours);
+        let period = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12; // Convert 0 to 12 for midnight
+        return `${hours.toString().padStart(2, '0')}:${minutes.padStart(2, '0')} ${period}`;
+    }
+}

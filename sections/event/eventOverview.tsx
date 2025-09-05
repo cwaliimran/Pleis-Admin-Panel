@@ -6,15 +6,16 @@ import {
   Ellipsis,
   MapPin,
   PartyPopper,
-  Shirt,
-  UserPlus,
   UsersRound,
 } from "lucide-react";
 import React from "react";
-import { userTags } from "../users/data";
 import { Button } from "@/components/ui/button";
+import ImageWithFallback from "@/components/common/img-with-fallback";
+import { fDate } from "@/utils/format-time";
+import { useRouter } from "next/navigation";
 
-const EventOverView = () => {
+const EventOverView = ({ event }: { event: any }) => {
+  const router = useRouter();
   const tickets = [
     {
       title: "Early Bird Tickets",
@@ -52,14 +53,10 @@ const EventOverView = () => {
               <h1 className="text-slate-500 font-semibold">ABOUT ORGANIZER</h1>
               <div className="mt-2">
                 <div className="md:flex items-center gap-2 mt-1">
-                  <img
-                    src="/images/eventImage.png"
-                    alt="Peti Kupe"
-                    className="w-10 h-10 rounded-full"
-                  />
+                  <ImageWithFallback url={event?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url} alt={event?.basicInfo?.organization?.basicInfo?.name} className="w-6 h-6 rounded-full" />
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-gray-800 dark:text-white">
-                      Peti Kupe
+                      {event?.basicInfo?.organization?.basicInfo?.name || "Unknown Organizer"}
                     </span>
                     <div className="flex">
                       <MapPin className="w-4 h-4" />
@@ -71,7 +68,9 @@ const EventOverView = () => {
                   Peti Kupe je destinacija u kojoj se isprepliću glazba,
                   umjetnosti, edukativni sadržaji i gastronomija.
                 </h1>
-                <Badge className=" bg-transparent w-full  text-black dark:bg-white  border border-gray-400 cursor-pointer rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800  transition-colors">
+                <Badge onClick={() =>
+                  router.push(`/${window.location.pathname.split('/')[1]}/organization/${event?.basicInfo?.organization?._id}`)
+                } className=" bg-transparent w-full  text-black dark:bg-white  border border-gray-400 cursor-pointer rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800  transition-colors">
                   Profile
                 </Badge>
               </div>
@@ -82,11 +81,7 @@ const EventOverView = () => {
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">DESCRIPTION</h1>
               <p className=" mt-2">
-                Svirati ploče bez pritiska, jednostavno iz ljubavi prema
-                zvukovima te njegovati umjetnost slušanja muzike. Misija je to
-                jedinstvenog kluba Kasheme u Zürichu. S ovim audiofilskim barom
-                posebne koncepcije i uređenja upoznali smo se proljetos pri
-                gostovanju njihove sjajne ekipe u Kupeu.
+                {event?.basicInfo?.description || "No description available."}
               </p>
             </CardHeader>
           </Card>
@@ -96,7 +91,7 @@ const EventOverView = () => {
               <h1 className="text-slate-500 font-semibold ">VENUE TYPE</h1>
               <div className="flex items-center gap-2 mt-2">
                 <PartyPopper />
-                <p className=" mt-2 text-lg ">Nightclub</p>
+                <p className=" mt-2 text-lg ">{event?.basicInfo?.venue?.title || "Unknown Type"}</p>
               </div>
             </CardHeader>
           </Card>
@@ -105,12 +100,12 @@ const EventOverView = () => {
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">CATEGORIES</h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                {userTags.map((item, index) => (
+                {[event?.basicInfo?.category || []]?.map((item, index) => (
                   <Badge
                     key={index}
                     className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
                   >
-                    {item}
+                    {item?.title}
                   </Badge>
                 ))}
               </div>
@@ -121,12 +116,12 @@ const EventOverView = () => {
             <CardHeader>
               <h1 className="text-slate-500 font-semibold">TAGS</h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                {userTags.map((item, index) => (
+                {event?.basicInfo?.tags?.map((item: any, index: number) => (
                   <Badge
                     key={index}
                     className="bg-white dark:bg-black text-gray-400 border border-gray-400 rounded-full px-4 py-1 text-md font-medium hover:bg-gray-200 hover:text-gray-800 dark:hover:text-white transition-colors"
                   >
-                    {item}
+                    {item?.title}
                   </Badge>
                 ))}
               </div>
@@ -148,6 +143,7 @@ const EventOverView = () => {
                 <img
                   src="/images/bannerImage.png"
                   alt="Promotion"
+                  width={100}
                   className="w-full sm:w-20 md:h-20 h-30 rounded-[10px] object-cover"
                 />
 
@@ -237,14 +233,14 @@ const EventOverView = () => {
                     <Calendar className="w-4 h-4" />
                     <p className="text-sm text-slate-500">START DATE</p>
                   </div>
-                  <p className="text-sm">March 23, 25, 13:00</p>
+                  <p className="text-sm">{fDate(event?.schedule?.startDateTime) || "-"}</p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <p className="text-sm text-slate-500">END DATE</p>
                   </div>
-                  <p className="text-sm">March 23, 25, 13:00</p>
+                  <p className="text-sm">{fDate(event?.schedule?.endDateTime) || "-"}</p>
                 </div>
               </div>
             </CardHeader>
@@ -255,17 +251,27 @@ const EventOverView = () => {
               <h1 className="text-slate-500 font-semibold">VENUE</h1>
               <div className="flex items-center gap-2 mt-2">
                 <PartyPopper className="w-4 h-4" />
-                <span> Vibrant club</span>
+                <span>{event?.basicInfo?.venue?.title || "Unknown Venue"}</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <MapPin className="w-4 h-4" />
-                <span>Trnjanska cesta 5, 10 000 Zagreb, Cro...</span>
+                <span>{event?.basicInfo?.venue?.location?.fullAddress || "Unknown Address"}</span>
               </div>
-              <img
-                src="/images/mapImage.png"
-                alt=""
-                className="w-full h-full mt-2"
-              />
+
+              <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
+                {event?.basicInfo?.venue?.location?.coordinates?.length ? (
+                  <iframe
+                    title="Venue Location Map"
+                    src={`https://www.google.com/maps?q=${event?.basicInfo?.venue?.location?.coordinates[0]},${event?.basicInfo?.venue?.location?.coordinates[1]}&hl=es;z=14&output=embed`}
+                    className="h-full w-full border-0"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-gray-400">
+                    No location selected
+                  </div>
+                )}
+              </div>
             </CardHeader>
           </Card>
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import ImageWithFallback from "@/components/common/img-with-fallback";
+import { Avatar } from "@/components/ui/avatar";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,7 +10,6 @@ import { FC } from "react";
 interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
   userType?: string;
 }
 
@@ -25,26 +25,24 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
     }
   };
 
-  const handleNavigateToEdit = (id: string) => {
-    if (userType === "organizer") {
-      router.push(`/organizer/events/edit-event/${id}`);
+  const handleNavigateToEdit = (item:any) => {
+    if (userType) {
+      router.push(`/${userType}/events/edit-event/${item?._id}`);
     }
-    if (userType === "super-admin") {
-      router.push(`/super-admin/events/edit-event/${id}`);
-    }
-  };
+  }
 
   return (
     <TableRow
       className="transition-colors h-14 w-full cursor-pointer"
       onClick={handleNavigateToDetails}
     >
+      {/* Event Image */}
+
       <TableCell>
         <Avatar className="!rounded-xl shadow-sm w-12 h-12 overflow-hidden">
-          {/* Check if event has an image or use a placeholder */}
           {item?.basicInfo?.mediaInfo?.url && item.basicInfo.mediaInfo.name !== "noimage.png" ? (
-            <AvatarImage
-              src={item?.basicInfo?.mediaInfo?.url}
+            <ImageWithFallback
+              url={item?.basicInfo?.mediaInfo?.url}
               alt={item?.basicInfo?.title}
               className="object-cover w-full h-full cursor-pointer"
             />
@@ -56,22 +54,70 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
         </Avatar>
       </TableCell>
 
+      {/* Event Title */}
       <TableCell className="text-left">
         {item?.basicInfo?.title?.length > 20 ? item.basicInfo.title.slice(0, 20) + "..." : item.basicInfo.title}
       </TableCell>
 
-      <TableCell className="text-left">{item?.basicInfo?.organization || "-"}</TableCell>
-      <TableCell className="text-left">{item?.basicInfo?.venue || "-"}</TableCell>
-
-      <TableCell>{item?.schedule?.startDateTime ? item.schedule.startDateTime : "-"}</TableCell>
+      {/* Organization Name & Logo */}
       <TableCell className="text-left">
-        {item?.schedule?.endDateTime ? item.schedule.endDateTime : "-"}
+        <div className="flex items-center justify-center gap-2">
+          {item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url && (
+            <Avatar className="w-6 h-6 !rounded">
+              <ImageWithFallback url={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
+                alt={item?.basicInfo?.organization?.basicInfo?.name}  className="object-cover w-full h-full" />
+              {/* <AvatarImage
+                src={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
+                alt={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.name}
+                className="object-cover w-full h-full"
+              /> */}
+            </Avatar>
+          )}
+          <span>{item?.basicInfo?.organization?.basicInfo?.name || "-"}</span>
+        </div>
+
       </TableCell>
 
+      {/* Venue Title */}
+      <TableCell className="text-left">{item?.basicInfo?.venue?.title || "-"}</TableCell>
+
+      {/* Start Date */}
+      <TableCell>
+        {item?.schedule?.startDateTime
+          ? new Date(item.schedule.startDateTime).toLocaleString()
+          : "-"}
+      </TableCell>
+      {/* End Date */}
+      <TableCell className="text-left">
+        {item?.schedule?.endDateTime
+          ? new Date(item.schedule.endDateTime).toLocaleString()
+          : "-"}
+      </TableCell>
+
+      {/* Revenue */}
       <TableCell>{item?.meta?.revenue ? item.meta.revenue : "-"}</TableCell>
+      {/* Views */}
       <TableCell className="text-left">{item?.meta?.views ? item.meta.views : "-"}</TableCell>
+      {/* Region */}
       <TableCell className="text-left">{item?.meta?.region || "-"}</TableCell>
 
+      {/* Category */}
+      {/* <TableCell className="text-left flex items-center gap-2">
+      {item?.basicInfo?.category?.imageInfo?.url &&
+      item?.basicInfo?.category?.imageInfo?.name !== "noimage.png" ? (
+        <Avatar className="w-6 h-6 !rounded">
+        <AvatarImage
+          src={item?.basicInfo?.category?.imageInfo?.url}
+          alt={item?.basicInfo?.category?.imageInfo?.name}
+          className="object-cover w-full h-full"
+        />
+        </Avatar>
+      ) : null}
+      <span>{item?.basicInfo?.category?.title || "-"}</span>
+      </TableCell> */}
+
+
+      {/* Actions */}
       <TableCell className="text-end">
         <div className="flex gap-2">
           {/* View Details Button */}
@@ -89,7 +135,7 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleNavigateToEdit(item._id);
+              handleNavigateToEdit(item);
             }}
             className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
           >
