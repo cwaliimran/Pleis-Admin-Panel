@@ -1,7 +1,7 @@
 "use client";
 
 import ImageWithFallback from "@/components/common/img-with-fallback";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,6 @@ import { FC } from "react";
 interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
   userType?: string;
 }
 
@@ -26,12 +25,9 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
     }
   };
 
-  const handleNavigateToEdit = (id: string) => {
-    if (userType === "organizer") {
-      router.push(`/organizer/events/edit-event/${id}`);
-    }
-    if (userType === "super-admin") {
-      router.push(`/super-admin/events/edit-event/${id}`);
+  const handleNavigateToEdit = (item:any) => {
+    if (userType) {
+      router.push(`/${userType}/events/edit-event/${item?._id}`);
     }
   }
 
@@ -139,7 +135,7 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleNavigateToEdit(item._id);
+              handleNavigateToEdit(item);
             }}
             className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
           >

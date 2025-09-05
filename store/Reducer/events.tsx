@@ -48,6 +48,13 @@ export const eventApi = createApi({
             }),
             invalidatesTags: ['event'],
         }),
+        cloneevent: builder.mutation({
+            query: (id) => ({
+                url: API_ROUTES.EVENTS_BY_ID(id) + '/clone',
+                method: 'POST',
+            }),
+            invalidatesTags: ['event'],
+        }),
 
         updateevent: builder.mutation({
             query: ({ id, ...updatedevent }) => ({
@@ -73,5 +80,6 @@ export const {
   useGeteventByIdQuery,
   useAddeventMutation,
   useUpdateeventMutation,
+  useCloneeventMutation,
   useDeleteeventMutation,
 } = eventApi;

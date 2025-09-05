@@ -38,6 +38,7 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
     placeholder = "Select option",
     options,
     className = "",
+    ...rest
 }) => {
     const { control } = useFormContext()
 
@@ -48,7 +49,11 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
             render={({ field }) => (
                 <FormItem>
                     {label && <FormLabel className="">{label}</FormLabel>}
-                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                    >
                         <FormControl>
                             <SelectTrigger className={`w-full ${className}`}>
                                 <SelectValue placeholder={placeholder} />
@@ -62,7 +67,12 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
                             ))}
                         </SelectContent>
                     </Select>
-                    <input type="hidden" onBlur={field.onBlur} />
+                    <input
+                        type="hidden"
+                        onBlur={field.onBlur}
+                        value={field.value}
+                        {...rest}
+                    />
                     <FormMessage />
                 </FormItem>
             )}

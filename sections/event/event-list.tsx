@@ -1,10 +1,12 @@
 "use client";
+import OverlayLoading from "@/components/atoms/overlay-loading";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { useBoolean } from "@/hooks/useBoolean";
 import { EventTable } from "@/sections/event";
-import { useGeteventsQuery } from "@/store/Reducer/events";
+import { useDeleteeventMutation, useGeteventsQuery } from "@/store/Reducer/events";
 import { formatDate } from "@/utils/format-time";
+import { fi } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -16,7 +18,9 @@ type OrganizationListProps = {
 const EventList = ({ userType }: OrganizationListProps) => {
   const router = useRouter();
   const deleteModal = useBoolean();
-
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteEvent] = useDeleteeventMutation();
+  const [isDeleting, setIsDeleting] = useState(false);
   // Unified filter state
   const [filters, setFilters] = useState({
     page: 1,
@@ -27,7 +31,7 @@ const EventList = ({ userType }: OrganizationListProps) => {
     endDate: undefined as Date | undefined,
   });
 
-  const { data: apiData, isLoading } = useGeteventsQuery({
+  const { data: apiData, isLoading, refetch } = useGeteventsQuery({
     page: filters.page - 1,
     search: filters.search,
     limit: filters.limit,
@@ -37,17 +41,26 @@ const EventList = ({ userType }: OrganizationListProps) => {
   });
 
   const handleDelete = (id: string) => {
-    console.log("Deleting event with ID:", id);
+    setDeleteId(id);
     deleteModal.onTrue();
   };
 
   const onDelete = async () => {
     try {
       // Call the delete function from your API or store
-      // console.log("Confirmed delete for event:", id);
-      deleteModal.onFalse(); // Close the confirmation modal after deletion
+      if (deleteId) {
+        deleteModal.onFalse();
+        setIsDeleting(true);
+       const res= await deleteEvent(deleteId).unwrap();
+       if (res?.data) {
+         refetch(); 
+       }
+      }
+     
     } catch (error) {
       console.error("Failed to delete event", error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -88,6 +101,7 @@ const EventList = ({ userType }: OrganizationListProps) => {
 
   return (
     <div>
+      <OverlayLoading show={isLoading || isDeleting} />
       {/* Create Event Button */}
       <div className="w-full flex items-center justify-end md:mt-0 mt-3">
         <Button

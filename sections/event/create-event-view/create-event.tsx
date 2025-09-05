@@ -1,9 +1,7 @@
 'use client';
 
-import Header from '@/app/common/header';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFDate from '@/components/rhf/rhf-date';
-import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
 import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import VenueTypeModal from '@/sections/venue/venueTypeModal';
 import { useGetCategoriesQuery } from '@/store/Reducer/categories';
-import { useAddeventMutation, useGeteventByIdQuery } from '@/store/Reducer/events';
+import { useAddeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
 import { useAddVenueMutation, useGetVenuesQuery } from '@/store/Reducer/venue';
@@ -20,16 +18,15 @@ import { uploadFileToAzure } from '@/utils/fileUpload';
 import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CalendarIcon, ChevronDown, Clock, Plus, X } from 'lucide-react';
-import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
 import type { RootState } from '@/store/store';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
-import { AppLoading } from '@/components/atoms/app-loading';
 import { skipToken } from '@reduxjs/toolkit/query';
+import OverlayLoading from '@/components/atoms/overlay-loading';
 interface EventFormValues {
   image: File | null;
   mediaUrl?: string;
@@ -90,16 +87,16 @@ const CreateEventView = (props: any) => {
   const [file, setFile] = useState<File | null>(null);
   const [venueModal, setVenueModal] = useState<boolean>(false);
   const { id } = useParams();
-  const { data: event = {} } = useGeteventByIdQuery(id ?? skipToken);
+  const { data: event = {}, isLoading: eventLoading = false } = useGeteventByIdQuery(id ?? skipToken);
   const { data: { data: organizations = [] } = {} } = useGetOrganizationQuery({ page: 0, limit: 100 });
   const { data: { data: venues = [] } = {}, refetch: refetchVenues } = useGetVenuesQuery({ page: 0, limit: 100 });
   const { data: { data: categories = [] } = {} } = useGetCategoriesQuery({ page: 0, limit: 100 });
   const { data: { data: tagsd = [] } = {} } = useGetTagsQuery({ page: 0, limit: 100 });
   const [addVenue] = useAddVenueMutation();
   const [addEvent] = useAddeventMutation();
+  const [updateEvent] = useUpdateeventMutation();
 
-
-  const defaultValues = useMemo<EventFormValues>(() => ({
+  const defaultValues: EventFormValues = {
     image: null,
     mediaUrl: '',
     mediaType: 'image',
@@ -127,7 +124,7 @@ const CreateEventView = (props: any) => {
     organizerInput: '',
     partnerOrganizerInput: '',
     organization: '',
-  }), []);
+  };
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.userSlice);
   const [loading, setLoading] = useState(false);
@@ -168,11 +165,12 @@ const CreateEventView = (props: any) => {
   });
   const {
     watch,
-    setValue,reset
+    setValue, reset
   } = methods;
   const {
     mediaUrl,
     mediaType,
+    organization,
     venue,
     category,
     partnerOrganizers,
@@ -263,8 +261,9 @@ const CreateEventView = (props: any) => {
   };
 
   const addNewVenue = async (values: any) => {
+    let imageFileString = "";
     try {
-      let imageFileString = "";
+      setLoading(true);
       if (
         values.floorPlan &&
         (values.floorPlan instanceof FileList ||
@@ -275,13 +274,17 @@ const CreateEventView = (props: any) => {
           imageFileString = await uploadFileToAzure(file);
         }
         const res: any = await addVenue({ ...values, floorPlan: imageFileString }).unwrap();
-        if (res?.status < 400) {
+        if (res?.data) {
           refetchVenues();
+          setVenueModal(false);
           setValue('venue', res?.data?._id);
         }
       }
     } catch (err) {
+      await deleteFileFromAzure(imageFileString);
       console.log("Error adding venue:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -309,8 +312,8 @@ const CreateEventView = (props: any) => {
         },
         schedule: {
           type: data.eventType, // "oneTime"
-          startDateTime: data.fromDate ? `${fDate(data.fromDate,formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}` : '', // "2025-09-03 16:35"
-          endDateTime: data.endDate ? `${fDate(data.endDate,formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}` : '', // "2025-09-03 16:37"
+          startDateTime: data.fromDate ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}` : '', // "2025-09-03 16:35"
+          endDateTime: data.endDate ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}` : '', // "2025-09-03 16:37"
           ...(data.recurring ? {
             recurringDetails: {
               isEnabled: data.recurring, // true
@@ -326,13 +329,18 @@ const CreateEventView = (props: any) => {
       };
 
       console.log("Final Payload:", payload);
-      const res = await addEvent(payload).unwrap();
+      let res = null;
+      if (!id) {
+        res = await addEvent(payload).unwrap();
+      } else {
+        res = await updateEvent({ id: id, ...payload }).unwrap();
+      }
       if (res?.data) {
         router.push(`/${user?.role}/events/${res?.data?._id}`);
       }
     } catch (error) {
       if (imageFileString) {
-       await deleteFileFromAzure(imageFileString);
+        await deleteFileFromAzure(imageFileString);
       }
       console.log("Error adding event:", error);
     } finally {
@@ -341,48 +349,61 @@ const CreateEventView = (props: any) => {
 
   };
 
-//   useEffect(() => {
-//   if (event && event._id) {
-//     console.log('Event has changed:', event);
+  const setEditValues = () => {
 
-//     reset({
-//       image: event?.mediaInfo?.url || null, // Example of mediaUrl
-//       mediaUrl: event?.mediaInfo?.url || '',
-//       mediaType: event?.mediaInfo?.type || 'image',
-//       name: event?.basicInfo?.title || '',
-//       venue: event?.venue?._id || '',
-//       category: event?.category?._id || '',
-//       tags: event?.tags?.map((tag: any) => tag._id) || [],
-//       organizers: [event?.basicInfo?.organization?.basicInfo?.name || ''],
-//       partnerOrganizers: event?.partnerOrganizer ? [event.partnerOrganizer] : [],
-//       fromDate: event?.schedule?.startDateTime ? new Date(event.schedule.startDateTime) : null,
-//       fromTime: event?.schedule?.startDateTime ? event.schedule.startDateTime.split(' ')[1] : '',
-//       endDate: event?.schedule?.endDateTime ? new Date(event.schedule.endDateTime) : null,
-//       endTime: event?.schedule?.endDateTime ? event.schedule.endDateTime.split(' ')[1] : '',
-//       description: event?.basicInfo?.description || '',
-//       eventType: event?.schedule?.type || 'oneTime',
-//       recurring: event?.schedule?.recurringDetails?.isEnabled || false,
-//       recurringType: event?.schedule?.recurringDetails?.frequency || 'weekly',
-//       recurringInterval: event?.schedule?.recurringDetails?.interval || 1,
-//       recurringDays: event?.schedule?.recurringDetails?.daysOfWeek || [],
-//       recurringEnd: event?.schedule?.recurringDetails?.endType || 'never',
-//       recurringEndDate: event?.schedule?.recurringDetails?.endDate || null,
-//       recurringEndCount: event?.schedule?.recurringDetails?.occurrences || 1,
-//       categoryInput: '',
-//       tagInput: '',
-//       organizerInput: '',
-//       partnerOrganizerInput: '',
-//       organization: event?.basicInfo?.organization?._id || '',
-//     });
-//   } else {
-//     // If no event or if event _id is not set, reset to default values
-//     reset(defaultValues);
-//   }
-// }, [event, reset]);
+    if (!event) return;
+    const fromDate_ = event?.schedule?.startDateTime ? new Date(event.schedule.startDateTime) : null;
+    const fromTime_ = event?.schedule?.startDateTime
+      ? convertTimeFormat(event.schedule.startDateTime.split(' ').slice(1).join(' '),true)
+      : '';
+    const endDate_ = event?.schedule?.endDateTime ? new Date(event.schedule.endDateTime) : null;
+    const endTime_ = event?.schedule?.endDateTime ? convertTimeFormat(event.schedule.endDateTime.split(' ').slice(1).join(' '),true) : '';
 
+    reset({
+      image: event?.basicInfo?.mediaInfo?.url || null,        // from basicInfo.mediaInfo
+      mediaUrl: event?.basicInfo?.mediaInfo?.url || '',
+      mediaType: event?.basicInfo?.mediaInfo?.type || 'image',
+
+      name: event?.basicInfo?.title || '',
+      description: event?.basicInfo?.description || '',
+
+      venue: event?.basicInfo?.venue?._id || '',
+      category: event?.basicInfo?.category?._id || '',
+      tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
+
+      eventType: event?.schedule?.type || 'oneTime',
+
+      fromDate: fromDate_,
+      fromTime: fromTime_,
+      endDate: endDate_,
+      endTime: endTime_,
+
+      recurring: event?.schedule?.recurringDetails?.isEnabled || false,
+      recurringType: event?.schedule?.recurringDetails?.frequency || 'weekly',
+      recurringInterval: event?.schedule?.recurringDetails?.interval || 1,
+      recurringDays: event?.schedule?.recurringDetails?.daysOfWeek || [],
+      recurringEnd: event?.schedule?.recurringDetails?.endType || 'never',
+      recurringEndDate: event?.schedule?.recurringDetails?.endDate || null,
+      recurringEndCount: event?.schedule?.recurringDetails?.occurrences || 1,
+
+      categoryInput: '',
+      tagInput: '',
+      organizerInput: '',
+      partnerOrganizerInput: '',
+
+      organization: event?.basicInfo?.organization?._id || '',
+    });
+  }
+ 
+  useEffect(() => {
+    if (event && event._id) {
+      setEditValues();
+    } 
+  }, [event?._id, reset]);
 
   return (
     <div>
+      <OverlayLoading show={loading || eventLoading} />
       <div className="font['Inter'] flex min-h-screen w-full flex-col items-center bg-[#f8f6f7] py-4 dark:bg-black">
         <div className="mb-2 flex w-full justify-end"></div>
 
@@ -532,7 +553,7 @@ const CreateEventView = (props: any) => {
                             value: org._id,
                             label: org.basicInfo?.name,
                           }))}
-                          value={watch('organization')}
+                          value={organization}
                           onChange={(e: any) =>
                             setValue('organization', e.target.value)
                           }
@@ -579,7 +600,7 @@ const CreateEventView = (props: any) => {
                               value: val._id,
                               label: val.title,
                             }))}
-                            defaultValue={category}
+                            value={category}
                             onChange={(e: any) =>
                               setValue('category', e.target.value)
                             }
@@ -702,14 +723,14 @@ const CreateEventView = (props: any) => {
                           </Button>
                         </div>
                       )}
-                      {partnerOrganizers.length > 0 && (
+                      {partnerOrganizers?.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {partnerOrganizers.map((po: string) => (
+                          {partnerOrganizers?.map((po: string) => (
                             <Badge
                               key={po}
                               className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black"
                             >
-                              {organizerOptions.find((opt) => opt.value === po)
+                              {organizerOptions?.find((opt) => opt.value === po)
                                 ?.label || po}
                               <button
                                 title="Remove Organizer"

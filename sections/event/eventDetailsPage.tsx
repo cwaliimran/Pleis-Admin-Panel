@@ -1,5 +1,6 @@
 "use client";
 
+import OverlayLoading from "@/components/atoms/overlay-loading";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import ImageWithFallback from "@/components/common/img-with-fallback";
 import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
@@ -25,9 +26,10 @@ import EventTicket from "@/sections/event/eventTicket";
 import LastTransaction from "@/sections/event/lastTransaction";
 import { TransactionHistory } from "@/sections/invoices";
 import UserCard from "@/sections/users/userCard";
-import { useGeteventByIdQuery } from "@/store/Reducer/events";
+import { useCloneeventMutation, useDeleteeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from "@/store/Reducer/events";
 import { fDate } from "@/utils/format-time";
 import { capitalizeFirst } from "@/utils/short-utils";
+import { set } from "lodash";
 import { Calendar, Copy, Pencil, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
@@ -39,8 +41,13 @@ const EventDetailsPage = () => {
   const { id } = useParams();
   const [active, setActive] = React.useState("overview");
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
-  const { data: event = {} } = useGeteventByIdQuery(id);
-
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
+  const [deleteEvent] = useDeleteeventMutation();
+  const [updateEvent] = useUpdateeventMutation();
+  const [cloneEvent] = useCloneeventMutation();
+  const userType = window?.location?.pathname?.split('/')[1];
   // const event = {
   //   id: "1",
   //   name: "Summer Music Festival 2025",
@@ -48,22 +55,64 @@ const EventDetailsPage = () => {
   //   fromDate: "2025-03-23T13:00:00Z",
   //   endDate: "2025-03-25T13:00:00Z",
   // };
-
-  const onDelete = () => {
-    deleteModal.onFalse();
-    // Handle delete logic here
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    deleteModal.onTrue();
+  };
+  const handleUpdateEvent = async () => {
+    try {
+      setLoading(true);
+      const newStatus = event.status === 'active' ? 'inactive' : 'active';
+      const res = await updateEvent({ id, status: newStatus }).unwrap();
+      if (res?.data) {
+        refetch();
+      }
+    } catch (error) {
+      console.error("Failed to update event", error);
+    }
+    finally {
+      setLoading(false);
+    }
   };
 
-  const handleCloneEvent = async (id: string) => {
-    console.log("Cloning event with ID:", id);
-    // Call API to clone event
-    //   const clonedEvent = await cloneEvent(id);
-    //   toast.success("Event cloned successfully.");
-    //   router.push(`/events/${clonedEvent.id}`); // or refresh list
+  const handleCloneEvent = async () => {
+    try {
+      setLoading(true);
+      const res = await cloneEvent(id).unwrap();
+      if (res?.data?._id) {
+        router.push(`/${userType}/events`);
+      }
+    } catch (error) {
+      console.error("Failed to clone event", error);
+    }
+    finally {
+      setLoading(false);
+    }
   };
+  const onDelete = async () => {
+    try {
+      // Call the delete function from your API or store
+      if (deleteId) {
+        deleteModal.onFalse();
+        setLoading(true);
+        const res = await deleteEvent(deleteId).unwrap();
+        if (res?.data) {
+          router.back();
+        }
+      }
+
+    } catch (error) {
+      console.error("Failed to delete event", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   return (
     <>
+      <OverlayLoading show={isLoading || loading} />
       <div className="space-y-6 pb-12">
         <div className="mt-10 h-full">
           <div className="grid grid-cols-12 md:gap-7">
@@ -87,14 +136,14 @@ const EventDetailsPage = () => {
                         </div>
                         <div className="flex items-center">
                           <Pencil
-                          className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
-                          onClick={() =>
-                            router.push(`/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`)
-                          }
+                            className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+                            onClick={() =>
+                              router.push(`/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`)
+                            }
                           />
                           <Trash2
-                          className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors md:ml-4 ml-1"
-                          onClick={deleteModal.onTrue}
+                            className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors md:ml-4 ml-1"
+                            onClick={() => handleDelete(event?._id)}
                           />
                         </div>
                       </div>
@@ -149,7 +198,7 @@ const EventDetailsPage = () => {
                     <div className="w-full sm:w-auto">
                       <Button
                         variant="default"
-                        onClick={() => handleCloneEvent(event.id)}
+                        onClick={handleCloneEvent}
                         className="flex items-center justify-center gap-2 px-4 py-2 rounded-3xl w-full sm:w-auto cursor-pointer"
                       >
                         <Copy className="w-4 h-4" /> Clone
@@ -159,10 +208,11 @@ const EventDetailsPage = () => {
                     {/* Publish Button */}
                     <div className="w-full sm:w-auto">
                       <Button
+                        onClick={handleUpdateEvent}
                         variant="default"
                         className="flex items-center justify-center gap-2 px-4 py-2 rounded-3xl w-full sm:w-auto cursor-pointer"
                       >
-                        Publish
+                        {event?.status === "active" ? 'Unpublish' : 'Publish'}
                       </Button>
                     </div>
 
