@@ -49,16 +49,30 @@ const OrganizationModal = ({
   const isLoading = isAdding || isUpdating;
 
   // Define Yup schema with minimal typing
+  const urlRegex = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
+
   const schema = Yup.object().shape({
-    image: Yup.mixed().nullable().optional(), // Loosened to accept any mixed type
+    image: Yup.mixed().nullable().optional(),
     name: Yup.string()
       .required('Organization Name is required')
       .trim()
       .min(2, 'Organization Name must be at least 2 characters'),
-    instagram: Yup.string().nullable().optional(),
-    facebook: Yup.string().nullable().optional(),
-    youtube: Yup.string().nullable().optional(),
-    linkedin: Yup.string().nullable().optional(),
+    instagram: Yup.string()
+      .nullable()
+      .optional()
+      .matches(urlRegex, { message: 'Instagram link must be a valid URL', excludeEmptyString: true }),
+    facebook: Yup.string()
+      .nullable()
+      .optional()
+      .matches(urlRegex, { message: 'Facebook link must be a valid URL', excludeEmptyString: true }),
+    youtube: Yup.string()
+      .nullable()
+      .optional()
+      .matches(urlRegex, { message: 'YouTube link must be a valid URL', excludeEmptyString: true }),
+    linkedin: Yup.string()
+      .nullable()
+      .optional()
+      .matches(urlRegex, { message: 'LinkedIn link must be a valid URL', excludeEmptyString: true }),
   });
 
   // Define default values

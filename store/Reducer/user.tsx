@@ -8,7 +8,6 @@ export const userApi = createApi({
   reducerPath: 'userApi',
   baseQuery: customFetchBaseQuery(),
   endpoints: (builder) => ({
-    
     // -------------- SUPER ADMIN --------------
     adminLogin: builder.mutation({
       query: (login) => ({
@@ -37,7 +36,7 @@ export const userApi = createApi({
       }),
     }),
 
-     resetPassword: builder.mutation({
+    resetPassword: builder.mutation({
       query: (data) => ({
         url: API_ROUTES.RESET_PASSWORD,
         method: 'POST',
@@ -53,11 +52,20 @@ export const userApi = createApi({
         body: login,
       }),
     }),
+
+    signup: builder.mutation({
+      query: (signup) => ({
+        url: API_ROUTES.REGISTER,
+        method: 'POST',
+        body: signup,
+      }),
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
+  useSignupMutation,
   useAdminLoginMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,

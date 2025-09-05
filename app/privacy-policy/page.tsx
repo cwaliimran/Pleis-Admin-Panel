@@ -1,10 +1,10 @@
-import { Separator } from "@/components/ui/separator";
-import React from "react";
+import { Separator } from '@/components/ui/separator';
+import React from 'react';
 
 const Page = () => {
   return (
-    <div className="p-10">
-      <h1 className="text-2xl font-bold mb-4 text-foreground">
+    <div className="dark:bg-secondary min-h-screen p-10">
+      <h1 className="text-foreground mb-4 text-2xl font-bold">
         Privacy Policy
       </h1>
       <Separator className="mb-4" />
@@ -15,7 +15,7 @@ const Page = () => {
         not agree with any part of these terms, you may not use our services.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">
+      <h2 className="text-foreground mb-2 text-lg font-semibold">
         1. Account Registration
       </h2>
       <p className="mb-4">
@@ -24,7 +24,7 @@ const Page = () => {
         information and to keep your login credentials secure.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">
+      <h2 className="text-foreground mb-2 text-lg font-semibold">
         2. Use of Our Services
       </h2>
       <p className="mb-4">
@@ -33,7 +33,7 @@ const Page = () => {
         the service or servers.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">
+      <h2 className="text-foreground mb-2 text-lg font-semibold">
         3. Subscriptions & Payments
       </h2>
       <p className="mb-4">
@@ -42,7 +42,7 @@ const Page = () => {
         forth at the time of purchase.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">
+      <h2 className="text-foreground mb-2 text-lg font-semibold">
         4. Intellectual Property
       </h2>
       <p className="mb-4">
@@ -50,7 +50,7 @@ const Page = () => {
         of Pleis and may not be copied or reproduced without permission.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">
+      <h2 className="text-foreground mb-2 text-lg font-semibold">
         5. Termination
       </h2>
       <p className="mb-4">
@@ -58,7 +58,7 @@ const Page = () => {
         at any time, with or without notice, for violating these Terms.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">
+      <h2 className="text-foreground mb-2 text-lg font-semibold">
         6. Limitation of Liability
       </h2>
       <p className="mb-4">
@@ -66,16 +66,16 @@ const Page = () => {
         damages arising from your use of the services. Use at your own risk.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">7. Privacy</h2>
+      <h2 className="text-foreground mb-2 text-lg font-semibold">7. Privacy</h2>
       <p className="mb-4">
-        Your privacy is important to us. Please review our{" "}
+        Your privacy is important to us. Please review our{' '}
         <a href="/privacy-policy" className="text-primary underline">
           Privacy Policy
-        </a>{" "}
+        </a>{' '}
         to learn how we handle your personal data.
       </p>
 
-      <h2 className="text-lg font-semibold mb-2 text-foreground">
+      <h2 className="text-foreground mb-2 text-lg font-semibold">
         8. Updates to Terms
       </h2>
       <p className="mb-4">
@@ -84,7 +84,7 @@ const Page = () => {
         Terms.
       </p>
 
-      <p className="text-xs text-muted-foreground mt-6">
+      <p className="text-muted-foreground mt-6 text-xs">
         Last updated: July 10, 2025
       </p>
     </div>

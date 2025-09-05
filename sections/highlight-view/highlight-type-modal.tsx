@@ -4,7 +4,7 @@ import FormProvider, {
   RHFTextField,
   RHFUploadVideo,
 } from '@/components/rhf';
-import RHFTextfieldWithSelect from '@/components/rhf/rhf-text-field-with-select';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useGeteventsQuery } from '@/store/Reducer/events';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import * as React from 'react';
 
@@ -40,7 +41,15 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
     }
   };
 
-  const { data: apiData } = useGetOrganizationQuery({
+  const { data: apiData, isLoading: isLoadingOrganizations } =
+    useGetOrganizationQuery({
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+    });
+
+  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
     page: 0,
     search: '',
     limit: '10000',
@@ -49,7 +58,12 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
 
   const organizationOptions = (apiData?.data || []).map((v: any) => ({
     value: v?._id.toString(),
-    label: v?.basicInfo?.name,
+    label: v?.basicInfo?.name || 'No Name',
+  }));
+
+  const eventOptions = (eventData?.data || []).map((v: any) => ({
+    value: v?._id.toString(),
+    label: v?.basicInfo?.title || 'No Title',
   }));
 
   // Get isDirty from formState
@@ -75,7 +89,7 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
               <RHFUploadVideo name="video" label="Highlight Video" />
             </div>
 
-            <div className="col-span-12 flex flex-col gap-0 space-y-3 md:col-span-8">
+            <div className="col-span-12 flex flex-col gap-0 space-y-4 md:col-span-8">
               <RHFTextField
                 name="title"
                 label="Highlight Title"
@@ -85,22 +99,38 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
                 }`}
               />
 
-              <RHFTextfieldWithSelect
+              {/* <RHFCustomDropdown
                 name="event"
+                label="Event"
                 placeholder="Select Event"
-                label="Events"
-                options={[
-                  { value: 'event1', label: 'Event 1' },
-                  { value: 'event2', label: 'Event 2' },
-                  { value: 'event3', label: 'Event 3' },
-                ]}
+                options={eventOptions}
+                isLoading={isLoadingEvents}
               />
 
-              <RHFTextfieldWithSelect
+              <RHFCustomDropdown
                 name="organization"
                 label="Organization"
                 placeholder="Select Organization"
                 options={organizationOptions}
+                isLoading={isLoadingOrganizations}
+              /> */}
+
+              <RHFCustomDropdown
+                name="event"
+                label="Event"
+                placeholder="Select Event"
+                options={eventOptions}
+                isLoading={isLoadingEvents}
+                disabled={!!methods.watch('organization')}
+              />
+
+              <RHFCustomDropdown
+                name="organization"
+                label="Organization"
+                placeholder="Select Organization"
+                options={organizationOptions}
+                isLoading={isLoadingOrganizations}
+                disabled={!!methods.watch('event')}
               />
 
               <RHFSelectField

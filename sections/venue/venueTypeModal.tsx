@@ -2,7 +2,7 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFSelectScrollable from '@/components/rhf/rhf-select-scrollable';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import {
@@ -80,14 +80,14 @@ const VenueTypeModal = ({
     }
   };
 
-  const { data: apiData } = useGetVenueTypesQuery({
+  const { data: apiData, isLoading: venueLoading } = useGetVenueTypesQuery({
     page: 0,
     search: '',
-    limit: '100',
+    limit: '10000',
     status: '',
   });
 
-  const { data: orgData } = useGetOrganizationQuery({
+  const { data: orgData, isLoading: orgLoading } = useGetOrganizationQuery({
     page: 0,
     search: '',
     limit: '10000',
@@ -134,18 +134,34 @@ const VenueTypeModal = ({
                 }
               />
 
-              <RHFSelectScrollable
+              <RHFCustomDropdown
+                name="venueType"
+                label="Venue Type"
+                placeholder="Select Venue Type"
+                options={venueTypeOptions}
+                isLoading={venueLoading}
+              />
+
+              {/* <RHFSelectScrollable
                 name="venueType"
                 label="Venue Type"
                 placeholder="Select a venue type"
                 options={venueTypeOptions}
-              />
+              /> */}
 
-              <RHFSelectScrollable
+              {/* <RHFSelectScrollable
                 name="organization"
                 label="Organization"
                 placeholder="Select Organization"
                 options={organizationOptions}
+              /> */}
+
+              <RHFCustomDropdown
+                name="organization"
+                label="Organization"
+                placeholder="Select Organization"
+                options={organizationOptions}
+                isLoading={orgLoading}
               />
 
               {editMode && (
