@@ -21,7 +21,7 @@ import CustomBadge from '../ui/custom-badge';
 
 interface RHFCustomComboboxProps {
   name: string;
-  label: string;
+  label?: string;
   placeholder: string;
   className?: string;
   multiple: boolean;
@@ -60,9 +60,9 @@ export const RHFCustomCombobox = ({
     setValue(name, newValues, { shouldValidate: true });
   };
 
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(search.toLowerCase())
-  );
+  // const filteredOptions = options.filter((option) =>
+  //   option.label.toLowerCase().includes(search.toLowerCase())
+  // );
 
   return (
     <div className={cn('', className)}>
@@ -86,7 +86,7 @@ export const RHFCustomCombobox = ({
             style={{ width: 'var(--radix-popover-trigger-width)' }}
             onWheel={(e) => e.stopPropagation()}
           >
-            <Command className="dark:bg-secondary rounded-lg">
+            {/* <Command className="dark:bg-secondary rounded-lg">
               <CommandInput
                 placeholder="Search..."
                 value={search}
@@ -119,6 +119,59 @@ export const RHFCustomCombobox = ({
                   {allowCustom &&
                     search &&
                     !filteredOptions.some(
+                      (opt) => opt.label.toLowerCase() === search.toLowerCase()
+                    ) && (
+                      <CommandItem
+                        value={search}
+                        onSelect={() => {
+                          const newOption = {
+                            value: search.toLowerCase().replace(/\s+/g, '-'),
+                            label: search,
+                          };
+                          options.push(newOption);
+                          handleSelect(newOption.value);
+                        }}
+                      >
+                        &quot;{search}&quot;
+                      </CommandItem>
+                    )}
+                </CommandGroup>
+              </CommandList>
+            </Command> */}
+            <Command className="dark:bg-secondary rounded-lg">
+              <CommandInput
+                placeholder="Search..."
+                value={search}
+                onValueChange={setSearch}
+                className="h-11 border-0 focus:ring-0 focus:outline-none"
+              />
+              <CommandList className="max-h-[240px] overflow-y-auto">
+                <CommandEmpty className="py-6 text-center text-sm text-gray-500">
+                  No results found.
+                </CommandEmpty>
+                <CommandGroup>
+                  {options.map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      value={option.label} // ✅ use label for search
+                      onSelect={() => handleSelect(option.value)}
+                      className="cursor-pointer"
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          selectedValues.includes(option.value)
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))}
+
+                  {allowCustom &&
+                    search &&
+                    !options.some(
                       (opt) => opt.label.toLowerCase() === search.toLowerCase()
                     ) && (
                       <CommandItem

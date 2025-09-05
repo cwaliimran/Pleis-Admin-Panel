@@ -1,93 +1,344 @@
 'use client';
 
-import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
-import * as Yup from 'yup';
+import 'react-phone-input-2/lib/style.css';
 
 import { ModeToggle } from '@/components/atoms/mode-toggle';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import GoogleLocationInput from '@/components/common/location-input';
+import FormProvider, { RHFTextField } from '@/components/rhf';
+import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useGetSuppliersGloabalQuery } from '@/store/Reducer/suppliers';
 import Image from 'next/image';
+import { useSignupMutation } from '@/store/Reducer/user';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
+import ButtonLoading from '@/components/common/button-loading';
+import { getDeviceType } from '@/utils/getDeviceType';
+import { useRouter } from 'next/navigation';
 
-const defaultValues = {
+// TypeScript interfaces
+interface LocationData {
+  coordinates: [number, number];
+  fullAddress: string;
+  country: string;
+  city: string;
+  state: string;
+  postalCode: string;
+}
+
+interface FormData {
+  fname: string;
+  lname: string;
+  organizationName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  phone: { code: string; number: string }; // Updated type
+  companyName: string;
+  oib: string;
+  bankAccountNumber: string;
+  representativeFullName: string;
+  location: LocationData | null;
+  suppliers: string[];
+  terms: boolean;
+}
+
+interface BackendPayload {
+  // profileIcon: string;
+  firstName: string;
+  lastName: string;
+  organizationName: string;
+  email: string;
+  phoneNumber: {
+    code: string;
+    number: string;
+  };
+  password: string;
+  deviceType: string;
+  userType: string;
+  deviceId: string;
+  timezone: string;
+  companyDetails: {
+    name: string;
+    oib: string;
+    bankAccountNumber: string;
+    representativeName: string;
+    location: {
+      coordinates: [number, number];
+      fullAddress: string;
+      country: string;
+      city: string;
+      state: string;
+      postalCode: string;
+    };
+    suppliers: string[];
+  };
+}
+
+const defaultValues: FormData = {
   fname: '',
   lname: '',
   organizationName: '',
   email: '',
   password: '',
   confirmPassword: '',
-  phone: '',
+  phone: { code: '+92', number: '' }, // Updated default value
   companyName: '',
   oib: '',
   bankAccountNumber: '',
   representativeFullName: '',
-  address: '',
-  postalCode: '',
-  city: '',
-  country: '',
+  location: null,
   suppliers: [],
   terms: false,
 };
 
-// Step 1 validation
-const basicInfoSchema = Yup.object().shape({
-  fname: Yup.string().required('First name is required'),
-  lname: Yup.string().required('Last name is required'),
-  organizationName: Yup.string().required('Organization name is required'),
-  email: Yup.string().email('Invalid email').required('Email is required'),
-  password: Yup.string()
-    .min(6, 'Password must be at least 6 characters')
-    .required('Password is required'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'Passwords must match')
-    .required('Confirm password is required'),
-  phone: Yup.string().required('Phone number is required'),
-});
+// Custom validation functions
+const validateEmail = (email: string): string | true => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email.trim()) return 'Email is required';
+  if (!emailRegex.test(email)) return 'Invalid email format';
+  return true;
+};
 
-// Step 2 validation
-const businessDetailsSchema = Yup.object().shape({
-  companyName: Yup.string().required('Company name is required'),
-  oib: Yup.string().required('OIB is required'),
-  bankAccountNumber: Yup.string().required('Bank account number is required'),
-  postalCode: Yup.string().required('Postal code is required'),
-  representativeFullName: Yup.string().required(
-    'Representative full name is required'
-  ),
-  address: Yup.string().required('Address is required'),
-  country: Yup.string().required('Country is required'),
-  city: Yup.string().required('City is required'),
-  suppliers: Yup.array().min(1, 'At least one supplier is required'),
-  terms: Yup.bool()
-    .oneOf([true], 'You must accept terms and conditions')
-    .required(),
-});
+const validatePassword = (password: string): string | true => {
+  if (!password) return 'Password is required';
+  if (password.length < 6) return 'Password must be at least 6 characters';
+  return true;
+};
 
-const fullSchema = basicInfoSchema.concat(businessDetailsSchema);
+const validateConfirmPassword = (
+  confirmPassword: string,
+  password: string
+): string | true => {
+  if (!confirmPassword) return 'Confirm password is required';
+  if (confirmPassword !== password) return 'Passwords must match';
+  return true;
+};
+
+const validateRequired = (value: any, fieldName: string): string | true => {
+  if (!value || (typeof value === 'string' && !value.trim())) {
+    return `${fieldName} is required`;
+  }
+  if (Array.isArray(value) && value.length === 0) {
+    return `${fieldName} is required`;
+  }
+  return true;
+};
 
 function SignUpPage() {
   const open = useBoolean();
   const confirmOpen = useBoolean();
+  const router = useRouter();
+
+  const [signUp, { isLoading: signUpLoading }] = useSignupMutation();
+
+  const { data: supplierData } = useGetSuppliersGloabalQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
+
+  const supplierOptions = React.useMemo(
+    () =>
+      supplierData?.data?.map((sup: any) => ({
+        value: sup._id,
+        label: sup?.title,
+      })) || [],
+    [supplierData]
+  );
 
   const [step, setStep] = React.useState<'basicInfo' | 'businessDetails'>(
     'basicInfo'
   );
+  const [validationErrors, setValidationErrors] = React.useState<
+    Record<string, string>
+  >({});
 
-  const methods = useForm({
+  const methods = useForm<FormData>({
     defaultValues,
-    resolver: yupResolver(fullSchema),
     mode: 'onTouched',
   });
 
-  const onSubmit = async (data: any) => {
-    console.log('Submitted data:', data);
+  const { getValues, reset } = methods;
+
+  const parsePhoneNumber = (
+    phoneInput: { code: string; number: string } | string
+  ): { code: string; number: string } => {
+    if (typeof phoneInput === 'string') {
+      if (!phoneInput) return { code: '+92', number: '' };
+
+      const cleaned = phoneInput.replace(/[\s\-\(\)]/g, '');
+      if (cleaned.startsWith('+')) {
+        const match = cleaned.match(/^\+(\d{1,3})(.+)$/);
+        if (match) {
+          return {
+            code: `+${match[1]}`,
+            number: match[2],
+          };
+        }
+      }
+      return { code: '+92', number: cleaned };
+    }
+    return phoneInput; // Already in the correct format
+  };
+
+  // Transform form data to backend payload
+  const transformToBackendPayload = (data: FormData): BackendPayload => {
+    const deviceType = getDeviceType();
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    return {
+      // profileIcon: '435dff23-2928-494b-9ed1-aee72d118066.png',
+      firstName: data.fname.trim(),
+      lastName: data.lname.trim(),
+      organizationName: data.organizationName.trim(),
+      email: data.email.trim().toLowerCase(),
+      phoneNumber: parsePhoneNumber(data.phone),
+      password: data.password,
+      deviceType: deviceType,
+      userType: 'organizer',
+      deviceId: '123',
+      timezone: timezone,
+      companyDetails: {
+        name: data.companyName.trim(),
+        oib: data.oib.trim(),
+        bankAccountNumber: data.bankAccountNumber.trim(),
+        representativeName: data.representativeFullName.trim(),
+        location: data.location || {
+          coordinates: [0, 0],
+          fullAddress: '',
+          country: '',
+          city: '',
+          state: '',
+          postalCode: '',
+        },
+        suppliers: data.suppliers,
+      },
+    };
+  };
+
+  // Validate step 1 (Basic Info)
+  const validateBasicInfo = (): boolean => {
+    const data = getValues();
+    const errors: Record<string, string> = {};
+
+    const fnameValidation = validateRequired(data.fname, 'First name');
+    if (fnameValidation !== true) errors.fname = fnameValidation;
+
+    const lnameValidation = validateRequired(data.lname, 'Last name');
+    if (lnameValidation !== true) errors.lname = lnameValidation;
+
+    const orgValidation = validateRequired(
+      data.organizationName,
+      'Organization name'
+    );
+    if (orgValidation !== true) errors.organizationName = orgValidation;
+
+    const emailValidation = validateEmail(data.email);
+    if (emailValidation !== true) errors.email = emailValidation;
+
+    const passwordValidation = validatePassword(data.password);
+    if (passwordValidation !== true) errors.password = passwordValidation;
+
+    const confirmPasswordValidation = validateConfirmPassword(
+      data.confirmPassword,
+      data.password
+    );
+    if (confirmPasswordValidation !== true)
+      errors.confirmPassword = confirmPasswordValidation;
+
+    const phoneValidation = validateRequired(data.phone.number, 'Phone number');
+    if (phoneValidation !== true) errors.phone = phoneValidation;
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Validate step 2 (Business Details)
+  const validateBusinessDetails = (): boolean => {
+    const data = getValues();
+    const errors: Record<string, string> = {};
+
+    const companyValidation = validateRequired(
+      data.companyName,
+      'Company name'
+    );
+    if (companyValidation !== true) errors.companyName = companyValidation;
+
+    const oibValidation = validateRequired(data.oib, 'OIB');
+    if (oibValidation !== true) errors.oib = oibValidation;
+
+    const bankValidation = validateRequired(
+      data.bankAccountNumber,
+      'Bank account number'
+    );
+    if (bankValidation !== true) errors.bankAccountNumber = bankValidation;
+
+    const repValidation = validateRequired(
+      data.representativeFullName,
+      'Representative full name'
+    );
+    if (repValidation !== true) errors.representativeFullName = repValidation;
+
+    const locationValidation = validateRequired(data.location, 'Location');
+    if (locationValidation !== true) errors.location = locationValidation;
+
+    const suppliersValidation = validateRequired(data.suppliers, 'Suppliers');
+    if (suppliersValidation !== true) errors.suppliers = suppliersValidation;
+
+    if (!data.terms) errors.terms = 'You must accept terms and conditions';
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (validateBasicInfo()) {
+      setStep('businessDetails');
+    }
+  };
+
+  const handleBackStep = () => {
+    setStep('basicInfo');
+    setValidationErrors({});
+  };
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      if (!validateBusinessDetails()) {
+        return;
+      }
+      const payload = transformToBackendPayload(data);
+
+      const response = await signUp(payload);
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      if (response?.data?.message) {
+        showSuccess(response.data.message || 'Account created successfully');
+      }
+
+      router.push('/');
+
+      reset();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.error('Failed to add category:', errorMessage);
+      showError(errorMessage);
+    }
   };
 
   return (
@@ -132,120 +383,192 @@ function SignUpPage() {
           >
             {step === 'basicInfo' && (
               <div className="space-y-4">
-                <RHFTextField name="fname" placeholder="First Name" />
-                <RHFTextField name="lname" placeholder="Last Name" />
-                <RHFTextField
-                  name="organizationName"
-                  placeholder="Organization Name"
-                />
-                <RHFTextField
-                  name="email"
-                  type="email"
-                  placeholder="Email Address"
-                />
-                <RHFTextField
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  showPassword={open.value}
-                  onTogglePassword={open.onToggle}
-                />
-
-                <RHFTextField
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="Confirm Password"
-                  showPassword={confirmOpen.value}
-                  onTogglePassword={confirmOpen.onToggle}
-                />
-
-                <Controller
-                  name={'phone'}
-                  control={methods.control}
-                  render={({ field, fieldState }) => (
-                    <div className="w-full">
-                      <PhoneInput
-                        {...field}
-                        country="pk"
-                        onChange={(value) => field.onChange(value)}
-                        placeholder={'Phone Number'}
-                        specialLabel=""
-                        inputProps={{
-                          required: true,
-                          'aria-invalid': fieldState.invalid,
-                        }}
-                        containerClass="w-full"
-                        buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
-                        inputClass={`
-              file:text-foreground placeholder:text-muted-foreground
-              selection:bg-primary selection:text-primary-foreground
-              dark:bg-input/30 border-input !border-gray-100 !shadow-sm
-              flex !h-[40px] !w-full min-w-0 rounded-md
-              !bg-transparent px-3 py-1 text-base
-              shadow-xs transition-[color,box-shadow]
-              outline-none file:inline-flex file:h-7 file:border-0
-              file:bg-transparent file:text-sm file:font-medium
-              disabled:pointer-events-none disabled:cursor-not-allowed
-              disabled:opacity-50 md:text-sm
-              focus-visible:ring-ring/50 focus-visible:ring-[3px]
-              aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
-              aria-invalid:border-destructive
-              ${
-                fieldState.invalid
-                  ? 'border-destructive ring-destructive/40'
-                  : ''
-              }
-            `}
-                      />
-                      {fieldState.error && (
-                        <p className="mt-1 text-xs text-red-500">
-                          {fieldState.error.message}
-                        </p>
-                      )}
-                    </div>
+                <div>
+                  <RHFTextField name="fname" placeholder="First Name" />
+                  {validationErrors.fname && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.fname}
+                    </p>
                   )}
-                />
+                </div>
+
+                <div>
+                  <RHFTextField name="lname" placeholder="Last Name" />
+                  {validationErrors.lname && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.lname}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <RHFTextField
+                    name="organizationName"
+                    placeholder="Organization Name"
+                  />
+                  {validationErrors.organizationName && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.organizationName}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <RHFTextField
+                    name="email"
+                    type="email"
+                    placeholder="Email Address"
+                  />
+                  {validationErrors.email && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.email}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <RHFTextField
+                    name="password"
+                    type="password"
+                    placeholder="Password"
+                    showPassword={open.value}
+                    onTogglePassword={open.onToggle}
+                  />
+                  {validationErrors.password && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.password}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <RHFTextField
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm Password"
+                    showPassword={confirmOpen.value}
+                    onTogglePassword={confirmOpen.onToggle}
+                  />
+                  {validationErrors.confirmPassword && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+
+                {/* <div>
+                  <Controller
+                    name="phone"
+                    control={methods.control}
+                    render={({ field }) => (
+                      <div className="w-full">
+                        <PhoneInput
+                          {...field}
+                          country="pk"
+                          onChange={(value) => field.onChange(value)}
+                          placeholder="Phone Number"
+                          specialLabel=""
+                          inputProps={{
+                            required: true,
+                            'aria-invalid': !!validationErrors.phone,
+                          }}
+                          containerClass="w-full"
+                          buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                          inputClass={`
+                            file:text-foreground placeholder:text-muted-foreground
+                            selection:bg-primary selection:text-primary-foreground
+                            dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm
+                            flex !h-[42px] !w-full min-w-0 rounded-lg
+                            !bg-transparent px-3 py-1 text-base
+                            shadow-xs transition-[color,box-shadow]
+                            outline-none file:inline-flex file:h-7 file:border-0
+                            file:bg-transparent file:text-sm file:font-medium
+                            disabled:pointer-events-none disabled:cursor-not-allowed
+                            disabled:opacity-50 md:text-sm
+                            focus-visible:ring-ring/50 focus-visible:ring-[3px]
+                            aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
+                            aria-invalid:border-destructive
+                            ${validationErrors.phone ? 'border-destructive ring-destructive/40' : ''}
+                          `}
+                        />
+                      </div>
+                    )}
+                  />
+                  {validationErrors.phone && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.phone}
+                    </p>
+                  )}
+                </div> */}
+                <div>
+                  <div>
+                    <Controller
+                      name="phone"
+                      control={methods.control}
+                      render={({ field }) => (
+                        <div className="w-full">
+                          <PhoneInput
+                            country="pk"
+                            value={
+                              field.value
+                                ? `${field.value.code}${field.value.number}`
+                                : ''
+                            } // Concatenate code and number
+                            onChange={(value, countryData: any) => {
+                              const phoneNumber = value.replace(
+                                countryData.dialCode,
+                                ''
+                              );
+                              field.onChange({
+                                code: `+${countryData.dialCode}`,
+                                number: phoneNumber,
+                              });
+                            }}
+                            placeholder="Phone Number"
+                            specialLabel=""
+                            inputProps={{
+                              required: true,
+                              'aria-invalid': !!validationErrors.phone,
+                            }}
+                            containerClass="w-full"
+                            buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                            inputClass={`
+            file:text-foreground placeholder:text-muted-foreground
+            selection:bg-primary selection:text-primary-foreground
+            dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm
+            flex !h-[42px] !w-full min-w-0 rounded-lg
+            !bg-transparent px-3 py-1 text-base
+            shadow-xs transition-[color,box-shadow]
+            outline-none file:inline-flex file:h-7 file:border-0
+            file:bg-transparent file:text-sm file:font-medium
+            disabled:pointer-events-none disabled:cursor-not-allowed
+            disabled:opacity-50 md:text-sm
+            focus-visible:ring-ring/50 focus-visible:ring-[3px]
+            aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
+            aria-invalid:border-destructive
+            ${validationErrors.phone ? 'border-destructive ring-destructive/40' : ''}
+          `}
+                          />
+                        </div>
+                      )}
+                    />
+                    {validationErrors.phone && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {validationErrors.phone}
+                      </p>
+                    )}
+                  </div>
+                  {validationErrors.phone && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.phone}
+                    </p>
+                  )}
+                </div>
+
                 <Button
                   type="button"
-                  onClick={async () => {
-                    const valid = await basicInfoSchema.isValid(
-                      methods.getValues()
-                    );
-                    if (valid) {
-                      setStep('businessDetails');
-                    } else {
-                      methods.trigger([
-                        'fname',
-                        'lname',
-                        'organizationName',
-                        'email',
-                        'password',
-                        'confirmPassword',
-                        'phone',
-                      ]);
-                    }
-                  }}
+                  onClick={handleNextStep}
                   className="h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
-                  disabled={
-                    !methods.watch('fname') ||
-                    !methods.watch('lname') ||
-                    !methods.watch('organizationName') ||
-                    !methods.watch('email') ||
-                    !methods.watch('password') ||
-                    !methods.watch('confirmPassword') ||
-                    !methods.watch('phone') ||
-                    Object.keys(methods.formState.errors).some((key) =>
-                      [
-                        'fname',
-                        'lname',
-                        'organizationName',
-                        'email',
-                        'password',
-                        'confirmPassword',
-                        'phone',
-                      ].includes(key)
-                    )
-                  }
                 >
                   Next
                 </Button>
@@ -260,14 +583,32 @@ function SignUpPage() {
                       name="companyName"
                       placeholder="Company Name"
                     />
+                    {validationErrors.companyName && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {validationErrors.companyName}
+                      </p>
+                    )}
                   </div>
-                  <RHFTextField name="oib" placeholder="OIB" />
-                  <RHFTextField name="postalCode" placeholder="Postal Code" />
+
+                  <div className="col-span-2">
+                    <RHFTextField name="oib" placeholder="OIB" />
+                    {validationErrors.oib && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {validationErrors.oib}
+                      </p>
+                    )}
+                  </div>
+
                   <div className="col-span-2">
                     <RHFTextField
                       name="bankAccountNumber"
                       placeholder="Bank Account Number"
                     />
+                    {validationErrors.bankAccountNumber && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {validationErrors.bankAccountNumber}
+                      </p>
+                    )}
                   </div>
 
                   <div className="col-span-2">
@@ -275,50 +616,49 @@ function SignUpPage() {
                       name="representativeFullName"
                       placeholder="Representative Full Name"
                     />
+                    {validationErrors.representativeFullName && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {validationErrors.representativeFullName}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="mt-4">
-                  <RHFTextField name="address" placeholder="Address" />
+                  <GoogleLocationInput
+                    name="location"
+                    label="Location"
+                    showLabel={false}
+                  />
+                  {validationErrors.location && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.location}
+                    </p>
+                  )}
                 </div>
 
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <RHFSelectField
-                    name="country"
-                    placeholder="Select Country"
-                    className="w-full flex-1"
-                    options={[{ label: 'Croatia', value: 'cr' }]}
-                  />
-
-                  <RHFSelectField
-                    name="city"
-                    placeholder="Select City"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'Zadar', value: 'zadar' },
-                      { label: 'Pula', value: 'pula' },
-                      { label: 'Hvar', value: 'hvar' },
-                    ]}
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <RHFMultiSelect
+                <div className="mt-3">
+                  <RHFCustomCombobox
                     name="suppliers"
-                    placeholder="List of Suppliers"
-                    options={[
-                      { label: 'Clubbing', value: 'clubbing' },
-                      { label: 'Techno', value: 'techno' },
-                      { label: 'House', value: 'house' },
-                    ]}
+                    placeholder="Select suppliers"
+                    className="w-full flex-1"
+                    multiple={true}
+                    allowCustom={false}
+                    options={supplierOptions}
                   />
+
+                  {validationErrors.suppliers && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.suppliers}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-4 flex items-center gap-3">
                   <Controller
                     name="terms"
                     control={methods.control}
-                    render={({ field, fieldState }) => (
+                    render={({ field }) => (
                       <>
                         <Checkbox
                           id="terms"
@@ -329,14 +669,16 @@ function SignUpPage() {
                         <Label className="cursor-pointer" htmlFor="terms">
                           Accept terms and conditions
                         </Label>
-                        {fieldState.error && (
-                          <p className="mt-1 text-xs text-red-500">
-                            {fieldState.error.message}
-                          </p>
-                        )}
                       </>
                     )}
                   />
+                </div>
+                <div>
+                  {validationErrors.terms && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {validationErrors.terms}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-6 grid grid-cols-2 gap-4">
@@ -344,44 +686,28 @@ function SignUpPage() {
                     type="button"
                     variant="outline"
                     className="h-[45px] w-full cursor-pointer"
-                    onClick={() => setStep('basicInfo')}
+                    onClick={handleBackStep}
+                    disabled={signUpLoading}
                   >
                     Back
                   </Button>
-                  <Button
-                    type="submit"
-                    className="h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
-                    disabled={
-                      !methods.watch('companyName') ||
-                      !methods.watch('oib') ||
-                      !methods.watch('bankAccountNumber') ||
-                      !methods.watch('postalCode') ||
-                      !methods.watch('representativeFullName') ||
-                      !methods.watch('address') ||
-                      !methods.watch('country') ||
-                      !methods.watch('city') ||
-                      !methods.watch('suppliers') ||
-                      !methods.watch('terms') ||
-                      Object.keys(methods.formState.errors).some((key) =>
-                        [
-                          'companyName',
-                          'oib',
-                          'bankAccountNumber',
-                          'postalCode',
-                          'representativeFullName',
-                          'address',
-                          'country',
-                          'city',
-                          'suppliers',
-                          'terms',
-                        ].includes(key)
-                      )
-                    }
-                  >
-                    {methods.formState.isSubmitting
-                      ? 'Creating Account...'
-                      : 'Sign Up'}
-                  </Button>
+
+                  {signUpLoading ? (
+                    <Button
+                      type="button"
+                      className="h-[45px] w-full cursor-not-allowed bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
+                    >
+                      <ButtonLoading title="Creating Account..." />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      className="h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
+                      disabled={signUpLoading}
+                    >
+                      Sign Up
+                    </Button>
+                  )}
                 </div>
               </>
             )}
@@ -394,6 +720,7 @@ function SignUpPage() {
               <Button
                 variant="outline"
                 className="h-[60px] w-[60px] cursor-pointer rounded-full py-3"
+                type="button"
               >
                 <span className="flex h-6 w-6 items-center justify-center">
                   <Image
@@ -403,7 +730,6 @@ function SignUpPage() {
                     width={25}
                     height={25}
                   />
-
                   <Image
                     src="/images/macIconDark.png"
                     alt="Apple"
@@ -417,6 +743,7 @@ function SignUpPage() {
               <Button
                 variant="outline"
                 className="h-[60px] w-[60px] cursor-pointer rounded-full"
+                type="button"
               >
                 <span className="flex h-6 w-6 items-center justify-center">
                   <Image
@@ -432,6 +759,7 @@ function SignUpPage() {
               <Button
                 variant="outline"
                 className="h-[60px] w-[60px] cursor-pointer rounded-full"
+                type="button"
               >
                 <span className="flex h-6 w-6 items-center justify-center">
                   <Image

@@ -13,6 +13,7 @@ export const API_ROUTES = {
   VENUES_TYPES: `/admin/venue-types`,
   VENUES_TYPE_By_ID: (id: string) => `/admin/venue-types/${id}`,
 
+  SUPPLIERS_GLOABAL: `/suppliers/global`,
   SUPPLIERS: `/admin/suppliers`,
   SUPPLIERS_BY_ID: (id: string) => `/admin/suppliers/${id}`,
 
