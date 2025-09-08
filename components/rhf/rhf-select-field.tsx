@@ -1,4 +1,3 @@
-// components/form/RHFSelectField.tsx
 "use client"
 
 import {
@@ -24,11 +23,11 @@ interface Option {
     value: string
 }
 
-interface RHFSelectFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface RHFSelectFieldProps {
     name: string
     label?: string
     placeholder?: string
-    options: Option[],
+    options: Option[]
     className?: string
 }
 
@@ -38,7 +37,6 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
     placeholder = "Select option",
     options,
     className = "",
-    ...rest
 }) => {
     const { control } = useFormContext()
 
@@ -48,11 +46,15 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
             name={name}
             render={({ field }) => (
                 <FormItem>
-                    {label && <FormLabel className="">{label}</FormLabel>}
+                    {label && <FormLabel>{label}</FormLabel>}
                     <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        defaultValue={field.value}
+                        onValueChange={(val) => {
+                            // Only update if valid
+                            if (options.some(o => o.value === val)) {
+                                field.onChange(val)
+                            }
+                        }}
+                        value={field.value || ""} // ✅ controlled only
                     >
                         <FormControl>
                             <SelectTrigger className={`w-full ${className}`}>
@@ -67,12 +69,16 @@ const RHFSelectField: FC<RHFSelectFieldProps> = ({
                             ))}
                         </SelectContent>
                     </Select>
+
+                    {/* Hidden input to support RHF blur + validation */}
                     <input
                         type="hidden"
                         onBlur={field.onBlur}
-                        value={field.value}
-                        {...rest}
+                        value={field.value || ""}
+                        name={field.name}
+                        ref={field.ref}
                     />
+
                     <FormMessage />
                 </FormItem>
             )}

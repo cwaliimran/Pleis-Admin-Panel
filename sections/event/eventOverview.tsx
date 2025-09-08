@@ -65,8 +65,7 @@ const EventOverView = ({ event }: { event: any }) => {
                   </div>
                 </div>
                 <h1 className="text-slate-500 m-1">
-                  Peti Kupe je destinacija u kojoj se isprepliću glazba,
-                  umjetnosti, edukativni sadržaji i gastronomija.
+                 {event?.basicInfo?.organization?.otherInfo?.description || "No description available."}
                 </h1>
                 <Badge onClick={() =>
                   router.push(`/${window.location.pathname.split('/')[1]}/organization/${event?.basicInfo?.organization?._id}`)

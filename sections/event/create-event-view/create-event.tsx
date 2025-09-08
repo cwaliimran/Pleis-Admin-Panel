@@ -296,6 +296,8 @@ const CreateEventView = (props: any) => {
         imageFileString = await uploadFileToAzure(file);
         console.log("Uploaded file URL:", imageFileString);
 
+      }else{
+        imageFileString= data.mediaUrl || '';
       }
       const payload = {
         basicInfo: {
@@ -553,10 +555,6 @@ const CreateEventView = (props: any) => {
                             value: org._id,
                             label: org.basicInfo?.name,
                           }))}
-                          value={organization}
-                          onChange={(e: any) =>
-                            setValue('organization', e.target.value)
-                          }
                           className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
                         />
                       </div>
@@ -574,10 +572,6 @@ const CreateEventView = (props: any) => {
                             value: val._id,
                             label: val.title,
                           }))}
-                          value={venue}
-                          onChange={(e: any) =>
-                            setValue('venue', e.target.value)
-                          }
                           className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
                         />
 
@@ -600,10 +594,6 @@ const CreateEventView = (props: any) => {
                               value: val._id,
                               label: val.title,
                             }))}
-                            value={category}
-                            onChange={(e: any) =>
-                              setValue('category', e.target.value)
-                            }
                             className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
                           />
                         </div>
