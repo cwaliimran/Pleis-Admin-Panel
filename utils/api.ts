@@ -16,7 +16,7 @@
 //     variant: 'error',
 //     autoHideDuration: 2000,
 //   });
-//   console.error('Failed to add category:', error);
+//   console.log('Failed to add category:', error);
 // }
 
 export const getErrorMessage = (error: any): string => {

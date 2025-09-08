@@ -1,8 +1,7 @@
-'use client';
+import { useEffect, useState } from 'react';
+import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import { Camera, X } from 'lucide-react';
 import Image from 'next/image';
-import React, { useEffect, useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
 
 interface RHFUploadAvatarProps {
   name: string;
@@ -20,25 +19,36 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
   const {
     control,
     setValue,
-    watch,
     formState: { errors },
   } = useFormContext();
 
   const [preview, setPreview] = useState<string | null>(initialImage);
-  const watchedValue = watch(name);
+  const watchedValue = useWatch({ control, name, defaultValue: initialImage }); // Watch the field value
 
   useEffect(() => {
-    if (watchedValue?.[0]) {
-      const objectUrl = URL.createObjectURL(watchedValue[0]);
-      setPreview(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    } else if (initialImage) {
+    // Handle preview based on watched value or initial image
+    if (watchedValue) {
+      if (watchedValue instanceof FileList && watchedValue[0] instanceof File) {
+        // Handle file upload
+        const objectUrl = URL.createObjectURL(watchedValue[0]);
+        setPreview(objectUrl);
+        return () => URL.revokeObjectURL(objectUrl); // Cleanup on unmount
+      } else if (typeof watchedValue === 'string') {
+        // Handle string URL (e.g., from initialImage in edit mode)
+        setPreview(watchedValue);
+      }
+    } else if (initialImage && typeof initialImage === 'string') {
+      // Set initial image if no watched value
       setPreview(initialImage);
     } else {
       setPreview(null);
     }
-    // Only update preview if watchedValue or initialImage changes
   }, [watchedValue, initialImage]);
+
+  const handleRemove = () => {
+    setValue(name, null);
+    setPreview(null);
+  };
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -52,79 +62,206 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
       <Controller
         name={name}
         control={control}
-        render={({ field: { onChange, ref } }) => {
-          const handleRemove = () => {
-            setValue(name, null);
-            setPreview(null);
-          };
-          //   const hasError = (errors[name] as any)?.message;
-
-          return (
-            <>
-              {/* Avatar Upload Box */}
-              <div className="relative rounded-full border border-dashed p-2">
-                <div
-                  className={`relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-gray-200 transition hover:opacity-80 dark:bg-gray-700 ${
-                    errors[name]
-                      ? 'border-dashed border-red-400'
-                      : 'border-gray-300 dark:border-gray-600'
-                  } `}
-                  // ${`w-[${size}] h-[${size}]`}
-                  style={{ width: size, height: size }}
+        render={({ field: { onChange, ref } }) => (
+          <>
+            {/* Avatar Upload Box */}
+            <div className="relative rounded-full border border-dashed p-2">
+              <div
+                className={`relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-gray-200 transition hover:opacity-80 dark:bg-gray-700 ${
+                  errors[name]
+                    ? 'border-dashed border-red-400'
+                    : 'border-gray-300 dark:border-gray-600'
+                }`}
+                style={{ width: size, height: size }}
+              >
+                <label
+                  htmlFor={`avatar-upload-${name}`}
+                  className="flex h-full w-full cursor-pointer items-center justify-center"
                 >
-                  <label
-                    htmlFor={`avatar-upload-${name}`}
-                    className="flex h-full w-full cursor-pointer items-center justify-center"
-                  >
-                    {preview ? (
-                      <Image
-                        src={preview}
-                        alt="Avatar"
-                        className="h-full w-full object-cover"
-                        width={size}
-                        height={size}
-                      />
-                    ) : (
-                      <Camera className="h-6 w-6 text-gray-500 dark:text-gray-400" />
-                    )}
-                  </label>
-
-                  {/* File Input */}
-                  <input
-                    id={`avatar-upload-${name}`}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => onChange(e.target.files)}
-                    ref={ref}
-                    className="hidden"
-                  />
-
-                  {/* Remove Button */}
-                  {preview && (
-                    <button
-                      type="button"
-                      title="Remove Avatar"
-                      onClick={handleRemove}
-                      className="absolute top-[-6px] right-[-6px] rounded-full border border-gray-200 bg-white p-1 shadow dark:border-gray-700 dark:bg-gray-800"
-                    >
-                      <X className="h-3 w-3 text-gray-600 dark:text-gray-300" />
-                    </button>
+                  {preview ? (
+                    <Image
+                      src={preview}
+                      alt="Avatar"
+                      className="h-full w-full object-cover"
+                      width={size}
+                      height={size}
+                    />
+                  ) : (
+                    <Camera className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                   )}
-                </div>
-              </div>
+                </label>
 
-              {/* Validation Error */}
-              {errors[name] && (
-                <p className="text-sm text-red-400">
-                  {(errors[name] as any).message}
-                </p>
-              )}
-            </>
-          );
-        }}
+                {/* File Input */}
+                <input
+                  id={`avatar-upload-${name}`}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      onChange(files); // Update form with FileList
+                    }
+                  }}
+                  ref={ref}
+                  className="hidden"
+                />
+
+                {/* Remove Button */}
+                {preview && (
+                  <button
+                    type="button"
+                    title="Remove Avatar"
+                    onClick={handleRemove}
+                    className="absolute top-[-6px] right-[-6px] rounded-full border border-gray-200 bg-white p-1 shadow dark:border-gray-700 dark:bg-gray-800"
+                  >
+                    <X className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Validation Error */}
+            {errors[name] && (
+              <p className="text-sm text-red-400">
+                {(errors[name] as any).message}
+              </p>
+            )}
+          </>
+        )}
       />
     </div>
   );
 };
 
 export default RHFUploadAvatar;
+
+// 'use client';
+// import { Camera, X } from 'lucide-react';
+// import Image from 'next/image';
+// import React, { useEffect, useState } from 'react';
+// import { Controller, useFormContext } from 'react-hook-form';
+
+// interface RHFUploadAvatarProps {
+//   name: string;
+//   label?: string;
+//   size?: number;
+//   initialImage?: string | null;
+// }
+
+// const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
+//   name,
+//   label = 'Upload Avatar',
+//   size = 120,
+//   initialImage = null,
+// }) => {
+//   const {
+//     control,
+//     setValue,
+//     watch,
+//     formState: { errors },
+//   } = useFormContext();
+
+//   const [preview, setPreview] = useState<string | null>(initialImage);
+//   const watchedValue = watch(name);
+
+//   useEffect(() => {
+//     if (watchedValue?.[0]) {
+//       const objectUrl = URL.createObjectURL(watchedValue[0]);
+//       setPreview(objectUrl);
+//       return () => URL.revokeObjectURL(objectUrl);
+//     } else if (initialImage) {
+//       setPreview(initialImage);
+//     } else {
+//       setPreview(null);
+//     }
+//     // Only update preview if watchedValue or initialImage changes
+//   }, [watchedValue, initialImage]);
+
+//   return (
+//     <div className="flex flex-col items-center gap-3">
+//       {/* Label */}
+//       {label && (
+//         <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+//           {label}
+//         </label>
+//       )}
+
+//       <Controller
+//         name={name}
+//         control={control}
+//         render={({ field: { onChange, ref } }) => {
+//           const handleRemove = () => {
+//             setValue(name, null);
+//             setPreview(null);
+//           };
+//           //   const hasError = (errors[name] as any)?.message;
+
+//           return (
+//             <>
+//               {/* Avatar Upload Box */}
+//               <div className="relative rounded-full border border-dashed p-2">
+//                 <div
+//                   className={`relative flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-gray-200 transition hover:opacity-80 dark:bg-gray-700 ${
+//                     errors[name]
+//                       ? 'border-dashed border-red-400'
+//                       : 'border-gray-300 dark:border-gray-600'
+//                   } `}
+//                   // ${`w-[${size}] h-[${size}]`}
+//                   style={{ width: size, height: size }}
+//                 >
+//                   <label
+//                     htmlFor={`avatar-upload-${name}`}
+//                     className="flex h-full w-full cursor-pointer items-center justify-center"
+//                   >
+//                     {preview ? (
+//                       <Image
+//                         src={preview}
+//                         alt="Avatar"
+//                         className="h-full w-full object-cover"
+//                         width={size}
+//                         height={size}
+//                       />
+//                     ) : (
+//                       <Camera className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+//                     )}
+//                   </label>
+
+//                   {/* File Input */}
+//                   <input
+//                     id={`avatar-upload-${name}`}
+//                     type="file"
+//                     accept="image/*"
+//                     onChange={(e) => onChange(e.target.files)}
+//                     ref={ref}
+//                     className="hidden"
+//                   />
+
+//                   {/* Remove Button */}
+//                   {preview && (
+//                     <button
+//                       type="button"
+//                       title="Remove Avatar"
+//                       onClick={handleRemove}
+//                       className="absolute top-[-6px] right-[-6px] rounded-full border border-gray-200 bg-white p-1 shadow dark:border-gray-700 dark:bg-gray-800"
+//                     >
+//                       <X className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+//                     </button>
+//                   )}
+//                 </div>
+//               </div>
+
+//               {/* Validation Error */}
+//               {errors[name] && (
+//                 <p className="text-sm text-red-400">
+//                   {(errors[name] as any).message}
+//                 </p>
+//               )}
+//             </>
+//           );
+//         }}
+//       />
+//     </div>
+//   );
+// };
+
+// export default RHFUploadAvatar;

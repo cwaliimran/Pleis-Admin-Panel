@@ -33,7 +33,7 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
           fullAddress: Yup.string().required('Full Address is required'),
           state: Yup.string().required('State is required'),
           city: Yup.string().required('City is required'),
-          postalCode: Yup.string().required('Postal Code is required'),
+          postalCode: Yup.string(),
           country: Yup.string().required('Country is required'),
           coordinates: Yup.array()
             .of(Yup.number())

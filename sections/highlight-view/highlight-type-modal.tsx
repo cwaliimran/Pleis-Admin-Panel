@@ -122,6 +122,7 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
                 options={eventOptions}
                 isLoading={isLoadingEvents}
                 disabled={!!methods.watch('organization')}
+                showNone={true}
               />
 
               <RHFCustomDropdown
@@ -131,6 +132,7 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
                 options={organizationOptions}
                 isLoading={isLoadingOrganizations}
                 disabled={!!methods.watch('event')}
+                showNone={true}
               />
 
               <RHFSelectField

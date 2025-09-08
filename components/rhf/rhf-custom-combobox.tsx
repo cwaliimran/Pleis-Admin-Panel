@@ -27,6 +27,7 @@ interface RHFCustomComboboxProps {
   multiple: boolean;
   allowCustom: boolean;
   options: { value: string; label: string }[];
+  onChange?: (value: string[]) => void;
 }
 
 export const RHFCustomCombobox = ({
@@ -37,6 +38,7 @@ export const RHFCustomCombobox = ({
   multiple,
   allowCustom,
   options,
+  onChange,
 }: RHFCustomComboboxProps) => {
   const { setValue, watch } = useFormContext();
   const [open, setOpen] = useState(false);
@@ -53,11 +55,17 @@ export const RHFCustomCombobox = ({
       newValues = [value];
     }
     setValue(name, newValues, { shouldValidate: true });
+    if (onChange) {
+      onChange(newValues);
+    }
   };
 
   const handleRemove = (value: string) => {
     const newValues = selectedValues.filter((v: string) => v !== value);
     setValue(name, newValues, { shouldValidate: true });
+    if (onChange) {
+      onChange(newValues);
+    }
   };
 
   // const filteredOptions = options.filter((option) =>

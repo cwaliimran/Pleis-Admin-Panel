@@ -4,6 +4,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { noImageUrl } from '@/constant/constant';
 import { getStatusVariant } from '@/utils/short-utils';
 import { Eye, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -23,11 +24,6 @@ const UserListTypeTableRow: FC<PageProps> = ({
   const router = useRouter();
 
   const handleNavigate = () => {
-    console.log('working');
-    console.log('id', item?.basicInfo?._id);
-    console.log('usertype', userType);
-    console.log('accountState', item?.accountState?.userType);
-
     if (userType === 'super-admin') {
       router.push(
         `/super-admin/user/${item?.basicInfo?._id}?userType=${item?.accountState?.userType}`
@@ -44,8 +40,7 @@ const UserListTypeTableRow: FC<PageProps> = ({
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.basicInfo?.profileIcon &&
-          item?.basicInfo?.profileIcon !==
-            'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' ? (
+          item?.basicInfo?.profileIcon !== noImageUrl ? (
             <AvatarImage
               src={item?.basicInfo?.profileIcon}
               alt="Store"
@@ -60,7 +55,7 @@ const UserListTypeTableRow: FC<PageProps> = ({
       </TableCell>
 
       <TableCell className="text-left font-medium capitalize">
-        {item?.basicInfo?.firstName || '-'} {item?.basicInfo?.lastName || ''}
+        {item?.basicInfo?.firstName || '-'}{" "}{item?.basicInfo?.lastName || ''}
       </TableCell>
 
       <TableCell className={`text-left text-sm`}>

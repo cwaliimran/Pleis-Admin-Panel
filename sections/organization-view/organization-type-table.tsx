@@ -174,21 +174,6 @@ const OrganizationTypeTable: FC<PageProps> = ({
                         </div>
                       </div>
                     </div>
-                    {/* <div className="mt-4 flex gap-3">
-                      <button
-                        className="bg-primary hover:bg-primary/90 w-full cursor-pointer rounded-md py-2 font-semibold text-white transition"
-                        type="button"
-                      >
-                        Apply
-                      </button>
-                      <button
-                        className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
-                        type="button"
-                        onClick={onResetFilters}
-                      >
-                        Reset
-                      </button>
-                    </div> */}
                   </form>
                 </FormProvider>
               </SheetContent>

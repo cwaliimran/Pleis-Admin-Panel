@@ -1,6 +1,5 @@
 'use client';
 import Header from '@/app/common/header';
-
 import OrganizerProfileSection from '@/sections/proflie/organizer-profile-section-old';
 
 const Page = () => {
@@ -8,7 +7,7 @@ const Page = () => {
     <div className=" ">
       <Header
         links={[
-          { name: 'Dashboard', href: '/super-admin/dashboard' },
+          { name: 'Dashboard', href: '/organizer/dashboard' },
           { name: 'Profile', href: '' },
         ]}
       />

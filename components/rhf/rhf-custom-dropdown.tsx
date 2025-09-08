@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
-import { type FC, useState, useMemo } from 'react';
+import { type FC, useState, useMemo, useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 interface DropdownOption {
@@ -33,6 +33,30 @@ interface Props {
   options: DropdownOption[];
   disabled?: boolean;
   isLoading?: boolean;
+  showNone?: boolean;
+}
+
+// Custom debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }
 
 const RHFCustomDropdown: FC<Props> = ({
@@ -43,19 +67,31 @@ const RHFCustomDropdown: FC<Props> = ({
   options = [],
   disabled = false,
   isLoading = false,
+  showNone = true,
 }) => {
   const { control } = useFormContext();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300); 
+
+  // const filteredOptions = useMemo(() => {
+  //   return [
+  //     { value: 'none', label: 'None' }, // Add "None" option
+  //     ...options.filter((option) =>
+  //       option.label.toLowerCase().includes(debouncedSearch.toLowerCase())
+  //     ),
+  //   ];
+  // }, [options, debouncedSearch]);
 
   const filteredOptions = useMemo(() => {
-    return [
-      { value: 'none', label: 'None' }, // Add "None" option
-      ...options.filter((option) =>
-        option.label.toLowerCase().includes(search.toLowerCase())
-      ),
-    ];
-  }, [options, search]);
+    const baseOptions = options.filter((option) =>
+      option.label.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+    
+    return showNone
+      ? [{ value: 'none', label: 'None' }, ...baseOptions]
+      : baseOptions;
+  }, [options, debouncedSearch, showNone]);
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -77,9 +113,8 @@ const RHFCustomDropdown: FC<Props> = ({
               <Select
                 open={open}
                 onOpenChange={setOpen}
-                value={field.value || ''} // Empty string for cleared state
+                value={field.value || ''}
                 onValueChange={(value) => {
-                  // Map 'none' to undefined to clear the field
                   field.onChange(value === 'none' ? undefined : value);
                 }}
                 disabled={disabled}
@@ -108,7 +143,9 @@ const RHFCustomDropdown: FC<Props> = ({
                       </div>
                     ) : filteredOptions.length === 0 ? (
                       <div className="text-muted-foreground py-6 text-center text-sm">
-                        {search ? 'No results found.' : 'No options available.'}
+                        {debouncedSearch
+                          ? 'No results found.'
+                          : 'No options available.'}
                       </div>
                     ) : (
                       filteredOptions.map((option) => (
@@ -186,9 +223,12 @@ export default RHFCustomDropdown;
 //   const [search, setSearch] = useState('');
 
 //   const filteredOptions = useMemo(() => {
-//     return options.filter((option) =>
-//       option.label.toLowerCase().includes(search.toLowerCase())
-//     );
+//     return [
+//       { value: 'none', label: 'None' }, // Add "None" option
+//       ...options.filter((option) =>
+//         option.label.toLowerCase().includes(search.toLowerCase())
+//       ),
+//     ];
 //   }, [options, search]);
 
 //   const handleSearchChange = (value: string) => {
@@ -200,9 +240,9 @@ export default RHFCustomDropdown;
 //       control={control}
 //       name={name}
 //       render={({ field }) => {
-//         const selectedOption = options.find(
-//           (option) => option.value === field.value
-//         );
+//         const selectedOption = field.value
+//           ? options.find((option) => option.value === field.value)
+//           : null;
 
 //         return (
 //           <FormItem className={cn('w-full', className)}>
@@ -211,8 +251,11 @@ export default RHFCustomDropdown;
 //               <Select
 //                 open={open}
 //                 onOpenChange={setOpen}
-//                 value={field.value || ''}
-//                 onValueChange={field.onChange}
+//                 value={field.value || ''} // Empty string for cleared state
+//                 onValueChange={(value) => {
+//                   // Map 'none' to undefined to clear the field
+//                   field.onChange(value === 'none' ? undefined : value);
+//                 }}
 //                 disabled={disabled}
 //               >
 //                 <SelectTrigger className="h-[40px] w-full capitalize">

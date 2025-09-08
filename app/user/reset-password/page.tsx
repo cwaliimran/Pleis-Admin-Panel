@@ -32,8 +32,7 @@ const schema = Yup.object().shape({
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams.get('email') || '';
-  const rst = searchParams.get('rst') || '';
+  const rst = searchParams.get('token') || '';
   const showPassword = useBoolean();
 
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
@@ -46,16 +45,15 @@ export default function ResetPasswordPage() {
   const { handleSubmit } = methods;
 
   const onSubmit = handleSubmit(async (data) => {
-    if (!email || !rst) {
+    if (!rst) {
       showError('Invalid or expired reset link. Please request a new one.');
       return;
     }
 
     try {
       const payload = {
-        email: email.trim(),
         newPassword: data.newPassword,
-        resetToken: rst,
+        token: rst,
       };
 
       const response = await resetPassword(payload).unwrap();
@@ -81,7 +79,7 @@ export default function ResetPasswordPage() {
       router.push(`/`);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to reset password:', errorMessage);
+      console.log('Failed to reset password:', errorMessage);
       showError(errorMessage);
     }
   });

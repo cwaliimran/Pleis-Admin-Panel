@@ -1,18 +1,21 @@
-"use client";
-import OverlayLoading from "@/components/atoms/overlay-loading";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import { Button } from "@/components/ui/button";
-import { useBoolean } from "@/hooks/useBoolean";
-import { EventTable } from "@/sections/event";
-import { useDeleteeventMutation, useGeteventsQuery } from "@/store/Reducer/events";
-import { formatDate } from "@/utils/format-time";
-import { fi } from "date-fns/locale";
-import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+'use client';
+// import OverlayLoading from '@/components/atoms/overlay-loading';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import { EventTable } from '@/sections/event';
+import {
+  useDeleteeventMutation,
+  useGeteventsQuery,
+} from '@/store/Reducer/events';
+import { formatDate } from '@/utils/format-time';
+// import { fi } from 'date-fns/locale';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 type OrganizationListProps = {
-  userType?: "organizer" | "super-admin";
+  userType?: 'organizer' | 'super-admin';
 };
 
 const EventList = ({ userType }: OrganizationListProps) => {
@@ -25,17 +28,21 @@ const EventList = ({ userType }: OrganizationListProps) => {
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
-    search: "",
-    status: "",
+    search: '',
+    status: '',
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
   });
 
-  const { data: apiData, isLoading, refetch } = useGeteventsQuery({
+  const {
+    data: apiData,
+    isLoading,
+    refetch,
+  } = useGeteventsQuery({
     page: filters.page - 1,
     search: filters.search,
     limit: filters.limit,
-    status: filters.status === "all" ? undefined : filters.status,
+    status: filters.status === 'all' ? undefined : filters.status,
     startDate: filters.startDate ? formatDate(filters.startDate) : undefined,
     endDate: filters.endDate ? formatDate(filters.endDate) : undefined,
   });
@@ -51,49 +58,53 @@ const EventList = ({ userType }: OrganizationListProps) => {
       if (deleteId) {
         deleteModal.onFalse();
         setIsDeleting(true);
-       const res= await deleteEvent(deleteId).unwrap();
-       if (res?.data) {
-         refetch(); 
-       }
+        const res = await deleteEvent(deleteId).unwrap();
+        if (res?.data) {
+          refetch();
+        }
       }
-     
     } catch (error) {
-      console.error("Failed to delete event", error);
+      console.log('Failed to delete event', error);
     } finally {
       setIsDeleting(false);
     }
   };
 
   const handleNavigateToCreate = () => {
-    if (userType === "super-admin") {
-      router.push("/super-admin/events/create-event");
+    if (userType === 'super-admin') {
+      router.push('/super-admin/events/create-event');
     } else {
-      router.push("/organizer/events/create-event");
+      router.push('/organizer/events/create-event');
     }
   };
 
   // Update filter state
   const updateFilter = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }));
   };
 
   // Pagination handlers
-  const onPageChange = (newPage: number) => updateFilter("page", newPage);
-  const onLimitChange = (newLimit: number) => updateFilter("limit", newLimit);
-  const onSearchChange = (searchTerm: string) => updateFilter("search", searchTerm);
-  const onStatusChange = (newStatus: string) => updateFilter("status", newStatus);
-  const onDateChange = (newStartDate: Date | undefined, newEndDate: Date | undefined) => {
-    console.log("Date range changed:", newStartDate, newEndDate);
-    updateFilter("startDate", newStartDate);
-    updateFilter("endDate", newEndDate);
+  const onPageChange = (newPage: number) => updateFilter('page', newPage);
+  const onLimitChange = (newLimit: number) => updateFilter('limit', newLimit);
+  const onSearchChange = (searchTerm: string) =>
+    updateFilter('search', searchTerm);
+  const onStatusChange = (newStatus: string) =>
+    updateFilter('status', newStatus);
+  const onDateChange = (
+    newStartDate: Date | undefined,
+    newEndDate: Date | undefined
+  ) => {
+    console.log('Date range changed:', newStartDate, newEndDate);
+    updateFilter('startDate', newStartDate);
+    updateFilter('endDate', newEndDate);
   };
 
   const onResetFilters = () => {
     setFilters({
       page: 1,
       limit: 10,
-      search: "",
-      status: "",
+      search: '',
+      status: '',
       startDate: undefined,
       endDate: undefined,
     });
@@ -101,11 +112,12 @@ const EventList = ({ userType }: OrganizationListProps) => {
 
   return (
     <div>
-      <OverlayLoading show={isLoading || isDeleting} />
+      {/* <OverlayLoading show={isLoading || isDeleting} /> */}
+
       {/* Create Event Button */}
-      <div className="w-full flex items-center justify-end md:mt-0 mt-3">
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
         <Button
-          className="rounded-4xl py-2 bg-primary cursor-pointer text-white hover:bg-primary/80"
+          className="bg-primary hover:bg-primary/80 cursor-pointer rounded-4xl py-2 text-white"
           onClick={handleNavigateToCreate}
         >
           <Plus />
@@ -120,6 +132,7 @@ const EventList = ({ userType }: OrganizationListProps) => {
         content="Are you sure you want to delete this event?"
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
+        isLoading={isDeleting}
       />
 
       {/* Event Table */}
@@ -140,6 +153,7 @@ const EventList = ({ userType }: OrganizationListProps) => {
         onDateChange={onDateChange}
         onResetFilters={onResetFilters}
         meta={apiData?.meta}
+        userType={userType}
       />
     </div>
   );

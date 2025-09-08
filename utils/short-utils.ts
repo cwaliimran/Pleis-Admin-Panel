@@ -11,10 +11,14 @@ export function capitalizeFirst(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export const getStatusVariant = (status?: string) =>
-  ({
+export const getStatusVariant = (
+  status?: string
+): 'success' | 'error' | 'info' | 'warning' | 'default' | undefined => {
+  const variants = {
     active: 'success',
     inactive: 'error',
     pending: 'warning',
     scheduled: 'info',
-  }[status ?? ''] || 'default');
+  } as const;
+  return variants[status as keyof typeof variants] ?? 'default';
+};
