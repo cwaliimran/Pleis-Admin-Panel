@@ -20,7 +20,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { CalendarIcon, ChevronDown, Clock, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Controller, Resolver, useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
 import type { RootState } from '@/store/store';
@@ -29,8 +29,8 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import OverlayLoading from '@/components/atoms/overlay-loading';
 interface EventFormValues {
   image: File | null;
-  mediaUrl: string;
-  mediaType: string;
+  mediaUrl?: string;
+  mediaType?: string;
   name: string;
   venue: string;
   category: string;
@@ -54,11 +54,10 @@ interface EventFormValues {
   tagInput?: string;
   organizerInput?: string;
   partnerOrganizerInput?: string;
-  organization: string;
+  organization?: string;
   startDateTime?: Date;
   endDateTime?: Date;
   daysOfWeek?: string[];
-  endOnDate?: string;
 }
 
 const organizerOptions = [
@@ -125,7 +124,6 @@ const CreateEventView = (props: any) => {
     organizerInput: '',
     partnerOrganizerInput: '',
     organization: '',
-    daysOfWeek: [],
   };
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.userSlice);
@@ -134,35 +132,36 @@ const CreateEventView = (props: any) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step, version]);
 
-const schema = Yup.object().shape({
-  mediaUrl: Yup.string().required('Event media is required'),
-  mediaType: Yup.string(),
-  name: Yup.string().required('Name is required'),
-  description: Yup.string(),
-  venue: Yup.string(),
-  category: Yup.string(),
-  tags: Yup.array().of(Yup.string()),
-  organization: Yup.string().required('Organization is required'),
-  partnerOrganizers: Yup.array().of(Yup.string()),
-  fromDate: Yup.date().nullable(),      // 👈 fix
-  fromTime: Yup.string().required('Start time is required'),
-  endDate: Yup.date().nullable(),       // 👈 fix
-  endTime: Yup.string().required('End time is required'),
-  eventType: Yup.string().oneOf(['oneTime', 'slots']),
-  recurring: Yup.boolean(),
-  recurringType: Yup.string().oneOf(['weekly', 'monthly', 'daily']),
-  recurringInterval: Yup.number().min(1),
-  recurringDays: Yup.array().of(Yup.string()),
-  recurringEnd: Yup.string().oneOf(['never', 'onDate', 'afterOccurrences']),
-  recurringEndDate: Yup.date().nullable(),  // 👈 already correct
-  recurringEndCount: Yup.number().min(1),
-  daysOfWeek: Yup.array().of(Yup.string()),
-  endOnDate: Yup.string(),
-});
+  const schema = Yup.object().shape({
+    mediaUrl: Yup.string()
+      .required('Event media is required'),
+    mediaType: Yup.string(),
+    name: Yup.string().required('Name is required'),
+    description: Yup.string(),
+    venue: Yup.string(),
+    category: Yup.string(),
+    tags: Yup.array().of(Yup.string()),
+    organization: Yup.string().required('Organization is required'),
+    partnerOrganizers: Yup.array().of(Yup.string()),
+    fromDate: Yup.date(),
+    fromTime: Yup.string().required('Start time is required'),
+    endDate: Yup.date(),
+    endTime: Yup.string().required('End time is required'),
+    eventType: Yup.string().oneOf(['oneTime', 'slots']),
+    recurring: Yup.boolean(),
+    recurringType: Yup.string().oneOf(['weekly', 'monthly', 'daily']),
+    recurringInterval: Yup.number().min(1),
+    recurringDays: Yup.array().of(Yup.string()),
+    recurringEnd: Yup.string().oneOf(['never', 'onDate', 'afterOccurrences']),
+    recurringEndDate: Yup.date().nullable(),
+    recurringEndCount: Yup.number().min(1),
+    daysOfWeek: Yup.array().of(Yup.string()),
+    endOnDate: Yup.string(),
+  });
 
   const methods = useForm<EventFormValues>({
     defaultValues,
-    resolver: yupResolver(schema) as unknown as Resolver<EventFormValues>,
+    resolver: yupResolver(schema),
   });
   const {
     watch,
@@ -171,12 +170,13 @@ const schema = Yup.object().shape({
   const {
     mediaUrl,
     mediaType,
-
+    organization,
     venue,
     category,
     partnerOrganizers,
     eventType,
     recurring,
+    recurringType,
     recurringDays,
     recurringEnd,
     partnerOrganizerInput = '',
@@ -288,7 +288,7 @@ const schema = Yup.object().shape({
     }
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: EventFormValues) => {
     let imageFileString = "";
     try {
       setLoading(true);
@@ -321,7 +321,7 @@ const schema = Yup.object().shape({
               isEnabled: data.recurring, // true
               frequency: data.recurringType, // "weekly"
               interval: data.recurringInterval, // 1
-              daysOfWeek: data.recurringDays.map((day:string) => day.substring(0, 3).toLowerCase()), // ["mon", "tue", "wed"]
+              daysOfWeek: data.recurringDays.map(day => day.substring(0, 3).toLowerCase()), // ["mon", "tue", "wed"]
               endType: data.recurringEnd, // "never"
               endDate: data.recurringEndDate, // null
               occurrences: data.recurringEndCount // 1
@@ -897,6 +897,10 @@ const schema = Yup.object().shape({
                               { label: 'Monthly', value: 'monthly' },
                               { label: 'Daily', value: 'daily' },
                             ]}
+                            value={recurringType}
+                            onChange={(e: any) =>
+                              setValue('recurringType', e.target.value)
+                            }
                             className="w-32 cursor-pointer rounded-2xl border-gray-200 focus:border-blue-600"
                           />
                         </div>
@@ -1171,6 +1175,7 @@ const schema = Yup.object().shape({
                           <RHFSelectField
                             name="currency"
                             placeholder="USD"
+                            defaultValue={'EURO'}
                             options={[
                               { label: 'USD', value: 'USD' },
                               { label: 'EURO', value: 'EUR' },
@@ -1251,6 +1256,7 @@ const schema = Yup.object().shape({
                         </label>
                         <RHFSelectField
                           name="ticketOptions"
+                          defaultValue="early-bird"
                           placeholder="Select Ticket Options"
                           options={[
                             { label: 'General Admission', value: 'general' },
