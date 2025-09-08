@@ -6,7 +6,6 @@ import { useBoolean } from "@/hooks/useBoolean";
 import { EventTable } from "@/sections/event";
 import { useDeleteeventMutation, useGeteventsQuery } from "@/store/Reducer/events";
 import { formatDate } from "@/utils/format-time";
-import { fi } from "date-fns/locale";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

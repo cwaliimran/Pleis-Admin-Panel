@@ -3,23 +3,15 @@
 import { TableFilters } from "@/components/table-filters";
 import TableHeadCustom from "@/components/table/table-head-custom";
 import { Card } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Table, TableBody } from "@/components/ui/table";
-import { FC} from "react";
+import { FC } from "react";
 import EventTableRow from "./eventTAbleRow"; // Import EventTableRow to handle table rows
 import { Badge } from "@/components/ui/badge";
 import { Settings2 } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useForm, FormProvider } from "react-hook-form";
 import { LoadingBar } from "@/components/table/table-bar-loading";
+import PaginationControls from "@/components/table/pagination-controls";
 
 // Define headers for the table
 const headLabel = [
@@ -68,14 +60,14 @@ const EventTable: FC<PageProps> = ({
   loading,
   handleDelete,
   onPageChange,
-  onSearch = () => {},
+  onSearch = () => { },
   search = "",
   status = "",
-  onStatusChange = () => {},
+  onStatusChange = () => { },
   startDate,
   endDate,
-  onDateChange = () => {},
-  onResetFilters = () => {},
+  onDateChange = () => { },
+  onResetFilters = () => { },
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -87,18 +79,6 @@ const EventTable: FC<PageProps> = ({
       location: [],
     },
   });
-
-  // Generate page numbers for pagination (show max 5 pages)
-  const getPageNumbers = () => {
-    const maxPagesToShow = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let end = start + maxPagesToShow - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxPagesToShow + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
 
   return (
     <div>
@@ -123,7 +103,7 @@ const EventTable: FC<PageProps> = ({
                   <form className="flex flex-col gap-6 px-4 py-2">
                     {/* Date Range Filters */}
                     <TableFilters
-                    className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                      className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
                       dateRangeFilter={{
                         startDate: {
                           id: "start-date",
@@ -174,15 +154,20 @@ const EventTable: FC<PageProps> = ({
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {loading ? (
-                                  <tr>
-                                    <td colSpan={headLabel.length} className="py-0 text-center">
-                                      <LoadingBar variant="default" />
-                                    </td>
-                                  </tr>
+                  <tr>
+                    <td colSpan={headLabel.length} className="py-0 text-center">
+                      <LoadingBar variant="default" />
+                    </td>
+                  </tr>
                 ) : data.length === 0 ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="text-center py-4">
-                      No data found
+                    <td
+                      colSpan={headLabel.length}
+                      className="h-[40vh] border-b-0 text-center align-middle"
+                    >
+                      <div className="flex h-full w-full items-center justify-center text-xl">
+                        No data found
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -200,54 +185,13 @@ const EventTable: FC<PageProps> = ({
           </div>
 
           {/* Pagination */}
-          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
-            <div className="text-muted-foreground">
-              Page {currentPage} of {totalPages} | Total: {totalRecords}
-            </div>
-
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange?.(currentPage - 1);
-                  }}
-                  aria-disabled={currentPage === 1}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNum === currentPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (pageNum !== currentPage) onPageChange?.(pageNum);
-                    }}
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {totalPages > 5 && (
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages)
-                      onPageChange?.(currentPage + 1);
-                  }}
-                  aria-disabled={currentPage === totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            limit={10}
+            onPageChange={(p) => onPageChange?.(p)}
+          />
         </Card>
       </div>
     </div>
