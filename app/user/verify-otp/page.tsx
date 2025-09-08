@@ -66,7 +66,7 @@ function VerifyOtpPage() {
       router.push('/user/verify-otp?email=' + encodeURIComponent(trimmedEmail));
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to add category:', errorMessage);
+      console.log('Failed to add category:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -98,7 +98,7 @@ function VerifyOtpPage() {
       );
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to add category:', errorMessage);
+      console.log('Failed to add category:', errorMessage);
       showError(errorMessage);
     }
   });

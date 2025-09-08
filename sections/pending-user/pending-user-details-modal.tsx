@@ -26,11 +26,13 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
 }) => {
   if (!user) return null;
 
+  console.log('user', user);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         aria-describedby={undefined}
-        className="max-h-[90vh] max-w-4xl overflow-y-auto dark:bg-black"
+        className="max-h-[90vh] max-w-4xl overflow-y-auto dark:bg-[#1c1c1e]"
       >
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
@@ -41,13 +43,29 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
         <div className="grid gap-6">
           {/* User Avatar and Basic Info */}
           <div className="dark:bg-secondary flex items-center gap-4 rounded-lg border bg-gray-50 p-4">
-            <Avatar className="h-16 w-16 rounded-xl">
+            {/* <Avatar className="h-16 w-16 rounded-xl">
               <AvatarImage
                 src={user?.basicInfo?.profileIcon || ''}
                 alt={`${user?.basicInfo?.firstName}`}
                 className="object-cover"
               />
+            </Avatar> */}
+
+            <Avatar className="flex h-16 w-16 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+              {user?.basicInfo?.profileIcon &&
+              user?.basicInfo?.profileIcon !== 'noimage.png' ? (
+                <AvatarImage
+                  src={user?.basicInfo?.profileIcon}
+                  alt="User"
+                  className="h-full w-full cursor-pointer object-cover"
+                />
+              ) : (
+                <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+                  {user?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}
+                </span>
+              )}
             </Avatar>
+
             <div className="flex-1">
               <h3 className="text-lg font-semibold">
                 {user?.basicInfo?.firstName || '-'} {user?.basicInfo?.lastName}

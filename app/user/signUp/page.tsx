@@ -386,7 +386,7 @@ function SignUpPage() {
       reset();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to add category:', errorMessage);
+      console.log('Failed to add category:', errorMessage);
       showError(errorMessage);
     }
   };

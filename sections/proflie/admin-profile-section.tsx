@@ -1,11 +1,11 @@
 'use client';
+import TwoFactorAuth from '@/app/common/2fa/2fa';
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useUpdateUserMutation } from '@/store/Reducer/user-list';
 import { setUser } from '@/store/slice/userSlice';
 import { RootState } from '@/store/store';
@@ -43,9 +43,6 @@ const AdminProfileSection = () => {
     useUpdateUserMutation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(
-    user?.accountState?.twoFactorAuth || false
-  );
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -133,7 +130,7 @@ const AdminProfileSection = () => {
     } catch (error) {
       setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to update profile:', errorMessage);
+      console.log('Failed to update profile:', errorMessage);
       showError(errorMessage);
 
       if (uploadedFileKey) {
@@ -160,11 +157,6 @@ const AdminProfileSection = () => {
     }
   };
 
-  const handleToggleChange = () => {
-    setIsTwoFactorEnabled(!isTwoFactorEnabled);
-    // TODO: Call API to update twoFactorAuth if needed
-  };
-
   return (
     <div className="mt-5 min-h-[87vh] md:mt-0 md:p-6">
       <div className="max-w-4xl md:mx-auto">
@@ -178,32 +170,7 @@ const AdminProfileSection = () => {
                 Use a permanent address where you can receive mail.
               </p>
             </div>
-            <div className="flex items-center space-x-3">
-              <Label
-                htmlFor="two-factor"
-                className="cursor-pointer text-gray-700 dark:text-white"
-                onClick={handleToggleChange}
-              >
-                Enable two factor
-              </Label>
-              <div className="relative">
-                <Input
-                  id="two-factor"
-                  type="checkbox"
-                  checked={isTwoFactorEnabled}
-                  onChange={handleToggleChange}
-                  className="peer sr-only"
-                />
-                <div
-                  className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
-                    isTwoFactorEnabled
-                      ? 'bg-primary after:translate-x-full after:border-white'
-                      : 'bg-gray-200'
-                  }`}
-                  onClick={handleToggleChange}
-                ></div>
-              </div>
-            </div>
+            <TwoFactorAuth user={user} />
           </CardHeader>
 
           <CardContent className="space-y-6 pt-0 pb-3 md:px-8">
@@ -236,9 +203,7 @@ const AdminProfileSection = () => {
                   >
                     Change avatar
                   </Button>
-                  <p className="mt-2 text-sm text-gray-500">
-                    JPG or PNG. 1MB max.
-                  </p>
+                  <p className="mt-2 text-sm text-gray-500">JPG or PNG.</p>
                 </div>
               </div>
 
@@ -291,11 +256,21 @@ const AdminProfileSection = () => {
                           width: '16rem',
                         }}
                         buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
-                        inputClass={`file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input !border-gray-100 !shadow-sm flex !h-[34px] !w-full min-w-0 rounded-md !bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive ${
-                          fieldState.invalid
-                            ? 'border-destructive ring-destructive/40'
-                            : ''
-                        }`}
+                        inputClass={`file:text-foreground placeholder:text-muted-foreground
+            selection:bg-primary selection:text-primary-foreground
+            dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm
+            flex !h-[42px] !w-full min-w-0 rounded-lg
+            !bg-transparent px-3 py-1 text-base
+            shadow-xs transition-[color,box-shadow]
+            outline-none file:inline-flex file:h-7 file:border-0
+            file:bg-transparent file:text-sm file:font-medium
+            disabled:pointer-events-none disabled:cursor-not-allowed
+            disabled:opacity-50 md:text-sm
+            focus-visible:ring-ring/50 focus-visible:ring-[3px]
+            aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
+            aria-invalid:border-destructive ${
+              fieldState.invalid ? 'border-destructive ring-destructive/40' : ''
+            }`}
                       />
                       {fieldState.error && (
                         <p className="mt-1 text-xs text-red-500">

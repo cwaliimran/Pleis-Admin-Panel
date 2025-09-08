@@ -37,7 +37,7 @@ const Account = () => {
       localStorage.clear();
       router.replace('/');
     } catch (error) {
-      console.error(error);
+      console.log(error);
       showError('Unable to logout!');
     }
   };

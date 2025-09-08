@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { TableFilters } from "@/components/table-filters";
 import TableHeadCustom from "@/components/table/table-head-custom";
@@ -15,16 +15,16 @@ import PaginationControls from "@/components/table/pagination-controls";
 
 // Define headers for the table
 const headLabel = [
-  { id: "image", label: "Image", align: "left" },
-  { id: "name", label: "Name", align: "left" },
-  { id: "organization", label: "Organization", align: "left" },
-  { id: "venue", label: "Venue", align: "left" },
-  { id: "startDate", label: "Start Date", align: "left" },
-  { id: "endDate", label: "End Date", align: "left" },
-  { id: "totalRevenue", label: "Revenue", align: "left" },
-  { id: "totalViews", label: "Views", align: "left" },
-  { id: "region", label: "Region", align: "left" },
-  { id: "actions", label: "Action", align: "left" },
+  { id: 'image', label: 'Image', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'venue', label: 'Venue', align: 'left' },
+  { id: 'startDate', label: 'Start Date', align: 'left' },
+  { id: 'endDate', label: 'End Date', align: 'left' },
+  { id: 'totalRevenue', label: 'Revenue', align: 'left' },
+  { id: 'totalViews', label: 'Views', align: 'left' },
+  { id: 'region', label: 'Region', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
 interface Meta {
@@ -50,7 +50,11 @@ interface PageProps {
   onStatusChange?: (status: string) => void;
   startDate?: Date;
   endDate?: Date;
-  onDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
+  userType?: any;
+  onDateChange?: (
+    startDate: Date | undefined,
+    endDate: Date | undefined
+  ) => void;
   onResetFilters?: () => void;
 }
 
@@ -58,6 +62,7 @@ const EventTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
+  userType,
   handleDelete,
   onPageChange,
   onSearch = () => { },
@@ -95,7 +100,11 @@ const EventTable: FC<PageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
+              <SheetContent
+                aria-describedby={undefined}
+                side="right"
+                className="dark:bg-secondary p-0"
+              >
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -106,34 +115,36 @@ const EventTable: FC<PageProps> = ({
                       className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
                       dateRangeFilter={{
                         startDate: {
-                          id: "start-date",
-                          placeholder: "Select start date",
+                          id: 'start-date',
+                          placeholder: 'Select start date',
                           value: startDate,
-                          onChange: (newStartDate) => onDateChange(newStartDate, endDate),
+                          onChange: (newStartDate) =>
+                            onDateChange(newStartDate, endDate),
                         },
                         endDate: {
-                          id: "end-date",
-                          placeholder: "Select end date",
+                          id: 'end-date',
+                          placeholder: 'Select end date',
                           value: endDate,
-                          onChange: (newEndDate) => onDateChange(startDate, newEndDate),
+                          onChange: (newEndDate) =>
+                            onDateChange(startDate, newEndDate),
                         },
                       }}
                       selectFilters={[
                         {
-                          id: "status",
-                          label: "Status",
-                          placeholder: "Select by Status",
+                          id: 'status',
+                          label: 'Status',
+                          placeholder: 'Select by Status',
                           value: status,
                           onChange: onStatusChange,
                           options: [
-                            { value: "all", label: "All" },
-                            { value: "active", label: "Active" },
-                            { value: "inactive", label: "Inactive" },
+                            { value: 'all', label: 'All' },
+                            { value: 'active', label: 'Active' },
+                            { value: 'inactive', label: 'Inactive' },
                           ],
                         },
                       ]}
                       searchFilter={{
-                        placeholder: "Search Events...",
+                        placeholder: 'Search Events...',
                         value: search,
                         onChange: onSearch,
                       }}
@@ -176,7 +187,7 @@ const EventTable: FC<PageProps> = ({
                       key={item._id || index}
                       item={item}
                       handleDelete={handleDelete}
-                      userType={"organizer"}
+                      userType={userType}
                     />
                   ))
                 )}

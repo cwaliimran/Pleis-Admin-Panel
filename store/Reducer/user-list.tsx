@@ -62,6 +62,18 @@ export const userListApi = createApi({
       invalidatesTags: ['userList'],
     }),
 
+    updateUserSuperAdminAndGuest: builder.mutation({
+      query: (updateUser) => ({
+        url: API_ROUTES.USER_LIST_BY_ID(updateUser.id),
+        method: 'PUT',
+        body: updateUser,
+        headers: {
+          'x-admin-access-token': ADMIN_ACCESS_TOKEN,
+        },
+      }),
+      invalidatesTags: ['userList'],
+    }),
+
     updatePendingUser: builder.mutation({
       query: ({ id, status }) => ({
         url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
@@ -95,6 +107,7 @@ export const {
   useGetUserByIdQuery,
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
+  useUpdateUserSuperAdminAndGuestMutation,
   useUpdatePendingUserMutation,
   useUpdateUserMutation,
   useUpdatePasswordMutation,

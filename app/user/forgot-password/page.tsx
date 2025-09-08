@@ -3,17 +3,16 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 import { ModeToggle } from '@/components/atoms/mode-toggle';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
-import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
 import { useSendOtpMutation } from '@/store/Reducer/user';
+import { getErrorMessage } from '@/utils/api';
 import { normalizeEmail } from '@/utils/short-utils';
+import { showError, showSuccess } from '@/utils/toast';
 
 const defaultValues = {
   email: '',
@@ -24,7 +23,6 @@ const schema = Yup.object().shape({
 });
 
 function ForgotPasswordPage() {
-  const router = useRouter();
 
   const [forgotPasswordData, { isLoading }] = useSendOtpMutation();
 
@@ -51,7 +49,6 @@ function ForgotPasswordPage() {
         showSuccess(response?.message || 'Otp sent successfully');
       }
 
-      router.push('/user/verify-otp?email=' + encodeURIComponent(data.email));
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.log('Failed to add category:', errorMessage);

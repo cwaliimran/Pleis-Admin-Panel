@@ -1,8 +1,11 @@
 'use client';
 
-// import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent, DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
@@ -25,34 +28,6 @@ const HighlightTypeTableRow: FC<PageProps> = ({
         {item?.title || '-'}
       </TableCell>
 
-      {/* <TableCell className="text-left">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage
-              src={item?.object?.basicInfo?.mediaInfo?.logo?.url || ''}
-              alt={item?.object?.basicInfo?.mediaInfo?.logo?.name || 'unknown'}
-              className="object-cover"
-            />
-
-            {item?.object?.basicInfo?.mediaInfo?.logo?.url &&
-            item?.object?.basicInfo?.mediaInfo?.logo?.name !== 'noimage.png' ? (
-              <AvatarImage
-                src={item?.object?.basicInfo?.mediaInfo?.logo?.url}
-                alt={
-                  item?.object?.basicInfo?.mediaInfo?.logo?.name || 'unknown'
-                }
-                className="h-full w-full cursor-pointer object-cover"
-              />
-            ) : (
-              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-                {item?.object?.basicInfo?.name?.[0]?.toUpperCase() || ''}
-              </span>
-            )}
-          </Avatar>
-          {item?.object?.basicInfo?.name || '-'}
-        </div>
-      </TableCell> */}
-
       <TableCell>
         {item?.type === 'organization' ? item?.object?.basicInfo?.name : '-'}
       </TableCell>
@@ -70,14 +45,12 @@ const HighlightTypeTableRow: FC<PageProps> = ({
             aria-description={undefined}
             className="max-w-2xl overflow-hidden p-2"
           >
+            <DialogTitle className="sr-only">Media Preview</DialogTitle>
             <video
               controls
               autoPlay
               className="h-full w-full"
-              // src={item.video}
-              src={
-                'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4'
-              }
+              src={item?.mediaInfo?.url || ''}
             />
           </DialogContent>
         </Dialog>

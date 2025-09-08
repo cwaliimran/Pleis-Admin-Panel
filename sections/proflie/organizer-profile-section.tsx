@@ -1,102 +1,298 @@
-"use client";
-import FormProvider, { RHFSelectField, RHFTextField } from "@/components/rhf";
-import { RHFMultiSelect } from "@/components/rhf/rhf-multiselect";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import React, { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+'use client';
+import TwoFactorAuth from '@/app/common/2fa/2fa';
+import ButtonLoading from '@/components/common/button-loading';
+import GoogleLocationInput from '@/components/common/location-input';
+import FormProvider, { RHFTextField } from '@/components/rhf';
+import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { useGetSuppliersGloabalQuery } from '@/store/Reducer/suppliers';
+import { useUpdateUserMutation } from '@/store/Reducer/user-list';
+import { setUser } from '@/store/slice/userSlice';
+import { RootState } from '@/store/store';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+import { useDispatch, useSelector } from 'react-redux';
+import * as Yup from 'yup';
+import PasswordUpdateModal from './update-password-modal';
 
-interface OrganizerProfileFormData {
+type ProfileFormData = {
   firstName: string;
   lastName: string;
-  orgName: string;
-  phoneNo: string;
-  address: string;
-  role: string;
   email: string;
-  password: string;
+  phone: string;
+  phoneCode: string;
+  avatar: any;
+  organizationName: string;
   companyName: string;
   oib: string;
   bankAccountNumber: string;
-  postalCode: string;
-  country: string;
-  city: string;
-  representativeFullName: string;
+  representativeName: string;
+  subscriptionStatus: string;
+  location: {
+    address: string;
+    country: string;
+    city: string;
+    postalCode: string;
+    state?: string;
+    coordinates?: [number, number];
+  };
   suppliers: string[];
-  avatar?: string;
-}
+};
 
-interface PasswordUpdateFormData {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
+const profileSchema = Yup.object({
+  firstName: Yup.string().required('First name is required'),
+  lastName: Yup.string().required('Last name is required'),
+  email: Yup.string()
+    .email('Invalid email address')
+    .required('Email is required'),
+  phone: Yup.string()
+    .matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
+    .required('Phone number is required'),
+  phoneCode: Yup.string(),
+  avatar: Yup.string().nullable(),
+  organizationName: Yup.string().required('Organization name is required'),
+  companyName: Yup.string().required('Company name is required'),
+  oib: Yup.string().required('OIB is required'),
+  bankAccountNumber: Yup.string().required('Bank account number is required'),
+  representativeName: Yup.string().required('Representative name is required'),
+  subscriptionStatus: Yup.string(),
+  location: Yup.object({
+    address: Yup.string().required('Address is required'),
+    country: Yup.string().required('Country is required'),
+    city: Yup.string().required('City is required'),
+    postalCode: Yup.string(),
+    state: Yup.string().optional(),
+    coordinates: Yup.array().of(Yup.number()).optional(),
+  }),
+  suppliers: Yup.array()
+    .of(Yup.string())
+    .min(1, 'At least one supplier is required'),
+});
 
 const OrganizerProfileSection = () => {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.userSlice);
+
+  const [updateUser, { isLoading: updateUserLoading }] =
+    useUpdateUserMutation();
+
+  const { data: supplierData } = useGetSuppliersGloabalQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
+
+  const supplierOptions = React.useMemo(
+    () =>
+      supplierData?.data?.map((sup: any) => ({
+        value: sup._id,
+        label: sup?.title,
+      })) || [],
+    [supplierData]
+  );
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
 
-  const methods = useForm<OrganizerProfileFormData>({
+  const methods = useForm({
     defaultValues: {
-      firstName: "John",
-      lastName: "Doe",
-      orgName: "Example Organization",
-      phoneNo: "+385 98 123 4567",
-      address: "123 Main Street, Zagreb",
-      role: "Admin",
-      email: "john.doe@example.com",
-      password: "",
-      companyName: "Example Company Ltd.",
-      oib: "12345678901",
-      bankAccountNumber: "HR1234567890123456789",
-      postalCode: "10000",
-      country: "cr",
-      city: "zadar",
-      representativeFullName: "John Doe",
-      suppliers: ["clubbing", "techno"],
-      avatar: "https://github.com/shadcn.png",
+      firstName: user?.basicInfo?.firstName || '',
+      lastName: user?.basicInfo?.lastName || '',
+      email: user?.basicInfo?.email || '',
+      phone: `${user?.basicInfo?.phoneNumber?.code || ''}${user?.basicInfo?.phoneNumber?.number || ''}`,
+      avatar: user?.basicInfo?.profileIcon || '',
+      phoneCode: user?.basicInfo?.phoneNumber?.code || '',
+      organizationName: user?.basicInfo?.organizationName || '',
+      companyName: user?.basicInfo?.companyDetails?.name || '',
+      oib: user?.basicInfo?.companyDetails?.oib || '',
+      bankAccountNumber:
+        user?.basicInfo?.companyDetails?.bankAccountNumber || '',
+      representativeName:
+        user?.basicInfo?.companyDetails?.representativeName || '',
+      subscriptionStatus: 'Basic',
+      location: {
+        city: user?.basicInfo?.companyDetails?.location?.city || '',
+        country: user?.basicInfo?.companyDetails?.location?.country || '',
+        address: user?.basicInfo?.companyDetails?.location?.fullAddress || '',
+        postalCode: user?.basicInfo?.companyDetails?.location?.postalCode || '',
+      },
+      suppliers: user?.basicInfo?.companyDetails?.suppliers || [],
     },
+    resolver: yupResolver(profileSchema),
   });
 
-  const { handleSubmit, watch, setValue } = methods;
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    control,
+    formState: { isDirty, dirtyFields },
+  } = methods;
 
-  const passwordMethods = useForm<PasswordUpdateFormData>({
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  });
+  const avatarUrl = watch('avatar');
 
-  const avatarUrl = watch("avatar");
-
-  const onSubmit = (data: OrganizerProfileFormData) => {
-    console.log("Profile data:", data);
-  };
-
-  const onPasswordSubmit = (data: PasswordUpdateFormData) => {
-    if (data.newPassword !== data.confirmPassword) {
-      alert("New password and confirm password do not match!");
+  const onSubmit = handleSubmit(async (formData) => {
+    if (!isDirty) {
+      showSuccess('No changes to save');
       return;
     }
-    console.log("Password update data:", data);
-    // Here you would typically call your API to update the password
-    setIsPasswordModalOpen(false);
-    passwordMethods.reset();
-    alert("Password updated successfully!");
-  };
+
+    let uploadedFileKey: string | null = null;
+    try {
+      const payload: any = {};
+
+      const companyDetailsFields: (keyof ProfileFormData)[] = [
+        'companyName',
+        'oib',
+        'bankAccountNumber',
+        'representativeName',
+        'suppliers',
+      ];
+
+      companyDetailsFields.forEach((field) => {
+        if (dirtyFields[field]) {
+          payload.companyDetails = {
+            ...(payload.companyDetails || {}),
+            [field === 'companyName' ? 'name' : field]: formData[field],
+          };
+        }
+      });
+
+      const basicFields: (keyof ProfileFormData)[] = [
+        'firstName',
+        'lastName',
+        'email',
+        'organizationName',
+        'subscriptionStatus',
+      ];
+
+      basicFields.forEach((field) => {
+        if (dirtyFields[field]) {
+          payload[field] = formData[field];
+        }
+      });
+
+      if (dirtyFields.location) {
+        payload.location = {
+          ...formData.location,
+          fullAddress: formData.location.address,
+        };
+        delete payload.location.address;
+      }
+
+      if (dirtyFields.phone || dirtyFields.phoneCode) {
+        payload.phoneNumber = {
+          code: formData.phoneCode || '',
+          number: formData.phone.replace(formData.phoneCode || '', ''),
+        };
+      }
+
+      if (selectedFile) {
+        setImageUploading(true);
+        try {
+          uploadedFileKey = await uploadFileToAzure(selectedFile);
+          payload.profileIcon = uploadedFileKey;
+        } finally {
+          setImageUploading(false);
+        }
+      }
+
+      const response = await updateUser({
+        id: user?.basicInfo?._id,
+        body: payload,
+      }).unwrap();
+
+      const updatedUser = response?.data;
+
+      if (!updatedUser) {
+        showError('No updated user returned from server');
+      }
+
+      const role = updatedUser?.accountState?.userType || user?.role || '';
+
+      const newUser = {
+        ...user,
+        ...updatedUser,
+        role,
+        key: process.env.NEXT_PUBLIC_PROJECT_KEY,
+      };
+
+      dispatch(setUser(newUser));
+
+      // Reset form with updated values to reflect new default state
+      reset({
+        firstName: updatedUser?.basicInfo?.firstName || formData.firstName,
+        lastName: updatedUser?.basicInfo?.lastName || formData.lastName,
+        email: updatedUser?.basicInfo?.email || formData.email,
+        phone: `${updatedUser?.basicInfo?.phoneNumber?.code || formData.phoneCode}${updatedUser?.basicInfo?.phoneNumber?.number || formData.phone}`,
+        phoneCode:
+          updatedUser?.basicInfo?.phoneNumber?.code || formData.phoneCode,
+        avatar: updatedUser?.basicInfo?.profileIcon || formData.avatar,
+        organizationName:
+          updatedUser?.basicInfo?.organizationName || formData.organizationName,
+        companyName:
+          updatedUser?.basicInfo?.companyDetails?.name || formData.companyName,
+        oib: updatedUser?.basicInfo?.companyDetails?.oib || formData.oib,
+        bankAccountNumber:
+          updatedUser?.basicInfo?.companyDetails?.bankAccountNumber ||
+          formData.bankAccountNumber,
+        representativeName:
+          updatedUser?.basicInfo?.companyDetails?.representativeName ||
+          formData.representativeName,
+        subscriptionStatus: formData.subscriptionStatus,
+        location: {
+          address:
+            updatedUser?.basicInfo?.companyDetails?.location?.fullAddress ||
+            formData.location.address,
+          city:
+            updatedUser?.basicInfo?.companyDetails?.location?.city ||
+            formData.location.city,
+          country:
+            updatedUser?.basicInfo?.companyDetails?.location?.country ||
+            formData.location.country,
+          postalCode:
+            updatedUser?.basicInfo?.companyDetails?.location?.postalCode ||
+            formData.location.postalCode,
+          state:
+            updatedUser?.basicInfo?.companyDetails?.location?.state ||
+            formData.location.state,
+          coordinates:
+            updatedUser?.basicInfo?.companyDetails?.location?.coordinates ||
+            formData.location.coordinates,
+        },
+        suppliers:
+          updatedUser?.basicInfo?.companyDetails?.suppliers ||
+          formData.suppliers,
+      });
+
+      showSuccess(response?.message || 'Profile updated successfully');
+    } catch (error) {
+      setImageUploading(false);
+      const errorMessage = getErrorMessage(error);
+      console.log('Failed to update profile:', errorMessage);
+      showError(errorMessage);
+
+      if (uploadedFileKey) {
+        console.log('Rolling back uploaded image:', uploadedFileKey);
+        await deleteFileFromAzure(uploadedFileKey);
+      }
+    }
+  });
 
   const handleAvatarChange = () => {
     fileInputRef.current?.click();
@@ -105,45 +301,33 @@ const OrganizerProfileSection = () => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageUrl = e.target?.result as string;
-        setValue("avatar", imageUrl);
+        setValue('avatar', imageUrl, { shouldDirty: true });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleToggleChange = () => {
-    setIsTwoFactorEnabled(!isTwoFactorEnabled);
-  };
-
-  const handlePasswordModalOpen = () => {
-    setIsPasswordModalOpen(true);
-  };
-
-  const handlePasswordModalClose = () => {
-    setIsPasswordModalOpen(false);
-    passwordMethods.reset();
-  };
-
   return (
-    <div className="min-h-[87vh] md:p-6 md:mt-0 mt-5">
+    <div className="mt-5 min-h-[87vh] md:mt-0 md:p-6">
       <div className="max-w-4xl md:mx-auto">
-        <Card className="bg-white dark:bg-secondary border-gray-200 dark:border-none shadow-sm">
-          <CardHeader className="flex md:flex-row flex-col-reverse items-center justify-between">
+        <Card className="dark:bg-secondary border-gray-200 bg-white shadow-sm dark:border-none">
+          <CardHeader className="flex flex-col-reverse items-center justify-between md:flex-row">
             <div>
-              <CardTitle className="text-gray-900 dark:text-white text-2xl font-semibold">
+              <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Personal Information
               </CardTitle>
-              <p className="text-gray-600 dark:text-white mt-1 text-sm">
+              <p className="mt-1 text-sm text-gray-600 dark:text-white">
                 Use a permanent address where you can receive mail.
               </p>
             </div>
-            <div className="flex items-center space-x-3">
+            {/* <div className="flex items-center space-x-3">
               <Label
                 htmlFor="two-factor"
-                className="text-gray-700 dark:text-white cursor-pointer"
+                className="cursor-pointer text-gray-700 dark:text-white"
                 onClick={handleToggleChange}
               >
                 Enable two factor
@@ -154,22 +338,24 @@ const OrganizerProfileSection = () => {
                   type="checkbox"
                   checked={isTwoFactorEnabled}
                   onChange={handleToggleChange}
-                  className="sr-only peer"
+                  className="peer sr-only"
                 />
                 <div
-                  className={`relative w-11 h-6 rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all cursor-pointer ${
+                  className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
                     isTwoFactorEnabled
-                      ? "bg-primary after:translate-x-full after:border-white"
-                      : "bg-gray-200 "
+                      ? 'bg-primary after:translate-x-full after:border-white'
+                      : 'bg-gray-200'
                   }`}
                   onClick={handleToggleChange}
                 ></div>
               </div>
-            </div>
+            </div> */}
+
+            <TwoFactorAuth user={user} />
           </CardHeader>
 
-          <CardContent className="space-y-6 md:px-8 pt-0 pb-3">
-            <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+          <CardContent className="space-y-6 pt-0 pb-3 md:px-8">
+            <FormProvider methods={methods} onSubmit={onSubmit}>
               {/* Hidden file input */}
               <Input
                 ref={fileInputRef}
@@ -180,11 +366,13 @@ const OrganizerProfileSection = () => {
               />
 
               {/* Avatar Section */}
-              <div className="flex items-center md:space-x-8 space-x-2 pb-6 border-b border-gray-200">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={avatarUrl} />
+              <div className="flex items-center space-x-2 border-b border-gray-200 pb-6 md:space-x-8">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={avatarUrl ?? undefined} />
                   <AvatarFallback className="bg-gray-100 text-gray-700">
-                    AD
+                    <span className="text-2xl font-semibold">
+                      {user?.basicInfo?.firstName[0]}
+                    </span>
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -192,18 +380,16 @@ const OrganizerProfileSection = () => {
                     type="button"
                     variant="outline"
                     onClick={handleAvatarChange}
-                    className="bg-white border-gray-300 text-gray-700 dark:text-white hover:bg-gray-50"
+                    className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:text-white"
                   >
                     Change avatar
                   </Button>
-                  <p className="text-gray-500 text-sm mt-2">
-                    JPG or PNG. 1MB max.
-                  </p>
+                  <p className="mt-2 text-sm text-gray-500">JPG or PNG.</p>
                 </div>
               </div>
 
               {/* Form Fields */}
-              <div className="w-full mt-6 mb-4 grid md:grid-cols-2 grid-cols-1 gap-4">
+              <div className="mt-6 mb-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                 <RHFTextField
                   name="firstName"
                   label="First Name"
@@ -217,23 +403,69 @@ const OrganizerProfileSection = () => {
                 />
 
                 <RHFTextField
-                  name="orgName"
-                  label="Organization Name"
-                  placeholder="Enter organization name"
-                />
-
-                <RHFTextField
-                  name="phoneNo"
-                  label="Phone Number"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                />
-
-                <RHFTextField
                   name="email"
                   type="email"
                   label="Email"
                   placeholder="Enter your email address"
+                />
+
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <div>
+                      <p className="mb-0.5 text-sm font-medium">Phone</p>
+                      <PhoneInput
+                        {...field}
+                        country="pk"
+                        onChange={(value, country: any) => {
+                          field.onChange(value);
+                          setValue('phoneCode', `+${country?.dialCode || ''}`, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+                        }}
+                        placeholder="Phone Number"
+                        inputProps={{
+                          required: true,
+                          'aria-invalid': fieldState.invalid,
+                        }}
+                        containerClass="w-full"
+                        dropdownStyle={{
+                          zIndex: 9999,
+                          position: 'fixed',
+                          width: '16rem',
+                        }}
+                        buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                        inputClass={`file:text-foreground placeholder:text-muted-foreground
+            selection:bg-primary selection:text-primary-foreground
+            dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm
+            flex !h-[42px] !w-full min-w-0 rounded-lg
+            !bg-transparent px-3 py-1 text-base
+            shadow-xs transition-[color,box-shadow]
+            outline-none file:inline-flex file:h-7 file:border-0
+            file:bg-transparent file:text-sm file:font-medium
+            disabled:pointer-events-none disabled:cursor-not-allowed
+            disabled:opacity-50 md:text-sm
+            focus-visible:ring-ring/50 focus-visible:ring-[3px]
+            aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
+            aria-invalid:border-destructive ${
+              fieldState.invalid ? 'border-destructive ring-destructive/40' : ''
+            }`}
+                      />
+                      {fieldState.error && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                />
+
+                <RHFTextField
+                  name="organizationName"
+                  label="Organization Name"
+                  placeholder="Enter organization name"
                 />
 
                 <RHFTextField
@@ -252,142 +484,76 @@ const OrganizerProfileSection = () => {
                   placeholder="Enter bank account number"
                 />
                 <RHFTextField
-                  name="postalCode"
-                  label="Postal Code"
-                  placeholder="Enter postal code"
-                />
-
-                <RHFSelectField
-                  name="country"
-                  label="Country"
-                  placeholder="Select Country"
-                  className="w-full flex-1"
-                  options={[{ label: "Croatia", value: "cr" }]}
-                />
-
-                <RHFSelectField
-                  name="city"
-                  label="City"
-                  placeholder="Select City"
-                  className="w-full flex-1"
-                  options={[
-                    { label: "Zadar", value: "zadar" },
-                    { label: "Pula", value: "pula" },
-                    { label: "Hvar", value: "hvar" },
-                  ]}
-                />
-
-                <RHFTextField
-                  name="representativeFullName"
+                  name="representativeName"
                   label="Representative Full Name"
                   placeholder="Enter representative full name"
                 />
 
                 <RHFTextField
                   name="subscriptionStatus"
-                  label="Subscription Status"
+                  label="Current Subscription"
                   placeholder="Subscription status"
-                  value="Basic"
+                  disabled
                 />
 
-                <div className="col-span-2 space-y-4">
-                  <RHFTextField
-                    name="address"
-                    label="Address"
-                    placeholder="Enter your address"
+                <div className="col-span-1 space-y-2 md:col-span-2">
+                  <GoogleLocationInput
+                    name="location"
+                    label="Location"
+                    showLabel={true}
                   />
 
-                  <RHFMultiSelect
+                  <RHFCustomCombobox
                     name="suppliers"
-                    label="List of Suppliers"
                     placeholder="Select suppliers"
-                    options={[
-                      { label: "Clubbing", value: "clubbing" },
-                      { label: "Techno", value: "techno" },
-                      { label: "House", value: "house" },
-                    ]}
+                    label="Suppliers"
+                    className="w-full flex-1"
+                    multiple={true}
+                    allowCustom={false}
+                    options={supplierOptions}
+                    onChange={(value: string[]) => {
+                      setValue('suppliers', value, { shouldDirty: true });
+                    }}
                   />
                 </div>
               </div>
 
               {/* Save Button */}
-              <div className="pt-4 flex justify-end gap-4 items-center">
+              <div className="flex items-center justify-end gap-4 pt-4">
                 <Button
                   type="button"
-                  onClick={handlePasswordModalOpen}
-                  className="bg-gray-200 text-black hover:bg-gray-300 px-7 h-11"
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="h-10 bg-gray-200 px-5 text-black hover:bg-gray-300"
                 >
                   Update Password
                 </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary text-white hover:bg-primary px-7 h-11"
-                >
-                  Save Changes
-                </Button>
+
+                {updateUserLoading || imageUploading ? (
+                  <Button
+                    type="button"
+                    className="bg-primary hover:bg-primary h-10 cursor-not-allowed px-7 text-white"
+                  >
+                    <ButtonLoading title="Saving" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={updateUserLoading || imageUploading || !isDirty}
+                    className="bg-primary hover:bg-primary h-10 px-7 text-white"
+                  >
+                    Save Changes
+                  </Button>
+                )}
               </div>
             </FormProvider>
           </CardContent>
         </Card>
 
         {/* Password Update Modal */}
-        <Dialog
-          open={isPasswordModalOpen}
-          onOpenChange={setIsPasswordModalOpen}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Update Password</DialogTitle>
-              <DialogDescription>
-                Enter your current password and choose a new password.
-              </DialogDescription>
-            </DialogHeader>
-
-            <FormProvider
-              methods={passwordMethods}
-              onSubmit={passwordMethods.handleSubmit(onPasswordSubmit)}
-            >
-              <div className="space-y-4">
-                <RHFTextField
-                  name="currentPassword"
-                  type="password"
-                  label="Current Password"
-                  placeholder="Enter your current password"
-                />
-
-                <RHFTextField
-                  name="newPassword"
-                  type="password"
-                  label="New Password"
-                  placeholder="Enter your new password"
-                />
-
-                <RHFTextField
-                  name="confirmPassword"
-                  type="password"
-                  label="Confirm New Password"
-                  placeholder="Confirm your new password"
-                />
-              </div>
-
-              <DialogFooter className="mt-6">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePasswordModalClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary text-white hover:bg-primary"
-                >
-                  Update Password
-                </Button>
-              </DialogFooter>
-            </FormProvider>
-          </DialogContent>
-        </Dialog>
+        <PasswordUpdateModal
+          isOpen={isPasswordModalOpen}
+          onClose={() => setIsPasswordModalOpen(false)}
+        />
       </div>
     </div>
   );

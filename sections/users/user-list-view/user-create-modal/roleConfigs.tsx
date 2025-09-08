@@ -535,7 +535,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
 
       onSubmit(payload);
     } catch (err) {
-      console.error('Image upload failed:', err);
+      console.log('Image upload failed:', err);
       showError(getErrorMessage(err));
     }
   };

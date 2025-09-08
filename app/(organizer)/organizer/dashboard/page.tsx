@@ -104,7 +104,7 @@ const Page = () => {
         setShowTermsModal(false);
       } catch (error) {
         const errorMessage = getErrorMessage(error);
-        console.error('Failed:', errorMessage);
+        console.log('Failed:', errorMessage);
         showError(errorMessage);
       }
     }

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import ImageWithFallback from "@/components/common/img-with-fallback";
-import { Avatar } from "@/components/ui/avatar";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { FC } from "react";
+import ImageWithFallback from '@/components/common/img-with-fallback';
+import { Avatar } from '@/components/ui/avatar';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FC } from 'react';
 
 interface PageProps {
   item: any;
@@ -17,38 +17,46 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
   const router = useRouter();
 
   const handleNavigateToDetails = () => {
-    if (userType === "organizer") {
+    if (userType === 'organizer') {
       router.push(`/organizer/events/${item._id}`);
     }
-    if (userType === "super-admin") {
+    if (userType === 'super-admin') {
       router.push(`/super-admin/events/${item._id}`);
     }
   };
 
-  const handleNavigateToEdit = (item:any) => {
-    if (userType) {
+  const handleNavigateToEdit = (item: any) => {
+    // if (userType) {
+    //   router.push(`/${userType}/events/edit-event/${item?._id}`);
+    // }
+
+    if (userType === 'organizer') {
       router.push(`/${userType}/events/edit-event/${item?._id}`);
     }
-  }
+    if (userType === 'super-admin') {
+      router.push(`/${userType}/events/edit-event/${item?._id}`);
+    }
+  };
 
   return (
     <TableRow
-      className="transition-colors h-14 w-full cursor-pointer"
+      className="h-14 w-full cursor-pointer transition-colors"
       onClick={handleNavigateToDetails}
     >
       {/* Event Image */}
 
       <TableCell>
-        <Avatar className="!rounded-xl shadow-sm w-12 h-12 overflow-hidden">
-          {item?.basicInfo?.mediaInfo?.url && item.basicInfo.mediaInfo.name !== "noimage.png" ? (
+        <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
+          {item?.basicInfo?.mediaInfo?.url &&
+          item.basicInfo.mediaInfo.name !== 'noimage.png' ? (
             <ImageWithFallback
               url={item?.basicInfo?.mediaInfo?.url}
               alt={item?.basicInfo?.title}
-              className="object-cover w-full h-full cursor-pointer"
+              className="h-full w-full cursor-pointer object-cover"
             />
           ) : (
             <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.basicInfo?.title?.[0]?.toUpperCase() || ""}
+              {item?.basicInfo?.title?.[0]?.toUpperCase() || ''}
             </span>
           )}
         </Avatar>
@@ -56,16 +64,23 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
 
       {/* Event Title */}
       <TableCell className="text-left">
-        {item?.basicInfo?.title?.length > 20 ? item.basicInfo.title.slice(0, 20) + "..." : item.basicInfo.title}
+        {item?.basicInfo?.title?.length > 20
+          ? item.basicInfo.title.slice(0, 20) + '...'
+          : item.basicInfo.title}
       </TableCell>
 
       {/* Organization Name & Logo */}
       <TableCell className="text-left">
         <div className="flex items-center justify-center gap-2">
           {item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url && (
-            <Avatar className="w-6 h-6 !rounded">
-              <ImageWithFallback url={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
-                alt={item?.basicInfo?.organization?.basicInfo?.name}  className="object-cover w-full h-full" />
+            <Avatar className="h-6 w-6 !rounded">
+              <ImageWithFallback
+                url={
+                  item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url
+                }
+                alt={item?.basicInfo?.organization?.basicInfo?.name}
+                className="h-full w-full object-cover"
+              />
               {/* <AvatarImage
                 src={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
                 alt={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.name}
@@ -73,33 +88,36 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
               /> */}
             </Avatar>
           )}
-          <span>{item?.basicInfo?.organization?.basicInfo?.name || "-"}</span>
+          <span>{item?.basicInfo?.organization?.basicInfo?.name || '-'}</span>
         </div>
-
       </TableCell>
 
       {/* Venue Title */}
-      <TableCell className="text-left">{item?.basicInfo?.venue?.title || "-"}</TableCell>
+      <TableCell className="text-left">
+        {item?.basicInfo?.venue?.title || '-'}
+      </TableCell>
 
       {/* Start Date */}
       <TableCell>
         {item?.schedule?.startDateTime
           ? new Date(item.schedule.startDateTime).toLocaleString()
-          : "-"}
+          : '-'}
       </TableCell>
       {/* End Date */}
       <TableCell className="text-left">
         {item?.schedule?.endDateTime
           ? new Date(item.schedule.endDateTime).toLocaleString()
-          : "-"}
+          : '-'}
       </TableCell>
 
       {/* Revenue */}
-      <TableCell>{item?.meta?.revenue ? item.meta.revenue : "-"}</TableCell>
+      <TableCell>{item?.meta?.revenue ? item.meta.revenue : '-'}</TableCell>
       {/* Views */}
-      <TableCell className="text-left">{item?.meta?.views ? item.meta.views : "-"}</TableCell>
+      <TableCell className="text-left">
+        {item?.meta?.views ? item.meta.views : '-'}
+      </TableCell>
       {/* Region */}
-      <TableCell className="text-left">{item?.meta?.region || "-"}</TableCell>
+      <TableCell className="text-left">{item?.meta?.region || '-'}</TableCell>
 
       {/* Category */}
       {/* <TableCell className="text-left flex items-center gap-2">
@@ -116,7 +134,6 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
       <span>{item?.basicInfo?.category?.title || "-"}</span>
       </TableCell> */}
 
-
       {/* Actions */}
       <TableCell className="text-end">
         <div className="flex gap-2">
@@ -124,9 +141,9 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
           <button
             title="View Details"
             type="button"
-            className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
-            <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+            <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
           </button>
 
           {/* Edit Button */}
@@ -137,9 +154,9 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
               e.stopPropagation();
               handleNavigateToEdit(item);
             }}
-            className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
-            <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+            <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
           </button>
 
           {/* Delete Button */}
@@ -150,9 +167,9 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
               e.stopPropagation();
               handleDelete?.(item._id);
             }}
-            className="p-1.5 rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 transition cursor-pointer"
+            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >
-            <Trash2 className="w-4 h-4 text-red-600 dark:text-red-300" />
+            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
           </button>
         </div>
       </TableCell>

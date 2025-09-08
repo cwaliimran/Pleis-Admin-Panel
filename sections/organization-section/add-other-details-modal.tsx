@@ -388,15 +388,21 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
       onClose();
 
       if (typeof window !== 'undefined') {
-        if (window.location.pathname === '/organizer/organization/create-organization') {
+        if (
+          window.location.pathname ===
+          '/organizer/organization/create-organization'
+        ) {
           router.push('/organizer/organization/organization-list');
-        } else if (window.location.pathname === '/super-admin/organization/create-organization') {
+        } else if (
+          window.location.pathname ===
+          '/super-admin/organization/create-organization'
+        ) {
           router.push('/super-admin/organization/organization-list');
         }
       }
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to update details:', errorMessage);
+      console.log('Failed to update details:', errorMessage);
 
       showError(errorMessage);
       if (galleryMedia.length > 0) {
@@ -444,6 +450,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
                   placeholder="Select Venue"
                   options={venueOptions}
                   isLoading={venueLoading}
+                  showNone={false}
                 />
 
                 <RHFCustomCombobox
