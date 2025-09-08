@@ -18,13 +18,13 @@ import { Table, TableBody } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import CategoriesTypeTableRow from './categoriesTypeTableRow';
+import SupplierTypeTableRow from './pending-user-type-table-row';
 
 const headLabel = [
-  { id: 'icon', label: 'Icon', align: 'left' },
-  { id: 'name', label: 'Category Name', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'image', label: 'Image', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'phone', label: 'Phone', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -54,7 +54,7 @@ interface PageProps {
   onResetFilters?: () => void;
 }
 
-const CategoriesTypeTable: FC<PageProps> = ({
+const PendingUserTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
@@ -65,8 +65,8 @@ const CategoriesTypeTable: FC<PageProps> = ({
   onSearch = () => {},
   search = '',
   // limit = 10,
-  status = '',
-  onStatusChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -89,7 +89,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Category List
+              Pending User List
             </h3>
 
             <Sheet>
@@ -128,24 +128,10 @@ const CategoriesTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Categories...',
+                              placeholder: 'Search User...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -186,16 +172,14 @@ const CategoriesTypeTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : (
-                  data
-                    .filter((item: any) => item.status !== 'deleted')
-                    .map((item: any, index: number) => (
-                      <CategoriesTypeTableRow
-                        key={item._id || index}
-                        item={item}
-                        handleDelete={handleDelete}
-                        handleEdit={handleEdit}
-                      />
-                    ))
+                  data.map((item: any, index: number) => (
+                    <SupplierTypeTableRow
+                      key={item._id || index}
+                      item={item}
+                      handleDelete={handleDelete}
+                      handlePending={handleEdit}
+                    />
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -214,4 +198,4 @@ const CategoriesTypeTable: FC<PageProps> = ({
   );
 };
 
-export default CategoriesTypeTable;
+export default PendingUserTypeTable;

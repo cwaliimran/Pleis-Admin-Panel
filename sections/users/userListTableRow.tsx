@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { TableCell, TableRow } from '@/components/ui/table';
 
-import { Check, Eye, Pencil, Trash2 } from "lucide-react";
-import React, { FC, useState } from "react";
-import { useRouter } from "next/navigation";
-import CustomBadge from "@/components/ui/custom-badge";
-import UserDetailsModal from "@/components/modals/UserDetailsModal";
+import { Check, Eye, Pencil, Trash2 } from 'lucide-react';
+import React, { FC, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import CustomBadge from '@/components/ui/custom-badge';
+import UserDetailsModal from '@/components/modals/UserDetailsModal';
 interface UserItem {
   id: string;
   image: string;
@@ -30,7 +30,7 @@ interface Props {
   handleEdit?: (id: string) => void;
   handlePending?: (id: string) => void;
   pendingUser?: boolean;
-  userType?: "super-admin" | "organizer";
+  userType?: 'super-admin' | 'organizer';
 }
 
 const UserListTableRow: FC<Props> = ({
@@ -52,33 +52,33 @@ const UserListTableRow: FC<Props> = ({
   return (
     <>
       <TableRow
-        className={`transition-colors h-14 w-full ${
-          pendingUser ? "" : "cursor-pointer"
+        className={`h-14 w-full transition-colors ${
+          pendingUser ? '' : 'cursor-pointer'
         }`}
         onClick={() =>
-          userType === "super-admin"
+          userType === 'super-admin'
             ? router.push(`/super-admin/user/${item.id}?userType=${item.role}`)
-            : userType === "organizer" &&
+            : userType === 'organizer' &&
               router.push(`/organizer/user/${item.id}?userType=${item.role}`)
         }
       >
         <TableCell>
-          <Avatar className="!rounded-xl  shadow-sm w-12 h-12 overflow-hidden">
+          <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
             <AvatarImage
               src={item.image}
               alt={`${item.firstName} ${item.lastName}`}
-              className="object-cover w-full h-full cursor-pointer"
+              className="h-full w-full cursor-pointer object-cover"
             />
           </Avatar>
         </TableCell>
 
         {/* Full Name */}
-        <TableCell className="text-left ">{item.firstName}</TableCell>
+        <TableCell className="text-left">{item.firstName}</TableCell>
         <TableCell className="text-left">{item.lastName}</TableCell>
 
         {pendingUser && (
           <TableCell className="text-left text-sm">
-            {item.organization || "N/A"}
+            {item.organization || 'N/A'}
           </TableCell>
         )}
 
@@ -89,14 +89,14 @@ const UserListTableRow: FC<Props> = ({
         {/* Username */}
         {!pendingUser && (
           <TableCell className="text-left text-sm">
-            {item.firstName.toLowerCase() + " " + item.lastName.toLowerCase()}
+            {item.firstName.toLowerCase() + ' ' + item.lastName.toLowerCase()}
           </TableCell>
         )}
 
         {/* Role */}
         {!pendingUser && (
           <TableCell className="text-left capitalize">
-            <Badge className="bg-secondary dark:bg-white text-white dark:text-black">
+            <Badge className="bg-secondary text-white dark:bg-white dark:text-black">
               {item.role}
             </Badge>
           </TableCell>
@@ -107,11 +107,11 @@ const UserListTableRow: FC<Props> = ({
           <TableCell className="text-left">
             <CustomBadge
               variant={
-                item.status === "active"
-                  ? "success"
-                  : item.status === "pending"
-                  ? "warning"
-                  : "error"
+                item.status === 'active'
+                  ? 'success'
+                  : item.status === 'pending'
+                    ? 'warning'
+                    : 'error'
               }
             >
               {item.status}
@@ -120,33 +120,33 @@ const UserListTableRow: FC<Props> = ({
         )}
         {!pendingUser && (
           <TableCell className="text-left">
-            {item.totalPoints || "N/A"}
+            {item.totalPoints || 'N/A'}
           </TableCell>
         )}
         {!pendingUser && (
           <TableCell className="text-left">
-            {item.totalRevenue || "N/A"}
+            {item.totalRevenue || 'N/A'}
           </TableCell>
         )}
         {!pendingUser && (
-          <TableCell className="text-left">{item.region || "N/A"}</TableCell>
+          <TableCell className="text-left">{item.region || 'N/A'}</TableCell>
         )}
 
         {pendingUser && (
-          <TableCell className="text-left">{item.phone || "N/A"}</TableCell>
+          <TableCell className="text-left">{item.phone || 'N/A'}</TableCell>
         )}
 
         {/* Actions */}
         <TableCell className="text-end">
-          <div className="flex gap-2 ">
+          <div className="flex gap-2">
             {/* Eye button for user details */}
             {!pendingUser && (
               <button
                 type="button"
                 title="View User"
-                className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+                className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
               >
-                <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
               </button>
             )}
 
@@ -155,9 +155,9 @@ const UserListTableRow: FC<Props> = ({
                 type="button"
                 title="View User"
                 onClick={handleViewUser}
-                className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+                className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
               >
-                <Eye className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
               </button>
             )}
 
@@ -169,9 +169,9 @@ const UserListTableRow: FC<Props> = ({
                   e.stopPropagation();
                   handleEdit?.(item.id);
                 }}
-                className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer"
+                className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
               >
-                <Pencil className="w-4 h-4 text-gray-700 dark:text-gray-200" />
+                <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
               </button>
             )}
 
@@ -183,9 +183,9 @@ const UserListTableRow: FC<Props> = ({
                   e.stopPropagation();
                   handlePending?.(item.id);
                 }}
-                className="p-1.5 rounded-md bg-blue-100 hover:bg-blue-200 dark:bg-primary dark:hover:bg-primary transition cursor-pointer"
+                className="dark:bg-primary dark:hover:bg-primary cursor-pointer rounded-md bg-blue-100 p-1.5 transition hover:bg-blue-200"
               >
-                <Check className="w-4 h-4 text-primary dark:text-blue-300" />
+                <Check className="text-primary h-4 w-4 dark:text-blue-300" />
               </button>
             )}
 
@@ -196,9 +196,9 @@ const UserListTableRow: FC<Props> = ({
                 e.stopPropagation();
                 handleDelete?.(item.id);
               }}
-              className="p-1.5 rounded-md bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 transition cursor-pointer"
+              className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
             >
-              <Trash2 className="w-4 h-4 text-red-600 dark:text-red-300" />
+              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
             </button>
           </div>
         </TableCell>

@@ -1,44 +1,48 @@
-import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogOverlay,
-} from '@/components/ui/dialog';
+import GoogleLocationInput from '@/components/common/location-input';
 import FormProvider, {
-  RHFCombobox,
   RHFMultiFileUpload,
   RHFSelectField,
   RHFTextField,
 } from '@/components/rhf';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useForm, FieldValues } from 'react-hook-form';
-import * as Yup from 'yup';
-import { uploadFileToAzure } from '@/utils/fileUpload';
-import { deleteFileFromAzure } from '@/utils/deleteFile';
-import { showSuccess, showError } from '@/utils/toast';
-import { getErrorMessage } from '@/utils/api';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogOverlay,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useGetCategoriesQuery } from '@/store/Reducer/categories';
 import { useUpdateOrganizationMutation } from '@/store/Reducer/organization';
-
-// Define TypeScript interfaces
-interface OperatingHours {
-  from: string;
-  to: string;
-  break: { from: string; to: string };
-  isOpen: string; // String to match RHFSelectField values
-}
+import { useGetTagsQuery } from '@/store/Reducer/tags';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { FieldValues, useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 
 interface Location {
   address: string;
+  city: string;
+  postalCode: string;
+  country: string;
   coordinates: [number, number];
 }
-
+interface OperatingHours {
+  from: string;
+  to: string;
+  isOpen: string;
+}
 interface FormValues extends FieldValues {
   description: string;
-  minAge: number | null;
+  minAge: string;
   tags: string[];
   categories: string[];
   galleryImages: FileList | File[];
@@ -56,60 +60,33 @@ interface FormValues extends FieldValues {
 
 const defaultValues: FormValues = {
   description: '',
-  minAge: null,
+  minAge: '',
   tags: [],
   categories: [],
   galleryImages: [],
   venue: '',
-  monday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  tuesday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  wednesday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  thursday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  friday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  saturday: {
-    from: '00:00',
-    to: '00:00',
-    break: { from: '00:00', to: '00:00' },
-    isOpen: 'false',
-  },
-  sunday: { from: '', to: '', break: { from: '', to: '' }, isOpen: 'true' },
+  monday: { from: '00:00', to: '00:00', isOpen: 'false' },
+  tuesday: { from: '00:00', to: '00:00', isOpen: 'false' },
+  wednesday: { from: '00:00', to: '00:00', isOpen: 'false' },
+  thursday: { from: '00:00', to: '00:00', isOpen: 'false' },
+  friday: { from: '00:00', to: '00:00', isOpen: 'false' },
+  saturday: { from: '00:00', to: '00:00', isOpen: 'false' },
+  sunday: { from: '00:00', to: '00:00', isOpen: 'false' },
   status: 'active',
-  location: { address: '', coordinates: [0, 0] },
+  location: {
+    address: '',
+    city: '',
+    postalCode: '',
+    country: '',
+    coordinates: [0, 0],
+  },
 };
 
 const schema = Yup.object().shape({
   description: Yup.string()
     .required('Description is required')
     .max(500, 'Description must be at most 500 characters'),
-  minAge: Yup.number()
-    .nullable()
-    .min(0, 'Age cannot be negative')
-    .transform((value, originalValue) => (originalValue === '' ? null : value)),
+  minAge: Yup.string(),
   tags: Yup.array().of(Yup.string()).min(0).max(10, 'Maximum 10 tags allowed'),
   categories: Yup.array()
     .of(Yup.string())
@@ -120,69 +97,44 @@ const schema = Yup.object().shape({
   monday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.string().required('Required'),
   }),
   tuesday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.string().required('Required'),
   }),
   wednesday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.string().required('Required'),
   }),
   thursday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.string().required('Required'),
   }),
   friday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.string().required('Required'),
   }),
   saturday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.string().required('Required'),
   }),
   sunday: Yup.object().shape({
     from: Yup.string().required('Required'),
     to: Yup.string().required('Required'),
-    break: Yup.object().shape({
-      from: Yup.string().required('Required'),
-      to: Yup.string().required('Required'),
-    }),
-    isOpen: Yup.string().oneOf(['true', 'false'], 'Invalid option').required(),
+    isOpen: Yup.string().required('Required'),
   }),
   status: Yup.string().required('Status is required'),
   location: Yup.object().shape({
     address: Yup.string().required('Address is required'),
+    city: Yup.string().required('City is required'),
+    postalCode: Yup.string(),
+    country: Yup.string().required('Country is required'),
     coordinates: Yup.array()
       .of(Yup.number())
       .length(2, 'Coordinates must be an array of 2 numbers'),
@@ -193,63 +145,140 @@ interface AddOtherDetailsModalProps {
   newOrganization?: any;
   onClose: () => void;
   open: boolean;
-  onSubmitSuccess: (data: any) => void;
 }
 
 const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
   newOrganization,
   onClose,
   open,
-  onSubmitSuccess,
 }) => {
+  const router = useRouter();
   const [imageUploading, setImageUploading] = useState(false);
   const [updateOrganization, { isLoading }] = useUpdateOrganizationMutation();
 
+  const { data: tagData } = useGetTagsQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
+
+  const { data: venueData, isLoading: venueLoading } = useGetVenuesQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
+
+  const { data: categoryData } = useGetCategoriesQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
+
+  const tagOptions =
+    tagData?.data?.map((tag: any) => ({
+      label: tag?.title,
+      value: tag?._id,
+    })) || [];
+
+  const venueOptions =
+    venueData?.data?.map((venue: any) => ({
+      label: venue?.title,
+      value: venue?._id,
+    })) || [];
+
+  const categoryOptions =
+    categoryData?.data?.map((category: any) => ({
+      label: category?.title,
+      value: category?._id,
+    })) || [];
+
   const methods = useForm<FormValues>({
-    resolver: yupResolver(schema) as any, // Type assertion due to complex schema
+    resolver: yupResolver(schema) as any,
     defaultValues: newOrganization?.otherInfo
       ? {
           ...defaultValues,
           description: newOrganization.otherInfo.description || '',
-          minAge: newOrganization.otherInfo.minAge || null,
-          tags: newOrganization.otherInfo.tags || [],
-          categories: newOrganization.otherInfo.categories || [],
-          venue: newOrganization.venue || '',
+          minAge: String(newOrganization.otherInfo.minAge ?? ''),
+          tags:
+            newOrganization.otherInfo.tags?.map((tag: any) => tag._id) || [],
+          categories:
+            newOrganization.otherInfo.categories?.map((cat: any) => cat._id) ||
+            [],
+          venue: newOrganization.venue?._id || '',
           monday: {
-            ...defaultValues.monday,
-            ...newOrganization.operatingHours?.monday,
+            from: newOrganization.operatingHours?.monday?.from || '00:00',
+            to: newOrganization.operatingHours?.monday?.to || '00:00',
+            isOpen: newOrganization.operatingHours?.monday?.isOpen
+              ? 'true'
+              : 'false',
           },
           tuesday: {
-            ...defaultValues.tuesday,
-            ...newOrganization.operatingHours?.tuesday,
+            from: newOrganization.operatingHours?.tuesday?.from || '00:00',
+            to: newOrganization.operatingHours?.tuesday?.to || '00:00',
+            isOpen: newOrganization.operatingHours?.tuesday?.isOpen
+              ? 'true'
+              : 'false',
           },
           wednesday: {
-            ...defaultValues.wednesday,
-            ...newOrganization.operatingHours?.wednesday,
+            from: newOrganization.operatingHours?.wednesday?.from || '00:00',
+            to: newOrganization.operatingHours?.wednesday?.to || '00:00',
+            isOpen: newOrganization.operatingHours?.wednesday?.isOpen
+              ? 'true'
+              : 'false',
           },
           thursday: {
-            ...defaultValues.thursday,
-            ...newOrganization.operatingHours?.thursday,
+            from: newOrganization.operatingHours?.thursday?.from || '00:00',
+            to: newOrganization.operatingHours?.thursday?.to || '00:00',
+            isOpen: newOrganization.operatingHours?.thursday?.isOpen
+              ? 'true'
+              : 'false',
           },
           friday: {
-            ...defaultValues.friday,
-            ...newOrganization.operatingHours?.friday,
+            from: newOrganization.operatingHours?.friday?.from || '00:00',
+            to: newOrganization.operatingHours?.friday?.to || '00:00',
+            isOpen: newOrganization.operatingHours?.friday?.isOpen
+              ? 'true'
+              : 'false',
           },
           saturday: {
-            ...defaultValues.saturday,
-            ...newOrganization.operatingHours?.saturday,
+            from: newOrganization.operatingHours?.saturday?.from || '00:00',
+            to: newOrganization.operatingHours?.saturday?.to || '00:00',
+            isOpen: newOrganization.operatingHours?.saturday?.isOpen
+              ? 'true'
+              : 'false',
           },
           sunday: {
-            ...defaultValues.sunday,
-            ...newOrganization.operatingHours?.sunday,
+            from: newOrganization.operatingHours?.sunday?.from || '00:00',
+            to: newOrganization.operatingHours?.sunday?.to || '00:00',
+            isOpen: newOrganization.operatingHours?.sunday?.isOpen
+              ? 'true'
+              : 'false',
           },
           status: newOrganization.status || 'active',
-          location: newOrganization.location || defaultValues.location,
+          location: {
+            address: newOrganization.location?.fullAddress || '',
+            city: newOrganization.location?.city || '',
+            postalCode: newOrganization.location?.postalCode || '',
+            country: newOrganization.location?.country || '',
+            coordinates: newOrganization.location?.coordinates || [0, 0],
+          },
         }
       : defaultValues,
   });
 
-  const { handleSubmit, reset, setValue } = methods;
+  const {
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = methods;
+
+  console.log('errors', errors);
 
   const handleImageUpload = async (
     files: FileList | File[]
@@ -274,45 +303,44 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
     try {
       if (formData.galleryImages && formData.galleryImages.length > 0) {
         galleryMedia = await handleImageUpload(formData.galleryImages);
-        // Clear galleryImages after upload to prevent resubmission
         setValue('galleryImages', []);
       }
 
       const operatingHours = {
         monday:
           formData.monday.isOpen === 'true'
-            ? formData.monday
-            : { ...defaultValues.monday, isOpen: 'false' },
+            ? { ...formData.monday, isOpen: true }
+            : { from: '00:00', to: '00:00', isOpen: false },
         tuesday:
           formData.tuesday.isOpen === 'true'
-            ? formData.tuesday
-            : { ...defaultValues.tuesday, isOpen: 'false' },
+            ? { ...formData.tuesday, isOpen: true }
+            : { from: '00:00', to: '00:00', isOpen: false },
         wednesday:
           formData.wednesday.isOpen === 'true'
-            ? formData.wednesday
-            : { ...defaultValues.wednesday, isOpen: 'false' },
+            ? { ...formData.wednesday, isOpen: true }
+            : { from: '00:00', to: '00:00', isOpen: false },
         thursday:
           formData.thursday.isOpen === 'true'
-            ? formData.thursday
-            : { ...defaultValues.thursday, isOpen: 'false' },
+            ? { ...formData.thursday, isOpen: true }
+            : { from: '00:00', to: '00:00', isOpen: false },
         friday:
           formData.friday.isOpen === 'true'
-            ? formData.friday
-            : { ...defaultValues.friday, isOpen: 'false' },
+            ? { ...formData.friday, isOpen: true }
+            : { from: '00:00', to: '00:00', isOpen: false },
         saturday:
           formData.saturday.isOpen === 'true'
-            ? formData.saturday
-            : { ...defaultValues.saturday, isOpen: 'false' },
+            ? { ...formData.saturday, isOpen: true }
+            : { from: '00:00', to: '00:00', isOpen: false },
         sunday:
           formData.sunday.isOpen === 'true'
-            ? formData.sunday
-            : { ...defaultValues.sunday, isOpen: 'true' },
+            ? { ...formData.sunday, isOpen: true }
+            : { from: '00:00', to: '00:00', isOpen: false },
       };
 
       const payload = {
         otherInfo: {
           description: formData.description,
-          minAge: formData.minAge,
+          minAge: formData.minAge ? Number(formData.minAge) : undefined,
           tags: formData.tags,
           categories: formData.categories,
           galleryMedia,
@@ -321,10 +349,15 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
         status: formData.status,
         venue: formData.venue,
         location: {
-          address: formData.location.address,
+          fullAddress: formData.location.address,
+          city: formData.location.city,
+          postalCode: formData.location.postalCode,
+          country: formData.location.country,
           coordinates: formData.location.coordinates,
         },
       };
+
+      // console.log('payload', payload);
 
       if (!newOrganization?._id) {
         throw new Error('Organization ID is missing');
@@ -335,27 +368,42 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
         ...payload,
       }).unwrap();
 
-      if (response?.data) {
-        onSubmitSuccess(response.data);
-        showSuccess('Details updated successfully');
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
       }
 
-      if (response?.error) {
-        throw new Error(getErrorMessage(response.error));
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      if (response?.message) {
+        showSuccess(response?.message || 'Details updated successfully');
+      }
+
+      setImageUploading(false);
+      reset();
+      onClose();
+
+      if (typeof window !== 'undefined') {
+        if (window.location.pathname === '/organizer/organization/create-organization') {
+          router.push('/organizer/organization/organization-list');
+        } else if (window.location.pathname === '/super-admin/organization/create-organization') {
+          router.push('/super-admin/organization/organization-list');
+        }
       }
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.error('Failed to update details:', errorMessage);
+
       showError(errorMessage);
       if (galleryMedia.length > 0) {
         await Promise.all(
           galleryMedia.map((file) => deleteFileFromAzure(file))
         );
       }
-    } finally {
-      setImageUploading(false);
-      onClose();
-      reset();
     }
   });
 
@@ -386,41 +434,36 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
                   name="minAge"
                   label="Age (optional)"
                   placeholder="Min Age 5"
-                  min={5}
                 />
               </div>
 
               <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
-                <RHFCombobox
-                  name="tags"
-                  label="Tags"
-                  placeholder="Select or add tags"
-                  className="w-full flex-1"
-                  multiple={true}
-                  allowCustom={true}
-                  options={[
-                    { label: 'Tag 1', value: '68822a624ebf07788604301b' },
-                    { label: 'Tag 2', value: '68b294c4a09f4da7cdf23d47' },
-                  ]}
-                />
-
-                <RHFSelectField
+                <RHFCustomDropdown
                   name="venue"
                   label="Venue"
                   placeholder="Select Venue"
-                  className="w-full flex-1"
-                  options={[
-                    { label: 'Venue 1', value: '68b2a8c62e76b4cdac8be34d' },
-                  ]}
+                  options={venueOptions}
+                  isLoading={venueLoading}
                 />
 
-                <RHFMultiSelect
+                <RHFCustomCombobox
+                  name="tags"
+                  label="Select Tags"
+                  placeholder="Select tags"
+                  className="w-full flex-1"
+                  multiple={true}
+                  allowCustom={false}
+                  options={tagOptions}
+                />
+
+                <RHFCustomCombobox
                   name="categories"
                   label="Select Categories"
-                  placeholder="Select Category"
-                  options={[
-                    { label: 'Clubbing', value: '64f7206e442c7dfc4aa00002' },
-                  ]}
+                  placeholder="Select categories"
+                  className="w-full flex-1"
+                  multiple={true}
+                  allowCustom={false}
+                  options={categoryOptions}
                 />
               </div>
 
@@ -435,63 +478,75 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
                 <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">
                   Operating Hours
                 </h3>
-                <div className="space-y-4">
-                  {[
-                    { day: 'Monday', dayKey: 'monday' },
-                    { day: 'Tuesday', dayKey: 'tuesday' },
-                    { day: 'Wednesday', dayKey: 'wednesday' },
-                    { day: 'Thursday', dayKey: 'thursday' },
-                    { day: 'Friday', dayKey: 'friday' },
-                    { day: 'Saturday', dayKey: 'saturday' },
-                    { day: 'Sunday', dayKey: 'sunday' },
-                  ].map((dayInfo) => (
-                    <div
-                      key={dayInfo.dayKey}
-                      className="flex items-center gap-4"
-                    >
-                      <span className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {dayInfo.day}
-                      </span>
-                      <div className="flex flex-1 items-center gap-2">
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.from`}
-                          placeholder="09:00"
-                          className="flex-1"
-                        />
-                        <span className="text-xs text-gray-500">to</span>
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.to`}
-                          placeholder="23:00"
-                          className="flex-1"
-                        />
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.break.from`}
-                          placeholder="13:00"
-                          className="flex-1"
-                        />
-                        <span className="text-xs text-gray-500">to</span>
-                        <RHFTextField
-                          type="time"
-                          name={`${dayInfo.dayKey}.break.to`}
-                          placeholder="14:00"
-                          className="flex-1"
-                        />
-                        <RHFSelectField
-                          name={`${dayInfo.dayKey}.isOpen`}
-                          className="flex-1"
-                          options={[
-                            { label: 'Open', value: 'true' },
-                            { label: 'Closed', value: 'false' },
-                          ]}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-gray-100 dark:bg-[#272727]">
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Day
+                        </th>
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Opening
+                        </th>
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Closing
+                        </th>
+                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        { day: 'Monday', dayKey: 'monday' },
+                        { day: 'Tuesday', dayKey: 'tuesday' },
+                        { day: 'Wednesday', dayKey: 'wednesday' },
+                        { day: 'Thursday', dayKey: 'thursday' },
+                        { day: 'Friday', dayKey: 'friday' },
+                        { day: 'Saturday', dayKey: 'saturday' },
+                        { day: 'Sunday', dayKey: 'sunday' },
+                      ].map((dayInfo) => (
+                        <tr
+                          key={dayInfo.dayKey}
+                          className="border-t dark:border-gray-700"
+                        >
+                          <td className="p-2 text-sm text-gray-700 dark:text-gray-300">
+                            {dayInfo.day}
+                          </td>
+                          <td className="p-2">
+                            <RHFTextField
+                              type="time"
+                              name={`${dayInfo.dayKey}.from`}
+                              placeholder="09:00"
+                              className="w-full rounded border p-1"
+                            />
+                          </td>
+                          <td className="p-2">
+                            <RHFTextField
+                              type="time"
+                              name={`${dayInfo.dayKey}.to`}
+                              placeholder="23:00"
+                              className="w-full rounded border p-1"
+                            />
+                          </td>
+                          <td className="p-2">
+                            <RHFSelectField
+                              name={`${dayInfo.dayKey}.isOpen`}
+                              className="w-full rounded border p-1"
+                              options={[
+                                { label: 'Open', value: 'true' },
+                                { label: 'Closed', value: 'false' },
+                              ]}
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
+
+              <GoogleLocationInput name="location" label="Location" />
 
               <RHFSelectField
                 name="status"
@@ -503,19 +558,15 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
                   { label: 'Inactive', value: 'inactive' },
                 ]}
               />
-
-              <RHFTextField
-                name="location.address"
-                label="Location Address"
-                placeholder="Enter Location Address"
-              />
             </div>
 
             <div className="mt-2 flex w-full items-center justify-center">
               <Button
                 type="submit"
-                className="mt-3 cursor-pointer bg-blue-700 px-7 text-white hover:bg-blue-800"
-                disabled={isLoading || imageUploading}
+                className="bg-primary hover:bg-primary/80 mt-3 h-10 cursor-pointer px-10 text-white"
+                disabled={
+                  isLoading || imageUploading || !methods.formState.isValid
+                }
               >
                 {isLoading || imageUploading ? 'Saving...' : 'Save'}
               </Button>

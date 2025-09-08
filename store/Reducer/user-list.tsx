@@ -11,12 +11,13 @@ export const userListApi = createApi({
 
   endpoints: (builder) => ({
     getUserList: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, userType }) => {
         const params: any = {
           keyword: search,
           status,
           page: page + 1,
           limit,
+          userType,
         };
         if (date) (params as any).date = date;
         return {
@@ -61,11 +62,29 @@ export const userListApi = createApi({
       invalidatesTags: ['userList'],
     }),
 
-    updateUser: builder.mutation({
-      query: ({ id, ...updatedUser }) => ({
-        url: API_ROUTES.USER_LIST_BY_ID(id),
+    updatePendingUser: builder.mutation({
+      query: ({ id, status }) => ({
+        url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
         method: 'PUT',
-        body: updatedUser,
+        body: { status },
+      }),
+      invalidatesTags: ['userList'],
+    }),
+
+    updateUser: builder.mutation({
+      query: ({ id, body }) => ({
+        url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
+        method: 'PUT',
+        body: body,
+      }),
+      invalidatesTags: ['userList'],
+    }),
+
+    updatePassword: builder.mutation({
+      query: (body) => ({
+        url: API_ROUTES.CHANGE_PASSWORD,
+        method: 'POST',
+        body: body,
       }),
     }),
   }),
@@ -76,5 +95,7 @@ export const {
   useGetUserByIdQuery,
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
+  useUpdatePendingUserMutation,
   useUpdateUserMutation,
+  useUpdatePasswordMutation,
 } = userListApi;

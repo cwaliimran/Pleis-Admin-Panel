@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+// import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -25,7 +25,7 @@ const HighlightTypeTableRow: FC<PageProps> = ({
         {item?.title || '-'}
       </TableCell>
 
-      <TableCell className="text-left">
+      {/* <TableCell className="text-left">
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage
@@ -51,9 +51,15 @@ const HighlightTypeTableRow: FC<PageProps> = ({
           </Avatar>
           {item?.object?.basicInfo?.name || '-'}
         </div>
+      </TableCell> */}
+
+      <TableCell>
+        {item?.type === 'organization' ? item?.object?.basicInfo?.name : '-'}
       </TableCell>
 
-      <TableCell>{item?.event || '-'}</TableCell>
+      <TableCell>
+        {item?.type === 'event' ? item?.object?.basicInfo?.title : '-'}
+      </TableCell>
 
       <TableCell>
         <Dialog>

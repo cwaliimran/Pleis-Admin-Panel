@@ -13,6 +13,7 @@ export const API_ROUTES = {
   VENUES_TYPES: `/admin/venue-types`,
   VENUES_TYPE_By_ID: (id: string) => `/admin/venue-types/${id}`,
 
+  SUPPLIERS_GLOABAL: `/suppliers/global`,
   SUPPLIERS: `/admin/suppliers`,
   SUPPLIERS_BY_ID: (id: string) => `/admin/suppliers/${id}`,
 
@@ -32,7 +33,9 @@ export const API_ROUTES = {
   ORGANIZATION_BY_ID: (id: string) => `/organizations/${id}`,
 
   USER_LIST: `/users`,
+  CHANGE_PASSWORD: `/auth/change-password`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
+  PENDING_USER_LIST_BY_ID: (id: string) => `/users/${id}`,
 
   HIGHLIGHT_LIST: `/highlights`,
   HIGHLIGHT_LIST_BY_ID: (id: string) => `/highlights/${id}`,

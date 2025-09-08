@@ -36,6 +36,18 @@ export const organizationApi = createApi({
         method: 'POST',
         body: newOrganization,
       }),
+      invalidatesTags: ['organization'],
+    }),
+
+    getOrganizationById: builder.query({
+      query: ({ id }) => ({
+        url: API_ROUTES.ORGANIZATION_BY_ID(id),
+        method: 'GET',
+      }),
+      transformResponse: (res) => ({
+        data: res.data,
+      }),
+      providesTags: ['organization'],
     }),
 
     updateOrganization: builder.mutation({
@@ -44,6 +56,7 @@ export const organizationApi = createApi({
         method: 'PUT',
         body: updatedOrganization,
       }),
+      invalidatesTags: ['organization'],
     }),
 
     deleteOrganization: builder.mutation({
@@ -59,6 +72,7 @@ export const organizationApi = createApi({
 export const {
   useGetOrganizationQuery,
   useAddOrganizationMutation,
+  useGetOrganizationByIdQuery,
   useUpdateOrganizationMutation,
   useDeleteOrganizationMutation,
 } = organizationApi;

@@ -30,6 +30,28 @@ export const suppliersApi = createApi({
       providesTags: ['supplier'],
     }),
 
+    getSuppliersGloabal: builder.query({
+      query: ({ search, page, status, date, limit }) => {
+        const params: any = {
+          keyword: search,
+          status,
+          page: page + 1,
+          limit,
+        };
+        if (date) (params as any).date = date;
+        return {
+          url: API_ROUTES.SUPPLIERS_GLOABAL,
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['supplier'],
+    }),
+
     addSupplier: builder.mutation({
       query: (newSupplier) => ({
         url: API_ROUTES.SUPPLIERS,
@@ -59,6 +81,7 @@ export const suppliersApi = createApi({
 
 export const {
   useGetSuppliersQuery,
+  useGetSuppliersGloabalQuery,
   useAddSupplierMutation,
   useUpdateSupplierMutation,
   useDeleteSupplierMutation,

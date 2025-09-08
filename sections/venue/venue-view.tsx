@@ -271,9 +271,9 @@ const VenueView = () => {
       if (response?.message) {
         showSuccess(
           response?.message ||
-          (editModal.value
-            ? 'Venue updated successfully'
-            : 'Venue created successfully')
+            (editModal.value
+              ? 'Venue updated successfully'
+              : 'Venue created successfully')
         );
       }
 

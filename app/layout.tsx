@@ -3,6 +3,8 @@ import AuthProvider from '@/components/providers/AuthProvider';
 import { ThemeProvider } from '@/components/templates/theme-provider';
 import { store } from '@/store/store';
 import { Inter } from 'next/font/google';
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Provider } from 'react-redux';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
@@ -36,6 +38,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [pathname]);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body

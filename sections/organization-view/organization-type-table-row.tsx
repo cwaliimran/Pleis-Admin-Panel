@@ -4,7 +4,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FC } from 'react';
 
@@ -23,7 +23,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({
 
   return (
     <TableRow
-      className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
+      className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
       onClick={() =>
         userType === 'organizer'
           ? router.push(`/organizer/organization/${item?._id}`)
@@ -81,8 +81,16 @@ const OrganizationTypeTableRow: FC<PageProps> = ({
       <TableCell className="text-end">
         <div className="flex gap-2">
           <button
+            title="View Organization"
             type="button"
-            title="Edit"
+            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+          >
+            <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+          </button>
+
+          <button
+            title="Edit Organization"
+            type="button"
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
