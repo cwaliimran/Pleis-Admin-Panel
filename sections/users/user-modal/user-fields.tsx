@@ -20,7 +20,7 @@ const genderOptions: Option[] = [
 const UserFields: React.FC<UserFieldsProps> = ({ organizationOptions }) => {
   return (
     <>
-      <RHFTextField name="username" label="Username" />
+      <RHFTextField name="username" label="Username" placeholder='Enter your username' />
       <RHFDatePickerWithDropdown
         name="dob"
         label="Date of Birth"

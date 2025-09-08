@@ -39,7 +39,7 @@ export default function ImageWithFallback({
     );
   }
 
-  return <img src={src} alt={alt} width={size} height={size} className={className} />;
+  return <Image src={src} alt={alt} width={size} height={size} className={className} />;
 }
 
 function generatePlaceholderImage(text: string, size: number = 48): string {

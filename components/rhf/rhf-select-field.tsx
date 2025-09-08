@@ -1,89 +1,92 @@
-"use client"
+'use client';
 
 import {
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from "@/components/ui/form"
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-import { FC } from "react"
-import { useFormContext } from "react-hook-form"
+import { FC } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 interface Option {
-    label: string
-    value: string
+  label: string;
+  value: string;
 }
 
 interface RHFSelectFieldProps {
-    name: string
-    label?: string
-    placeholder?: string
-    options: Option[]
-    className?: string
+  name: string;
+  label?: string;
+  placeholder?: string;
+  options: Option[];
+  className?: string;
+  disabled?: boolean;
 }
 
 const RHFSelectField: FC<RHFSelectFieldProps> = ({
-    name,
-    label,
-    placeholder = "Select option",
-    options,
-    className = "",
+  name,
+  label,
+  placeholder = 'Select option',
+  options,
+  className = '',
+  disabled = false,
 }) => {
-    const { control } = useFormContext()
+  const { control } = useFormContext();
 
-    return (
-        <FormField
-            control={control}
-            name={name}
-            render={({ field }) => (
-                <FormItem>
-                    {label && <FormLabel>{label}</FormLabel>}
-                    <Select
-                        onValueChange={(val) => {
-                            // Only update if valid
-                            if (options.some(o => o.value === val)) {
-                                field.onChange(val)
-                            }
-                        }}
-                        value={field.value || ""} // ✅ controlled only
-                    >
-                        <FormControl>
-                            <SelectTrigger className={`w-full ${className}`}>
-                                <SelectValue placeholder={placeholder} />
-                            </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="dark:bg-secondary">
-                            {options.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+  return (
+    <FormField
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <FormItem>
+          {label && <FormLabel>{label}</FormLabel>}
+          <Select
+            onValueChange={(val) => {
+              // Only update if valid
+              if (options.some((o) => o.value === val)) {
+                field.onChange(val);
+              }
+            }}
+            value={field.value || ''}
+            disabled={disabled}
+          >
+            <FormControl>
+              <SelectTrigger className={`w-full ${className}`}>
+                <SelectValue placeholder={placeholder} />
+              </SelectTrigger>
+            </FormControl>
+            <SelectContent className="dark:bg-secondary">
+              {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-                    {/* Hidden input to support RHF blur + validation */}
-                    <input
-                        type="hidden"
-                        onBlur={field.onBlur}
-                        value={field.value || ""}
-                        name={field.name}
-                        ref={field.ref}
-                    />
+          {/* Hidden input to support RHF blur + validation */}
+          <input
+            type="hidden"
+            onBlur={field.onBlur}
+            value={field.value || ''}
+            name={field.name}
+            ref={field.ref}
+          />
 
-                    <FormMessage />
-                </FormItem>
-            )}
-        />
-    )
-}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
 
-export default RHFSelectField
+export default RHFSelectField;

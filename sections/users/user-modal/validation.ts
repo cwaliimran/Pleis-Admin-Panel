@@ -29,17 +29,25 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
         oib: Yup.string().required('OIB is required'),
         bankAccountNumber: Yup.string().required('Bank Account Number is required'),
         representativeName: Yup.string().required('Representative Name is required'),
+        // location: Yup.object().shape({
+        //   fullAddress: Yup.string().required('Full Address is required'),
+        //   state: Yup.string().required('State is required'),
+        //   city: Yup.string().required('City is required'),
+        //   postalCode: Yup.string(),
+        //   country: Yup.string().required('Country is required'),
+        //   coordinates: Yup.array()
+        //     .of(Yup.number())
+        //     .length(2, 'Coordinates must be a valid latitude and longitude pair')
+        // //     .required('Coordinates are required'),
+        // }).required('Location is required'),
         location: Yup.object().shape({
-          fullAddress: Yup.string().required('Full Address is required'),
-          state: Yup.string().required('State is required'),
-          city: Yup.string().required('City is required'),
-          postalCode: Yup.string(),
-          country: Yup.string().required('Country is required'),
-          coordinates: Yup.array()
-            .of(Yup.number())
-            .length(2, 'Coordinates must be a valid latitude and longitude pair')
-            .required('Coordinates are required'),
-        }).required('Location is required'),
+        address: Yup.string().required('Address is required'),
+        city: Yup.string().required('City is required'),
+        postalCode: Yup.string(),
+        country: Yup.string().required('Country is required'),
+        state: Yup.string(), // Make state optional
+        coordinates: Yup.array().of(Yup.number()).length(2, 'Coordinates must be an array of 2 numbers').nullable().default(null), // Make coordinates optional with default null
+      }),
         suppliers: Yup.array().of(Yup.string()).min(1, 'At least one supplier is required').required(),
       };
       break;

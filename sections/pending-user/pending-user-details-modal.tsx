@@ -26,8 +26,6 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
 }) => {
   if (!user) return null;
 
-  console.log('user', user);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
@@ -41,16 +39,7 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
         </DialogHeader>
 
         <div className="grid gap-6">
-          {/* User Avatar and Basic Info */}
           <div className="dark:bg-secondary flex items-center gap-4 rounded-lg border bg-gray-50 p-4">
-            {/* <Avatar className="h-16 w-16 rounded-xl">
-              <AvatarImage
-                src={user?.basicInfo?.profileIcon || ''}
-                alt={`${user?.basicInfo?.firstName}`}
-                className="object-cover"
-              />
-            </Avatar> */}
-
             <Avatar className="flex h-16 w-16 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
               {user?.basicInfo?.profileIcon &&
               user?.basicInfo?.profileIcon !== 'noimage.png' ? (
@@ -228,14 +217,14 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="suppliers">List of Suppliers</Label>
-                <div className="rounded-md border bg-gray-50 px-3 py-1.5 dark:bg-gray-800">
+                <div className="dark:bg-secondary rounded-md border bg-gray-50 px-3 py-1.5">
                   {user?.basicInfo?.companyDetails?.suppliers &&
                   user?.basicInfo?.companyDetails?.suppliers.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {user?.basicInfo?.companyDetails?.suppliers.map(
-                        (supplier: string, index: number) => (
+                        (supplier: any, index: number) => (
                           <Badge key={index} variant="outline">
-                            {supplier}
+                            {supplier?.title || 'N/A'}
                           </Badge>
                         )
                       )}

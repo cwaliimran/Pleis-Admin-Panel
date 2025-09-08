@@ -1,50 +1,19 @@
 'use client';
 
-import React, { useRef } from 'react';
 import { RHFTextField } from '@/components/rhf';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
-import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api';
-import { extractAddress } from '@/utils/format-google-address';
+import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+import React from 'react';
 import type { Option } from './types';
-
-// PLEIS CLIENT
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
-const googleMapsLibraries: 'places'[] = ['places'];
+import GoogleLocationInput from '@/components/common/location-input';
 
 interface OrganizerFieldsProps {
   supplierOptions: Option[];
-  methods: any; // From FormProvider
+  methods: any;
 }
 
 const OrganizerFields: React.FC<OrganizerFieldsProps> = ({
   supplierOptions,
-  methods,
 }) => {
-  const inputRef = useRef<google.maps.places.SearchBox | null>(null);
-
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY as string,
-    libraries: googleMapsLibraries, 
-  });
-
-  const handleOnPlacesChanged = async () => {
-    const places = inputRef.current?.getPlaces();
-    if (places && places.length > 0) {
-      const address = await extractAddress(places[0]);
-      const locationPayload = {
-        fullAddress: address.address_line_1 || '',
-        state: address.province || '',
-        city: address.city || '',
-        postalCode: address.postal_code || '',
-        country: address.country || '',
-        coordinates: [address.latitude || 0, address.longitude || 0],
-      };
-      console.log('Setting location payload:', locationPayload); // Debug log
-      methods.setValue('location', locationPayload, { shouldValidate: true });
-    }
-  };
-
   return (
     <>
       <RHFTextField
@@ -76,40 +45,17 @@ const OrganizerFields: React.FC<OrganizerFieldsProps> = ({
       </div>
 
       <div className="input md:col-span-2">
-        <label
-          htmlFor="location"
-          className="text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
-          Location
-        </label>
-        {isLoaded && (
-          <StandaloneSearchBox
-            onLoad={(searchBox) => {
-              inputRef.current = searchBox;
-            }}
-            onPlacesChanged={handleOnPlacesChanged}
-          >
-            <input
-              id="location"
-              type="text"
-              placeholder="Enter location"
-              defaultValue={methods.getValues('location?.fullAddress') || ''}
-              className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault(); 
-                }
-              }}
-            />
-          </StandaloneSearchBox>
-        )}
+        <GoogleLocationInput name="location" label="Location" />
       </div>
 
       <div className="md:col-span-2">
-        <RHFMultiSelect
+        <RHFCustomCombobox
           name="suppliers"
-          label="Suppliers"
+          label="Select Suppliers"
           placeholder="Select Suppliers"
+          className="w-full flex-1"
+          multiple={true}
+          allowCustom={false}
           options={supplierOptions}
         />
       </div>
@@ -118,3 +64,79 @@ const OrganizerFields: React.FC<OrganizerFieldsProps> = ({
 };
 
 export default OrganizerFields;
+
+// 'use client';
+
+// import GoogleLocationInput from '@/components/common/location-input';
+// import { RHFTextField } from '@/components/rhf';
+// import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+// import { extractAddress } from '@/utils/format-google-address';
+// import { useJsApiLoader } from '@react-google-maps/api';
+// import React, { useRef } from 'react';
+// import type { Option } from './types';
+
+// // PLEIS CLIENT
+// const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
+// const googleMapsLibraries: 'places'[] = ['places'];
+
+// interface OrganizerFieldsProps {
+//   supplierOptions: Option[];
+//   methods: any;
+// }
+
+// const OrganizerFields: React.FC<OrganizerFieldsProps> = ({
+//   supplierOptions,
+//   methods,
+// }) => {
+//   const inputRef = useRef<google.maps.places.SearchBox | null>(null);
+
+//   return (
+//     <>
+//       <RHFTextField
+//         name="organizationName"
+//         label="Organization Name"
+//         placeholder="Enter organization name"
+//       />
+//       <div className="md:col-span-2">
+//         <RHFTextField
+//           name="companyName"
+//           label="Company Name"
+//           placeholder="Enter company name"
+//         />
+//       </div>
+//       <RHFTextField name="oib" label="OIB" placeholder="Enter OIB" />
+//       <div className="md:col-span-2">
+//         <RHFTextField
+//           name="bankAccountNumber"
+//           label="Bank Account Number"
+//           placeholder="Enter bank account number"
+//         />
+//       </div>
+//       <div className="md:col-span-2">
+//         <RHFTextField
+//           name="representativeName"
+//           label="Representative Name"
+//           placeholder="Enter representative name"
+//         />
+//       </div>
+
+//       <div className="input md:col-span-2">
+//         <GoogleLocationInput name="location" label="Location" />{' '}
+//       </div>
+
+//       <div className="md:col-span-2">
+//         <RHFCustomCombobox
+//           name="suppliers"
+//           label="Select Suppliers"
+//           placeholder="Select Suppliers"
+//           className="w-full flex-1"
+//           multiple={true}
+//           allowCustom={false}
+//           options={supplierOptions}
+//         />
+//       </div>
+//     </>
+//   );
+// };
+
+// export default OrganizerFields;

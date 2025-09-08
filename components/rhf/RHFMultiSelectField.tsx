@@ -48,7 +48,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
 }) => {
     const { control, setValue, watch } = useFormContext()
 
-    const selectedValues = watch(name) || []
+    const selectedValues = useMemo(() => watch(name) || [], [watch, name])
 
     const selectedOptions = useMemo(
         () => options.filter(o => selectedValues.includes(o.value)),

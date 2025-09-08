@@ -163,10 +163,12 @@ const CreateEventView = (props: any) => {
     defaultValues,
     resolver: yupResolver(schema),
   });
+  
   const {
     watch,
     setValue, reset
   } = methods;
+  
   const {
     mediaUrl,
     mediaType,

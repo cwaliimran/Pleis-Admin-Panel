@@ -7,7 +7,11 @@ import { RHFTextField } from '@/components/rhf';
 import PhoneInput from 'react-phone-input-2';
 import { useBoolean } from '@/hooks/useBoolean';
 
-const CommonFields: React.FC = () => {
+interface CommonFieldsProps {
+  mode: 'create' | 'edit';
+}
+
+const CommonFields: React.FC<CommonFieldsProps> = ({ mode }) => {
   const { control, setValue } = useFormContext();
   const showPassword = useBoolean();
 
@@ -81,14 +85,17 @@ const CommonFields: React.FC = () => {
           </div>
         )}
       />
-      <RHFTextField
-        name="password"
-        type="password"
-        label="Password"
-        placeholder="Min 6 characters"
-        showPassword={showPassword.value}
-        onTogglePassword={showPassword.onToggle}
-      />
+
+      {mode !== 'edit' && (
+        <RHFTextField
+          name="password"
+          type="password"
+          label="Password"
+          placeholder="Min 6 characters"
+          showPassword={showPassword.value}
+          onTogglePassword={showPassword.onToggle}
+        />
+      )}
     </>
   );
 };

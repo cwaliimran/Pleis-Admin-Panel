@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import type { Option } from './types'; // assume Option type is defined elsewhere
-import { UseFormReturn } from 'react-hook-form'; // Import UseFormReturn type
+import type { Option } from './types'; 
+import { UseFormReturn } from 'react-hook-form'; 
 
 import OrganizerFields from './organizer-fields';
 import ManagerFields from './manager-fields';
@@ -15,7 +15,7 @@ interface RoleSpecificFieldsProps {
   role: RoleKey;
   organizationOptions: Option[];
   supplierOptions: Option[];
-  methods: UseFormReturn<any, any>; // Add methods prop with UseFormReturn type
+  methods: UseFormReturn<any, any>;
 }
 
 const RoleSpecificFields: React.FC<RoleSpecificFieldsProps> = ({
