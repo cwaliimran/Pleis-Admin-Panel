@@ -1,7 +1,7 @@
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import ButtonLoading from '@/components/common/button-loading';
@@ -15,28 +15,25 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { noImageUrl } from '@/constant/constant';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetSuppliersQuery } from '@/store/Reducer/suppliers';
+import {
+  useUpdateUserForUserListMutation,
+  useUpdateUserSuperAdminAndGuestMutation,
+} from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
-import { showError } from '@/utils/toast';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { showError, showSuccess } from '@/utils/toast';
 import CommonFields from './common-fields';
 import { splitPhoneByDial } from './helpers';
 import RoleSpecificFields from './role-specific-fields';
-import { uploadFileToAzure } from '@/utils/fileUpload';
-import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { generateValidationSchema } from './validation';
 
 type RoleKey = 'admin' | 'organizer' | 'manager' | 'staff' | 'guest' | 'user';
 
 type Option = { value: string; label: string };
-
-// type Location = {
-//   address: string;
-//   city: string;
-//   postalCode: string;
-//   country: string;
-//   coordinates: [number, number];
-// };
 
 const roleOptionsFor = (parentUserType?: string): Option[] => {
   if (parentUserType === 'organizer') {
@@ -76,11 +73,12 @@ const defaultValues = {
     coordinates: [0, 0],
   },
   suppliers: [] as string[],
-  organizations: [] as string[], // Array of organization IDs
+  organizations: [] as string[],
   modules: [],
   username: '',
   dob: null,
   gender: '',
+  status: 'active',
 };
 
 interface EditUserModalProps {
@@ -105,8 +103,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [currentRole, setCurrentRole] = useState<RoleKey>(
     userData?.accountState?.userType || 'manager'
   );
+  const [uploadedFileKey, setUploadedFileKey] = useState<string | null>(null);
+  console.log('uploadedFileKey', uploadedFileKey);
 
-  console.log('userData', userData);
+  const [imageUploading, setImageUploading] = useState(false);
+
+  const [updateUser, { isLoading: updateUserLoading }] =
+    useUpdateUserForUserListMutation();
+  const [
+    updateUserSuperAdminAndGuest,
+    { isLoading: updateUserSuperAdminAndGuestLoading },
+  ] = useUpdateUserSuperAdminAndGuestMutation();
 
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
@@ -162,13 +169,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     watch,
     reset,
     formState: { errors },
-    // setValue,
   } = methods;
 
   console.log('errors', errors);
-  console.log('location value', methods.getValues('location')); // Debug location
 
-  // Fix typing issue with watch
   const watchedRole = watch(
     'role',
     userData?.accountState?.userType || 'manager'
@@ -189,7 +193,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     if (userData) {
       const formData = {
         role: userData.accountState.userType as RoleKey,
-        image: userData.basicInfo.profileIcon || null,
+        image:
+          userData?.basicInfo?.profileIcon !== noImageUrl
+            ? userData?.basicInfo?.profileIcon
+            : null,
         firstName: userData.basicInfo.firstName || '',
         lastName: userData.basicInfo.lastName || '',
         email: userData.basicInfo.email || '',
@@ -204,22 +211,27 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           userData.basicInfo.companyDetails?.bankAccountNumber || '',
         representativeName:
           userData.basicInfo.companyDetails?.representativeName || '',
-        location: userData.basicInfo.companyDetails?.location || {
-          address: '',
-          city: '',
-          postalCode: '',
-          country: '',
-          coordinates: [0, 0],
+        location: {
+          address:
+            userData.basicInfo.companyDetails?.location?.fullAddress || '',
+          city: userData.basicInfo.companyDetails?.location?.city || '',
+          postalCode:
+            userData.basicInfo.companyDetails?.location?.postalCode || '',
+          country: userData.basicInfo.companyDetails?.location?.country || '',
+          coordinates: userData.basicInfo.companyDetails?.location
+            ?.coordinates || [0, 0],
         },
         suppliers:
           userData.basicInfo?.companyDetails?.suppliers?.map(
             (sup: any) => sup._id
           ) || [],
-        organizations: userData?.organizations?.map((org: any) => org._id) || [],
+        organizations:
+          userData?.organizations?.map((org: any) => org._id) || [],
         modules: userData.modules || [],
-        username: userData.username || '',
-        dob: userData.dob ? new Date(userData.dob) : null,
-        gender: userData.gender || '',
+        username: userData?.basicInfo?.username || '',
+        dob: userData?.basicInfo?.dob ? new Date(userData.basicInfo.dob) : null,
+        gender: userData?.basicInfo?.gender || '',
+        status: userData.accountState?.status || 'active',
       };
       reset(formData);
       setCurrentRole(formData.role);
@@ -239,23 +251,37 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     }
 
     let uploadedFileKey: string | null = null;
-    try {
-      let profileIconUrl: any = data.image;
 
-      if (data.image instanceof File) {
-        uploadedFileKey = await uploadFileToAzure(data.image);
-        if (!uploadedFileKey) return;
-        profileIconUrl = uploadedFileKey;
-      } else {
-        profileIconUrl = userData?.basicInfo?.profileIcon || '';
+    try {
+      let profileIconUrl = userData?.basicInfo?.profileIcon || noImageUrl;
+
+      if (
+        data.image === null &&
+        userData?.basicInfo?.profileIcon !== noImageUrl
+      ) {
+        profileIconUrl = null;
+      } else if (typeof data.image === 'string') {
+        profileIconUrl = data.image;
+      } else if (
+        data.image &&
+        (data.image instanceof FileList || Array.isArray(data.image))
+      ) {
+        const file = data.image[0];
+        if (file) {
+          setImageUploading(true);
+          uploadedFileKey = await uploadFileToAzure(file);
+          profileIconUrl = uploadedFileKey;
+        }
       }
 
       const initialValues = userData || {};
       const payload: any = { id: selectedId };
 
       const compareAndAdd = (key: string, value: any, initialValue: any) => {
-        if (key === 'image' && data.image instanceof File) {
-          payload.profileIcon = profileIconUrl;
+        if (key === 'image') {
+          if (profileIconUrl !== initialValues.basicInfo?.profileIcon) {
+            payload.profileIcon = profileIconUrl;
+          }
         } else if (key === 'phone') {
           const phoneNumber = splitPhoneByDial(
             String(value || ''),
@@ -307,6 +333,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         data.organizationName,
         initialValues.basicInfo?.organizationName
       );
+      compareAndAdd('status', data.status, initialValues.accountState?.status); // Compare status
 
       // Role-specific fields
       switch (currentRole) {
@@ -322,7 +349,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               oib: data.oib,
               bankAccountNumber: data.bankAccountNumber,
               representativeName: data.representativeName,
-              location: data.location,
+              location: {
+                fullAddress: data.location.address,
+                city: data.location.city,
+                postalCode: data.location.postalCode,
+                country: data.location.country,
+                coordinates: data.location.coordinates,
+              },
               suppliers: data.suppliers,
             },
             initialValues.basicInfo?.companyDetails
@@ -376,33 +409,36 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         return;
       }
 
-      console.log('Submitted payload:', payload);
+      let response;
+      if (payload.userType === 'admin' || payload.userType === 'guest') {
+        response = await updateUserSuperAdminAndGuest(payload).unwrap();
+      } else {
+        response = await updateUser(payload).unwrap();
+      }
 
-      // let response;
-      // if (payload.userType === 'admin' || payload.userType === 'guest') {
-      //   response = await updateUserSuperAdminAndGuest(payload).unwrap();
-      // } else {
-      //   response = await updateUser(payload).unwrap();
-      // }
+      if (!response) {
+        throw new Error('No response from server. Please try again later.');
+      }
 
-      // if (!response) {
-      //   throw new Error('No response from server. Please try again later.');
-      // }
+      if (response.error) {
+        throw new Error(getErrorMessage(response.error));
+      }
 
-      // if (response.error) {
-      //   throw new Error(getErrorMessage(response.error));
-      // }
-
-      // if (response?.data) {
-      //   onUpdateSuccess(response.data);
-      // }
+      setUploadedFileKey(null);
+      handleClose();
+      if (response?.message) {
+        showSuccess(response?.message || 'Updated successfully');
+      }
     } catch (error) {
       console.log('Update failed:', error);
       showError(getErrorMessage(error));
 
       if (uploadedFileKey) {
         await deleteFileFromAzure(uploadedFileKey);
+        setUploadedFileKey(null);
       }
+    } finally {
+      setImageUploading(false);
     }
   };
 
@@ -411,7 +447,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0" />
       <DialogContent
         aria-describedby={undefined}
-        className="dark:bg-secondary md:!max-w[640px] mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto"
+        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
       >
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
@@ -422,10 +458,22 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             onSubmit={handleSubmit(submit)}
             className="mt-2 w-full space-y-4"
           >
-            <RHFUploadAvatar
+            {/* <RHFUploadAvatar
               name="image"
               label="Profile Image"
               initialImage={userData?.basicInfo?.profileIcon || null}
+            /> */}
+
+            <RHFUploadAvatar
+              name="image"
+              label="Organization Icon"
+              initialImage={(() => {
+                const img = userData?.basicInfo?.profileIcon;
+                if (img && img !== noImageUrl) {
+                  return img;
+                }
+                return null;
+              })()}
             />
 
             <RHFSelectField
@@ -434,6 +482,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               placeholder="Select Role"
               options={roleOptionsFor(userType)}
               disabled={true}
+            />
+
+            <RHFSelectField
+              name="status"
+              label="Status"
+              placeholder="Select Status"
+              options={[
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+                // { value: 'pending', label: 'Pending' },
+              ]}
             />
 
             <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
@@ -447,13 +506,25 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             </div>
 
             <div className="mt-1 flex justify-center gap-2">
-              <Button
-                type="submit"
-                className="bg-primary hover:bg-primary/80 text-white"
-                disabled={isLoading}
-              >
-                {isLoading ? <ButtonLoading title="Updating" /> : 'Update User'}
-              </Button>
+              {isLoading ||
+              imageUploading ||
+              updateUserLoading ||
+              updateUserSuperAdminAndGuestLoading ? (
+                <Button
+                  type="button"
+                  className="bg-primary cursor-not-allowed text-white"
+                >
+                  <ButtonLoading title="Updating" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="bg-primary hover:bg-primary/80 text-white"
+                >
+                  Update User
+                </Button>
+              )}
+
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>

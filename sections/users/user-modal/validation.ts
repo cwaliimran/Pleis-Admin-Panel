@@ -67,7 +67,7 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
         username: Yup.string().required('Username is required'),
         dob: Yup.date().required('Date of Birth is required'),
         gender: Yup.string().required('Gender is required'),
-        organizations: Yup.array().of(Yup.string()).min(1, 'At least one organization is required').required(),
+        // organizations: Yup.array().of(Yup.string()).min(1, 'At least one organization is required').required(),
       };
       break;
     default:

@@ -41,6 +41,15 @@ export const userListApi = createApi({
       transformResponse: (res) => res.data,
     }),
 
+    addUser: builder.mutation({
+      query: (newUser) => ({
+        url: API_ROUTES.USER_LIST,
+        method: 'POST',
+        body: newUser,
+      }),
+      invalidatesTags: ['userList'],
+    }),
+
     addUserSuperAdminAndGuest: builder.mutation({
       query: (newUser) => ({
         url: API_ROUTES.USER_LIST,
@@ -49,15 +58,6 @@ export const userListApi = createApi({
         headers: {
           'x-admin-access-token': ADMIN_ACCESS_TOKEN,
         },
-      }),
-      invalidatesTags: ['userList'],
-    }),
-
-    addUser: builder.mutation({
-      query: (newUser) => ({
-        url: API_ROUTES.USER_LIST,
-        method: 'POST',
-        body: newUser,
       }),
       invalidatesTags: ['userList'],
     }),
@@ -74,11 +74,11 @@ export const userListApi = createApi({
       invalidatesTags: ['userList'],
     }),
 
-    updatePendingUser: builder.mutation({
-      query: ({ id, status }) => ({
-        url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
+    updateUserForUserList: builder.mutation({
+      query: (updateUser) => ({
+        url: API_ROUTES.PENDING_USER_LIST_BY_ID(updateUser.id),
         method: 'PUT',
-        body: { status },
+        body: updateUser,
       }),
       invalidatesTags: ['userList'],
     }),
@@ -88,6 +88,15 @@ export const userListApi = createApi({
         url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
         method: 'PUT',
         body: body,
+      }),
+      invalidatesTags: ['userList'],
+    }),
+
+    updatePendingUser: builder.mutation({
+      query: ({ id, status }) => ({
+        url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
+        method: 'PUT',
+        body: { status },
       }),
       invalidatesTags: ['userList'],
     }),
@@ -107,8 +116,9 @@ export const {
   useGetUserByIdQuery,
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
+  useUpdateUserMutation,
+  useUpdateUserForUserListMutation,
   useUpdateUserSuperAdminAndGuestMutation,
   useUpdatePendingUserMutation,
-  useUpdateUserMutation,
   useUpdatePasswordMutation,
 } = userListApi;
