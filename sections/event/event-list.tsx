@@ -1,5 +1,4 @@
 "use client";
-import OverlayLoading from "@/components/atoms/overlay-loading";
 import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { useBoolean } from "@/hooks/useBoolean";
@@ -108,8 +107,6 @@ const EventList = ({ userType }: OrganizationListProps) => {
 
   return (
     <div>
-      <OverlayLoading show={isLoading || isDeleting} />
-
       {/* Create Event Button */}
       <div className="mt-3 flex w-full items-center justify-end md:mt-0">
         <Button

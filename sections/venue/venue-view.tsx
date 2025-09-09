@@ -198,6 +198,11 @@ const VenueView = () => {
   // CREATE/UPDATE VENUE
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      if (formData.floorPlan === null) {
+        showError('Please select a floor plan image.');
+        return;
+      }
+
       let imageFileString = undefined;
 
       if (
@@ -287,7 +292,7 @@ const VenueView = () => {
   });
 
   const onSetAsPinned = async (item: any) => {
-    console.log("Setting venue as pinned:", item);
+    console.log('Setting venue as pinned:', item);
     if (item?.isPrimary) {
       showError('This venue is already set as primary.');
       return;

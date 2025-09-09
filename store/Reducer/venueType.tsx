@@ -45,6 +45,7 @@ export const venueTypeApi = createApi({
         method: 'PUT',
         body: updatedVenueType,
       }),
+      invalidatesTags: ['venueType'],
     }),
 
     deleteVenueType: builder.mutation({

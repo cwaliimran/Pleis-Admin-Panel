@@ -67,6 +67,7 @@ export const suppliersApi = createApi({
         method: 'PUT',
         body: updatedSupplier,
       }),
+      invalidatesTags: ['supplier'],
     }),
 
     deleteSupplier: builder.mutation({

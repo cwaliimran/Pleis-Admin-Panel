@@ -62,6 +62,7 @@ const VenueTypeModal = ({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY as any,
     libraries: googleMapsLibraries,
   });
+
   const schema = Yup.object().shape({
     title: Yup.string().required('Venue name is required'),
     venueType: Yup.string().required('Venue Type is required'),
