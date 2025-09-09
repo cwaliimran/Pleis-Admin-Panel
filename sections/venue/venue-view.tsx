@@ -63,7 +63,7 @@ const VenueView = () => {
     page: page - 1,
     search,
     limit,
-    status: status === 'all' ? undefined : status,
+    status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
 
@@ -198,6 +198,11 @@ const VenueView = () => {
   // CREATE/UPDATE VENUE
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      if (formData.floorPlan === null) {
+        showError('Please select a floor plan image.');
+        return;
+      }
+
       let imageFileString = undefined;
 
       if (
@@ -287,6 +292,12 @@ const VenueView = () => {
   });
 
   const onSetAsPinned = async (item: any) => {
+    console.log('Setting venue as pinned:', item);
+    if (item?.isPrimary) {
+      showError('This venue is already set as primary.');
+      return;
+    }
+
     try {
       const payload = {
         id: item?._id,

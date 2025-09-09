@@ -92,7 +92,9 @@ const OrgInfo = ({ organizationData }: any) => {
               </div>
               <div className="mt-2 flex items-center gap-2">
                 {/* <PartyPopper /> */}
-                <p className="mt-2 text-lg">-</p>
+                <p className="mt-2 text-lg">
+                  {organizationData?.venue?.title || '-'}
+                </p>
               </div>
             </CardHeader>
           </Card>
@@ -220,8 +222,7 @@ const OrgInfo = ({ organizationData }: any) => {
             <CardHeader className="flex w-full flex-col gap-2">
               <h1 className="font-semibold text-slate-500">LOCATION PIN</h1>
               <div className="mt-2 flex items-center gap-2">
-                {/* <PartyPopper className="h-4 w-4" /> */}
-                <span>-</span>
+                <span>{organizationData?.venue?.title || '-'}</span>
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <MapPin />
