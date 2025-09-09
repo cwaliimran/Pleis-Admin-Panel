@@ -31,8 +31,8 @@ type Option = { value: string; label: string };
 const roleOptionsFor = (userType?: string): Option[] => {
   if (userType === 'organizer') {
     return [
+      { value: 'manager', label: 'Manager' },
       { value: 'staff', label: 'Staff' },
-      { value: 'user', label: 'User' },
     ];
   }
   return [

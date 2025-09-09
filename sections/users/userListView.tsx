@@ -5,7 +5,7 @@ import { useBoolean } from '@/hooks/useBoolean';
 import {
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
-  useGetUserListQuery
+  useGetUserListQuery,
 } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
@@ -21,13 +21,13 @@ import CustomUserModal from './user-modal/custom-user-modal';
 const UserListView = ({ usertype }: { usertype: any }) => {
   const createModal = useBoolean();
   const editModal = useBoolean();
-  const deleteModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [role, setRole] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -40,18 +40,11 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     { isLoading: addUserSuperAdminAndGuestLoading },
   ] = useAddUserSuperAdminAndGuestMutation();
 
-  // const [updateUser, { isLoading: updateUserLoading }] =
-  //   useUpdateUserMutation();
-
-  // const [
-  //   updateUserSuperAdminAndGuest,
-  //   { isLoading: updateUserSuperAdminAndGuestLoading },
-  // ] = useUpdateUserSuperAdminAndGuestMutation();
-
   const { data: apiData, isLoading } = useGetUserListQuery({
     page: page - 1,
     search,
     limit,
+    userType: role === 'all' ? undefined : role,
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
   });
@@ -79,8 +72,6 @@ const UserListView = ({ usertype }: { usertype: any }) => {
   }, [apiData, page, limit]);
 
   const onCreateSubmit = async (formData: any) => {
-    console.log('formData', formData);
-
     let uploadedFileKey: string | null = null;
     try {
       setimageUploading(true);
@@ -96,8 +87,6 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         ...formData,
         profileIcon: profileIconUrl || '',
       };
-
-      console.log('Submitted payload:', payload);
 
       let response;
       if (payload.userType === 'admin' || payload.userType === 'guest') {
@@ -154,11 +143,6 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    console.log('id', id);
-    deleteModal.onTrue();
-  };
-
   return (
     <div>
       <div>
@@ -177,7 +161,6 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         data={venueTypes}
         meta={meta}
         loading={isLoading}
-        handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
         userType={usertype}
@@ -193,6 +176,11 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         limit={limit}
         page={page}
         status={status}
+        role={role}
+        onRoleChange={(val) => {
+          setRole(val);
+          setPage(1);
+        }}
         onStatusChange={(val) => {
           setStatus(val);
           setPage(1);
@@ -207,6 +195,7 @@ const UserListView = ({ usertype }: { usertype: any }) => {
           setDate(undefined);
           setSearch('');
           setPage(1);
+          setRole('');
         }}
       />
 

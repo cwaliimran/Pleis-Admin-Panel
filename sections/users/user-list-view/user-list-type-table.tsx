@@ -53,7 +53,9 @@ interface PageProps {
   search?: string;
   limit?: number;
   status?: string;
+  role?: string;
   onStatusChange?: (status: string) => void;
+  onRoleChange?: (role: string) => void;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
@@ -73,7 +75,9 @@ const UserListTypeTable: FC<PageProps> = ({
   search = '',
   // limit = 10,
   status = '',
+  role = '',
   onStatusChange = () => {},
+  onRoleChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -148,6 +152,22 @@ const UserListTypeTable: FC<PageProps> = ({
                                   { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
+                                ],
+                              },
+                              {
+                                id: 'sheet-role',
+                                label: 'Role',
+                                placeholder: 'Select by Role',
+                                value: role,
+                                onChange: onRoleChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'admin', label: 'Admin' },
+                                  { value: 'organizer', label: 'Organizer' },
+                                  { value: 'manager', label: 'Manager' },
+                                  { value: 'staff', label: 'Staff' },
+                                  { value: 'guest', label: 'Guest' },
+                                  { value: 'user', label: 'User' },
                                 ],
                               },
                             ]}

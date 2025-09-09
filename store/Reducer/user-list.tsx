@@ -17,9 +17,9 @@ export const userListApi = createApi({
           status,
           page: page + 1,
           limit,
-          userType,
         };
-        if (date) (params as any).date = date;
+        if (date) params.date = date;
+        if (userType) params.userType = userType;
         return {
           url: API_ROUTES.USER_LIST,
           method: 'GET',

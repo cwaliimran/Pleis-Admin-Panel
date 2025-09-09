@@ -106,6 +106,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [uploadedFileKey, setUploadedFileKey] = useState<string | null>(null);
   console.log('uploadedFileKey', uploadedFileKey);
 
+  console.log(userData);
+
   const [imageUploading, setImageUploading] = useState(false);
 
   const [updateUser, { isLoading: updateUserLoading }] =
@@ -227,7 +229,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           ) || [],
         organizations:
           userData?.organizations?.map((org: any) => org._id) || [],
-        modules: userData.modules || [],
+        modules: userData.organizations[0]?.staff[0]?.featuresAccess || [],
         username: userData?.basicInfo?.username || '',
         dob: userData?.basicInfo?.dob ? new Date(userData.basicInfo.dob) : null,
         gender: userData?.basicInfo?.gender || '',
@@ -458,15 +460,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             onSubmit={handleSubmit(submit)}
             className="mt-2 w-full space-y-4"
           >
-            {/* <RHFUploadAvatar
-              name="image"
-              label="Profile Image"
-              initialImage={userData?.basicInfo?.profileIcon || null}
-            /> */}
-
             <RHFUploadAvatar
               name="image"
-              label="Organization Icon"
+              label="Profile Image"
               initialImage={(() => {
                 const img = userData?.basicInfo?.profileIcon;
                 if (img && img !== noImageUrl) {
@@ -491,7 +487,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               options={[
                 { value: 'active', label: 'Active' },
                 { value: 'inactive', label: 'Inactive' },
-                // { value: 'pending', label: 'Pending' },
+                ...(userData?.accountState?.userType === 'organizer'
+                  ? [{ value: 'pending', label: 'Pending' }]
+                  : []),
               ]}
             />
 
@@ -505,14 +503,14 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               />
             </div>
 
-            <div className="mt-1 flex justify-center gap-2">
+            <div className="mt-6 flex justify-center gap-2">
               {isLoading ||
               imageUploading ||
               updateUserLoading ||
               updateUserSuperAdminAndGuestLoading ? (
                 <Button
                   type="button"
-                  className="bg-primary cursor-not-allowed text-white"
+                  className="bg-primary/80 cursor-not-allowed text-white"
                 >
                   <ButtonLoading title="Updating" />
                 </Button>
@@ -521,7 +519,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                   type="submit"
                   className="bg-primary hover:bg-primary/80 text-white"
                 >
-                  Update User
+                  Update
                 </Button>
               )}
 
