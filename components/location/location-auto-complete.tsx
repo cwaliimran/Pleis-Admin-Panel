@@ -27,9 +27,9 @@ interface LocationAutocompleteProps<T extends FieldValues> {
 const LocationAutocomplete = <T extends FieldValues>({
   name,
   control,
-  label = "Address",
-  placeholder = "Enter address",
-  className = "",
+  label = 'Address',
+  placeholder = 'Enter address',
+  className = '',
   error,
   disabled = false,
   onPlaceSelect,
@@ -38,14 +38,17 @@ const LocationAutocomplete = <T extends FieldValues>({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
-  
+
   // const debounceRef = useRef<NodeJS.Timeout>();
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
-  
+  const autocompleteServiceRef =
+    useRef<google.maps.places.AutocompleteService | null>(null);
+  const placesServiceRef = useRef<google.maps.places.PlacesService | null>(
+    null
+  );
+
   const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   // Load Google Maps Script
@@ -72,14 +75,14 @@ const LocationAutocomplete = <T extends FieldValues>({
     script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly`;
     script.async = true;
     script.defer = true;
-    
+
     script.onload = () => {
       setIsGoogleLoaded(true);
       initializeServices();
     };
 
     script.onerror = () => {
-      console.error('Failed to load Google Maps script');
+      console.log('Failed to load Google Maps script');
     };
 
     document.head.appendChild(script);
@@ -88,13 +91,16 @@ const LocationAutocomplete = <T extends FieldValues>({
   // Initialize Google Services
   const initializeServices = () => {
     if (window.google && window.google.maps) {
-      autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
-      
+      autocompleteServiceRef.current =
+        new window.google.maps.places.AutocompleteService();
+
       // Create a hidden div for PlacesService (it needs a map or div element)
       const hiddenDiv = document.createElement('div');
       hiddenDiv.style.display = 'none';
       document.body.appendChild(hiddenDiv);
-      placesServiceRef.current = new window.google.maps.places.PlacesService(hiddenDiv);
+      placesServiceRef.current = new window.google.maps.places.PlacesService(
+        hiddenDiv
+      );
     }
   };
 
@@ -107,7 +113,7 @@ const LocationAutocomplete = <T extends FieldValues>({
     }
 
     setIsSearching(true);
-    
+
     try {
       autocompleteServiceRef.current.getPlacePredictions(
         {
@@ -116,14 +122,19 @@ const LocationAutocomplete = <T extends FieldValues>({
         },
         (predictions, status) => {
           setIsSearching(false);
-          
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-            const placeSuggestions = predictions.map(prediction => ({
+
+          if (
+            status === window.google.maps.places.PlacesServiceStatus.OK &&
+            predictions
+          ) {
+            const placeSuggestions = predictions.map((prediction) => ({
               place_id: prediction.place_id,
               formatted_address: prediction.description,
-              name: prediction.structured_formatting.main_text || prediction.description,
+              name:
+                prediction.structured_formatting.main_text ||
+                prediction.description,
             }));
-            
+
             setSuggestions(placeSuggestions);
             setShowSuggestions(true);
           } else {
@@ -134,7 +145,7 @@ const LocationAutocomplete = <T extends FieldValues>({
         }
       );
     } catch (error) {
-      console.error('Error searching places:', error);
+      console.log('Error searching places:', error);
       setIsSearching(false);
       setSuggestions([]);
       setShowSuggestions(false);
@@ -146,13 +157,16 @@ const LocationAutocomplete = <T extends FieldValues>({
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    
+
     debounceRef.current = setTimeout(() => {
       searchPlaces(query);
     }, 300);
   }, []);
 
-  const handleInputChange = (value: string, onChange: (value: string) => void) => {
+  const handleInputChange = (
+    value: string,
+    onChange: (value: string) => void
+  ) => {
     onChange(value);
     if (value.length >= 3 && isGoogleLoaded) {
       debouncedSearch(value);
@@ -162,7 +176,10 @@ const LocationAutocomplete = <T extends FieldValues>({
     }
   };
 
-  const handleSuggestionSelect = (suggestion: PlaceSuggestion, onChange: (value: string) => void) => {
+  const handleSuggestionSelect = (
+    suggestion: PlaceSuggestion,
+    onChange: (value: string) => void
+  ) => {
     onChange(suggestion.formatted_address);
     setSuggestions([]);
     setShowSuggestions(false);
@@ -172,20 +189,26 @@ const LocationAutocomplete = <T extends FieldValues>({
       placesServiceRef.current.getDetails(
         {
           placeId: suggestion.place_id,
-          fields: ['formatted_address', 'geometry', 'name', 'place_id']
+          fields: ['formatted_address', 'geometry', 'name', 'place_id'],
         },
         (place, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
+          if (
+            status === window.google.maps.places.PlacesServiceStatus.OK &&
+            place
+          ) {
             const detailedPlace = {
               ...suggestion,
-              geometry: place.geometry ? {
-                location: {
-                  lat: place.geometry.location?.lat() || 0,
-                  lng: place.geometry.location?.lng() || 0,
-                }
-              } : undefined,
+              geometry: place.geometry
+                ? {
+                    location: {
+                      lat: place.geometry.location?.lat() || 0,
+                      lng: place.geometry.location?.lng() || 0,
+                    },
+                  }
+                : undefined,
               name: place.name || suggestion.name,
-              formatted_address: place.formatted_address || suggestion.formatted_address,
+              formatted_address:
+                place.formatted_address || suggestion.formatted_address,
             };
             onPlaceSelect?.(detailedPlace);
           } else {
@@ -237,7 +260,7 @@ const LocationAutocomplete = <T extends FieldValues>({
               {label}
             </label>
           )}
-          
+
           <div className="relative">
             <input
               ref={inputRef}
@@ -245,7 +268,7 @@ const LocationAutocomplete = <T extends FieldValues>({
               placeholder={placeholder}
               value={value || ''}
               disabled={disabled || !isGoogleLoaded}
-              className={`block w-full rounded-md border bg-white px-3 py-2 pr-10 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:bg-[#171717] dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed dark:disabled:bg-gray-700 ${
+              className={`block w-full rounded-md border bg-white px-3 py-2 pr-10 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100 dark:bg-[#171717] dark:text-white dark:disabled:bg-gray-700 ${
                 error
                   ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
                   : 'border-gray-300 dark:border-gray-600'
@@ -264,7 +287,7 @@ const LocationAutocomplete = <T extends FieldValues>({
                 }
               }}
             />
-            
+
             {/* Loading Spinner */}
             {isSearching && (
               <div className="absolute top-1/2 right-8 -translate-y-1/2">
@@ -278,7 +301,7 @@ const LocationAutocomplete = <T extends FieldValues>({
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent"></div>
               </div>
             )}
-            
+
             {/* Location Icon */}
             <div className="absolute top-1/2 right-2 -translate-y-1/2 text-gray-400">
               <svg
@@ -303,7 +326,7 @@ const LocationAutocomplete = <T extends FieldValues>({
                 />
               </svg>
             </div>
-            
+
             {/* Custom Suggestions Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
               <div
@@ -314,7 +337,7 @@ const LocationAutocomplete = <T extends FieldValues>({
                   <button
                     key={suggestion.place_id}
                     type="button"
-                    className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:hover:bg-gray-700 dark:focus:bg-gray-700 dark:text-white transition-colors duration-150"
+                    className="w-full px-4 py-3 text-left text-sm transition-colors duration-150 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700"
                     onClick={() => handleSuggestionSelect(suggestion, onChange)}
                     onMouseDown={(e) => {
                       // Prevent the input from losing focus
@@ -322,7 +345,7 @@ const LocationAutocomplete = <T extends FieldValues>({
                     }}
                   >
                     <div className="flex items-start space-x-3">
-                      <div className="flex-shrink-0 mt-1">
+                      <div className="mt-1 flex-shrink-0">
                         <svg
                           className="h-4 w-4 text-gray-400"
                           fill="none"
@@ -343,11 +366,11 @@ const LocationAutocomplete = <T extends FieldValues>({
                           />
                         </svg>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 dark:text-white truncate">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium text-gray-900 dark:text-white">
                           {suggestion.name}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                        <div className="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">
                           {suggestion.formatted_address}
                         </div>
                       </div>
@@ -358,28 +381,30 @@ const LocationAutocomplete = <T extends FieldValues>({
             )}
 
             {/* No results message */}
-            {showSuggestions && suggestions.length === 0 && !isSearching && value && value.length >= 3 && (
-              <div
-                ref={suggestionsRef}
-                className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border border-gray-300 bg-white py-2 px-4 shadow-lg dark:border-gray-600 dark:bg-gray-800"
-              >
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  No locations found
+            {showSuggestions &&
+              suggestions.length === 0 &&
+              !isSearching &&
+              value &&
+              value.length >= 3 && (
+                <div
+                  ref={suggestionsRef}
+                  className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border border-gray-300 bg-white px-4 py-2 shadow-lg dark:border-gray-600 dark:bg-gray-800"
+                >
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    No locations found
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
-          
+
           {/* Error Message */}
-          {error && (
-            <p className="mt-1 text-xs text-red-500">{error}</p>
-          )}
-          
+          {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+
           {/* Status Messages */}
           {!isGoogleLoaded && GOOGLE_MAPS_API_KEY && (
             <p className="mt-1 text-xs text-gray-500">Loading Google Maps...</p>
           )}
-          
+
           {!GOOGLE_MAPS_API_KEY && (
             <p className="mt-1 text-xs text-red-500">
               Google Maps API key is required

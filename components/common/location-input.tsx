@@ -39,7 +39,7 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
     if (places && places.length > 0) {
       const address = await extractAddress(places[0]);
       const locationPayload = {
-        fullAddress: address.address_line_1 || '',
+        address: address.address_line_1 || '',
         city: address.city || '',
         postalCode: address.postal_code || '',
         country: address.country || '',

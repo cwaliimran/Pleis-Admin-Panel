@@ -23,6 +23,13 @@ import { showError, showSuccess } from '@/utils/toast';
 import ButtonLoading from '@/components/common/button-loading';
 import { getDeviceType } from '@/utils/getDeviceType';
 import { useRouter } from 'next/navigation';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 // TypeScript interfaces
 interface LocationData {
@@ -51,37 +58,37 @@ interface FormData {
   terms: boolean;
 }
 
-interface BackendPayload {
-  // profileIcon: string;
-  firstName: string;
-  lastName: string;
-  organizationName: string;
-  email: string;
-  phoneNumber: {
-    code: string;
-    number: string;
-  };
-  password: string;
-  deviceType: string;
-  userType: string;
-  deviceId: string;
-  timezone: string;
-  companyDetails: {
-    name: string;
-    oib: string;
-    bankAccountNumber: string;
-    representativeName: string;
-    location: {
-      coordinates: [number, number];
-      fullAddress: string;
-      country: string;
-      city: string;
-      state: string;
-      postalCode: string;
-    };
-    suppliers: string[];
-  };
-}
+// interface BackendPayload {
+//   // profileIcon: string;
+//   firstName: string;
+//   lastName: string;
+//   organizationName: string;
+//   email: string;
+//   phoneNumber: {
+//     code: string;
+//     number: string;
+//   };
+//   password: string;
+//   deviceType: string;
+//   userType: string;
+//   deviceId: string;
+//   timezone: string;
+//   companyDetails: {
+//     name: string;
+//     oib: string;
+//     bankAccountNumber: string;
+//     representativeName: string;
+//     location: {
+//       coordinates: [number, number];
+//       fullAddress: string;
+//       country: string;
+//       city: string;
+//       state: string;
+//       postalCode: string;
+//     };
+//     suppliers: string[];
+//   };
+// }
 
 const defaultValues: FormData = {
   fname: '',
@@ -90,7 +97,7 @@ const defaultValues: FormData = {
   email: '',
   password: '',
   confirmPassword: '',
-  phone: { code: '+92', number: '' }, // Updated default value
+  phone: { code: '+92', number: '' },
   companyName: '',
   oib: '',
   bankAccountNumber: '',
@@ -137,6 +144,7 @@ function SignUpPage() {
   const open = useBoolean();
   const confirmOpen = useBoolean();
   const router = useRouter();
+  const modalOpen = useBoolean();
 
   const [signUp, { isLoading: signUpLoading }] = useSignupMutation();
 
@@ -192,12 +200,45 @@ function SignUpPage() {
   };
 
   // Transform form data to backend payload
-  const transformToBackendPayload = (data: FormData): BackendPayload => {
+  // const transformToBackendPayload = (data: FormData): BackendPayload => {
+  //   const deviceType = getDeviceType();
+  //   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  //   return {
+  //     // profileIcon: '435dff23-2928-494b-9ed1-aee72d118066.png',
+  //     firstName: data.fname.trim(),
+  //     lastName: data.lname.trim(),
+  //     organizationName: data.organizationName.trim(),
+  //     email: data.email.trim().toLowerCase(),
+  //     phoneNumber: parsePhoneNumber(data.phone),
+  //     password: data.password,
+  //     deviceType: deviceType,
+  //     userType: 'organizer',
+  //     deviceId: '123',
+  //     timezone: timezone,
+  //     companyDetails: {
+  //       name: data.companyName.trim(),
+  //       oib: data.oib.trim(),
+  //       bankAccountNumber: data.bankAccountNumber.trim(),
+  //       representativeName: data.representativeFullName.trim(),
+  //       location: data.location || {
+  //         coordinates: [0, 0],
+  //         fullAddress: '',
+  //         country: '',
+  //         city: '',
+  //         state: '',
+  //         postalCode: '',
+  //       },
+  //       suppliers: data.suppliers,
+  //     },
+  //   };
+  // };
+
+  const transformToBackendPayload = (data: any): any => {
     const deviceType = getDeviceType();
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     return {
-      // profileIcon: '435dff23-2928-494b-9ed1-aee72d118066.png',
       firstName: data.fname.trim(),
       lastName: data.lname.trim(),
       organizationName: data.organizationName.trim(),
@@ -213,16 +254,26 @@ function SignUpPage() {
         oib: data.oib.trim(),
         bankAccountNumber: data.bankAccountNumber.trim(),
         representativeName: data.representativeFullName.trim(),
-        location: data.location || {
-          coordinates: [0, 0],
-          fullAddress: '',
-          country: '',
-          city: '',
-          state: '',
-          postalCode: '',
-        },
+        location: data.location
+          ? {
+              coordinates: data.location.coordinates,
+              fullAddress: data?.location?.address || '', // Map address to fullAddress
+              country: data.location.country || '',
+              city: data.location.city || '',
+              state: data.location.state || '',
+              postalCode: data.location.postalCode || '',
+            }
+          : {
+              coordinates: [0, 0],
+              fullAddress: '',
+              country: '',
+              city: '',
+              state: '',
+              postalCode: '',
+            },
         suppliers: data.suppliers,
       },
+      termsAccepted: data.terms, // Map terms to termsAccepted
     };
   };
 
@@ -318,7 +369,6 @@ function SignUpPage() {
         return;
       }
       const payload = transformToBackendPayload(data);
-
       const response = await signUp(payload);
 
       if (response.error) {
@@ -331,12 +381,12 @@ function SignUpPage() {
         showSuccess(response.data.message || 'Account created successfully');
       }
 
-      router.push('/');
+      modalOpen.onTrue();
 
       reset();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to add category:', errorMessage);
+      console.log('Failed to add category:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -456,50 +506,6 @@ function SignUpPage() {
                   )}
                 </div>
 
-                {/* <div>
-                  <Controller
-                    name="phone"
-                    control={methods.control}
-                    render={({ field }) => (
-                      <div className="w-full">
-                        <PhoneInput
-                          {...field}
-                          country="pk"
-                          onChange={(value) => field.onChange(value)}
-                          placeholder="Phone Number"
-                          specialLabel=""
-                          inputProps={{
-                            required: true,
-                            'aria-invalid': !!validationErrors.phone,
-                          }}
-                          containerClass="w-full"
-                          buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
-                          inputClass={`
-                            file:text-foreground placeholder:text-muted-foreground
-                            selection:bg-primary selection:text-primary-foreground
-                            dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm
-                            flex !h-[42px] !w-full min-w-0 rounded-lg
-                            !bg-transparent px-3 py-1 text-base
-                            shadow-xs transition-[color,box-shadow]
-                            outline-none file:inline-flex file:h-7 file:border-0
-                            file:bg-transparent file:text-sm file:font-medium
-                            disabled:pointer-events-none disabled:cursor-not-allowed
-                            disabled:opacity-50 md:text-sm
-                            focus-visible:ring-ring/50 focus-visible:ring-[3px]
-                            aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
-                            aria-invalid:border-destructive
-                            ${validationErrors.phone ? 'border-destructive ring-destructive/40' : ''}
-                          `}
-                        />
-                      </div>
-                    )}
-                  />
-                  {validationErrors.phone && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {validationErrors.phone}
-                    </p>
-                  )}
-                </div> */}
                 <div>
                   <div>
                     <Controller
@@ -802,6 +808,30 @@ function SignUpPage() {
           </p>
         </motion.div>
       </div>
+
+      <Dialog open={modalOpen.value} onOpenChange={modalOpen.onToggle}>
+        <DialogContent className="dark:bg-secondary sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Account Created Successfully</DialogTitle>
+            <DialogDescription>
+              An activation link has been sent to{' '}
+              <span className="font-medium">{getValues('email')}</span>. Please
+              check your email (including the spam/junk folder) and click the
+              link to activate your account.
+            </DialogDescription>
+          </DialogHeader>
+          <Button
+            onClick={() => {
+              modalOpen.onFalse();
+              router.push('/');
+              reset();
+            }}
+            className="mt-4 bg-[#0f172b] text-white hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
+          >
+            Close
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -27,6 +27,7 @@ type Props = {
   label?: string;
   placeholder?: string;
   options: Option[];
+  className?: string;
 };
 
 export function RHFMultiSelect({
@@ -34,6 +35,7 @@ export function RHFMultiSelect({
   label,
   placeholder = 'Select',
   options,
+  className
 }: Props) {
   const { control } = useFormContext();
 
@@ -53,7 +55,7 @@ export function RHFMultiSelect({
         };
 
         return (
-          <FormItem className="w-full">
+          <FormItem className={className || "w-full"}>
             {label && <FormLabel>{label}</FormLabel>}
             <FormControl>
               <Popover modal={true}>

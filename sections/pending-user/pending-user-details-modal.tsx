@@ -30,7 +30,7 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         aria-describedby={undefined}
-        className="max-h-[90vh] max-w-4xl overflow-y-auto dark:bg-black"
+        className="max-h-[90vh] max-w-4xl overflow-y-auto dark:bg-[#1c1c1e]"
       >
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
@@ -39,15 +39,22 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
         </DialogHeader>
 
         <div className="grid gap-6">
-          {/* User Avatar and Basic Info */}
           <div className="dark:bg-secondary flex items-center gap-4 rounded-lg border bg-gray-50 p-4">
-            <Avatar className="h-16 w-16 rounded-xl">
-              <AvatarImage
-                src={user?.basicInfo?.profileIcon || ''}
-                alt={`${user?.basicInfo?.firstName}`}
-                className="object-cover"
-              />
+            <Avatar className="flex h-16 w-16 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+              {user?.basicInfo?.profileIcon &&
+              user?.basicInfo?.profileIcon !== 'noimage.png' ? (
+                <AvatarImage
+                  src={user?.basicInfo?.profileIcon}
+                  alt="User"
+                  className="h-full w-full cursor-pointer object-cover"
+                />
+              ) : (
+                <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+                  {user?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}
+                </span>
+              )}
             </Avatar>
+
             <div className="flex-1">
               <h3 className="text-lg font-semibold">
                 {user?.basicInfo?.firstName || '-'} {user?.basicInfo?.lastName}
@@ -210,14 +217,14 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="suppliers">List of Suppliers</Label>
-                <div className="rounded-md border bg-gray-50 px-3 py-1.5 dark:bg-gray-800">
+                <div className="dark:bg-secondary rounded-md border bg-gray-50 px-3 py-1.5">
                   {user?.basicInfo?.companyDetails?.suppliers &&
                   user?.basicInfo?.companyDetails?.suppliers.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {user?.basicInfo?.companyDetails?.suppliers.map(
-                        (supplier: string, index: number) => (
+                        (supplier: any, index: number) => (
                           <Badge key={index} variant="outline">
-                            {supplier}
+                            {supplier?.title || 'N/A'}
                           </Badge>
                         )
                       )}

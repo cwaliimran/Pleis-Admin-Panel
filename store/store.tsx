@@ -14,6 +14,7 @@ import { userSlice } from './slice/userSlice';
 import { userListApi } from './Reducer/user-list';
 import { highlightsApi } from './Reducer/highlights';
 import { eventApi } from './Reducer/events';
+import { twoFactorAuthApi } from './Reducer/twoFactorAuth';
 
 export const store = configureStore({
   reducer: {
@@ -29,6 +30,7 @@ export const store = configureStore({
     [userListApi.reducerPath]: userListApi.reducer,
     [highlightsApi.reducerPath]: highlightsApi.reducer,
     [eventApi.reducerPath]: eventApi.reducer,
+    [twoFactorAuthApi.reducerPath]: twoFactorAuthApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -42,7 +44,8 @@ export const store = configureStore({
       organizationApi.middleware,
       userListApi.middleware,
       highlightsApi.middleware,
-      eventApi.middleware
+      eventApi.middleware,
+      twoFactorAuthApi.middleware
     ),
 });
 

@@ -1,15 +1,15 @@
-"use client";
-import Header from "@/app/common/header";
+'use client';
+import Header from '@/app/common/header';
 
-import OrganizerProfileSection from "@/sections/proflie/organizer-profile-section";
+import OrganizerProfileSection from '@/sections/proflie/organizer-profile-section-old';
 
 const Page = () => {
   return (
     <div className=" ">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin/dashboard" },
-          { name: "Profile", href: "" },
+          { name: 'Dashboard', href: '/super-admin/dashboard' },
+          { name: 'Profile', href: '' },
         ]}
       />
 

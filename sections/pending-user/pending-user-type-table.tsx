@@ -128,7 +128,7 @@ const PendingUserTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search User...',
+                              placeholder: 'Search name, phone, organization...',
                               value: search,
                               onChange: onSearch,
                             }}

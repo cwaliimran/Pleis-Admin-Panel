@@ -1,4 +1,5 @@
 'use client';
+
 import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
@@ -37,21 +38,75 @@ import {
 import { invoicesData2 } from '@/sections/invoices/data';
 import { useEffect, useState } from 'react';
 import Header from '../../../common/header';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
+import { useUpdateUserMutation } from '@/store/Reducer/user-list';
+import { showError, showSuccess } from '@/utils/toast';
+import { getErrorMessage } from '@/utils/api';
+import { setUser } from '@/store/slice/userSlice';
 
 const Page = () => {
+  const dispatch = useDispatch();
   const [active, setActive] = useState('all');
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
 
-  useEffect(() => {
-    setShowTermsModal(true);
-  }, []);
+  const { user } = useSelector((state: RootState) => state.userSlice);
+  const [updateUser, { isLoading: updateUserLoading }] =
+    useUpdateUserMutation();
 
-  const handleTermsSubmit = () => {
+  const userTerm = user?.accountState?.termsAccepted;
+
+  useEffect(() => {
+    if (userTerm === false) {
+      setShowTermsModal(true);
+    }
+  }, [userTerm]);
+
+  const handleTermsSubmit = async () => {
     if (acceptedTerms) {
-      setShowTermsModal(false);
+      try {
+        const payload = {
+          id: user?.basicInfo?._id,
+          body: {
+            termsAccepted: true,
+          },
+        };
+
+        const response = await updateUser(payload).unwrap();
+
+        if (response.error) {
+          const errorMessage = getErrorMessage(response.error);
+          showError(errorMessage);
+          return;
+        }
+
+        const updatedUser = response?.data;
+
+        if (!updatedUser) {
+          showError('No updated user returned from server');
+        }
+
+        const role = updatedUser?.accountState?.userType || user?.role || '';
+
+        const newUser = {
+          ...user,
+          ...updatedUser,
+          role,
+          key: process.env.NEXT_PUBLIC_PROJECT_KEY,
+        };
+
+        dispatch(setUser(newUser));
+
+        showSuccess(response?.message || 'Terms accepted successfully');
+        setShowTermsModal(false);
+      } catch (error) {
+        const errorMessage = getErrorMessage(error);
+        console.log('Failed:', errorMessage);
+        showError(errorMessage);
+      }
     }
   };
 
@@ -571,7 +626,7 @@ const Page = () => {
 
       {/* Terms and Conditions Modal */}
       <Dialog open={showTermsModal} onOpenChange={() => {}}>
-        <DialogContent className="max-h-[80vh] max-w-2xl border-none p-0 [&>button]:hidden">
+        <DialogContent className="dark:bg-secondary max-h-[80vh] max-w-2xl border-none p-0 [&>button]:hidden">
           <DialogHeader className="p-6 pb-0">
             <DialogTitle className="text-2xl font-bold">
               Terms and Conditions
@@ -701,10 +756,10 @@ const Page = () => {
             <div className="flex justify-end space-x-2">
               <Button
                 onClick={handleTermsSubmit}
-                disabled={!acceptedTerms}
+                disabled={!acceptedTerms || updateUserLoading}
                 className="w-full md:w-auto"
               >
-                Continue to Dashboard
+                {updateUserLoading ? 'Processing...' : 'Continue to Dashboard'}
               </Button>
             </div>
           </div>

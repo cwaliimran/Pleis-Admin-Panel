@@ -5,9 +5,9 @@ export const API_ROUTES = {
   REGISTER: `/auth/register`,
   SOCIAL_AUTH: `/auth/social-auth`,
   LOGIN: `/auth/login`,
-  RESEND_OTP: `/auth/resend-otp/email`,
+  RESEND_OTP: `/auth/link/send-password-reset`,
   VERIFY_OTP: `/auth/verify-otp/email`,
-  RESET_PASSWORD: `/auth/reset-password`,
+  RESET_PASSWORD: `/auth/link/reset-password`,
   RESUME_ACCOUNT: `/auth/resume-account`,
 
   VENUES_TYPES: `/admin/venue-types`,
@@ -42,6 +42,10 @@ export const API_ROUTES = {
 
   EVENTS: `/events`,
   EVENTS_BY_ID: (id: string) => `/events/${id}`,
+
+  TWO_FACTOR_AUTH_SETUP: `/users/twofa/setup`,
+  TWO_FACTOR_AUTH_CONFIRM: `/users/twofa/confirm`,
+  TWO_FACTOR_AUTH_DISABLE: `/users/twofa/disable`,
 };
 
 export default API_ROUTES;

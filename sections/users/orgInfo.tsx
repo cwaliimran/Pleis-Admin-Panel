@@ -9,7 +9,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Ellipsis,
   MapPin,
-  PartyPopper,
+  // PartyPopper,
   Pencil,
   Shirt,
   UserPlus,
@@ -220,8 +220,8 @@ const OrgInfo = ({ organizationData }: any) => {
             <CardHeader className="flex w-full flex-col gap-2">
               <h1 className="font-semibold text-slate-500">LOCATION PIN</h1>
               <div className="mt-2 flex items-center gap-2">
-                <PartyPopper className="h-4 w-4" />
-                <span>{organizationData?.location?.fullAddress || '-'}</span>
+                {/* <PartyPopper className="h-4 w-4" /> */}
+                <span>-</span>
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <MapPin />

@@ -3,15 +3,6 @@
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -20,6 +11,7 @@ import {
 } from '@/components/ui/sheet';
 
 import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
 import { LoadingBar } from '@/components/table/table-bar-loading';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody } from '@/components/ui/table';
@@ -27,7 +19,6 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import UserListTypeTableRow from './user-list-type-table-row';
-import PaginationControls from '@/components/table/pagination-controls';
 
 const headLabel = [
   { id: 'image', label: 'Image', align: 'left' },
@@ -62,7 +53,9 @@ interface PageProps {
   search?: string;
   limit?: number;
   status?: string;
+  role?: string;
   onStatusChange?: (status: string) => void;
+  onRoleChange?: (role: string) => void;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
@@ -78,14 +71,16 @@ const UserListTypeTable: FC<PageProps> = ({
   onPageChange,
   userType,
   // onLimitChange,
-  onSearch = () => { },
+  onSearch = () => {},
   search = '',
   // limit = 10,
   status = '',
-  onStatusChange = () => { },
+  role = '',
+  onStatusChange = () => {},
+  onRoleChange = () => {},
   date,
-  onDateChange = () => { },
-  onResetFilters = () => { },
+  onDateChange = () => {},
+  onResetFilters = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -98,18 +93,6 @@ const UserListTypeTable: FC<PageProps> = ({
       location: sheetLocation,
     },
   });
-
-  // Generate page numbers for pagination (show max 5 pages)
-  const getPageNumbers = () => {
-    const maxPagesToShow = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let end = start + maxPagesToShow - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxPagesToShow + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
 
   return (
     <div>
@@ -171,6 +154,22 @@ const UserListTypeTable: FC<PageProps> = ({
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
                               },
+                              {
+                                id: 'sheet-role',
+                                label: 'Role',
+                                placeholder: 'Select by Role',
+                                value: role,
+                                onChange: onRoleChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'admin', label: 'Admin' },
+                                  { value: 'organizer', label: 'Organizer' },
+                                  { value: 'manager', label: 'Manager' },
+                                  { value: 'staff', label: 'Staff' },
+                                  { value: 'guest', label: 'Guest' },
+                                  { value: 'user', label: 'User' },
+                                ],
+                              },
                             ]}
                             resetFilter={{
                               onReset: onResetFilters,
@@ -200,7 +199,7 @@ const UserListTypeTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : data.filter((item: any) => item.status !== 'deleted')
-                  .length === 0 ? (
+                    .length === 0 ? (
                   <tr>
                     <td
                       colSpan={headLabel.length}

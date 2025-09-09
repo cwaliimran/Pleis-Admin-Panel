@@ -536,10 +536,10 @@ const UserOverView: React.FC<{
                   </p>
                   <p>
                     <strong className="text-slate-500">Global Points:</strong>{' '}
-                    1,800 pts
+                    0 pts
                   </p>
                   <p>
-                    <strong className="text-slate-500">Global Spent:</strong> 40
+                    <strong className="text-slate-500">Global Spent:</strong> 0
                     pts
                   </p>
                 </div>
@@ -566,63 +566,63 @@ const UserOverView: React.FC<{
                       <tbody>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">Premium Club</td>
-                          <td className="px-2 py-1">1200 pts</td>
+                          <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
                             <Badge className="bg-yellow-400 text-white">
                               Gold
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">25</td>
+                          <td className="px-2 py-1">0</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">EventPlus</td>
-                          <td className="px-2 py-1">600 pts</td>
+                          <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
                             <Badge className="bg-gray-400 text-white">
                               Silver
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">15</td>
+                          <td className="px-2 py-1">0</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">VIP Access</td>
-                          <td className="px-2 py-1">300 pts</td>
+                          <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
                             <Badge className="bg-yellow-800 text-white">
                               Premium
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">8</td>
+                          <td className="px-2 py-1">0</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">Music Lovers</td>
-                          <td className="px-2 py-1">950 pts</td>
+                          <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
                             <Badge className="bg-gray-400 text-white">
                               Silver
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">18</td>
+                          <td className="px-2 py-1">0</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">Cinema Club</td>
-                          <td className="px-2 py-1">400 pts</td>
+                          <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
                             <Badge className="bg-yellow-400 text-white">
                               Gold
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">10</td>
+                          <td className="px-2 py-1">0</td>
                         </tr>
                         <tr className="border-b border-gray-100 dark:border-gray-700">
                           <td className="px-2 py-1">Sports Elite</td>
-                          <td className="px-2 py-1">700 pts</td>
+                          <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
                             <Badge className="bg-gray-400 text-white">
                               Silver
                             </Badge>
                           </td>
-                          <td className="px-2 py-1">32</td>
+                          <td className="px-2 py-1">0</td>
                         </tr>
                       </tbody>
                     </table>
@@ -678,7 +678,7 @@ const UserOverView: React.FC<{
                         variant="secondary"
                         className="mt-1 bg-gray-200 text-xs capitalize dark:bg-gray-600"
                       >
-                        {item.views} Views
+                        0 Views
                       </Badge>
                     </div>
                   ))}

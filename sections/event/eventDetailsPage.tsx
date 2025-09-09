@@ -1,119 +1,171 @@
-"use client";
+'use client';
 
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import FilterDropdown from "@/components/filter-dropdown/FilterDropdown";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import OverlayLoading from '@/components/atoms/overlay-loading';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import ImageWithFallback from '@/components/common/img-with-fallback';
+import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBoolean } from "@/hooks/useBoolean";
-import { cn } from "@/lib/utils";
-import CapacityGaugeChart from "@/sections/event/CapacityGaugeChart";
-import { eventCardData, tabsData } from "@/sections/event/data";
-import EventAnalytics from "@/sections/event/eventAnalytics";
-import EventNotification from "@/sections/event/eventNotification";
-import EventOverView from "@/sections/event/eventOverview";
-import EventReservation from "@/sections/event/eventReservation";
-import EventTicket from "@/sections/event/eventTicket";
-import LastTransaction from "@/sections/event/lastTransaction";
-import { TransactionHistory } from "@/sections/invoices";
-import UserCard from "@/sections/users/userCard";
-import { Calendar, Copy, Pencil, Trash2 } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import React from "react";
+} from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useBoolean } from '@/hooks/useBoolean';
+import { cn } from '@/lib/utils';
+import CapacityGaugeChart from '@/sections/event/CapacityGaugeChart';
+import { eventCardData, tabsData } from '@/sections/event/data';
+import EventAnalytics from '@/sections/event/eventAnalytics';
+import EventNotification from '@/sections/event/eventNotification';
+import EventOverView from '@/sections/event/eventOverview';
+import EventReservation from '@/sections/event/eventReservation';
+import EventTicket from '@/sections/event/eventTicket';
+import LastTransaction from '@/sections/event/lastTransaction';
+import { TransactionHistory } from '@/sections/invoices';
+import UserCard from '@/sections/users/userCard';
+import {
+  useCloneeventMutation,
+  useDeleteeventMutation,
+  useGeteventByIdQuery,
+  useUpdateeventMutation,
+} from '@/store/Reducer/events';
+import { fDate } from '@/utils/format-time';
+import { capitalizeFirst } from '@/utils/short-utils';
+import { set } from 'lodash';
+import { Calendar, Copy, Pencil, Trash2 } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import React from 'react';
 
 const EventDetailsPage = () => {
   // const [tabActive, setTabActive] = React.useState("all");
   const router = useRouter();
   const deleteModal = useBoolean();
-
-  const [active, setActive] = React.useState("overview");
+  const { id } = useParams();
+  const [active, setActive] = React.useState('overview');
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
-
-  const event = {
-    id: "1",
-    name: "Summer Music Festival 2025",
-    published: true,
-    fromDate: "2025-03-23T13:00:00Z",
-    endDate: "2025-03-25T13:00:00Z",
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
+  const [deleteEvent] = useDeleteeventMutation();
+  const [updateEvent] = useUpdateeventMutation();
+  const [cloneEvent] = useCloneeventMutation();
+  const userType = window?.location?.pathname?.split('/')[1];
+  // const event = {
+  //   id: "1",
+  //   name: "Summer Music Festival 2025",
+  //   published: true,
+  //   fromDate: "2025-03-23T13:00:00Z",
+  //   endDate: "2025-03-25T13:00:00Z",
+  // };
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    deleteModal.onTrue();
+  };
+  const handleUpdateEvent = async () => {
+    try {
+      setLoading(true);
+      const newStatus = event.status === 'active' ? 'inactive' : 'active';
+      const res = await updateEvent({ id, status: newStatus }).unwrap();
+      if (res?.data) {
+        refetch();
+      }
+    } catch (error) {
+      console.log('Failed to update event', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onDelete = () => {
-    deleteModal.onFalse();
-    // Handle delete logic here
+  const handleCloneEvent = async () => {
+    try {
+      setLoading(true);
+      const res = await cloneEvent(id).unwrap();
+      if (res?.data?._id) {
+        router.push(`/${userType}/events`);
+      }
+    } catch (error) {
+      console.log('Failed to clone event', error);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const handleCloneEvent = async (id: string) => {
-    console.log("Cloning event with ID:", id);
-    // Call API to clone event
-    //   const clonedEvent = await cloneEvent(id);
-    //   toast.success("Event cloned successfully.");
-    //   router.push(`/events/${clonedEvent.id}`); // or refresh list
+  const onDelete = async () => {
+    try {
+      // Call the delete function from your API or store
+      if (deleteId) {
+        deleteModal.onFalse();
+        setLoading(true);
+        const res = await deleteEvent(deleteId).unwrap();
+        if (res?.data) {
+          router.back();
+        }
+      }
+    } catch (error) {
+      console.log('Failed to delete event', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
+      <OverlayLoading show={isLoading || loading} />
       <div className="space-y-6 pb-12">
         <div className="mt-10 h-full">
           <div className="grid grid-cols-12 md:gap-7">
-            <div className="lg:col-span-9 col-span-12">
-              <Card className=" dark:bg-[#171717] shadow-md pb-0">
+            <div className="col-span-12 lg:col-span-9">
+              <Card className="pb-0 shadow-md dark:bg-[#171717]">
                 <CardContent>
-                  <div className="flex flex-col sm:flex-row gap-3 ">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <div className="w-full sm:w-1/3">
-                      <Image
-                        src="/images/eventImage.png"
-                        alt="Event"
-                        className="rounded-md w-full h-auto object-contain object-top"
-                        width={100}
-                        height={100}
+                      <ImageWithFallback
+                        url={event?.basicInfo?.mediaInfo?.url}
+                        size={100}
+                        alt={event?.basicInfo?.title}
+                        className="h-auto w-full rounded-md object-contain object-top"
                       />
                     </div>
 
                     {/* Right Content */}
-                    <div className="w-full sm:w-2/3 flex flex-col gap-3">
+                    <div className="flex w-full flex-col gap-3 sm:w-2/3">
                       {/* Status and Date */}
                       <div className="flex items-center justify-between gap-3 text-sm text-gray-500">
-                        <div className="flex items-center md:flex-row flex-col gap-2">
-                          <span className="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full text-xs font-medium">
-                            Upcoming
+                        <div className="flex flex-col items-center gap-2 md:flex-row">
+                          <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800">
+                            {capitalizeFirst(event?.status) || 'Upcoming'}
                           </span>
-                          <span>Sat, 26 Feb</span>
+                          <span>
+                            {fDate(event?.schedule?.endDateTime) || '-'}
+                          </span>
                         </div>
                         <div className="flex items-center">
                           <Pencil
-                            className="md:w-5 md:h-5 w-4 h-4  text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+                            className="h-4 w-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700 md:h-5 md:w-5"
                             onClick={() =>
-                              router.push("/super-admin/events/edit-event/1")
+                              router.push(
+                                `/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`
+                              )
                             }
                           />
                           <Trash2
-                            className="md:w-5 md:h-5 w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors md:ml-4 ml-1"
-                            onClick={deleteModal.onTrue}
+                            className="ml-1 h-4 w-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700 md:ml-4 md:h-5 md:w-5"
+                            onClick={() => handleDelete(event?._id)}
                           />
                         </div>
                       </div>
 
                       {/* Title */}
                       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        Summer Music Festival 2025
+                        {event?.basicInfo?.title || 'Untitled Event'}
                       </h2>
 
                       {/* Description */}
-                      <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Svirati ploče bez pritiska, jednostavno iz ljubavi prema
-                        zvukovima te njegovati umjetnost slušanja muzike. Misija
-                        je to jedinstvenog kluba Kasheme u Zürichu. S ovim
-                        audiofilskim barom posebne koncepcije i uređenja
-                        upoznali smo se proljetos pri gostovanju njihove sjajne
-                        ekipe u Kupeu.
+                      <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+                        {event?.basicInfo?.description ||
+                          'No description available.'}
                       </p>
 
                       {/* Organizer */}
@@ -121,23 +173,28 @@ const EventDetailsPage = () => {
                         <h4 className="text-xs font-bold text-gray-500">
                           ORGANIZER
                         </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Image
-                            src="/images/eventImage.png"
-                            alt="Peti Kupe"
-                            className="w-6 h-6 rounded-full"
-                            width={6}
-                            height={6}
+                        <div className="mt-1 flex items-center gap-2">
+                          <ImageWithFallback
+                            url={
+                              event?.basicInfo?.organization?.basicInfo
+                                ?.mediaInfo?.logo?.url
+                            }
+                            alt={
+                              event?.basicInfo?.organization?.basicInfo?.name
+                            }
+                            className="h-6 w-6 rounded-full"
                           />
+
                           <span className="text-sm font-medium text-gray-800 dark:text-white">
-                            Peti Kupe
+                            {event?.basicInfo?.organization?.basicInfo?.name ||
+                              'Unknown Organizer'}
                           </span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3 w-full mt-4 md:mb-0 mb-2 md:px-0 px-2">
+                  <div className="mt-4 mb-2 flex w-full flex-col gap-3 px-2 sm:flex-row sm:items-center sm:justify-end md:mb-0 md:px-0">
                     {/* Publish / Hide Button */}
                     {/* <div className="w-full sm:w-auto">
                       <Button
@@ -161,34 +218,35 @@ const EventDetailsPage = () => {
                     <div className="w-full sm:w-auto">
                       <Button
                         variant="default"
-                        onClick={() => handleCloneEvent(event.id)}
-                        className="flex items-center justify-center gap-2 px-4 py-2 rounded-3xl w-full sm:w-auto cursor-pointer"
+                        onClick={handleCloneEvent}
+                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-3xl px-4 py-2 sm:w-auto"
                       >
-                        <Copy className="w-4 h-4" /> Clone
+                        <Copy className="h-4 w-4" /> Clone
                       </Button>
                     </div>
 
                     {/* Publish Button */}
                     <div className="w-full sm:w-auto">
                       <Button
+                        onClick={handleUpdateEvent}
                         variant="default"
-                        className="flex items-center justify-center gap-2 px-4 py-2 rounded-3xl w-full sm:w-auto cursor-pointer"
+                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-3xl px-4 py-2 sm:w-auto"
                       >
-                        Publish
+                        {event?.status === 'active' ? 'Unpublish' : 'Publish'}
                       </Button>
                     </div>
 
                     {/* Boost Button */}
                     <div className="w-full sm:w-auto">
-                      <button className="bg-primary text-white px-4 py-2 rounded-3xl hover:bg-primary transition w-full sm:w-auto cursor-pointer">
+                      <button className="bg-primary hover:bg-primary w-full cursor-pointer rounded-3xl px-4 py-2 text-white transition sm:w-auto">
                         Boost
                       </button>
                     </div>
                   </div>
 
-                  <div className="w-full md:px-0 px-2">
+                  <div className="w-full px-2 md:px-0">
                     {/* Small screen dropdown */}
-                    <div className="block sm:hidden mb-4">
+                    <div className="mb-4 block sm:hidden">
                       <Select value={active} onValueChange={setActive}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select tab" />
@@ -206,22 +264,19 @@ const EventDetailsPage = () => {
                     <Tabs
                       value={active}
                       onValueChange={setActive}
-                      className="hidden sm:block w-full"
+                      className="hidden w-full sm:block"
                     >
                       <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
-                        <div className="overflow-x-auto whitespace-nowrap scrollbar-hide">
+                        <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
                           {tabsData.map((tab: any) => (
                             <TabsTrigger
                               key={tab.value}
                               value={tab.value}
-                              className={`relative px-4 py-2 font-semibold text-sm rounded-full transition-all
-                                                                    !shadow-none dark:!bg-transparent cursor-pointer border-none
-                                                                  ${
-                                                                    active ===
-                                                                    tab.value
-                                                                      ? 'after:content-[""] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-3/4 after:h-[4px] after:bg-[#71717A] after:rounded-full'
-                                                                      : "text-muted-foreground"
-                                                                  }`}
+                              className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold !shadow-none transition-all dark:!bg-transparent ${
+                                active === tab.value
+                                  ? 'after:absolute after:bottom-0 after:left-1/2 after:h-[4px] after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
+                                  : 'text-muted-foreground'
+                              }`}
                             >
                               {tab.label}
                             </TabsTrigger>
@@ -233,53 +288,53 @@ const EventDetailsPage = () => {
                 </CardContent>
               </Card>
 
-              <div className=" mt-4 rounded-lg">
-                {active === "overview" && <EventOverView />}
+              <div className="mt-4 rounded-lg">
+                {active === 'overview' && <EventOverView event={event} />}
 
-                {active === "analytics" && <EventAnalytics />}
+                {active === 'analytics' && <EventAnalytics />}
 
-                {active === "tickets" && <EventTicket />}
+                {active === 'tickets' && <EventTicket />}
 
-                {active === "reservations" && <EventReservation />}
+                {active === 'reservations' && <EventReservation />}
 
-                {active === "notifications" && <EventNotification />}
+                {active === 'notifications' && <EventNotification />}
               </div>
             </div>
 
             {/* Sidebar or Additional Panel */}
-            <div className="lg:col-span-3 col-span-12 md:space-y-2 space-y-3 md:mt-0 mt-3">
+            <div className="col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-3">
               {eventCardData.map((user: any) => (
                 <UserCard item={user} key={user._id} />
               ))}
               <CapacityGaugeChart />
               <LastTransaction />
 
-              <Card className="col-span-12 shadow-lg  dark:bg-[#171717]">
+              <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
                 <CardContent>
-                  <div className="w-full md:flex  justify-between items-start flex-wrap gap-y-6 md:px-0 px-2">
+                  <div className="w-full flex-wrap items-start justify-between gap-y-6 px-2 md:flex md:px-0">
                     {/* START DATE */}
-                    <div className="flex flex-col gap-1 min-w-[140px]">
+                    <div className="flex min-w-[140px] flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
-                        <p className="text-xs text-gray-600 dark:text-white font-semibold">
+                        <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
+                        <p className="text-xs font-semibold text-gray-600 dark:text-white">
                           START DATE
                         </p>
                       </div>
-                      <p className="text-sm text-black dark:text-white font-medium">
-                        March 23, 25, 13:00
+                      <p className="text-sm font-medium text-black dark:text-white">
+                        {fDate(event?.schedule?.startDateTime) || 'N/A'}
                       </p>
                     </div>
 
                     {/* END DATE */}
-                    <div className="flex flex-col gap-1 min-w-[140px] md:mt-0 mt-4">
+                    <div className="mt-4 flex min-w-[140px] flex-col gap-1 md:mt-0">
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-gray-600 dark:text-white" />
-                        <p className="text-xs text-gray-600 dark:text-white font-semibold">
+                        <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
+                        <p className="text-xs font-semibold text-gray-600 dark:text-white">
                           END DATE
                         </p>
                       </div>
-                      <p className="text-sm text-black dark:text-white font-medium">
-                        March 23, 25, 13:00
+                      <p className="text-sm font-medium text-black dark:text-white">
+                        {fDate(event?.schedule?.endDateTime) || 'N/A'}
                       </p>
                     </div>
                   </div>
@@ -288,9 +343,9 @@ const EventDetailsPage = () => {
             </div>
           </div>
 
-          {active === "analytics" && (
-            <div className="grid grid-cols-12 mt-5">
-              <Card className="col-span-12 shadow-lg  dark:bg-[#171717]">
+          {active === 'analytics' && (
+            <div className="mt-5 grid grid-cols-12">
+              <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
                 {/* <CardHeader>
                   <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
                     <h3 className="text-xl font-semibold">
@@ -352,7 +407,7 @@ const EventDetailsPage = () => {
                   </div>
                 </CardHeader> */}
                 <CardHeader>
-                  <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <h3 className="text-xl font-semibold">
                       Transaction History
                     </h3>
@@ -382,11 +437,11 @@ const EventDetailsPage = () => {
                             defaultValue="all"
                             className="w-full"
                           >
-                            <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border rounded-full p-1">
+                            <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
                               <TabsTrigger
                                 value="all"
                                 className={cn(
-                                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                                  'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
                                 )}
                               >
                                 All
@@ -394,7 +449,7 @@ const EventDetailsPage = () => {
                               <TabsTrigger
                                 value="transactions"
                                 className={cn(
-                                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                                  'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
                                 )}
                               >
                                 Transactions
@@ -402,7 +457,7 @@ const EventDetailsPage = () => {
                               <TabsTrigger
                                 value="refunds"
                                 className={cn(
-                                  "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
+                                  'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
                                 )}
                               >
                                 Refunds
@@ -412,19 +467,19 @@ const EventDetailsPage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col md:items-center items-end">
+                    <div className="flex flex-col items-end md:items-center">
                       <FilterDropdown
                         selectedOptions={selectedOptions}
                         onSelectOption={setSelectedOptions}
                         options={[
-                          { id: "user", label: "User" },
-                          { id: "contact", label: "Contact" },
-                          { id: "invoice", label: "Invoice" },
-                          { id: "organizer", label: "Organizer " },
-                          { id: "date", label: "Date" },
-                          { id: "total", label: "Total" },
-                          { id: "transactionType", label: "Transaction Type" },
-                          { id: "status", label: "Status" },
+                          { id: 'user', label: 'User' },
+                          { id: 'contact', label: 'Contact' },
+                          { id: 'invoice', label: 'Invoice' },
+                          { id: 'organizer', label: 'Organizer ' },
+                          { id: 'date', label: 'Date' },
+                          { id: 'total', label: 'Total' },
+                          { id: 'transactionType', label: 'Transaction Type' },
+                          { id: 'status', label: 'Status' },
                         ]}
                       />
                     </div>

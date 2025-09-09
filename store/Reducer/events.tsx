@@ -31,11 +31,27 @@ export const eventApi = createApi({
             providesTags: ['event'],
         }),
 
+        geteventById: builder.query({
+            query: (id) => ({
+                url: API_ROUTES.EVENTS_BY_ID(id),
+                method: 'GET',
+            }),
+            transformResponse: (res) => res.data,
+            providesTags: ['event'],
+        }),
+
         addevent: builder.mutation({
             query: (newevent) => ({
                 url: API_ROUTES.EVENTS,
                 method: 'POST',
                 body: newevent,
+            }),
+            invalidatesTags: ['event'],
+        }),
+        cloneevent: builder.mutation({
+            query: (id) => ({
+                url: API_ROUTES.EVENTS_BY_ID(id) + '/clone',
+                method: 'POST',
             }),
             invalidatesTags: ['event'],
         }),
@@ -61,7 +77,9 @@ export const eventApi = createApi({
 
 export const {
   useGeteventsQuery,
+  useGeteventByIdQuery,
   useAddeventMutation,
   useUpdateeventMutation,
+  useCloneeventMutation,
   useDeleteeventMutation,
 } = eventApi;

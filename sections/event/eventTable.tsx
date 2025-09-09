@@ -1,38 +1,30 @@
-"use client";
+'use client';
 
 import { TableFilters } from "@/components/table-filters";
 import TableHeadCustom from "@/components/table/table-head-custom";
 import { Card } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Table, TableBody } from "@/components/ui/table";
-import { FC} from "react";
+import { FC } from "react";
 import EventTableRow from "./eventTAbleRow"; // Import EventTableRow to handle table rows
 import { Badge } from "@/components/ui/badge";
 import { Settings2 } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useForm, FormProvider } from "react-hook-form";
 import { LoadingBar } from "@/components/table/table-bar-loading";
+import PaginationControls from "@/components/table/pagination-controls";
 
 // Define headers for the table
 const headLabel = [
-  { id: "image", label: "Image", align: "left" },
-  { id: "name", label: "Name", align: "left" },
-  { id: "organization", label: "Organization", align: "left" },
-  { id: "venue", label: "Venue", align: "left" },
-  { id: "startDate", label: "Start Date", align: "left" },
-  { id: "endDate", label: "End Date", align: "left" },
-  { id: "totalRevenue", label: "Revenue", align: "left" },
-  { id: "totalViews", label: "Views", align: "left" },
-  { id: "region", label: "Region", align: "left" },
-  { id: "actions", label: "Action", align: "left" },
+  { id: 'image', label: 'Image', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'venue', label: 'Venue', align: 'left' },
+  { id: 'startDate', label: 'Start Date', align: 'left' },
+  { id: 'endDate', label: 'End Date', align: 'left' },
+  { id: 'totalRevenue', label: 'Revenue', align: 'left' },
+  { id: 'totalViews', label: 'Views', align: 'left' },
+  { id: 'region', label: 'Region', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
 interface Meta {
@@ -58,7 +50,11 @@ interface PageProps {
   onStatusChange?: (status: string) => void;
   startDate?: Date;
   endDate?: Date;
-  onDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
+  userType?: any;
+  onDateChange?: (
+    startDate: Date | undefined,
+    endDate: Date | undefined
+  ) => void;
   onResetFilters?: () => void;
 }
 
@@ -66,16 +62,17 @@ const EventTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
+  userType,
   handleDelete,
   onPageChange,
-  onSearch = () => {},
+  onSearch = () => { },
   search = "",
   status = "",
-  onStatusChange = () => {},
+  onStatusChange = () => { },
   startDate,
   endDate,
-  onDateChange = () => {},
-  onResetFilters = () => {},
+  onDateChange = () => { },
+  onResetFilters = () => { },
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -87,18 +84,6 @@ const EventTable: FC<PageProps> = ({
       location: [],
     },
   });
-
-  // Generate page numbers for pagination (show max 5 pages)
-  const getPageNumbers = () => {
-    const maxPagesToShow = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let end = start + maxPagesToShow - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxPagesToShow + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
 
   return (
     <div>
@@ -115,7 +100,11 @@ const EventTable: FC<PageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
+              <SheetContent
+                aria-describedby={undefined}
+                side="right"
+                className="dark:bg-secondary p-0"
+              >
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -123,37 +112,39 @@ const EventTable: FC<PageProps> = ({
                   <form className="flex flex-col gap-6 px-4 py-2">
                     {/* Date Range Filters */}
                     <TableFilters
-                    className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                      className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
                       dateRangeFilter={{
                         startDate: {
-                          id: "start-date",
-                          placeholder: "Select start date",
+                          id: 'start-date',
+                          placeholder: 'Select start date',
                           value: startDate,
-                          onChange: (newStartDate) => onDateChange(newStartDate, endDate),
+                          onChange: (newStartDate) =>
+                            onDateChange(newStartDate, endDate),
                         },
                         endDate: {
-                          id: "end-date",
-                          placeholder: "Select end date",
+                          id: 'end-date',
+                          placeholder: 'Select end date',
                           value: endDate,
-                          onChange: (newEndDate) => onDateChange(startDate, newEndDate),
+                          onChange: (newEndDate) =>
+                            onDateChange(startDate, newEndDate),
                         },
                       }}
                       selectFilters={[
                         {
-                          id: "status",
-                          label: "Status",
-                          placeholder: "Select by Status",
+                          id: 'status',
+                          label: 'Status',
+                          placeholder: 'Select by Status',
                           value: status,
                           onChange: onStatusChange,
                           options: [
-                            { value: "all", label: "All" },
-                            { value: "active", label: "Active" },
-                            { value: "inactive", label: "Inactive" },
+                            { value: 'all', label: 'All' },
+                            { value: 'active', label: 'Active' },
+                            { value: 'inactive', label: 'Inactive' },
                           ],
                         },
                       ]}
                       searchFilter={{
-                        placeholder: "Search Events...",
+                        placeholder: 'Search Events...',
                         value: search,
                         onChange: onSearch,
                       }}
@@ -174,15 +165,20 @@ const EventTable: FC<PageProps> = ({
               <TableHeadCustom headLabel={headLabel} />
               <TableBody>
                 {loading ? (
-                                  <tr>
-                                    <td colSpan={headLabel.length} className="py-0 text-center">
-                                      <LoadingBar variant="default" />
-                                    </td>
-                                  </tr>
+                  <tr>
+                    <td colSpan={headLabel.length} className="py-0 text-center">
+                      <LoadingBar variant="default" />
+                    </td>
+                  </tr>
                 ) : data.length === 0 ? (
                   <tr>
-                    <td colSpan={headLabel.length} className="text-center py-4">
-                      No data found
+                    <td
+                      colSpan={headLabel.length}
+                      className="h-[40vh] border-b-0 text-center align-middle"
+                    >
+                      <div className="flex h-full w-full items-center justify-center text-xl">
+                        No data found
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -191,7 +187,7 @@ const EventTable: FC<PageProps> = ({
                       key={item._id || index}
                       item={item}
                       handleDelete={handleDelete}
-                      userType={"organizer"}
+                      userType={userType}
                     />
                   ))
                 )}
@@ -200,54 +196,13 @@ const EventTable: FC<PageProps> = ({
           </div>
 
           {/* Pagination */}
-          <Pagination className="flex-wrsap mt-4 flex items-center justify-end gap-4 text-sm">
-            <div className="text-muted-foreground">
-              Page {currentPage} of {totalPages} | Total: {totalRecords}
-            </div>
-
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) onPageChange?.(currentPage - 1);
-                  }}
-                  aria-disabled={currentPage === 1}
-                />
-              </PaginationItem>
-              {getPageNumbers().map((pageNum) => (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink
-                    href="#"
-                    isActive={pageNum === currentPage}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (pageNum !== currentPage) onPageChange?.(pageNum);
-                    }}
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              {totalPages > 5 && (
-                <PaginationItem>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage < totalPages)
-                      onPageChange?.(currentPage + 1);
-                  }}
-                  aria-disabled={currentPage === totalPages}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            limit={10}
+            onPageChange={(p) => onPageChange?.(p)}
+          />
         </Card>
       </div>
     </div>

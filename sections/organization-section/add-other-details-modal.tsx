@@ -156,8 +156,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
   const [imageUploading, setImageUploading] = useState(false);
   const [updateOrganization, { isLoading }] = useUpdateOrganizationMutation();
 
-  // console.log('Other Details Page', newOrganization);
-
   const { data: tagData } = useGetTagsQuery({
     page: 0,
     search: '',
@@ -389,10 +387,22 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
       reset();
       onClose();
 
-      router.push('/super-admin/organization/organization-list');
+      if (typeof window !== 'undefined') {
+        if (
+          window.location.pathname ===
+          '/organizer/organization/create-organization'
+        ) {
+          router.push('/organizer/organization/organization-list');
+        } else if (
+          window.location.pathname ===
+          '/super-admin/organization/create-organization'
+        ) {
+          router.push('/super-admin/organization/organization-list');
+        }
+      }
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.error('Failed to update details:', errorMessage);
+      console.log('Failed to update details:', errorMessage);
 
       showError(errorMessage);
       if (galleryMedia.length > 0) {
@@ -426,6 +436,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
 
               <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                 <RHFTextField
+                  type="number"
                   name="minAge"
                   label="Age (optional)"
                   placeholder="Min Age 5"
@@ -433,44 +444,14 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
               </div>
 
               <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
-                {/* <RHFCombobox
-                  name="tags"
-                  label="Tags"
-                  placeholder="Select or add tags"
-                  className="w-full flex-1"
-                  multiple={true}
-                  allowCustom={true}
-                  options={tagOptions}
-                /> */}
-
-                {/* <RHFMultiSelect
-                  name="tags"
-                  label="Select Tags"
-                  placeholder="Select Tag"
-                  options={tagOptions}
-                /> */}
-
                 <RHFCustomDropdown
                   name="venue"
                   label="Venue"
                   placeholder="Select Venue"
                   options={venueOptions}
                   isLoading={venueLoading}
+                  showNone={false}
                 />
-
-                {/* <RHFMultiSelect
-                  name="categories"
-                  label="Select Categories"
-                  placeholder="Select Category"
-                  options={categoryOptions}
-                /> */}
-
-                {/* <RHFCustomMultiSelect
-                  name="categories"
-                  label="Select Categories"
-                  options={categoryOptions}
-                  placeholder="Choose categories..."
-                /> */}
 
                 <RHFCustomCombobox
                   name="tags"

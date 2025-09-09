@@ -25,6 +25,7 @@ interface RHFDatePickerProps {
   label?: string;
   placeholder?: string;
   className?: string;
+  minDate?: Date;
 }
 
 const RHFDatePicker: FC<RHFDatePickerProps> = ({
@@ -32,6 +33,7 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
   label,
   placeholder = "Pick a date",
   className,
+  minDate=new Date(),
 }) => {
   const { control } = useFormContext();
 
@@ -39,6 +41,9 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({
     <FormField
       control={control}
       name={name}
+      rules={{
+        validate: value => !minDate || !value || value >= minDate || `Date must be after ${format(minDate, "PPP")}`,
+      }}
       render={({ field, formState: {} }) => (
         <FormItem className={"flex-1"}>
           {label && <FormLabel>{label}</FormLabel>}

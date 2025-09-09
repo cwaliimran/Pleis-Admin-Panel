@@ -4,13 +4,8 @@ import {
   Calendar,
   ChartColumnBig,
   Handshake,
-  Highlighter,
-  Home,
-  List,
-  Tags,
-  User,
-  UsersRound,
-  VenetianMask,
+  Highlighter, List,
+  Tags, VenetianMask
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -36,38 +31,48 @@ export const menuGroups: MenuGroup[] = [
   },
   {
     label: 'Organizations',
-    key: paths.organizer.organizations.default,
+    key: paths.organizer.organizations.list,
     icon: Building,
-    items: [
-      {
-        title: 'Create Organization',
-        url: paths.organizer.organizations.create,
-        icon: Home,
-      },
-      {
-        title: 'Organization List',
-        url: paths.organizer.organizations.list,
-        icon: Home,
-      },
-    ],
   },
+  // {
+  //   label: 'Organizations',
+  //   key: paths.organizer.organizations.default,
+  //   icon: Building,
+  //   items: [
+  //     {
+  //       title: 'Create Organization',
+  //       url: paths.organizer.organizations.create,
+  //       icon: Home,
+  //     },
+  //     {
+  //       title: 'Organization List',
+  //       url: paths.organizer.organizations.list,
+  //       icon: Home,
+  //     },
+  //   ],
+  // },
   {
     label: 'Events',
-    key: paths.organizer.events.default,
+    key: paths.organizer.events.list,
     icon: Calendar,
-    items: [
-      {
-        title: 'Create Event',
-        url: paths.organizer.events.create,
-        icon: Tags,
-      },
-      {
-        title: 'Events List',
-        url: paths.organizer.events.list,
-        icon: Tags,
-      },
-    ],
   },
+  // {
+  //   label: 'Events',
+  //   key: paths.organizer.events.default,
+  //   icon: Calendar,
+  //   items: [
+  //     {
+  //       title: 'Create Event',
+  //       url: paths.organizer.events.create,
+  //       icon: Tags,
+  //     },
+  //     {
+  //       title: 'Events List',
+  //       url: paths.organizer.events.list,
+  //       icon: Tags,
+  //     },
+  //   ],
+  // },
   {
     label: 'Loyalty',
     key: paths.organizer.loyalty.default,
@@ -148,22 +153,27 @@ export const menuGroups: MenuGroup[] = [
   //   icon: Cog,
   // },
   {
-    label: 'User',
-    key: paths.organizer.users.default,
-    icon: User,
-    items: [
-      {
-        title: 'User List',
-        url: paths.organizer.users.list,
-        icon: UsersRound,
-      },
-      // {
-      //     title: "Pending User List",
-      //     url: paths.superAdmin.users.pendingList,
-      //     icon: UsersRound,
-      // }
-    ],
+    label: 'User List',
+    key: paths.organizer.users.list,
+    icon: Calendar,
   },
+  // {
+  //   label: 'User',
+  //   key: paths.organizer.users.default,
+  //   icon: User,
+  //   items: [
+  //     {
+  //       title: 'User List',
+  //       url: paths.organizer.users.list,
+  //       icon: UsersRound,
+  //     },
+  //     // {
+  //     //     title: "Pending User List",
+  //     //     url: paths.superAdmin.users.pendingList,
+  //     //     icon: UsersRound,
+  //     // }
+  //   ],
+  // },
   // {
   //     label: "Marketing Requests",
   //     key: paths.organizer.marketing.detault,

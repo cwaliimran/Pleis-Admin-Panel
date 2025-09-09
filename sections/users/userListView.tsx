@@ -2,37 +2,39 @@
 
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { Plus } from 'lucide-react';
-import { formatDate } from '@/utils/format-time';
 import {
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
   useGetUserListQuery,
 } from '@/store/Reducer/user-list';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { formatDate } from '@/utils/format-time';
+import { showError, showSuccess } from '@/utils/toast';
+import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import UserListTypeTable from './user-list-view/user-list-type-table';
-import { showError, showSuccess } from '@/utils/toast';
-import { getErrorMessage } from '@/utils/api';
+import EditUserModal from './user-modal/custom-edit-user-modal';
 import CustomUserModal from './user-modal/custom-user-modal';
-import { uploadFileToAzure } from '@/utils/fileUpload';
-import { deleteFileFromAzure } from '@/utils/deleteFile';
 
 const UserListView = ({ usertype }: { usertype: any }) => {
-  const openModal = useBoolean();
+  const createModal = useBoolean();
   const editModal = useBoolean();
-  const deleteModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [role, setRole] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  // const [imageUploading, setImageUploading] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null); // Track selected user ID for edit
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [imageUploading, setimageUploading] = useState<boolean>(false);
 
   const [addUser, { isLoading: addUserLoading }] = useAddUserMutation();
+
   const [
     addUserSuperAdminAndGuest,
     { isLoading: addUserSuperAdminAndGuestLoading },
@@ -42,6 +44,7 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     page: page - 1,
     search,
     limit,
+    userType: role === 'all' ? undefined : role,
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
   });
@@ -68,14 +71,12 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     }
   }, [apiData, page, limit]);
 
-  const onSubmit = async (formData: any) => {
-    console.log('formData', formData);
-
+  const onCreateSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
     try {
+      setimageUploading(true);
       let profileIconUrl: any = formData.profileIcon;
 
-      // Upload new image if provided
       if (formData.profileIcon instanceof File) {
         uploadedFileKey = await uploadFileToAzure(formData.profileIcon);
         if (!uploadedFileKey) return;
@@ -84,20 +85,9 @@ const UserListView = ({ usertype }: { usertype: any }) => {
 
       const payload: any = {
         ...formData,
-        profileIcon:
-          profileIconUrl ||
-          (editModal.value && typeof formData.profileIcon === 'string'
-            ? formData.profileIcon
-            : ''),
+        profileIcon: profileIconUrl || '',
       };
 
-      if (editModal.value && selectedId) {
-        payload.id = selectedId;
-      }
-
-      console.log('Submitted payload:', payload);
-
-      // Call API
       let response;
       if (payload.userType === 'admin' || payload.userType === 'guest') {
         response = await addUserSuperAdminAndGuest(payload).unwrap();
@@ -113,47 +103,32 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         throw new Error(getErrorMessage(response.error));
       }
 
-      // --- SUCCESS HANDLING ---
       if (response?.data) {
-        if (editModal.value && selectedId) {
-          setVenueTypes((prev) =>
-            prev.map((item) =>
-              item._id === selectedId ? { ...item, ...response.data } : item
-            )
-          );
-        } else {
-          setVenueTypes((prev) => [response.data, ...prev].slice(0, limit));
-          setMeta((prev: any) => ({
-            ...prev,
-            totalRecords: prev.totalRecords + 1,
-          }));
-        }
+        setVenueTypes((prev) => [response.data, ...prev].slice(0, limit));
+        setMeta((prev: any) => ({
+          ...prev,
+          totalRecords: prev.totalRecords + 1,
+        }));
       }
 
       if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value ? 'Updated successfully' : 'Created successfully')
-        );
+        showSuccess(response?.message || 'Created successfully');
       }
-
-      CloseModal();
+      setimageUploading(false);
+      CloseCreateModal();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save user:', errorMessage);
+      console.log('Failed to create user:', errorMessage);
       showError(errorMessage);
 
       if (uploadedFileKey) {
-        console.log('Rolling back uploaded image:', uploadedFileKey);
         await deleteFileFromAzure(uploadedFileKey);
       }
     }
   };
 
-  const CloseModal = () => {
-    openModal.onFalse();
-    editModal.onFalse();
-    setSelectedId(null);
+  const CloseCreateModal = () => {
+    createModal.onFalse();
   };
 
   const handleEdit = (id: string) => {
@@ -162,16 +137,10 @@ const UserListView = ({ usertype }: { usertype: any }) => {
     );
     if (userToEdit) {
       setSelectedId(id);
-      openModal.onTrue();
       editModal.onTrue();
     } else {
       showError('User not found');
     }
-  };
-
-  const handleDelete = (id: string) => {
-    console.log('id', id);
-    deleteModal.onTrue();
   };
 
   return (
@@ -180,7 +149,7 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         <div className="flex w-full items-center justify-end">
           <Button
             className="cursor-pointer rounded-4xl bg-blue-700 py-2 text-white hover:bg-blue-800"
-            onClick={openModal.onTrue}
+            onClick={createModal.onTrue}
           >
             <Plus />
             Create User
@@ -192,7 +161,6 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         data={venueTypes}
         meta={meta}
         loading={isLoading}
-        handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
         userType={usertype}
@@ -208,6 +176,11 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         limit={limit}
         page={page}
         status={status}
+        role={role}
+        onRoleChange={(val) => {
+          setRole(val);
+          setPage(1);
+        }}
         onStatusChange={(val) => {
           setStatus(val);
           setPage(1);
@@ -222,21 +195,42 @@ const UserListView = ({ usertype }: { usertype: any }) => {
           setDate(undefined);
           setSearch('');
           setPage(1);
+          setRole('');
         }}
       />
 
       <CustomUserModal
-        open={openModal.value}
-        isEdit={editModal.value}
-        onClose={CloseModal}
+        open={createModal.value}
+        isEdit={false}
+        onClose={CloseCreateModal}
         userType={usertype}
-        onSubmit={onSubmit}
-        isLoading={addUserLoading || addUserSuperAdminAndGuestLoading}
-        initialData={
-          editModal.value && selectedId
-            ? venueTypes.find((item: any) => item._id === selectedId)
-            : undefined
+        onSubmit={onCreateSubmit}
+        isLoading={
+          addUserLoading || addUserSuperAdminAndGuestLoading || imageUploading
         }
+        initialData={null}
+      />
+
+      <EditUserModal
+        open={editModal.value}
+        onClose={() => editModal.onFalse()}
+        selectedId={selectedId}
+        userData={venueTypes.find(
+          (item: any) => item?.basicInfo?._id === selectedId
+        )}
+        onUpdateSuccess={(updatedUser) => {
+          setVenueTypes((prev) =>
+            prev.map((item) =>
+              item.basicInfo?._id === selectedId
+                ? { ...item, ...updatedUser }
+                : item
+            )
+          );
+          showSuccess('User updated successfully');
+          editModal.onFalse();
+        }}
+        isLoading={false}
+        userType={usertype}
       />
     </div>
   );
