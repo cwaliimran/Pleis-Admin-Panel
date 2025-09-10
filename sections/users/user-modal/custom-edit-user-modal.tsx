@@ -103,10 +103,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [currentRole, setCurrentRole] = useState<RoleKey>(
     userData?.accountState?.userType || 'manager'
   );
-  const [uploadedFileKey, setUploadedFileKey] = useState<string | null>(null);
-  console.log('uploadedFileKey', uploadedFileKey);
-
-  console.log(userData);
 
   const [imageUploading, setImageUploading] = useState(false);
 
@@ -166,14 +162,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     shouldUnregister: false,
   });
 
-  const {
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors },
-  } = methods;
-
-  console.log('errors', errors);
+  const { handleSubmit, watch, reset } = methods;
 
   const watchedRole = watch(
     'role',
@@ -194,46 +183,48 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   useEffect(() => {
     if (userData) {
       const formData = {
-        role: userData.accountState.userType as RoleKey,
+        role: userData?.accountState?.userType as RoleKey,
         image:
           userData?.basicInfo?.profileIcon !== noImageUrl
             ? userData?.basicInfo?.profileIcon
             : null,
-        firstName: userData.basicInfo.firstName || '',
-        lastName: userData.basicInfo.lastName || '',
-        email: userData.basicInfo.email || '',
-        phone: userData.basicInfo.phoneNumber
-          ? `${userData.basicInfo.phoneNumber.code}${userData.basicInfo.phoneNumber.number}`
+        firstName: userData?.basicInfo?.firstName || '',
+        lastName: userData?.basicInfo?.lastName || '',
+        email: userData?.basicInfo?.email || '',
+        phone: userData?.basicInfo?.phoneNumber
+          ? `${userData?.basicInfo?.phoneNumber?.code}${userData?.basicInfo?.phoneNumber?.number}`
           : '',
-        phoneCode: userData.basicInfo.phoneNumber?.code || '',
-        organizationName: userData.basicInfo.organizationName || '',
-        companyName: userData.basicInfo.companyDetails?.name || '',
-        oib: userData.basicInfo.companyDetails?.oib || '',
+        phoneCode: userData?.basicInfo?.phoneNumber?.code || '',
+        organizationName: userData?.basicInfo?.organizationName || '',
+        companyName: userData?.basicInfo?.companyDetails?.name || '',
+        oib: userData?.basicInfo?.companyDetails?.oib || '',
         bankAccountNumber:
-          userData.basicInfo.companyDetails?.bankAccountNumber || '',
+          userData?.basicInfo?.companyDetails?.bankAccountNumber || '',
         representativeName:
-          userData.basicInfo.companyDetails?.representativeName || '',
+          userData?.basicInfo?.companyDetails?.representativeName || '',
         location: {
           address:
-            userData.basicInfo.companyDetails?.location?.fullAddress || '',
-          city: userData.basicInfo.companyDetails?.location?.city || '',
+            userData?.basicInfo?.companyDetails?.location?.fullAddress || '',
+          city: userData?.basicInfo?.companyDetails?.location?.city || '',
           postalCode:
-            userData.basicInfo.companyDetails?.location?.postalCode || '',
-          country: userData.basicInfo.companyDetails?.location?.country || '',
-          coordinates: userData.basicInfo.companyDetails?.location
+            userData?.basicInfo?.companyDetails?.location?.postalCode || '',
+          country: userData?.basicInfo?.companyDetails?.location?.country || '',
+          coordinates: userData?.basicInfo?.companyDetails?.location
             ?.coordinates || [0, 0],
         },
         suppliers:
-          userData.basicInfo?.companyDetails?.suppliers?.map(
-            (sup: any) => sup._id
+          userData?.basicInfo?.companyDetails?.suppliers?.map(
+            (sup: any) => sup?._id
           ) || [],
         organizations:
-          userData?.organizations?.map((org: any) => org._id) || [],
-        modules: userData.organizations[0]?.staff[0]?.featuresAccess || [],
+          userData?.organizations?.map((org: any) => org?._id) || [],
+        modules: userData?.organizations?.[0]?.staff?.[0]?.featuresAccess || [],
         username: userData?.basicInfo?.username || '',
-        dob: userData?.basicInfo?.dob ? new Date(userData.basicInfo.dob) : null,
+        dob: userData?.basicInfo?.dob
+          ? new Date(userData?.basicInfo?.dob)
+          : null,
         gender: userData?.basicInfo?.gender || '',
-        status: userData.accountState?.status || 'active',
+        status: userData?.accountState?.status || 'active',
       };
       reset(formData);
       setCurrentRole(formData.role);
@@ -426,7 +417,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         throw new Error(getErrorMessage(response.error));
       }
 
-      setUploadedFileKey(null);
       handleClose();
       if (response?.message) {
         showSuccess(response?.message || 'Updated successfully');
@@ -437,7 +427,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
       if (uploadedFileKey) {
         await deleteFileFromAzure(uploadedFileKey);
-        setUploadedFileKey(null);
       }
     } finally {
       setImageUploading(false);

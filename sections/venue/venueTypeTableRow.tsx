@@ -17,6 +17,7 @@ import { FC } from 'react';
 
 import placeHolderImg from '../../assets/profile/placeholder.png';
 import Image from 'next/image';
+import { noImageUrl } from '@/constant/constant';
 
 interface PageProps {
   item: any;
@@ -65,7 +66,7 @@ const VenueTypeTableRow: FC<PageProps> = ({
       <TableCell className="text-left">
         <Avatar className="">
           {item?.floorPlanInfo?.url &&
-          item?.floorPlanInfo?.name !== 'noimage.png' ? (
+          item?.floorPlanInfo?.url !== noImageUrl ? (
             <AvatarImage
               src={item?.floorPlanInfo?.url}
               alt="Store"

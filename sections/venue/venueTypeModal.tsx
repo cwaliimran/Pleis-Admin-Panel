@@ -13,14 +13,16 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { noImageUrl } from '@/constant/constant';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
 import { extractAddress } from '@/utils/format-google-address';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api';
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import React, { useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import * as Yup from 'yup';
+
 interface CreateVenueModalProps {
   open: boolean;
   onClose: () => void;
@@ -32,22 +34,18 @@ interface CreateVenueModalProps {
   buttonType?: 'button' | 'submit';
 }
 
-// PLEIS CLIENT
-// const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-// PLEIS CLIENT
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
-const googleMapsLibraries = ['places'] as any;
+const googleMapsLibraries: 'places'[] = ['places'];
 
 const VenueTypeModal = ({
   open,
   onClose,
   editMode,
-  methods:defaultMethods,
+  methods: defaultMethods,
   onSubmit,
   isLoading,
   selectedVenueType,
-  buttonType='submit'
+  buttonType = 'submit',
 }: CreateVenueModalProps) => {
   const handleClose = () => {
     if (!isLoading) {
@@ -55,11 +53,11 @@ const VenueTypeModal = ({
     }
   };
 
-  const inputref = useRef<google.maps.places.SearchBox | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY as any,
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY as string,
     libraries: googleMapsLibraries,
   });
 
@@ -97,29 +95,30 @@ const VenueTypeModal = ({
       coordinates: [],
     },
   };
+
   const internalMethods = useForm({
     resolver: yupResolver(schema),
     defaultValues: defaultValues,
   });
   const methods = defaultMethods || internalMethods;
 
-  const handleOnPlacesChanged = async () => {
-    const places = inputref.current?.getPlaces();
-    if (places && places.length > 0) {
-      const address = await extractAddress(places[0]);
+  const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    autocompleteRef.current = autocomplete;
+  };
 
-      // Build location object
+  const onPlaceChanged = async () => {
+    const place = autocompleteRef.current?.getPlace();
+    if (place) {
+      const address = await extractAddress(place);
       const locationPayload = {
         fullAddress: address.address_line_1 || '',
-        state: address.province || '',
         city: address.city || '',
+        state: address.province || '',
         postalCode: address.postal_code || '',
         country: address.country || '',
-        coordinates: [address.latitude, address.longitude],
+        coordinates: [address.latitude || 0, address.longitude || 0],
       };
-
-      console.log('Extracted address payload:', locationPayload);
-
+      console.log('Setting location payload:', locationPayload);
       methods.setValue('location', locationPayload, { shouldValidate: true });
     }
   };
@@ -155,7 +154,17 @@ const VenueTypeModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center md:w-lg">
-        <DialogContent className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]">
+        {/* <DialogContent className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]"> */}
+        <DialogContent
+          aria-describedby={undefined}
+          className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]"
+          onInteractOutside={(event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest('.pac-container')) {
+              event.preventDefault();
+            }
+          }}
+        >
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-lg font-semibold">
               {editMode ? 'Edit Venue' : 'Create Venue'}
@@ -185,20 +194,6 @@ const VenueTypeModal = ({
                 options={venueTypeOptions}
                 isLoading={venueLoading}
               />
-
-              {/* <RHFSelectScrollable
-                name="venueType"
-                label="Venue Type"
-                placeholder="Select a venue type"
-                options={venueTypeOptions}
-              /> */}
-
-              {/* <RHFSelectScrollable
-                name="organization"
-                label="Organization"
-                placeholder="Select Organization"
-                options={organizationOptions}
-              /> */}
 
               <RHFCustomDropdown
                 name="organization"
@@ -230,8 +225,7 @@ const VenueTypeModal = ({
                   initialImage={
                     editMode
                       ? selectedVenueType?.floorPlanInfo?.url &&
-                        selectedVenueType.floorPlanInfo.url !==
-                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
+                        selectedVenueType.floorPlanInfo.url !== noImageUrl
                         ? selectedVenueType.floorPlanInfo.url
                         : null
                       : null
@@ -239,35 +233,41 @@ const VenueTypeModal = ({
                 />
               </div>
 
-              <div className="input">
-                <label htmlFor="address" className="text-sm">
+              <div className="w-full">
+                <label
+                  htmlFor="location-input"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Location
                 </label>
-
                 {isLoaded && (
-                  <StandaloneSearchBox
-                    onLoad={(searchBox) => {
-                      inputref.current = searchBox;
-                    }}
-                    onPlacesChanged={handleOnPlacesChanged}
-                  >
-                    <input
-                      id="address"
-                      type="text"
-                      placeholder="Enter Location"
-                      defaultValue={
-                        editMode
-                          ? selectedVenueType?.location?.fullAddress || ''
-                          : methods.getValues('location.fullAddress')
-                      }
-                      className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault(); // stops form submission
-                        }
-                      }}
-                    />
-                  </StandaloneSearchBox>
+                  <Controller
+                    name="location"
+                    control={methods.control}
+                    render={({ field }) => (
+                      <Autocomplete
+                        onLoad={onLoad}
+                        onPlaceChanged={onPlaceChanged}
+                      >
+                        <input
+                          id="location-input"
+                          type="text"
+                          placeholder="Enter Location"
+                          defaultValue={field.value?.fullAddress || ''}
+                          className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
+                          onChange={(e) =>
+                            field.onChange({
+                              ...field.value,
+                              fullAddress: e.target.value,
+                            })
+                          }
+                          onKeyDown={(e) =>
+                            e.key === 'Enter' && e.preventDefault()
+                          }
+                        />
+                      </Autocomplete>
+                    )}
+                  />
                 )}
               </div>
 
@@ -313,7 +313,11 @@ const VenueTypeModal = ({
                 ) : (
                   <Button
                     type={buttonType}
-                    onClick={buttonType==='button' ? methods.handleSubmit(onSubmit) : undefined}
+                    onClick={
+                      buttonType === 'button'
+                        ? methods.handleSubmit(onSubmit)
+                        : undefined
+                    }
                     className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
                     disabled={isLoading || !methods.formState.isValid}
                   >

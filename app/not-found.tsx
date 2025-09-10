@@ -1,43 +1,35 @@
-"use client";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+'use client';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const NotFound = () => {
-  const user = useSelector((state: RootState) => state.userSlice.user);
   const router = useRouter();
 
-  const handleGoToDashboard = () => {
-    if (user?.role === "superAdmin") {
-      router.push("/super-admin");
-    } else if (user?.role === "organizer") {
-      router.push("/organizer/dashboard");
-    } else {
-      router.push("/");
-    }
+  const handleGoBack = () => {
+    router.back();
   };
 
   return (
     <>
-      <section className="bg-white min-h-screen flex items-center justify-center dark:bg-black">
-        <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+      <section className="flex min-h-screen items-center justify-center bg-white dark:bg-black">
+        <div className="mx-auto max-w-screen-xl px-4 py-8 lg:px-6 lg:py-16">
           <div className="mx-auto max-w-screen-sm text-center">
-            <h1 className="mb-4 text-7xl tracking-tight font-extrabold lg:text-9xl text-primary-600 dark:text-primary-500">
+            <h1 className="text-primary-600 dark:text-primary-500 mb-4 text-7xl font-extrabold tracking-tight lg:text-9xl">
               404
             </h1>
-            <p className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl dark:text-white">
+            <p className="mb-4 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
               Something&#39;s missing.
             </p>
-            <p className="mb-4 text-md font-light text-gray-600 dark:text-gray-400">
+            <p className="text-md mb-4 font-light text-gray-600 dark:text-gray-400">
               You don&#39;t have permission to access this area.
             </p>
+
             <Button
-              onClick={handleGoToDashboard}
+              onClick={handleGoBack}
               variant="default"
-              className="cursor-pointer"
+              className="mt-2 cursor-pointer px-6 py-3"
             >
-              Go to Dashboard
+              Go Back
             </Button>
           </div>
         </div>

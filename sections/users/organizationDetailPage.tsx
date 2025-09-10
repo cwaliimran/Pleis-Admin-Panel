@@ -96,10 +96,11 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
   // Handle cover image upload
   const handleCoverImageUpload = async (file: File) => {
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
+
 
     if (!allowedTypes.includes(file.type)) {
-      showError('Only JPEG, PNG, or GIF images are allowed.');
+      showError('Only JPEG, PNG, WEBP, or GIF images are allowed.');
       return;
     }
 

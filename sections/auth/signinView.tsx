@@ -356,7 +356,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                 <p className="text-muted-foreground mt-4 text-center text-sm">
                   Don&#39;t have an account?{' '}
                   <Link
-                    href="/user/signUp"
+                    href="/user/signup"
                     className="font-medium text-[#0f172b] hover:underline dark:text-white"
                   >
                     Sign Up

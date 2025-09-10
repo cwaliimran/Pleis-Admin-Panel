@@ -12,7 +12,7 @@ export const useAuth = () => {
 
   const logout = () => {
     dispatch(clearUser());
-    router.push("/user/signIn");
+    router.push("/");
   };
 
   const login = (userData: {
@@ -39,7 +39,7 @@ export const useAuth = () => {
     } else if (user?.role === "organizer") {
       return "/organizer/dashboard";
     }
-    return "/user/signIn";
+    return "/";
   };
 
   return {

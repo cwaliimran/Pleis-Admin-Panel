@@ -71,7 +71,7 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
 
       {/* Organization Name & Logo */}
       <TableCell className="text-left">
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-start gap-2">
           {item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url && (
             <Avatar className="h-6 w-6 !rounded">
               <ImageWithFallback

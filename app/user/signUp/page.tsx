@@ -722,7 +722,7 @@ function SignUpPage() {
           {/* Social Auth Buttons */}
           <div className="text-muted-foreground mt-8 text-center text-sm">
             Or sign up with
-            <div className="flex items-center justify-center gap-4">
+            <div className="mt-2 flex items-center justify-center gap-4">
               <Button
                 variant="outline"
                 className="h-[60px] w-[60px] cursor-pointer rounded-full py-3"
@@ -781,7 +781,7 @@ function SignUpPage() {
             <p className="mt-4 text-sm">
               Already have an account?{' '}
               <Link
-                href="/user/signIn"
+                href="/"
                 className="font-medium text-[#0f172b] hover:underline dark:text-white"
               >
                 Login

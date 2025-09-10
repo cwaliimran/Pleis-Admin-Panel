@@ -122,7 +122,7 @@ function ForgotPasswordPage() {
               <p className="text-muted-foreground mt-4 text-center text-sm">
                 Remember your password?{' '}
                 <Link
-                  href="/user/signIn"
+                  href="/"
                   className="font-medium text-[#0f172b] hover:underline dark:text-white"
                 >
                   Go back to login
