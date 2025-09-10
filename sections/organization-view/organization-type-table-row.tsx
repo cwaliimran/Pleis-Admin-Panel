@@ -3,6 +3,7 @@
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { noImageUrl } from '@/constant/constant';
 import { fDate, formatStr } from '@/utils/format-time';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -32,9 +33,10 @@ const OrganizationTypeTableRow: FC<PageProps> = ({
     >
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
+          {item?.basicInfo?.mediaInfo?.logo?.url &&
+          item?.basicInfo?.mediaInfo?.logo?.url !== noImageUrl ? (
             <AvatarImage
-              src={item?.mediaInfo?.logo}
+              src={item?.basicInfo?.mediaInfo?.logo?.url}
               alt="Store"
               className="h-full w-full cursor-pointer object-cover"
             />

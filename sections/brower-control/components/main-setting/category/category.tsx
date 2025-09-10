@@ -144,7 +144,7 @@ function CategoryCard({
 function CategoryModal({
   isOpen,
   onClose,
-  onSave,
+  // onSave,
   category,
   mode,
 }: {
@@ -162,16 +162,16 @@ function CategoryModal({
     isVisible: category?.isVisible !== undefined ? category.isVisible : true,
   });
 
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
+  // const [open, setOpen] = useState(false);
+  // const [value, setValue] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.name.trim()) {
-      onSave(formData);
-      onClose();
-    }
-  };
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (formData.name.trim()) {
+  //     onSave(formData);
+  //     onClose();
+  //   }
+  // };
 
   const resetForm = () => {
     setFormData({

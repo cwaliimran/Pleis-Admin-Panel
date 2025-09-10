@@ -40,9 +40,10 @@ import UserNotifications from './userNotifications';
 
 interface IdType {
   id?: any;
+  userType?: string;
 }
 
-const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
+const OrganizationDetailPage = ({ id: organizationId, userType }: IdType) => {
   const router = useRouter();
   const openModal = useBoolean();
   const deleteModal = useBoolean();
@@ -96,8 +97,13 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
   // Handle cover image upload
   const handleCoverImageUpload = async (file: File) => {
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
-
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/jpg',
+      'image/webp',
+    ];
 
     if (!allowedTypes.includes(file.type)) {
       showError('Only JPEG, PNG, WEBP, or GIF images are allowed.');
@@ -179,7 +185,8 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
       setSelectedId(null);
       deleteModal.onFalse();
 
-      router.push('/super-admin/organization/organization-list');
+      // router.push('/super-admin/organization/organization-list');
+      router.push(`/${userType}/organization/organization-list`);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.log('Failed to delete organization:', errorMessage);
@@ -293,7 +300,7 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold md:text-3xl capitalize">
+                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl">
                     {organizationData?.basicInfo?.name || '-'}
                   </h1>
                   <Badge

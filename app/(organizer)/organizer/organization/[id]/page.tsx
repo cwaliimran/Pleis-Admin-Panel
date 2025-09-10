@@ -15,7 +15,7 @@ const Page = () => {
           { name: 'Organization Details' },
         ]}
       />
-      <OrganizationDetailPage id={id} />
+      <OrganizationDetailPage id={id} userType={'organizer'} />
     </div>
   );
 };
