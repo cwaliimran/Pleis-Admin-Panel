@@ -170,7 +170,11 @@ const CreateEventView = (props: any) => {
     eventType: Yup.string().oneOf(['oneTime', 'slots']),
     recurring: Yup.boolean(),
     recurringType: Yup.string().oneOf(['weekly', 'monthly', 'daily']),
-    recurringInterval: Yup.number().min(1),
+    recurringInterval: Yup.mixed()
+      .test('is-valid', 'Recurring interval must be at least 1', (value) => {
+        if (value === '' || value === null || value === undefined) return true;
+        return typeof value === 'number' && value >= 1;
+      }),
     recurringDays: Yup.array().of(Yup.string()),
     recurringEnd: Yup.string().oneOf(['never', 'onDate', 'afterOccurrences']),
     recurringEndDate: Yup.date().nullable(), // 👈 already correct
@@ -347,18 +351,18 @@ const CreateEventView = (props: any) => {
             : '', // "2025-09-03 16:37"
           ...(data.recurring
             ? {
-                recurringDetails: {
-                  isEnabled: data.recurring, // true
-                  frequency: data.recurringType, // "weekly"
-                  interval: data.recurringInterval, // 1
-                  daysOfWeek: data.recurringDays.map((day: string) =>
-                    day.substring(0, 3).toLowerCase()
-                  ), // ["mon", "tue", "wed"]
-                  endType: data.recurringEnd, // "never"
-                  endDate: data.recurringEndDate, // null
-                  occurrences: data.recurringEndCount, // 1
-                },
-              }
+              recurringDetails: {
+                isEnabled: data.recurring, // true
+                frequency: data.recurringType, // "weekly"
+                interval: data.recurringInterval, // 1
+                daysOfWeek: data.recurringDays.map((day: string) =>
+                  day.substring(0, 3).toLowerCase()
+                ), // ["mon", "tue", "wed"]
+                endType: data.recurringEnd, // "never"
+                endDate: data.recurringEndDate, // null
+                occurrences: data.recurringEndCount, // 1
+              },
+            }
             : {}),
         },
       };
@@ -393,18 +397,18 @@ const CreateEventView = (props: any) => {
       : null;
     const fromTime_ = event?.schedule?.startDateTime
       ? convertTimeFormat(
-          event.schedule.startDateTime.split(' ').slice(1).join(' '),
-          true
-        )
+        event.schedule.startDateTime.split(' ').slice(1).join(' '),
+        true
+      )
       : '';
     const endDate_ = event?.schedule?.endDateTime
       ? new Date(event.schedule.endDateTime)
       : null;
     const endTime_ = event?.schedule?.endDateTime
       ? convertTimeFormat(
-          event.schedule.endDateTime.split(' ').slice(1).join(' '),
-          true
-        )
+        event.schedule.endDateTime.split(' ').slice(1).join(' '),
+        true
+      )
       : '';
 
     reset({
@@ -486,13 +490,12 @@ const CreateEventView = (props: any) => {
                   </div> */}
                     <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-800">
                       <div
-                        className={`h-2 rounded-full bg-blue-700 transition-all duration-300 ${
-                          step === 1
+                        className={`h-2 rounded-full bg-blue-700 transition-all duration-300 ${step === 1
                             ? 'w-[33%]'
                             : step === 2
                               ? 'w-[66%]'
                               : 'w-full'
-                        }`}
+                          }`}
                       />
                     </div>
                   </div>
@@ -840,11 +843,10 @@ const CreateEventView = (props: any) => {
                             type="button"
                             variant="outline"
                             onClick={() => setValue('eventType', 'oneTime')}
-                            className={`border-2 ${
-                              eventType === 'oneTime'
+                            className={`border-2 ${eventType === 'oneTime'
                                 ? 'border-blue-700 text-blue-700'
                                 : 'border-gray-300 dark:border-zinc-700'
-                            } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
+                              } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
                           >
                             One time
                           </Button>
@@ -852,11 +854,10 @@ const CreateEventView = (props: any) => {
                             type="button"
                             variant="outline"
                             onClick={() => setValue('eventType', 'slots')}
-                            className={`border-2 ${
-                              eventType === 'slots'
+                            className={`border-2 ${eventType === 'slots'
                                 ? 'border-blue-700 text-blue-700'
                                 : 'border-gray-300 dark:border-zinc-700'
-                            } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
+                              } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
                           >
                             Slots
                           </Button>
@@ -989,14 +990,14 @@ const CreateEventView = (props: any) => {
                                     onChange={(e) =>
                                       setValue(
                                         'recurringInterval',
-                                        Number.parseInt(e.target.value)
+                                       e.target.value ? Number(e.target.value) : 0
                                       )
                                     }
                                     className="w-16 rounded-2xl border border-gray-200 px-3 py-2 focus:border-blue-600 focus:outline-none"
                                     min="1"
                                   />
                                   <span className="text-sm text-gray-600 dark:text-white">
-                                    Weekly
+                                    {watch('recurringType') === 'weekly' ? 'Weeks' : watch('recurringType') === 'monthly' ? 'Months' : 'Days'}
                                   </span>
                                 </div>
                               </div>
@@ -1020,11 +1021,10 @@ const CreateEventView = (props: any) => {
                                     onClick={() =>
                                       toggleRecurringDay(day.value)
                                     }
-                                    className={`h-8 w-12 cursor-pointer text-xs ${
-                                      recurringDays.includes(day.value)
+                                    className={`h-8 w-12 cursor-pointer text-xs ${recurringDays.includes(day.value)
                                         ? 'bg-blue-600 text-white'
                                         : 'text-gray-600 dark:text-white'
-                                    }`}
+                                      }`}
                                   >
                                     {day.label}
                                   </Button>
@@ -1186,11 +1186,10 @@ const CreateEventView = (props: any) => {
                             <Button
                               variant={'outline'}
                               onClick={() => setVersion(index + 1)}
-                              className={`cursor-pointer px-10 py-5 transition-all md:max-w-[140px] md:min-w-[140px] ${
-                                version === index + 1
+                              className={`cursor-pointer px-10 py-5 transition-all md:max-w-[140px] md:min-w-[140px] ${version === index + 1
                                   ? 'border-primary dark:border-primary border'
                                   : ''
-                              }`}
+                                }`}
                             >
                               {item}
                             </Button>
