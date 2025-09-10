@@ -218,7 +218,17 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center md:w-lg">
-        <DialogContent className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]">
+        {/* <DialogContent className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]"> */}
+        <DialogContent
+          aria-describedby={undefined}
+          className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]"
+          onInteractOutside={(event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest('.pac-container')) {
+              event.preventDefault();
+            }
+          }}
+        >
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-lg font-semibold">
               Create Venue

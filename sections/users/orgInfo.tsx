@@ -9,7 +9,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Ellipsis,
   MapPin,
-  // PartyPopper,
   Pencil,
   Shirt,
   UserPlus,
@@ -23,8 +22,6 @@ const OrgInfo = ({ organizationData }: any) => {
   const totalDays = 30;
   const remainingDays = 5;
   const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
-
-  // console.log('organizationData', organizationData);
 
   const openModal = useBoolean();
   const openVenueModal = useBoolean();
@@ -92,7 +89,7 @@ const OrgInfo = ({ organizationData }: any) => {
               </div>
               <div className="mt-2 flex items-center gap-2">
                 {/* <PartyPopper /> */}
-                <p className="mt-2 text-lg">
+                <p className="mt-2 text-lg capitalize">
                   {organizationData?.venue?.title || '-'}
                 </p>
               </div>
@@ -222,7 +219,9 @@ const OrgInfo = ({ organizationData }: any) => {
             <CardHeader className="flex w-full flex-col gap-2">
               <h1 className="font-semibold text-slate-500">LOCATION PIN</h1>
               <div className="mt-2 flex items-center gap-2">
-                <span>{organizationData?.venue?.title || '-'}</span>
+                <span className="capitalize">
+                  {organizationData?.venue?.title || '-'}
+                </span>
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <MapPin />
@@ -233,7 +232,7 @@ const OrgInfo = ({ organizationData }: any) => {
                   {organizationData?.location?.coordinates?.length === 2 ? (
                     <iframe
                       title="Venue Location Map"
-                      src={`https://www.google.com/maps?q=${organizationData.location.coordinates[0]},${organizationData.location.coordinates[1]}&hl=es;z=14&output=embed`}
+                      src={`https://www.google.com/maps?q=${organizationData?.location?.coordinates[0]},${organizationData?.location?.coordinates[1]}&hl=es;z=14&output=embed`}
                       className="h-full w-full border-0"
                       referrerPolicy="no-referrer-when-downgrade"
                     ></iframe>
@@ -256,141 +255,9 @@ const OrgInfo = ({ organizationData }: any) => {
         </div>
       </div>
 
-      {/* ADD OTHER DETAILS */}
-      {/* <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="bg-opacity-30 fixed inset-0 bg-white">
-          <DialogContent className="mx-auto flex max-h-[90vh] min-h-[86vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle> Edit Other Details </DialogTitle>
-            </DialogHeader>
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(onSubmit)}
-            >
-              <div className="mt-4 flex w-full flex-col gap-4">
-                <RHFTextField
-                  name="description"
-                  label="Description"
-                  placeholder="Enter Description"
-                  rows={2}
-                  multiline
-                  className={` ${
-                    methods.formState.errors.name ? 'border-red-400' : ''
-                  }`}
-                />
-
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField
-                    type="number"
-                    name="minAge"
-                    label="Age (optional)"
-                    placeholder="Min Age 5"
-                    min={5}
-                  />
-                </div>
-
-                <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
-                  <RHFCombobox
-                    name="tags"
-                    label="Tags"
-                    placeholder="Select or add tags"
-                    className="w-full flex-1"
-                    multiple={true}
-                    allowCustom={true}
-                    options={[
-                      { label: 'Tag 1', value: 'tag1' },
-                      { label: 'Tag 2', value: 'tag2' },
-                      { label: 'Tag 3', value: 'tag3' },
-                    ]}
-                  />
-
-                  <RHFSelectField
-                    name="venue"
-                    label="Venue"
-                    placeholder="Select Venue"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'Venue 1', value: 'venue1' },
-                      { label: 'Venue 2', value: 'venue2' },
-                      { label: 'Venue 3', value: 'venue3' },
-                    ]}
-                  />
-
-                  <RHFMultiSelect
-                    name="category"
-                    label="Select Categories"
-                    placeholder="Select Category"
-                    options={[
-                      { label: 'Clubbing', value: 'clubbing' },
-                      { label: 'Techno', value: 'techno' },
-                      { label: 'House', value: 'house' },
-                    ]}
-                  />
-                </div>
-
-                <div className="w-full">
-                  <RHFMultiFileUpload
-                    name="galleryImages"
-                    label="Upload Gallery Images"
-                  />
-                </div>
-
-                <div className="w-full">
-                  <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">
-                    Operating Hours
-                  </h3>
-                  <div className="space-y-4">
-                    {[
-                      { day: 'Monday', dayKey: 'monday' },
-                      { day: 'Tuesday', dayKey: 'tuesday' },
-                      { day: 'Wednesday', dayKey: 'wednesday' },
-                      { day: 'Thursday', dayKey: 'thursday' },
-                      { day: 'Friday', dayKey: 'friday' },
-                      { day: 'Saturday', dayKey: 'saturday' },
-                      { day: 'Sunday', dayKey: 'sunday' },
-                    ].map((dayInfo) => (
-                      <div
-                        key={dayInfo.dayKey}
-                        className="flex items-center gap-4"
-                      >
-                        <span className="w-20 text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {dayInfo.day}
-                        </span>
-                        <div className="flex flex-1 items-center gap-2">
-                          <RHFTextField
-                            type="time"
-                            name={`${dayInfo.dayKey}StartTime`}
-                            placeholder="09:00"
-                            className="flex-1"
-                          />
-                          <span className="text-xs text-gray-500">to</span>
-                          <RHFTextField
-                            type="time"
-                            name={`${dayInfo.dayKey}EndTime`}
-                            placeholder="23:00"
-                            className="flex-1"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-2 flex w-full items-center justify-center">
-                <Button
-                  type="button"
-                  className="mt-3 cursor-pointer bg-blue-700 px-7 text-white hover:bg-blue-800"
-                >
-                  Save
-                </Button>
-              </div>
-            </FormProvider>
-          </DialogContent>
-        </DialogOverlay>
-      </Dialog> */}
-
-      <VenueTypeModal open={openVenueModal.value} onClose={CloseVenueModal} />
+      {openVenueModal.value && (
+        <VenueTypeModal open={openVenueModal.value} onClose={CloseVenueModal} />
+      )}
 
       <AddOtherDetailsModal
         open={openModal.value}

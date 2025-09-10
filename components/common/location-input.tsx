@@ -1,18 +1,11 @@
-// components/GoogleLocationInput.tsx
 'use client';
-
-import { StandaloneSearchBox, useJsApiLoader } from '@react-google-maps/api';
-import { useFormContext, Controller } from 'react-hook-form';
-import { extractAddress } from '@/utils/format-google-address';
 import React, { useRef } from 'react';
+import { useFormContext, Controller } from 'react-hook-form';
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
+import { extractAddress } from '@/utils/format-google-address';
 
-// CLIENT API KEY
-// const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-// SAMPLE API KEY
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
-
-const googleMapsLibraries: 'places'[] = ['places'];
+const googleMapsLibraries: ('places')[] = ['places'];
 
 interface GoogleLocationInputProps {
   name: string;
@@ -26,7 +19,7 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
   showLabel = true,
 }) => {
   const { control, setValue } = useFormContext();
-  const inputRef = useRef<google.maps.places.SearchBox | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -34,10 +27,14 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
     libraries: googleMapsLibraries,
   });
 
-  const handleOnPlacesChanged = async () => {
-    const places = inputRef.current?.getPlaces();
-    if (places && places.length > 0) {
-      const address = await extractAddress(places[0]);
+  const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    autocompleteRef.current = autocomplete;
+  };
+
+  const onPlaceChanged = async () => {
+    const place = autocompleteRef.current?.getPlace();
+    if (place) {
+      const address = await extractAddress(place);
       const locationPayload = {
         address: address.address_line_1 || '',
         city: address.city || '',
@@ -65,24 +62,21 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
           name={name}
           control={control}
           render={({ field }) => (
-            <StandaloneSearchBox
-              onLoad={(searchBox) => {
-                inputRef.current = searchBox;
-              }}
-              onPlacesChanged={handleOnPlacesChanged}
-            >
+            <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
               <input
                 id={`${name}-input`}
                 type="text"
                 placeholder="Enter Location"
                 defaultValue={field.value?.address || ''}
-                className={` ${showLabel ? 'mt-2' : 'mt-0'} h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400`}
+                className={`${
+                  showLabel ? 'mt-2' : 'mt-0'
+                } h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400`}
                 onChange={(e) =>
                   field.onChange({ ...field.value, address: e.target.value })
                 }
                 onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
               />
-            </StandaloneSearchBox>
+            </Autocomplete>
           )}
         />
       )}

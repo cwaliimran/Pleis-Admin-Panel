@@ -271,21 +271,18 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
       : defaultValues,
   });
 
-  const {
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = methods;
-
-  console.log('errors', errors);
+  const { handleSubmit, reset, setValue } = methods;
 
   const handleImageUpload = async (
     files: FileList | File[]
   ): Promise<string[]> => {
     const uploadPromises = Array.from(files).map(async (file) => {
-      if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-        throw new Error('Only JPEG, PNG, or GIF images are allowed.');
+      if (
+        !['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(
+          file.type
+        )
+      ) {
+        throw new Error('Only JPEG, PNG, GIF, or WEBP images are allowed.');
       }
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('Image size must be less than 5MB.');
@@ -297,10 +294,10 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
   };
 
   const onSubmit = handleSubmit(async (formData) => {
-    setImageUploading(true);
     let galleryMedia: string[] = [];
 
     try {
+      setImageUploading(true);
       if (formData.galleryImages && formData.galleryImages.length > 0) {
         galleryMedia = await handleImageUpload(formData.galleryImages);
         setValue('galleryImages', []);
@@ -403,13 +400,15 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.log('Failed to update details:', errorMessage);
-
       showError(errorMessage);
       if (galleryMedia.length > 0) {
         await Promise.all(
           galleryMedia.map((file) => deleteFileFromAzure(file))
         );
       }
+      setImageUploading(false);
+    } finally {
+      setImageUploading(false);
     }
   });
 
@@ -419,6 +418,12 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({
       <DialogContent
         aria-describedby={undefined}
         className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+        onInteractOutside={(event) => {
+          const target = event.target as HTMLElement;
+          if (target.closest('.pac-container')) {
+            event.preventDefault();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>Add Other Details</DialogTitle>

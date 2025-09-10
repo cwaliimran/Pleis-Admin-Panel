@@ -241,7 +241,7 @@ export const menuGroups: MenuGroup[] = [
   // },
   // {
   //     label: "Logout",
-  //     key: "/user/signIn",
+  //     key: "/",
   //     icon: LogOut,
   // }
 ];

@@ -142,14 +142,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
     shouldUnregister: true,
   });
 
-  const {
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = methods;
-  console.log('formState', errors);
+  const { handleSubmit, watch, setValue, reset } = methods;
 
   const watchedRole = watch('role') as RoleKey;
 
@@ -273,7 +266,6 @@ const CustomUserModal: React.FC<UserModalProps> = ({
         delete payload.companyDetails.location.address;
       }
 
-      console.log('Submitted data from modal:', payload);
       onSubmit(payload);
     } catch (err) {
       console.log('Submission failed:', err);
