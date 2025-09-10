@@ -558,11 +558,6 @@ function SignUpPage() {
                         </div>
                       )}
                     />
-                    {validationErrors.phone && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {validationErrors.phone}
-                      </p>
-                    )}
                   </div>
                   {validationErrors.phone && (
                     <p className="mt-1 text-xs text-red-500">
