@@ -15,7 +15,7 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { noImageUrl } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetSuppliersQuery } from '@/store/Reducer/suppliers';
 import {
@@ -246,7 +246,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     let uploadedFileKey: string | null = null;
 
     try {
-      let profileIconUrl = userData?.basicInfo?.profileIcon || noImageUrl;
+      let profileIconUrl = userData?.basicInfo?.profileIcon || noImageUrl || noImageUrlDev;
 
       if (
         data.image === null &&
@@ -475,7 +475,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               placeholder="Select Status"
               options={[
                 { value: 'active', label: 'Active' },
-                { value: 'inactive', label: 'Inactive' },
+                { value: 'suspended', label: 'Suspended' },
                 ...(userData?.accountState?.userType === 'organizer'
                   ? [{ value: 'pending', label: 'Pending' }]
                   : []),

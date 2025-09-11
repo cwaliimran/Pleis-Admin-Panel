@@ -5,7 +5,7 @@ import SocialLinks from '@/components/common/social-links';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { noImageUrl } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
 import {
@@ -40,9 +40,10 @@ import UserNotifications from './userNotifications';
 
 interface IdType {
   id?: any;
+  userType?: string;
 }
 
-const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
+const OrganizationDetailPage = ({ id: organizationId, userType }: IdType) => {
   const router = useRouter();
   const openModal = useBoolean();
   const deleteModal = useBoolean();
@@ -96,8 +97,13 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
   // Handle cover image upload
   const handleCoverImageUpload = async (file: File) => {
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
-
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/jpg',
+      'image/webp',
+    ];
 
     if (!allowedTypes.includes(file.type)) {
       showError('Only JPEG, PNG, WEBP, or GIF images are allowed.');
@@ -179,7 +185,8 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
       setSelectedId(null);
       deleteModal.onFalse();
 
-      router.push('/super-admin/organization/organization-list');
+      // router.push('/super-admin/organization/organization-list');
+      router.push(`/${userType}/organization/organization-list`);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.log('Failed to delete organization:', errorMessage);
@@ -206,7 +213,9 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
                   <div className="relative h-72 rounded-lg bg-cover bg-center">
                     {organizationData?.basicInfo?.mediaInfo?.cover?.url &&
                     organizationData?.basicInfo?.mediaInfo?.cover?.url !==
-                      noImageUrl ? (
+                      noImageUrl &&
+                    organizationData?.basicInfo?.mediaInfo?.cover?.url !==
+                      noImageUrlDev ? (
                       <Image
                         src={
                           newOrganization?.basicInfo?.mediaInfo?.cover?.url ||
@@ -261,7 +270,9 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
                   <div className="absolute bottom-[-30] left-5">
                     {organizationData?.basicInfo?.mediaInfo?.logo?.url &&
                     organizationData?.basicInfo?.mediaInfo?.logo?.url !==
-                      noImageUrl ? (
+                      noImageUrl &&
+                    organizationData?.basicInfo?.mediaInfo?.logo?.url !==
+                      noImageUrlDev ? (
                       <Image
                         src={organizationData?.basicInfo?.mediaInfo?.logo?.url}
                         alt="User Avatar"
@@ -293,7 +304,7 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold md:text-3xl capitalize">
+                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl">
                     {organizationData?.basicInfo?.name || '-'}
                   </h1>
                   <Badge
@@ -361,7 +372,9 @@ const OrganizationDetailPage = ({ id: organizationId }: IdType) => {
                   <UserInfo organizationData={organizationData} />
                 )}
 
-                {active === 'events' && <UserEvents />}
+                {active === 'events' && (
+                  <UserEvents organizationData={organizationData} />
+                )}
 
                 {active === 'loyalty' && <UserLoyalty />}
 

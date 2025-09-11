@@ -4,11 +4,12 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { noImageUrl } from '@/constant/constant';
+import { RootState } from '@/store/store';
 import { getStatusVariant } from '@/utils/short-utils';
 import { Eye, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FC } from 'react';
+import { useSelector } from 'react-redux';
 
 interface PageProps {
   item: any;
@@ -22,6 +23,7 @@ const UserListTypeTableRow: FC<PageProps> = ({
   handleEdit,
 }) => {
   const router = useRouter();
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
   const handleNavigate = () => {
     if (userType === 'super-admin') {
@@ -40,7 +42,10 @@ const UserListTypeTableRow: FC<PageProps> = ({
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.basicInfo?.profileIcon &&
-          item?.basicInfo?.profileIcon !== noImageUrl ? (
+          item?.basicInfo?.profileIcon !==
+            'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' &&
+          item?.basicInfo?.profileIcon !==
+            'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
             <AvatarImage
               src={item?.basicInfo?.profileIcon}
               alt="Store"
@@ -55,7 +60,14 @@ const UserListTypeTableRow: FC<PageProps> = ({
       </TableCell>
 
       <TableCell className="text-left font-medium capitalize">
-        {item?.basicInfo?.firstName || '-'}{" "}{item?.basicInfo?.lastName || ''}
+        <div className="flex flex-col">
+          <div>
+            {item?.basicInfo?.firstName || '-'}{' '}
+            {item?.basicInfo?.lastName || ''}{' '}
+            {user?.basicInfo?._id === item?.basicInfo?._id ? '(You)' : ''}
+          </div>
+          {/* <div>{item?.basicInfo?.email || '-'}</div> */}
+        </div>
       </TableCell>
 
       <TableCell className={`text-left text-sm`}>

@@ -121,9 +121,12 @@ const UserListView = ({ usertype }: { usertype: any }) => {
       console.log('Failed to create user:', errorMessage);
       showError(errorMessage);
 
+      setimageUploading(false);
       if (uploadedFileKey) {
         await deleteFileFromAzure(uploadedFileKey);
       }
+    } finally {
+      setimageUploading(false);
     }
   };
 

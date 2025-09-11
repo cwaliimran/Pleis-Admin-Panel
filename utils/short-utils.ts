@@ -17,6 +17,7 @@ export const getStatusVariant = (
   const variants = {
     active: 'success',
     inactive: 'error',
+    suspended: 'error',
     pending: 'warning',
     scheduled: 'info',
   } as const;

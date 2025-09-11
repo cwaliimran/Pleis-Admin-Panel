@@ -69,7 +69,9 @@ const OrganizationTypeModal: React.FC<OrganizationTypeModalProps> = ({
                     if (
                       !img ||
                       img ===
-                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png'
+                        'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' ||
+                      img ===
+                        'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noimage.png'
                     ) {
                       return null;
                     }

@@ -137,7 +137,7 @@ const UserListTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Organization...',
+                              placeholder: 'Search User...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -151,7 +151,7 @@ const UserListTypeTable: FC<PageProps> = ({
                                 options: [
                                   { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
+                                  { value: 'suspended', label: 'Suspended' },
                                 ],
                               },
                               {
@@ -160,15 +160,21 @@ const UserListTypeTable: FC<PageProps> = ({
                                 placeholder: 'Select by Role',
                                 value: role,
                                 onChange: onRoleChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'admin', label: 'Admin' },
-                                  { value: 'organizer', label: 'Organizer' },
-                                  { value: 'manager', label: 'Manager' },
-                                  { value: 'staff', label: 'Staff' },
-                                  { value: 'guest', label: 'Guest' },
-                                  { value: 'user', label: 'User' },
-                                ],
+                                options:
+                                  userType === 'organizer'
+                                    ? [
+                                        { value: 'staff', label: 'Staff' },
+                                        { value: 'manager', label: 'Manager' },
+                                      ]
+                                    : [
+                                        { value: 'all', label: 'All' },
+                                        { value: 'admin', label: 'Admin' },
+                                        { value: 'organizer', label: 'Organizer' },
+                                        { value: 'manager', label: 'Manager' },
+                                        { value: 'staff', label: 'Staff' },
+                                        { value: 'guest', label: 'Guest' },
+                                        { value: 'user', label: 'User' },
+                                      ],
                               },
                             ]}
                             resetFilter={{

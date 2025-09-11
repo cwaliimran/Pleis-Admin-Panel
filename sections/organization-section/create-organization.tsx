@@ -3,11 +3,9 @@
 import ButtonLoading from '@/components/common/button-loading';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { noImageUrl } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useUpdateOrganizationMutation
-} from '@/store/Reducer/organization';
+import { useUpdateOrganizationMutation } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -62,7 +60,13 @@ const CreateOrganizationPage = () => {
   // Handle cover image upload
   const handleCoverImageUpload = async (file: File) => {
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/jpg',
+      'image/webp',
+    ];
 
     if (!allowedTypes.includes(file.type)) {
       showError('Only JPEG, PNG, or GIF images are allowed.');
@@ -133,7 +137,9 @@ const CreateOrganizationPage = () => {
               <div className="relative h-72 rounded-lg bg-cover bg-center">
                 {newOrganization?.basicInfo?.mediaInfo?.cover?.url &&
                 newOrganization?.basicInfo?.mediaInfo?.cover?.url !==
-                  noImageUrl ? (
+                  noImageUrl &&
+                newOrganization?.basicInfo?.mediaInfo?.cover?.url !==
+                  noImageUrlDev ? (
                   <Image
                     src={newOrganization?.basicInfo?.mediaInfo?.cover?.url}
                     alt="Cover Image"
@@ -194,7 +200,9 @@ const CreateOrganizationPage = () => {
               <div className="absolute bottom-[-30] left-5">
                 {newOrganization?.basicInfo?.mediaInfo?.logo?.url &&
                 newOrganization?.basicInfo?.mediaInfo?.logo?.url !==
-                  'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' ? (
+                  'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' &&
+                newOrganization?.basicInfo?.mediaInfo?.logo?.url !==
+                  'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noimage.png' ? (
                   <Image
                     src={newOrganization?.basicInfo?.mediaInfo?.logo?.url}
                     alt="User Avatar"
@@ -230,7 +238,7 @@ const CreateOrganizationPage = () => {
             </div>
 
             <div className="mt-2 items-center gap-2 pt-0 md:mt-0 md:flex">
-              <h1 className="mt-0 pt-0 text-2xl font-bold md:ml-2 md:text-3xl capitalize">
+              <h1 className="mt-0 pt-0 text-2xl font-bold capitalize md:ml-2 md:text-3xl">
                 {newOrganization
                   ? newOrganization?.basicInfo?.name
                   : 'Organization Name'}
@@ -272,105 +280,6 @@ const CreateOrganizationPage = () => {
           </div>
         </div>
       </div>
-
-      {/* ------------- CREATE ORG MODAL ------------- */}
-      {/* <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
-          <DialogContent
-            aria-describedby={undefined}
-            className="mx-4 w-full max-w-md dark:bg-[#171717]"
-          >
-            <DialogHeader className="flex flex-row items-center justify-between">
-              <DialogTitle className="text-lg font-semibold">
-                Create Organization
-              </DialogTitle>
-            </DialogHeader>
-
-            <FormProvider methods={methods} onSubmit={onSubmit}>
-              <div className="mt-4 flex flex-col gap-4">
-                <div className="space-y-2">
-                  <RHFUploadAvatar
-                    name="image"
-                    label="Organization Icon"
-                    initialImage={(() => {
-                      const img = methods.getValues('image');
-                      if (
-                        typeof img === 'string' &&
-                        img &&
-                        img !== noImageUrl
-                      ) {
-                        return img;
-                      }
-                      return null;
-                    })()}
-                  />
-                </div>
-
-                <div className="space-y-5">
-                  <RHFTextField
-                    name="name"
-                    label="Organization Name"
-                    placeholder="Enter Organization Name"
-                  />
-
-                  <RHFTextField
-                    name="instagram"
-                    label="Instagram Link"
-                    placeholder="Enter Instagram Link"
-                  />
-
-                  <RHFTextField
-                    name="facebook"
-                    label="Facebook Link"
-                    placeholder="Enter Facebook Link"
-                  />
-
-                  <RHFTextField
-                    name="youtube"
-                    label="You Tube Link"
-                    placeholder="Enter You Tube Link"
-                  />
-
-                  <RHFTextField
-                    name="linkedin"
-                    label="LinkedIn Link"
-                    placeholder="Enter LinkedIn Link"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={CloseModal}
-                    disabled={isLoading}
-                    className="px-4 py-2"
-                  >
-                    Cancel
-                  </Button>
-
-                  {isLoading || imageUploading ? (
-                    <Button
-                      type="button"
-                      disabled
-                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                    >
-                      <ButtonLoading title="Saving" />
-                    </Button>
-                  ) : (
-                    <Button
-                      type="submit"
-                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
-                    >
-                      Save
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </FormProvider>
-          </DialogContent>
-        </DialogOverlay>
-      </Dialog> */}
 
       <OrganizationModal
         open={openModal.value}

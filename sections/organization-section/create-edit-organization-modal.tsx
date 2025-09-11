@@ -11,7 +11,7 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { noImageUrl } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import {
   useAddOrganizationMutation,
   useUpdateOrganizationMutation,
@@ -256,7 +256,7 @@ const OrganizationModal = ({
                   label="Organization Icon"
                   initialImage={(() => {
                     const img = organization?.basicInfo?.mediaInfo?.logo?.url;
-                    if (img && img !== noImageUrl) {
+                    if (img && img !== noImageUrl && img !== noImageUrlDev) {
                       return img;
                     }
                     return null;

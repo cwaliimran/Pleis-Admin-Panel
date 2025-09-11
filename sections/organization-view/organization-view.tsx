@@ -1,33 +1,19 @@
 'use client';
+
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useAddCategoryMutation,
-  useUpdateCategoryMutation,
-} from '@/store/Reducer/categories';
 import {
   useDeleteOrganizationMutation,
   useGetOrganizationQuery,
 } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
-import { uploadFileToAzure } from '@/utils/fileUpload';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import * as Yup from 'yup';
-import OrganizationTypeModal from './organization-type-modal';
 import OrganizationTypeTable from './organization-type-table';
-
-const defaultValues = {
-  image: null,
-  title: '',
-  status: 'active',
-};
 
 type OrganizationListProps = {
   userType?: 'organizer' | 'super-admin';
@@ -35,8 +21,6 @@ type OrganizationListProps = {
 
 const OrganizationView = ({ userType }: OrganizationListProps) => {
   const router = useRouter();
-  const openModal = useBoolean();
-  const editModal = useBoolean();
   const deleteModal = useBoolean();
 
   // Pagination and filter state
@@ -47,13 +31,7 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
-  const [imageUploading, setImageUploading] = useState(false);
 
-  const [addCategory, { isLoading: addCategoryLoading }] =
-    useAddCategoryMutation();
-  const [updateCategory, { isLoading: updateCategoryLoading }] =
-    useUpdateCategoryMutation();
   const [deleteOrganization, { isLoading: deleteOrganizationLoading }] =
     useDeleteOrganizationMutation();
 
@@ -65,7 +43,6 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     date: date ? formatDate(date) : undefined,
   });
 
-  // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({
     currentPage: page,
@@ -88,39 +65,6 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     }
   }, [apiData, page, limit]);
 
-  const schema = Yup.object().shape({
-    image: Yup.mixed().nullable(),
-    title: Yup.string().required('Category Name is required'),
-    status: Yup.string().oneOf(['active', 'inactive']),
-  });
-
-  const methods = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: defaultValues,
-  });
-
-  const { handleSubmit, reset } = methods;
-
-  useEffect(() => {
-    if (editModal.value && selectedVenueType) {
-      reset({
-        title: selectedVenueType.title || '',
-        status: selectedVenueType.status || '',
-        image: selectedVenueType.image || null,
-      });
-    } else if (!editModal.value) {
-      reset(defaultValues);
-    }
-  }, [editModal.value, selectedVenueType, reset]);
-
-  const CloseModal = () => {
-    methods.reset(defaultValues);
-    setSelectedVenueType(null);
-    setSelectedId(null);
-    openModal.onFalse();
-    editModal.onFalse();
-  };
-
   const handleNavigateToCreate = () => {
     if (userType === 'super-admin') {
       router.push('/super-admin/organization/create-organization');
@@ -129,119 +73,13 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     }
   };
 
-  const handleEdit = (id: string) => {
-    const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
-    if (venueTypeToEdit) {
-      setSelectedVenueType(venueTypeToEdit);
-      setSelectedId(id);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Category type not found');
-    }
-  };
-
   const handleDelete = (id: string) => {
     setSelectedId(id);
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE VENUE TYPE
-  const onSubmit = handleSubmit(async (formData) => {
-    try {
-      let imageFileString = undefined;
-
-      // If image is present and is a FileList or array
-      if (
-        formData.image &&
-        (formData.image instanceof FileList || Array.isArray(formData.image))
-      ) {
-        const file = formData.image[0];
-        if (file) {
-          setImageUploading(true);
-          try {
-            imageFileString = await uploadFileToAzure(file);
-          } finally {
-            setImageUploading(false);
-          }
-        }
-      }
-
-      const payload: any = {
-        title: formData.title,
-      };
-
-      if (imageFileString) {
-        payload.image = imageFileString;
-      } else if (editModal.value && typeof formData.image === 'string') {
-        payload.image = formData.image;
-      }
-
-      if (editModal.value && selectedId) {
-        payload.status = formData.status;
-        payload.id = selectedId;
-      }
-
-      let response;
-      if (editModal.value && selectedId) {
-        response = await updateCategory(payload).unwrap();
-      } else {
-        response = await addCategory(payload).unwrap();
-      }
-
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
-
-      if (response.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      // Handle success and update local state
-      if (response?.data) {
-        if (editModal.value && selectedId) {
-          // Edit: update the item in local state
-          setVenueTypes((prev) =>
-            prev.map((item) => (item._id === selectedId ? response.data : item))
-          );
-        } else {
-          // Add: add new item to local state but keep only first `limit`
-          setVenueTypes((prev) => {
-            const updated = [response.data, ...prev];
-            return updated.slice(0, limit);
-          });
-
-          setMeta((prev: any) => ({
-            ...prev,
-            totalRecords: prev.totalRecords + 1,
-          }));
-        }
-      }
-
-      if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value
-              ? 'Category updated successfully'
-              : 'Category created successfully')
-        );
-      }
-
-      CloseModal();
-    } catch (error) {
-      setImageUploading(false);
-      const errorMessage = getErrorMessage(error);
-      console.log('Failed to save category:', errorMessage);
-      showError(errorMessage);
-    }
-  });
-
-  // DELETE CATEGORY
+  // DELETE ORGANIZATION
   const onDelete = async () => {
-    console.log('selectedId', selectedId);
     try {
       const response = await deleteOrganization(selectedId).unwrap();
 
@@ -269,13 +107,6 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     }
   };
 
-  // const handleCreateNew = () => {
-  //   setSelectedVenueType(null);
-  //   setSelectedId(null);
-  //   editModal.onFalse();
-  //   openModal.onTrue();
-  // };
-
   return (
     <div>
       <div>
@@ -295,7 +126,6 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
         meta={meta}
         loading={isLoading}
         handleDelete={handleDelete}
-        handleEdit={handleEdit}
         onPageChange={setPage}
         userType={userType}
         onLimitChange={(l) => {
@@ -325,18 +155,6 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
           setSearch('');
           setPage(1);
         }}
-      />
-
-      <OrganizationTypeModal
-        open={openModal.value}
-        onClose={CloseModal}
-        editMode={editModal.value}
-        methods={methods}
-        onSubmit={onSubmit}
-        isLoading={
-          addCategoryLoading || updateCategoryLoading || imageUploading
-        }
-        selectedVenueType={selectedVenueType}
       />
 
       <ConfirmDialog

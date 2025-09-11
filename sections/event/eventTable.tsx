@@ -1,17 +1,23 @@
 'use client';
 
-import { TableFilters } from "@/components/table-filters";
-import TableHeadCustom from "@/components/table/table-head-custom";
-import { Card } from "@/components/ui/card";
-import { Table, TableBody } from "@/components/ui/table";
-import { FC } from "react";
-import EventTableRow from "./eventTAbleRow"; // Import EventTableRow to handle table rows
-import { Badge } from "@/components/ui/badge";
-import { Settings2 } from "lucide-react";
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useForm, FormProvider } from "react-hook-form";
-import { LoadingBar } from "@/components/table/table-bar-loading";
-import PaginationControls from "@/components/table/pagination-controls";
+import { TableFilters } from '@/components/table-filters';
+import TableHeadCustom from '@/components/table/table-head-custom';
+import { Card } from '@/components/ui/card';
+import { Table, TableBody } from '@/components/ui/table';
+import { FC } from 'react';
+import EventTableRow from './eventTAbleRow'; // Import EventTableRow to handle table rows
+import { Badge } from '@/components/ui/badge';
+import { Settings2 } from 'lucide-react';
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { useForm, FormProvider } from 'react-hook-form';
+import { LoadingBar } from '@/components/table/table-bar-loading';
+import PaginationControls from '@/components/table/pagination-controls';
 
 // Define headers for the table
 const headLabel = [
@@ -65,14 +71,14 @@ const EventTable: FC<PageProps> = ({
   userType,
   handleDelete,
   onPageChange,
-  onSearch = () => { },
-  search = "",
-  status = "",
-  onStatusChange = () => { },
+  onSearch = () => {},
+  search = '',
+  status = '',
+  onStatusChange = () => {},
   startDate,
   endDate,
-  onDateChange = () => { },
-  onResetFilters = () => { },
+  onDateChange = () => {},
+  onResetFilters = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
