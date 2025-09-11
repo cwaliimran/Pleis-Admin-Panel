@@ -226,9 +226,9 @@ const Page = () => {
       if (response?.message) {
         showSuccess(
           response?.message ||
-          (editModal.value
-            ? 'Venue type updated successfully'
-            : 'Venue type created successfully')
+            (editModal.value
+              ? 'Venue type updated successfully'
+              : 'Venue type created successfully')
         );
       }
 

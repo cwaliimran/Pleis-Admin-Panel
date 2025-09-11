@@ -5,7 +5,7 @@ import SocialLinks from '@/components/common/social-links';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { noImageUrl } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
 import {
@@ -213,7 +213,9 @@ const OrganizationDetailPage = ({ id: organizationId, userType }: IdType) => {
                   <div className="relative h-72 rounded-lg bg-cover bg-center">
                     {organizationData?.basicInfo?.mediaInfo?.cover?.url &&
                     organizationData?.basicInfo?.mediaInfo?.cover?.url !==
-                      noImageUrl ? (
+                      noImageUrl &&
+                    organizationData?.basicInfo?.mediaInfo?.cover?.url !==
+                      noImageUrlDev ? (
                       <Image
                         src={
                           newOrganization?.basicInfo?.mediaInfo?.cover?.url ||
@@ -268,7 +270,9 @@ const OrganizationDetailPage = ({ id: organizationId, userType }: IdType) => {
                   <div className="absolute bottom-[-30] left-5">
                     {organizationData?.basicInfo?.mediaInfo?.logo?.url &&
                     organizationData?.basicInfo?.mediaInfo?.logo?.url !==
-                      noImageUrl ? (
+                      noImageUrl &&
+                    organizationData?.basicInfo?.mediaInfo?.logo?.url !==
+                      noImageUrlDev ? (
                       <Image
                         src={organizationData?.basicInfo?.mediaInfo?.logo?.url}
                         alt="User Avatar"
@@ -368,7 +372,9 @@ const OrganizationDetailPage = ({ id: organizationId, userType }: IdType) => {
                   <UserInfo organizationData={organizationData} />
                 )}
 
-                {active === 'events' && <UserEvents />}
+                {active === 'events' && (
+                  <UserEvents organizationData={organizationData} />
+                )}
 
                 {active === 'loyalty' && <UserLoyalty />}
 

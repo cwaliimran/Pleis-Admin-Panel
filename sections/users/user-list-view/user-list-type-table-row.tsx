@@ -4,7 +4,6 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { noImageUrl } from '@/constant/constant';
 import { RootState } from '@/store/store';
 import { getStatusVariant } from '@/utils/short-utils';
 import { Eye, Pencil } from 'lucide-react';
@@ -43,7 +42,10 @@ const UserListTypeTableRow: FC<PageProps> = ({
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.basicInfo?.profileIcon &&
-          item?.basicInfo?.profileIcon !== noImageUrl ? (
+          item?.basicInfo?.profileIcon !==
+            'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' &&
+          item?.basicInfo?.profileIcon !==
+            'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
             <AvatarImage
               src={item?.basicInfo?.profileIcon}
               alt="Store"

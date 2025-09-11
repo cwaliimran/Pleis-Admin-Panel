@@ -25,18 +25,14 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
     }
   };
 
-  const handleNavigateToEdit = (item: any) => {
-    // if (userType) {
-    //   router.push(`/${userType}/events/edit-event/${item?._id}`);
-    // }
-
-    if (userType === 'organizer') {
-      router.push(`/${userType}/events/edit-event/${item?._id}`);
-    }
-    if (userType === 'super-admin') {
-      router.push(`/${userType}/events/edit-event/${item?._id}`);
-    }
-  };
+  // const handleNavigateToEdit = (item: any) => {
+  //   if (userType === 'organizer') {
+  //     router.push(`/${userType}/events/edit-event/${item?._id}`);
+  //   }
+  //   if (userType === 'super-admin') {
+  //     router.push(`/${userType}/events/edit-event/${item?._id}`);
+  //   }
+  // };
 
   return (
     <TableRow
@@ -150,10 +146,10 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
           <button
             title="Edit Event"
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleNavigateToEdit(item);
-            }}
+            // onClick={(e) => {
+            //   e.stopPropagation();
+            //   handleNavigateToEdit(item);
+            // }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />

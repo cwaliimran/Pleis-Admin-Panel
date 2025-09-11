@@ -1,6 +1,5 @@
 import Header from '@/app/common/header';
 import HighlightsView from '@/sections/highlight-view/highlight-view';
-// import HighlightView from '@/sections/highlight/highlight-view';
 
 const Page = () => {
   return (
@@ -13,7 +12,6 @@ const Page = () => {
       />
 
       <HighlightsView />
-      {/* <HighlightView /> */}
     </div>
   );
 };

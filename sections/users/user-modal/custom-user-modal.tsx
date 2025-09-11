@@ -276,9 +276,19 @@ const CustomUserModal: React.FC<UserModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0" />
+      {/* <DialogContent
+        aria-describedby={undefined}
+        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
+      > */}
       <DialogContent
         aria-describedby={undefined}
         className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
+        onInteractOutside={(event) => {
+          const target = event.target as HTMLElement;
+          if (target.closest('.pac-container')) {
+            event.preventDefault();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>Create User</DialogTitle>
@@ -321,7 +331,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <ButtonLoading title="Creating" />
+                  <ButtonLoading title="Adding" />
                 ) : (
                   `Add ${currentRole}`
                 )}

@@ -1,19 +1,23 @@
-"use client";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import { Button } from "@/components/ui/button";
-import { useBoolean } from "@/hooks/useBoolean";
-import { EventTable } from "@/sections/event";
-import { useDeleteeventMutation, useGeteventsQuery } from "@/store/Reducer/events";
-import { formatDate } from "@/utils/format-time";
-import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+'use client';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import { EventTable } from '@/sections/event';
+import {
+  useDeleteeventMutation,
+  useGeteventsQuery,
+} from '@/store/Reducer/events';
+import { formatDate } from '@/utils/format-time';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 type OrganizationListProps = {
   userType?: 'organizer' | 'super-admin';
+  organization?: string;
 };
 
-const EventList = ({ userType }: OrganizationListProps) => {
+const EventList = ({ userType, organization }: OrganizationListProps) => {
   const router = useRouter();
   const deleteModal = useBoolean();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -40,6 +44,7 @@ const EventList = ({ userType }: OrganizationListProps) => {
     status: filters.status === 'all' ? undefined : filters.status,
     startDate: filters.startDate ? formatDate(filters.startDate) : undefined,
     endDate: filters.endDate ? formatDate(filters.endDate) : undefined,
+    ...(organization ? { organization } : {}),
   });
 
   const handleDelete = (id: string) => {
@@ -109,13 +114,15 @@ const EventList = ({ userType }: OrganizationListProps) => {
     <div>
       {/* Create Event Button */}
       <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-        <Button
-          className="bg-primary hover:bg-primary/80 cursor-pointer rounded-4xl py-2 text-white"
-          onClick={handleNavigateToCreate}
-        >
-          <Plus />
-          Create Event
-        </Button>
+        {!organization && (
+          <Button
+            className="bg-primary hover:bg-primary/80 cursor-pointer rounded-4xl py-2 text-white"
+            onClick={handleNavigateToCreate}
+          >
+            <Plus />
+            Create Event
+          </Button>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}

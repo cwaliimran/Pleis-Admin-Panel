@@ -1,26 +1,10 @@
-// import { useBoolean } from '@/hooks/useBoolean';
-// import { useRouter } from "next/navigation";
-import { EventTable } from '../event';
+import EventList from '../event/event-list';
 
-const UserEvents = () => {
-  // const router = useRouter();
-  // const deleteModal = useBoolean();
-
-  // const handleEdit = (id: string) => {
-  //   router.push("/super-admin/events/create-event");
-  // };
-
-  // const handleDelete = (id: string) => {
-  //   deleteModal.onTrue();
-  // };
-
-  // const onDelete = () => {
-  //   deleteModal.onFalse();
-  // };
-
+const UserEvents = ({ organizationData }: any) => {
+  console.log('organizationData', organizationData);
   return (
     <>
-      <EventTable />
+      <EventList userType="super-admin" organization={organizationData?._id} />
     </>
   );
 };

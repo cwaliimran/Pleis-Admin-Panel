@@ -13,7 +13,7 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { noImageUrl } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
 import { extractAddress } from '@/utils/format-google-address';
@@ -225,7 +225,8 @@ const VenueTypeModal = ({
                   initialImage={
                     editMode
                       ? selectedVenueType?.floorPlanInfo?.url &&
-                        selectedVenueType.floorPlanInfo.url !== noImageUrl
+                        selectedVenueType.floorPlanInfo.url !== noImageUrl &&
+                        selectedVenueType.floorPlanInfo.url !== noImageUrlDev
                         ? selectedVenueType.floorPlanInfo.url
                         : null
                       : null

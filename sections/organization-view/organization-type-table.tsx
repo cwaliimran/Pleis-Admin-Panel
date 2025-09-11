@@ -47,7 +47,6 @@ interface PageProps {
   userType?: any;
   loading?: boolean;
   handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -65,7 +64,6 @@ const OrganizationTypeTable: FC<PageProps> = ({
   meta,
   loading,
   handleDelete,
-  handleEdit,
   onPageChange,
   userType,
   // onLimitChange,
@@ -89,18 +87,6 @@ const OrganizationTypeTable: FC<PageProps> = ({
       location: sheetLocation,
     },
   });
-
-  // Generate page numbers for pagination (show max 5 pages)
-  // const getPageNumbers = () => {
-  //   const maxPagesToShow = 5;
-  //   let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-  //   let end = start + maxPagesToShow - 1;
-  //   if (end > totalPages) {
-  //     end = totalPages;
-  //     start = Math.max(1, end - maxPagesToShow + 1);
-  //   }
-  //   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  // };
 
   return (
     <div>
@@ -212,7 +198,6 @@ const OrganizationTypeTable: FC<PageProps> = ({
                         key={item._id || index}
                         item={item}
                         handleDelete={handleDelete}
-                        handleEdit={handleEdit}
                         userType={userType}
                       />
                     ))

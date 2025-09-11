@@ -9,7 +9,9 @@ import {
   useUpdateCategoryMutation,
 } from '@/store/Reducer/categories';
 import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
@@ -18,8 +20,6 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import CategoriesTypeModal from './categoriesTypeModal';
 import CategoriesTypeTable from './categoriesTypeTable';
-import { formatDate } from '@/utils/format-time';
-import { deleteFileFromAzure } from '@/utils/deleteFile';
 
 const defaultValues = {
   image: null,

@@ -151,7 +151,7 @@ const UserListTypeTable: FC<PageProps> = ({
                                 options: [
                                   { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
+                                  { value: 'suspended', label: 'Suspended' },
                                 ],
                               },
                               {
