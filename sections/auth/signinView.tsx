@@ -265,6 +265,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                   showPassword={open.value}
                   onTogglePassword={open.onToggle}
                 />
+
                 <Link
                   href={'/user/forgot-password'}
                   className="text-muted-foreground text-end text-sm hover:underline"
@@ -290,98 +291,104 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                   </Button>
                 )}
 
-                <div className="text-muted-foreground text-center text-sm">
-                  Or sign in with
-                </div>
+                {userType === 'organizer' && (
+                  <>
+                    <div className="text-muted-foreground text-center text-sm">
+                      Or sign in with
+                    </div>
 
-                <div className="flex items-center justify-center gap-4">
-                  <Button
-                    variant="outline"
-                    className="h-[60px] w-[60px] cursor-pointer rounded-full py-3"
-                  >
-                    <span className="flex h-6 w-6 items-center justify-center">
-                      <Image
-                        src="/images/appleIcon.png"
-                        alt="Apple"
-                        className="block h-[25px] w-[25px] object-contain dark:hidden"
-                        width={25}
-                        height={25}
-                        style={{ height: 'auto' }}
-                      />
+                    <div className="flex items-center justify-center gap-4">
+                      <Button
+                        variant="outline"
+                        className="h-[60px] w-[60px] cursor-pointer rounded-full py-3"
+                      >
+                        <span className="flex h-6 w-6 items-center justify-center">
+                          <Image
+                            src="/images/appleIcon.png"
+                            alt="Apple"
+                            className="block h-[25px] w-[25px] object-contain dark:hidden"
+                            width={25}
+                            height={25}
+                            style={{ height: 'auto' }}
+                          />
 
-                      <Image
-                        src="/images/macIconDark.png"
-                        alt="Apple"
-                        className="hidden h-[25px] w-[25px] object-contain dark:block"
-                        width={25}
-                        height={25}
-                        style={{ height: 'auto' }}
-                      />
-                    </span>
-                  </Button>
+                          <Image
+                            src="/images/macIconDark.png"
+                            alt="Apple"
+                            className="hidden h-[25px] w-[25px] object-contain dark:block"
+                            width={25}
+                            height={25}
+                            style={{ height: 'auto' }}
+                          />
+                        </span>
+                      </Button>
 
-                  <Button
-                    variant="outline"
-                    className="h-[60px] w-[60px] cursor-pointer rounded-full"
-                  >
-                    <span className="flex h-6 w-6 items-center justify-center">
-                      <Image
-                        src="/images/googleIcon.png"
-                        alt="Google"
-                        className="h-[25px] w-[25px] object-contain"
-                        width={25}
-                        height={25}
-                        style={{ height: 'auto' }}
-                      />
-                    </span>
-                  </Button>
+                      <Button
+                        variant="outline"
+                        className="h-[60px] w-[60px] cursor-pointer rounded-full"
+                      >
+                        <span className="flex h-6 w-6 items-center justify-center">
+                          <Image
+                            src="/images/googleIcon.png"
+                            alt="Google"
+                            className="h-[25px] w-[25px] object-contain"
+                            width={25}
+                            height={25}
+                            style={{ height: 'auto' }}
+                          />
+                        </span>
+                      </Button>
 
-                  <Button
-                    variant="outline"
-                    className="h-[60px] w-[60px] cursor-pointer rounded-full"
-                  >
-                    <span className="flex h-6 w-6 items-center justify-center">
-                      <Image
-                        src="/images/metaIcon.png"
-                        alt="Meta"
-                        className="h-[25px] w-[25px] object-contain"
-                        width={25}
-                        height={25}
-                        style={{ height: 'auto' }}
-                      />
-                    </span>
-                  </Button>
-                </div>
+                      <Button
+                        variant="outline"
+                        className="h-[60px] w-[60px] cursor-pointer rounded-full"
+                      >
+                        <span className="flex h-6 w-6 items-center justify-center">
+                          <Image
+                            src="/images/metaIcon.png"
+                            alt="Meta"
+                            className="h-[25px] w-[25px] object-contain"
+                            width={25}
+                            height={25}
+                            style={{ height: 'auto' }}
+                          />
+                        </span>
+                      </Button>
+                    </div>
 
-                <p className="text-muted-foreground mt-4 text-center text-sm">
-                  Don&#39;t have an account?{' '}
-                  <Link
-                    href="/user/register"
-                    className="font-medium text-[#0f172b] hover:underline dark:text-white"
-                  >
-                    Sign Up
-                  </Link>
-                </p>
+                    <p className="text-muted-foreground mt-4 text-center text-sm">
+                      Don&#39;t have an account?{' '}
+                      <Link
+                        href="/user/register"
+                        className="font-medium text-[#0f172b] hover:underline dark:text-white"
+                      >
+                        Sign Up
+                      </Link>
+                    </p>
+                  </>
+                )}
               </div>
             </FormProvider>
 
-            <p className="text-muted-foreground mt-10 text-center text-xs">
-              By continuing, you agree to our{' '}
-              <Link
-                href="/term-and-service"
-                className="hover:text-primary underline transition-colors"
-              >
-                Terms
-              </Link>{' '}
-              and{' '}
-              <Link
-                href="/privacy-policy"
-                className="hover:text-primary underline transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              .
-            </p>
+            {userType === 'organizer' && (
+              <p className="text-muted-foreground mt-10 text-center text-xs">
+                By continuing, you agree to our{' '}
+                <Link
+                  href="/term-and-service"
+                  className="hover:text-primary underline transition-colors"
+                >
+                  Terms
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="/privacy-policy"
+                  className="hover:text-primary underline transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </p>
+            )}
           </motion.div>
         </div>
       </div>
