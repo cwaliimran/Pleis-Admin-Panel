@@ -1,6 +1,7 @@
 'use client';
 
 import ImageWithFallback from '@/components/common/img-with-fallback';
+import { formatDateTime } from '@/utils/short-utils';
 import { Avatar } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
@@ -40,7 +41,6 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
       onClick={handleNavigateToDetails}
     >
       {/* Event Image */}
-
       <TableCell>
         <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
           {item?.basicInfo?.mediaInfo?.url &&
@@ -96,16 +96,17 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
       {/* Start Date */}
       <TableCell>
         {item?.schedule?.startDateTime
-          ? new Date(item.schedule.startDateTime).toLocaleString()
-          : '-'}
-      </TableCell>
-      {/* End Date */}
-      <TableCell className="text-left">
-        {item?.schedule?.endDateTime
-          ? new Date(item.schedule.endDateTime).toLocaleString()
+          ? formatDateTime(item.schedule.startDateTime)
           : '-'}
       </TableCell>
 
+      {/* End Date */}
+      <TableCell className="text-left">
+        {item?.schedule?.endDateTime
+          ? formatDateTime(item.schedule.endDateTime)
+          : '-'}
+      </TableCell>
+      
       {/* Revenue */}
       <TableCell>{item?.meta?.revenue ? item.meta.revenue : '-'}</TableCell>
       {/* Views */}

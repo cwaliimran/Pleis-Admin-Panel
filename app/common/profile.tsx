@@ -32,10 +32,16 @@ const Account = () => {
 
   const handleLogout = async () => {
     try {
+      const role = user?.role;
       dispatch(logout());
-      // popover.onClose();
       localStorage.clear();
-      router.replace('/');
+
+      if (role === 'admin') {
+        router.replace('/super-admin/login');
+      } else {
+        router.replace('/');
+      }
+      
     } catch (error) {
       console.log(error);
       showError('Unable to logout!');

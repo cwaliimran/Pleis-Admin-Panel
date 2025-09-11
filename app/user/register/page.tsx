@@ -326,7 +326,12 @@ function SignUpPage() {
     if (companyValidation !== true) errors.companyName = companyValidation;
 
     const oibValidation = validateRequired(data.oib, 'OIB');
-    if (oibValidation !== true) errors.oib = oibValidation;
+
+    if (oibValidation !== true) {
+      errors.oib = oibValidation;
+    } else if (data.oib.length > 11) {
+      errors.oib = 'OIB cannot exceed 11 characters';
+    }
 
     const bankValidation = validateRequired(
       data.bankAccountNumber,

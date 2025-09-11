@@ -57,7 +57,7 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
         </div>
         {item.amount && (
           <div className="flex justify-between items-center mt-2">
-            <p className="text-3xl font-bold">{item?.amount?.toFixed(0)}</p>
+            <p className="text-3xl font-bold">0</p>
             {item.raise && (
               <div className="flex items-center bg-[#79D48B] text-white px-3 py-1 rounded-full text-xs font-semibold">
                 <TrendingUp />

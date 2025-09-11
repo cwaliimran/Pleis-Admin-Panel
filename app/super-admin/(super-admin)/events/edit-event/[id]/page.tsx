@@ -1,9 +1,18 @@
-import EditEventView from "@/sections/event/edit-event-view/edit-event";
+"use client";
+
+import Header from "@/app/common/header";
+import CreateEventView from "@/sections/event/create-event-view/create-event";
 
 const Page = () => {
   return (
     <>
-      <EditEventView />
+     <Header
+            links={[
+              { name: 'Dashboard', href: '/super-admin' },
+              { name: 'Edit Event', href: '' },
+            ]}
+          />
+      <CreateEventView title={'Edit'} />
     </>
   );
 };

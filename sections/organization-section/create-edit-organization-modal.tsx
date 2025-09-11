@@ -2,6 +2,7 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +17,7 @@ import {
   useAddOrganizationMutation,
   useUpdateOrganizationMutation,
 } from '@/store/Reducer/organization';
+import { useGetUserListQuery } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -43,8 +45,27 @@ const OrganizationModal = ({
 
   const [addOrganization, { isLoading: isAdding }] =
     useAddOrganizationMutation();
+
   const [updateOrganization, { isLoading: isUpdating }] =
     useUpdateOrganizationMutation();
+
+  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery({
+    page: 0,
+    search: '',
+    limit: 10000,
+    userType: undefined,
+    status: undefined,
+    date: undefined,
+  });
+
+  const userOptions =
+    apiData?.data?.map((user: any) => ({
+      label:
+        `${user?.basicInfo?.firstName || ''} ${user?.basicInfo?.lastName || ''}`.trim(),
+      value: user?.basicInfo?._id,
+    })) || [];
+
+  console.log('apiData', apiData);
 
   const isLoading = isAdding || isUpdating;
 
@@ -58,6 +79,10 @@ const OrganizationModal = ({
       .required('Organization Name is required')
       .trim()
       .min(2, 'Organization Name must be at least 2 characters'),
+    user: Yup.string()
+      .required('User is required')
+      .trim()
+      .min(2, 'User must be at least 2 characters'),
     instagram: Yup.string().nullable().optional().matches(urlRegex, {
       message: 'Instagram link must be a valid URL',
       excludeEmptyString: true,
@@ -80,6 +105,7 @@ const OrganizationModal = ({
   const defaultValues = {
     image: null,
     name: organization?.basicInfo?.name || '',
+    user: organization?.basicInfo?.user || '',
     instagram: organization?.basicInfo?.socialLinks?.instagram || '',
     facebook: organization?.basicInfo?.socialLinks?.facebook || '',
     youtube: organization?.basicInfo?.socialLinks?.youtube || '',
@@ -188,6 +214,7 @@ const OrganizationModal = ({
         // For create, include all fields
         payload.basicInfo = {
           name: formData.name,
+          user: formData.user,
           socialLinks: {
             youtube: formData.youtube || '',
             facebook: formData.facebook || '',
@@ -269,6 +296,15 @@ const OrganizationModal = ({
                   name="name"
                   label="Organization Name"
                   placeholder="Enter Organization Name"
+                />
+
+                <RHFCustomDropdown
+                  name="user"
+                  label="Assigneed User"
+                  placeholder="Select User"
+                  options={userOptions}
+                  isLoading={isUserLoading}
+                  showNone={false}
                 />
 
                 <RHFTextField
