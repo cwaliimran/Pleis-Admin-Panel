@@ -31,6 +31,7 @@ interface OrganizationModalProps {
   open: boolean;
   onClose: () => void;
   organization?: any;
+  userType?: any;
   onSuccess: (org: any) => void;
 }
 
@@ -38,6 +39,7 @@ const OrganizationModal = ({
   open,
   onClose,
   organization,
+  userType,
   onSuccess,
 }: OrganizationModalProps) => {
   const isEdit = !!organization;
@@ -65,11 +67,9 @@ const OrganizationModal = ({
       value: user?.basicInfo?._id,
     })) || [];
 
-  console.log('apiData', apiData);
-
   const isLoading = isAdding || isUpdating;
 
-  // Define Yup schema with minimal typing
+  // Define Yup schema with conditional user validation
   const urlRegex =
     /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
 
@@ -79,10 +79,12 @@ const OrganizationModal = ({
       .required('Organization Name is required')
       .trim()
       .min(2, 'Organization Name must be at least 2 characters'),
-    user: Yup.string()
-      .required('User is required')
-      .trim()
-      .min(2, 'User must be at least 2 characters'),
+    ...(userType !== 'organizer' && {
+      user: Yup.string()
+        .required('User is required')
+        .trim()
+        .min(2, 'User must be at least 2 characters'),
+    }),
     instagram: Yup.string().nullable().optional().matches(urlRegex, {
       message: 'Instagram link must be a valid URL',
       excludeEmptyString: true,
@@ -105,7 +107,9 @@ const OrganizationModal = ({
   const defaultValues = {
     image: null,
     name: organization?.basicInfo?.name || '',
-    user: organization?.basicInfo?.user || '',
+    ...(userType !== 'organizer' && {
+      user: organization?.basicInfo?.user || '',
+    }),
     instagram: organization?.basicInfo?.socialLinks?.instagram || '',
     facebook: organization?.basicInfo?.socialLinks?.facebook || '',
     youtube: organization?.basicInfo?.socialLinks?.youtube || '',
@@ -122,7 +126,7 @@ const OrganizationModal = ({
 
   useEffect(() => {
     reset(defaultValues);
-  }, [organization, reset]);
+  }, [organization, userType, reset]);
 
   const handleClose = () => {
     reset();
@@ -136,7 +140,7 @@ const OrganizationModal = ({
         ? organization?.basicInfo?.media?.logo || null
         : null;
 
-      // Handle image upload (checking for FileList or array)
+      // Handle image upload
       if (
         formData.image &&
         (formData.image instanceof FileList || Array.isArray(formData.image))
@@ -161,6 +165,14 @@ const OrganizationModal = ({
       // Add fields to payload only if they have changed
       if (formData.name !== organization?.basicInfo?.name) {
         payload.basicInfo.name = formData.name;
+      }
+
+      // Add user only if userType is not organizer
+      if (
+        userType !== 'organizer' &&
+        formData.user !== organization?.basicInfo?.user
+      ) {
+        payload.basicInfo.user = formData.user;
       }
 
       // Check and add social links only if they have changed
@@ -214,7 +226,7 @@ const OrganizationModal = ({
         // For create, include all fields
         payload.basicInfo = {
           name: formData.name,
-          user: formData.user,
+          ...(userType !== 'organizer' && { user: formData.user }),
           socialLinks: {
             youtube: formData.youtube || '',
             facebook: formData.facebook || '',
@@ -298,14 +310,16 @@ const OrganizationModal = ({
                   placeholder="Enter Organization Name"
                 />
 
-                <RHFCustomDropdown
-                  name="user"
-                  label="Assigneed User"
-                  placeholder="Select User"
-                  options={userOptions}
-                  isLoading={isUserLoading}
-                  showNone={false}
-                />
+                {userType !== 'organizer' && (
+                  <RHFCustomDropdown
+                    name="user"
+                    label="Assigned User"
+                    placeholder="Select User"
+                    options={userOptions}
+                    isLoading={isUserLoading}
+                    showNone={false}
+                  />
+                )}
 
                 <RHFTextField
                   name="instagram"

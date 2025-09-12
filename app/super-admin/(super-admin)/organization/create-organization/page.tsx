@@ -11,7 +11,7 @@ const Page = () => {
         ]}
       />
 
-      <CreateOrganizationPage />
+      <CreateOrganizationPage userType="super-admin" />
     </div>
   );
 };

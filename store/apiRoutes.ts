@@ -9,6 +9,8 @@ export const API_ROUTES = {
   VERIFY_OTP: `/auth/verify-otp/email`,
   RESET_PASSWORD: `/auth/link/reset-password`,
   RESUME_ACCOUNT: `/auth/resume-account`,
+  TERMSANDCONDITION: `/settings/terms-conditions`,
+  TERMSANDCONDITION_BY_ID: (id: string) => `/settings/update/${id}`,
 
   VENUES_TYPES: `/admin/venue-types`,
   VENUES_TYPE_By_ID: (id: string) => `/admin/venue-types/${id}`,

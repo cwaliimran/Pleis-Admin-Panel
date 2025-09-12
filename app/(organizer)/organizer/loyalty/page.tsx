@@ -1,13 +1,13 @@
-import Header from "@/app/common/header";
-import LoyaltyView from "@/sections/loyalty/loyalty-view/loyalty-view";
+import Header from '@/app/common/header';
+import LoyaltyView from '@/sections/loyalty/loyalty-view/loyalty-view';
 
 const Page = () => {
   return (
-    <div className="min-h-screen pb-12 px-2">
+    <div className="min-h-screen px-2 pb-12">
       <Header
         links={[
-          { name: "Dashboard", href: "/organizer/dashboard" },
-          { name: "Loyalty", href: "" },
+          { name: 'Dashboard', href: '/organizer' },
+          { name: 'Loyalty', href: '' },
         ]}
       />
 

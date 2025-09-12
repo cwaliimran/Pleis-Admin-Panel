@@ -404,6 +404,7 @@ const OrganizationDetailPage = ({ id: organizationId, userType }: IdType) => {
             onClose={CloseModal}
             organization={organizationData}
             onSuccess={handleSuccess}
+            userType={userType}
           />
 
           <ConfirmDialog

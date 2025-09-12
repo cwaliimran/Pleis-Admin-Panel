@@ -74,7 +74,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
           router.push('/super-admin');
           break;
         case 'organizer':
-          router.push('/organizer/dashboard');
+          router.push('/organizer');
           break;
         default:
           router.push('/');
@@ -90,7 +90,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
       user &&
       user.token &&
       user.key === process.env.NEXT_PUBLIC_PROJECT_KEY &&
-      !user.accountState?.twoFactorAuth 
+      !user.accountState?.twoFactorAuth
     ) {
       goTo(user?.role);
     }

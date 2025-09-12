@@ -8,12 +8,12 @@ const Page = () => {
     <div className="min-h-screen bg-[#f8f6f7] pb-12 dark:bg-black">
       <Header
         links={[
-          { name: 'Dashboard', href: '/organizer/dashboard' },
+          { name: 'Dashboard', href: '/organizer' },
           { name: 'Organizations', href: '' },
         ]}
       />
 
-      <CreateOrganizationPage />
+      <CreateOrganizationPage userType="organizer" />
     </div>
   );
 };

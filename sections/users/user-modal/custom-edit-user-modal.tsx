@@ -106,12 +106,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const [imageUploading, setImageUploading] = useState(false);
 
-  const [updateUser, { isLoading: updateUserLoading }] =
-    useUpdateUserForUserListMutation();
-  const [
-    updateUserSuperAdminAndGuest,
-    { isLoading: updateUserSuperAdminAndGuestLoading },
-  ] = useUpdateUserSuperAdminAndGuestMutation();
+  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
+  const [updateUserSuperAdminAndGuest, { isLoading: updateUserSuperAdminAndGuestLoading }] = useUpdateUserSuperAdminAndGuestMutation();
 
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
@@ -164,10 +160,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const { handleSubmit, watch, reset } = methods;
 
-  const watchedRole = watch(
-    'role',
-    userData?.accountState?.userType || 'manager'
-  );
+  const watchedRole = watch('role', userData?.accountState?.userType || 'manager');
+
   const roleValue = roleOptionsFor(userType).some(
     (opt) => opt.value === watchedRole
   )
@@ -232,8 +226,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   }, [userData, reset]);
 
   const handleClose = () => {
-    reset(defaultValues);
-    setCurrentRole('manager');
+    // reset(defaultValues);
+    // setCurrentRole('manager');
     onClose();
   };
 
@@ -476,7 +470,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               options={[
                 { value: 'active', label: 'Active' },
                 { value: 'suspended', label: 'Suspended' },
-                ...(userData?.accountState?.userType === 'organizer'
+                ...(userData?.accountState?.userType === 'organizer' && userData?.accountState?.status === 'pending'
                   ? [{ value: 'pending', label: 'Pending' }]
                   : []),
               ]}

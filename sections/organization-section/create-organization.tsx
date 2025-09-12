@@ -28,7 +28,7 @@ const defaultValues = {
   linkedin: '',
 };
 
-const CreateOrganizationPage = () => {
+const CreateOrganizationPage = ({ userType }: { userType: string }) => {
   const openModal = useBoolean();
   const [updateOrganization] = useUpdateOrganizationMutation();
 
@@ -286,6 +286,7 @@ const CreateOrganizationPage = () => {
         onClose={CloseModal}
         organization={newOrganization}
         onSuccess={handleSuccess}
+        userType={userType}
       />
     </div>
   );
