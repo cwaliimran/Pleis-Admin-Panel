@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useSelector, useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
-import { RootState } from "@/store/store";
-import { clearUser, setUser } from "@/store/slice/userSlice";
+import { useSelector, useDispatch } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { RootState } from '@/store/store';
+import { clearUser, setUser } from '@/store/slice/userSlice';
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -12,7 +12,7 @@ export const useAuth = () => {
 
   const logout = () => {
     dispatch(clearUser());
-    router.push("/");
+    router.push('/');
   };
 
   const login = (userData: {
@@ -26,20 +26,20 @@ export const useAuth = () => {
   };
 
   const isAuthenticated = !!user;
-  const isOrganizer = user?.role === "organizer";
-  const isSuperAdmin = user?.role === "superAdmin";
+  const isOrganizer = user?.role === 'organizer';
+  const isSuperAdmin = user?.role === 'superAdmin';
 
   const canAccess = (allowedRoles: string[]) => {
     return user && allowedRoles.includes(user.role);
   };
 
   const getDashboardRoute = () => {
-    if (user?.role === "superAdmin") {
-      return "/super-admin";
-    } else if (user?.role === "organizer") {
-      return "/organizer/dashboard";
+    if (user?.role === 'superAdmin') {
+      return '/super-admin';
+    } else if (user?.role === 'organizer') {
+      return '/organizer';
     }
-    return "/";
+    return '/';
   };
 
   return {

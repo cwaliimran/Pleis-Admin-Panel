@@ -6,7 +6,7 @@ const Page = () => {
     <div>
       <Header
         links={[
-          { name: 'Dashboard', href: '/organizer/dashboard' },
+          { name: 'Dashboard', href: '/organizer' },
           { name: 'Users List', href: '/organizer/user/user-list' },
           { name: 'User Details' },
         ]}

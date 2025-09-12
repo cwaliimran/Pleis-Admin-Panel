@@ -1,8 +1,8 @@
-"use client";
-import Header from "@/app/common/header";
-import ConfirmDialog from "@/components/comfirm-dialog/confirm-dialog";
-import { useBoolean } from "@/hooks/useBoolean";
-import { UserTable } from "@/sections/users";
+'use client';
+import Header from '@/app/common/header';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { useBoolean } from '@/hooks/useBoolean';
+import { UserTable } from '@/sections/users';
 // import { yupResolver } from "@hookform/resolvers/yup";
 // import { useForm } from "react-hook-form";
 // import * as Yup from "yup";
@@ -52,20 +52,20 @@ const Page = () => {
   //   };
 
   const handleEdit = (id: string) => {
-    console.log("id:", id);
+    console.log('id:', id);
     openModal.onTrue();
     editModal.onTrue();
   };
 
   const handleDelete = (id: string) => {
-    console.log("id:", id);
+    console.log('id:', id);
     deleteModal.onTrue();
   };
   const onDelete = () => {
     deleteModal.onFalse();
   };
   const handlePending = (id: string) => {
-    console.log("id:", id);
+    console.log('id:', id);
     pendingModal.onTrue();
   };
   const onPending = () => {
@@ -76,8 +76,8 @@ const Page = () => {
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/organizer/dashboard" },
-          { name: "Pending Users List", href: "" },
+          { name: 'Dashboard', href: '/organizer' },
+          { name: 'Pending Users List', href: '' },
         ]}
       />
       <div></div>

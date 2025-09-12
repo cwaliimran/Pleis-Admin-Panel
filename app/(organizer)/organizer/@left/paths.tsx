@@ -4,7 +4,7 @@ export const paths = {
     menu: '/organizer/menu',
     invoices: '/organizer/invoices',
     calendar: '/organizer/calendar',
-    dashboard: '/organizer/dashboard',
+    dashboard: '/organizer',
     menuItems: '/organizer/menuItems',
     rewards: '/organizer/rewards',
     challenges: '/organizer/challenges',

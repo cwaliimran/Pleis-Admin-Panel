@@ -2,6 +2,7 @@ import {
   Building,
   Calendar,
   ChartColumnBig,
+  ClipboardPenLine,
   Hash,
   Highlighter,
   // Home,
@@ -150,6 +151,11 @@ export const menuGroups: MenuGroup[] = [
         icon: UsersRound,
       },
     ],
+  },
+  {
+    label: 'Terms & Conditions',
+    key: paths.superAdmin.terms.default,
+    icon: ClipboardPenLine,
   },
   // {
   //   label: "Marketing Requests",

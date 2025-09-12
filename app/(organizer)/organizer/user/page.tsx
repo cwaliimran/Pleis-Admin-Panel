@@ -6,7 +6,7 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/organizer/dashboard' },
+          { name: 'Dashboard', href: '/organizer' },
           { name: 'Users', href: '' },
         ]}
       />

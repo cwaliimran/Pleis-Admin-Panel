@@ -1,17 +1,17 @@
 import Header from '@/app/common/header';
-import TransactionsView from '@/sections/transactions/transactions-view';
+import TermsAndConditionsPage from '@/sections/terms/terms-view';
 
 const Page = () => {
   return (
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/organizer' },
-          { name: 'Transactions', href: '' },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Terms & Conditions', href: '' },
         ]}
       />
 
-      <TransactionsView />
+      <TermsAndConditionsPage />
     </div>
   );
 };

@@ -23,7 +23,6 @@ const schema = Yup.object().shape({
 });
 
 function ForgotPasswordPage() {
-
   const [forgotPasswordData, { isLoading }] = useSendOtpMutation();
 
   const methods = useForm({
@@ -31,12 +30,14 @@ function ForgotPasswordPage() {
     resolver: yupResolver(schema),
   });
 
-  const { handleSubmit } = methods;
+  const { handleSubmit, reset } = methods;
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       const normalizedEmail = normalizeEmail(data.email);
-      const response = await forgotPasswordData({ email: normalizedEmail }).unwrap();
+      const response = await forgotPasswordData({
+        email: normalizedEmail,
+      }).unwrap();
 
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -49,6 +50,7 @@ function ForgotPasswordPage() {
         showSuccess(response?.message || 'Otp sent successfully');
       }
 
+      reset();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       console.log('Failed to add category:', errorMessage);
@@ -131,7 +133,7 @@ function ForgotPasswordPage() {
             </div>
           </FormProvider>
 
-          <p className="text-muted-foreground mt-10 text-center text-xs">
+          {/* <p className="text-muted-foreground mt-10 text-center text-xs">
             By continuing, you agree to our{' '}
             <Link
               href="/term-and-service"
@@ -147,7 +149,7 @@ function ForgotPasswordPage() {
               Privacy Policy
             </Link>
             .
-          </p>
+          </p> */}
         </motion.div>
       </div>
     </div>
