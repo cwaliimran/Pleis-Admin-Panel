@@ -38,12 +38,14 @@ const UserOverView: React.FC<{
   user: any;
   apiData: any;
 }> = ({ userType, apiData, user }) => {
-  const permissionList = [
-    'Ticketing',
-    'Loyalty',
-    'InApp ordering',
-    'Reservation management',
-  ];
+  console.log('apiData in overview', apiData);
+
+  const permissionLabels: Record<string, string> = {
+    inAppOrdering: 'InApp ordering',
+    reservationManagement: 'Reservation management',
+    loyaltyScanning: 'Loyalty',
+    ticketing: 'Ticketing',
+  };
 
   const openModal = useBoolean();
 
@@ -104,11 +106,13 @@ const UserOverView: React.FC<{
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
-                  {permissionList.map((perm, idx) => (
-                    <Badge key={idx} variant="default">
-                      {perm}
-                    </Badge>
-                  ))}
+                  {apiData?.organizations?.[0]?.staff?.[0]?.featuresAccess?.map(
+                    (perm: string, idx: number) => (
+                      <Badge key={idx} variant="default">
+                        {permissionLabels[perm] ?? perm}
+                      </Badge>
+                    )
+                  )}
                 </CardContent>
               </Card>
             </>
@@ -163,7 +167,7 @@ const UserOverView: React.FC<{
                   </div>
 
                   {/* Social Links */}
-                  <div className="mt-5 flex justify-end gap-2">
+                  {/* <div className="mt-5 flex justify-end gap-2">
                     <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-200 p-0 text-blue-800 transition-colors hover:bg-blue-300">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -233,7 +237,7 @@ const UserOverView: React.FC<{
                         </g>
                       </svg>
                     </div>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
 
@@ -394,7 +398,7 @@ const UserOverView: React.FC<{
               <CardHeader>
                 <h1 className="font-semibold text-slate-500">CATEGORIES</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {userTags.slice(0, 1).map((item, index) => (
+                  {[userTags].slice(0, 1).map((item, index) => (
                     <Badge
                       key={index}
                       className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
@@ -418,7 +422,7 @@ const UserOverView: React.FC<{
                       key={index}
                       className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
                     >
-                      {item}
+                      -
                     </Badge>
                   ))}
                 </div>
@@ -432,12 +436,12 @@ const UserOverView: React.FC<{
               <CardHeader>
                 <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {venueTypes?.slice(0, 9)?.map((item, index) => (
+                  {venueTypes?.slice(0, 1)?.map((item, index) => (
                     <Badge
                       key={index}
                       className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
                     >
-                      {item}
+                      -
                     </Badge>
                   ))}
                 </div>
@@ -535,8 +539,8 @@ const UserOverView: React.FC<{
                     Platium
                   </p>
                   <p>
-                    <strong className="text-slate-500">Global Points:</strong>{' '}
-                    0 pts
+                    <strong className="text-slate-500">Global Points:</strong> 0
+                    pts
                   </p>
                   <p>
                     <strong className="text-slate-500">Global Spent:</strong> 0

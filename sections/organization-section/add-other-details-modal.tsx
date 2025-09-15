@@ -87,7 +87,7 @@ const schema = Yup.object().shape({
     .required('Description is required')
     .max(500, 'Description must be at most 500 characters'),
   minAge: Yup.string(),
-  tags: Yup.array().of(Yup.string()).min(0).max(10, 'Maximum 10 tags allowed'),
+  tags: Yup.array().of(Yup.string()).min(0),
   categories: Yup.array()
     .of(Yup.string())
     .min(1, 'At least one category is required')

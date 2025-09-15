@@ -11,7 +11,7 @@ const Page = () => {
           { name: 'User Details' },
         ]}
       />
-      <UserDetailPage />
+      <UserDetailPage userDashboardType="organizer" />
     </div>
   );
 };
