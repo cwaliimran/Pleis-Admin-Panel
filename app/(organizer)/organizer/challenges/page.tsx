@@ -1,5 +1,6 @@
 import Header from '@/app/common/header';
 import ChallengesView from '@/sections/challenges/challenges-view';
+// import ChallengesView from '@/sections/challenges-old/challenges-view';
 
 const Page = () => {
   return (

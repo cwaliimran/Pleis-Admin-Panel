@@ -1,6 +1,6 @@
-export const PromotionData = [
+export const RewardsData = [
   {
-    _id: '1',
+    id: '1',
     photo: '/images/menu/burger.jpg',
     title: 'Burger Bonanza',
     description: 'Buy one get one free on all burgers.',
@@ -11,7 +11,7 @@ export const PromotionData = [
     type: 'Happy Hour',
   },
   {
-    _id: '2',
+    id: '2',
     photo: '/images/menu/salad.jpg',
     title: 'Healthy Salad Days',
     description: '20% off on all salads.',
@@ -22,7 +22,7 @@ export const PromotionData = [
     type: 'Happy Hour',
   },
   {
-    _id: '3',
+    id: '3',
     photo: '/images/menu/icecream.jpg',
     title: 'Ice Cream Fiesta',
     description: 'Free topping with every ice cream.',

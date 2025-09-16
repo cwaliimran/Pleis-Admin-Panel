@@ -1,6 +1,6 @@
 export const ChallengesData = [
   {
-    _id: '1',
+    id: '1',
     name: 'Complete 5 Orders',
     reward: '100 pts',
     taskType: 'Order Count',
@@ -10,7 +10,7 @@ export const ChallengesData = [
     tierLimit: 'Silver',
   },
   {
-    _id: '2',
+    id: '2',
     name: 'Try the New Burger',
     reward: 'Free Drink',
     taskType: 'Menu Item',
@@ -20,7 +20,7 @@ export const ChallengesData = [
     tierLimit: 'Bronze',
   },
   {
-    _id: '3',
+    id: '3',
     name: 'Refer a Friend',
     reward: '200 pts',
     taskType: 'Referral',
@@ -30,7 +30,7 @@ export const ChallengesData = [
     tierLimit: 'Gold',
   },
   {
-    _id: '4',
+    id: '4',
     name: 'Order Dessert',
     reward: '50 pts',
     taskType: 'Menu Item',
@@ -40,7 +40,7 @@ export const ChallengesData = [
     tierLimit: 'Bronze',
   },
   {
-    _id: '5',
+    id: '5',
     name: 'Lunch Combo Challenge',
     reward: 'Combo Discount',
     taskType: 'Combo Purchase',

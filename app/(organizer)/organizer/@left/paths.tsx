@@ -54,6 +54,9 @@ export const paths = {
     transactions: {
       default: '/organizer/transactions',
     },
+    sample: {
+      default: '/organizer/sample',
+    },
     users: {
       default: '/organizer/user',
       create: '/organizer/user/create-user',

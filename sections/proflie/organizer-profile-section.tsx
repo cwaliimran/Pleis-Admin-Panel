@@ -336,7 +336,7 @@ const OrganizerProfileSection = () => {
               <button
                 type="button"
                 aria-current={activeTab === 'personal' ? 'page' : undefined}
-                className={`focus-visible:ring-primary/60 rounded-t-md border-b-2 px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 ${activeTab === 'personal' ? 'border-primary text-primary dark:bg-secondary bg-white dark:text-white' : 'hover:text-primary border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white'}`}
+                className={`focus-visible:ring-primary/60 cursor-pointer rounded-t-md border-b-2 px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 ${activeTab === 'personal' ? 'border-primary text-primary dark:bg-secondary bg-white dark:text-white' : 'hover:text-primary border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white'}`}
                 onClick={() => setActiveTab('personal')}
               >
                 <span className="inline-flex items-center gap-2">
@@ -357,7 +357,7 @@ const OrganizerProfileSection = () => {
               <button
                 type="button"
                 aria-current={activeTab === 'business' ? 'page' : undefined}
-                className={`focus-visible:ring-primary/60 rounded-t-md border-b-2 px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 ${activeTab === 'business' ? 'border-primary text-primary dark:bg-secondary bg-white dark:text-white' : 'hover:text-primary border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white'}`}
+                className={`focus-visible:ring-primary/60 cursor-pointer rounded-t-md border-b-2 px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 ${activeTab === 'business' ? 'border-primary text-primary dark:bg-secondary bg-white dark:text-white' : 'hover:text-primary border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white'}`}
                 onClick={() => setActiveTab('business')}
               >
                 <span className="inline-flex items-center gap-2">
