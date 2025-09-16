@@ -23,22 +23,19 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
   } = useFormContext();
 
   const [preview, setPreview] = useState<string | null>(initialImage);
-  const watchedValue = useWatch({ control, name, defaultValue: initialImage }); // Watch the field value
+  const watchedValue = useWatch({ control, name, defaultValue: initialImage });
 
   useEffect(() => {
     // Handle preview based on watched value or initial image
     if (watchedValue) {
       if (watchedValue instanceof FileList && watchedValue[0] instanceof File) {
-        // Handle file upload
         const objectUrl = URL.createObjectURL(watchedValue[0]);
         setPreview(objectUrl);
-        return () => URL.revokeObjectURL(objectUrl); // Cleanup on unmount
+        return () => URL.revokeObjectURL(objectUrl);
       } else if (typeof watchedValue === 'string') {
-        // Handle string URL (e.g., from initialImage in edit mode)
         setPreview(watchedValue);
       }
     } else if (initialImage && typeof initialImage === 'string') {
-      // Set initial image if no watched value
       setPreview(initialImage);
     } else {
       setPreview(null);
@@ -99,7 +96,7 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
                   onChange={(e) => {
                     const files = e.target.files;
                     if (files && files.length > 0) {
-                      onChange(files); // Update form with FileList
+                      onChange(files); 
                     }
                   }}
                   ref={ref}

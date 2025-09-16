@@ -13,7 +13,7 @@ const Page = () => {
           { name: 'Organizer Details' },
         ]}
       />
-      <UserDetailPage />
+      <UserDetailPage userDashboardType="organizer" />
     </div>
   );
 };

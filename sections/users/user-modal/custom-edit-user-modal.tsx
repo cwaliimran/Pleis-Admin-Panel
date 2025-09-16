@@ -86,7 +86,7 @@ interface EditUserModalProps {
   onClose: () => void;
   selectedId: string | null;
   userData?: any;
-  onUpdateSuccess: (updatedUser: any) => void;
+  onUpdateSuccess?: (updatedUser: any) => void;
   isLoading: boolean;
   userType?: string;
 }
@@ -107,7 +107,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [imageUploading, setImageUploading] = useState(false);
 
   const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
-  const [updateUserSuperAdminAndGuest, { isLoading: updateUserSuperAdminAndGuestLoading }] = useUpdateUserSuperAdminAndGuestMutation();
+  const [ updateUserSuperAdminAndGuest, { isLoading: updateUserSuperAdminAndGuestLoading }] = useUpdateUserSuperAdminAndGuestMutation();
 
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
@@ -160,7 +160,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const { handleSubmit, watch, reset } = methods;
 
-  const watchedRole = watch('role', userData?.accountState?.userType || 'manager');
+  const watchedRole = watch(
+    'role',
+    userData?.accountState?.userType || 'manager'
+  );
 
   const roleValue = roleOptionsFor(userType).some(
     (opt) => opt.value === watchedRole
@@ -178,10 +181,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     if (userData) {
       const formData = {
         role: userData?.accountState?.userType as RoleKey,
-        image:
-          userData?.basicInfo?.profileIcon !== noImageUrl
-            ? userData?.basicInfo?.profileIcon
-            : null,
+        image: userData?.basicInfo?.profileIcon !== noImageUrl || userData?.basicInfo?.profileIcon !== noImageUrlDev ? userData?.basicInfo?.profileIcon : null,
         firstName: userData?.basicInfo?.firstName || '',
         lastName: userData?.basicInfo?.lastName || '',
         email: userData?.basicInfo?.email || '',
@@ -240,7 +240,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     let uploadedFileKey: string | null = null;
 
     try {
-      let profileIconUrl = userData?.basicInfo?.profileIcon || noImageUrl || noImageUrlDev;
+      let profileIconUrl =
+        userData?.basicInfo?.profileIcon || noImageUrl || noImageUrlDev;
 
       if (
         data.image === null &&
@@ -448,7 +449,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               label="Profile Image"
               initialImage={(() => {
                 const img = userData?.basicInfo?.profileIcon;
-                if (img && img !== noImageUrl) {
+                if (img && img !== noImageUrl && img !== noImageUrlDev) {
                   return img;
                 }
                 return null;
@@ -470,7 +471,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               options={[
                 { value: 'active', label: 'Active' },
                 { value: 'suspended', label: 'Suspended' },
-                ...(userData?.accountState?.userType === 'organizer' && userData?.accountState?.status === 'pending'
+                ...(userData?.accountState?.userType === 'organizer' &&
+                userData?.accountState?.status === 'pending'
                   ? [{ value: 'pending', label: 'Pending' }]
                   : []),
               ]}

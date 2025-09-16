@@ -13,7 +13,7 @@ const Page = () => {
           { name: 'User Detail', href: '' },
         ]}
       />
-      <UserDetailPage />
+      <UserDetailPage userDashboardType="super-admin" />
     </div>
   );
 };
