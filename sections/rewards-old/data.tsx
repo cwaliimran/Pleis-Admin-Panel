@@ -1,6 +1,6 @@
 export const RewardsData = [
   {
-    _id: '1',
+    id: '1',
     photo: '/images/menu/pizza.jpg',
     name: 'Pepperoni Pizza',
     description: 'Cheesy pizza topped with pepperoni slices.',
@@ -14,7 +14,7 @@ export const RewardsData = [
     eventId: '',
   },
   {
-    _id: '2',
+    id: '2',
     photo: '/images/menu/salad.jpg',
     name: 'Caesar Salad',
     description: 'Fresh romaine lettuce with Caesar dressing.',
@@ -28,7 +28,7 @@ export const RewardsData = [
     eventId: '',
   },
   {
-    _id: '3',
+    id: '3',
     photo: '/images/menu/coffee.jpg',
     name: 'Cappuccino',
     description: 'Rich espresso with steamed milk foam.',
@@ -42,7 +42,7 @@ export const RewardsData = [
     eventId: '',
   },
   {
-    _id: '4',
+    id: '4',
     photo: '/images/menu/icecream.jpg',
     name: 'Vanilla Ice Cream',
     description: 'Classic vanilla ice cream scoop.',
@@ -56,7 +56,7 @@ export const RewardsData = [
     eventId: '',
   },
   {
-    _id: '5',
+    id: '5',
     photo: '/images/rewards/vip-entry.jpg',
     name: 'VIP Event Entry',
     description: 'Exclusive access to VIP area at special events.',
@@ -70,7 +70,7 @@ export const RewardsData = [
     eventId: 'event-1',
   },
   {
-    _id: '6',
+    id: '6',
     photo: '/images/rewards/merchandise.jpg',
     name: 'Branded T-Shirt',
     description: 'Exclusive restaurant branded merchandise.',

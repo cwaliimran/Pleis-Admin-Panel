@@ -1,18 +1,17 @@
-'use client';
 import Header from '@/app/common/header';
-import OrganizerProfileSection from '@/sections/proflie/organizer-profile-section-old';
+import SampleView from '@/sections/sample-table/sample-view';
 
 const Page = () => {
   return (
-    <div className=" ">
+    <div className="min-h-screen pb-12">
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer' },
-          { name: 'Profile', href: '' },
+          { name: 'Sample Page', href: '' },
         ]}
       />
 
-      <OrganizerProfileSection />
+      <SampleView />
     </div>
   );
 };

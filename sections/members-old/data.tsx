@@ -1,9 +1,8 @@
-export const MembersData = [
+export const RewardsData = [
   {
-    _id: '1',
     username: 'JohnDoe',
     currentTier: 'Gold',
-    status: 'active',
+    status: 'Active',
     currentPointBalance: 1200,
     membershipStartDate: '2023-03-15',
     highestTierAchieved: 'Platinum',
@@ -17,10 +16,9 @@ export const MembersData = [
     actions: '',
   },
   {
-    _id: '2',
     username: 'JaneSmith',
     currentTier: 'Silver',
-    status: 'inactive',
+    status: 'Inactive',
     currentPointBalance: 450,
     membershipStartDate: '2022-11-02',
     highestTierAchieved: 'Gold',
@@ -34,10 +32,9 @@ export const MembersData = [
     actions: '',
   },
   {
-    _id: '3',
     username: 'AlexLee',
     currentTier: 'Bronze',
-    status: 'active',
+    status: 'Active',
     currentPointBalance: 300,
     membershipStartDate: '2024-01-20',
     highestTierAchieved: 'Silver',

@@ -12,10 +12,9 @@ import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import ChallengesTable from './challenges-table';
-import ChallengeModal from './challenges-modal';
+import SampleTable from './sample-table';
 
-const ChallengesView = () => {
+const SampleView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -29,6 +28,8 @@ const ChallengesView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+
+  console.log('selectedRecord', selectedRecord);
 
   const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
 
@@ -70,34 +71,31 @@ const ChallengesView = () => {
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
   const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
+    const selectedData = localData?.find((item: any) => item?._id === id);
+
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('... not found');
+    }
   };
 
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
-
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
+  // const handleDelete = (id: string) => {
+  //   if (!id) {
+  //     showError('No ... selected');
+  //     return;
   //   }
+
+  //   setSelectedId(id);
+  //   deleteModal.onTrue();
   // };
 
   const handleDelete = useCallback(
     (id: string) => {
-      if (!id) {
-        showError('No challenge selected');
-        return;
-      }
-
       setSelectedId(id);
       deleteModal.onTrue();
     },
@@ -133,12 +131,12 @@ const ChallengesView = () => {
             onClick={handleCreateNew}
           >
             <Plus />
-            Create Challenges
+            Create ...
           </Button>
         </div>
       </div>
 
-      <ChallengesTable
+      <SampleTable
         data={localData}
         meta={meta}
         loading={isLoading}
@@ -174,17 +172,10 @@ const ChallengesView = () => {
         }}
       />
 
-      <ChallengeModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-      />
-
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Challenges"
-        content="Are you sure you want to delete this challenges?"
+        title="Delete ..."
+        content="Are you sure you want to delete this ...?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -196,4 +187,4 @@ const ChallengesView = () => {
   );
 };
 
-export default ChallengesView;
+export default SampleView;

@@ -311,6 +311,11 @@ const OrganizerProfileSection = () => {
     }
   };
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'personal' | 'business'>(
+    'personal'
+  );
+
   return (
     <div className="mt-5 min-h-[87vh] md:mt-0 md:p-6">
       <div className="max-w-4xl md:mx-auto">
@@ -318,42 +323,60 @@ const OrganizerProfileSection = () => {
           <CardHeader className="flex flex-col-reverse items-center justify-between md:flex-row">
             <div>
               <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Personal Information
+                Organizer Profile
               </CardTitle>
               <p className="mt-1 text-sm text-gray-600 dark:text-white">
-                Use a permanent address where you can receive mail.
+                Manage your personal and business details.
               </p>
             </div>
-            {/* <div className="flex items-center space-x-3">
-              <Label
-                htmlFor="two-factor"
-                className="cursor-pointer text-gray-700 dark:text-white"
-                onClick={handleToggleChange}
-              >
-                Enable two factor
-              </Label>
-              <div className="relative">
-                <Input
-                  id="two-factor"
-                  type="checkbox"
-                  checked={isTwoFactorEnabled}
-                  onChange={handleToggleChange}
-                  className="peer sr-only"
-                />
-                <div
-                  className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
-                    isTwoFactorEnabled
-                      ? 'bg-primary after:translate-x-full after:border-white'
-                      : 'bg-gray-200'
-                  }`}
-                  onClick={handleToggleChange}
-                ></div>
-              </div>
-            </div> */}
-
             <TwoFactorAuth user={user} />
           </CardHeader>
-
+          <div className="border-b border-gray-200 px-8 pt-2 dark:border-gray-700">
+            <nav className="flex space-x-6" aria-label="Tabs">
+              <button
+                type="button"
+                aria-current={activeTab === 'personal' ? 'page' : undefined}
+                className={`focus-visible:ring-primary/60 cursor-pointer rounded-t-md border-b-2 px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 ${activeTab === 'personal' ? 'border-primary text-primary dark:bg-secondary bg-white dark:text-white' : 'hover:text-primary border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white'}`}
+                onClick={() => setActiveTab('personal')}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <svg
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="inline-block"
+                  >
+                    <circle cx="9" cy="9" r="7" />
+                    <path d="M9 11c2.5 0 4.5-1.5 4.5-3.5S11.5 4 9 4 4.5 5.5 4.5 7.5 6.5 11 9 11z" />
+                  </svg>
+                  Personal Info
+                </span>
+              </button>
+              <button
+                type="button"
+                aria-current={activeTab === 'business' ? 'page' : undefined}
+                className={`focus-visible:ring-primary/60 cursor-pointer rounded-t-md border-b-2 px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 ${activeTab === 'business' ? 'border-primary text-primary dark:bg-secondary bg-white dark:text-white' : 'hover:text-primary border-transparent bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white'}`}
+                onClick={() => setActiveTab('business')}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <svg
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="inline-block"
+                  >
+                    <rect x="3" y="6" width="12" height="8" rx="2" />
+                    <path d="M6 6V4a3 3 0 0 1 6 0v2" />
+                  </svg>
+                  Business Details
+                </span>
+              </button>
+            </nav>
+          </div>
           <CardContent className="space-y-6 pt-0 pb-3 md:px-8">
             <FormProvider methods={methods} onSubmit={onSubmit}>
               {/* Hidden file input */}
@@ -365,159 +388,167 @@ const OrganizerProfileSection = () => {
                 className="hidden"
               />
 
-              {/* Avatar Section */}
-              <div className="flex items-center space-x-2 border-b border-gray-200 pb-6 md:space-x-8">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-gray-100 text-gray-700">
-                    <span className="text-2xl font-semibold">
-                      {user?.basicInfo?.firstName[0]}
-                    </span>
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleAvatarChange}
-                    className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:text-white"
-                  >
-                    Change avatar
-                  </Button>
-                  <p className="mt-2 text-sm text-gray-500">JPG or PNG.</p>
-                </div>
-              </div>
-
-              {/* Form Fields */}
-              <div className="mt-6 mb-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                <RHFTextField
-                  name="firstName"
-                  label="First Name"
-                  placeholder="Enter your first name"
-                />
-
-                <RHFTextField
-                  name="lastName"
-                  label="Last Name"
-                  placeholder="Enter your last name"
-                />
-
-                <RHFTextField
-                  name="email"
-                  type="email"
-                  label="Email"
-                  placeholder="Enter your email address"
-                />
-
-                <Controller
-                  name="phone"
-                  control={control}
-                  render={({ field, fieldState }) => (
+              {/* Tab Content */}
+              {activeTab === 'personal' && (
+                <>
+                  {/* Avatar Section */}
+                  <div className="flex items-center space-x-2 border-b border-gray-200 pb-6 md:space-x-8">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage src={avatarUrl ?? undefined} />
+                      <AvatarFallback className="bg-gray-100 text-gray-700">
+                        <span className="text-2xl font-semibold">
+                          {user?.basicInfo?.firstName[0]}
+                        </span>
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
-                      <p className="mb-0.5 text-sm font-medium">Phone</p>
-                      <PhoneInput
-                        {...field}
-                        country="pk"
-                        onChange={(value, country: any) => {
-                          field.onChange(value);
-                          setValue('phoneCode', `+${country?.dialCode || ''}`, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
-                        }}
-                        placeholder="Phone Number"
-                        inputProps={{
-                          required: true,
-                          'aria-invalid': fieldState.invalid,
-                        }}
-                        containerClass="w-full"
-                        dropdownStyle={{
-                          zIndex: 9999,
-                          position: 'fixed',
-                          width: '16rem',
-                        }}
-                        buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
-                        inputClass={`file:text-foreground placeholder:text-muted-foreground
-            selection:bg-primary selection:text-primary-foreground
-            dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm
-            flex !h-[42px] !w-full min-w-0 rounded-lg
-            !bg-transparent px-3 py-1 text-base
-            shadow-xs transition-[color,box-shadow]
-            outline-none file:inline-flex file:h-7 file:border-0
-            file:bg-transparent file:text-sm file:font-medium
-            disabled:pointer-events-none disabled:cursor-not-allowed
-            disabled:opacity-50 md:text-sm
-            focus-visible:ring-ring/50 focus-visible:ring-[3px]
-            aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
-            aria-invalid:border-destructive ${
-              fieldState.invalid ? 'border-destructive ring-destructive/40' : ''
-            }`}
-                      />
-                      {fieldState.error && (
-                        <p className="mt-1 text-xs text-red-500">
-                          {fieldState.error.message}
-                        </p>
-                      )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAvatarChange}
+                        className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:text-white"
+                      >
+                        Change avatar
+                      </Button>
+                      <p className="mt-2 text-sm text-gray-500">JPG or PNG.</p>
                     </div>
-                  )}
-                />
-
-                <RHFTextField
-                  name="organizationName"
-                  label="Organization Name"
-                  placeholder="Enter organization name"
-                />
-
-                <RHFTextField
-                  name="companyName"
-                  label="Company Name"
-                  placeholder="Enter company name"
-                />
-                <RHFTextField
-                  name="oib"
-                  label="OIB"
-                  placeholder="Enter OIB number"
-                />
-                <RHFTextField
-                  name="bankAccountNumber"
-                  label="Bank Account Number"
-                  placeholder="Enter bank account number"
-                />
-                <RHFTextField
-                  name="representativeName"
-                  label="Representative Full Name"
-                  placeholder="Enter representative full name"
-                />
-
-                <RHFTextField
-                  name="subscriptionStatus"
-                  label="Current Subscription"
-                  placeholder="Subscription status"
-                  disabled
-                />
-
-                <div className="col-span-1 space-y-2 md:col-span-2">
-                  <GoogleLocationInput
-                    name="location"
-                    label="Location"
-                    showLabel={true}
-                  />
-
-                  <RHFCustomCombobox
-                    name="suppliers"
-                    placeholder="Select suppliers"
-                    label="Suppliers"
-                    className="w-full flex-1"
-                    multiple={true}
-                    allowCustom={false}
-                    options={supplierOptions}
-                    onChange={(value: string[]) => {
-                      setValue('suppliers', value, { shouldDirty: true });
-                    }}
-                  />
-                </div>
-              </div>
-
+                  </div>
+                  {/* Personal Info Fields */}
+                  <div className="mt-6 mb-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    <RHFTextField
+                      name="firstName"
+                      label="First Name"
+                      placeholder="Enter your first name"
+                    />
+                    <RHFTextField
+                      name="lastName"
+                      label="Last Name"
+                      placeholder="Enter your last name"
+                    />
+                    <RHFTextField
+                      name="email"
+                      type="email"
+                      label="Email"
+                      placeholder="Enter your email address"
+                    />
+                    <Controller
+                      name="phone"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <div>
+                          <p className="mb-0.5 text-sm font-medium">Phone</p>
+                          <PhoneInput
+                            {...field}
+                            country="pk"
+                            onChange={(value, country: any) => {
+                              field.onChange(value);
+                              setValue(
+                                'phoneCode',
+                                `+${country?.dialCode || ''}`,
+                                {
+                                  shouldValidate: true,
+                                  shouldDirty: true,
+                                }
+                              );
+                            }}
+                            placeholder="Phone Number"
+                            inputProps={{
+                              required: true,
+                              'aria-invalid': fieldState.invalid,
+                            }}
+                            containerClass="w-full"
+                            dropdownStyle={{
+                              zIndex: 9999,
+                              position: 'fixed',
+                              width: '16rem',
+                            }}
+                            buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                            inputClass={`file:text-foreground placeholder:text-muted-foreground
+              selection:bg-primary selection:text-primary-foreground
+              dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm
+              flex !h-[42px] !w-full min-w-0 rounded-lg
+              !bg-transparent px-3 py-1 text-base
+              shadow-xs transition-[color,box-shadow]
+              outline-none file:inline-flex file:h-7 file:border-0
+              file:bg-transparent file:text-sm file:font-medium
+              disabled:pointer-events-none disabled:cursor-not-allowed
+              disabled:opacity-50 md:text-sm
+              focus-visible:ring-ring/50 focus-visible:ring-[3px]
+              aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
+              aria-invalid:border-destructive ${
+                fieldState.invalid
+                  ? 'border-destructive ring-destructive/40'
+                  : ''
+              }`}
+                          />
+                          {fieldState.error && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {fieldState.error.message}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    />
+                    <RHFTextField
+                      name="organizationName"
+                      label="Organization Name"
+                      placeholder="Enter organization name"
+                    />
+                  </div>
+                </>
+              )}
+              {activeTab === 'business' && (
+                <>
+                  {/* Business Details Fields */}
+                  <div className="mt-6 mb-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    <RHFTextField
+                      name="companyName"
+                      label="Company Name"
+                      placeholder="Enter company name"
+                    />
+                    <RHFTextField
+                      name="oib"
+                      label="OIB"
+                      placeholder="Enter OIB number"
+                    />
+                    <RHFTextField
+                      name="bankAccountNumber"
+                      label="Bank Account Number"
+                      placeholder="Enter bank account number"
+                    />
+                    <RHFTextField
+                      name="representativeName"
+                      label="Representative Full Name"
+                      placeholder="Enter representative full name"
+                    />
+                    <RHFTextField
+                      name="subscriptionStatus"
+                      label="Current Subscription"
+                      placeholder="Subscription status"
+                      disabled
+                    />
+                    <div className="col-span-1 space-y-2 md:col-span-2">
+                      <GoogleLocationInput
+                        name="location"
+                        label="Location"
+                        showLabel={true}
+                      />
+                      <RHFCustomCombobox
+                        name="suppliers"
+                        placeholder="Select suppliers"
+                        label="Suppliers"
+                        className="w-full flex-1"
+                        multiple={true}
+                        allowCustom={false}
+                        options={supplierOptions}
+                        onChange={(value: string[]) => {
+                          setValue('suppliers', value, { shouldDirty: true });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               {/* Save Button */}
               <div className="flex items-center justify-end gap-4 pt-4">
                 <Button
@@ -527,7 +558,6 @@ const OrganizerProfileSection = () => {
                 >
                   Update Password
                 </Button>
-
                 {updateUserLoading || imageUploading ? (
                   <Button
                     type="button"
@@ -548,7 +578,6 @@ const OrganizerProfileSection = () => {
             </FormProvider>
           </CardContent>
         </Card>
-
         {/* Password Update Modal */}
         <PasswordUpdateModal
           isOpen={isPasswordModalOpen}

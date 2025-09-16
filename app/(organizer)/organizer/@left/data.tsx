@@ -3,9 +3,12 @@ import {
   Building,
   Calendar,
   ChartColumnBig,
+  Grid2x2Check,
   Handshake,
-  Highlighter, List,
-  Tags, VenetianMask
+  Highlighter,
+  List,
+  Tags,
+  VenetianMask,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -23,6 +26,9 @@ type MenuGroup = {
   items?: MenuItem[];
 };
 
+const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
+console.log('isDev', isDev);
+
 export const menuGroups: MenuGroup[] = [
   {
     label: 'Dashboard',
@@ -34,45 +40,11 @@ export const menuGroups: MenuGroup[] = [
     key: paths.organizer.organizations.list,
     icon: Building,
   },
-  // {
-  //   label: 'Organizations',
-  //   key: paths.organizer.organizations.default,
-  //   icon: Building,
-  //   items: [
-  //     {
-  //       title: 'Create Organization',
-  //       url: paths.organizer.organizations.create,
-  //       icon: Home,
-  //     },
-  //     {
-  //       title: 'Organization List',
-  //       url: paths.organizer.organizations.list,
-  //       icon: Home,
-  //     },
-  //   ],
-  // },
   {
     label: 'Events',
     key: paths.organizer.events.list,
     icon: Calendar,
   },
-  // {
-  //   label: 'Events',
-  //   key: paths.organizer.events.default,
-  //   icon: Calendar,
-  //   items: [
-  //     {
-  //       title: 'Create Event',
-  //       url: paths.organizer.events.create,
-  //       icon: Tags,
-  //     },
-  //     {
-  //       title: 'Events List',
-  //       url: paths.organizer.events.list,
-  //       icon: Tags,
-  //     },
-  //   ],
-  // },
   {
     label: 'Loyalty',
     key: paths.organizer.loyalty.default,
@@ -135,45 +107,21 @@ export const menuGroups: MenuGroup[] = [
     key: paths.organizer.menuItems,
     icon: List,
   },
-
-  // {
-  //   label: 'Loyalty',
-  //   key: paths.organizer.loyalty.default,
-  //   icon: Handshake,
-  // },
-
-  // {
-  //   label: 'Rewards',
-  //   key: paths.organizer.rewards,
-  //   icon: Trophy,
-  // },
-  // {
-  //   label: 'Challenges',
-  //   key: paths.organizer.challenges,
-  //   icon: Cog,
-  // },
   {
     label: 'User List',
     key: paths.organizer.users.list,
     icon: Calendar,
   },
-  // {
-  //   label: 'User',
-  //   key: paths.organizer.users.default,
-  //   icon: User,
-  //   items: [
-  //     {
-  //       title: 'User List',
-  //       url: paths.organizer.users.list,
-  //       icon: UsersRound,
-  //     },
-  //     // {
-  //     //     title: "Pending User List",
-  //     //     url: paths.superAdmin.users.pendingList,
-  //     //     icon: UsersRound,
-  //     // }
-  //   ],
-  // },
+  ...(isDev
+    ? [
+        {
+          label: 'Sample',
+          key: paths.organizer.sample.default,
+          icon: Grid2x2Check,
+        },
+      ]
+    : []),
+
   // {
   //     label: "Marketing Requests",
   //     key: paths.organizer.marketing.detault,
