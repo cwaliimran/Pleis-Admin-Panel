@@ -1,5 +1,10 @@
 import Header from "@/app/common/header";
 import SuppliersView from "@/sections/suppliers/suppliers-view";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Suppliers - Pleis',
+};
 
 const Page = () => {
   return (

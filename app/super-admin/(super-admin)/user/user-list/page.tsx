@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import UserListView from '@/sections/users/userListView';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Users - Pleis',
+};
 
 const Page = () => {
   return (

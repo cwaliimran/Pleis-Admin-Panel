@@ -270,10 +270,12 @@ const OrgInfo = ({ organizationData }: any) => {
 
 export default OrgInfo;
 
-{/* <Image
+{
+  /* <Image
   src={img.url}
   alt="Gallery image"
   className="h-32 w-full rounded object-cover"
   height={100}
   width={100}
-/> */}
+/> */
+}

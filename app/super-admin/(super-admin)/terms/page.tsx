@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import TermsAndConditionsPage from '@/sections/terms/terms-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms & Conditions - Pleis',
+};
 
 const Page = () => {
   return (

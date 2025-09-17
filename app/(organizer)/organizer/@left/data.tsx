@@ -27,7 +27,6 @@ type MenuGroup = {
 };
 
 const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
-console.log('isDev', isDev);
 
 export const menuGroups: MenuGroup[] = [
   {
@@ -77,7 +76,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Settings',
-        url: paths.organizer.events.list,
+        url: paths.organizer.settings,
         icon: Tags,
       },
       {

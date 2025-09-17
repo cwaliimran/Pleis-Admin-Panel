@@ -1,11 +1,12 @@
-'use client';
 import OrganizationDetailPage from '@/sections/users/organizationDetailPage';
-import { useParams } from 'next/navigation';
 import Header from '../../../../common/header';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Organization Details - Pleis',
+};
 
 const Page = () => {
-  const id = useParams<any>();
-
   return (
     <div>
       <Header
@@ -15,7 +16,7 @@ const Page = () => {
           { name: 'Organization Details' },
         ]}
       />
-      <OrganizationDetailPage id={id} userType={'super-admin'} />
+      <OrganizationDetailPage userType={'super-admin'} />
     </div>
   );
 };

@@ -229,7 +229,6 @@ const CategoriesView = () => {
 
   // CREATE/UPDATE VENUE TYPE
   const onSubmit = handleSubmit(async (formData) => {
-    console.log('formData', formData);
 
     let uploadedFileKey: string | null = null;
     try {
@@ -254,8 +253,6 @@ const CategoriesView = () => {
       const payload: any = {
         title: formData.title,
       };
-
-      console.log('payload', payload);
 
       if (imageFileString) {
         payload.image = imageFileString;

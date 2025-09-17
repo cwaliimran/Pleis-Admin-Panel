@@ -210,6 +210,11 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
       setIsOtpLoading(false);
     }
   };
+
+  const navigateToAdminLogin = () => {
+    router.push('/admin/login');
+  };
+
   return (
     <>
       <div className="text-foreground relative flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100 px-4 dark:from-[#0f0f0f] dark:via-[#1a1a1a] dark:to-[#0f0f0f]">
@@ -230,7 +235,8 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                 Welcome Back
               </h1>
               <p className="mx-auto max-w-sm text-lg text-gray-300">
-                Let’s get you signed in to continue.
+                Let’s get <span onClick={navigateToAdminLogin}>you</span> signed
+                in to continue.
               </p>
             </div>
           </motion.div>

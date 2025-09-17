@@ -1,6 +1,6 @@
 export const menuItemsData = [
   {
-    id: '1',
+    _id: '1',
     photo: '/images/menu/burger.jpg',
     name: 'Classic Burger',
     description: 'Juicy beef patty with lettuce, tomato, and cheese.',
@@ -8,9 +8,11 @@ export const menuItemsData = [
     category: 'Main Course',
     basePrice: 8.99,
     status: 'active',
+    venue: 'Main Hall',
+    discountPrice: 7.99,
   },
   {
-    id: '2',
+    _id: '2',
     photo: '/images/menu/vegan_salad.jpg',
     name: 'Vegan Salad',
     description: 'Fresh greens, avocado, and nuts with vinaigrette.',
@@ -18,9 +20,11 @@ export const menuItemsData = [
     category: 'Salad',
     basePrice: 6.5,
     status: 'inactive',
+    venue: 'Garden Area',
+    discountPrice: 5.5,
   },
   {
-    id: '3',
+    _id: '3',
     photo: '/images/menu/espresso.jpg',
     name: 'Espresso',
     description: 'Strong and rich Italian coffee shot.',
@@ -28,9 +32,11 @@ export const menuItemsData = [
     category: 'Beverage',
     basePrice: 2.5,
     status: 'active',
+    venue: 'Coffee Bar',
+    discountPrice: 2.0,
   },
   {
-    id: '4',
+    _id: '4',
     photo: '/images/menu/chocolate_cake.jpg',
     name: 'Chocolate Cake',
     description: 'Moist chocolate cake with creamy frosting.',
@@ -38,9 +44,11 @@ export const menuItemsData = [
     category: 'Cake',
     basePrice: 4.75,
     status: 'inactive',
+    venue: 'Bakery Corner',
+    discountPrice: 3.99,
   },
   {
-    id: '5',
+    _id: '5',
     photo: '/images/menu/smoothie.jpg',
     name: 'Berry Smoothie',
     description: 'Mixed berries blended with yogurt and honey.',
@@ -48,5 +56,7 @@ export const menuItemsData = [
     category: 'Beverage',
     basePrice: 3.99,
     status: 'inactive',
+    venue: 'Juice Stand',
+    discountPrice: 3.5,
   },
 ];

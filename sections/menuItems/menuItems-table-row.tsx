@@ -1,6 +1,12 @@
 'use client';
 
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Pencil, Trash2 } from 'lucide-react';
+import { FC } from 'react';
+import { TableRowProps } from './types';
+
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import CustomBadge from '@/components/ui/custom-badge';
 import {
   Dialog,
   DialogContent,
@@ -8,49 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2 } from 'lucide-react';
-import { FC } from 'react';
 
-interface PageProps {
-  item: {
-    id: string;
-    photo: string;
-    name: string;
-    description: string;
-    type: string;
-    pointValue: string | number;
-    limit: string | number;
-    tierLimit: string;
-    percentOff: string | number;
-    creationMethod: string;
-    menuItems: string[];
-    eventId: string;
-  };
-  handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
-}
-
-const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
-  const formatCreationMethod = (method: string) => {
-    switch (method) {
-      case 'menu-items':
-        return 'From Menu Items';
-      case 'custom':
-        return 'Custom Reward';
-      case 'ticket':
-        return 'Ticket Reward';
-      default:
-        return method;
-    }
-  };
-
-  const formatValue = (value: string | number) => {
-    return value === '' || value === 0 ? '-' : value;
-  };
-
+const MenuItemTableRow: FC<TableRowProps> = ({
+  item,
+  handleDelete,
+  handleEdit,
+}) => {
   return (
-    <TableRow className="h-14 w-full transition-colors">
+    <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
         <Avatar className="h-8 w-8">
           <AvatarImage
@@ -62,7 +33,7 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
       </TableCell>
       <TableCell className="text-left">{item.name}</TableCell>
       <TableCell className="text-left">
-        {item.description && item.description.length > 22 ? (
+        {item.description.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
               <span
@@ -84,31 +55,37 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
             </DialogContent>
           </Dialog>
         ) : (
-          item.description || '-'
+          item.description
         )}
       </TableCell>
-      <TableCell className="text-left">{item.type}</TableCell>
+      <TableCell className="text-left">{item?.venue}</TableCell>
+      <TableCell className="text-left">{item?.type}</TableCell>
+      <TableCell className="text-left">{item?.category}</TableCell>
+      <TableCell className="text-left">{item?.basePrice}</TableCell>
+      <TableCell className="text-left">{item?.discountPrice}</TableCell>
+      {/* Status */}
       <TableCell className="text-left">
-        <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          {formatCreationMethod(item.creationMethod)}
-        </span>
-      </TableCell>
-      <TableCell className="text-left">{item.pointValue}</TableCell>
-      <TableCell className="text-left">{formatValue(item.limit)}</TableCell>
-      <TableCell className="text-left capitalize">{formatValue(item.tierLimit)}</TableCell>
-      <TableCell className="text-left">
-        {item.percentOff && Number(item.percentOff) > 0 ? `${item.percentOff}%` : '-'}
+        <CustomBadge
+          variant={
+            item.status === 'active'
+              ? 'success'
+              : item.status === 'inactive'
+                ? 'error'
+                : 'info'
+          }
+        >
+          {item.status}
+        </CustomBadge>
       </TableCell>
 
-      {/* Action menu */}
       <TableCell className="text-end">
         <div className="flex gap-2">
           <button
+            title="View Venue"
             type="button"
-            title="Edit Reward"
             onClick={(e) => {
               e.stopPropagation();
-              handleEdit?.(item.id);
+              handleEdit?.(item?._id);
             }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
@@ -116,11 +93,11 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
           </button>
 
           <button
+            title="View Venue"
             type="button"
-            title="Delete Reward"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete?.(item.id);
+              handleDelete?.(item?._id);
             }}
             className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >
@@ -131,5 +108,4 @@ const RewardsTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
     </TableRow>
   );
 };
-
-export default RewardsTableRow;
+export default MenuItemTableRow;

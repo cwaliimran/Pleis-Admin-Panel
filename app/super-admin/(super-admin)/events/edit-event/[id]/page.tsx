@@ -1,18 +1,21 @@
-"use client";
+import Header from '@/app/common/header';
+import CreateEventView from '@/sections/event/create-event-view/create-event';
+import { Metadata } from 'next';
 
-import Header from "@/app/common/header";
-import CreateEventView from "@/sections/event/create-event-view/create-event";
+export const metadata: Metadata = {
+  title: 'Edit Event - Pleis',
+};
 
 const Page = () => {
   return (
     <>
-     <Header
-            links={[
-              { name: 'Dashboard', href: '/super-admin' },
-              { name: 'Edit Event', href: '' },
-            ]}
-          />
-      <CreateEventView title={'Edit'} />
+      <Header
+        links={[
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Edit Event', href: '' },
+        ]}
+      />
+      <CreateEventView userType="super-admin" title={'Edit'} />
     </>
   );
 };

@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import CategoriesView from '@/sections/categories/categories-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Categories - Pleis',
+};
 
 const Page = () => {
   return (

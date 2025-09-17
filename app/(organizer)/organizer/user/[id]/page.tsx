@@ -1,5 +1,10 @@
 import UserDetailPage from '@/sections/users/userDetailPage';
 import Header from '../../../../common/header';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'User Details - Pleis',
+};
 
 const Page = () => {
   return (

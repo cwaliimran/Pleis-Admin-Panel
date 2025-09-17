@@ -1,16 +1,20 @@
-"use client";
-import React from "react";
-import Header from "@/app/common/header";
+import React from 'react';
+import Header from '@/app/common/header';
+import { AdminProfileSection } from '@/sections/proflie';
+import { Metadata } from 'next';
 
-import { AdminProfileSection } from "@/sections/proflie";
+export const metadata: Metadata = {
+  title: 'Admin Profile - Pleis',
+};
+
 
 const Page = () => {
   return (
     <div className=" ">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Profile", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Profile', href: '' },
         ]}
       />
 

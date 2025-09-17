@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import LoyaltyView from '@/sections/loyalty/loyalty-view/loyalty-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Loyalty Dashboard - Pleis',
+};
 
 const Page = () => {
   return (

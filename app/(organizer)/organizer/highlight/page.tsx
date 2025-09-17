@@ -1,6 +1,11 @@
 import Header from '@/app/common/header';
 // import HighlightView from '@/sections/highlight/highlight-view';
 import HighlightsView from '@/sections/highlight-view/highlight-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Highlights - Pleis',
+};
 
 const Page = () => {
   return (

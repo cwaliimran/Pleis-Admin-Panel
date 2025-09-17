@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import OrganizerDashboard from '@/sections/organizer/organizer-dashboard';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Dashboard - Pleis',
+};
 
 const Page = () => {
   return (

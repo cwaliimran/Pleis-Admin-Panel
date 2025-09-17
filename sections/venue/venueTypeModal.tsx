@@ -193,6 +193,7 @@ const VenueTypeModal = ({
                 placeholder="Select Venue Type"
                 options={venueTypeOptions}
                 isLoading={venueLoading}
+                showNone={false}
               />
 
               <RHFCustomDropdown
@@ -201,6 +202,7 @@ const VenueTypeModal = ({
                 placeholder="Select Organization"
                 options={organizationOptions}
                 isLoading={orgLoading}
+                showNone={false}
               />
 
               {editMode && (

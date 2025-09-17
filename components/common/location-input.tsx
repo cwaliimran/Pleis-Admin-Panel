@@ -42,7 +42,6 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
         country: address.country || '',
         coordinates: [address.latitude || 0, address.longitude || 0],
       };
-      console.log('Setting location payload:', locationPayload);
       setValue(name, locationPayload, { shouldValidate: true });
     }
   };

@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import CreateOrganizationPage from '@/sections/organization-section/create-organization';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Create Organization - Pleis',
+};
 
 const Page = () => {
   return (
