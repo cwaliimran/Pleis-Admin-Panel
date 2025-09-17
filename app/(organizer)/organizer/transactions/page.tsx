@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import TransactionsView from '@/sections/transactions/transactions-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Transactions - Pleis',
+};
 
 const Page = () => {
   return (

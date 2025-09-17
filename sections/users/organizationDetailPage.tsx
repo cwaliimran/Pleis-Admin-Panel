@@ -1,3 +1,5 @@
+'use client';
+
 import { AppLoading } from '@/components/atoms/app-loading';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import ButtonLoading from '@/components/common/button-loading';
@@ -20,7 +22,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Camera, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
@@ -37,13 +39,14 @@ import UserCard from './userCard';
 import UserEvents from './userEvents';
 import UserLoyalty from './userLoyalty';
 import UserNotifications from './userNotifications';
-
 interface IdType {
-  id?: any;
   userType?: string;
 }
 
-const OrganizationDetailPage = ({ id: organizationId, userType }: IdType) => {
+const OrganizationDetailPage = ({ userType }: IdType) => {
+  const id = useParams<any>();
+  const organizationId = id;
+
   const router = useRouter();
   const openModal = useBoolean();
   const deleteModal = useBoolean();

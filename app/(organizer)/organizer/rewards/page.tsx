@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import RewardsView from '@/sections/rewards/rewards-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Rewards - Pleis',
+};
 
 const Page = () => {
   return (

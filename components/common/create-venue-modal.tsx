@@ -2,7 +2,6 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
-import RHFSelectScrollable from '@/components/rhf/rhf-select-scrollable';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +25,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { useAddVenueMutation } from '@/store/Reducer/venue';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
+import RHFCustomDropdown from '../rhf/rhf-custom-dropdown';
 
 interface VenueTypeModalProps {
   open: boolean;
@@ -96,14 +96,14 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
   const inputRef = useRef<google.maps.places.SearchBox | null>(null);
 
   // Fetch venue types and organizations
-  const { data: apiData } = useGetVenueTypesQuery({
+  const { data: apiData, isLoading: venueLoading } = useGetVenueTypesQuery({
     page: 0,
     search: '',
     limit: '100',
     status: '',
   });
 
-  const { data: orgData } = useGetOrganizationQuery({
+  const { data: orgData, isLoading: orgLoading } = useGetOrganizationQuery({
     page: 0,
     search: '',
     limit: '10000',
@@ -249,7 +249,7 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
                 }
               />
 
-              <RHFSelectScrollable
+              {/* <RHFSelectScrollable
                 name="venueType"
                 label="Venue Type"
                 placeholder="Select a venue type"
@@ -261,6 +261,24 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
                 label="Organization"
                 placeholder="Select Organization"
                 options={organizationOptions}
+              /> */}
+
+              <RHFCustomDropdown
+                name="venueType"
+                label="Venue Type"
+                placeholder="Select Venue Type"
+                options={venueTypeOptions}
+                isLoading={venueLoading}
+                showNone={false}
+              />
+
+              <RHFCustomDropdown
+                name="organization"
+                label="Organization"
+                placeholder="Select Organization"
+                options={organizationOptions}
+                isLoading={orgLoading}
+                showNone={false}
               />
 
               <div className="flex max-w-[10rem] items-center justify-start">

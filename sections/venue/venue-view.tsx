@@ -198,11 +198,6 @@ const VenueView = () => {
   // CREATE/UPDATE VENUE
   const onSubmit = handleSubmit(async (formData) => {
     try {
-      if (formData.floorPlan === null) {
-        showError('Please select a floor plan image.');
-        return;
-      }
-
       let imageFileString = undefined;
 
       if (
@@ -343,20 +338,13 @@ const VenueView = () => {
     try {
       const response = await deleteVenue(selectedId).unwrap();
 
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
-
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
         showError(errorMessage);
         return;
       }
 
-      if (response?.message) {
-        showSuccess(response?.message || 'Venue deleted successfully');
-      }
+      showSuccess(response?.message || 'Venue deleted successfully');
 
       setSelectedId(null);
       deleteModal.onFalse();

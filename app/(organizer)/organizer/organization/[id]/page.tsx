@@ -1,21 +1,22 @@
-'use client';
-import { useParams } from 'next/navigation';
 import Header from '../../../../common/header';
 import OrganizationDetailPage from '@/sections/users/organizationDetailPage';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Organization Details - Pleis',
+};
 
 const Page = () => {
-  const id = useParams<any>();
-
   return (
     <div>
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer' },
-          { name: 'Organization', href: '/super-admin/organization' },
+          { name: 'Organization', href: '/organizer/organization/organization-list' },
           { name: 'Organization Details' },
         ]}
       />
-      <OrganizationDetailPage id={id} userType={'organizer'} />
+      <OrganizationDetailPage userType={'organizer'} />
     </div>
   );
 };

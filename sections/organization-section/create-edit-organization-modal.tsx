@@ -55,15 +55,14 @@ const OrganizationModal = ({
     page: 0,
     search: '',
     limit: 10000,
-    userType: undefined,
+    userType: 'organizer',
     status: undefined,
     date: undefined,
   });
 
   const userOptions =
     apiData?.data?.map((user: any) => ({
-      label:
-        `${user?.basicInfo?.firstName || ''} ${user?.basicInfo?.lastName || ''}`.trim(),
+      label: `${user?.basicInfo?.companyDetails?.name || ''}`,
       value: user?.basicInfo?._id,
     })) || [];
 
@@ -313,8 +312,8 @@ const OrganizationModal = ({
                 {userType !== 'organizer' && (
                   <RHFCustomDropdown
                     name="user"
-                    label="Assigned User"
-                    placeholder="Select User"
+                    label="Company Name"
+                    placeholder="Select Company"
                     options={userOptions}
                     isLoading={isUserLoading}
                     showNone={false}

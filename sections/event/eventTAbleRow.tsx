@@ -59,7 +59,7 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
       </TableCell>
 
       {/* Event Title */}
-      <TableCell className="text-left">
+      <TableCell className="text-left capitalize">
         {item?.basicInfo?.title?.length > 20
           ? item.basicInfo.title.slice(0, 20) + '...'
           : item.basicInfo.title}

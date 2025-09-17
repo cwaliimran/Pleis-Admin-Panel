@@ -34,7 +34,7 @@ const VenueTypeTableRow: FC<PageProps> = ({
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <div className="flex items-center gap-3">{item?.title || '-'}</div>
+        <div className="flex items-center gap-3 capitalize">{item?.title || '-'}</div>
       </TableCell>
 
       <TableCell className="text-left">

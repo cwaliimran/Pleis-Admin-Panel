@@ -94,7 +94,6 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     newStartDate: Date | undefined,
     newEndDate: Date | undefined
   ) => {
-    console.log('Date range changed:', newStartDate, newEndDate);
     updateFilter('startDate', newStartDate);
     updateFilter('endDate', newEndDate);
   };

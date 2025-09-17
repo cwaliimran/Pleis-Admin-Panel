@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import EventDetailsPage from '@/sections/event/eventDetailsPage';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Edit Event - Pleis',
+};
 
 const Page = () => {
   return (

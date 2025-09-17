@@ -1,6 +1,11 @@
 import Header from '@/app/common/header';
 import MembersView from '@/sections/members/members-view';
 // import MembersView from '@/sections/members-old/members-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Members - Pleis',
+};
 
 const Page = () => {
   return (

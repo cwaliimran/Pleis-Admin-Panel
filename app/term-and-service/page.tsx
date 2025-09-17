@@ -1,9 +1,14 @@
 import { Separator } from '@/components/ui/separator';
 import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms & Service - Pleis',
+};
 
 const Page = () => {
   return (
-    <div className="dark:bg-secondary p-10 min-h-screen">
+    <div className="dark:bg-secondary min-h-screen p-10">
       <h1 className="text-foreground mb-4 text-2xl font-bold">
         Terms & Serivce
       </h1>

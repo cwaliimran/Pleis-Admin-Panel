@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
-import MenuItemsView from '@/sections/menuItems/menuItems-view';
+import MenuItemView from '@/sections/menuItems/menuItems-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Menu Items - Pleis',
+};
 
 const Page = () => {
   return (
@@ -11,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <MenuItemsView />
+      <MenuItemView />
     </div>
   );
 };

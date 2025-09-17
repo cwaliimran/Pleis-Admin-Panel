@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DashboardLayoutProps {
   left: React.ReactNode;
@@ -63,24 +64,30 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
   children,
 }) => {
   const dispatch = useDispatch();
-
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const { data: apiData, isLoading } = useGetTermsAndConditionQuery({});
 
   const { user } = useSelector((state: RootState) => state.userSlice);
-
-  const [updateUser, { isLoading: updateUserLoading }] =
-    useUpdateUserMutation();
   const userTerm = user?.accountState?.termsAccepted;
+  const userType = user?.accountState?.userType;
+
+  // Only call API if termsAccepted is false and userType is not 'admin'
+  const shouldCallTermsApi = userTerm === false && userType !== 'admin';
+  const { data: apiData, isLoading } = useGetTermsAndConditionQuery(
+    {},
+    { skip: !shouldCallTermsApi }
+  );
 
   useEffect(() => {
-    if (userTerm === false) {
+    if (userTerm === false && userType !== 'admin') {
       setShowTermsModal(true);
     } else {
       setShowTermsModal(false);
     }
-  }, [userTerm]);
+  }, [userTerm, userType]);
+
+  const [updateUser, { isLoading: updateUserLoading }] =
+    useUpdateUserMutation();
 
   const handleTermsSubmit = async () => {
     if (acceptedTerms) {
@@ -148,13 +155,28 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
             </DialogHeader>
 
             <div className="px-6">
-              <div
-                className="max-h-[400px] space-y-4 overflow-y-auto pr-4 text-sm"
-                dangerouslySetInnerHTML={{
-                  __html:
-                    apiData?.data?.terms_and_conditions || 'Loading terms...',
-                }}
-              />
+              {!apiData?.data?.terms_and_conditions ? (
+                <div className="my-3 space-y-3">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+
+                  <Skeleton className="mt-6 h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+
+                  <Skeleton className="mt-8 h-4 w-5/6" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ) : (
+                <div
+                  className="max-h-[400px] space-y-4 overflow-y-auto pr-4 text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      apiData?.data?.terms_and_conditions || 'Loading terms...',
+                  }}
+                />
+              )}
             </div>
 
             <div className="border-t p-6 pt-4">

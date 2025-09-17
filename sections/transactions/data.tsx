@@ -1,6 +1,6 @@
-export const RewardsData = [
+export const TransactionData = [
   {
-    id: '1',
+    _id: '1',
     purchases: 'Coffee at Downtown Cafe',
     rewardRedemptions: 'Free Muffin',
     transactionType: 'Ticketing',
@@ -16,7 +16,7 @@ export const RewardsData = [
     actions: 'View',
   },
   {
-    id: '2',
+    _id: '2',
     purchases: 'Latte at Central Perk',
     rewardRedemptions: 'Free Cookie',
     transactionType: 'In-app Order',
@@ -32,7 +32,7 @@ export const RewardsData = [
     actions: 'View',
   },
   {
-    id: '3',
+    _id: '3',
     purchases: 'Espresso at Bean House',
     rewardRedemptions: 'Free Espresso Shot',
     transactionType: 'Local Purchase',
@@ -48,7 +48,7 @@ export const RewardsData = [
     actions: 'View',
   },
   {
-    id: '4',
+    _id: '4',
     purchases: 'Cappuccino at Coffee Corner',
     rewardRedemptions: 'Free Croissant',
     timeStamp: '19-01-2025',

@@ -1,4 +1,5 @@
 'use client';
+
 import TwoFactorAuth from '@/app/common/2fa/2fa';
 import ButtonLoading from '@/components/common/button-loading';
 import GoogleLocationInput from '@/components/common/location-input';

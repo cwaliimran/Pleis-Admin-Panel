@@ -1,5 +1,10 @@
 import Header from '@/app/common/header';
 import TagsView from '@/sections/tags/tags-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Tags - Pleis',
+};
 
 const Page = () => {
   return (
