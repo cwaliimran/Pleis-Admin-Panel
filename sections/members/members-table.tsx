@@ -26,7 +26,7 @@ const HEAD_LABEL = [
   { id: 'currentTier', label: 'Current Tier', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'streak', label: 'Streak', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'left', },
 ];
 
 const MembersTable: FC<SamplePageProps> = ({

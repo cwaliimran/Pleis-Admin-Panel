@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-type RewardCalculatorProps = {
-  onReset: () => void;
-};
-
-const RewardCalculatorFields = ({}: RewardCalculatorProps) => {
+const RewardCalculatorFields = () => {
   const [itemPrice, setItemPrice] = useState<string>('');
   const [pointsPerEuro, setPointsPerEuro] = useState<string>('');
 

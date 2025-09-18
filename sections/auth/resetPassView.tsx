@@ -1,0 +1,183 @@
+'use client';
+
+import { yupResolver } from '@hookform/resolvers/yup';
+import { motion } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+
+import { ModeToggle } from '@/components/atoms/mode-toggle';
+import FormProvider, { RHFTextField } from '@/components/rhf';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import Link from 'next/link';
+import { useResetPasswordMutation } from '@/store/Reducer/user';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
+
+const defaultValues = {
+  newPassword: '',
+  confirmPassword: '',
+};
+
+const schema = Yup.object().shape({
+  newPassword: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('New password is required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('newPassword')], 'Passwords do not match')
+    .required('Please confirm your password'),
+});
+
+export default function ResetPasswordView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const rst = searchParams.get('token') || '';
+  const showPassword = useBoolean();
+
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+
+  const methods = useForm({
+    defaultValues,
+    resolver: yupResolver(schema),
+  });
+
+  const { handleSubmit } = methods;
+
+  const onSubmit = handleSubmit(async (data) => {
+    if (!rst) {
+      showError('Invalid or expired reset link. Please request a new one.');
+      return;
+    }
+
+    try {
+      const payload = {
+        newPassword: data.newPassword,
+        token: rst,
+      };
+
+      const response = await resetPassword(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage || 'Failed to reset password.');
+        return;
+      }
+
+      // Handle success
+      if (response?.message) {
+        showSuccess(response.message || 'Password reset successfully');
+      } else {
+        showSuccess('Password reset successfully');
+      }
+
+      router.push(`/`);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      console.log('Failed to reset password:', errorMessage);
+      showError(errorMessage);
+    }
+  });
+
+  return (
+    <div className="text-foreground relative flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-100 via-slate-200 to-gray-100 px-4 dark:from-[#0f0f0f] dark:via-[#1a1a1a] dark:to-[#0f0f0f]">
+      <div className="absolute top-4 right-4 z-10">
+        <ModeToggle />
+      </div>
+
+      <div className="border-border flex w-full max-w-5xl overflow-hidden rounded-xl border bg-white/30 shadow-2xl backdrop-blur-md transition-all dark:bg-black/30">
+        {/* Left Section */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-black p-10 text-white md:flex"
+        >
+          <div className="space-y-4 text-center">
+            <h1 className="text-4xl font-extrabold tracking-tight">
+              Set a New Password
+            </h1>
+            <p className="mx-auto max-w-sm text-lg text-gray-300">
+              Please enter a new password to complete the reset process.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Right Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex w-full flex-col justify-center p-8 md:w-1/2 md:p-16"
+        >
+          <h2 className="mb-1 text-center text-3xl font-extrabold">
+            Reset Your Password
+          </h2>
+          <p className="text-muted-foreground mb-6 text-center text-sm">
+            Enter and confirm your new password.
+          </p>
+
+          <FormProvider methods={methods} onSubmit={onSubmit}>
+            <div className="space-y-4">
+              <RHFTextField
+                name="newPassword"
+                type="password"
+                placeholder="New Password"
+                className="h-[45px] rounded-md"
+                showPassword={showPassword.value}
+                onTogglePassword={showPassword.onToggle}
+              />
+              <RHFTextField
+                name="confirmPassword"
+                type="password"
+                placeholder="Confirm Password"
+                className="h-[45px] rounded-md"
+                showPassword={showPassword.value}
+                onTogglePassword={showPassword.onToggle}
+              />
+
+              {!isLoading ? (
+                <Button
+                  type="submit"
+                  className={`h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white`}
+                >
+                  Reset Password
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  className={`h-[45px] w-full cursor-not-allowed bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white`}
+                >
+                  Resetting...
+                </Button>
+              )}
+            </div>
+          </FormProvider>
+
+          <p className="text-muted-foreground mt-10 text-center text-xs">
+            By continuing, you agree to our{' '}
+            <Link
+              href="/term-and-service"
+              className="hover:text-primary underline transition-colors"
+            >
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link
+              href="/privacy-policy"
+              className="hover:text-primary underline transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </motion.div>
+      </div>
+    </div>
+  );
+}

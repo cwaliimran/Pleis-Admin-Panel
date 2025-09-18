@@ -1,7 +1,7 @@
 'use client';
 
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 import CustomBadge from '@/components/ui/custom-badge';
@@ -23,8 +23,16 @@ const MembersTableRow: FC<TableRowProps> = ({
       </TableCell>
       <TableCell className="text-left">{item?.streak}</TableCell>
 
-      <TableCell className="text-end">
+      <TableCell className="max-w-[60px] text-end">
         <div className="flex gap-2">
+          <button
+            title="View Venue"
+            type="button"
+            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+          >
+            <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+          </button>
+
           <button
             title="View Venue"
             type="button"
