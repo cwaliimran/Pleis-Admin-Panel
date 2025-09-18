@@ -38,7 +38,6 @@ const UserOverView: React.FC<{
   user: any;
   apiData: any;
 }> = ({ userType, apiData, user }) => {
-  console.log('apiData in overview', apiData);
 
   const permissionLabels: Record<string, string> = {
     inAppOrdering: 'InApp ordering',

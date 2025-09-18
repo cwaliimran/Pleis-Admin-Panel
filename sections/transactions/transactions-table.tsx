@@ -17,21 +17,33 @@ import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import { TransactionData } from './data';
 import TransactionsTableRow from './transactions-table-row';
+import { SamplePageProps } from './types';
+
+// const HEAD_LABEL = [
+//   { id: 'organization', label: 'Organization', align: 'left' },
+//   { id: 'user', label: 'User', align: 'left' },
+//   { id: 'transactionType', label: 'Transaction Type', align: 'left' },
+//   { id: 'challengeCompletions', label: 'Challenge completions', align: 'left' },
+//   { id: 'timeStamp', label: 'TimeStamp', align: 'left' },
+//   { id: 'points', label: 'Points', align: 'left' },
+//   { id: 'manualPointGifts', label: 'Manual point gifts', align: 'left' },
+//   { id: 'pointExpirations', label: 'Point expirations', align: 'left' },
+//   { id: 'referrals', label: 'Referrals', align: 'left' },
+//   { id: 'actions', label: 'View', align: 'left' },
+// ];
 
 const HEAD_LABEL = [
-  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'organization', label: 'Organizer', align: 'left' },
   { id: 'user', label: 'User', align: 'left' },
+  { id: 'transactionId', label: 'Transaction ID', align: 'left' },
   { id: 'transactionType', label: 'Transaction Type', align: 'left' },
-  { id: 'challengeCompletions', label: 'Challenge completions', align: 'left' },
-  { id: 'timeStamp', label: 'TimeStamp', align: 'left' },
   { id: 'points', label: 'Points', align: 'left' },
-  { id: 'manualPointGifts', label: 'Manual point gifts', align: 'left' },
-  { id: 'pointExpirations', label: 'Point expirations', align: 'left' },
-  { id: 'referrals', label: 'Referrals', align: 'left' },
-  { id: 'actions', label: 'View', align: 'left' },
+  { id: 'reference', label: 'Reference', align: 'left' },
+  { id: 'timestamp', label: 'Timestamp', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
 const TransactionsTable: FC<SamplePageProps> = ({
@@ -47,9 +59,13 @@ const TransactionsTable: FC<SamplePageProps> = ({
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
-  date,
-  onDateChange = () => {},
   onResetFilters = () => {},
+  startDate,
+  endDate,
+  onStartDateChange,
+  onEndDateChange,
+  transactionType,
+  onTransactionTypeChange,
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -102,14 +118,23 @@ const TransactionsTable: FC<SamplePageProps> = ({
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateFilter={{
-                              id: 'organization-date',
-                              placeholder: 'Select date',
-                              value: date,
-                              onChange: onDateChange,
+                            dateRangeFilter={{
+                              startDate: {
+                                id: 'start-date',
+                                placeholder: 'Select start date',
+                                value: startDate,
+                                onChange: onStartDateChange,
+                              },
+                              endDate: {
+                                id: 'end-date',
+                                placeholder: 'Select end date',
+                                value: endDate,
+                                onChange: onEndDateChange,
+                              },
                             }}
                             searchFilter={{
-                              placeholder: 'Search by user, organization, referral...',
+                              placeholder:
+                                'Search by User, Organization, Venue, Reference ...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -124,6 +149,17 @@ const TransactionsTable: FC<SamplePageProps> = ({
                                   { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
+                                ],
+                              },
+                              {
+                                id: 'sheet-transaction-type',
+                                label: 'Transaction Type',
+                                placeholder: 'Select by Transaction Type',
+                                value: transactionType,
+                                onChange: onTransactionTypeChange,
+                                options: [
+                                  { value: 'type1', label: 'Type 1' },
+                                  { value: 'type2', label: 'Type 2' },
                                 ],
                               },
                             ]}

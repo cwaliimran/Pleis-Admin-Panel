@@ -24,7 +24,10 @@ const TransactionsView = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [transactionType, setTransactionType] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -160,13 +163,24 @@ const TransactionsView = () => {
         limit={limit}
         page={page}
         status={status}
-        onStatusChange={(val) => {
+        transactionType={transactionType}
+        onTransactionTypeChange={(val: any) => {
+          setTransactionType(val);
+          setPage(1);
+        }}
+        onStatusChange={(val: any) => {
           setStatus(val);
           setPage(1);
         }}
         date={date}
-        onDateChange={(val) => {
-          setDate(val);
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={(val: any) => {
+          setStartDate(val);
+          setPage(1);
+        }}
+        onEndDateChange={(val: any) => {
+          setEndDate(val);
           setPage(1);
         }}
         onResetFilters={() => {
@@ -180,7 +194,6 @@ const TransactionsView = () => {
       <TransactionModal
         open={openModal.value}
         onClose={openModal.onFalse}
-        isEdit={editModal.value}
         selectedData={selectedRecord}
       />
 

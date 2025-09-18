@@ -41,7 +41,8 @@ const Account = () => {
       } else {
         router.replace('/');
       }
-      
+
+      window.location.reload();
     } catch (error) {
       console.log(error);
       showError('Unable to logout!');
@@ -54,7 +55,9 @@ const Account = () => {
 
   const profileImage =
     user?.basicInfo?.profileIcon ===
-    'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png'
+      'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' ||
+    user?.basicInfo?.profileIcon ===
+      'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png'
       ? placeHolderImage.src
       : user?.basicInfo?.profileIcon;
 

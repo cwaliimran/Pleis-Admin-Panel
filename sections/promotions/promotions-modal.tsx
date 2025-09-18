@@ -47,7 +47,7 @@ const defaultValues = {
   endTime: '',
   tierLimit: '',
   repeatSettings: '',
-  type: '',
+  type: 'Happy Hour', // Default to Happy Hour
   // Happy Hour specific fields
   timeRangeStart: '',
   timeRangeEnd: '',

@@ -1,16 +1,14 @@
 'use client';
 
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
-import CustomBadge from '@/components/ui/custom-badge';
-import { getStatusVariant } from '@/utils/short-utils';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 
 const ReferralsTableRow: FC<TableRowProps> = ({
   item,
-  handleDelete,
+  // handleDelete,
   handleEdit,
 }) => {
   return (
@@ -31,14 +29,14 @@ const ReferralsTableRow: FC<TableRowProps> = ({
       <TableCell className="text-left">{item?.userPoints || '-'}</TableCell>
       <TableCell className="text-left">{item?.refPoints || '-'}</TableCell>
       <TableCell className="text-left">{item?.createdAt || '-'}</TableCell>
-      <TableCell className="text-left">
+      {/* <TableCell className="text-left">
         <CustomBadge variant={getStatusVariant(item?.status)}>
           {item?.status}
         </CustomBadge>
-      </TableCell>
+      </TableCell> */}
 
-      <TableCell className="text-end">
-        <div className="flex gap-2">
+      <TableCell className="text-center">
+        <div className="flex justify-center gap-2">
           <button
             title="View Venue"
             type="button"
@@ -51,7 +49,7 @@ const ReferralsTableRow: FC<TableRowProps> = ({
             <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
           </button>
 
-          <button
+          {/* <button
             title="View Venue"
             type="button"
             onClick={(e) => {
@@ -61,7 +59,7 @@ const ReferralsTableRow: FC<TableRowProps> = ({
             className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >
             <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
-          </button>
+          </button> */}
         </div>
       </TableCell>
     </TableRow>

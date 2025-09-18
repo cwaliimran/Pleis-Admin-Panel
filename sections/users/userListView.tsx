@@ -18,7 +18,12 @@ import UserListTypeTable from './user-list-view/user-list-type-table';
 import EditUserModal from './user-modal/custom-edit-user-modal';
 import CustomUserModal from './user-modal/custom-user-modal';
 
-const UserListView = ({ usertype }: { usertype: any }) => {
+interface UserListViewProps {
+  usertype: string;
+  memberPage?: boolean;
+}
+
+const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const createModal = useBoolean();
   const editModal = useBoolean();
 
@@ -148,17 +153,19 @@ const UserListView = ({ usertype }: { usertype: any }) => {
 
   return (
     <div>
-      <div>
-        <div className="flex w-full items-center justify-end">
-          <Button
-            className="cursor-pointer rounded-4xl bg-blue-700 py-2 text-white hover:bg-blue-800"
-            onClick={createModal.onTrue}
-          >
-            <Plus />
-            Create User
-          </Button>
+      {!memberPage && (
+        <div>
+          <div className="flex w-full items-center justify-end">
+            <Button
+              className="cursor-pointer rounded-4xl bg-blue-700 py-2 text-white hover:bg-blue-800"
+              onClick={createModal.onTrue}
+            >
+              <Plus />
+              Create User
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       <UserListTypeTable
         data={venueTypes}
@@ -167,6 +174,7 @@ const UserListView = ({ usertype }: { usertype: any }) => {
         handleEdit={handleEdit}
         onPageChange={setPage}
         userType={usertype}
+        memberPage={memberPage}
         onLimitChange={(l) => {
           setLimit(l);
           setPage(1);

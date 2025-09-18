@@ -22,6 +22,12 @@ export interface SamplePageProps {
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
+  startDate?: Date;
+  endDate?: Date;
+  onStartDateChange?: any;
+  onEndDateChange?: any;
+  transactionType?: string;
+  onTransactionTypeChange?: any;
 }
 
 export interface TableRowProps {

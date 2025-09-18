@@ -1,6 +1,5 @@
 import Header from '@/app/common/header';
-import MembersView from '@/sections/members/members-view';
-// import MembersView from '@/sections/members-old/members-view';
+import UserListView from '@/sections/users/userListView';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -17,7 +16,8 @@ const Page = () => {
         ]}
       />
 
-      <MembersView />
+      {/* <MembersView /> */}
+      <UserListView usertype="super-admin" memberPage={true}  />
     </div>
   );
 };

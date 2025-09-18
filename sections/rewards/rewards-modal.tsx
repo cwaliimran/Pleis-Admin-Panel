@@ -83,11 +83,6 @@ const RewardFormModal = ({ open, onClose, isEdit }: RewardFormModalProps) => {
     onClose();
   };
 
-  // Handle calculator reset
-  const handleCalculatorReset = () => {
-    // Optional: Add any additional logic if needed when resetting calculator
-  };
-
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
@@ -247,7 +242,7 @@ const RewardFormModal = ({ open, onClose, isEdit }: RewardFormModalProps) => {
                 />
               </div>
 
-              <RewardCalculatorFields onReset={handleCalculatorReset} />
+              <RewardCalculatorFields />
             </div>
 
             <div className="mt-4 flex items-center justify-end gap-2">

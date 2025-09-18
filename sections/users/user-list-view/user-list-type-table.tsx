@@ -20,7 +20,7 @@ import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import UserListTypeTableRow from './user-list-type-table-row';
 
-const headLabel = [
+const USERHEADLABEL = [
   { id: 'image', label: 'Image', align: 'left' },
   { id: 'name', label: 'Name', align: 'left' },
   { id: 'username', label: 'Username', align: 'left' },
@@ -31,6 +31,18 @@ const headLabel = [
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'region', label: 'Region', align: 'left' },
   { id: 'action', label: 'Action', align: 'left' },
+];
+
+const MEMBERHEADLABEL = [
+  { id: 'image', label: 'Image', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'username', label: 'Username', align: 'left' },
+  { id: 'globalStatus', label: 'Global Status', align: 'left' },
+  { id: 'totalPoints', label: 'Points Earned', align: 'left' },
+  { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'region', label: 'Region', align: 'left' },
+  { id: 'action', label: 'Action', align: 'center' },
 ];
 
 interface Meta {
@@ -60,6 +72,7 @@ interface PageProps {
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
   userType?: any;
+  memberPage?: boolean;
 }
 
 const UserListTypeTable: FC<PageProps> = ({
@@ -70,6 +83,7 @@ const UserListTypeTable: FC<PageProps> = ({
   handleEdit,
   onPageChange,
   userType,
+  memberPage,
   // onLimitChange,
   onSearch = () => {},
   search = '',
@@ -94,12 +108,16 @@ const UserListTypeTable: FC<PageProps> = ({
     },
   });
 
+  const headLabel = memberPage ? MEMBERHEADLABEL : USERHEADLABEL;
+
   return (
     <div>
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">User List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">
+              {memberPage ? 'Members' : 'Users'} List
+            </h3>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -137,7 +155,7 @@ const UserListTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search User...',
+                              placeholder: `Search ${memberPage ? 'Member' : 'User'}...`,
                               value: search,
                               onChange: onSearch,
                             }}
@@ -154,28 +172,53 @@ const UserListTypeTable: FC<PageProps> = ({
                                   { value: 'suspended', label: 'Suspended' },
                                 ],
                               },
-                              {
-                                id: 'sheet-role',
-                                label: 'Role',
-                                placeholder: 'Select by Role',
-                                value: role,
-                                onChange: onRoleChange,
-                                options:
-                                  userType === 'organizer'
-                                    ? [
-                                        { value: 'staff', label: 'Staff' },
-                                        { value: 'manager', label: 'Manager' },
-                                      ]
-                                    : [
-                                        { value: 'all', label: 'All' },
-                                        { value: 'admin', label: 'Admin' },
-                                        { value: 'organizer', label: 'Organizer' },
-                                        { value: 'manager', label: 'Manager' },
-                                        { value: 'staff', label: 'Staff' },
-                                        { value: 'guest', label: 'Guest' },
-                                        { value: 'user', label: 'User' },
-                                      ],
-                              },
+                              ...(!memberPage
+                                ? [
+                                    {
+                                      id: 'sheet-role',
+                                      label: 'Role',
+                                      placeholder: 'Select by Role',
+                                      value: role,
+                                      onChange: onRoleChange,
+                                      options:
+                                        userType === 'organizer'
+                                          ? [
+                                              {
+                                                value: 'staff',
+                                                label: 'Staff',
+                                              },
+                                              {
+                                                value: 'manager',
+                                                label: 'Manager',
+                                              },
+                                            ]
+                                          : [
+                                              { value: 'all', label: 'All' },
+                                              {
+                                                value: 'admin',
+                                                label: 'Admin',
+                                              },
+                                              {
+                                                value: 'organizer',
+                                                label: 'Organizer',
+                                              },
+                                              {
+                                                value: 'manager',
+                                                label: 'Manager',
+                                              },
+                                              {
+                                                value: 'staff',
+                                                label: 'Staff',
+                                              },
+                                              {
+                                                value: 'guest',
+                                                label: 'Guest',
+                                              },
+                                              { value: 'user', label: 'User' },
+                                            ],
+                                    },
+                                  ]
+                                : []),
                             ]}
                             resetFilter={{
                               onReset: onResetFilters,
@@ -226,6 +269,7 @@ const UserListTypeTable: FC<PageProps> = ({
                         handleDelete={handleDelete}
                         handleEdit={handleEdit}
                         userType={userType}
+                        memberPage={memberPage}
                       />
                     ))
                 )}

@@ -122,7 +122,8 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                             'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
                             <Image
                               src={apiData?.basicInfo?.profileIcon || '-'}
-                              alt={user.fullName}
+                              alt={user?.fullName}
+                              priority
                               className="h-56 w-full rounded-lg object-cover shadow sm:h-auto"
                               width={100}
                               height={100}

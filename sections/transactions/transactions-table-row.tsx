@@ -4,6 +4,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { Eye } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import CustomBadge from '@/components/ui/custom-badge';
 
 const TransactionsTableRow: FC<TableRowProps> = ({
   item,
@@ -14,15 +15,27 @@ const TransactionsTableRow: FC<TableRowProps> = ({
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left">{item?.organizer}</TableCell>
       <TableCell className="text-left">{item?.user}</TableCell>
+      <TableCell className="text-left">TXN-123456</TableCell>
       <TableCell className="text-left">{item?.transactionType}</TableCell>
-      <TableCell className="text-left">{item?.challengeCompletions}</TableCell>
-      <TableCell className="text-left">{item?.timeStamp}</TableCell>
-      <TableCell className="text-left">{item?.streakRewards}</TableCell>
-      <TableCell className="text-left">{item?.manualPointGifts}</TableCell>
       <TableCell className="text-left">
-        <span className="text-red-600">{item?.pointExpirations}</span>
+        <span className="text-green-600">{item?.points}</span>
       </TableCell>
-      <TableCell className="text-left">{item?.referrals}</TableCell>
+
+      <TableCell className="text-left">{item?.reference}</TableCell>
+      <TableCell className="text-left">{item?.timestamp}</TableCell>
+      <TableCell className="text-center">
+        <CustomBadge
+          variant={
+            item?.status === 'success'
+              ? 'success'
+              : item?.status === 'failed' || item?.status === 'failed'
+                ? 'error'
+                : 'default'
+          }
+        >
+          {item?.status}
+        </CustomBadge>
+      </TableCell>
 
       <TableCell className="">
         <div className="flex justify-center gap-2">

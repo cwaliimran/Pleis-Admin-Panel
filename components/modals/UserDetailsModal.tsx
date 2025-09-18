@@ -84,14 +84,14 @@ const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 <Badge className="bg-secondary capitalize dark:bg-white text-white dark:text-black">
                   {user.role}
                 </Badge>
-                <CustomBadge
+                
                   variant={
                     user.status === "active"
                       ? "success"
                       : user.status === "pending" || user.status === "inactive"
                       ? "error"
                       : "default"
-                  }
+                  }<CustomBadge
                 >
                   {user.status}
                 </CustomBadge>
