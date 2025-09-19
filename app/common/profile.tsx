@@ -34,6 +34,7 @@ const Account = () => {
     try {
       const role = user?.role;
       dispatch(logout());
+      dispatch({ type: 'RESET_APP_STATE' }); // Clear all Redux state
       localStorage.clear();
 
       if (role === 'admin') {
@@ -41,8 +42,6 @@ const Account = () => {
       } else {
         router.replace('/');
       }
-
-      window.location.reload();
     } catch (error) {
       console.log(error);
       showError('Unable to logout!');

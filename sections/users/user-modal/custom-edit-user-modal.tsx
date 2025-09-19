@@ -106,8 +106,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const [imageUploading, setImageUploading] = useState(false);
 
-  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
-  const [ updateUserSuperAdminAndGuest, { isLoading: updateUserSuperAdminAndGuestLoading }] = useUpdateUserSuperAdminAndGuestMutation();
+  const [updateUser, { isLoading: updateUserLoading }] =
+    useUpdateUserForUserListMutation();
+  const [
+    updateUserSuperAdminAndGuest,
+    { isLoading: updateUserSuperAdminAndGuestLoading },
+  ] = useUpdateUserSuperAdminAndGuestMutation();
 
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
@@ -181,7 +185,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     if (userData) {
       const formData = {
         role: userData?.accountState?.userType as RoleKey,
-        image: userData?.basicInfo?.profileIcon !== noImageUrl || userData?.basicInfo?.profileIcon !== noImageUrlDev ? userData?.basicInfo?.profileIcon : null,
+        image:
+          userData?.basicInfo?.profileIcon !== noImageUrl ||
+          userData?.basicInfo?.profileIcon !== noImageUrlDev
+            ? userData?.basicInfo?.profileIcon
+            : null,
         firstName: userData?.basicInfo?.firstName || '',
         lastName: userData?.basicInfo?.lastName || '',
         email: userData?.basicInfo?.email || '',

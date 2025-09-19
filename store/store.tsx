@@ -18,21 +18,87 @@ import { twoFactorAuthApi } from './Reducer/twoFactorAuth';
 import { settingsApi } from './Reducer/settings';
 
 export const store = configureStore({
-  reducer: {
-    userSlice: userSlice.reducer,
-    [userApi.reducerPath]: userApi.reducer,
-    [venueTypeApi.reducerPath]: venueTypeApi.reducer,
-    [suppliersApi.reducerPath]: suppliersApi.reducer,
-    [categoriesApi.reducerPath]: categoriesApi.reducer,
-    [tagsApi.reducerPath]: tagsApi.reducer,
-    [venueApi.reducerPath]: venueApi.reducer,
-    [userAccessApi.reducerPath]: userAccessApi.reducer,
-    [organizationApi.reducerPath]: organizationApi.reducer,
-    [userListApi.reducerPath]: userListApi.reducer,
-    [highlightsApi.reducerPath]: highlightsApi.reducer,
-    [eventApi.reducerPath]: eventApi.reducer,
-    [twoFactorAuthApi.reducerPath]: twoFactorAuthApi.reducer,
-    [settingsApi.reducerPath]: settingsApi.reducer,
+  reducer: (state, action) => {
+    if (action.type === 'RESET_APP_STATE') {
+      // Reset all slices and RTK Query caches
+      return {
+        userSlice: userSlice.getInitialState(),
+        [userApi.reducerPath]: userApi.reducer(undefined, action),
+        [venueTypeApi.reducerPath]: venueTypeApi.reducer(undefined, action),
+        [suppliersApi.reducerPath]: suppliersApi.reducer(undefined, action),
+        [categoriesApi.reducerPath]: categoriesApi.reducer(undefined, action),
+        [tagsApi.reducerPath]: tagsApi.reducer(undefined, action),
+        [venueApi.reducerPath]: venueApi.reducer(undefined, action),
+        [userAccessApi.reducerPath]: userAccessApi.reducer(undefined, action),
+        [organizationApi.reducerPath]: organizationApi.reducer(
+          undefined,
+          action
+        ),
+        [userListApi.reducerPath]: userListApi.reducer(undefined, action),
+        [highlightsApi.reducerPath]: highlightsApi.reducer(undefined, action),
+        [eventApi.reducerPath]: eventApi.reducer(undefined, action),
+        [twoFactorAuthApi.reducerPath]: twoFactorAuthApi.reducer(
+          undefined,
+          action
+        ),
+        [settingsApi.reducerPath]: settingsApi.reducer(undefined, action),
+      };
+    }
+    return {
+      userSlice: userSlice.reducer(state?.userSlice, action),
+      [userApi.reducerPath]: userApi.reducer(
+        state?.[userApi.reducerPath],
+        action
+      ),
+      [venueTypeApi.reducerPath]: venueTypeApi.reducer(
+        state?.[venueTypeApi.reducerPath],
+        action
+      ),
+      [suppliersApi.reducerPath]: suppliersApi.reducer(
+        state?.[suppliersApi.reducerPath],
+        action
+      ),
+      [categoriesApi.reducerPath]: categoriesApi.reducer(
+        state?.[categoriesApi.reducerPath],
+        action
+      ),
+      [tagsApi.reducerPath]: tagsApi.reducer(
+        state?.[tagsApi.reducerPath],
+        action
+      ),
+      [venueApi.reducerPath]: venueApi.reducer(
+        state?.[venueApi.reducerPath],
+        action
+      ),
+      [userAccessApi.reducerPath]: userAccessApi.reducer(
+        state?.[userAccessApi.reducerPath],
+        action
+      ),
+      [organizationApi.reducerPath]: organizationApi.reducer(
+        state?.[organizationApi.reducerPath],
+        action
+      ),
+      [userListApi.reducerPath]: userListApi.reducer(
+        state?.[userListApi.reducerPath],
+        action
+      ),
+      [highlightsApi.reducerPath]: highlightsApi.reducer(
+        state?.[highlightsApi.reducerPath],
+        action
+      ),
+      [eventApi.reducerPath]: eventApi.reducer(
+        state?.[eventApi.reducerPath],
+        action
+      ),
+      [twoFactorAuthApi.reducerPath]: twoFactorAuthApi.reducer(
+        state?.[twoFactorAuthApi.reducerPath],
+        action
+      ),
+      [settingsApi.reducerPath]: settingsApi.reducer(
+        state?.[settingsApi.reducerPath],
+        action
+      ),
+    };
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

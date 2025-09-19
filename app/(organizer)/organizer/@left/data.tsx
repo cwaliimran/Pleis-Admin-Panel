@@ -3,7 +3,7 @@ import {
   Building,
   Calendar,
   ChartColumnBig,
-  Grid2x2Check,
+  // Grid2x2Check,
   Handshake,
   Highlighter,
   List,
@@ -26,7 +26,7 @@ type MenuGroup = {
   items?: MenuItem[];
 };
 
-const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
+// const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
 
 export const menuGroups: MenuGroup[] = [
   {
@@ -111,15 +111,15 @@ export const menuGroups: MenuGroup[] = [
     key: paths.organizer.users.list,
     icon: Calendar,
   },
-  ...(isDev
-    ? [
-        {
-          label: 'Sample',
-          key: paths.organizer.sample.default,
-          icon: Grid2x2Check,
-        },
-      ]
-    : []),
+  // ...(isDev
+  //   ? [
+  //       {
+  //         label: 'Sample',
+  //         key: paths.organizer.sample.default,
+  //         icon: Grid2x2Check,
+  //       },
+  //     ]
+  //   : []),
 
   // {
   //     label: "Marketing Requests",
