@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { logout } from '@/store/slice/userSlice';
-import type { RootState } from '@/store/store';
+import { resetStore, type RootState } from '@/store/store';
 import { showError } from '@/utils/toast';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,8 +33,8 @@ const Account = () => {
   const handleLogout = async () => {
     try {
       const role = user?.role;
+      dispatch(resetStore());
       dispatch(logout());
-      dispatch({ type: 'RESET_APP_STATE' }); // Clear all Redux state
       localStorage.clear();
 
       if (role === 'admin') {

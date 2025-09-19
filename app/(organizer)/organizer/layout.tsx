@@ -148,7 +148,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
           <DialogContent
             aria-describedby={undefined}
             // className="dark:bg-secondary max-h-[80vh] max-w-2xl border-none p-0 [&>button]:hidden"
-            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col overflow-y-auto pb-3 md:!max-w-[700px]"
+            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col overflow-y-auto pb-3 md:!max-w-[700px] [&>button]:hidden"
           >
             <DialogHeader className="p-2 pb-0 sm:p-3 sm:pb-0">
               <DialogTitle className="text-2xl font-bold">
