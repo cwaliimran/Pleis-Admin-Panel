@@ -2,29 +2,27 @@
 'use client';
 
 import {
-  configureStore,
   combineReducers,
+  configureStore,
   createAction,
 } from '@reduxjs/toolkit';
 import { categoriesApi } from './Reducer/categories';
+import { eventApi } from './Reducer/events';
+import { highlightsApi } from './Reducer/highlights';
 import { organizationApi } from './Reducer/organization';
+import { settingsApi } from './Reducer/settings';
 import { suppliersApi } from './Reducer/suppliers';
 import { tagsApi } from './Reducer/tags';
+import { twoFactorAuthApi } from './Reducer/twoFactorAuth';
 import { userApi } from './Reducer/user';
 import { userAccessApi } from './Reducer/user-access';
+import { userListApi } from './Reducer/user-list';
 import { venueApi } from './Reducer/venue';
 import { venueTypeApi } from './Reducer/venueType';
 import { userSlice } from './slice/userSlice';
-import { userListApi } from './Reducer/user-list';
-import { highlightsApi } from './Reducer/highlights';
-import { eventApi } from './Reducer/events';
-import { twoFactorAuthApi } from './Reducer/twoFactorAuth';
-import { settingsApi } from './Reducer/settings';
 
-// ✅ Action to reset all state
 export const resetStore = createAction('RESET_STORE');
 
-// ✅ Combine reducers
 const appReducer = combineReducers({
   userSlice: userSlice.reducer,
   [userApi.reducerPath]: userApi.reducer,
@@ -42,10 +40,9 @@ const appReducer = combineReducers({
   [settingsApi.reducerPath]: settingsApi.reducer,
 });
 
-// ✅ Root reducer that clears everything on reset
 const rootReducer = (state: any, action: any) => {
   if (action.type === resetStore.type) {
-    state = undefined; // clears all slices + RTK Query cache
+    state = undefined;
   }
   return appReducer(state, action);
 };

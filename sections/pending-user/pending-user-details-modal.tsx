@@ -131,9 +131,9 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="oib">OIB</Label>
+                <Label htmlFor="vat">VAT</Label>
                 <Input
-                  id="oib"
+                  id="vat"
                   value={user?.basicInfo?.companyDetails?.oib || 'N/A'}
                   readOnly
                   className="bg-gray-50 dark:bg-gray-800"

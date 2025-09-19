@@ -45,6 +45,11 @@ const UserListTypeTableRow: FC<PageProps> = ({
   const [points, setPoints] = useState('');
 
   const handleNavigate = () => {
+    if (memberPage) {
+      router.push(`/organizer/members/${item?.basicInfo?._id}`);
+      return;
+    }
+
     if (userType === 'super-admin') {
       router.push(
         `/super-admin/user/${item?.basicInfo?._id}?userType=${item?.accountState?.userType}`
@@ -142,17 +147,17 @@ const UserListTypeTableRow: FC<PageProps> = ({
               </button>
             )}
 
+            <button
+              type="button"
+              title="View User"
+              onClick={handleNavigate}
+              className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+            >
+              <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+            </button>
+
             {!memberPage && (
               <>
-                <button
-                  type="button"
-                  title="View User"
-                  onClick={handleNavigate}
-                  className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                >
-                  <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
-                </button>
-
                 <button
                   type="button"
                   title="Edit"

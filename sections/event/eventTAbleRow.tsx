@@ -1,12 +1,13 @@
 'use client';
 
 import ImageWithFallback from '@/components/common/img-with-fallback';
-import { formatDateTime } from '@/utils/short-utils';
+import { formatDateTime, getStatusVariant } from '@/utils/short-utils';
 import { Avatar } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FC } from 'react';
+import CustomBadge from '@/components/ui/custom-badge';
 
 interface PageProps {
   item: any;
@@ -40,7 +41,6 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
       className="h-14 w-full cursor-pointer transition-colors"
       onClick={handleNavigateToDetails}
     >
-      {/* Event Image */}
       <TableCell>
         <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
           {item?.basicInfo?.mediaInfo?.url &&
@@ -58,14 +58,12 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
         </Avatar>
       </TableCell>
 
-      {/* Event Title */}
       <TableCell className="text-left capitalize">
         {item?.basicInfo?.title?.length > 20
           ? item.basicInfo.title.slice(0, 20) + '...'
           : item.basicInfo.title}
       </TableCell>
 
-      {/* Organization Name & Logo */}
       <TableCell className="text-left">
         <div className="flex items-center justify-start gap-2">
           {item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url && (
@@ -88,33 +86,35 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
         </div>
       </TableCell>
 
-      {/* Venue Title */}
-      <TableCell className="text-left">
+      <TableCell className="text-left capitalize">
         {item?.basicInfo?.venue?.title || '-'}
       </TableCell>
 
-      {/* Start Date */}
       <TableCell>
         {item?.schedule?.startDateTime
           ? formatDateTime(item.schedule.startDateTime)
           : '-'}
       </TableCell>
 
-      {/* End Date */}
       <TableCell className="text-left">
         {item?.schedule?.endDateTime
           ? formatDateTime(item.schedule.endDateTime)
           : '-'}
       </TableCell>
-      
-      {/* Revenue */}
+
       <TableCell>{item?.meta?.revenue ? item.meta.revenue : '-'}</TableCell>
-      {/* Views */}
+
       <TableCell className="text-left">
         {item?.meta?.views ? item.meta.views : '-'}
       </TableCell>
-      {/* Region */}
+
       <TableCell className="text-left">{item?.meta?.region || '-'}</TableCell>
+
+      <TableCell className="text-muted-foreground text-left text-sm">
+        <CustomBadge variant={getStatusVariant(item?.status)}>
+          {item?.status}
+        </CustomBadge>
+      </TableCell>
 
       {/* Category */}
       {/* <TableCell className="text-left flex items-center gap-2">

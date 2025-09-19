@@ -1,11 +1,5 @@
 'use client';
 
-import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2 } from 'lucide-react';
-import { FC } from 'react';
-import { TableRowProps } from './types';
-
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import {
   Dialog,
@@ -14,6 +8,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { Pencil, Trash2 } from 'lucide-react';
+import { FC } from 'react';
+import { TableRowProps } from './types';
 
 const MenuItemTableRow: FC<TableRowProps> = ({
   item,
@@ -22,15 +20,6 @@ const MenuItemTableRow: FC<TableRowProps> = ({
 }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell>
-        <Avatar className="h-8 w-8">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt={item.photo}
-            className="object-cover"
-          />
-        </Avatar>
-      </TableCell>
       <TableCell className="text-left">{item.name}</TableCell>
       <TableCell className="text-left">
         {item.description.length > 22 ? (
@@ -61,13 +50,9 @@ const MenuItemTableRow: FC<TableRowProps> = ({
           item.description
         )}
       </TableCell>
+
       <TableCell className="text-left">{item?.venue}</TableCell>
-      <TableCell className="text-left">{item?.menu}</TableCell>
-      <TableCell className="text-left">{item?.type}</TableCell>
-      <TableCell className="text-left">{item?.category}</TableCell>
-      <TableCell className="text-left">{item?.basePrice}</TableCell>
-      <TableCell className="text-left">{item?.discountPrice}</TableCell>
-      {/* Status */}
+
       <TableCell className="text-left">
         <CustomBadge
           variant={

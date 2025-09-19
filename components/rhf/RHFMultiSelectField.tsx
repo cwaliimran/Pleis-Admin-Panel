@@ -1,16 +1,20 @@
-"use client"
+'use client';
 
-import { FC } from "react"
-import { useFormContext } from "react-hook-form"
+import { FC } from 'react';
+import { useFormContext } from 'react-hook-form';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+} from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '@/components/ui/popover';
 import {
   Command,
   CommandEmpty,
@@ -18,38 +22,40 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+} from '@/components/ui/command';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
 
 interface Option {
-  label: string
-  value: string
+  label: string;
+  value: string;
 }
 
 interface RHFMultiSelectFieldProps {
-  name: string
-  label?: string
-  placeholder?: string
-  options: Option[]
-  className?: string
-  disabled?: boolean
+  name: string;
+  label?: string;
+  placeholder?: string;
+  options: Option[];
+  className?: string;
+  disabled?: boolean;
 }
 
 const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
   name,
   label,
-  placeholder = "Select options",
+  placeholder = 'Select options',
   options,
   className,
   disabled,
 }) => {
-  const { control, watch, setValue } = useFormContext()
+  const { control, watch, setValue } = useFormContext();
 
-  const selectedValues: string[] = watch(name) || []
-  const selectedOptions = options.filter(o => selectedValues.includes(o.value))
+  const selectedValues: string[] = watch(name) || [];
+  const selectedOptions = options.filter((o) =>
+    selectedValues.includes(o.value)
+  );
 
   return (
     <div className="flex flex-col gap-2">
@@ -59,16 +65,16 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
         render={({ field }) => {
           const toggle = (val: string) => {
             const next = selectedValues.includes(val)
-              ? selectedValues.filter(v => v !== val)
-              : [...selectedValues, val]
-            field.onChange(next)
-          }
+              ? selectedValues.filter((v) => v !== val)
+              : [...selectedValues, val];
+            field.onChange(next);
+          };
 
-        //   const clearOne = (val: string) => {
-        //     field.onChange(selectedValues.filter(v => v !== val))
-        //   }
+          //   const clearOne = (val: string) => {
+          //     field.onChange(selectedValues.filter(v => v !== val))
+          //   }
 
-          const clearAll = () => field.onChange([])
+          const clearAll = () => field.onChange([]);
 
           return (
             <FormItem>
@@ -85,19 +91,17 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                       aria-expanded="false"
                       className={cn(
                         className ||
-                          "w-full min-h-[40px] rounded-md border border-muted bg-background text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary",
-                        disabled && "opacity-60 cursor-not-allowed"
+                          'border-muted bg-background text-muted-foreground placeholder:text-muted-foreground focus:ring-primary min-h-[40px] w-full rounded-md border focus:ring-2 focus:outline-none',
+                        disabled && 'cursor-not-allowed opacity-60'
                       )}
                       disabled={disabled}
                     >
-                      <span className="flex-1 text-left text-muted-foreground">
+                      <span className="text-muted-foreground flex-1 text-left">
                         {selectedOptions.length > 0
-                          ? `${selectedOptions.length} Tag${
-                              selectedOptions.length > 1 ? "s" : ""
-                            } selected`
+                          ? `${selectedOptions.length} selected`
                           : placeholder}
                       </span>
-                      <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
+                      <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
@@ -108,15 +112,15 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                     <CommandList>
                       <CommandEmpty>No options found.</CommandEmpty>
                       <CommandGroup className="dark:bg-secondary w-full">
-                        {options.map(opt => {
-                          const checked = selectedValues.includes(opt.value)
+                        {options.map((opt) => {
+                          const checked = selectedValues.includes(opt.value);
                           return (
                             <CommandItem
                               key={opt.value}
                               value={opt.value}
                               onSelect={() => {
                                 // e.preventDefault()
-                                toggle(opt.value)
+                                toggle(opt.value);
                               }}
                               className="cursor-pointer"
                             >
@@ -126,7 +130,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                               <span className="flex-1">{opt.label}</span>
                               {checked && <Check className="h-4 w-4" />}
                             </CommandItem>
-                          )
+                          );
                         })}
                       </CommandGroup>
                     </CommandList>
@@ -151,17 +155,17 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
               <input type="hidden" onBlur={field.onBlur} />
               <FormMessage />
             </FormItem>
-          )
+          );
         }}
       />
 
       {/* Selected tags */}
       {selectedOptions.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2">
-          {selectedOptions.map(opt => (
+          {selectedOptions.map((opt) => (
             <Badge
               key={opt.value}
-              className="bg-secondary text-sm text-white dark:bg-white dark:text-black flex items-center gap-1"
+              className="bg-secondary flex items-center gap-1 text-xs text-white dark:bg-white dark:text-black"
             >
               {opt.label}
               <button
@@ -170,7 +174,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                 onClick={() =>
                   setValue(
                     name,
-                    selectedValues.filter(v => v !== opt.value)
+                    selectedValues.filter((v) => v !== opt.value)
                   )
                 }
                 className="ml-1 rounded-full p-0.5 hover:bg-gray-200"
@@ -182,7 +186,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default RHFMultiSelectField
+export default RHFMultiSelectField;

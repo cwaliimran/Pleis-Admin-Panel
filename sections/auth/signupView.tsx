@@ -334,7 +334,7 @@ function SignUpView() {
     if (oibValidation !== true) {
       errors.oib = oibValidation;
     } else if (data.oib.length > 11) {
-      errors.oib = 'OIB cannot exceed 11 characters';
+      errors.oib = 'VAT cannot exceed 11 characters';
     }
 
     const bankValidation = validateRequired(
@@ -603,7 +603,7 @@ function SignUpView() {
                   </div>
 
                   <div className="col-span-2">
-                    <RHFTextField name="oib" placeholder="OIB" />
+                    <RHFTextField name="oib" placeholder="VAT" />
                     {validationErrors.oib && (
                       <p className="mt-1 text-xs text-red-500">
                         {validationErrors.oib}

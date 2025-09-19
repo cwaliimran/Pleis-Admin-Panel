@@ -10,6 +10,7 @@ export const menuItemsData = [
     status: 'active',
     venue: 'Main Hall',
     discountPrice: 7.99,
+    menu: 'Main Hall Lunch Menu',
   },
   {
     _id: '2',
@@ -22,6 +23,7 @@ export const menuItemsData = [
     status: 'inactive',
     venue: 'Garden Area',
     discountPrice: 5.5,
+    menu: 'Coffee Bar Specials',
   },
   {
     _id: '3',
@@ -34,6 +36,7 @@ export const menuItemsData = [
     status: 'active',
     venue: 'Coffee Bar',
     discountPrice: 2.0,
+    menu: 'Greenland Evening Menu',
   },
   {
     _id: '4',
@@ -46,6 +49,7 @@ export const menuItemsData = [
     status: 'inactive',
     venue: 'Bakery Corner',
     discountPrice: 3.99,
+    menu: 'Main Hall Lunch Menu',
   },
   {
     _id: '5',
@@ -58,5 +62,6 @@ export const menuItemsData = [
     status: 'inactive',
     venue: 'Juice Stand',
     discountPrice: 3.5,
+    menu: 'Coffee Bar Specials',
   },
 ];

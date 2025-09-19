@@ -38,6 +38,7 @@ const UserOverView: React.FC<{
   user: any;
   apiData: any;
 }> = ({ userType, apiData, user }) => {
+  console.log('user', apiData);
 
   const permissionLabels: Record<string, string> = {
     inAppOrdering: 'InApp ordering',
@@ -240,7 +241,7 @@ const UserOverView: React.FC<{
                 </CardContent>
               </Card>
 
-              <Card className="dark:bg-secondary mt-4 rounded-2xl bg-white shadow-lg">
+              <Card className="dark:bg-secondary mt-4 gap-2 rounded-2xl bg-white shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-slate-500">
                     Bank Details
@@ -249,9 +250,9 @@ const UserOverView: React.FC<{
 
                 <CardContent className="space-y-1 text-sm text-slate-500 dark:text-gray-400">
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-slate-500">OIB:</p>
+                    <p className="font-bold text-slate-500">VAT:</p>
                     <p className="text-gray-800 dark:text-white">
-                      {user.bankDetails?.oib || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.oib || 'N/A'}
                     </p>
                   </div>
 
@@ -268,7 +269,7 @@ const UserOverView: React.FC<{
                       Bank Account Name:
                     </p>
                     <p className="font-semibold text-gray-800 dark:text-white">
-                      {user.bankDetails?.bankAccountName || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.name || 'N/A'}
                     </p>
                   </div>
 
@@ -283,8 +284,8 @@ const UserOverView: React.FC<{
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">Address:</p>
                     <p className="text-gray-800 dark:text-white">
+                      <span className="font-bold text-gray-500">Address: </span>
                       {apiData?.basicInfo?.companyDetails?.location
                         ?.fullAddress || 'N/A'}
                     </p>
@@ -293,21 +294,24 @@ const UserOverView: React.FC<{
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-gray-500">Postal Code:</p>
                     <p className="text-gray-800 dark:text-white">
-                      {user.bankDetails?.postalCode || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.location
+                        ?.postalCode || 'N/A'}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-gray-500">City:</p>
                     <p className="text-gray-800 dark:text-white">
-                      {user.bankDetails?.city || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.location?.city ||
+                        'N/A'}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-gray-500">Country:</p>
                     <p className="text-gray-800 dark:text-white">
-                      {user.bankDetails?.country || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.location?.country ||
+                        'N/A'}
                     </p>
                   </div>
                 </CardContent>

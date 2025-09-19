@@ -7,6 +7,7 @@ import {
   Handshake,
   Highlighter,
   List,
+  SquareMenu,
   Tags,
   VenetianMask,
 } from 'lucide-react';
@@ -102,9 +103,14 @@ export const menuGroups: MenuGroup[] = [
     icon: Highlighter,
   },
   {
+    label: 'Menu List',
+    key: paths.organizer.menuList,
+    icon: List,
+  },
+  {
     label: 'Menu Items',
     key: paths.organizer.menuItems,
-    icon: List,
+    icon: SquareMenu,
   },
   {
     label: 'User List',

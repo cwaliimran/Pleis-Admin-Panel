@@ -30,6 +30,7 @@ const headLabel = [
   { id: 'totalRevenue', label: 'Revenue', align: 'left' },
   { id: 'totalViews', label: 'Views', align: 'left' },
   { id: 'region', label: 'Region', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
