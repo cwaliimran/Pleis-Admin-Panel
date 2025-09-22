@@ -21,20 +21,48 @@ export const customFetchBaseQuery = () => {
   return async (arg: any, api: any, extraOptions: any) => {
     const result = await baseQuery(arg, api, extraOptions);
 
+    // if (result.error) {
+    //   const message = handleApiError(result.error);
+    //   console.log(message);
+
+    //   // Check for 401 Unauthorized (token expired)
+    //   if (result.error.status === 401) {
+    //     if (typeof window !== 'undefined' && window.location.pathname === '/admin/login') {
+    //       // Do nothing if already on login page
+    //     } else {
+    //       api.dispatch(logout());
+    //       api.dispatch(resetStore());
+
+    //       if (typeof window !== 'undefined') {
+    //     window.location.replace('/');
+    //       }
+    //     }
+    //   }
+    // }
+
     if (result.error) {
       const message = handleApiError(result.error);
       console.log(message);
 
-      // Check for 401 Unauthorized (token expired)
-      if (result.error.status === 401) {
-        api.dispatch(logout());
-        api.dispatch(resetStore());
+      const { status } = result.error;
 
-        if (typeof window !== 'undefined') {
-          window.location.replace('/');
+      // Handle unauthorized access (token expired / invalid)
+      if (status === 401) {
+        const isBrowser = typeof window !== 'undefined';
+        const isOnLoginPage =
+          isBrowser && window.location.pathname === '/admin/login';
+
+        if (!isOnLoginPage) {
+          api.dispatch(logout());
+          api.dispatch(resetStore());
+
+          if (isBrowser) {
+            window.location.replace('/');
+          }
         }
       }
     }
+
     return result;
   };
 };
