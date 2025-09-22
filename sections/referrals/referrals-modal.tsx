@@ -108,7 +108,6 @@ const ReferralModal = ({
               </div>
 
               <div className="mt-6 flex w-full items-center justify-between gap-2">
-                {/* Reset Count Button */}
                 <Button
                   type="button"
                   className="cursor-pointer bg-[#82181A] hover:bg-[#82181A]/80"
@@ -117,7 +116,6 @@ const ReferralModal = ({
                   Reset Count
                 </Button>
 
-                {/* Save Button */}
                 <Button
                   type="submit"
                   className="bg-primary hover:bg-primary cursor-pointer px-7 text-white"

@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import SettingsView from '@/sections/settings-view/settings-view';
+import ReferralsDetailsView from '@/sections/referrals/referral-detail/referrals-details-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Settings - Pleis',
+  title: 'Referral Detail - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer' },
-          { name: 'Settings', href: '' },
+          { name: 'Referral Details', href: '' },
         ]}
       />
 
-      <SettingsView />
+      <ReferralsDetailsView />
     </div>
   );
 };

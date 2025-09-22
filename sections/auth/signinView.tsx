@@ -128,8 +128,13 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
 
       let user = response?.data?.data;
 
+      // if (!user) {
+      //   return router.push('/');
+      // }
+
       if (!user) {
-        return router.push('/');
+        showError('Invalid email or password. Please try again.');
+        return;
       }
 
       if (user?.accountState?.status === 'inactive') {

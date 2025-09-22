@@ -107,7 +107,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                 </PopoverTrigger>
 
                 <PopoverContent className="dark:bg-secondary z-[9999] max-h-[300px] w-[var(--radix-popover-trigger-width)] p-0">
-                  <Command>
+                  <Command className="dark:bg-secondary">
                     <CommandInput placeholder="Search..." />
                     <CommandList>
                       <CommandEmpty>No options found.</CommandEmpty>
@@ -136,7 +136,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                     </CommandList>
 
                     {selectedValues.length > 0 && (
-                      <div className="border-t p-2">
+                      <div className="border-t p-1 dark:bg-secondary">
                         <Button
                           type="button"
                           variant="ghost"

@@ -1,4 +1,4 @@
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -7,9 +7,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { TrendingUp } from "lucide-react";
-import React, { FC } from "react";
+} from '@/components/ui/select';
+import { TrendingUp } from 'lucide-react';
+import React, { FC } from 'react';
 
 interface InvoiceCardProps {
   item: {
@@ -23,9 +23,9 @@ interface InvoiceCardProps {
 }
 const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
   return (
-    <Card className="rounded-[8px] dark:bg-secondary">
+    <Card className="dark:bg-secondary rounded-[8px]">
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div>
             <h3 className="text-md font-semibold">
               {/* {item.title.length > 20
@@ -37,10 +37,10 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
           <div>
             {item.menu && (
               <Select defaultValue="all">
-                <SelectTrigger className=" rounded-3xl ">
+                <SelectTrigger className="rounded-3xl">
                   <SelectValue placeholder="" />
                 </SelectTrigger>
-                <SelectContent className="dark:bg-secondary ">
+                <SelectContent className="dark:bg-secondary">
                   <SelectGroup className="w-auto">
                     <SelectLabel>Status</SelectLabel>
                     <SelectItem value="all">All</SelectItem>
@@ -56,10 +56,12 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
           </div>
         </div>
         {item.amount && (
-          <div className="flex justify-between items-center mt-2">
-            <p className="text-3xl font-bold">0</p>
-            {item.raise && (
-              <div className="flex items-center bg-[#79D48B] text-white px-3 py-1 rounded-full text-xs font-semibold">
+          <div className="mt-2 flex items-center justify-between">
+            <p className="text-3xl font-bold">
+              {item?.raise === 'gold' ? 'Gold' : 0}
+            </p>
+            {item.raise && item.raise !== 'gold' && (
+              <div className="flex items-center rounded-full bg-[#79D48B] px-3 py-1 text-xs font-semibold text-white">
                 <TrendingUp />
                 <p>{item.raise}</p>
               </div>
