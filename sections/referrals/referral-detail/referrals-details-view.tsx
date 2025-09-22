@@ -4,6 +4,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ViewsOverTime } from '@/sections/invoices';
 import ReferralsDetailPageTable from './referrals-detail-table';
 
+type StatCardProps = {
+  title: string;
+  value: string | number;
+};
+
 type ReferralAnalytics = {
   totalCompleted: number;
   totalPointsGiven: number;
@@ -137,11 +142,6 @@ const ReferralsDetailsView = () => {
       </Card>
     </>
   );
-};
-
-type StatCardProps = {
-  title: string;
-  value: string | number;
 };
 
 const StatCard = ({ title, value }: StatCardProps) => {

@@ -1,8 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import TableHeadCustom from '@/components/table/table-head-custom';
-import { Table } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Pagination,
   PaginationContent,
@@ -12,6 +11,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { Table } from '@/components/ui/table';
 
 type ReferralItem = {
   friendName: string;
@@ -82,7 +82,9 @@ const ReferralsDetailPageTable = () => {
                       {item?.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center">{item?.dateReferred}</td>
+                  <td className="px-4 py-3 text-center">
+                    {item?.dateReferred}
+                  </td>
                   <td className="px-4 py-3 text-center">
                     {item?.pointsAwarded}
                   </td>
@@ -95,23 +97,6 @@ const ReferralsDetailPageTable = () => {
         {/* Pagination */}
         <div className="mt-4">
           <Pagination className="flex flex-wrap items-center justify-end gap-4 text-sm">
-            {/* <div className="flex items-center space-x-2">
-              <span className="text-muted-foreground">Rows per page:</span>
-              <Select defaultValue="10">
-                <SelectTrigger className="h-8 w-[70px] text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="50">50</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div> */}
-
             <div className="text-muted-foreground">Page 1 of 1</div>
             <PaginationContent>
               <PaginationItem>

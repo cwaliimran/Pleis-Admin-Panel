@@ -1,5 +1,5 @@
 import Header from '@/app/common/header';
-import ReferralsDetailsView from '@/sections/referrals/referrals-details-view';
+import ReferralsDetailsView from '@/sections/referrals/referral-detail/referrals-details-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
