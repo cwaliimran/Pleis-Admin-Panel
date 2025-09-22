@@ -1,28 +1,12 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import React, { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
-
 import { ModeToggle } from '@/components/atoms/mode-toggle';
+import ButtonLoading from '@/components/common/button-loading';
 import GoogleLocationInput from '@/components/common/location-input';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { useBoolean } from '@/hooks/useBoolean';
-import { useGetSuppliersGloabalQuery } from '@/store/Reducer/suppliers';
-import Image from 'next/image';
-import { useSignupMutation } from '@/store/Reducer/user';
-import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
-import ButtonLoading from '@/components/common/button-loading';
-import { getDeviceType } from '@/utils/getDeviceType';
-import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +14,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useBoolean } from '@/hooks/useBoolean';
+import { useGetSuppliersGloabalQuery } from '@/store/Reducer/suppliers';
+import { useSignupMutation } from '@/store/Reducer/user';
+import { getErrorMessage } from '@/utils/api';
+import { getDeviceType } from '@/utils/getDeviceType';
+import { showError, showSuccess } from '@/utils/toast';
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 // TypeScript interfaces
 interface LocationData {
@@ -146,9 +145,9 @@ function SignUpView() {
   const router = useRouter();
   const modalOpen = useBoolean();
 
-  const [emailVerificationLink, setEmailVerificationLink] = useState<
-    string | null
-  >(null);
+  // const [emailVerificationLink, setEmailVerificationLink] = useState<
+  //   string | null
+  // >(null);
 
   const [signUp, { isLoading: signUpLoading }] = useSignupMutation();
 
@@ -380,7 +379,7 @@ function SignUpView() {
       const payload = transformToBackendPayload(data);
       const response = await signUp(payload);
 
-      setEmailVerificationLink(response?.data?.data?.emailVerification || null);
+      // setEmailVerificationLink(response?.data?.data?.emailVerification || null);
 
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -822,11 +821,11 @@ function SignUpView() {
         >
           <DialogHeader>
             <DialogTitle>Account Created Successfully</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="mt-2">
               An activation link has been sent to your email. Please check your
               email (including the spam/junk folder) and click the link to
               activate your account.
-              <br />
+              {/* <br />
               <br />
               <span className="text-md mx-auto w-full">
                 Click Here To Verify Email <br />
@@ -842,7 +841,7 @@ function SignUpView() {
                 ) : (
                   'Loading...'
                 )}
-              </span>
+              </span> */}
             </DialogDescription>
           </DialogHeader>
           <Button
@@ -851,7 +850,7 @@ function SignUpView() {
               router.push('/');
               reset();
             }}
-            className="mt-4 bg-[#0f172b] text-white hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
+            className="mt-2 bg-[#0f172b] text-white hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
           >
             Close
           </Button>

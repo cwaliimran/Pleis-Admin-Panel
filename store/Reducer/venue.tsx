@@ -9,7 +9,7 @@ export const venueApi = createApi({
 
   endpoints: (builder) => ({
     getVenues: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, organization }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,6 +17,7 @@ export const venueApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (organization) (params as any).organization = organization;
         return {
           url: API_ROUTES.VENUES,
           method: 'GET',

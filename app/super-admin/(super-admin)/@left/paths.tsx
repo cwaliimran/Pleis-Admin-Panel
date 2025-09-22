@@ -75,6 +75,9 @@ export const paths = {
     terms: {
       default: '/super-admin/terms',
     },
+    preset: {
+      default: '/super-admin/preset',
+    },
     browserControl: {
       default: '/super-admin/browser-control',
     },

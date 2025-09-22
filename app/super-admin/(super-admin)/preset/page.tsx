@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import SettingsView from '@/sections/settings-view/settings-view';
+import PresetView from '@/sections/preset/preset-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Settings - Pleis',
+  title: 'Preset - Pleis',
 };
 
 const Page = () => {
@@ -11,12 +11,12 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/organizer' },
-          { name: 'Settings', href: '' },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Preset', href: '' },
         ]}
       />
 
-      <SettingsView />
+      <PresetView />
     </div>
   );
 };

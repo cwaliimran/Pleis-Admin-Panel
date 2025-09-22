@@ -1,8 +1,8 @@
-import TableHeadCustom from "@/components/table/table-head-custom";
-import { Table } from "@/components/ui/table";
-import React from "react";
-import { loyaltylistData } from "./data";
-import LoyaltyTableRow from "./loyaltyTableRow";
+import TableHeadCustom from '@/components/table/table-head-custom';
+import { Table } from '@/components/ui/table';
+import React from 'react';
+import { loyaltylistData } from './data';
+import LoyaltyTableRow from './loyaltyTableRow';
 import {
   Pagination,
   PaginationContent,
@@ -11,7 +11,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
@@ -19,55 +19,55 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 const headLabel = [
   {
-    id: "menuItem",
-    label: "Menu Item",
-    align: "left",
+    id: 'menuItem',
+    label: 'Menu Item',
+    align: 'left',
   },
   {
-    id: "buyerName",
-    label: "Buyer Name",
-    align: "center",
+    id: 'buyerName',
+    label: 'Buyer Name',
+    align: 'center',
   },
   {
-    id: "venue",
-    label: "Venue",
-    align: "left",
+    id: 'venue',
+    label: 'Venue',
+    align: 'left',
   },
   {
-    id: "points",
-    label: "Points",
-    align: "center",
+    id: 'points',
+    label: 'Points',
+    align: 'center',
   },
   {
-    id: "dateTime",
-    label: "Date and Time",
-    align: "center",
+    id: 'dateTime',
+    label: 'Date and Time',
+    align: 'center',
   },
   {
-    id: "amount",
-    label: "Amount",
-    align: "center",
+    id: 'amount',
+    label: 'Amount',
+    align: 'center',
   },
   {
-    id: "total",
-    label: "Total",
-    align: "center",
+    id: 'total',
+    label: 'Total',
+    align: 'center',
   },
   {
-    id: "actions",
-    label: "",
-    align: "center",
+    id: 'actions',
+    label: '',
+    align: 'center',
   },
 ];
 
 const LoyaltyList = () => {
   return (
     <div>
-      <div className="border rounded-lg md:m-4  ">
+      <div className="rounded-lg border md:m-4">
         <Table className="w-full">
           <TableHeadCustom headLabel={headLabel} />
           <tbody>
@@ -77,11 +77,11 @@ const LoyaltyList = () => {
           </tbody>
         </Table>
       </div>
-      <Pagination className="flex flex-wrap items-center justify-end gap-4 mt-4 text-sm">
+      <Pagination className="mt-4 flex flex-wrap items-center justify-end gap-4 text-sm">
         <div className="flex items-center space-x-2">
           <span className="text-muted-foreground">Rows per page:</span>
           <Select defaultValue="10">
-            <SelectTrigger className="w-[70px] h-8 text-sm">
+            <SelectTrigger className="h-8 w-[70px] text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

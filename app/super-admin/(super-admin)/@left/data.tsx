@@ -9,6 +9,7 @@ import {
   List,
   Package,
   Settings,
+  SlidersHorizontal,
   // Tags,
   User,
   UsersRound,
@@ -118,6 +119,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Tags',
     key: paths.superAdmin.tags.default,
     icon: Hash,
+  },
+  {
+    label: 'Preset',
+    key: paths.superAdmin.preset.default,
+    icon: SlidersHorizontal,
   },
   // {
   //   label: 'User List',

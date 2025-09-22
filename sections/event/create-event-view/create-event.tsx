@@ -22,7 +22,7 @@ import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CalendarIcon, ChevronDown, Clock, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Controller, Resolver, useForm } from 'react-hook-form';
 // import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
@@ -33,6 +33,7 @@ import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { skipToken } from '@reduxjs/toolkit/query';
 import Image from 'next/image';
 import VenueTypeModal from '@/components/common/create-venue-modal';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 
 interface EventFormValues {
   image: File | null;
@@ -68,12 +69,6 @@ interface EventFormValues {
   endOnDate?: string;
 }
 
-const organizerOptions = [
-  { label: 'Organization A', value: 'orgA' },
-  { label: 'Organization B', value: 'orgB' },
-  { label: 'Organization C', value: 'orgC' },
-];
-
 const weekDays = [
   { label: 'MON', value: 'monday' },
   { label: 'TUE', value: 'tuesday' },
@@ -95,11 +90,6 @@ const CreateEventView = (props: any) => {
   const { id } = useParams();
 
   const { data: event = {} } = useGeteventByIdQuery(id ?? skipToken);
-  const {
-    data: { data: venues = [] } = {},
-    // refetch: refetchVenues,
-    isLoading: venuesLoading,
-  } = useGetVenuesQuery({ page: 0, limit: 100 });
 
   const { data: { data: organizations = [] } = {}, isLoading: orgLoading } =
     useGetOrganizationQuery({
@@ -212,7 +202,6 @@ const CreateEventView = (props: any) => {
   const {
     mediaUrl,
     mediaType,
-
     venue,
     categories,
     partnerOrganizers,
@@ -220,21 +209,56 @@ const CreateEventView = (props: any) => {
     recurring,
     recurringDays,
     recurringEnd,
-    partnerOrganizerInput = '',
+    // partnerOrganizerInput = '',
+    organization,
   } = watch();
 
-  const addPartnerOrganizer = () => {
+  // Conditional venue API call based on organization selection
+  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
+    useGetVenuesQuery(
+      organization
+        ? { page: 0, limit: 1000, organization: organization }
+        : { page: 0, limit: 1000 },
+      {
+        skip: !organization,
+      }
+    );
+
+  // Clear venue when organization changes
+  const prevOrganizationRef = useRef(organization);
+  useEffect(() => {
     if (
-      partnerOrganizerInput &&
-      !partnerOrganizers.includes(partnerOrganizerInput)
+      prevOrganizationRef.current &&
+      prevOrganizationRef.current !== organization
     ) {
-      setValue('partnerOrganizers', [
-        ...partnerOrganizers,
-        partnerOrganizerInput,
-      ]);
-      setValue('partnerOrganizerInput', '');
+      // Clear venue field when organization changes to a different organization
+      setValue('venue', '');
     }
-  };
+    prevOrganizationRef.current = organization;
+  }, [organization, setValue]);
+
+  // Remove partner organizer if it becomes the main organization
+  useEffect(() => {
+    if (organization && partnerOrganizers?.includes(organization)) {
+      setValue(
+        'partnerOrganizers',
+        partnerOrganizers?.filter((po) => po !== organization)
+      );
+    }
+  }, [organization, partnerOrganizers, setValue]);
+
+  // const addPartnerOrganizer = () => {
+  //   if (
+  //     partnerOrganizerInput &&
+  //     !partnerOrganizers?.includes(partnerOrganizerInput)
+  //   ) {
+  //     setValue('partnerOrganizers', [
+  //       ...partnerOrganizers,
+  //       partnerOrganizerInput,
+  //     ]);
+  //     setValue('partnerOrganizerInput', '');
+  //   }
+  // };
 
   const removePartnerOrganizer = (val: string) => {
     setValue(
@@ -351,6 +375,7 @@ const CreateEventView = (props: any) => {
           title: data.name,
           description: data.description,
           organization: data.organization,
+          partnerOrganizers: data.partnerOrganizers,
           venue: data.venue,
           categories: data.categories,
           tags: data.tags,
@@ -433,8 +458,7 @@ const CreateEventView = (props: any) => {
       description: event?.basicInfo?.description || '',
 
       venue: event?.basicInfo?.venue?._id || '',
-      categories:
-        event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
+      categories: event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
       tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
 
       eventType: event?.schedule?.type || 'oneTime',
@@ -458,6 +482,7 @@ const CreateEventView = (props: any) => {
       partnerOrganizerInput: '',
 
       organization: event?.basicInfo?.organization?._id || '',
+      partnerOrganizers: event?.basicInfo?.partnerOrganizers ? event.basicInfo.partnerOrganizers.map((org: any) => org._id) : [],
     });
   };
 
@@ -635,7 +660,7 @@ const CreateEventView = (props: any) => {
                         </div>
                       ) : (
                         <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
-                          <RHFSelectField
+                          {/* <RHFSelectField
                             name="organization"
                             placeholder="Choose Organization"
                             options={organizations?.map((org: any) => ({
@@ -643,6 +668,20 @@ const CreateEventView = (props: any) => {
                               label: org.basicInfo?.name,
                             }))}
                             className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                          /> */}
+
+                          <RHFCustomDropdown
+                            name="organization"
+                            placeholder="Choose Organization"
+                            className="sm:max-w-[120px] lg:max-w-[440px]"
+                            triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
+                            contentClassName="rounded-xl shadow-md"
+                            options={organizations?.map((org: any) => ({
+                              value: org?._id,
+                              label: org?.basicInfo?.name,
+                            }))}
+                            isLoading={orgLoading}
+                            showNone={false}
                           />
                         </div>
                       )}
@@ -658,19 +697,44 @@ const CreateEventView = (props: any) => {
                           <Skeleton className="h-[35px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
                         </div>
                       ) : (
-                        <div className="mt-2 w-full items-center gap-2 md:flex md:w-[70%]">
-                          <RHFSelectField
+                        <div className="w-full items-center gap-2 md:flex md:w-[70%]">
+                          {/* <RHFSelectField
                             name="venue"
-                            placeholder="Suggested Venue"
+                            placeholder={
+                              !organization
+                                ? 'Select organization first'
+                                : 'Suggested Venue'
+                            }
+                            disabled={!organization || venues?.length === 0}
                             options={venues?.map((val: any) => ({
-                              value: val._id,
-                              label: val.title,
+                              value: val?._id,
+                              label: val?.title,
                             }))}
-                            className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                            className={`mt-2 h-[40px] flex-1 rounded-4xl border-gray-200 px-5 focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px] ${!organization ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                          /> */}
+
+                          <RHFCustomDropdown
+                            name="venue"
+                            placeholder={
+                              !organization
+                                ? 'Select organization first'
+                                : 'Suggested Venue'
+                            }
+                            className="sm:max-w-[120px] lg:max-w-[440px]"
+                            triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
+                            contentClassName="rounded-xl shadow-md"
+                            disabled={!organization || venues?.length === 0}
+                            options={venues?.map((val: any) => ({
+                              value: val?._id,
+                              label: val?.title,
+                            }))}
+                            isLoading={venuesLoading}
+                            showNone={false}
                           />
 
                           <Button
-                            className="bg-primary hover:bg-primary mt-2 cursor-pointer rounded-4xl py-2 text-white"
+                            className={`bg-primary hover:bg-primary mt-2 rounded-4xl py-2 text-white ${!organization ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            disabled={!organization}
                             onClick={() => setVenueModal(true)}
                           >
                             Add Venue
@@ -678,7 +742,7 @@ const CreateEventView = (props: any) => {
                         </div>
                       )}
 
-                      <div className="mt-5">
+                      <div className="mt-8">
                         <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
                           Category
                         </label>
@@ -810,7 +874,7 @@ const CreateEventView = (props: any) => {
                       {/* Partner organizer input (visible only when toggled) */}
                       {showPartnerOrganizer && (
                         <div className="mt-2 flex w-[70%] gap-2">
-                          <input
+                          {/* <input
                             type="text"
                             placeholder="Search for partner organizer"
                             value={partnerOrganizerInput}
@@ -818,15 +882,37 @@ const CreateEventView = (props: any) => {
                               setValue('partnerOrganizerInput', e.target.value)
                             }
                             className="h-[40px] w-full max-w-md cursor-pointer rounded-4xl border border-gray-200 px-5 py-[8px] text-[14px]"
+                          /> */}
+
+                          <RHFCustomDropdown
+                            name="partnerOrganizerInput"
+                            placeholder="Search for partner organizer"
+                            className="sm:max-w-[120px] lg:max-w-[440px]"
+                            triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
+                            contentClassName="rounded-xl shadow-md"
+                            disabled={!organization}
+                            options={organizations
+                              ?.filter(
+                                (org: any) =>
+                                  org._id !== organization &&
+                                  !partnerOrganizers?.includes(org._id)
+                              )
+                              ?.map((org: any) => ({
+                                value: org?._id,
+                                label: org?.basicInfo?.name,
+                              }))}
+                            isLoading={orgLoading}
+                            showNone={false}
                           />
 
-                          <Button
+                          {/* <Button
                             type="button"
                             onClick={addPartnerOrganizer}
-                            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-0"
+                            // disabled={!partnerOrganizerInput || partnerOrganizers?.includes(partnerOrganizerInput)}
+                            className={`bg-primary hover:bg-primary rounded-4xl py-2 text-white md:mt-0 ${(!partnerOrganizerInput || partnerOrganizers?.includes(partnerOrganizerInput)) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                           >
                             Add
-                          </Button>
+                          </Button> */}
                         </div>
                       )}
                       {partnerOrganizers?.length > 0 && (
@@ -836,8 +922,8 @@ const CreateEventView = (props: any) => {
                               key={po}
                               className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black"
                             >
-                              {organizerOptions?.find((opt) => opt.value === po)
-                                ?.label || po}
+                              {organizations?.find((org: any) => org._id === po)
+                                ?.basicInfo?.name || po}
                               <button
                                 title="Remove Organizer"
                                 type="button"

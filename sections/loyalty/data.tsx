@@ -92,6 +92,28 @@ export const tabsData: TabData[] = [
   },
 ];
 
+export const memberCardHeaderData: LoyaltyCardData[] = [
+  {
+    title: 'Stat 1',
+    amount: 22,
+    raise: '15%',
+  },
+  {
+    title: 'Stat 2',
+    amount: 22,
+    raise: '12%',
+  },
+  {
+    title: 'Manually gift loyalty points',
+    amount: 432,
+  },
+  {
+    title: 'Tier',
+    amount: 22,
+    raise: 'gold',
+  },
+];
+
 export const loyaltyCardHeaderData: LoyaltyCardData[] = [
   {
     title: 'Total Members',
