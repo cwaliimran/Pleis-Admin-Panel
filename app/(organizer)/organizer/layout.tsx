@@ -35,6 +35,7 @@ import SidebarToggleButton from '@/app/common/siebarToggleButton';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { OrganizerGuard } from '@/components/guards';
 import React, { FC, useEffect, useState } from 'react';
+import '../../common/terms-html.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useUpdateUserMutation } from '@/store/Reducer/user-list';
@@ -146,15 +147,16 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
         <Dialog open={showTermsModal} onOpenChange={() => {}}>
           <DialogContent
             aria-describedby={undefined}
-            className="dark:bg-secondary max-h-[80vh] max-w-2xl border-none p-0 [&>button]:hidden"
+            // className="dark:bg-secondary max-h-[80vh] max-w-2xl border-none p-0 [&>button]:hidden"
+            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col overflow-y-auto pb-3 md:!max-w-[700px] [&>button]:hidden"
           >
-            <DialogHeader className="p-6 pb-0">
+            <DialogHeader className="p-2 pb-0 sm:p-3 sm:pb-0">
               <DialogTitle className="text-2xl font-bold">
                 Terms and Conditions
               </DialogTitle>
             </DialogHeader>
 
-            <div className="px-6">
+            <div className="p-2 sm:p-3">
               {!apiData?.data?.terms_and_conditions ? (
                 <div className="my-3 space-y-3">
                   <Skeleton className="h-4 w-3/4" />
@@ -169,18 +171,21 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
                   <Skeleton className="h-4 w-1/2" />
                 </div>
               ) : (
-                <div
-                  className="max-h-[400px] space-y-4 overflow-y-auto pr-4 text-sm"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      apiData?.data?.terms_and_conditions || 'Loading terms...',
-                  }}
-                />
+                <div className="max-h-[400px] overflow-y-auto pr-4">
+                  <div
+                    className="terms-html"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        apiData?.data?.terms_and_conditions ||
+                        'Loading terms...',
+                    }}
+                  />
+                </div>
               )}
             </div>
 
-            <div className="border-t p-6 pt-4">
-              <div className="mb-4 flex items-center space-x-2">
+            <div className="flex flex-col items-center justify-between gap-y-4 border-t p-3 pt-5 sm:flex-row sm:p-4">
+              <div className="flex items-center space-x-2">
                 <Checkbox
                   id="accept-terms"
                   checked={acceptedTerms}
@@ -198,7 +203,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
                 </label>
               </div>
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex">
                 <Button
                   onClick={handleTermsSubmit}
                   disabled={!acceptedTerms || updateUserLoading || isLoading}

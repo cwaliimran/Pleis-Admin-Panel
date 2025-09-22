@@ -30,7 +30,9 @@ const SupplierTypeTableRow: FC<PageProps> = ({
           <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
             {item?.basicInfo?.profileIcon &&
             item?.basicInfo?.profileIcon !==
-              'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' ? (
+              'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' &&
+            item?.basicInfo?.profileIcon !==
+              'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
               <AvatarImage
                 src={item?.basicInfo?.profileIcon}
                 alt="Store"

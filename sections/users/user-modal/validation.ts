@@ -27,8 +27,8 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
         organizationName: Yup.string().required('Organization Name is required'),
         companyName: Yup.string().required('Company Name is required'),
         oib: Yup.string()
-          .required('OIB is required')
-          .max(11, 'OIB must be at most 11 characters'),
+          .required('VAT is required')
+          .max(11, 'VAT must be at most 11 characters'),
         bankAccountNumber: Yup.string().required('Bank Account Number is required'),
         representativeName: Yup.string().required('Representative Name is required'),
         // location: Yup.object().shape({

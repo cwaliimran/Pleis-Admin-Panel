@@ -28,7 +28,7 @@ const OrganizerFields: React.FC<OrganizerFieldsProps> = ({
           placeholder="Enter company name"
         />
       </div>
-      <RHFTextField name="oib" label="OIB" placeholder="Enter OIB" />
+      <RHFTextField name="oib" label="VAT" placeholder="Enter VAT" />
       <div className="md:col-span-2">
         <RHFTextField
           name="bankAccountNumber"

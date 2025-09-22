@@ -1,0 +1,47 @@
+.terms-html h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 1rem 0 0.75rem 0;
+}
+
+.terms-html h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0.75rem 0 0.5rem 0;
+}
+
+.terms-html h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0.5rem 0 0.25rem 0;
+}
+
+.terms-html p {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.terms-html ol {
+    list-style-type: decimal;
+    margin-left: 2rem;
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.terms-html ul {
+    list-style-type: disc;
+    margin-left: 2rem;
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.terms-html li {
+    margin-bottom: 0.25rem;
+    /* font-size: 1rem; */
+    font-size: 0.95rem;
+}
+
+.terms-html em,
+.terms-html i {
+    font-style: italic;
+}

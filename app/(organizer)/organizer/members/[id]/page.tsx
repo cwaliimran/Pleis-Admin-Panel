@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import UserListView from '@/sections/users/userListView';
+import MembersLoyaltyView from '@/sections/loyalty/loyalty-view/members-loyalty-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Members - Pleis',
+  title: 'Member Detail - Pleis',
 };
 
 const Page = () => {
@@ -16,8 +16,7 @@ const Page = () => {
         ]}
       />
 
-      {/* <MembersView /> */}
-      <UserListView usertype="organizer" memberPage={true}  />
+      <MembersLoyaltyView />
     </div>
   );
 };

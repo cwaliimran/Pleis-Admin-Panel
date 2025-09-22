@@ -3,10 +3,11 @@ import {
   Building,
   Calendar,
   ChartColumnBig,
-  Grid2x2Check,
+  // Grid2x2Check,
   Handshake,
   Highlighter,
   List,
+  SquareMenu,
   Tags,
   VenetianMask,
 } from 'lucide-react';
@@ -26,7 +27,7 @@ type MenuGroup = {
   items?: MenuItem[];
 };
 
-const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
+// const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
 
 export const menuGroups: MenuGroup[] = [
   {
@@ -102,24 +103,29 @@ export const menuGroups: MenuGroup[] = [
     icon: Highlighter,
   },
   {
+    label: 'Menu List',
+    key: paths.organizer.menuList,
+    icon: List,
+  },
+  {
     label: 'Menu Items',
     key: paths.organizer.menuItems,
-    icon: List,
+    icon: SquareMenu,
   },
   {
     label: 'User List',
     key: paths.organizer.users.list,
     icon: Calendar,
   },
-  ...(isDev
-    ? [
-        {
-          label: 'Sample',
-          key: paths.organizer.sample.default,
-          icon: Grid2x2Check,
-        },
-      ]
-    : []),
+  // ...(isDev
+  //   ? [
+  //       {
+  //         label: 'Sample',
+  //         key: paths.organizer.sample.default,
+  //         icon: Grid2x2Check,
+  //       },
+  //     ]
+  //   : []),
 
   // {
   //     label: "Marketing Requests",

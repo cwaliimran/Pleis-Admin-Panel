@@ -40,7 +40,7 @@ interface EventFormValues {
   mediaType: string;
   name: string;
   venue: string;
-  category: string;
+  categories: string[];
   tags: string[];
   organizers: string[];
   partnerOrganizers: string[];
@@ -107,11 +107,13 @@ const CreateEventView = (props: any) => {
       limit: 10000,
     });
 
-  const { data: { data: categories = [] } = {}, isLoading: categoriesLoading } =
-    useGetCategoriesQuery({
-      page: 0,
-      limit: 10000,
-    });
+  const {
+    data: { data: categoriesData = [] } = {},
+    isLoading: categoriesLoading,
+  } = useGetCategoriesQuery({
+    page: 0,
+    limit: 10000,
+  });
 
   const { data: { data: tagsd = [] } = {}, isLoading: tagsLoading } =
     useGetTagsQuery({
@@ -129,7 +131,7 @@ const CreateEventView = (props: any) => {
     mediaType: 'image',
     name: '',
     venue: '',
-    category: '',
+    categories: [],
     tags: [],
     organizers: [],
     partnerOrganizers: [],
@@ -167,7 +169,7 @@ const CreateEventView = (props: any) => {
     name: Yup.string().required('Name is required'),
     description: Yup.string(),
     venue: Yup.string(),
-    category: Yup.string(),
+    categories: Yup.array().of(Yup.string()),
     tags: Yup.array().of(Yup.string()),
     organization: Yup.string().required('Organization is required'),
     partnerOrganizers: Yup.array().of(Yup.string()),
@@ -212,7 +214,7 @@ const CreateEventView = (props: any) => {
     mediaType,
 
     venue,
-    category,
+    categories,
     partnerOrganizers,
     eventType,
     recurring,
@@ -256,7 +258,7 @@ const CreateEventView = (props: any) => {
         watch('name'),
         watch('description'),
         venue,
-        category,
+        categories && categories.length > 0,
         watch('tags').length > 0,
         watch('organization'),
       ].every(Boolean);
@@ -350,7 +352,7 @@ const CreateEventView = (props: any) => {
           description: data.description,
           organization: data.organization,
           venue: data.venue,
-          category: data.category,
+          categories: data.categories,
           tags: data.tags,
         },
         schedule: {
@@ -431,7 +433,8 @@ const CreateEventView = (props: any) => {
       description: event?.basicInfo?.description || '',
 
       venue: event?.basicInfo?.venue?._id || '',
-      category: event?.basicInfo?.category?._id || '',
+      categories:
+        event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
       tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
 
       eventType: event?.schedule?.type || 'oneTime',
@@ -686,7 +689,7 @@ const CreateEventView = (props: any) => {
                           </div>
                         ) : (
                           <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
-                            <RHFSelectField
+                            {/* <RHFSelectField
                               name="category"
                               placeholder="Choose Category"
                               options={categories?.map((val: any) => ({
@@ -694,7 +697,29 @@ const CreateEventView = (props: any) => {
                                 label: val.title,
                               }))}
                               className="mt-2 h-[40px] flex-1 cursor-pointer rounded-4xl border-gray-200 px-5 text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                            /> */}
+
+                            <RHFMultiSelectField
+                              name="categories"
+                              placeholder="Choose Category"
+                              options={categoriesData?.map((val: any) => ({
+                                value: val._id,
+                                label: val.title,
+                              }))}
+                              className="h-[40px] cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
                             />
+
+                            {/* <RHFCustomCombobox
+                              name="categories"
+                              placeholder="Select categories"
+                              className="w-full flex-1"
+                              multiple={true}
+                              allowCustom={false}
+                              options={categoriesData?.map((val: any) => ({
+                                value: val._id,
+                                label: val.title,
+                              }))}
+                            /> */}
                           </div>
                         )}
 

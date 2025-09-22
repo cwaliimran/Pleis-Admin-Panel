@@ -1,9 +1,11 @@
 'use client';
 
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
-import CustomBadge from '@/components/ui/custom-badge';
+import React from 'react';
+
 import {
   Dialog,
   DialogContent,
@@ -11,20 +13,11 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-
-type MenuItemFormValues = {
-  image?: any;
-  name: string;
-  type: string;
-  itemCategory: string;
-  itemVenue: string;
-  basePrice: string;
-  discountPrice: string | null;
-  description: string;
-};
+import { MenuItemFormValues, MenuItemModalProps } from './types';
 
 const defaultValues: MenuItemFormValues = {
   image: null,
@@ -35,6 +28,7 @@ const defaultValues: MenuItemFormValues = {
   basePrice: '',
   discountPrice: '',
   description: '',
+  preset: null,
 };
 
 const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
@@ -46,14 +40,8 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   basePrice: Yup.string().required('Base price is required'),
   discountPrice: Yup.string().nullable().default(''),
   description: Yup.string().required('Description is required'),
+  preset: Yup.number().nullable(),
 });
-
-type MenuItemModalProps = {
-  open: boolean;
-  onClose: () => void;
-  isEdit?: boolean;
-  selectedData?: MenuItemFormValues;
-};
 
 const MenuItemModal = ({
   open,
@@ -66,7 +54,10 @@ const MenuItemModal = ({
     defaultValues: selectedData || defaultValues,
   });
 
-  const { reset, setValue } = methods;
+  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
+    useGetVenuesQuery({ page: 0, limit: 10000 });
+
+  const { reset, setValue, watch } = methods;
 
   const handleSubmit = (data: any) => {
     console.log('Menu item data:', data);
@@ -80,16 +71,39 @@ const MenuItemModal = ({
   };
 
   // Preset items
-  const presets = [
-    { name: 'Coca Cola 1.5L' },
-    { name: 'Pepsi 500ml' },
-    { name: 'Chicken Burger' },
-    { name: 'French Fries' },
-  ];
+  const presets = React.useMemo(
+    () => [
+      { _id: 1, title: 'Coca Cola 1.5L' },
+      { _id: 2, title: 'Pepsi 500ml' },
+      { _id: 3, title: 'Chicken Burger' },
+      { _id: 4, title: 'French Fries' },
+      { _id: 5, title: 'Veg Pizza' },
+      { _id: 6, title: 'Grilled Sandwich' },
+      { _id: 7, title: 'Orange Juice' },
+      { _id: 8, title: 'Chocolate Cake' },
+      { _id: 9, title: 'Caesar Salad' },
+      { _id: 10, title: 'Mineral Water 1L' },
+    ],
+    []
+  );
 
-  const handlePresetClick = (presetName: string) => {
-    setValue('name', presetName);
-  };
+  const presetOptions =
+    presets?.map((preset: any) => ({
+      label: preset?.title,
+      value: preset?._id,
+    })) || [];
+
+  React.useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name === 'preset' && value.preset) {
+        const selectedPreset = presets.find((p) => p._id === value.preset);
+        if (selectedPreset) {
+          setValue('name', selectedPreset.title);
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, setValue, presets]);
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -114,13 +128,11 @@ const MenuItemModal = ({
                     label="Name"
                     placeholder="Enter Name"
                   />
-
                   <RHFTextField
                     name="type"
                     label="Type"
                     placeholder="Enter Type"
                   />
-
                   <RHFSelectField
                     name="itemCategory"
                     label="Item Category"
@@ -134,14 +146,14 @@ const MenuItemModal = ({
                   />
 
                   <RHFSelectField
-                    name="itemVenue"
-                    label="Select Venue"
-                    placeholder="Select Venue"
+                    name="menu"
+                    label="Select Menu"
+                    placeholder="Select Menu"
                     className="w-full flex-1"
                     options={[
-                      { value: 'type1', label: 'Main Hall' },
-                      { value: 'type2', label: 'Garden Area' },
-                      { value: 'type3', label: 'Coffee Bar' },
+                      { value: 'type1', label: 'Main Hall Lunch Menu' },
+                      { value: 'type2', label: 'Garden Area Lunch Menu' },
+                      { value: 'type3', label: 'Coffee Bar Lunch Menu' },
                     ]}
                   />
 
@@ -156,6 +168,33 @@ const MenuItemModal = ({
                     label="Discount Price"
                     placeholder="Enter Discount Price"
                   />
+
+                  <div className={`${isEdit ? 'col-span-1' : 'col-span-2'}`}>
+                    <RHFCustomDropdown
+                      name="itemVenue"
+                      label="Venue"
+                      placeholder="Select Venue"
+                      options={venues?.map((val: any) => ({
+                        value: val?._id,
+                        label: val?.title,
+                      }))}
+                      isLoading={venuesLoading}
+                      showNone={false}
+                    />
+                  </div>
+
+                  {isEdit && (
+                    <RHFSelectField
+                      name="status"
+                      label="Select Status"
+                      placeholder="Select Status"
+                      className="w-full flex-1"
+                      options={[
+                        { value: 'active', label: 'Active' },
+                        { value: 'inactive', label: 'Inactive' },
+                      ]}
+                    />
+                  )}
                 </div>
 
                 {/* Description */}
@@ -172,17 +211,13 @@ const MenuItemModal = ({
                 {/* Preset Section */}
                 <div className="mt-2">
                   <h4 className="mb-2 text-sm font-semibold">Presets</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {presets?.map((preset, idx) => (
-                      <div
-                        key={idx}
-                        className="cursor-pointer rounded-full py-1 text-sm"
-                        onClick={() => handlePresetClick(preset.name)}
-                      >
-                        <CustomBadge>{preset.name}</CustomBadge>
-                      </div>
-                    ))}
-                  </div>
+                  <RHFCustomDropdown
+                    name="preset"
+                    placeholder="Select Preset"
+                    options={presetOptions}
+                    isLoading={false}
+                    showNone={false}
+                  />
                 </div>
               </div>
 

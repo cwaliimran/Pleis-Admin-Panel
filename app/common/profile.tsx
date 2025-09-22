@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { logout } from '@/store/slice/userSlice';
-import type { RootState } from '@/store/store';
+import { resetStore, type RootState } from '@/store/store';
 import { showError } from '@/utils/toast';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,6 +33,7 @@ const Account = () => {
   const handleLogout = async () => {
     try {
       const role = user?.role;
+      dispatch(resetStore());
       dispatch(logout());
       localStorage.clear();
 
@@ -41,8 +42,6 @@ const Account = () => {
       } else {
         router.replace('/');
       }
-
-      window.location.reload();
     } catch (error) {
       console.log(error);
       showError('Unable to logout!');

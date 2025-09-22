@@ -6,6 +6,7 @@ export const paths = {
     calendar: '/organizer/calendar',
     dashboard: '/organizer',
     menuItems: '/organizer/menuItems',
+    menuList: '/organizer/menu-list',
     rewards: '/organizer/rewards',
     challenges: '/organizer/challenges',
     promotions: '/organizer/promotions',

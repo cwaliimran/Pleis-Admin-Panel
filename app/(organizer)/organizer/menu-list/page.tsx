@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import UserListView from '@/sections/users/userListView';
+import MenuListView from '@/sections/menulist/menulist-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Members - Pleis',
+  title: 'Menu List - Pleis',
 };
 
 const Page = () => {
@@ -12,12 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer' },
-          { name: 'Members', href: '' },
+          { name: 'Menu List', href: '' },
         ]}
       />
 
-      {/* <MembersView /> */}
-      <UserListView usertype="organizer" memberPage={true}  />
+      <MenuListView />
     </div>
   );
 };

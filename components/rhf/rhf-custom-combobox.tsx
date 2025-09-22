@@ -87,7 +87,7 @@ export const RHFCustomCombobox = ({
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-full justify-between font-normal text-gray-600 dark:text-white"
+              className="w-full justify-between font-normal text-gray-600 dark:text-slate-400"
             >
               {selectedValues.length > 0
                 ? `${selectedValues.length} selected`

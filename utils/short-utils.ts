@@ -7,11 +7,11 @@ export function formatDateTime(dateInput: string | Date): string {
   const year = date.getFullYear();
   let hours = date.getHours();
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
+  // const seconds = String(date.getSeconds()).padStart(2, '0');
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;
   hours = hours ? hours : 12;
-  return `${day}-${month}-${year}, ${hours}:${minutes}:${seconds} ${ampm}`;
+  return `${day}-${month}-${year}, ${hours}:${minutes} ${ampm}`;
 }
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
