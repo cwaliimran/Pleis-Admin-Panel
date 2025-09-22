@@ -14,6 +14,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
 import ReferralsTable from './referrals-table';
 import RefferralModal from './referrals-modal';
+import { Button } from '@/components/ui/button';
 
 const ReferralsView = () => {
   const openModal = useBoolean();
@@ -71,8 +72,7 @@ const ReferralsView = () => {
   // };
 
   // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
+  const handleEdit = () => {
     openModal.onTrue();
     editModal.onTrue();
   };
@@ -127,15 +127,14 @@ const ReferralsView = () => {
   return (
     <div>
       <div>
-        {/* <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button
             className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
+            onClick={handleEdit}
           >
-            <Plus />
-            Create Referral
+            Referral Setting
           </Button>
-        </div> */}
+        </div>
       </div>
 
       <ReferralsTable
