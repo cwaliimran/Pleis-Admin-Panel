@@ -62,7 +62,13 @@ const defaultValues = {
   oib: '',
   bankAccountNumber: '',
   representativeName: '',
-  location: undefined,
+  location: {
+    fullAddress: '',
+    country: '',
+    city: '',
+    state: '',
+    postalCode: '',
+  },
   suppliers: [],
   organizations: [],
   modules: [],
@@ -100,7 +106,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
     status: '',
   });
 
-  const { data: supplierData } = useGetSuppliersQuery({
+  const { data: supplierData, isLoading: supplierLoading } = useGetSuppliersQuery({
     page: 0,
     search: '',
     limit: '10000',
@@ -156,7 +162,6 @@ const CustomUserModal: React.FC<UserModalProps> = ({
     reset({
       ...defaultValues,
       role: getDefaultRole(userType),
-      location: undefined,
     });
     setCurrentRole(getDefaultRole(userType));
   }, [reset, userType]);
@@ -214,13 +219,13 @@ const CustomUserModal: React.FC<UserModalProps> = ({
               oib: data.oib,
               bankAccountNumber: data.bankAccountNumber,
               representativeName: data.representativeName,
-              location: data.location || {
-                coordinates: [0, 0],
-                fullAddress: '',
-                country: '',
-                city: '',
-                state: '',
-                postalCode: '',
+              location: {
+                coordinates: [0, 0], // Default coordinates since we're not using Google Places
+                fullAddress: data.location?.fullAddress || '',
+                country: data.location?.country || '',
+                city: data.location?.city || '',
+                state: data.location?.state || '',
+                postalCode: data.location?.postalCode || '',
               },
               suppliers: data.suppliers || [],
             },
@@ -256,16 +261,6 @@ const CustomUserModal: React.FC<UserModalProps> = ({
           break;
       }
 
-      // If payload has companyDetails and location, rename address to fullAddress
-      if (
-        payload?.companyDetails?.location &&
-        payload.companyDetails.location.address
-      ) {
-        payload.companyDetails.location.fullAddress =
-          payload.companyDetails.location.address;
-        delete payload.companyDetails.location.address;
-      }
-
       onSubmit(payload);
     } catch (err) {
       console.log('Submission failed:', err);
@@ -283,12 +278,6 @@ const CustomUserModal: React.FC<UserModalProps> = ({
       <DialogContent
         aria-describedby={undefined}
         className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
-        onInteractOutside={(event) => {
-          const target = event.target as HTMLElement;
-          if (target.closest('.pac-container')) {
-            event.preventDefault();
-          }
-        }}
       >
         <DialogHeader>
           <DialogTitle>Create User</DialogTitle>
@@ -319,6 +308,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
                 role={currentRole}
                 organizationOptions={organizationOptions}
                 supplierOptions={supplierOptions}
+                supplierLoading={supplierLoading}
                 methods={methods}
               />
             </div>

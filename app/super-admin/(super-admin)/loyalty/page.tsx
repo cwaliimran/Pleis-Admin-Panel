@@ -3,7 +3,7 @@ import LoyaltyView from '@/sections/loyalty/loyalty-view/loyalty-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Loyalty Dashboard - Pleis',
+  title: 'Global Loyalty Dashboard - Pleis',
 };
 
 const Page = () => {
@@ -11,12 +11,12 @@ const Page = () => {
     <div className="min-h-screen px-2 pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/organizer' },
-          { name: 'Loyalty', href: '' },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Global Loyalty', href: '' },
         ]}
       />
 
-      <LoyaltyView global={false} />
+      <LoyaltyView global={true} />
     </div>
   );
 };

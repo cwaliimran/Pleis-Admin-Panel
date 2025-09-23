@@ -66,10 +66,11 @@ const defaultValues = {
   bankAccountNumber: '',
   representativeName: '',
   location: {
-    address: '',
-    city: '',
-    postalCode: '',
+    fullAddress: '',
     country: '',
+    city: '',
+    state: '',
+    postalCode: '',
     coordinates: [0, 0],
   },
   suppliers: [] as string[],
@@ -104,10 +105,16 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     userData?.accountState?.userType || 'manager'
   );
 
+  console.log('userData', userData);
+
   const [imageUploading, setImageUploading] = useState(false);
 
-  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
-  const [ updateUserSuperAdminAndGuest, { isLoading: updateUserSuperAdminAndGuestLoading }] = useUpdateUserSuperAdminAndGuestMutation();
+  const [updateUser, { isLoading: updateUserLoading }] =
+    useUpdateUserForUserListMutation();
+  const [
+    updateUserSuperAdminAndGuest,
+    { isLoading: updateUserSuperAdminAndGuestLoading },
+  ] = useUpdateUserSuperAdminAndGuestMutation();
 
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
@@ -116,12 +123,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     status: '',
   });
 
-  const { data: supplierData } = useGetSuppliersQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-  });
+  const { data: supplierData, isLoading: supplierLoading } =
+    useGetSuppliersQuery({
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+    });
 
   const organizationOptions = React.useMemo(
     () =>
@@ -181,7 +189,18 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     if (userData) {
       const formData = {
         role: userData?.accountState?.userType as RoleKey,
-        image: userData?.basicInfo?.profileIcon !== noImageUrl || userData?.basicInfo?.profileIcon !== noImageUrlDev ? userData?.basicInfo?.profileIcon : null,
+        image: (() => {
+          const img = userData?.basicInfo?.profileIcon;
+          if (
+            !img ||
+            img === noImageUrl ||
+            img === noImageUrlDev ||
+            img.toLowerCase().includes('noimage.png')
+          ) {
+            return null;
+          }
+          return img;
+        })(),
         firstName: userData?.basicInfo?.firstName || '',
         lastName: userData?.basicInfo?.lastName || '',
         email: userData?.basicInfo?.email || '',
@@ -197,12 +216,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         representativeName:
           userData?.basicInfo?.companyDetails?.representativeName || '',
         location: {
-          address:
+          fullAddress:
             userData?.basicInfo?.companyDetails?.location?.fullAddress || '',
+          country: userData?.basicInfo?.companyDetails?.location?.country || '',
           city: userData?.basicInfo?.companyDetails?.location?.city || '',
+          state: userData?.basicInfo?.companyDetails?.location?.state || '',
           postalCode:
             userData?.basicInfo?.companyDetails?.location?.postalCode || '',
-          country: userData?.basicInfo?.companyDetails?.location?.country || '',
           coordinates: userData?.basicInfo?.companyDetails?.location
             ?.coordinates || [0, 0],
         },
@@ -240,26 +260,35 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     let uploadedFileKey: string | null = null;
 
     try {
-      let profileIconUrl =
-        userData?.basicInfo?.profileIcon || noImageUrl || noImageUrlDev;
+      let profileIconUrl = userData?.basicInfo?.profileIcon;
 
-      if (
-        data.image === null &&
-        userData?.basicInfo?.profileIcon !== noImageUrl
-      ) {
+      // Check if current profile icon is a "no image" URL
+      const isCurrentlyNoImage =
+        !profileIconUrl ||
+        profileIconUrl === noImageUrl ||
+        profileIconUrl === noImageUrlDev ||
+        profileIconUrl.toLowerCase().includes('noimage.png');
+
+      if (data.image === null) {
+        // User explicitly removed the image
         profileIconUrl = null;
       } else if (typeof data.image === 'string') {
+        // User kept existing image or has a URL
         profileIconUrl = data.image;
       } else if (
         data.image &&
         (data.image instanceof FileList || Array.isArray(data.image))
       ) {
+        // User uploaded a new image
         const file = data.image[0];
         if (file) {
           setImageUploading(true);
           uploadedFileKey = await uploadFileToAzure(file);
           profileIconUrl = uploadedFileKey;
         }
+      } else if (isCurrentlyNoImage) {
+        // If currently no image and no new image provided, set to null
+        profileIconUrl = null;
       }
 
       const initialValues = userData || {};
@@ -267,7 +296,25 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
       const compareAndAdd = (key: string, value: any, initialValue: any) => {
         if (key === 'image') {
-          if (profileIconUrl !== initialValues.basicInfo?.profileIcon) {
+          const currentIcon = initialValues.basicInfo?.profileIcon;
+          const isInitiallyNoImage =
+            !currentIcon ||
+            currentIcon === noImageUrl ||
+            currentIcon === noImageUrlDev ||
+            currentIcon.toLowerCase().includes('noimage.png');
+
+          // Normalize both values for comparison
+          const normalizedCurrent =
+            !profileIconUrl ||
+            profileIconUrl === noImageUrl ||
+            profileIconUrl === noImageUrlDev ||
+            profileIconUrl.toLowerCase().includes('noimage.png')
+              ? null
+              : profileIconUrl;
+
+          const normalizedInitial = isInitiallyNoImage ? null : currentIcon;
+
+          if (normalizedCurrent !== normalizedInitial) {
             payload.profileIcon = profileIconUrl;
           }
         } else if (key === 'phone') {
@@ -283,11 +330,22 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             payload.phoneNumber = phoneNumber;
           }
         } else if (key === 'location' && value) {
+          // Compare the new location structure
+          const currentLocation = {
+            fullAddress: value.fullAddress || '',
+            country: value.country || '',
+            city: value.city || '',
+            state: value.state || '',
+            postalCode: value.postalCode || '',
+            coordinates: value.coordinates || [0, 0],
+          };
+          const initialLocation =
+            initialValues.basicInfo?.companyDetails?.location || {};
+
           if (
-            JSON.stringify(value) !==
-            JSON.stringify(initialValues.basicInfo?.companyDetails?.location)
+            JSON.stringify(currentLocation) !== JSON.stringify(initialLocation)
           ) {
-            payload.location = value;
+            payload.location = currentLocation;
           }
         } else if (Array.isArray(value)) {
           if (JSON.stringify(value) !== JSON.stringify(initialValue)) {
@@ -338,11 +396,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               bankAccountNumber: data.bankAccountNumber,
               representativeName: data.representativeName,
               location: {
-                fullAddress: data.location.address,
-                city: data.location.city,
-                postalCode: data.location.postalCode,
-                country: data.location.country,
-                coordinates: data.location.coordinates,
+                fullAddress: data.location.fullAddress || '',
+                country: data.location.country || '',
+                city: data.location.city || '',
+                state: data.location.state || '',
+                postalCode: data.location.postalCode || '',
+                coordinates: data.location.coordinates || [0, 0],
               },
               suppliers: data.suppliers,
             },
@@ -449,10 +508,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               label="Profile Image"
               initialImage={(() => {
                 const img = userData?.basicInfo?.profileIcon;
-                if (img && img !== noImageUrl && img !== noImageUrlDev) {
-                  return img;
+                if (
+                  !img ||
+                  img === noImageUrl ||
+                  img === noImageUrlDev ||
+                  img.toLowerCase().includes('noimage.png')
+                ) {
+                  return null;
                 }
-                return null;
+                return img;
               })()}
             />
 
@@ -484,6 +548,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 role={currentRole}
                 organizationOptions={organizationOptions}
                 supplierOptions={supplierOptions}
+                supplierLoading={supplierLoading}
                 methods={methods}
               />
             </div>

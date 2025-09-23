@@ -494,10 +494,10 @@ const CreateEventView = (props: any) => {
 
   return (
     <div>
-      <div className="font['Inter'] flex min-h-screen w-full flex-col items-center bg-[#f8f6f7] py-4 dark:bg-black">
+      <div className="flex min-h-screen w-full flex-col items-center bg-[#f8f6f7] py-4 dark:bg-black">
         <div className="mb-2 flex w-full justify-end"></div>
 
-        <div className="w-full md:mx-auto md:max-w-4xl">
+        <div className="w-full md:mx-auto md:max-w-5xl">
           <Card className="dark:bg-secondary shadow-sm">
             <CardContent className="dark:bg-secondary p-2 md:p-8">
               {/* Header */}
@@ -644,7 +644,7 @@ const CreateEventView = (props: any) => {
                           placeholder="Type Event Description"
                           multiline
                           rows={8}
-                          className="max-w-lg resize-none border-gray-200 bg-[#F8F6F7] break-words whitespace-pre-wrap focus:border-blue-600 sm:min-h-[120px] lg:min-h-[275px]"
+                          className="max-w-xl resize-none border-gray-200 bg-[#F8F6F7] break-words whitespace-pre-wrap focus:border-blue-600 sm:min-h-[120px] lg:min-h-[275px]"
                         />
                       </div>
                     </div>

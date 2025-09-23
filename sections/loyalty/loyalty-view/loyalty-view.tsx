@@ -44,7 +44,7 @@ import { Settings2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-const LoyaltyView = () => {
+const LoyaltyView = ({ global }: { global: boolean }) => {
   const openModal = useBoolean();
   const router = useRouter();
 
@@ -63,22 +63,26 @@ const LoyaltyView = () => {
   return (
     <>
       <div className="mt-10 flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="w-[90%] border-b border-gray-200 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400">
+        <div
+          className={`${global ? 'w-[50%]' : 'w-[90%]'} border-b border-gray-200 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400`}
+        >
           <ul className="-mb-px flex flex-wrap">
-            {tabsData.map((tab: TabData, index: number) => (
-              <li key={index} className="me-0">
-                <div
-                  onClick={() => handleTabClick(tab)}
-                  className={`inline-block cursor-pointer rounded-t-lg border-b-3 p-4 pb-1 text-[13px] sm:text-[15px] ${
-                    mainActive === tab.value
-                      ? 'border-[#64748B] font-semibold text-gray-700 dark:text-white'
-                      : 'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-300'
-                  }`}
-                >
-                  {tab.label}
-                </div>
-              </li>
-            ))}
+            {tabsData
+              .filter((tab) => (global ? tab.value !== 'tiers' : true))
+              .map((tab: TabData, index: number) => (
+                <li key={index} className="me-0">
+                  <div
+                    onClick={() => handleTabClick(tab)}
+                    className={`inline-block cursor-pointer rounded-t-lg border-b-3 p-4 pb-1 text-[13px] sm:text-[15px] ${
+                      mainActive === tab.value
+                        ? 'border-[#64748B] font-semibold text-gray-700 dark:text-white'
+                        : 'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-800 dark:text-gray-200 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    {tab.label}
+                  </div>
+                </li>
+              ))}
           </ul>
         </div>
 
