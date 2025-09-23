@@ -15,6 +15,7 @@ interface RoleSpecificFieldsProps {
   role: RoleKey;
   organizationOptions: Option[];
   supplierOptions: Option[];
+  supplierLoading: boolean;
   methods: UseFormReturn<any, any>;
   userData?: any;
 }
@@ -23,6 +24,7 @@ const RoleSpecificFields: React.FC<RoleSpecificFieldsProps> = ({
   role,
   organizationOptions,
   supplierOptions,
+  supplierLoading,
   methods,
   // userData,
 }) => {
@@ -32,7 +34,11 @@ const RoleSpecificFields: React.FC<RoleSpecificFieldsProps> = ({
       return null;
     case 'organizer':
       return (
-        <OrganizerFields supplierOptions={supplierOptions} methods={methods} />
+        <OrganizerFields
+          supplierOptions={supplierOptions}
+          methods={methods}
+          supplierLoading={supplierLoading}
+        />
       );
     case 'manager':
       return <ManagerFields organizationOptions={organizationOptions} />;

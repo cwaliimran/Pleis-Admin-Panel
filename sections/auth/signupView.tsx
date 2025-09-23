@@ -2,7 +2,6 @@
 
 import { ModeToggle } from '@/components/atoms/mode-toggle';
 import ButtonLoading from '@/components/common/button-loading';
-import GoogleLocationInput from '@/components/common/location-input';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,6 @@ import 'react-phone-input-2/lib/style.css';
 
 // TypeScript interfaces
 interface LocationData {
-  coordinates: [number, number];
   fullAddress: string;
   country: string;
   city: string;
@@ -52,7 +50,7 @@ interface FormData {
   oib: string;
   bankAccountNumber: string;
   representativeFullName: string;
-  location: LocationData | null;
+  location: LocationData;
   suppliers: string[];
   terms: boolean;
 }
@@ -101,7 +99,13 @@ const defaultValues: FormData = {
   oib: '',
   bankAccountNumber: '',
   representativeFullName: '',
-  location: null,
+  location: {
+    fullAddress: '',
+    country: '',
+    city: '',
+    state: '',
+    postalCode: '',
+  },
   suppliers: [],
   terms: false,
 };
@@ -257,26 +261,17 @@ function SignUpView() {
         oib: data.oib.trim(),
         bankAccountNumber: data.bankAccountNumber.trim(),
         representativeName: data.representativeFullName.trim(),
-        location: data.location
-          ? {
-              coordinates: data.location.coordinates,
-              fullAddress: data?.location?.address || '', // Map address to fullAddress
-              country: data.location.country || '',
-              city: data.location.city || '',
-              state: data.location.state || '',
-              postalCode: data.location.postalCode || '',
-            }
-          : {
-              coordinates: [0, 0],
-              fullAddress: '',
-              country: '',
-              city: '',
-              state: '',
-              postalCode: '',
-            },
+        location: {
+          coordinates: [0, 0], // Default coordinates since we're not using Google Places
+          fullAddress: data.location.fullAddress || '',
+          country: data.location.country || '',
+          city: data.location.city || '',
+          state: data.location.state || '',
+          postalCode: data.location.postalCode || '',
+        },
         suppliers: data.suppliers,
       },
-      termsAccepted: data.terms, // Map terms to termsAccepted
+      termsAccepted: data.terms,
     };
   };
 
@@ -348,8 +343,30 @@ function SignUpView() {
     );
     if (repValidation !== true) errors.representativeFullName = repValidation;
 
-    const locationValidation = validateRequired(data.location, 'Location');
-    if (locationValidation !== true) errors.location = locationValidation;
+    const fullAddressValidation = validateRequired(
+      data.location.fullAddress,
+      'Full address'
+    );
+    if (fullAddressValidation !== true)
+      errors.fullAddress = fullAddressValidation;
+
+    const countryValidation = validateRequired(
+      data.location.country,
+      'Country'
+    );
+    if (countryValidation !== true) errors.country = countryValidation;
+
+    const cityValidation = validateRequired(data.location.city, 'City');
+    if (cityValidation !== true) errors.city = cityValidation;
+
+    const stateValidation = validateRequired(data.location.state, 'State');
+    if (stateValidation !== true) errors.state = stateValidation;
+
+    const postalCodeValidation = validateRequired(
+      data.location.postalCode,
+      'Postal code'
+    );
+    if (postalCodeValidation !== true) errors.postalCode = postalCodeValidation;
 
     const suppliersValidation = validateRequired(data.suppliers, 'Suppliers');
     if (suppliersValidation !== true) errors.suppliers = suppliersValidation;
@@ -378,8 +395,6 @@ function SignUpView() {
       }
       const payload = transformToBackendPayload(data);
       const response = await signUp(payload);
-
-      // setEmailVerificationLink(response?.data?.data?.emailVerification || null);
 
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -635,17 +650,64 @@ function SignUpView() {
                   </div>
                 </div>
 
-                <div className="mt-4">
-                  <GoogleLocationInput
-                    name="location"
-                    label="Location"
-                    showLabel={false}
-                  />
-                  {validationErrors.location && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {validationErrors.location}
-                    </p>
-                  )}
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <RHFTextField
+                      name="location.fullAddress"
+                      placeholder="Full Address"
+                    />
+                    {validationErrors.fullAddress && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {validationErrors.fullAddress}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <RHFTextField
+                        name="location.country"
+                        placeholder="Country"
+                      />
+                      {validationErrors.country && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {validationErrors.country}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <RHFTextField name="location.state" placeholder="State" />
+                      {validationErrors.state && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {validationErrors.state}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <RHFTextField name="location.city" placeholder="City" />
+                      {validationErrors.city && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {validationErrors.city}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <RHFTextField
+                        name="location.postalCode"
+                        placeholder="Postal Code"
+                      />
+                      {validationErrors.postalCode && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {validationErrors.postalCode}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="mt-3">

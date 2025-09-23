@@ -89,6 +89,9 @@ export const paths = {
       createGiveaway: '/super-admin/notification/create-giveaway',
       createNotification: '/super-admin/notification/create-notification',
     },
+    loyalty: {
+      default: '/super-admin/loyalty',
+    },
     subscription: '/super-admin/subscription',
     addSupport: '/super-admin/add-support',
     logout: '/super-admin/logout',

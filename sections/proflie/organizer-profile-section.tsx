@@ -2,7 +2,6 @@
 
 import TwoFactorAuth from '@/app/common/2fa/2fa';
 import ButtonLoading from '@/components/common/button-loading';
-import GoogleLocationInput from '@/components/common/location-input';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,11 +39,11 @@ type ProfileFormData = {
   representativeName: string;
   subscriptionStatus: string;
   location: {
-    address: string;
+    fullAddress: string;
     country: string;
     city: string;
+    state: string;
     postalCode: string;
-    state?: string;
     coordinates?: [number, number];
   };
   suppliers: string[];
@@ -68,11 +67,11 @@ const profileSchema = Yup.object({
   representativeName: Yup.string().required('Representative name is required'),
   subscriptionStatus: Yup.string(),
   location: Yup.object({
-    address: Yup.string().required('Address is required'),
+    fullAddress: Yup.string().required('Full address is required'),
     country: Yup.string().required('Country is required'),
     city: Yup.string().required('City is required'),
-    postalCode: Yup.string(),
-    state: Yup.string().optional(),
+    state: Yup.string().required('State is required'),
+    postalCode: Yup.string().required('Postal code is required'),
     coordinates: Yup.array().of(Yup.number()).optional(),
   }),
   suppliers: Yup.array()
@@ -84,15 +83,18 @@ const OrganizerProfileSection = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.userSlice);
 
+  console.log('Current user state:', user);
+
   const [updateUser, { isLoading: updateUserLoading }] =
     useUpdateUserMutation();
 
-  const { data: supplierData } = useGetSuppliersGloabalQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-  });
+  const { data: supplierData, isLoading: supplierLoading } =
+    useGetSuppliersGloabalQuery({
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+    });
 
   const supplierOptions = React.useMemo(
     () =>
@@ -126,9 +128,11 @@ const OrganizerProfileSection = () => {
         user?.basicInfo?.companyDetails?.representativeName || '',
       subscriptionStatus: 'Basic',
       location: {
+        fullAddress:
+          user?.basicInfo?.companyDetails?.location?.fullAddress || '',
         city: user?.basicInfo?.companyDetails?.location?.city || '',
         country: user?.basicInfo?.companyDetails?.location?.country || '',
-        address: user?.basicInfo?.companyDetails?.location?.fullAddress || '',
+        state: user?.basicInfo?.companyDetails?.location?.state || '',
         postalCode: user?.basicInfo?.companyDetails?.location?.postalCode || '',
       },
       suppliers: user?.basicInfo?.companyDetails?.suppliers || [],
@@ -190,10 +194,13 @@ const OrganizerProfileSection = () => {
 
       if (dirtyFields.location) {
         payload.location = {
-          ...formData.location,
-          fullAddress: formData.location.address,
+          fullAddress: formData.location.fullAddress,
+          country: formData.location.country,
+          city: formData.location.city,
+          state: formData.location.state,
+          postalCode: formData.location.postalCode,
+          coordinates: formData.location.coordinates || [0, 0],
         };
-        delete payload.location.address;
       }
 
       if (dirtyFields.phone || dirtyFields.phoneCode) {
@@ -212,6 +219,8 @@ const OrganizerProfileSection = () => {
           setImageUploading(false);
         }
       }
+
+      console.log('payload before submission', payload);
 
       const response = await updateUser({
         id: user?.basicInfo?._id,
@@ -257,21 +266,21 @@ const OrganizerProfileSection = () => {
           formData.representativeName,
         subscriptionStatus: formData.subscriptionStatus,
         location: {
-          address:
+          fullAddress:
             updatedUser?.basicInfo?.companyDetails?.location?.fullAddress ||
-            formData.location.address,
+            formData.location.fullAddress,
           city:
             updatedUser?.basicInfo?.companyDetails?.location?.city ||
             formData.location.city,
           country:
             updatedUser?.basicInfo?.companyDetails?.location?.country ||
             formData.location.country,
-          postalCode:
-            updatedUser?.basicInfo?.companyDetails?.location?.postalCode ||
-            formData.location.postalCode,
           state:
             updatedUser?.basicInfo?.companyDetails?.location?.state ||
             formData.location.state,
+          postalCode:
+            updatedUser?.basicInfo?.companyDetails?.location?.postalCode ||
+            formData.location.postalCode,
           coordinates:
             updatedUser?.basicInfo?.companyDetails?.location?.coordinates ||
             formData.location.coordinates,
@@ -509,8 +518,8 @@ const OrganizerProfileSection = () => {
                     />
                     <RHFTextField
                       name="oib"
-                      label="OIB"
-                      placeholder="Enter OIB number"
+                      label="VAT"
+                      placeholder="Enter VAT number"
                     />
                     <RHFTextField
                       name="bankAccountNumber"
@@ -528,28 +537,68 @@ const OrganizerProfileSection = () => {
                       placeholder="Subscription status"
                       disabled
                     />
-                    <div className="col-span-1 space-y-2 md:col-span-2">
-                      <GoogleLocationInput
-                        name="location"
-                        label="Location"
-                        showLabel={true}
+                    <div className="col-span-1 space-y-4 md:col-span-2">
+                      {/* Full Address */}
+                      <RHFTextField
+                        name="location.fullAddress"
+                        label="Full Address"
+                        placeholder="Enter full address"
                       />
-                      <RHFCustomCombobox
-                        name="suppliers"
-                        placeholder="Select suppliers"
-                        label="Suppliers"
-                        className="w-full flex-1"
-                        multiple={true}
-                        allowCustom={false}
-                        options={supplierOptions}
-                        onChange={(value: string[]) => {
-                          setValue('suppliers', value, { shouldDirty: true });
-                        }}
-                      />
+
+                      {/* Country and State */}
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <RHFTextField
+                          name="location.country"
+                          label="Country"
+                          placeholder="Enter country"
+                        />
+                        <RHFTextField
+                          name="location.state"
+                          label="State"
+                          placeholder="Enter state"
+                        />
+                      </div>
+
+                      {/* City and Postal Code */}
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <RHFTextField
+                          name="location.city"
+                          label="City"
+                          placeholder="Enter city"
+                        />
+                        <RHFTextField
+                          name="location.postalCode"
+                          label="Postal Code"
+                          placeholder="Enter postal code"
+                        />
+                      </div>
+
+                      {supplierLoading ? (
+                        <div className="w-full">
+                          <div className="animate-pulse space-y-2">
+                            <div className="h-5 w-32 rounded-full bg-gray-200 dark:bg-gray-700" />
+                            <div className="h-8 w-3/4 rounded-full bg-gray-200 dark:bg-gray-700" />
+                          </div>
+                        </div>
+                      ) : (
+                        <RHFCustomCombobox
+                          name="suppliers"
+                          placeholder="Select suppliers"
+                          label="Suppliers"
+                          className="w-full flex-1"
+                          multiple={true}
+                          allowCustom={false}
+                          options={supplierOptions}
+                          onChange={(value: string[]) => {
+                            setValue('suppliers', value, { shouldDirty: true });
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
                 </>
               )}
+
               {/* Save Button */}
               <div className="flex items-center justify-end gap-4 pt-4">
                 <Button

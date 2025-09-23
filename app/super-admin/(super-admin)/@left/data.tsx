@@ -3,6 +3,7 @@ import {
   Calendar,
   ChartColumnBig,
   ClipboardPenLine,
+  Handshake,
   Hash,
   Highlighter,
   // Home,
@@ -124,6 +125,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Preset',
     key: paths.superAdmin.preset.default,
     icon: SlidersHorizontal,
+  },
+  {
+    label: 'Global Loyalty Dashboard',
+    key: paths.superAdmin.loyalty.default,
+    icon: Handshake,
   },
   // {
   //   label: 'User List',
