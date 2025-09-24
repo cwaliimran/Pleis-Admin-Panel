@@ -35,7 +35,6 @@ const USERHEADLABEL = [
 
 const MEMBERHEADLABEL = [
   { id: 'image', label: 'Image', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
   { id: 'username', label: 'Username', align: 'left' },
   { id: 'globalStatus', label: 'Global Status', align: 'left' },
   { id: 'totalPoints', label: 'Points Earned', align: 'left' },

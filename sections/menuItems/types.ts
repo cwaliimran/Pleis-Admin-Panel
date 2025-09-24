@@ -35,11 +35,15 @@ export type MenuItemFormValues = {
   name: string;
   type: string;
   itemCategory: string;
-  itemVenue: string;
+  menu: string;
+  itemVenue?: string;
+  tax: string;
   basePrice: string;
   discountPrice: string | null;
   description: string;
   preset?: number | null;
+  startTime?: string;
+  endTime?: string;
 };
 
 export type MenuItemModalProps = {

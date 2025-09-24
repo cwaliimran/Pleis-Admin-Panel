@@ -1,7 +1,6 @@
 'use client';
 
 import FormProvider from '@/components/rhf';
-import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,30 +14,14 @@ import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { MenuItemFormValues, MenuItemModalProps } from './types';
+import { MenuItemModalProps } from './types';
 
-const defaultValues: MenuItemFormValues = {
-  image: null,
-  name: '',
-  type: '',
-  itemCategory: '',
+const defaultValues = {
   itemVenue: '',
-  basePrice: '',
-  discountPrice: '',
-  description: '',
-  preset: null,
 };
 
-const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
-  image: Yup.mixed().nullable(),
-  name: Yup.string().required('Name is required'),
-  type: Yup.string().required('Type is required'),
-  itemCategory: Yup.string().required('Item category is required'),
+const schema = Yup.object({
   itemVenue: Yup.string().required('Venue is required'),
-  basePrice: Yup.string().required('Base price is required'),
-  discountPrice: Yup.string().nullable().default(''),
-  description: Yup.string().required('Description is required'),
-  preset: Yup.number().nullable(),
 });
 
 const DuplicateMenuModal = ({
@@ -46,7 +29,7 @@ const DuplicateMenuModal = ({
   onClose,
   selectedData,
 }: MenuItemModalProps) => {
-  const methods = useForm<MenuItemFormValues>({
+  const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
@@ -70,8 +53,8 @@ const DuplicateMenuModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[28vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
-          <DialogHeader>
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[24vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+          <DialogHeader className="w-full text-start">
             <DialogTitle>Duplicate Menu</DialogTitle>
           </DialogHeader>
           <div className="mt-4 w-full">
@@ -95,7 +78,7 @@ const DuplicateMenuModal = ({
                     />
                   </div>
 
-                  <div className="col-span-2">
+                  {/* <div className="col-span-2">
                     <RHFCustomCombobox
                       name="menu"
                       label="Select Menu"
@@ -116,7 +99,7 @@ const DuplicateMenuModal = ({
                         { label: 'High-Protein', value: 'high-protein' },
                       ]}
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
 

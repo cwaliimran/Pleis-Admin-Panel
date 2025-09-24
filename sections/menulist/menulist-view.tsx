@@ -72,7 +72,8 @@ const MenuListView = () => {
     openModal.onTrue();
   };
 
-  const handleDuplicate = () => {
+  const handleDuplicate = (id: string) => {
+    setSelectedId(id);
     duplicateModal.onTrue();
   };
 
@@ -136,13 +137,6 @@ const MenuListView = () => {
         <div className="mt-3 flex w-full items-center justify-end gap-x-3 md:mt-0">
           <Button
             className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleDuplicate}
-          >
-            Duplicate Menu
-          </Button>
-
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
             onClick={handleCreateNew}
           >
             <Plus />
@@ -157,6 +151,7 @@ const MenuListView = () => {
         loading={isLoading}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
+        handleDuplicate={handleDuplicate}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);

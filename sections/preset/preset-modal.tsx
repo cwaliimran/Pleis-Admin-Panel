@@ -14,18 +14,22 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 
 type PresetFormValues = {
+  image?: any;
   name: string;
   status: string;
 };
 
 const defaultValues: PresetFormValues = {
+  image: null,
   name: '',
   status: 'active',
 };
 
 const schema = Yup.object().shape({
+  image: Yup.mixed().nullable(),
   name: Yup.string().required('Name is required'),
   status: Yup.string().required('Status is required'),
 });
@@ -44,16 +48,14 @@ const PresetModal = ({
   selectedData,
 }: PresetModalProps) => {
   const methods = useForm<PresetFormValues>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema as Yup.ObjectSchema<PresetFormValues>),
     defaultValues: selectedData || defaultValues,
   });
 
   const { reset } = methods;
 
-  const onSubmit = (data: PresetFormValues) => {
+  const handleSubmit = (data: any) => {
     console.log('Preset data:', data);
-    // onSubmit(data);
-    reset(defaultValues);
     onClose();
   };
 
@@ -75,9 +77,11 @@ const PresetModal = ({
           <div className="w-full">
             <FormProvider
               methods={methods}
-              onSubmit={methods.handleSubmit(onSubmit)}
+              onSubmit={methods.handleSubmit(handleSubmit)}
             >
               <div className="mt-6 flex w-full flex-col gap-4">
+                <RHFUploadAvatar name="image" label="Item Image" />
+
                 {/* Name */}
                 <RHFTextField
                   name="name"

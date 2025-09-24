@@ -24,11 +24,15 @@ const defaultValues: MenuItemFormValues = {
   name: '',
   type: '',
   itemCategory: '',
+  menu: '',
   itemVenue: '',
+  tax: '',
   basePrice: '',
   discountPrice: '',
   description: '',
   preset: null,
+  startTime: '',
+  endTime: '',
 };
 
 const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
@@ -36,11 +40,15 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   name: Yup.string().required('Name is required'),
   type: Yup.string().required('Type is required'),
   itemCategory: Yup.string().required('Item category is required'),
-  itemVenue: Yup.string().required('Venue is required'),
+  menu: Yup.string().required('Menu is required'),
+  itemVenue: Yup.string().optional(),
+  tax: Yup.string().required('Tax is required'),
   basePrice: Yup.string().required('Base price is required'),
   discountPrice: Yup.string().nullable().default(''),
   description: Yup.string().required('Description is required'),
   preset: Yup.number().nullable(),
+  startTime: Yup.string().optional(),
+  endTime: Yup.string().optional(),
 });
 
 const MenuItemModal = ({
@@ -108,7 +116,7 @@ const MenuItemModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
               {isEdit ? 'Edit Menu Item' : 'Create Menu Item'}
@@ -120,9 +128,21 @@ const MenuItemModal = ({
               onSubmit={methods.handleSubmit(handleSubmit)}
             >
               <div className="mt-0 flex w-full flex-col gap-4">
-                <RHFUploadAvatar name="image" label="Image" />
+                <RHFUploadAvatar name="image" label="Item Image" />
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  {/* Preset Section */}
+                  <div className="col-span-2">
+                    <h4 className="mb-2 text-sm font-semibold">Presets</h4>
+                    <RHFCustomDropdown
+                      name="preset"
+                      placeholder="Select Preset"
+                      options={presetOptions}
+                      isLoading={false}
+                      showNone={false}
+                    />
+                  </div>
+
                   <RHFTextField
                     name="name"
                     label="Name"
@@ -169,6 +189,19 @@ const MenuItemModal = ({
                     placeholder="Enter Discount Price"
                   />
 
+                  <RHFSelectField
+                    name="tax"
+                    label="Tax %"
+                    placeholder="Select Tax %"
+                    className="w-full flex-1"
+                    options={[
+                      { value: 'type1', label: '0%' },
+                      { value: 'type2', label: '5%' },
+                      { value: 'type3', label: '13%' },
+                      { value: 'type4', label: '25%' },
+                    ]}
+                  />
+
                   <div className={`${isEdit ? 'col-span-1' : 'col-span-2'}`}>
                     <RHFCustomDropdown
                       name="itemVenue"
@@ -208,15 +241,19 @@ const MenuItemModal = ({
                   />
                 </div>
 
-                {/* Preset Section */}
-                <div className="mt-2">
-                  <h4 className="mb-2 text-sm font-semibold">Presets</h4>
-                  <RHFCustomDropdown
-                    name="preset"
-                    placeholder="Select Preset"
-                    options={presetOptions}
-                    isLoading={false}
-                    showNone={false}
+                {/* Time Fields */}
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFTextField
+                    name="startTime"
+                    label="Start Time (Optional)"
+                    placeholder="Enter Start Time"
+                    type="time"
+                  />
+                  <RHFTextField
+                    name="endTime"
+                    label="End Time (Optional)"
+                    placeholder="Enter End Time"
+                    type="time"
                   />
                 </div>
               </div>

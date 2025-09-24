@@ -458,7 +458,8 @@ const CreateEventView = (props: any) => {
       description: event?.basicInfo?.description || '',
 
       venue: event?.basicInfo?.venue?._id || '',
-      categories: event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
+      categories:
+        event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
       tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
 
       eventType: event?.schedule?.type || 'oneTime',
@@ -482,7 +483,9 @@ const CreateEventView = (props: any) => {
       partnerOrganizerInput: '',
 
       organization: event?.basicInfo?.organization?._id || '',
-      partnerOrganizers: event?.basicInfo?.partnerOrganizers ? event.basicInfo.partnerOrganizers.map((org: any) => org._id) : [],
+      partnerOrganizers: event?.basicInfo?.partnerOrganizers
+        ? event.basicInfo.partnerOrganizers.map((org: any) => org._id)
+        : [],
     });
   };
 
@@ -1026,11 +1029,11 @@ const CreateEventView = (props: any) => {
                               title="Select Start Time"
                               type="time"
                               step="1800"
-                              value={watch('fromTime')}
+                              value={watch('fromTime') || '12:00'}
                               onChange={(e) =>
                                 setValue('fromTime', e.target.value)
                               }
-                              className="w-32 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 text-[15px] focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
+                              className="w-36 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 text-[15px] focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
                             />
                           </div>
                         </div>
@@ -1058,11 +1061,11 @@ const CreateEventView = (props: any) => {
                               title="Select End Time"
                               type="time"
                               step="1800"
-                              value={watch('endTime')}
+                              value={watch('endTime') || '13:00'}
                               onChange={(e) =>
                                 setValue('endTime', e.target.value)
                               }
-                              className="w-32 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 text-[15px] focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
+                              className="w-36 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 text-[15px] focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
                             />
                           </div>
                         </div>
