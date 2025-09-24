@@ -80,7 +80,7 @@ const TableHeadCustom: FC<CustomHeaderProps> = ({
             )}
             onClick={() => handleSort(header)}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-start gap-1">
               <span>{header.label}</span>
               {header.sortable && getSortIcon(header)}
             </div>
