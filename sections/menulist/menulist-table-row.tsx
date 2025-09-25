@@ -9,13 +9,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2 } from 'lucide-react';
+import { CopyCheck, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
 const MenuItemTableRow: FC<TableRowProps> = ({
   item,
   handleDelete,
+  handleDuplicate,
   handleEdit,
 }) => {
   return (
@@ -68,9 +69,21 @@ const MenuItemTableRow: FC<TableRowProps> = ({
       </TableCell>
 
       <TableCell className="text-end">
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2">
           <button
-            title="View Venue"
+            title="Duplicate Menu"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDuplicate?.(item?._id);
+            }}
+            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+          >
+            <CopyCheck className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+          </button>
+
+          <button
+            title="Edit Menu"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -82,7 +95,7 @@ const MenuItemTableRow: FC<TableRowProps> = ({
           </button>
 
           <button
-            title="View Venue"
+            title="Delete Menu"
             type="button"
             onClick={(e) => {
               e.stopPropagation();

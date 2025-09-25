@@ -11,6 +11,7 @@ export interface SamplePageProps {
   meta: SampleMeta;
   loading?: boolean;
   handleDelete?: (id: string) => void;
+  handleDuplicate?: (id: string) => void;
   handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
@@ -27,6 +28,7 @@ export interface SamplePageProps {
 export interface TableRowProps {
   item: any;
   handleDelete?: (id: string) => void;
+  handleDuplicate?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
 

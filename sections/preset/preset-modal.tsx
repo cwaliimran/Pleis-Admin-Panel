@@ -14,18 +14,22 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 
 type PresetFormValues = {
+  image?: any;
   name: string;
   status: string;
 };
 
 const defaultValues: PresetFormValues = {
+  image: null,
   name: '',
   status: 'active',
 };
 
 const schema = Yup.object().shape({
+  image: Yup.mixed().nullable(),
   name: Yup.string().required('Name is required'),
   status: Yup.string().required('Status is required'),
 });
@@ -44,16 +48,14 @@ const PresetModal = ({
   selectedData,
 }: PresetModalProps) => {
   const methods = useForm<PresetFormValues>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema as Yup.ObjectSchema<PresetFormValues>),
     defaultValues: selectedData || defaultValues,
   });
 
   const { reset } = methods;
 
-  const onSubmit = (data: PresetFormValues) => {
+  const handleSubmit = (data: any) => {
     console.log('Preset data:', data);
-    // onSubmit(data);
-    reset(defaultValues);
     onClose();
   };
 
@@ -65,7 +67,7 @@ const PresetModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[500px]">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
               {isEdit ? 'Edit Preset' : 'Create Preset'}
@@ -75,17 +77,25 @@ const PresetModal = ({
           <div className="w-full">
             <FormProvider
               methods={methods}
-              onSubmit={methods.handleSubmit(onSubmit)}
+              onSubmit={methods.handleSubmit(handleSubmit)}
             >
               <div className="mt-6 flex w-full flex-col gap-4">
-                {/* Name */}
-                <RHFTextField
-                  name="name"
-                  label="Item Name"
-                  placeholder="Enter Item Name"
-                />
+                <RHFUploadAvatar name="image" label="Item Image" />
 
-                {/* Status (only for edit) */}
+                <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                  <RHFTextField
+                    name="name"
+                    label="Item Name"
+                    placeholder="Enter Item Name"
+                  />
+
+                  <RHFTextField
+                    name="basePrice"
+                    label="Base Price"
+                    placeholder="Enter Base Price"
+                  />
+                </div>
+
                 {isEdit && (
                   <RHFSelectField
                     name="status"
@@ -97,6 +107,16 @@ const PresetModal = ({
                     ]}
                   />
                 )}
+
+                <div className="grid w-full grid-cols-1 gap-4">
+                  <RHFTextField
+                    name="description"
+                    label="Description"
+                    placeholder="Enter Description"
+                    multiline
+                    rows={2}
+                  />
+                </div>
               </div>
 
               <div className="mt-6 flex items-center justify-center">

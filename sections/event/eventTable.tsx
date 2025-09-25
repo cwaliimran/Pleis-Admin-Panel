@@ -1,37 +1,79 @@
 'use client';
 
 import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
+import { LoadingBar } from '@/components/table/table-bar-loading';
 import TableHeadCustom from '@/components/table/table-head-custom';
-import { Card } from '@/components/ui/card';
-import { Table, TableBody } from '@/components/ui/table';
-import { FC } from 'react';
-import EventTableRow from './eventTAbleRow'; // Import EventTableRow to handle table rows
 import { Badge } from '@/components/ui/badge';
-import { Settings2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import {
   Sheet,
-  SheetTrigger,
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from '@/components/ui/sheet';
-import { useForm, FormProvider } from 'react-hook-form';
-import { LoadingBar } from '@/components/table/table-bar-loading';
-import PaginationControls from '@/components/table/pagination-controls';
+import { Table, TableBody } from '@/components/ui/table';
+import { useTableSort } from '@/hooks/useTableSort';
+import { Settings2 } from 'lucide-react';
+import { FC } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import EventTableRow from './eventTAbleRow';
 
-// Define headers for the table
 const headLabel = [
-  { id: 'image', label: 'Image', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'organization', label: 'Organization', align: 'left' },
-  { id: 'venue', label: 'Venue', align: 'left' },
-  { id: 'startDate', label: 'Start Date', align: 'left' },
-  { id: 'endDate', label: 'End Date', align: 'left' },
-  { id: 'totalRevenue', label: 'Revenue', align: 'left' },
-  { id: 'totalViews', label: 'Views', align: 'left' },
-  { id: 'region', label: 'Region', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'image', label: 'Image', align: 'left', sortable: false },
+  {
+    id: 'name',
+    label: 'Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'basicInfo.title',
+  },
+  {
+    id: 'organization',
+    label: 'Organization',
+    align: 'left',
+    sortable: true,
+    sortKey: 'basicInfo.organization.basicInfo.name',
+  },
+  {
+    id: 'venue',
+    label: 'Venue',
+    align: 'left',
+    sortable: true,
+    sortKey: 'basicInfo.venue.title',
+  },
+  {
+    id: 'startDate',
+    label: 'Start Date',
+    align: 'left',
+  },
+  {
+    id: 'endDate',
+    label: 'End Date',
+    align: 'left',
+  },
+  {
+    id: 'totalRevenue',
+    label: 'Revenue',
+    align: 'left',
+  },
+  {
+    id: 'totalViews',
+    label: 'Views',
+    align: 'left',
+  },
+  {
+    id: 'region',
+    label: 'Region',
+    align: 'left',
+  },
+  {
+    id: 'status',
+    label: 'Status',
+    align: 'left',
+  },
+  { id: 'actions', label: 'Action', align: 'left', sortable: false },
 ];
 
 interface Meta {
@@ -85,6 +127,11 @@ const EventTable: FC<PageProps> = ({
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
+
+  // Sorting logic
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -169,7 +216,11 @@ const EventTable: FC<PageProps> = ({
           {/* Table with event data */}
           <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={headLabel} />
+              <TableHeadCustom
+                headLabel={headLabel}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
               <TableBody>
                 {loading ? (
                   <tr>
@@ -177,7 +228,7 @@ const EventTable: FC<PageProps> = ({
                       <LoadingBar variant="default" />
                     </td>
                   </tr>
-                ) : data.length === 0 ? (
+                ) : sortedData.length === 0 ? (
                   <tr>
                     <td
                       colSpan={headLabel.length}
@@ -189,7 +240,7 @@ const EventTable: FC<PageProps> = ({
                     </td>
                   </tr>
                 ) : (
-                  data.map((item, index) => (
+                  sortedData.map((item, index) => (
                     <EventTableRow
                       key={item._id || index}
                       item={item}

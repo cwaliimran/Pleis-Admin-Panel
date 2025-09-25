@@ -17,12 +17,15 @@ import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import { PresetData } from './data';
 import PresetTableRow from './preset-table-row';
+import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
+  { id: 'image', label: 'Image', align: 'left' },
   { id: 'name', label: 'Name', align: 'left' },
+  { id: 'description', label: 'Description', align: 'left' },
+  { id: 'basePrice', label: 'Price (EUR)', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
@@ -101,7 +104,7 @@ const PresetTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Preset',
+                              placeholder: 'Search by Name, Description...',
                               value: search,
                               onChange: onSearch,
                             }}

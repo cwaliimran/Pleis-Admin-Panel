@@ -26,6 +26,7 @@ import {
 import React, { useMemo, useState } from 'react';
 
 import LoyaltyList from '../loyaltyList'; // your existing table component (Transaction History)
+import GiftPointsModal from '@/sections/users/user-list-view/gift-points-modal';
 
 /* ------------------- Types ------------------- */
 type MemberDetail = {
@@ -103,7 +104,7 @@ type AuditEntry =
 
 /* ------------------- Dummy initial data ------------------- */
 const initialMember: MemberDetail = {
-  username: 'John Doe',
+  username: 'johndoe123',
   status: 'active',
   currentTier: 'Gold',
   progressToNextTier: 65,
@@ -227,8 +228,6 @@ const MembersLoyaltyView: React.FC = () => {
 
   // Organizer actions state
   const [giftModalOpen, setGiftModalOpen] = useState(false);
-  const [giftAmount, setGiftAmount] = useState<number>(0);
-  const [giftReason, setGiftReason] = useState<string>('');
 
   const [changeTierOpen, setChangeTierOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>(member.currentTier);
@@ -246,30 +245,8 @@ const MembersLoyaltyView: React.FC = () => {
   const [rewards] = useState<Reward[]>(dummyRewards);
   const [interests] = useState<Interest[]>(dummyInterests);
 
-  /* ---------- Handlers for organizer actions ---------- */
-  const handleGiftSubmit = () => {
-    if (!giftAmount || giftAmount <= 0) return alert('Enter a valid amount');
-    const now = new Date().toISOString();
-    // update member points & earned
-    setMember((prev) => ({
-      ...prev,
-      currentPoints: prev.currentPoints + giftAmount,
-      totalEarned: prev.totalEarned + giftAmount,
-    }));
-    // add audit entry
-    setAuditTrail((prev) => [
-      {
-        kind: 'gift',
-        by: 'Organizer',
-        amount: giftAmount,
-        reason: giftReason,
-        date: now,
-      },
-      ...prev,
-    ]);
-    // reset & close
-    setGiftAmount(0);
-    setGiftReason('');
+  const handleGiftConfirm = (points: string, note: string) => {
+    console.log('Gift points sent:', points, 'Note:', note);
     setGiftModalOpen(false);
   };
 
@@ -662,41 +639,46 @@ const MembersLoyaltyView: React.FC = () => {
 
       {/* ------------ Modals: Gift Points ------------ */}
       {giftModalOpen && (
-        <Dialog open={giftModalOpen} onOpenChange={setGiftModalOpen}>
-          <DialogOverlay className="fixed inset-0 bg-black/30" />
-          <DialogContent
-            aria-describedby={undefined}
-            className="dark:bg-secondary max-w-lg"
-          >
-            <DialogTitle>Gift Points</DialogTitle>
-            <div className="mt-4 space-y-3">
-              <div>
-                <label className="block text-sm">Amount</label>
-                <Input
-                  type="number"
-                  value={giftAmount}
-                  onChange={(e: any) => setGiftAmount(Number(e.target.value))}
-                  placeholder="Points to gift"
-                />
-              </div>
-              <div>
-                <label className="block text-sm">Reason</label>
-                <Input
-                  value={giftReason}
-                  onChange={(e: any) => setGiftReason(e.target.value)}
-                  placeholder="Optional reason"
-                />
-              </div>
-            </div>
+        <GiftPointsModal
+          open={giftModalOpen}
+          onOpenChange={setGiftModalOpen}
+          onConfirm={handleGiftConfirm}
+        />
+        // <Dialog open={giftModalOpen} onOpenChange={setGiftModalOpen}>
+        //   <DialogOverlay className="fixed inset-0 bg-black/30" />
+        //   <DialogContent
+        //     aria-describedby={undefined}
+        //     className="dark:bg-secondary max-w-lg"
+        //   >
+        //     <DialogTitle>Gift Points</DialogTitle>
+        //     <div className="mt-4 space-y-3">
+        //       <div>
+        //         <label className="block text-sm">Amount</label>
+        //         <Input
+        //           type="number"
+        //           value={giftAmount}
+        //           onChange={(e: any) => setGiftAmount(Number(e.target.value))}
+        //           placeholder="Points to gift"
+        //         />
+        //       </div>
+        //       <div>
+        //         <label className="block text-sm">Reason</label>
+        //         <Input
+        //           value={giftReason}
+        //           onChange={(e: any) => setGiftReason(e.target.value)}
+        //           placeholder="Optional reason"
+        //         />
+        //       </div>
+        //     </div>
 
-            <div className="mt-4 flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setGiftModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleGiftSubmit}>Send Gift</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        //     <div className="mt-4 flex justify-end gap-2">
+        //       <Button variant="outline" onClick={() => setGiftModalOpen(false)}>
+        //         Cancel
+        //       </Button>
+        //       <Button onClick={handleGiftSubmit}>Send Gift</Button>
+        //     </div>
+        //   </DialogContent>
+        // </Dialog>
       )}
 
       {/* Change Tier Modal */}

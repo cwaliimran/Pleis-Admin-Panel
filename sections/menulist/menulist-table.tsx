@@ -26,7 +26,7 @@ const HEAD_LABEL = [
   { id: 'description', label: 'Description', align: 'left' },
   { id: 'venue', label: 'Venue', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'center' },
 ];
 
 const MenuItemTable: FC<SamplePageProps> = ({
@@ -34,6 +34,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
   meta,
   loading,
   handleDelete,
+  handleDuplicate,
   handleEdit,
   onPageChange,
   limit = 10,
@@ -153,6 +154,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                     key={item?._id || idx}
                     item={item}
                     handleDelete={handleDelete}
+                    handleDuplicate={handleDuplicate}
                     handleEdit={handleEdit}
                   />
                 ))}
