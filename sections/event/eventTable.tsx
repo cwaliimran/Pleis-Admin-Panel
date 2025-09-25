@@ -1,26 +1,25 @@
 'use client';
 
 import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
+import { LoadingBar } from '@/components/table/table-bar-loading';
 import TableHeadCustom from '@/components/table/table-head-custom';
-import { Card } from '@/components/ui/card';
-import { Table, TableBody } from '@/components/ui/table';
-import { FC } from 'react';
-import EventTableRow from './eventTAbleRow'; // Import EventTableRow to handle table rows
 import { Badge } from '@/components/ui/badge';
-import { Settings2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import {
   Sheet,
-  SheetTrigger,
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from '@/components/ui/sheet';
-import { useForm, FormProvider } from 'react-hook-form';
-import { LoadingBar } from '@/components/table/table-bar-loading';
-import PaginationControls from '@/components/table/pagination-controls';
+import { Table, TableBody } from '@/components/ui/table';
 import { useTableSort } from '@/hooks/useTableSort';
+import { Settings2 } from 'lucide-react';
+import { FC } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import EventTableRow from './eventTAbleRow';
 
-// Define headers for the table
 const headLabel = [
   { id: 'image', label: 'Image', align: 'left', sortable: false },
   {

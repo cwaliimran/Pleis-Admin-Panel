@@ -67,7 +67,7 @@ const PresetModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[500px]">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
               {isEdit ? 'Edit Preset' : 'Create Preset'}
@@ -82,14 +82,20 @@ const PresetModal = ({
               <div className="mt-6 flex w-full flex-col gap-4">
                 <RHFUploadAvatar name="image" label="Item Image" />
 
-                {/* Name */}
-                <RHFTextField
-                  name="name"
-                  label="Item Name"
-                  placeholder="Enter Item Name"
-                />
+                <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                  <RHFTextField
+                    name="name"
+                    label="Item Name"
+                    placeholder="Enter Item Name"
+                  />
 
-                {/* Status (only for edit) */}
+                  <RHFTextField
+                    name="basePrice"
+                    label="Base Price"
+                    placeholder="Enter Base Price"
+                  />
+                </div>
+
                 {isEdit && (
                   <RHFSelectField
                     name="status"
@@ -101,6 +107,16 @@ const PresetModal = ({
                     ]}
                   />
                 )}
+
+                <div className="grid w-full grid-cols-1 gap-4">
+                  <RHFTextField
+                    name="description"
+                    label="Description"
+                    placeholder="Enter Description"
+                    multiline
+                    rows={2}
+                  />
+                </div>
               </div>
 
               <div className="mt-6 flex items-center justify-center">

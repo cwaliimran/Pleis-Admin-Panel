@@ -1,7 +1,6 @@
 'use client';
 
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +24,7 @@ type RewardFormValues = {
   description: string;
   creationMethod: string;
   percentOff: string;
-  menuItems: string[];
+  menuItems: string;
   eventId: string;
 };
 
@@ -45,7 +44,7 @@ const defaultValues: RewardFormValues = {
   description: '',
   creationMethod: 'custom',
   percentOff: '',
-  menuItems: [],
+  menuItems: '',
   eventId: '',
 };
 
@@ -141,7 +140,7 @@ const RewardFormModal = ({ open, onClose, isEdit }: RewardFormModalProps) => {
 
               {creationMethod === 'menu-items' && (
                 <div className="grid w-full grid-cols-1 gap-4">
-                  <RHFMultiSelect
+                  <RHFSelectField
                     name="menuItems"
                     label="Select Menu Items"
                     placeholder="Choose menu items"

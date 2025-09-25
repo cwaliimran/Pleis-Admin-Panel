@@ -33,7 +33,7 @@ const TransactionsTableRow: FC<TableRowProps> = ({
                 : 'default'
           }
         >
-          {item?.status}
+          {item?.status === 'success' ? 'gaining' : 'spending'}
         </CustomBadge>
       </TableCell>
 
