@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import TransactionsView from '@/sections/transactions/transactions-view';
+import MembersLoyaltyView from '@/sections/loyalty/loyalty-view/members-loyalty-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Transactions - Pleis',
+  title: 'Member Detail - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,12 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Transactions', href: '' },
+          { name: 'Members', href: '/super-admin/members' },
+          { name: 'Member Detail', href: '' },
         ]}
       />
 
-      <TransactionsView />
+      <MembersLoyaltyView />
     </div>
   );
 };

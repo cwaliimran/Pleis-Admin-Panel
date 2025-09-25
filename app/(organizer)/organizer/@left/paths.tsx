@@ -10,8 +10,12 @@ export const paths = {
     rewards: '/organizer/rewards',
     challenges: '/organizer/challenges',
     promotions: '/organizer/promotions',
-    referrals: '/organizer/referrals',
     members: '/organizer/members',
+    settings: '/organizer/settings',
+    referrals: '/organizer/referrals',
+    transactions: {
+      default: '/organizer/transactions',
+    },
     home: '/organizer/home',
     tags: '/organizer/tags',
     loyalty: {
@@ -20,7 +24,6 @@ export const paths = {
       list: '/organizer/loyalty/loyalty-list',
     },
     boost: '/organizer/boost',
-    settings: '/organizer/settings',
     organizations: {
       default: '/orgnizer/organization',
       create: '/organizer/organization/create-organization',
@@ -52,9 +55,7 @@ export const paths = {
       create: '/organizer/notification/create-notification',
       list: '/organizer/notification/notification-list',
     },
-    transactions: {
-      default: '/organizer/transactions',
-    },
+
     sample: {
       default: '/organizer/sample',
     },

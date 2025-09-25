@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import TransactionsView from '@/sections/transactions/transactions-view';
+import ReferralsView from '@/sections/referrals/referrals-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Transactions - Pleis',
+  title: 'Referrals - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Transactions', href: '' },
+          { name: 'Referrals', href: '' },
         ]}
       />
 
-      <TransactionsView />
+      <ReferralsView />
     </div>
   );
 };

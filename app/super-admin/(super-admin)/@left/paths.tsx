@@ -89,9 +89,21 @@ export const paths = {
       createGiveaway: '/super-admin/notification/create-giveaway',
       createNotification: '/super-admin/notification/create-notification',
     },
+    globalLoyalty: {
+      default: '/super-admin/global-loyalty',
+    },
     loyalty: {
       default: '/super-admin/loyalty',
     },
+    menuItems: '/super-admin/menuItems',
+    menuList: '/super-admin/menu-list',
+    rewards: '/super-admin/rewards',
+    challenges: '/super-admin/challenges',
+    promotions: '/super-admin/promotions',
+    members: '/super-admin/members',
+    settings: '/super-admin/settings',
+    referrals: '/super-admin/referrals',
+
     subscription: '/super-admin/subscription',
     addSupport: '/super-admin/add-support',
     logout: '/super-admin/logout',

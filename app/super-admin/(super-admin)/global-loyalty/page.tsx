@@ -1,22 +1,22 @@
 import Header from '@/app/common/header';
-import TransactionsView from '@/sections/transactions/transactions-view';
+import LoyaltyView from '@/sections/loyalty/loyalty-view/loyalty-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Transactions - Pleis',
+  title: 'Global Loyalty Dashboard - Pleis',
 };
 
 const Page = () => {
   return (
-    <div className="min-h-screen pb-12">
+    <div className="min-h-screen px-2 pb-12">
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Transactions', href: '' },
+          { name: 'Global Loyalty', href: '' },
         ]}
       />
 
-      <TransactionsView />
+      <LoyaltyView global={true} />
     </div>
   );
 };

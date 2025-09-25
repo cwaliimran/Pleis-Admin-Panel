@@ -11,6 +11,8 @@ import {
   Package,
   Settings,
   SlidersHorizontal,
+  SquareMenu,
+  Tags,
   // Tags,
   User,
   UsersRound,
@@ -102,6 +104,11 @@ export const menuGroups: MenuGroup[] = [
     icon: List,
   },
   {
+    label: 'Global Loyalty Dashboard',
+    key: paths.superAdmin.globalLoyalty.default,
+    icon: Handshake,
+  },
+  {
     label: 'Supplier',
     key: paths.superAdmin.suppliers.default,
     icon: Package,
@@ -126,11 +133,6 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.preset.default,
     icon: SlidersHorizontal,
   },
-  {
-    label: 'Global Loyalty Dashboard',
-    key: paths.superAdmin.loyalty.default,
-    icon: Handshake,
-  },
   // {
   //   label: 'User List',
   //   key: paths.superAdmin.users.list,
@@ -141,7 +143,63 @@ export const menuGroups: MenuGroup[] = [
   //   key: paths.superAdmin.users.pendingList,
   //   icon: User,
   // },
-
+  {
+    label: 'Loyalty',
+    key: paths.superAdmin.loyalty.default,
+    icon: Handshake,
+    items: [
+      {
+        title: 'Loyalty Dashboard',
+        url: paths.superAdmin.loyalty.default,
+        icon: Tags,
+      },
+      {
+        title: 'Rewards',
+        url: paths.superAdmin.rewards,
+        icon: Tags,
+      },
+      {
+        title: 'Challenges',
+        url: paths.superAdmin.challenges,
+        icon: Tags,
+      },
+      {
+        title: 'Promotions',
+        url: paths.superAdmin.promotions,
+        icon: Tags,
+      },
+      {
+        title: 'Members',
+        url: paths.superAdmin.members,
+        icon: Tags,
+      },
+      {
+        title: 'Settings',
+        url: paths.superAdmin.settings,
+        icon: Tags,
+      },
+      {
+        title: 'Referrals',
+        url: paths.superAdmin.referrals,
+        icon: Tags,
+      },
+      {
+        title: 'Transactions',
+        url: paths.superAdmin.transactions.default,
+        icon: Tags,
+      },
+    ],
+  },
+  {
+    label: 'Menu List',
+    key: paths.superAdmin.menuList,
+    icon: List,
+  },
+  {
+    label: 'Menu Items',
+    key: paths.superAdmin.menuItems,
+    icon: SquareMenu,
+  },
   {
     label: 'User List',
     key: paths.superAdmin.users.list,
