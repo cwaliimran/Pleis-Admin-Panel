@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Global Loyalty', href: '' },
+          { name: 'Loyalty', href: '' },
         ]}
       />
 
-      <LoyaltyView global={true} />
+      <LoyaltyView global={false} />
     </div>
   );
 };

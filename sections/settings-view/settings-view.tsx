@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Slider } from '@/components/ui/slider';
+import React, { useState } from 'react';
+import LinkedClubsView from './linked-clubs/linked-clubs-view';
 
 const SettingsView = () => {
   const [selectedModel, setSelectedModel] = useState('essential');
@@ -39,7 +40,7 @@ const SettingsView = () => {
       {/* Step 1 */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">
-          Step 1 - Loyalty Tier Model Selection
+          Loyalty Tier Model Selection
         </h2>
 
         <RadioGroup
@@ -96,7 +97,7 @@ const SettingsView = () => {
       {/* Step 2 */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">
-          Step 2 - Set Point Value Percentage
+          Set Point Value Percentage
         </h2>
         <div className="flex max-w-md items-center gap-4">
           <Input
@@ -125,126 +126,31 @@ const SettingsView = () => {
           back in loyalty points (depending on the user&apos;s status and tier).
         </p>
       </div>
+
+      {/* Step 3 */}
+      <div>
+        <h2 className="mb-4 text-xl font-semibold">Link Loyalty clubs</h2>
+
+        {/* Search Bar */}
+        <div className="mb-6 max-w-full">
+          <Label htmlFor="searchClub" className="mb-2 block">
+            Search Loyalty Clubs
+          </Label>
+          <div className="flex gap-2">
+            <Input
+              id="searchClub"
+              type="text"
+              placeholder="Enter club name..."
+              className="mt-2 h-12 flex-1 bg-[##171717] placeholder:text-slate-400 dark:bg-[#171717]"
+            />
+          </div>
+        </div>
+
+        <LinkedClubsView tableName="Currently Linked Clubs" />
+        <LinkedClubsView tableName="Incoming Requests" />
+      </div>
     </div>
   );
 };
 
 export default SettingsView;
-
-// 'use client';
-
-// import React, { useState } from 'react';
-// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-// import { Label } from '@/components/ui/label';
-// import { Input } from '@/components/ui/input';
-// import { DropdownMenuRadioGroup } from '@/components/ui/dropdown-menu';
-// import { Slider } from '@/components/ui/slider';
-
-// const SettingsView = () => {
-//   const [selectedModel, setSelectedModel] = useState('essential');
-//   const [pointValue, setPointValue] = useState(5);
-
-//   const loyaltyModels = [
-//     {
-//       value: 'essential',
-//       title: 'Essential',
-//       desc: 'Ideal for smaller venues like bars or casual spots. Lower entry requirements and more frequent rewards.',
-//     },
-//     {
-//       value: 'preferred',
-//       title: 'Preferred',
-//       desc: 'Suitable for mid-range venues like restaurants or small clubs. Balanced tier requirements and reward frequency.',
-//     },
-//     {
-//       value: 'premier',
-//       title: 'Premier',
-//       desc: 'Designed for premium venues such as high-end clubs or restaurants. Higher thresholds and slower progression.',
-//     },
-//   ];
-
-//   return (
-//     <div className="space-y-8 p-6">
-//       {/* Step 1 */}
-//       <div>
-//         <h2 className="mb-4 text-xl font-semibold">
-//           Step 1 - Loyalty Tier Model Selection
-//         </h2>
-//         <DropdownMenuRadioGroup
-//           value={selectedModel}
-//           onValueChange={setSelectedModel}
-//           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-//         >
-//           {loyaltyModels.map((model) => (
-//             <Card
-//               key={model.value}
-//               className={`dark:bg-secondary cursor-pointer gap-2 border ${
-//                 selectedModel === model.value
-//                   ? 'border-primary shadow-lg dark:border-gray-300'
-//                   : 'border-muted'
-//               }`}
-//             >
-//               <CardHeader>
-//                 <CardTitle className="flex items-center">
-//                   <DropdownMenuRadioGroup
-//                     value={model.value}
-//                     id={model.value}
-//                     className="mt-0.5"
-//                   />
-//                   <Label
-//                     htmlFor={model.value}
-//                     className="cursor-pointer text-2xl"
-//                   >
-//                     {model.title}
-//                   </Label>
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent>
-//                 <p className="text-muted-foreground text-sm">{model.desc}</p>
-//               </CardContent>
-//             </Card>
-//           ))}
-//         </DropdownMenuRadioGroup>
-//         <p className="text-muted-foreground mt-3 text-sm">
-//           To switch your business model, please reach out to the admin team for
-//           support.
-//         </p>
-//       </div>
-
-//       {/* Step 2 */}
-//       <div>
-//         <h2 className="mb-4 text-xl font-semibold">
-//           Step 2 – Set Point Value Percentage
-//         </h2>
-//         <div className="flex max-w-md items-center gap-4">
-//           <Input
-//             type="number"
-//             min={1}
-//             max={50}
-//             value={pointValue}
-//             onChange={(e) => setPointValue(Number(e.target.value))}
-//             className="w-24"
-//           />
-//           <span className="font-medium">%</span>
-//         </div>
-//         <div className="mt-4 max-w-md">
-//           <Slider
-//             // defaultValue={[33]}
-//             min={1}
-//             max={50}
-//             step={1}
-//             value={[pointValue]}
-//             onValueChange={(val) => setPointValue(val[0])}
-//           />
-//         </div>
-//         <p className="text-muted-foreground mt-3 text-sm">
-//           This means each euro spent returns between{' '}
-//           <span className="font-medium">{pointValue}%</span> -{' '}
-//           <span className="font-medium">{pointValue + 5}%</span> of its value
-//           back in loyalty points (depending on the user&apos;s status and tier).
-//         </p>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default SettingsView;
