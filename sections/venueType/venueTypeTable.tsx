@@ -1,16 +1,10 @@
 'use client';
 
+import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
 import {
   Sheet,
   SheetContent,
@@ -18,21 +12,30 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-
-import { TableFilters } from '@/components/table-filters';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody } from '@/components/ui/table';
+import { Table } from '@/components/ui/table';
+import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { VenueTableRow } from '.';
-import { LoadingBar } from '@/components/table/table-bar-loading';
-import PaginationControls from '@/components/table/pagination-controls';
 
 const headLabel = [
-  { id: 'icon', label: 'Icon', align: 'left' },
-  { id: 'name', label: 'Venue Type Name', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
+  { id: 'image', label: 'Image', align: 'left' },
+  {
+    id: 'name',
+    label: 'Venue Type Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'createdAt',
+    label: 'Created At',
+    align: 'left',
+    sortable: true,
+    sortKey: 'createdAt',
+  },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
@@ -71,14 +74,14 @@ const VenueTypeTable: FC<PageProps> = ({
   handleEdit,
   onPageChange,
   // onLimitChange,
-  onSearch = () => { },
+  onSearch = () => {},
   search = '',
   // limit = 10,
   status = '',
-  onStatusChange = () => { },
+  onStatusChange = () => {},
   date,
-  onDateChange = () => { },
-  onResetFilters = () => { },
+  onDateChange = () => {},
+  onResetFilters = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -86,23 +89,15 @@ const VenueTypeTable: FC<PageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
+
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
     },
   });
-
-  // Generate page numbers for pagination (show max 5 pages)
-  const getPageNumbers = () => {
-    const maxPagesToShow = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    let end = start + maxPagesToShow - 1;
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(1, end - maxPagesToShow + 1);
-    }
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  };
 
   return (
     <div>
@@ -197,43 +192,28 @@ const VenueTypeTable: FC<PageProps> = ({
             </Sheet>
           </div>
 
-          <div
-            className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
-          >
+          <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={headLabel} />
-              <TableBody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={headLabel.length} className="py-0 text-center">
-                      <LoadingBar variant="default" />
-                    </td>
-                  </tr>
-                ) : data.filter((item: any) => item.status !== 'deleted')
-                  .length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={headLabel.length}
-                      className="h-[40vh] border-b-0 text-center align-middle"
-                    >
-                      <div className="flex h-full w-full items-center justify-center text-xl">
-                        No data found
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  data
-                    .filter((item: any) => item.status !== 'deleted')
-                    .map((item: any, index: number) => (
-                      <VenueTableRow
-                        key={item._id || index}
-                        item={item}
-                        handleDelete={handleDelete}
-                        handleEdit={handleEdit}
-                      />
-                    ))
-                )}
-              </TableBody>
+              <TableHeadCustom
+                headLabel={headLabel}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+
+              <TableBodyWrapper
+                loading={loading}
+                colSpan={headLabel.length}
+                dataLength={sortedData?.length || 0}
+              >
+                {sortedData?.map((item: any, index: number) => (
+                  <VenueTableRow
+                    key={item._id || index}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                  />
+                ))}
+              </TableBodyWrapper>
             </Table>
           </div>
 

@@ -2,7 +2,6 @@
 
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
-import { LoadingBar } from '@/components/table/table-bar-loading';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -13,7 +12,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Table, TableBody } from '@/components/ui/table';
+import { Table } from '@/components/ui/table';
+import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC } from 'react';
@@ -221,35 +221,21 @@ const EventTable: FC<PageProps> = ({
                 sortConfig={sortConfig}
                 onSort={handleSort}
               />
-              <TableBody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={headLabel.length} className="py-0 text-center">
-                      <LoadingBar variant="default" />
-                    </td>
-                  </tr>
-                ) : sortedData.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={headLabel.length}
-                      className="h-[40vh] border-b-0 text-center align-middle"
-                    >
-                      <div className="flex h-full w-full items-center justify-center text-xl">
-                        No data found
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  sortedData.map((item, index) => (
-                    <EventTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      userType={userType}
-                    />
-                  ))
-                )}
-              </TableBody>
+
+              <TableBodyWrapper
+                loading={loading}
+                colSpan={headLabel.length}
+                dataLength={sortedData?.length || 0}
+              >
+                {sortedData?.map((item, index) => (
+                  <EventTableRow
+                    key={item?._id || index}
+                    item={item}
+                    handleDelete={handleDelete}
+                    userType={userType}
+                  />
+                ))}
+              </TableBodyWrapper>
             </Table>
           </div>
 

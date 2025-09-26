@@ -103,7 +103,7 @@ export const paths = {
     members: '/super-admin/members',
     settings: '/super-admin/settings',
     referrals: '/super-admin/referrals',
-
+    tiers: '/super-admin/tiers',
     subscription: '/super-admin/subscription',
     addSupport: '/super-admin/add-support',
     logout: '/super-admin/logout',

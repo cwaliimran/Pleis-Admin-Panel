@@ -1,6 +1,9 @@
 'use client';
 
+import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
   Sheet,
@@ -9,20 +12,29 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-
-import { TableFilters } from '@/components/table-filters';
-import PaginationControls from '@/components/table/pagination-controls';
-import { LoadingBar } from '@/components/table/table-bar-loading';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody } from '@/components/ui/table';
+import { Table } from '@/components/ui/table';
+import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import SupplierTypeTableRow from './suppliersTypeTableRow';
 
 const headLabel = [
-  { id: 'name', label: 'Supplier Name', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
+  {
+    id: 'name',
+    label: 'Supplier Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'createdAt',
+    label: 'Created At',
+    align: 'left',
+    sortable: true,
+    sortKey: 'createdAt',
+  },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
@@ -61,20 +73,24 @@ const SupplierTypeTable: FC<PageProps> = ({
   handleEdit,
   onPageChange,
   // onLimitChange,
-  onSearch = () => { },
+  onSearch = () => {},
   search = '',
   // limit = 10,
   status = '',
-  onStatusChange = () => { },
+  onStatusChange = () => {},
   date,
-  onDateChange = () => { },
-  onResetFilters = () => { },
+  onDateChange = () => {},
+  onResetFilters = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -175,41 +191,28 @@ const SupplierTypeTable: FC<PageProps> = ({
             </Sheet>
           </div>
 
-          <div
-            className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
-          >
+          <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={headLabel} />
-              <TableBody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={headLabel.length} className="py-0 text-center">
-                      <LoadingBar variant="default" />
-                    </td>
-                  </tr>
-                ) : data.filter((item: any) => item.status !== 'deleted')
-                  .length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={headLabel.length}
-                      className="h-[40vh] border-b-0 text-center align-middle"
-                    >
-                      <div className="flex h-full w-full items-center justify-center text-xl">
-                        No data found
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  data.map((item: any, index: number) => (
-                    <SupplierTypeTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
-                    />
-                  ))
-                )}
-              </TableBody>
+              <TableHeadCustom
+                headLabel={headLabel}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+
+              <TableBodyWrapper
+                loading={loading}
+                colSpan={headLabel.length}
+                dataLength={sortedData?.length || 0}
+              >
+                {sortedData?.map((item: any, index: number) => (
+                  <SupplierTypeTableRow
+                    key={item?._id || index}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                  />
+                ))}
+              </TableBodyWrapper>
             </Table>
           </div>
 

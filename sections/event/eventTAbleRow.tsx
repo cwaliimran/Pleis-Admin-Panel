@@ -1,13 +1,13 @@
 'use client';
 
 import ImageWithFallback from '@/components/common/img-with-fallback';
-import { formatDateTime, getStatusVariant } from '@/utils/short-utils';
 import { Avatar } from '@/components/ui/avatar';
+import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { formatDateTime, getStatusVariant } from '@/utils/short-utils';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FC } from 'react';
-import CustomBadge from '@/components/ui/custom-badge';
 
 interface PageProps {
   item: any;
@@ -19,22 +19,8 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
   const router = useRouter();
 
   const handleNavigateToDetails = () => {
-    if (userType === 'organizer') {
-      router.push(`/organizer/events/${item._id}`);
-    }
-    if (userType === 'super-admin') {
-      router.push(`/super-admin/events/${item._id}`);
-    }
+    router.push(`/${userType}/events/${item._id}`);
   };
-
-  // const handleNavigateToEdit = (item: any) => {
-  //   if (userType === 'organizer') {
-  //     router.push(`/${userType}/events/edit-event/${item?._id}`);
-  //   }
-  //   if (userType === 'super-admin') {
-  //     router.push(`/${userType}/events/edit-event/${item?._id}`);
-  //   }
-  // };
 
   return (
     <TableRow
@@ -134,7 +120,6 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
       {/* Actions */}
       <TableCell className="text-end">
         <div className="flex gap-2">
-          {/* View Details Button */}
           <button
             title="View Details"
             type="button"
@@ -143,26 +128,20 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
             <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
           </button>
 
-          {/* Edit Button */}
           <button
             title="Edit Event"
             type="button"
-            // onClick={(e) => {
-            //   e.stopPropagation();
-            //   handleNavigateToEdit(item);
-            // }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
           </button>
 
-          {/* Delete Button */}
           <button
             title="Delete Event"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete?.(item._id);
+              handleDelete?.(item?._id);
             }}
             className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >
