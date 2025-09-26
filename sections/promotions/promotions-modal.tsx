@@ -113,7 +113,7 @@ const PromotionModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
               {isEdit ? 'Edit Promotion' : 'Create Promotion'}
@@ -167,14 +167,14 @@ const PromotionModal = ({
 
                   <RHFDate
                     name="startTime"
-                    label="Start Time"
+                    label="Start Date"
                     placeholder="Select Start Date"
                     className="cursor-pointe h-10 w-full"
                   />
 
                   <RHFDate
                     name="endTime"
-                    label="End Time"
+                    label="End Date"
                     placeholder="Select End Date"
                     className="cursor-pointe h-10 w-full"
                   />

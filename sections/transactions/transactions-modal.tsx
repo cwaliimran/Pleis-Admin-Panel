@@ -104,7 +104,7 @@ const TransactionModal = ({
                 Status
               </h4>
               <p className="inline-flex rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                Success
+                Gaining
               </p>
             </div>
           </div>

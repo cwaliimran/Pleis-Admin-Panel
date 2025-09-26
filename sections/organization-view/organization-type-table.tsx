@@ -1,6 +1,9 @@
 'use client';
 
+import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
   Sheet,
@@ -9,21 +12,30 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-
-import { TableFilters } from '@/components/table-filters';
-import { LoadingBar } from '@/components/table/table-bar-loading';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody } from '@/components/ui/table';
+import { Table } from '@/components/ui/table';
+import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import OrganizationTypeTableRow from './organization-type-table-row';
-import PaginationControls from '@/components/table/pagination-controls';
 
 const headLabel = [
   { id: 'log', label: 'Logo', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'createdDate', label: 'Created Date', align: 'left' },
+  {
+    id: 'name',
+    label: 'Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'basicInfo.name',
+  },
+  {
+    id: 'createdDate',
+    label: 'Created Date',
+    align: 'left',
+    sortable: true,
+    sortKey: 'createdAt',
+  },
   { id: 'subscriptionType', label: 'Sub Type', align: 'left' },
   { id: 'subscriptionValidity', label: 'Sub End Date', align: 'left' },
   { id: 'commission', label: 'Commission (%)', align: 'left' },
@@ -81,6 +93,10 @@ const OrganizationTypeTable: FC<PageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -166,43 +182,28 @@ const OrganizationTypeTable: FC<PageProps> = ({
             </Sheet>
           </div>
 
-          <div
-            className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
-          >
+          <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={headLabel} />
-              <TableBody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={headLabel.length} className="py-0 text-center">
-                      <LoadingBar variant="default" />
-                    </td>
-                  </tr>
-                ) : data.filter((item: any) => item.status !== 'deleted')
-                    .length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={headLabel.length}
-                      className="h-[40vh] border-b-0 text-center align-middle"
-                    >
-                      <div className="flex h-full w-full items-center justify-center text-xl">
-                        No data found
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  data
-                    .filter((item: any) => item.status !== 'deleted')
-                    .map((item: any, index: number) => (
-                      <OrganizationTypeTableRow
-                        key={item._id || index}
-                        item={item}
-                        handleDelete={handleDelete}
-                        userType={userType}
-                      />
-                    ))
-                )}
-              </TableBody>
+              <TableHeadCustom
+                headLabel={headLabel}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+
+              <TableBodyWrapper
+                loading={loading}
+                colSpan={headLabel.length}
+                dataLength={sortedData?.length || 0}
+              >
+                {sortedData?.map((item: any, index: number) => (
+                  <OrganizationTypeTableRow
+                    key={item._id || index}
+                    item={item}
+                    handleDelete={handleDelete}
+                    userType={userType}
+                  />
+                ))}
+              </TableBodyWrapper>
             </Table>
           </div>
 

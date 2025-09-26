@@ -4,8 +4,6 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
-import React from 'react';
-
 import {
   Dialog,
   DialogContent,
@@ -13,8 +11,8 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { yupResolver } from '@hookform/resolvers/yup';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
@@ -25,7 +23,6 @@ const defaultValues: MenuItemFormValues = {
   type: '',
   itemCategory: '',
   menu: '',
-  itemVenue: '',
   tax: '',
   basePrice: '',
   discountPrice: '',
@@ -41,7 +38,6 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   type: Yup.string().required('Type is required'),
   itemCategory: Yup.string().required('Item category is required'),
   menu: Yup.string().required('Menu is required'),
-  itemVenue: Yup.string().optional(),
   tax: Yup.string().required('Tax is required'),
   basePrice: Yup.string().required('Base price is required'),
   discountPrice: Yup.string().nullable().default(''),
@@ -61,9 +57,6 @@ const MenuItemModal = ({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
-
-  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
-    useGetVenuesQuery({ page: 0, limit: 10000 });
 
   const { reset, setValue, watch } = methods;
 
@@ -165,18 +158,6 @@ const MenuItemModal = ({
                     ]}
                   />
 
-                  <RHFSelectField
-                    name="menu"
-                    label="Select Menu"
-                    placeholder="Select Menu"
-                    className="w-full flex-1"
-                    options={[
-                      { value: 'type1', label: 'Main Hall Lunch Menu' },
-                      { value: 'type2', label: 'Garden Area Lunch Menu' },
-                      { value: 'type3', label: 'Coffee Bar Lunch Menu' },
-                    ]}
-                  />
-
                   <RHFTextField
                     name="basePrice"
                     label="Base Price"
@@ -203,16 +184,16 @@ const MenuItemModal = ({
                   />
 
                   <div className={`${isEdit ? 'col-span-1' : 'col-span-2'}`}>
-                    <RHFCustomDropdown
-                      name="itemVenue"
-                      label="Venue"
-                      placeholder="Select Venue"
-                      options={venues?.map((val: any) => ({
-                        value: val?._id,
-                        label: val?.title,
-                      }))}
-                      isLoading={venuesLoading}
-                      showNone={false}
+                    <RHFSelectField
+                      name="menu"
+                      label="Select Menu"
+                      placeholder="Select Menu"
+                      className="w-full flex-1"
+                      options={[
+                        { value: 'type1', label: 'Main Hall Lunch Menu' },
+                        { value: 'type2', label: 'Garden Area Lunch Menu' },
+                        { value: 'type3', label: 'Coffee Bar Lunch Menu' },
+                      ]}
                     />
                   </div>
 

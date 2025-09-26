@@ -132,104 +132,7 @@ const CategoriesView = () => {
   };
 
   // CREATE/UPDATE VENUE TYPE
-  // const onSubmit = handleSubmit(async (formData) => {
-  //   console.log('formData', formData);
-
-  //   try {
-  //     let imageFileString = undefined;
-
-  //     if (
-  //       formData.image &&
-  //       (formData.image instanceof FileList || Array.isArray(formData.image))
-  //     ) {
-  //       const file = formData.image[0];
-  //       if (file) {
-  //         setImageUploading(true);
-  //         try {
-  //           imageFileString = await uploadFileToAzure(file);
-  //         } finally {
-  //           setImageUploading(false);
-  //         }
-  //       }
-  //     }
-
-  //     const payload: any = {
-  //       title: formData.title,
-  //     };
-
-  //     console.log('payload', payload);
-
-  //     if (imageFileString) {
-  //       payload.image = imageFileString;
-  //     } else if (editModal.value && typeof formData.image === 'string') {
-  //       payload.image = formData.image;
-  //     }
-
-  //     if (editModal.value && selectedId) {
-  //       payload.status = formData.status;
-  //       payload.id = selectedId;
-  //     }
-
-  //     let response;
-  //     if (editModal.value && selectedId) {
-  //       response = await updateCategory(payload).unwrap();
-  //     } else {
-  //       response = await addCategory(payload).unwrap();
-  //     }
-
-  //     if (!response) {
-  //       showError('No response from server. Please try again later.');
-  //       return;
-  //     }
-
-  //     if (response.error) {
-  //       const errorMessage = getErrorMessage(response.error);
-  //       showError(errorMessage);
-  //       return;
-  //     }
-
-  //     // Handle success and update local state
-  //     if (response?.data) {
-  //       if (editModal.value && selectedId) {
-  //         // Edit: update the item in local state
-  //         setVenueTypes((prev) =>
-  //           prev.map((item) => (item._id === selectedId ? response.data : item))
-  //         );
-  //       } else {
-  //         // Add: add new item to local state but keep only first `limit`
-  //         setVenueTypes((prev) => {
-  //           const updated = [response.data, ...prev];
-  //           return updated.slice(0, limit);
-  //         });
-
-  //         setMeta((prev: any) => ({
-  //           ...prev,
-  //           totalRecords: prev.totalRecords + 1,
-  //         }));
-  //       }
-  //     }
-
-  //     if (response?.message) {
-  //       showSuccess(
-  //         response?.message ||
-  //         (editModal.value
-  //           ? 'Category updated successfully'
-  //           : 'Category created successfully')
-  //       );
-  //     }
-
-  //     CloseModal();
-  //   } catch (error) {
-  //     setImageUploading(false);
-  //     const errorMessage = getErrorMessage(error);
-  //     console.log('Failed to save category:', errorMessage);
-  //     showError(errorMessage);
-  //   }
-  // });
-
-  // CREATE/UPDATE VENUE TYPE
   const onSubmit = handleSubmit(async (formData) => {
-
     let uploadedFileKey: string | null = null;
     try {
       let imageFileString = undefined;
@@ -304,9 +207,9 @@ const CategoriesView = () => {
       if (response?.message) {
         showSuccess(
           response?.message ||
-          (editModal.value
-            ? 'Category updated successfully'
-            : 'Category created successfully')
+            (editModal.value
+              ? 'Category updated successfully'
+              : 'Category created successfully')
         );
       }
 
@@ -325,16 +228,10 @@ const CategoriesView = () => {
     }
   });
 
-
   // DELETE CATEGORY
   const onDelete = async () => {
     try {
       const response = await deleteCategory(selectedId).unwrap();
-
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
 
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -342,9 +239,7 @@ const CategoriesView = () => {
         return;
       }
 
-      if (response?.message) {
-        showSuccess(response?.message || 'Category deleted successfully');
-      }
+      showSuccess(response?.message || 'Category deleted successfully');
 
       setSelectedId(null);
       deleteModal.onFalse();

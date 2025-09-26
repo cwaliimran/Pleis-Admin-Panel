@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   SquareMenu,
   Tags,
+  TriangleDashed,
   // Tags,
   User,
   UsersRound,
@@ -132,6 +133,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Preset',
     key: paths.superAdmin.preset.default,
     icon: SlidersHorizontal,
+  },
+  {
+    label: 'Tiers',
+    key: paths.superAdmin.tiers,
+    icon: TriangleDashed,
   },
   // {
   //   label: 'User List',

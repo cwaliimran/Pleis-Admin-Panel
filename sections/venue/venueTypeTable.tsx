@@ -12,18 +12,37 @@ import {
 
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
-import { LoadingBar } from '@/components/table/table-bar-loading';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody } from '@/components/ui/table';
+import { Table } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import VenueTypeTableRow from './venueTypeTableRow';
+import { useTableSort } from '@/hooks/useTableSort';
+import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 
 const headLabel = [
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'dateAdded', label: 'Date Added', align: 'left' },
-  { id: 'organizaiton', label: 'Organization', align: 'left' },
+  {
+    id: 'name',
+    label: 'Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'dateAdded',
+    label: 'Date Added',
+    align: 'left',
+    sortable: true,
+    sortKey: 'createdAt',
+  },
+  {
+    id: 'organizaiton',
+    label: 'Organization',
+    align: 'left',
+    sortable: true,
+    sortKey: 'organization.basicInfo.name',
+  },
   { id: 'floorplan', label: 'Floor Plan', align: 'left' },
   { id: 'location', label: 'Location', align: 'left' },
   { id: 'status', label: 'Status' },
@@ -81,6 +100,10 @@ const VenueTypeTable: FC<PageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -165,44 +188,29 @@ const VenueTypeTable: FC<PageProps> = ({
             </Sheet>
           </div>
 
-          <div
-            className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
-          >
+          <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={headLabel} />
-              <TableBody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={headLabel.length} className="py-0 text-center">
-                      <LoadingBar variant="default" />
-                    </td>
-                  </tr>
-                ) : data.filter((item: any) => item.status !== 'deleted')
-                    .length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={headLabel.length}
-                      className="h-[40vh] border-b-0 text-center align-middle"
-                    >
-                      <div className="flex h-full w-full items-center justify-center text-xl">
-                        No data found
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  data
-                    .filter((item: any) => item.status !== 'deleted')
-                    .map((item: any, index: number) => (
-                      <VenueTypeTableRow
-                        key={item._id || index}
-                        item={item}
-                        handleDelete={handleDelete}
-                        handleEdit={handleEdit}
-                        handlePinned={handlePinned}
-                      />
-                    ))
-                )}
-              </TableBody>
+              <TableHeadCustom
+                headLabel={headLabel}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+
+              <TableBodyWrapper
+                loading={loading}
+                colSpan={headLabel.length}
+                dataLength={sortedData?.length || 0}
+              >
+                {sortedData?.map((item: any, index: number) => (
+                  <VenueTypeTableRow
+                    key={item._id || index}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    handlePinned={handlePinned}
+                  />
+                ))}
+              </TableBodyWrapper>
             </Table>
           </div>
 

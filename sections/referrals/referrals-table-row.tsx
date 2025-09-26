@@ -2,21 +2,17 @@
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { useAppNavigator } from '@/hooks/useAppNavigator';
 import { Eye } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const ReferralsTableRow: FC<TableRowProps> = ({ item }) => {
-  const router = useRouter();
-
-  const handleNavigate = () => {
-    router.push(`/organizer/referrals/${item?._id}`);
-  };
+const ReferralsTableRow: FC<TableRowProps> = ({ item, userType }) => {
+  const { navigate } = useAppNavigator();
 
   return (
     <TableRow
-      onClick={handleNavigate}
+      onClick={() => navigate(`/${userType}/referrals/${item?._id}`)}
       className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
     >
       <TableCell className="flex items-center gap-2 text-left">

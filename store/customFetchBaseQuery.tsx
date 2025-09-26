@@ -49,8 +49,7 @@ export const customFetchBaseQuery = () => {
       // Handle unauthorized access (token expired / invalid)
       if (status === 401) {
         const isBrowser = typeof window !== 'undefined';
-        const isOnLoginPage =
-          isBrowser && window.location.pathname === '/admin/login';
+        const isOnLoginPage = isBrowser && (window.location.pathname === '/admin/login' || window.location.pathname === '/');
 
         if (!isOnLoginPage) {
           api.dispatch(logout());

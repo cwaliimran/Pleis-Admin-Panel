@@ -29,25 +29,3 @@ export interface TableRowProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
-
-export type MenuItemFormValues = {
-  image?: any;
-  name: string;
-  type: string;
-  itemCategory: string;
-  menu: string;
-  tax: string;
-  basePrice: string;
-  discountPrice: string | null;
-  description: string;
-  preset?: number | null;
-  startTime?: string;
-  endTime?: string;
-};
-
-export type MenuItemModalProps = {
-  open: boolean;
-  onClose: () => void;
-  isEdit?: boolean;
-  selectedData?: MenuItemFormValues;
-};

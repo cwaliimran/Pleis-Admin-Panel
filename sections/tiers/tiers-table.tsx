@@ -1,6 +1,9 @@
 'use client';
 
+import { TableFilters } from '@/components/table-filters';
+import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
   Sheet,
@@ -9,75 +12,34 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-
-import { TableFilters } from '@/components/table-filters';
-import PaginationControls from '@/components/table/pagination-controls';
-import { LoadingBar } from '@/components/table/table-bar-loading';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody } from '@/components/ui/table';
+import { Table } from '@/components/ui/table';
+import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import CategoriesTypeTableRow from './categoriesTypeTableRow';
-import { useTableSort } from '@/hooks/useTableSort';
+import { SamplePageProps } from './types';
+import { ChallengesData } from './data';
+import TiersTableRow from './tiers-table-row';
 
-const headLabel = [
-  { id: 'icon', label: 'Icon', align: 'left' },
-  {
-    id: 'name',
-    label: 'Category Name',
-    align: 'left',
-    sortable: true,
-    sortKey: 'title',
-  },
-  {
-    id: 'createdAt',
-    label: 'Created At',
-    align: 'left',
-    sortable: true,
-    sortKey: 'createdAt',
-  },
+const HEAD_LABEL = [
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'entryPoints', label: 'Entry Points', align: 'left' },
+  { id: 'retainPoints', label: 'Retain Points', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
-interface Meta {
-  currentPage: number;
-  totalPages: number;
-  totalRecords: number;
-  limit: number;
-}
-
-interface PageProps {
-  page: any;
-  data: any[];
-  meta: Meta;
-  loading?: boolean;
-  handleDelete?: (id: string) => void;
-  handleEdit?: (id: string) => void;
-  onPageChange?: (page: number) => void;
-  onLimitChange?: (limit: number) => void;
-  onSearch?: (search: string) => void;
-  search?: string;
-  limit?: number;
-  status?: string;
-  onStatusChange?: (status: string) => void;
-  date?: Date;
-  onDateChange?: (date: Date | undefined) => void;
-  onResetFilters?: () => void;
-}
-
-const CategoriesTypeTable: FC<PageProps> = ({
+const TiersTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
   handleDelete,
   handleEdit,
   onPageChange,
-  // onLimitChange,
-  onSearch = () => {},
+  limit = 10,
+  // filters states bellow
   search = '',
-  // limit = 10,
+  onSearch = () => {},
   status = '',
   onStatusChange = () => {},
   date,
@@ -90,13 +52,6 @@ const CategoriesTypeTable: FC<PageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  // Sorting logic
-  const { sortedData, sortConfig, handleSort } = useTableSort({
-    data: data || [],
-  });
-
-  console.log('sortedData', sortedData);
-
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
@@ -108,10 +63,9 @@ const CategoriesTypeTable: FC<PageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Category List
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Tiers List</h3>
 
+            {/* FILTER SHEET */}
             <Sheet>
               <SheetTrigger asChild>
                 <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-3xl border border-gray-300 bg-white px-4 py-2 text-black">
@@ -148,7 +102,7 @@ const CategoriesTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Categories...',
+                              placeholder: 'Search tiers...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -181,50 +135,33 @@ const CategoriesTypeTable: FC<PageProps> = ({
             </Sheet>
           </div>
 
-          <div className="rounded-lg border">
+          <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom
-                headLabel={headLabel}
-                sortConfig={sortConfig}
-                onSort={handleSort}
-              />
-              <TableBody>
-                {loading ? (
-                  <tr>
-                    <td colSpan={headLabel.length} className="py-0 text-center">
-                      <LoadingBar variant="default" />
-                    </td>
-                  </tr>
-                ) : sortedData.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={headLabel.length}
-                      className="h-[40vh] border-b-0 text-center align-middle"
-                    >
-                      <div className="flex h-full w-full items-center justify-center text-xl">
-                        No data found
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  sortedData?.map((item: any, index: number) => (
-                    <CategoriesTypeTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      handleEdit={handleEdit}
-                    />
-                  ))
-                )}
-              </TableBody>
+              <TableHeadCustom headLabel={HEAD_LABEL} />
+
+              <TableBodyWrapper
+                loading={loading}
+                colSpan={HEAD_LABEL.length}
+                dataLength={data?.length || 0}
+              >
+                {/* {data?.map((item, idx) => ( */}
+                {ChallengesData?.map((item, idx) => (
+                  <TiersTableRow
+                    key={item?._id || idx}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                  />
+                ))}
+              </TableBodyWrapper>
             </Table>
           </div>
 
           <PaginationControls
-            currentPage={currentPage}
+            limit={limit}
             totalPages={totalPages}
+            currentPage={currentPage}
             totalRecords={totalRecords}
-            limit={10}
             onPageChange={(p) => onPageChange?.(p)}
           />
         </Card>
@@ -233,4 +170,4 @@ const CategoriesTypeTable: FC<PageProps> = ({
   );
 };
 
-export default CategoriesTypeTable;
+export default TiersTable;

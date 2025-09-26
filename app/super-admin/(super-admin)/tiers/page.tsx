@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import UserListView from '@/sections/users/userListView';
+import TiersView from '@/sections/tiers/tiers-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Members - Pleis',
+  title: 'Tiers - Pleis',
 };
 
 const Page = () => {
@@ -12,12 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Members', href: '' },
+          { name: 'Tiers', href: '' },
         ]}
       />
 
-      {/* <MembersView /> */}
-      <UserListView usertype="super-admin" memberPage={true}  />
+      <TiersView />
     </div>
   );
 };
