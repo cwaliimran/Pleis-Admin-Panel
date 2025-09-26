@@ -32,20 +32,43 @@ const UserListTypeTableRow: FC<PageProps> = ({
   // --- State for modals ---
   const [giftModalOpen, setGiftModalOpen] = useState(false);
 
+  // const handleNavigate = () => {
+  //   if (memberPage) {
+  //     router.push(`/${userType}/members/${item?.basicInfo?._id}`);
+  //     return;
+  //   }
+
+  //   if (userType === 'super-admin') {
+  //     router.push(
+  //       `/super-admin/user/${item?.basicInfo?._id}?userType=${item?.accountState?.userType}`
+  //     );
+  //   } else if (userType === 'organizer') {
+  //     router.push(
+  //       `/organizer/user/${item?.basicInfo?._id}?userType=${item?.accountState?.userType}`
+  //     );
+  //   }
+  // };
+
   const handleNavigate = () => {
+    const userId = item?.basicInfo?._id;
+    const accountUserType = item?.accountState?.userType;
+
+    if (!userId || !userType) return; 
+
     if (memberPage) {
-      router.push(`/organizer/members/${item?.basicInfo?._id}`);
+      router.push(`/${userType}/members/${userId}`);
       return;
     }
 
-    if (userType === 'super-admin') {
-      router.push(
-        `/super-admin/user/${item?.basicInfo?._id}?userType=${item?.accountState?.userType}`
-      );
-    } else if (userType === 'organizer') {
-      router.push(
-        `/organizer/user/${item?.basicInfo?._id}?userType=${item?.accountState?.userType}`
-      );
+    const routes: Record<'super-admin' | 'organizer', string> = {
+      'super-admin': `/super-admin/user/${userId}?userType=${accountUserType}`,
+      organizer: `/organizer/user/${userId}?userType=${accountUserType}`,
+    };
+
+    const route = routes[userType as 'super-admin' | 'organizer'];
+
+    if (route) {
+      router.push(route);
     }
   };
 

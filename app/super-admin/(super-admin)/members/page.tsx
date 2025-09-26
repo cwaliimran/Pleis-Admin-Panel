@@ -17,7 +17,7 @@ const Page = () => {
       />
 
       {/* <MembersView /> */}
-      <UserListView usertype="organizer" memberPage={true}  />
+      <UserListView usertype="super-admin" memberPage={true}  />
     </div>
   );
 };

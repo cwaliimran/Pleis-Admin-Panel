@@ -36,7 +36,7 @@ const SettingsView = () => {
   };
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-7 p-6 sm:space-y-12">
       {/* Step 1 */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">
@@ -119,12 +119,22 @@ const SettingsView = () => {
             onValueChange={(val) => setPointValue(val[0])}
           />
         </div>
-        <p className="text-muted-foreground mt-3 text-sm">
-          This means each euro spent returns between{' '}
-          <span className="font-medium">{pointValue}%</span> -{' '}
-          <span className="font-medium">{pointValue + 5}%</span> of its value
-          back in loyalty points (depending on the user&apos;s status and tier).
-        </p>
+
+        <div className="mt-5 flex items-center justify-between">
+          <p className="text-muted-foreground text-sm">
+            This means each euro spent returns between{' '}
+            <span className="font-medium">{pointValue}%</span> -{' '}
+            <span className="font-medium">{pointValue + 5}%</span> of its value
+            back in loyalty points (depending on the user&apos;s status and
+            tier).
+          </p>
+
+          <div className="flex justify-end">
+            <Button className="px-7" onClick={handleSave}>
+              Save
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Step 3 */}

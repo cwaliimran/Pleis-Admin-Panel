@@ -8,7 +8,11 @@ import { useEffect, useState } from 'react';
 import RefferralModal from './referrals-modal';
 import ReferralsTable from './referrals-table';
 
-const ReferralsView = () => {
+interface ReferralsViewProps {
+  userType: 'super-admin' | 'organizer';
+}
+
+const ReferralsView = ({ userType }: ReferralsViewProps) => {
   const openModal = useBoolean();
 
   // Pagination and filter state
@@ -69,6 +73,7 @@ const ReferralsView = () => {
       <ReferralsTable
         data={localData}
         meta={meta}
+        userType={userType}
         loading={isLoading}
         onPageChange={setPage}
         onLimitChange={(l) => {

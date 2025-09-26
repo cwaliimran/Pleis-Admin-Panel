@@ -38,6 +38,7 @@ const ReferralsTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
+  userType,
   handleDelete,
   handleEdit,
   onPageChange,
@@ -155,6 +156,7 @@ const ReferralsTable: FC<SamplePageProps> = ({
                 {ReferralData?.map((item, idx) => (
                   <ReferralsTableRow
                     key={item?._id || idx}
+                    userType={userType}
                     item={item}
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}
