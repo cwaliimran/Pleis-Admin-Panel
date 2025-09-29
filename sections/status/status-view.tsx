@@ -12,10 +12,10 @@ import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import TiersTable from './tiers-table';
-import TiersModal from './tiers-modal';
+import StatusTable from './status-table';
+import StatusModal from './status-modal';
 
-const TiersView = () => {
+const StatusView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -94,7 +94,7 @@ const TiersView = () => {
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No tier selected');
+        showError('No status selected');
         return;
       }
 
@@ -133,12 +133,12 @@ const TiersView = () => {
             onClick={handleCreateNew}
           >
             <Plus />
-            Create Tiers
+            Create Status
           </Button>
         </div>
       </div>
 
-      <TiersTable
+      <StatusTable
         data={localData}
         meta={meta}
         loading={isLoading}
@@ -174,7 +174,7 @@ const TiersView = () => {
         }}
       />
 
-      <TiersModal
+      <StatusModal
         open={openModal.value}
         onClose={openModal.onFalse}
         isEdit={editModal.value}
@@ -196,4 +196,4 @@ const TiersView = () => {
   );
 };
 
-export default TiersView;
+export default StatusView;

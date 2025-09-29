@@ -1,5 +1,7 @@
 'use client';
 
+import FormProvider from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -18,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
+import { defaultValues, schema } from '@/lib/schemas/organization-schema';
 import { cn } from '@/lib/utils';
 import {
   GenderDonutChart,
@@ -40,13 +43,28 @@ import {
 } from '@/sections/loyalty/data';
 import LoyaltyList from '@/sections/loyalty/loyaltyList';
 import RewardCard from '@/sections/loyalty/rewardCard';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { Settings2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { useForm } from 'react-hook-form';
 
-const LoyaltyView = ({ global }: { global: boolean }) => {
+const LoyaltyView = ({
+  global,
+  userType,
+}: {
+  global: boolean;
+  userType: string;
+}) => {
   const openModal = useBoolean();
   const router = useRouter();
+
+  const methods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: defaultValues,
+  });
+
+  const onSubmit = () => {};
 
   const [mainActive, setMainActive] = React.useState('overview');
   const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
@@ -88,11 +106,32 @@ const LoyaltyView = ({ global }: { global: boolean }) => {
 
         {/* Action Buttons */}
         <div className="flex w-full items-center gap-2 md:justify-end">
+          {userType === 'super-admin' && global === false && (
+            <>
+              <FormProvider
+                methods={methods}
+                onSubmit={methods.handleSubmit(onSubmit)}
+              >
+                <div className="w-full rounded-md bg-white md:w-[240px] lg:w-[240px] dark:bg-[#171717]">
+                  <RHFCustomDropdown
+                    name="organizations"
+                    placeholder="Select Organization"
+                    options={[
+                      { value: 'org1', label: 'Organization 1' },
+                      { value: 'org2', label: 'Organization 2' },
+                      { value: 'org3', label: 'Organization 3' },
+                    ]}
+                    isLoading={false}
+                    showNone={false}
+                  />
+                </div>
+              </FormProvider>
+            </>
+          )}
           <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-3xl border border-gray-300 bg-white px-4 py-2 text-black">
             <Settings2 className="h-5 w-5" />
             <span className="whitespace-nowrap">Filter</span>
           </Badge>
-
           {/* <Button
             className="bg-primary border-primary flex cursor-pointer items-center gap-2 rounded-3xl border px-4 py-2 text-white transition-colors"
             onClick={openModal.onTrue}

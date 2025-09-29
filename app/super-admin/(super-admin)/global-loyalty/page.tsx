@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <LoyaltyView global={true} />
+      <LoyaltyView global={true} userType="super-admin" />
     </div>
   );
 };

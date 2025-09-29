@@ -34,8 +34,9 @@ interface CreateVenueModalProps {
   buttonType?: 'button' | 'submit';
 }
 
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries: 'places'[] = ['places'];
+console.log("GOOGLE_MAPS_API_KEY", GOOGLE_MAPS_API_KEY);
 
 const VenueTypeModal = ({
   open,

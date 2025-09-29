@@ -4,7 +4,7 @@ import { useFormContext, Controller } from 'react-hook-form';
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import { extractAddress } from '@/utils/format-google-address';
 
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries: ('places')[] = ['places'];
 
 interface GoogleLocationInputProps {

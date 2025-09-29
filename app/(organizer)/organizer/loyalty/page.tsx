@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <LoyaltyView global={false} />
+      <LoyaltyView global={false} userType="organizer" />
     </div>
   );
 };

@@ -19,6 +19,7 @@ type TierFormValues = {
   tierName: string;
   entryPoints: number;
   retainPoints: number;
+  bonusPointsPerEUR: number;
   status: TierStatus;
 };
 
@@ -26,6 +27,7 @@ const defaultValues: TierFormValues = {
   tierName: '',
   entryPoints: 0,
   retainPoints: 0,
+  bonusPointsPerEUR: 0,
   status: 'active',
 };
 
@@ -38,6 +40,9 @@ const schema = Yup.object({
     .required('Entry points is required')
     .min(0, 'Entry points must be at least 0')
     .integer('Entry points must be a whole number'),
+  bonusPointsPerEUR: Yup.number()
+    .required('Bonus points per EUR is required')
+    .min(0, 'Bonus points per EUR must be at least 0'),
   retainPoints: Yup.number()
     .required('Retain points is required')
     .min(0, 'Retain points must be at least 0')
@@ -111,18 +116,25 @@ const TiersModal = ({
               onSubmit={methods.handleSubmit(handleSubmit)}
             >
               <div className="mt-7 flex w-full flex-col gap-4">
-                {/* Tier Name */}
-                <div className="space-y-1">
-                  <RHFTextField
-                    name="tierName"
-                    label="Tier Name"
-                    placeholder="Enter tier name"
-                  />
-                  {!isEdit && (
-                    <p className="text-sm text-gray-500">
-                      Choose a descriptive name for this tier level
-                    </p>
-                  )}
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  {/* Tier Name */}
+                  <div className="space-y-1">
+                    <RHFTextField
+                      name="tierName"
+                      label="Tier Name"
+                      placeholder="Enter tier name"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <RHFTextField
+                      name="bonusPointsPerEUR"
+                      label="Bonus Points per EUR"
+                      placeholder="0"
+                      type="number"
+                      min="0"
+                    />
+                  </div>
                 </div>
 
                 {/* Entry Points and Retain Points */}
