@@ -1,22 +1,22 @@
 import Header from '@/app/common/header';
-import LoyaltyView from '@/sections/loyalty/loyalty-view/loyalty-view';
+import StatusView from '@/sections/status/status-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Global Loyalty Dashboard - Pleis',
+  title: 'Status - Pleis',
 };
 
 const Page = () => {
   return (
-    <div className="min-h-screen px-2 pb-12">
+    <div className="min-h-screen pb-12">
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Loyalty', href: '' },
+          { name: 'Status', href: '' },
         ]}
       />
 
-      <LoyaltyView global={false} userType="super-admin" />
+      <StatusView />
     </div>
   );
 };

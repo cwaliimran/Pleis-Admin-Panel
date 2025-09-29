@@ -2,6 +2,7 @@ import {
   Building,
   Calendar,
   ChartColumnBig,
+  ChartNoAxesColumnIncreasing,
   ClipboardPenLine,
   Handshake,
   Hash,
@@ -138,6 +139,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Tiers',
     key: paths.superAdmin.tiers,
     icon: TriangleDashed,
+  },
+  {
+    label: 'Status',
+    key: paths.superAdmin.status,
+    icon: ChartNoAxesColumnIncreasing,
   },
   // {
   //   label: 'User List',

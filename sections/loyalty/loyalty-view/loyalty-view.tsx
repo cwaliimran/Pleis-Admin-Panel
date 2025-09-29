@@ -44,9 +44,17 @@ import { Settings2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-const LoyaltyView = ({ global }: { global: boolean }) => {
+const LoyaltyView = ({
+  global,
+  userType,
+}: {
+  global: boolean;
+  userType: string;
+}) => {
   const openModal = useBoolean();
   const router = useRouter();
+
+  console.log('userType', userType);
 
   const [mainActive, setMainActive] = React.useState('overview');
   const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
@@ -92,7 +100,6 @@ const LoyaltyView = ({ global }: { global: boolean }) => {
             <Settings2 className="h-5 w-5" />
             <span className="whitespace-nowrap">Filter</span>
           </Badge>
-
           {/* <Button
             className="bg-primary border-primary flex cursor-pointer items-center gap-2 rounded-3xl border px-4 py-2 text-white transition-colors"
             onClick={openModal.onTrue}
@@ -430,8 +437,56 @@ const LoyaltyView = ({ global }: { global: boolean }) => {
           </Card>
         </div>
 
+        {/* --------------- Tier analytics --------------- */}
+        {!global && (
+          <div
+            className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
+          >
+            <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
+              <CardHeader>
+                <div className="mb-4 flex items-start justify-between">
+                  <h3 className="text-xl font-semibold"> Tier Analytics</h3>
+
+                  <div className="flex flex-col items-end space-y-1">
+                    <div className="flex items-center">
+                      <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
+                      <h1 className="text-[13px]">
+                        Guest{' '}
+                        <span className="font-semibold">(20% / 2000)</span>
+                      </h1>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="mr-2 h-3 w-3 rounded-full bg-[#202C88] leading-10" />
+                      <h1 className="text-[13px] text-[#7DAEF4]">
+                        Members{' '}
+                        <span className="font-semibold">(20% / 2000)</span>
+                      </h1>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4] leading-10" />
+                      <h1 className="text-[13px] text-[#7DAEF4]">
+                        Vip <span className="font-semibold">(10% / 1000)</span>
+                      </h1>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <GenderDonutChart
+                data={[
+                  { name: 'Guest', value: 400 },
+                  { name: 'Members', value: 300 },
+                  { name: 'Vip', value: 100 },
+                ]}
+                COLORS={['#2563EB', '#202C88', '#7DAEF4']}
+              />
+            </Card>
+          </div>
+        )}
+
         {/* --------------- Points activity over time --------------- */}
-        <div className="col-span-12 md:col-span-6">
+        <div
+          className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
+        >
           <Card className="dark:bg-secondary col-span-12 gap-0 shadow-md md:col-span-6">
             <CardHeader>
               <h3 className="text-md font-medium">
@@ -455,12 +510,14 @@ const LoyaltyView = ({ global }: { global: boolean }) => {
           </Card>
         </div>
 
-        {/* --------------- Tier analytics --------------- */}
-        <div className="col-span-12 md:col-span-6">
+        {/* --------------- Status analytics --------------- */}
+        <div
+          className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
+        >
           <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
             <CardHeader>
               <div className="mb-4 flex items-start justify-between">
-                <h3 className="text-xl font-semibold"> Tier Analytics</h3>
+                <h3 className="text-xl font-semibold"> Status Analytics</h3>
 
                 <div className="flex flex-col items-end space-y-1">
                   <div className="flex items-center">

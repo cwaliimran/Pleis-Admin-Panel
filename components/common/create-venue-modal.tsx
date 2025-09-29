@@ -47,7 +47,7 @@ const defaultValues = {
   },
 };
 
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_SAMPLE_GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries = ['places'] as any;
 
 const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
