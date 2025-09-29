@@ -1,7 +1,5 @@
 'use client';
 
-import FormProvider from '@/components/rhf';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -20,7 +18,6 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
-import { defaultValues, schema } from '@/lib/schemas/organization-schema';
 import { cn } from '@/lib/utils';
 import {
   GenderDonutChart,
@@ -43,11 +40,9 @@ import {
 } from '@/sections/loyalty/data';
 import LoyaltyList from '@/sections/loyalty/loyaltyList';
 import RewardCard from '@/sections/loyalty/rewardCard';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { Settings2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
-import { useForm } from 'react-hook-form';
 
 const LoyaltyView = ({
   global,
@@ -59,12 +54,7 @@ const LoyaltyView = ({
   const openModal = useBoolean();
   const router = useRouter();
 
-  const methods = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: defaultValues,
-  });
-
-  const onSubmit = () => {};
+  console.log('userType', userType);
 
   const [mainActive, setMainActive] = React.useState('overview');
   const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
@@ -106,28 +96,6 @@ const LoyaltyView = ({
 
         {/* Action Buttons */}
         <div className="flex w-full items-center gap-2 md:justify-end">
-          {userType === 'super-admin' && global === false && (
-            <>
-              <FormProvider
-                methods={methods}
-                onSubmit={methods.handleSubmit(onSubmit)}
-              >
-                <div className="w-full rounded-md bg-white md:w-[240px] lg:w-[240px] dark:bg-[#171717]">
-                  <RHFCustomDropdown
-                    name="organizations"
-                    placeholder="Select Organization"
-                    options={[
-                      { value: 'org1', label: 'Organization 1' },
-                      { value: 'org2', label: 'Organization 2' },
-                      { value: 'org3', label: 'Organization 3' },
-                    ]}
-                    isLoading={false}
-                    showNone={false}
-                  />
-                </div>
-              </FormProvider>
-            </>
-          )}
           <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-3xl border border-gray-300 bg-white px-4 py-2 text-black">
             <Settings2 className="h-5 w-5" />
             <span className="whitespace-nowrap">Filter</span>
@@ -469,8 +437,56 @@ const LoyaltyView = ({
           </Card>
         </div>
 
+        {/* --------------- Tier analytics --------------- */}
+        {!global && (
+          <div
+            className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
+          >
+            <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
+              <CardHeader>
+                <div className="mb-4 flex items-start justify-between">
+                  <h3 className="text-xl font-semibold"> Tier Analytics</h3>
+
+                  <div className="flex flex-col items-end space-y-1">
+                    <div className="flex items-center">
+                      <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
+                      <h1 className="text-[13px]">
+                        Guest{' '}
+                        <span className="font-semibold">(20% / 2000)</span>
+                      </h1>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="mr-2 h-3 w-3 rounded-full bg-[#202C88] leading-10" />
+                      <h1 className="text-[13px] text-[#7DAEF4]">
+                        Members{' '}
+                        <span className="font-semibold">(20% / 2000)</span>
+                      </h1>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4] leading-10" />
+                      <h1 className="text-[13px] text-[#7DAEF4]">
+                        Vip <span className="font-semibold">(10% / 1000)</span>
+                      </h1>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <GenderDonutChart
+                data={[
+                  { name: 'Guest', value: 400 },
+                  { name: 'Members', value: 300 },
+                  { name: 'Vip', value: 100 },
+                ]}
+                COLORS={['#2563EB', '#202C88', '#7DAEF4']}
+              />
+            </Card>
+          </div>
+        )}
+
         {/* --------------- Points activity over time --------------- */}
-        <div className="col-span-12 md:col-span-6">
+        <div
+          className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
+        >
           <Card className="dark:bg-secondary col-span-12 gap-0 shadow-md md:col-span-6">
             <CardHeader>
               <h3 className="text-md font-medium">
@@ -494,12 +510,14 @@ const LoyaltyView = ({
           </Card>
         </div>
 
-        {/* --------------- Tier analytics --------------- */}
-        <div className="col-span-12 md:col-span-6">
+        {/* --------------- Status analytics --------------- */}
+        <div
+          className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
+        >
           <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
             <CardHeader>
               <div className="mb-4 flex items-start justify-between">
-                <h3 className="text-xl font-semibold"> Tier Analytics</h3>
+                <h3 className="text-xl font-semibold"> Status Analytics</h3>
 
                 <div className="flex flex-col items-end space-y-1">
                   <div className="flex items-center">
