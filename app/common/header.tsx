@@ -95,11 +95,11 @@ const Header: FC<HeaderProps> = ({ links }) => {
                 <div className="w-full rounded-md bg-white md:w-[240px] lg:w-[240px] dark:bg-[#171717]">
                   <RHFCustomDropdown
                     name="organizations"
-                    placeholder="Select Organization"
+                    placeholder="Select Company"
                     options={[
-                      { value: 'org1', label: 'Organization 1' },
-                      { value: 'org2', label: 'Organization 2' },
-                      { value: 'org3', label: 'Organization 3' },
+                      { value: 'org1', label: 'Company 1' },
+                      { value: 'org2', label: 'Company 2' },
+                      { value: 'org3', label: 'Company 3' },
                     ]}
                     isLoading={false}
                     showNone={false}
