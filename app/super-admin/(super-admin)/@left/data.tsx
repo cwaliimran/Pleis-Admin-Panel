@@ -117,11 +117,6 @@ export const menuGroups: MenuGroup[] = [
     icon: Earth,
     items: [
       {
-        title: 'Third Party',
-        url: paths.superAdmin.thirdParty,
-        icon: Tags,
-      },
-      {
         title: 'Global Loyalty',
         url: paths.superAdmin.globalLoyalty.default,
         icon: Tags,
@@ -129,6 +124,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Rewards',
         url: paths.superAdmin.rewards,
+        icon: Tags,
+      },
+       {
+        title: 'Third Party',
+        url: paths.superAdmin.thirdParty,
         icon: Tags,
       },
       {
