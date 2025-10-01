@@ -79,7 +79,7 @@ const ThirdPartyRewardModal = ({
             >
               <div className="mt-7 flex w-full flex-col gap-4">
                 {/* Image */}
-                <RHFUploadAvatar name="image" label="Reward Image" />
+                <RHFUploadAvatar name="image" label="Image" />
 
                 {/* Title */}
                 <RHFTextField
@@ -109,7 +109,7 @@ const ThirdPartyRewardModal = ({
                   {/* Claim Limit */}
                   <RHFTextField
                     name="claimLimit"
-                    label="Claim Limit"
+                    label="Claim Limit (optional)"
                     type="number"
                     placeholder="Enter Claim Limit"
                   />

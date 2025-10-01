@@ -50,7 +50,7 @@ const defaultValues = {
   tierLimit: '',
   repeatSettings: '',
   selectedDays: [],
-  type: global ? 'extra_points_for_buying_menu_item' : 'happy_hour',
+  type: 'happy_hour',
   timeRangeStart: '',
   timeRangeEnd: '',
   pointMultiplier: '',
@@ -93,7 +93,7 @@ const PromotionModal = ({
   open,
   onClose,
   isEdit = false,
-  global = false,
+  // global = false,
   // selectedData,
 }: ChallengeModalProps) => {
   const methods = useForm<PromotionsFormValues>({
@@ -138,19 +138,29 @@ const PromotionModal = ({
                     placeholder="Select Type"
                     className="w-full flex-1"
                     options={[
+                      { label: 'Happy Hour', value: 'happy_hour' },
+                      { label: 'Claim Promotions', value: 'claim_promotions' },
+
                       ...(!global
                         ? [
                             {
-                              label: 'Happy Hour',
-                              value: 'happy_hour',
+                              label: 'Extra Points for Buying Menu Item',
+                              value: 'extra_points_for_buying_menu_item',
                             },
                           ]
                         : []),
-                      {
-                        label: 'Extra Points for Buying Menu Item',
-                        value: 'extra_points_for_buying_menu_item',
-                      },
-                      { label: 'Product Sale', value: 'product_sale' },
+
+                      ...(!global
+                        ? [
+                            {
+                              label: 'Product Sale',
+                              value: 'product_sale',
+                            },
+                          ]
+                        : []),
+
+                      // { label: 'Extra Points for Buying Menu Item', value: 'extra_points_for_buying_menu_item' },
+                      // { label: 'Product Sale', value: 'product_sale' },
                     ]}
                   />
                 </div>

@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import CustomBadge from '@/components/ui/custom-badge';
+// import CustomBadge from '@/components/ui/custom-badge';
 
 const ThirdPartyTableRow: FC<TableRowProps> = ({
   item,
@@ -76,19 +76,7 @@ const ThirdPartyTableRow: FC<TableRowProps> = ({
       <TableCell className="text-left">
         {item?.publicKeyForPartner || '-'}
       </TableCell>
-      <TableCell className="text-left">
-        <CustomBadge
-          variant={
-            item.statusLimit === 'active'
-              ? 'success'
-              : item.statusLimit === 'inactive'
-                ? 'error'
-                : 'info'
-          }
-        >
-          {item.statusLimit}
-        </CustomBadge>
-      </TableCell>
+      <TableCell className="text-left">{item?.statusLimit || '-'}</TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

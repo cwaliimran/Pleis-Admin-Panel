@@ -126,7 +126,7 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.rewards,
         icon: Tags,
       },
-       {
+      {
         title: 'Third Party',
         url: paths.superAdmin.thirdParty,
         icon: Tags,
