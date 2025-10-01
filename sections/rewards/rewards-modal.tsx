@@ -13,6 +13,7 @@ import {
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import RewardCalculatorFields from './reward-calculation-fields';
+import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 
 type RewardFormValues = {
   image: any;
@@ -42,7 +43,7 @@ const defaultValues: RewardFormValues = {
   limit: '',
   tierLimit: 'none',
   description: '',
-  creationMethod: 'custom',
+  creationMethod: 'menu-items',
   percentOff: '',
   menuItems: '',
   eventId: '',
@@ -240,6 +241,29 @@ const RewardFormModal = ({ open, onClose, isEdit }: RewardFormModalProps) => {
                   rows={2}
                 />
               </div>
+
+              {creationMethod === 'custom' && (
+                <div className="col-span-2 flex flex-col gap-2">
+                  <div className="mb-2 flex max-w-[10rem] items-center justify-start">
+                    <RHFUploadButton
+                      name="customReward.photo"
+                      label="Upload Photo"
+                      initialImage={null}
+                    />
+                  </div>
+
+                  <RHFTextField
+                    name="customReward.name"
+                    label="Custom Reward Name"
+                    placeholder="Enter custom reward name"
+                  />
+                  <RHFTextField
+                    name="customReward.description"
+                    label="Custom Reward Description"
+                    placeholder="Enter description"
+                  />
+                </div>
+              )}
 
               <RewardCalculatorFields />
             </div>
