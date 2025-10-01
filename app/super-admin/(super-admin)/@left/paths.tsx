@@ -105,6 +105,7 @@ export const paths = {
     settings: '/super-admin/settings',
     referrals: '/super-admin/referrals',
     tiers: '/super-admin/tiers',
+    thirdParty: '/super-admin/third-party',
     subscription: '/super-admin/subscription',
     addSupport: '/super-admin/add-support',
     logout: '/super-admin/logout',

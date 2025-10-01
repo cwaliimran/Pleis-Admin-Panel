@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <ChallengesView />
+      <ChallengesView global={true} />
     </div>
   );
 };

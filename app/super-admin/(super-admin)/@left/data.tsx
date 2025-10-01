@@ -4,6 +4,7 @@ import {
   ChartColumnBig,
   ChartNoAxesColumnIncreasing,
   ClipboardPenLine,
+  Earth,
   Handshake,
   Hash,
   Highlighter,
@@ -105,35 +106,47 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.category.default,
     icon: List,
   },
+  // {
+  //   label: 'Global Loyalty Dashboard',
+  //   key: paths.superAdmin.globalLoyalty.default,
+  //   icon: Handshake,
+  // },
   {
-    label: 'Global Loyalty Dashboard',
+    label: 'Global Loyalty',
     key: paths.superAdmin.globalLoyalty.default,
-    icon: Handshake,
-  },
-  {
-    label: 'Supplier',
-    key: paths.superAdmin.suppliers.default,
-    icon: Package,
-  },
-  {
-    label: 'Venue Type',
-    key: paths.superAdmin.venueType.default,
-    icon: VenetianMask,
-  },
-  {
-    label: 'Browser Control',
-    key: paths.superAdmin.browserControl.default,
-    icon: Settings,
-  },
-  {
-    label: 'Tags',
-    key: paths.superAdmin.tags.default,
-    icon: Hash,
-  },
-  {
-    label: 'Preset',
-    key: paths.superAdmin.preset.default,
-    icon: SlidersHorizontal,
+    icon: Earth,
+    items: [
+      {
+        title: 'Global Loyalty',
+        url: paths.superAdmin.globalLoyalty.default,
+        icon: Tags,
+      },
+      {
+        title: 'Rewards',
+        url: paths.superAdmin.rewards,
+        icon: Tags,
+      },
+      {
+        title: 'Third Party',
+        url: paths.superAdmin.thirdParty,
+        icon: Tags,
+      },
+      {
+        title: 'Challenges',
+        url: paths.superAdmin.challenges,
+        icon: Tags,
+      },
+      {
+        title: 'Promotions',
+        url: paths.superAdmin.promotions,
+        icon: Tags,
+      },
+      {
+        title: 'Referrals',
+        url: paths.superAdmin.referrals,
+        icon: Tags,
+      },
+    ],
   },
   {
     label: 'Tiers',
@@ -201,6 +214,31 @@ export const menuGroups: MenuGroup[] = [
         icon: Tags,
       },
     ],
+  },
+  {
+    label: 'Supplier',
+    key: paths.superAdmin.suppliers.default,
+    icon: Package,
+  },
+  {
+    label: 'Venue Type',
+    key: paths.superAdmin.venueType.default,
+    icon: VenetianMask,
+  },
+  {
+    label: 'Browser Control',
+    key: paths.superAdmin.browserControl.default,
+    icon: Settings,
+  },
+  {
+    label: 'Tags',
+    key: paths.superAdmin.tags.default,
+    icon: Hash,
+  },
+  {
+    label: 'Preset',
+    key: paths.superAdmin.preset.default,
+    icon: SlidersHorizontal,
   },
   {
     label: 'Menu List',

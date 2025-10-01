@@ -15,7 +15,11 @@ import { useCallback, useEffect, useState } from 'react';
 import PromotionsModal from './promotions-modal';
 import PromotionsTable from './promotions-table';
 
-const PromotionsView = () => {
+interface PromotionsViewProps {
+  global?: boolean;
+}
+
+const PromotionsView = ({ global }: PromotionsViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -179,6 +183,7 @@ const PromotionsView = () => {
         onClose={openModal.onFalse}
         isEdit={editModal.value}
         selectedData={selectedRecord}
+        global={global}
       />
 
       <ConfirmDialog

@@ -6,6 +6,7 @@ import FormProvider, {
   RHFTextField,
 } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
+import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,6 +26,7 @@ type PromotionsFormValues = {
   endTime: string;
   tierLimit: string;
   repeatSettings: string;
+  selectedDays: string[];
   type: string;
   // Happy Hour specific fields
   timeRangeStart: string;
@@ -47,16 +49,14 @@ const defaultValues = {
   endTime: '',
   tierLimit: '',
   repeatSettings: '',
-  type: 'Happy Hour', // Default to Happy Hour
-  // Happy Hour specific fields
+  selectedDays: [],
+  type: global ? 'extra_points_for_buying_menu_item' : 'happy_hour',
   timeRangeStart: '',
   timeRangeEnd: '',
   pointMultiplier: '',
   repeatOptions: '',
-  // Extra Points for Buying Menu Item fields
   menuItem: '',
   extraPoints: '',
-  // Product Sale fields
   saleMenuItem: '',
   discountedPrice: '',
 };
@@ -86,12 +86,14 @@ type ChallengeModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
+  global?: boolean;
 };
 
 const PromotionModal = ({
   open,
   onClose,
   isEdit = false,
+  global = false,
   // selectedData,
 }: ChallengeModalProps) => {
   const methods = useForm<PromotionsFormValues>({
@@ -100,6 +102,7 @@ const PromotionModal = ({
 
   const { reset, watch } = methods;
   const selectedType = watch('type');
+  const repeatSettings = watch('repeatSettings');
 
   const onSubmit = (data: any) => {
     console.log('data', data);
@@ -135,12 +138,19 @@ const PromotionModal = ({
                     placeholder="Select Type"
                     className="w-full flex-1"
                     options={[
-                      { label: 'Happy Hour', value: 'Happy Hour' },
+                      ...(!global
+                        ? [
+                            {
+                              label: 'Happy Hour',
+                              value: 'happy_hour',
+                            },
+                          ]
+                        : []),
                       {
                         label: 'Extra Points for Buying Menu Item',
-                        value: 'Extra Points for Buying Menu Item',
+                        value: 'extra_points_for_buying_menu_item',
                       },
-                      { label: 'Product Sale', value: 'Product Sale' },
+                      { label: 'Product Sale', value: 'product_sale' },
                     ]}
                   />
                 </div>
@@ -185,13 +195,42 @@ const PromotionModal = ({
                     placeholder="Select Repeat Settings"
                     className="w-full flex-1"
                     options={[
-                      { label: 'None', value: 'None' },
+                      // { label: 'None', value: 'None' },
                       { label: 'Daily', value: 'Daily' },
                       { label: 'Weekly', value: 'Weekly' },
                       { label: 'Monthly', value: 'Monthly' },
                     ]}
                   />
+
+                  <RHFTextField
+                    name="repeatInterval"
+                    label="Repeat Interval"
+                    placeholder="Enter Repeat Interval"
+                    type="number"
+                  />
                 </div>
+
+                {/* Day selection for Weekly and Monthly repeat settings */}
+                {(repeatSettings === 'Weekly' ||
+                  repeatSettings === 'Monthly') && (
+                  <div className="grid w-full grid-cols-1 gap-4">
+                    <RHFMultiSelectField
+                      name="selectedDays"
+                      label="Select Days"
+                      placeholder="Choose days of the week"
+                      className="w-full"
+                      options={[
+                        { label: 'Monday', value: 'Monday' },
+                        { label: 'Tuesday', value: 'Tuesday' },
+                        { label: 'Wednesday', value: 'Wednesday' },
+                        { label: 'Thursday', value: 'Thursday' },
+                        { label: 'Friday', value: 'Friday' },
+                        { label: 'Saturday', value: 'Saturday' },
+                        { label: 'Sunday', value: 'Sunday' },
+                      ]}
+                    />
+                  </div>
+                )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
                   <RHFTextField

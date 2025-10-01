@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import PromotionsView from '@/sections/promotions/promotions-view';
+import ThirdPartyView from '@/sections/third-party-view/third-party-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Promotions - Pleis',
+  title: 'Third Party - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Promotions', href: '' },
+          { name: 'Third Party', href: '' },
         ]}
       />
 
-      <PromotionsView global={true} />
+      <ThirdPartyView />
     </div>
   );
 };

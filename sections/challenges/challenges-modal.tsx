@@ -121,6 +121,7 @@ type ChallengeModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: ChallengesFormValues;
+  global?: boolean;
 };
 
 const ChallengeModal = ({
@@ -128,6 +129,7 @@ const ChallengeModal = ({
   onClose,
   isEdit = false,
   selectedData,
+  global = false,
 }: ChallengeModalProps) => {
   const menuItems = [
     { label: 'Burger', value: 'burger' },
@@ -193,10 +195,14 @@ const ChallengeModal = ({
                     options={[
                       { label: 'Visit X Times', value: 'visit' },
                       { label: 'Earn X Points', value: 'earn_points' },
-                      {
-                        label: 'Buy Specific Menu Item X Times',
-                        value: 'buy_menu_item',
-                      },
+                      ...(!global
+                        ? [
+                            {
+                              label: 'Buy Specific Menu Item X Times',
+                              value: 'buy_menu_item',
+                            },
+                          ]
+                        : []),
                       { label: 'Refer X Users', value: 'refer_users' },
                     ]}
                   />

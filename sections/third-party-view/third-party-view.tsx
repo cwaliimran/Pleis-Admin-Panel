@@ -12,14 +12,10 @@ import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import ChallengesTable from './challenges-table';
-import ChallengeModal from './challenges-modal';
+import ThirdPartyTable from './third-party-table';
+import ThirdPartyRewardModal from './third-party-modal';
 
-interface ChallengesViewProps {
-  global?: boolean;
-}
-
-const ChallengesView = ({ global }: ChallengesViewProps) => {
+const ThirdPartyView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -98,7 +94,7 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No challenge selected');
+        showError('No integration selected');
         return;
       }
 
@@ -137,12 +133,12 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
             onClick={handleCreateNew}
           >
             <Plus />
-            Create Challenges
+            Create
           </Button>
         </div>
       </div>
 
-      <ChallengesTable
+      <ThirdPartyTable
         data={localData}
         meta={meta}
         loading={isLoading}
@@ -178,18 +174,17 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
         }}
       />
 
-      <ChallengeModal
+      <ThirdPartyRewardModal
         open={openModal.value}
         onClose={openModal.onFalse}
         isEdit={editModal.value}
         selectedData={selectedRecord}
-        global={global}
       />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Challenges"
-        content="Are you sure you want to delete this challenges?"
+        title="Remove"
+        content="Are you sure you want to remove this integration?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -201,4 +196,4 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   );
 };
 
-export default ChallengesView;
+export default ThirdPartyView;
