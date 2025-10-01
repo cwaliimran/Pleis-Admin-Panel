@@ -65,7 +65,7 @@ const LoyaltyView = ({
 
   const handleTabClick = (tab: TabData) => {
     setMainActive(tab.value);
-    router.push(`/organizer/${tab.link}`);
+    router.push(`/${userType}/${tab.link}`);
   };
 
   return (
