@@ -183,7 +183,7 @@ const ThirdPartyView = () => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Remove"
+        title="Remove Integration"
         content="Are you sure you want to remove this integration?"
         onClose={() => {
           deleteModal.onFalse();

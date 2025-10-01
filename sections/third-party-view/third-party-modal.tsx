@@ -85,14 +85,14 @@ const ThirdPartyRewardModal = ({
                 <RHFTextField
                   name="title"
                   label="Title"
-                  placeholder="Enter Reward Title"
+                  placeholder="Enter Title"
                 />
 
                 {/* Description */}
                 <RHFTextField
                   name="description"
                   label="Description"
-                  placeholder="Enter Reward Description"
+                  placeholder="Enter Description"
                   multiline
                   rows={2}
                 />
@@ -106,7 +106,6 @@ const ThirdPartyRewardModal = ({
                     placeholder="Enter Point Cost"
                   />
 
-                  {/* Claim Limit */}
                   <RHFTextField
                     name="claimLimit"
                     label="Claim Limit (optional)"
@@ -115,18 +114,27 @@ const ThirdPartyRewardModal = ({
                   />
                 </div>
 
-                {/* Reward Source Link */}
                 <RHFTextField
                   name="rewardSourceLink"
                   label="Reward Source Link"
                   placeholder="https://api.partner.com/redeem"
                 />
 
-                {/* Public Key */}
                 <RHFTextField
                   name="publicKeyForPartner"
                   label="Public Key For Partner"
                   placeholder="Enter Partner Public Key"
+                />
+
+                <RHFSelectField
+                  name="statusLimits"
+                  label="Status Limit"
+                  placeholder="Select Status Limit"
+                  options={[
+                    { label: 'Silver', value: 'silver' },
+                    { label: 'Gold', value: 'gold' },
+                    { label: 'Platinum', value: 'platinum' },
+                  ]}
                 />
 
                 {isEdit && (
