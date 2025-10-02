@@ -143,8 +143,8 @@ const RewardFormModal = ({ open, onClose, isEdit }: RewardFormModalProps) => {
                 <div className="grid w-full grid-cols-1 gap-4">
                   <RHFSelectField
                     name="menuItems"
-                    label="Select Menu Items"
-                    placeholder="Choose menu items"
+                    label="Select Preset Menu Items"
+                    placeholder="Choose Preset"
                     options={[
                       { label: 'Pepperoni Pizza', value: 'pizza-1' },
                       { label: 'Caesar Salad', value: 'salad-1' },

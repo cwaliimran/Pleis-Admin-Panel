@@ -50,7 +50,7 @@ const defaultValues = {
   tierLimit: '',
   repeatSettings: '',
   selectedDays: [],
-  type: global ? 'extra_points_for_buying_menu_item' : 'happy_hour',
+  type: 'happy_hour',
   timeRangeStart: '',
   timeRangeEnd: '',
   pointMultiplier: '',
@@ -93,7 +93,7 @@ const PromotionModal = ({
   open,
   onClose,
   isEdit = false,
-  global = false,
+  // global = false,
   // selectedData,
 }: ChallengeModalProps) => {
   const methods = useForm<PromotionsFormValues>({
@@ -138,22 +138,50 @@ const PromotionModal = ({
                     placeholder="Select Type"
                     className="w-full flex-1"
                     options={[
+                      { label: 'Happy Hour', value: 'happy_hour' },
+                      { label: 'Claim Promotions', value: 'claim_promotions' },
+
                       ...(!global
                         ? [
                             {
-                              label: 'Happy Hour',
-                              value: 'happy_hour',
+                              label: 'Extra Points for Buying Menu Item',
+                              value: 'extra_points_for_buying_menu_item',
                             },
                           ]
                         : []),
-                      {
-                        label: 'Extra Points for Buying Menu Item',
-                        value: 'extra_points_for_buying_menu_item',
-                      },
-                      { label: 'Product Sale', value: 'product_sale' },
+
+                      ...(!global
+                        ? [
+                            {
+                              label: 'Product Sale',
+                              value: 'product_sale',
+                            },
+                          ]
+                        : []),
+
+                      // { label: 'Extra Points for Buying Menu Item', value: 'extra_points_for_buying_menu_item' },
+                      // { label: 'Product Sale', value: 'product_sale' },
                     ]}
                   />
                 </div>
+
+                {selectedType === 'happy_hour' && (
+                  <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                    <p className="text-xs text-blue-800 dark:text-blue-200">
+                      💡 Boost loyalty point earnings during specific time
+                      windows.
+                    </p>
+                  </div>
+                )}
+
+                {selectedType === 'claim_promotions' && (
+                  <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+                    <p className="text-xs text-green-800 dark:text-green-200">
+                      💡 Allow users to claim a global reward or point reward
+                      once during the promo.
+                    </p>
+                  </div>
+                )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFTextField
@@ -232,6 +260,20 @@ const PromotionModal = ({
                   </div>
                 )}
 
+                {selectedType === 'claim_promotions' && (
+                  <RHFSelectField
+                    name="claimReward"
+                    label="Claim Reward"
+                    placeholder="Select Reward"
+                    className="w-full flex-1"
+                    options={[
+                      { label: 'Cappuccino', value: 'cappuccino' },
+                      { label: 'VIP Event Entry', value: 'vip_event_entry' },
+                      { label: 'Branded T-Shirt', value: 'branded_tshirt' },
+                    ]}
+                  />
+                )}
+
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
                   <RHFTextField
                     name="description"
@@ -243,7 +285,7 @@ const PromotionModal = ({
                 </div>
 
                 {/* Dynamic fields based on promotion type */}
-                {selectedType === 'Happy Hour' && (
+                {selectedType === 'happy_hour' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <RHFTextField
                       name="timeRangeStart"
@@ -269,7 +311,7 @@ const PromotionModal = ({
                         { label: '3x', value: '3' },
                       ]}
                     />
-                    <RHFSelectField
+                    {/* <RHFSelectField
                       name="repeatOptions"
                       label="Repeat Options"
                       placeholder="Select Repeat Options"
@@ -284,7 +326,7 @@ const PromotionModal = ({
                         { label: 'Saturday', value: 'Saturday' },
                         { label: 'Sunday', value: 'Sunday' },
                       ]}
-                    />
+                    /> */}
                   </div>
                 )}
 
