@@ -45,6 +45,18 @@ export const API_ROUTES = {
   EVENTS: `/events`,
   EVENTS_BY_ID: (id: string) => `/events/${id}`,
 
+  PRESET: `/menu/presets`,
+  PRESET_BY_ID: (id: string) => `/menu/presets/${id}`,
+
+  MENU_CATEGORIES: `/menu/categories`,
+  MENU_CATEGORIES_BY_ID: (id: string) => `/menu/categories/${id}`,
+
+  MENU: `/menu`,
+  MENU_BY_ID: (id: string) => `/menu/${id}`,
+
+  MENU_ITEMS: `/menu/items`,
+  MENU_ITEMS_BY_ID: (id: string) => `/menu/items/${id}`,
+
   TWO_FACTOR_AUTH_SETUP: `/users/twofa/setup`,
   TWO_FACTOR_AUTH_CONFIRM: `/users/twofa/confirm`,
   TWO_FACTOR_AUTH_DISABLE: `/users/twofa/disable`,

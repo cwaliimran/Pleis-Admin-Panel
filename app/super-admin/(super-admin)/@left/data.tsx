@@ -246,6 +246,11 @@ export const menuGroups: MenuGroup[] = [
     icon: List,
   },
   {
+    label: 'Items Category',
+    key: paths.superAdmin.itemsCategory,
+    icon: SquareMenu,
+  },
+  {
     label: 'Menu Items',
     key: paths.superAdmin.menuItems,
     icon: SquareMenu,

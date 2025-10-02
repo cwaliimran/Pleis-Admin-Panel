@@ -34,19 +34,15 @@ export interface TableRowProps {
 
 export type MenuItemFormValues = {
   image?: any;
-  name: string;
-  type: string;
-  itemCategory: string;
-  itemVenue: string;
-  basePrice: string;
-  discountPrice: string | null;
-  description: string;
-  preset?: number | null;
+  title?: string;
+  venue?: string;
+  description?: string;
+  status?: string;
 };
 
 export type MenuItemModalProps = {
   open: boolean;
   onClose: () => void;
   isEdit?: boolean;
-  selectedData?: MenuItemFormValues;
+  selectedData?: any;
 };

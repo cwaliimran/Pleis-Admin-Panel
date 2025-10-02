@@ -33,7 +33,6 @@ const Header: FC<HeaderProps> = ({ links }) => {
   const { open } = useSidebar();
   const { user } = useAuth();
   const pathname = usePathname();
-  console.log('user', user);
 
   const methods = useForm({
     resolver: yupResolver(schema),

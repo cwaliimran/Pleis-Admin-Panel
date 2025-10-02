@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { fDate, formatStr } from '@/utils/format-time';
 
 const PresetTableRow: FC<TableRowProps> = ({
   item,
@@ -22,16 +23,22 @@ const PresetTableRow: FC<TableRowProps> = ({
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="w-20">
-        <Avatar className="h-8 w-8">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt={item.photo}
-            className="object-cover"
-          />
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
+            <AvatarImage
+              src={item.imageInfo.url}
+              alt="Store"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+              {item?.title?.[0]?.toUpperCase() || ''}
+            </span>
+          )}
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left">{item?.name}</TableCell>
+      <TableCell className="text-left">{item?.title}</TableCell>
       <TableCell className="text-left">
         {item.description.length > 22 ? (
           <Dialog>
@@ -64,7 +71,9 @@ const PresetTableRow: FC<TableRowProps> = ({
 
       <TableCell className="text-left">{item?.basePrice}</TableCell>
 
-      <TableCell className="text-left">{item?.createdAt}</TableCell>
+      <TableCell className="text-left">
+        {fDate(item?.createdAt, formatStr.paramCase.date)}
+      </TableCell>
 
       <TableCell className="text-left">
         <CustomBadge

@@ -38,6 +38,17 @@ const TableHeadCustom: FC<CustomHeaderProps> = ({
     }
   };
 
+  const getJustifyClass = (align?: string) => {
+    switch (align) {
+      case 'right':
+        return 'justify-end';
+      case 'center':
+        return 'justify-center';
+      default:
+        return 'justify-start';
+    }
+  };
+
   const getSortIcon = (header: any) => {
     const sortKey = header.sortKey || header.id;
 
@@ -80,7 +91,12 @@ const TableHeadCustom: FC<CustomHeaderProps> = ({
             )}
             onClick={() => handleSort(header)}
           >
-            <div className="flex items-center justify-start gap-1">
+            <div
+              className={cn(
+                'flex items-center gap-1',
+                getJustifyClass(header.align)
+              )}
+            >
               <span>{header.label}</span>
               {header.sortable && getSortIcon(header)}
             </div>

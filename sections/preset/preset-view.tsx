@@ -3,10 +3,6 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -14,6 +10,10 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import PresetModal from './preset-modal';
 import { default as PresetTable } from './preset-table';
+import {
+  useDeletePresetMenuMutation,
+  useGetPresetMenuQuery,
+} from '@/store/Reducer/preset-menu-api';
 
 const PresetView = () => {
   const openModal = useBoolean();
@@ -30,15 +30,18 @@ const PresetView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deletePresetMenu, { isLoading: deleteLoading }] =
+    useDeletePresetMenuMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetPresetMenuQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
+
+  console.log('isLoading', isLoading);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -71,25 +74,25 @@ const PresetView = () => {
   };
 
   // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
+  // const handleEdit = (id: string) => {
+  //   console.log('id', id);
+  //   openModal.onTrue();
+  //   editModal.onTrue();
+  // };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Reward not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -107,7 +110,7 @@ const PresetView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deletePresetMenu(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);

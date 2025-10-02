@@ -18,14 +18,12 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
-import { menuItemsData } from './data';
 import MenuItemTableRow from './menuItems-table-row';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
   { id: 'name', label: 'Name', align: 'left' },
   { id: 'description', label: 'Description', align: 'left' },
-  { id: 'venue', label: 'Venue', align: 'left' },
   { id: 'menu', label: 'Menu', align: 'left' },
   { id: 'type', label: 'Type', align: 'left' },
   { id: 'category', label: 'Item category', align: 'left' },
@@ -153,8 +151,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                 colSpan={HEAD_LABEL.length}
                 dataLength={data?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {menuItemsData?.map((item, idx) => (
+                {data?.map((item, idx) => (
                   <MenuItemTableRow
                     key={item?._id || idx}
                     item={item}
