@@ -1,9 +1,8 @@
 'use client';
 
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import React from 'react';
-
 import {
   Dialog,
   DialogContent,
@@ -11,35 +10,32 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { showError, showSuccess } from '@/utils/toast';
+import { getErrorMessage } from '@/utils/api';
+import {
+  useAddMenuListMutation,
+  useUpdateMenuListMutation,
+} from '@/store/Reducer/menu-list-api';
+import ButtonLoading from '@/components/common/button-loading';
 
 const defaultValues: MenuItemFormValues = {
-  image: null,
-  name: '',
-  type: '',
-  itemCategory: '',
-  itemVenue: '',
-  basePrice: '',
-  discountPrice: '',
+  title: '',
   description: '',
-  preset: null,
+  venue: '',
+  status: 'active',
 };
 
-const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
-  image: Yup.mixed().nullable(),
-  name: Yup.string().required('Name is required'),
-  type: Yup.string().required('Type is required'),
-  itemCategory: Yup.string().required('Item category is required'),
-  itemVenue: Yup.string().required('Venue is required'),
-  basePrice: Yup.string().required('Base price is required'),
-  discountPrice: Yup.string().nullable().default(''),
+const schema = Yup.object().shape({
+  title: Yup.string().required('Title is required'),
   description: Yup.string().required('Description is required'),
-  preset: Yup.number().nullable(),
+  venue: Yup.string().required('Venue is required'),
+  status: Yup.string().required('Status is required'),
 });
 
 const MenuItemModal = ({
@@ -49,19 +45,77 @@ const MenuItemModal = ({
   selectedData,
 }: MenuItemModalProps) => {
   const methods = useForm<MenuItemFormValues>({
-    resolver: yupResolver(schema),
-    defaultValues: selectedData || defaultValues,
+    resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
+    defaultValues,
   });
 
-  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
-    useGetVenuesQuery({ page: 0, limit: 10000 });
+  console.log("selectedData", selectedData);
 
-  const { reset } = methods;
+  const { reset, formState } = methods;
+  const isDirty = formState?.isDirty;
 
-  const handleSubmit = (data: any) => {
-    console.log('Menu item data:', data);
-    reset(defaultValues);
-    onClose();
+  const prepareFormData = (data: any): MenuItemFormValues => ({
+    title: data?.title || '',
+    description: data?.description || '',
+    venue: data?.venue?._id || '',
+    status: data?.status || 'active',
+  });
+
+  useEffect(() => {
+    if (open && isEdit && selectedData) {
+      const formData = prepareFormData(selectedData);
+      reset(formData);
+    } else if (open && !isEdit) {
+      reset(defaultValues);
+    }
+  }, [open, isEdit, selectedData, reset]);
+
+  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } = useGetVenuesQuery({ page: 0, limit: 10000 });
+
+  const [addMenuList, { isLoading: addMenuListLoading }] = useAddMenuListMutation();
+  const [updateMenuList, { isLoading: updateMenuListLoading }] = useUpdateMenuListMutation();
+
+  const handleSubmit = async (formData: any) => {
+    try {
+      const payload: any = {
+        title: formData?.title,
+        description: formData?.description,
+        venue: formData?.venue,
+      };
+
+      if (isEdit && selectedData) {
+        payload.status = formData?.status;
+        payload.id = selectedData?._id;
+      }
+
+      const response =
+        isEdit && selectedData
+          ? await updateMenuList(payload).unwrap()
+          : await addMenuList(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(
+        response?.message ||
+          (isEdit
+            ? 'Preset updated successfully'
+            : 'Preset created successfully')
+      );
+
+      methods.reset(defaultValues);
+      onClose();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+    }
   };
 
   const handleClose = () => {
@@ -72,7 +126,10 @@ const MenuItemModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+        <DialogContent
+          aria-describedby={undefined}
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
+        >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Menu' : 'Create Menu'}</DialogTitle>
           </DialogHeader>
@@ -85,7 +142,7 @@ const MenuItemModal = ({
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className={`${isEdit ? 'col-span-1' : 'col-span-2'}`}>
                     <RHFTextField
-                      name="name"
+                      name="title"
                       label="Name"
                       placeholder="Enter Name"
                     />
@@ -106,7 +163,7 @@ const MenuItemModal = ({
 
                   <div className="col-span-2">
                     <RHFCustomDropdown
-                      name="itemVenue"
+                      name="venue"
                       label="Venue"
                       placeholder="Select Venue"
                       options={venues?.map((val: any) => ({
@@ -133,12 +190,23 @@ const MenuItemModal = ({
 
               <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
-                  <Button
-                    type="submit"
-                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
-                  >
-                    {isEdit ? 'Update' : 'Create'} Menu
-                  </Button>
+                  {addMenuListLoading || updateMenuListLoading ? (
+                    <Button
+                      type="button"
+                      disabled
+                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
+                    >
+                      <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
+                      disabled={isEdit ? !isDirty : false}
+                    >
+                      {isEdit ? 'Update Menu' : 'Create Menu'}
+                    </Button>
+                  )}
                 </div>
               </div>
             </FormProvider>

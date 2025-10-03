@@ -22,7 +22,11 @@ import StatusTableRow from './status-table-row';
 import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
+  { id: 'photo', label: 'Photo', align: 'left' },
   { id: 'name', label: 'Name', align: 'left' },
+  { id: 'bg', label: 'Background', align: 'left' },
+  { id: 'entryPoint', label: 'Entry Point', align: 'left' },
+  { id: 'retainPoint', label: 'Retain Point', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },

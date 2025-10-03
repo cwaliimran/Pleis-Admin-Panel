@@ -12,6 +12,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { CopyCheck, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { fDate, formatStr } from '@/utils/format-time';
 
 const MenuItemTableRow: FC<TableRowProps> = ({
   item,
@@ -21,16 +22,16 @@ const MenuItemTableRow: FC<TableRowProps> = ({
 }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell className="text-left">{item.name}</TableCell>
-      <TableCell className="text-left">
-        {item.description.length > 22 ? (
+      <TableCell className="text-left">{item?.title || '-'}</TableCell>
+      <TableCell className="text-left capitalize">
+        {item.description.length > 30 ? (
           <Dialog>
             <DialogTrigger asChild>
               <span
-                className="cursor-pointer hover:text-blue-600"
+                className="cursor-pointer capitalize hover:text-blue-600"
                 title="Click to view full description"
               >
-                {item.description.slice(0, 22) + '...'}
+                {item?.description.slice(0, 30) + '...'}
               </span>
             </DialogTrigger>
             <DialogContent
@@ -41,8 +42,8 @@ const MenuItemTableRow: FC<TableRowProps> = ({
                 <DialogTitle>Description</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {item.description}
+                <p className="text-sm leading-relaxed text-gray-700 capitalize dark:text-gray-300">
+                  {item?.description || '-'}
                 </p>
               </div>
             </DialogContent>
@@ -52,7 +53,13 @@ const MenuItemTableRow: FC<TableRowProps> = ({
         )}
       </TableCell>
 
-      <TableCell className="text-left">{item?.venue}</TableCell>
+      <TableCell className="text-left capitalize">
+        {item?.venue?.title || '-'}
+      </TableCell>
+
+      <TableCell className="text-left">
+        {fDate(item?.createdAt, formatStr.paramCase.date)}
+      </TableCell>
 
       <TableCell className="text-left">
         <CustomBadge

@@ -3,10 +3,6 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -14,6 +10,10 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import MenuItemTable from './menuItems-table';
 import MenuItemModal from './menuItems-modal';
+import {
+  useDeleteMenuItemMutation,
+  useGetMenuItemsQuery,
+} from '@/store/Reducer/menu-items-api';
 
 const MenuItemView = () => {
   const openModal = useBoolean();
@@ -30,15 +30,18 @@ const MenuItemView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deleteMenuItem, { isLoading: deleteLoading }] =
+    useDeleteMenuItemMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetMenuItemsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
+
+  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -107,7 +110,7 @@ const MenuItemView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deleteMenuItem(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);

@@ -14,33 +14,68 @@ import {
 } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
-import { ChallengesData } from './data';
-import TiersTableRow from './tiers-table-row';
+import TagsTypeTableRow from './items-category-table-row';
 
-const HEAD_LABEL = [
-  { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'entryPoints', label: 'Entry Points', align: 'left' },
-  { id: 'retainPoints', label: 'Retain Points', align: 'left' },
-  // { id: 'status', label: 'Status', align: 'left' },
+const headLabel = [
+  {
+    id: 'name',
+    label: 'Title',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'createdAt',
+    label: 'Created At',
+    align: 'left',
+    sortable: true,
+    sortKey: 'createdAt',
+  },
+  { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
-const TiersTable: FC<SamplePageProps> = ({
+interface Meta {
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  limit: number;
+}
+
+interface PageProps {
+  page: any;
+  data: any[];
+  meta: Meta;
+  loading?: boolean;
+  handleDelete?: (id: string) => void;
+  handleEdit?: (id: string) => void;
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
+  onSearch?: (search: string) => void;
+  search?: string;
+  limit?: number;
+  status?: string;
+  onStatusChange?: (status: string) => void;
+  date?: Date;
+  onDateChange?: (date: Date | undefined) => void;
+  onResetFilters?: () => void;
+}
+
+const TagsTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
   handleDelete,
   handleEdit,
   onPageChange,
-  limit = 10,
-  // filters states bellow
-  search = '',
+  // onLimitChange,
   onSearch = () => {},
+  search = '',
+  // limit = 10,
   status = '',
   onStatusChange = () => {},
   date,
@@ -53,6 +88,10 @@ const TiersTable: FC<SamplePageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
+
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
@@ -64,9 +103,10 @@ const TiersTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Tiers List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">
+              Item Category List
+            </h3>
 
-            {/* FILTER SHEET */}
             <Sheet>
               <SheetTrigger asChild>
                 <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-3xl border border-gray-300 bg-white px-4 py-2 text-black">
@@ -91,7 +131,7 @@ const TiersTable: FC<SamplePageProps> = ({
                           htmlFor="sheet-event-start-date"
                           className="px-1 text-sm font-medium"
                         >
-                          Select Date
+                          Select Dates
                         </label>
                         <div className="w-full">
                           <TableFilters
@@ -103,7 +143,7 @@ const TiersTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search tiers...',
+                              placeholder: 'Search Categories...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -136,19 +176,22 @@ const TiersTable: FC<SamplePageProps> = ({
             </Sheet>
           </div>
 
-          <div className="min-h-[45vh] rounded-lg border">
+          <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom
+                headLabel={headLabel}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
               <TableBodyWrapper
                 loading={loading}
-                colSpan={HEAD_LABEL.length}
-                dataLength={data?.length || 0}
+                colSpan={headLabel.length}
+                dataLength={sortedData?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {ChallengesData?.map((item, idx) => (
-                  <TiersTableRow
-                    key={item?._id || idx}
+                {sortedData?.map((item: any, index: number) => (
+                  <TagsTypeTableRow
+                    key={item?._id || index}
                     item={item}
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}
@@ -159,10 +202,10 @@ const TiersTable: FC<SamplePageProps> = ({
           </div>
 
           <PaginationControls
-            limit={limit}
-            totalPages={totalPages}
             currentPage={currentPage}
+            totalPages={totalPages}
             totalRecords={totalRecords}
+            limit={10}
             onPageChange={(p) => onPageChange?.(p)}
           />
         </Card>
@@ -171,4 +214,4 @@ const TiersTable: FC<SamplePageProps> = ({
   );
 };
 
-export default TiersTable;
+export default TagsTypeTable;

@@ -17,7 +17,6 @@ import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { PresetData } from './data';
 import PresetTableRow from './preset-table-row';
 import { SamplePageProps } from './types';
 
@@ -146,8 +145,7 @@ const PresetTable: FC<SamplePageProps> = ({
                 colSpan={HEAD_LABEL.length}
                 dataLength={data?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {PresetData?.map((item, idx) => (
+                {data?.map((item, idx) => (
                   <PresetTableRow
                     key={item?._id || idx}
                     item={item}

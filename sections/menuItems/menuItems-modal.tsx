@@ -16,6 +16,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
+// import { useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
+// import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
+// import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 
 const defaultValues: MenuItemFormValues = {
   image: null,
@@ -57,6 +60,31 @@ const MenuItemModal = ({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
+
+  // const { data: presetData, isLoading: presetLoading } = useGetPresetMenuQuery({
+  //   page: 0,
+  //   search: '',
+  //   limit: '10000',
+  //   status: '',
+  //   date: undefined,
+  // });
+
+  // const { data: itemCategoryData, isLoading: itemCategoryLoading } =
+  //   useGetItemsCategoryQuery({
+  //     page: 0,
+  //     search: '',
+  //     limit: '10000',
+  //     status: '',
+  //     date: undefined,
+  //   });
+
+  // const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery({
+  //   page: 0,
+  //   search: '',
+  //   limit: '10000',
+  //   status: '',
+  //   date: undefined,
+  // });
 
   const { reset, setValue, watch } = methods;
 

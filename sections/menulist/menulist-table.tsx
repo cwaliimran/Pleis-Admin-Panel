@@ -18,13 +18,13 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
-import { menuItemsData } from './data';
 import MenuItemTableRow from './menulist-table-row';
 
 const HEAD_LABEL = [
   { id: 'name', label: 'Name', align: 'left' },
   { id: 'description', label: 'Description', align: 'left' },
   { id: 'venue', label: 'Venue', align: 'left' },
+  { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
 ];
@@ -64,9 +64,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Menu List
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Menu List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -105,8 +103,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder:
-                                'Search name, description & item category',
+                              placeholder: 'Search name, description...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -148,8 +145,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                 colSpan={HEAD_LABEL.length}
                 dataLength={data?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {menuItemsData?.map((item, idx) => (
+                {data?.map((item, idx) => (
                   <MenuItemTableRow
                     key={item?._id || idx}
                     item={item}

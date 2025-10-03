@@ -5,6 +5,7 @@ import {
   ChartNoAxesColumnIncreasing,
   ClipboardPenLine,
   Earth,
+  Grid2x2Check,
   Handshake,
   Hash,
   Highlighter,
@@ -37,6 +38,8 @@ type MenuGroup = {
   icon: any;
   items?: MenuItem[];
 };
+
+const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
 
 export const menuGroups: MenuGroup[] = [
   {
@@ -245,6 +248,20 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.menuList,
     icon: List,
   },
+  ...(isDev
+    ? [
+        {
+          label: 'Items Category',
+          key: paths.superAdmin.itemsCategory,
+          icon: Grid2x2Check,
+        },
+      ]
+    : []),
+  // {
+  //   label: 'Items Category',
+  //   key: paths.superAdmin.itemsCategory,
+  //   icon: SquareMenu,
+  // },
   {
     label: 'Menu Items',
     key: paths.superAdmin.menuItems,
