@@ -1,6 +1,7 @@
 'use client';
 
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -116,7 +117,9 @@ const TiersModal = ({
               onSubmit={methods.handleSubmit(handleSubmit)}
             >
               <div className="mt-7 flex w-full flex-col gap-4">
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <RHFUploadAvatar name="image" label="Image" />
+
+                <div className="mt-5 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   {/* Tier Name */}
                   <div className="space-y-1">
                     <RHFTextField
@@ -147,9 +150,6 @@ const TiersModal = ({
                       type="number"
                       min="0"
                     />
-                    <p className="text-sm text-gray-500">
-                      Points needed to reach this tier
-                    </p>
                   </div>
 
                   <div className="space-y-1">
@@ -160,9 +160,46 @@ const TiersModal = ({
                       type="number"
                       min="0"
                     />
-                    <p className="text-sm text-gray-500">
-                      Points needed to maintain this tier
-                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <RHFTextField
+                      name="entryPoints"
+                      label="Entry Points"
+                      placeholder="0"
+                      type="number"
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <RHFTextField
+                      name="retainPoints"
+                      label="Retain Points"
+                      placeholder="0"
+                      type="number"
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <RHFTextField
+                      name="entryPoints"
+                      label="Entry Points"
+                      placeholder="0"
+                      type="number"
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <RHFTextField
+                      name="retainPoints"
+                      label="Retain Points"
+                      placeholder="0"
+                      type="number"
+                      min="0"
+                    />
                   </div>
                 </div>
 
@@ -180,7 +217,7 @@ const TiersModal = ({
                 )}
               </div>
 
-              <div className="mt-6 flex items-center justify-end gap-2">
+              <div className="mt-6 flex items-center justify-center gap-2">
                 <Button
                   type="button"
                   variant="outline"

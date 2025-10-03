@@ -12,7 +12,7 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Items Category', href: '/super-admin/items-category' },
+          { name: 'Items Category', href: '' },
         ]}
       />
 

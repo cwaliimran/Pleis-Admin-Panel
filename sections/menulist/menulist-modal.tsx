@@ -128,7 +128,7 @@ const MenuItemModal = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Menu' : 'Create Menu'}</DialogTitle>

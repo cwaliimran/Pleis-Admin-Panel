@@ -1,11 +1,16 @@
 'use client';
+
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useAddTagMutation, useUpdateTagMutation
-} from '@/store/Reducer/tags';
+  useAddItemsCategoryMutation,
+  useDeleteItemsCategoryMutation,
+  useGetItemsCategoryQuery,
+  useUpdateItemsCategoryMutation,
+} from '@/store/Reducer/items-category-api';
 import { getErrorMessage } from '@/utils/api';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
@@ -14,15 +19,9 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TagsTypeModal from './items-category-modal';
 import TagsTypeTable from './items-category-table';
-import { formatDate } from '@/utils/format-time';
-import {
-  useDeleteItemsCategoryMutation,
-  useGetItemsCategoryQuery,
-} from '@/store/Reducer/items-category-api';
 
 const defaultValues = {
   title: '',
-  type: '',
   status: 'active',
 };
 
@@ -41,9 +40,12 @@ const ItemsCategoryView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const [addTag, { isLoading: addTagLoading }] = useAddTagMutation();
-  const [updateTag, { isLoading: updateTagLoading }] = useUpdateTagMutation();
-  const [deleteItemsCategory, { isLoading: deleteTagLoading }] =
+  const [addItemsCategory, { isLoading: addItemsCategoryLoading }] =
+    useAddItemsCategoryMutation();
+  const [updateItemsCategory, { isLoading: updateItemsCategoryLoading }] =
+    useUpdateItemsCategoryMutation();
+
+  const [deleteItemsCategory, { isLoading: deleteItemsCategoryLoading }] =
     useDeleteItemsCategoryMutation();
 
   const {
@@ -77,14 +79,13 @@ const ItemsCategoryView = () => {
       //     limit,
       //   }
       // );
-      setVenueTypes([...apiData.data]); // make a new array copy
+      setVenueTypes([...apiData.data]);
       setMeta({ ...apiData.meta });
     }
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
     title: Yup.string().required('Tag Name is required'),
-    type: Yup.string().required('Tag Type is required'),
     status: Yup.string().oneOf(['active', 'inactive']),
   });
 
@@ -100,7 +101,6 @@ const ItemsCategoryView = () => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        type: selectedVenueType.type || '',
         status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
@@ -133,20 +133,18 @@ const ItemsCategoryView = () => {
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE TAGS
+  // CREATE/UPDATE API CALL
   const onSubmit = handleSubmit(async (formData) => {
     try {
       let response;
       if (editModal.value && selectedId) {
-        // Update existing tag, include status
-        response = await updateTag({
+        response = await updateItemsCategory({
           id: selectedId,
           ...formData,
         }).unwrap();
       } else {
-        response = await addTag({
+        response = await addItemsCategory({
           title: formData.title,
-          type: formData.type,
         }).unwrap();
       }
 
@@ -162,21 +160,21 @@ const ItemsCategoryView = () => {
       }
 
       // Handle success and update local state
-      if (response?.data) {
-        if (editModal.value && selectedId) {
-          // Edit: update the item in local state
-          setVenueTypes((prev) =>
-            prev.map((item) => (item._id === selectedId ? response.data : item))
-          );
-        } else {
-          // Add: add new item to local state
-          setVenueTypes((prev) => [response.data, ...prev]);
-          setMeta((prev: any) => ({
-            ...prev,
-            totalRecords: prev.totalRecords + 1,
-          }));
-        }
-      }
+      // if (response?.data) {
+      //   if (editModal.value && selectedId) {
+      //     // Edit: update the item in local state
+      //     setVenueTypes((prev) =>
+      //       prev.map((item) => (item._id === selectedId ? response.data : item))
+      //     );
+      //   } else {
+      //     // Add: add new item to local state
+      //     setVenueTypes((prev) => [response.data, ...prev]);
+      //     setMeta((prev: any) => ({
+      //       ...prev,
+      //       totalRecords: prev.totalRecords + 1,
+      //     }));
+      //   }
+      // }
 
       if (response?.message) {
         showSuccess(
@@ -200,20 +198,13 @@ const ItemsCategoryView = () => {
     try {
       const response = await deleteItemsCategory(selectedId).unwrap();
 
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
-
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
         showError(errorMessage);
         return;
       }
 
-      if (response?.message) {
-        showSuccess(response?.message || 'Tag deleted successfully');
-      }
+      showSuccess(response?.message || 'Tag deleted successfully');
 
       setSelectedId(null);
       deleteModal.onFalse();
@@ -288,7 +279,7 @@ const ItemsCategoryView = () => {
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addTagLoading || updateTagLoading}
+        isLoading={addItemsCategoryLoading || updateItemsCategoryLoading}
         selectedVenueType={selectedVenueType}
       />
 
@@ -301,7 +292,7 @@ const ItemsCategoryView = () => {
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteTagLoading}
+        isLoading={deleteItemsCategoryLoading}
       />
     </div>
   );

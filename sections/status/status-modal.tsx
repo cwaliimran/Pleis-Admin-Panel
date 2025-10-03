@@ -1,6 +1,9 @@
 'use client';
 
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
+import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -17,11 +20,21 @@ type status = 'active' | 'inactive';
 
 type StatusFormValues = {
   title: string;
+  entryPoint: string;
+  retainPoint: string;
+  setOrder: string;
+  background?: null | File;
+  image?: null | File;
   status: status;
 };
 
 const defaultValues: StatusFormValues = {
   title: '',
+  entryPoint: '',
+  retainPoint: '',
+  setOrder: '',
+  background: null,
+  image: null,
   status: 'active',
 };
 
@@ -50,14 +63,14 @@ const StatusModal = ({
     { label: 'Inactive', value: 'inactive' },
   ];
 
-  const methods = useForm<StatusFormValues>({
+  const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
 
   const { reset } = methods;
 
-  const handleSubmit = (data: StatusFormValues) => {
+  const handleSubmit = (data: any) => {
     console.log('Status data:', data);
     if (onSubmit) {
       onSubmit(data);
@@ -87,12 +100,48 @@ const StatusModal = ({
               onSubmit={methods.handleSubmit(handleSubmit)}
             >
               <div className="mt-7 flex w-full flex-col gap-4">
+                <RHFUploadAvatar name="image" label="Image" />
+
+                <div className="flex max-w-[12rem] items-center justify-start">
+                  <RHFUploadButton
+                    name="background"
+                    label="Upload Background"
+                    initialImage={null}
+                  />
+                </div>
+
                 {/* Tier Name */}
-                <div className="space-y-1">
+                <div className="space-y-3">
                   <RHFTextField
                     name="title"
                     label="Status Name"
                     placeholder="Enter status name"
+                  />
+
+                  <RHFTextField
+                    name="entryPoint"
+                    label="Entry Point"
+                    type="number"
+                    placeholder="Enter entry point"
+                  />
+
+                  <RHFTextField
+                    name="retainPoint"
+                    label="Retain Point"
+                    type="number"
+                    placeholder="Enter retain point"
+                  />
+
+                  <RHFCustomDropdown
+                    name="setorder"
+                    label="Set Order of Appearance"
+                    placeholder="Select order"
+                    options={Array.from({ length: 10 }, (_, i) => ({
+                      label: `${i + 1}`,
+                      value: `${i + 1}`,
+                    }))}
+                    isLoading={false}
+                    showNone={false}
                   />
                 </div>
 
@@ -110,7 +159,7 @@ const StatusModal = ({
                 )}
               </div>
 
-              <div className="mt-6 flex items-center justify-end gap-2">
+              <div className="mt-6 flex items-center justify-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
@@ -123,7 +172,7 @@ const StatusModal = ({
                   type="submit"
                   className="bg-primary hover:bg-primary px-6 text-white"
                 >
-                  {isEdit ? 'Update Tier' : 'Create Tier'}
+                  {isEdit ? 'Update Status' : 'Create Status'}
                 </Button>
               </div>
             </FormProvider>

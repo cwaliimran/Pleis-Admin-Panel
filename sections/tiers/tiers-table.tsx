@@ -22,10 +22,11 @@ import { ChallengesData } from './data';
 import TiersTableRow from './tiers-table-row';
 
 const HEAD_LABEL = [
+  { id: 'photo', label: 'Photo', align: 'left' },
   { id: 'name', label: 'Name', align: 'left' },
   { id: 'entryPoints', label: 'Entry Points', align: 'left' },
   { id: 'retainPoints', label: 'Retain Points', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
+  // { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 

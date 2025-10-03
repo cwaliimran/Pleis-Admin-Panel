@@ -4,8 +4,9 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
-import CustomBadge from '@/components/ui/custom-badge';
-import { getStatusVariant } from '@/utils/short-utils';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+// import CustomBadge from '@/components/ui/custom-badge';
+// import { getStatusVariant } from '@/utils/short-utils';
 
 const TiersTableRow: FC<TableRowProps> = ({
   item,
@@ -14,14 +15,24 @@ const TiersTableRow: FC<TableRowProps> = ({
 }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
+      <TableCell>
+        <Avatar className="h-8 w-8">
+          <AvatarImage
+            src="https://github.com/shadcn.png"
+            alt={item.photo}
+            className="object-cover"
+          />
+        </Avatar>
+      </TableCell>
+
       <TableCell className="text-left">{item?.name || '-'}</TableCell>
       <TableCell className="text-left">{item?.entryPoints || '-'}</TableCell>
       <TableCell className="text-left">{item?.retainPoints || '-'}</TableCell>
-      <TableCell className="text-left">
+      {/* <TableCell className="text-left">
         <CustomBadge variant={getStatusVariant(item?.status)}>
           {item?.status}
         </CustomBadge>
-      </TableCell>
+      </TableCell> */}
 
       <TableCell className="text-end">
         <div className="flex gap-2">
