@@ -119,7 +119,7 @@ const TiersModal = ({
               <div className="mt-7 flex w-full flex-col gap-4">
                 <RHFUploadAvatar name="image" label="Image" />
 
-                <div className="mt-5 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="mt-2 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   {/* Tier Name */}
                   <div className="space-y-1">
                     <RHFTextField
@@ -141,66 +141,66 @@ const TiersModal = ({
                 </div>
 
                 {/* Entry Points and Retain Points */}
-                <div className="mt-2 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <RHFTextField
-                      name="entryPoints"
-                      label="Entry Points"
-                      placeholder="0"
-                      type="number"
-                      min="0"
-                    />
+                <div className="grid w-full grid-cols-1 gap-1 gap-x-4 md:grid-cols-2">
+                  <div className="col-span-2 mt-1 mb-1">
+                    <h3 className="text-md font-medium">Essential:</h3>
                   </div>
 
-                  <div className="space-y-1">
-                    <RHFTextField
-                      name="retainPoints"
-                      label="Retain Points"
-                      placeholder="0"
-                      type="number"
-                      min="0"
-                    />
+                  <RHFTextField
+                    name="entryPoints"
+                    label="Entry Points"
+                    placeholder="0"
+                    type="number"
+                    min="0"
+                  />
+
+                  <RHFTextField
+                    name="retainPoints"
+                    label="Retain Points"
+                    placeholder="0"
+                    type="number"
+                    min="0"
+                  />
+
+                  <div className="col-span-2 mt-1 mb-1">
+                    <h3 className="text-md font-medium">Preferred:</h3>
                   </div>
 
-                  <div className="space-y-1">
-                    <RHFTextField
-                      name="entryPoints"
-                      label="Entry Points"
-                      placeholder="0"
-                      type="number"
-                      min="0"
-                    />
+                  <RHFTextField
+                    name="entryPoints"
+                    label="Entry Points"
+                    placeholder="0"
+                    type="number"
+                    min="0"
+                  />
+
+                  <RHFTextField
+                    name="retainPoints"
+                    label="Retain Points"
+                    placeholder="0"
+                    type="number"
+                    min="0"
+                  />
+
+                  <div className="col-span-2 mt-1 mb-1">
+                    <h3 className="text-md font-medium">Premier:</h3>
                   </div>
 
-                  <div className="space-y-1">
-                    <RHFTextField
-                      name="retainPoints"
-                      label="Retain Points"
-                      placeholder="0"
-                      type="number"
-                      min="0"
-                    />
-                  </div>
+                  <RHFTextField
+                    name="entryPoints"
+                    label="Entry Points"
+                    placeholder="0"
+                    type="number"
+                    min="0"
+                  />
 
-                  <div className="space-y-1">
-                    <RHFTextField
-                      name="entryPoints"
-                      label="Entry Points"
-                      placeholder="0"
-                      type="number"
-                      min="0"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <RHFTextField
-                      name="retainPoints"
-                      label="Retain Points"
-                      placeholder="0"
-                      type="number"
-                      min="0"
-                    />
-                  </div>
+                  <RHFTextField
+                    name="retainPoints"
+                    label="Retain Points"
+                    placeholder="0"
+                    type="number"
+                    min="0"
+                  />
                 </div>
 
                 {/* Status - Only show in edit mode */}
