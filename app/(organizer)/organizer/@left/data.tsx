@@ -7,6 +7,7 @@ import {
   Handshake,
   Highlighter,
   List,
+  ListOrdered,
   SquareMenu,
   Tags,
   VenetianMask,
@@ -59,6 +60,11 @@ export const menuGroups: MenuGroup[] = [
         title: 'Rewards',
         url: paths.organizer.rewards,
         icon: Tags,
+      },
+      {
+        title: 'Streaks',
+        url: paths.organizer.streak,
+        icon: ListOrdered,
       },
       {
         title: 'Challenges',

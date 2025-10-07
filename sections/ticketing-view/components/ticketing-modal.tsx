@@ -19,6 +19,7 @@ import { ReservationFeature } from './ReservationFeature';
 import { SectionHeader } from './SectionHeader';
 import { TimeSensitivePricingFeature } from './TimeSensitivePricingFeature';
 import { TimeslotFeature } from './TimeslotFeature';
+import { TransferFeature } from './TransferFeature';
 
 interface TicketingModalProps {
   open: boolean;
@@ -55,6 +56,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
   const pricingType = watch('features.pricing') || 'none';
   const fasttrackEnabled = watch('features.fasttrack');
   const reservationEnabled = watch('features.reservation');
+  const transferEnabled = watch('features.transfer');
   const baseQuantity = watch('quantity');
 
   return (
@@ -133,6 +135,16 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                     enabled={reservationEnabled}
                     onChange={(val) =>
                       setValue('features.reservation', val, {
+                        shouldDirty: true,
+                      })
+                    }
+                    isLoading={isLoading}
+                  />
+
+                  <TransferFeature
+                    enabled={transferEnabled}
+                    onChange={(val) =>
+                      setValue('features.transfer', val, {
                         shouldDirty: true,
                       })
                     }

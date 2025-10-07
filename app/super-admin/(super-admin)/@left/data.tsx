@@ -11,6 +11,7 @@ import {
   Highlighter,
   // Home,
   List,
+  ListOrdered,
   Package,
   Settings,
   SlidersHorizontal,
@@ -131,6 +132,11 @@ export const menuGroups: MenuGroup[] = [
         icon: Tags,
       },
       {
+        title: 'Streaks',
+        url: paths.superAdmin.globalStreak,
+        icon: ListOrdered,
+      },
+      {
         title: 'Third Party',
         url: paths.superAdmin.thirdParty,
         icon: Tags,
@@ -186,6 +192,11 @@ export const menuGroups: MenuGroup[] = [
         title: 'Rewards',
         url: paths.superAdmin.rewards,
         icon: Tags,
+      },
+      {
+        title: 'Streaks',
+        url: paths.superAdmin.streak,
+        icon: ListOrdered,
       },
       {
         title: 'Challenges',
