@@ -1,0 +1,29 @@
+export const ticketingData = [
+  {
+    _id: '1',
+    title: 'General Admission',
+    quantity: 100,
+    tax: 5,
+    price: 50.0,
+    createdAt: '02-10-2025',
+    status: 'active',
+  },
+  {
+    _id: '2',
+    title: 'VIP Ticket',
+    quantity: 50,
+    tax: 10,
+    price: 150.0,
+    createdAt: '02-10-2025',
+    status: 'inactive',
+  },
+  {
+    _id: '3',
+    title: 'Early Bird',
+    quantity: 200,
+    tax: 3,
+    price: 30.0,
+    createdAt: '01-09-2025',
+    status: 'active',
+  },
+];

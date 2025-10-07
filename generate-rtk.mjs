@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+// RUNNING INSTRUCTIONS:
+// node generate-rtk.mjs products
 
 import fs from 'fs';
 import path from 'path';

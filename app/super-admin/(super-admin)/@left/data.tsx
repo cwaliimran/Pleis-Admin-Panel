@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   SquareMenu,
   Tags,
+  Ticket,
   TriangleDashed,
   // Tags,
   User,
@@ -266,6 +267,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Menu Items',
     key: paths.superAdmin.menuItems,
     icon: SquareMenu,
+  },
+  {
+    label: 'Ticketing',
+    key: paths.superAdmin.ticketing,
+    icon: Ticket,
   },
   {
     label: 'User List',

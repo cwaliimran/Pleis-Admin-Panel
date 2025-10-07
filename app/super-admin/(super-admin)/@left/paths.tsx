@@ -97,6 +97,7 @@ export const paths = {
     },
     menuItems: '/super-admin/menuItems',
     menuList: '/super-admin/menu-list',
+    ticketing: '/super-admin/ticketing',
     itemsCategory: '/super-admin/items-category',
     status: '/super-admin/status',
     rewards: '/super-admin/rewards',
