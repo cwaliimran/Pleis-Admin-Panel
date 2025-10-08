@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -22,10 +23,28 @@ import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'image', label: 'Image', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'description', label: 'Description', align: 'left' },
+  {
+    id: 'name',
+    label: 'Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'description',
+    label: 'Description',
+    align: 'left',
+    sortable: true,
+    sortKey: 'description',
+  },
   { id: 'basePrice', label: 'Price (EUR)', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
+  {
+    id: 'createdAt',
+    label: 'Created At',
+    align: 'left',
+    sortable: true,
+    sortKey: 'createdAt',
+  },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
@@ -52,6 +71,11 @@ const PresetTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  // Sorting logic
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -138,14 +162,18 @@ const PresetTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom
+                headLabel={HEAD_LABEL}
+                onSort={handleSort}
+                sortConfig={sortConfig}
+              />
 
               <TableBodyWrapper
                 loading={loading}
                 colSpan={HEAD_LABEL.length}
-                dataLength={data?.length || 0}
+                dataLength={sortedData?.length || 0}
               >
-                {data?.map((item, idx) => (
+                {sortedData?.map((item, idx) => (
                   <PresetTableRow
                     key={item?._id || idx}
                     item={item}

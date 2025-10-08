@@ -19,16 +19,41 @@ import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
 import MenuItemTableRow from './menuItems-table-row';
+import { useTableSort } from '@/hooks/useTableSort';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'description', label: 'Description', align: 'left' },
-  { id: 'menu', label: 'Menu', align: 'left' },
+  {
+    id: 'name',
+    label: 'Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'description',
+    label: 'Description',
+    align: 'left',
+    sortable: true,
+    sortKey: 'description',
+  },
+  {
+    id: 'menu',
+    label: 'Menu',
+    align: 'left',
+    sortable: true,
+    sortKey: 'menu.title',
+  },
   { id: 'tax', label: 'Tax', align: 'left' },
   { id: 'type', label: 'Type', align: 'left' },
   { id: 'category', label: 'Item category', align: 'left' },
-  { id: 'basePrice', label: 'Price (EUR)', align: 'left' },
+  {
+    id: 'basePrice',
+    label: 'Price (EUR)',
+    align: 'left',
+    sortable: true,
+    sortKey: 'basePrice',
+  },
   { id: 'discount', label: 'Temp Discount', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
@@ -56,6 +81,10 @@ const MenuItemTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -144,14 +173,18 @@ const MenuItemTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom
+                headLabel={HEAD_LABEL}
+                onSort={handleSort}
+                sortConfig={sortConfig}
+              />
 
               <TableBodyWrapper
                 loading={loading}
                 colSpan={HEAD_LABEL.length}
-                dataLength={data?.length || 0}
+                dataLength={sortedData?.length || 0}
               >
-                {data?.map((item, idx) => (
+                {sortedData?.map((item, idx) => (
                   <MenuItemTableRow
                     key={item?._id || idx}
                     item={item}
