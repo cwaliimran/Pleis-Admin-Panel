@@ -38,3 +38,15 @@ export const getStatusVariant = (
   } as const;
   return variants[status as keyof typeof variants] ?? 'default';
 };
+
+// Utility function to format time to hh:mm A (e.g., 02:30 AM)
+export const formatTimeTo12Hour = (time: string | null | undefined): string | null => {
+  if (!time) return null;
+  const [hours, minutes] = time.split(':');
+  const hourNum = parseInt(hours, 10);
+  const period = hourNum >= 12 ? 'PM' : 'AM';
+  const formattedHour = (hourNum % 12 === 0 ? 12 : hourNum % 12)
+    .toString()
+    .padStart(2, '0');
+  return `${formattedHour}:${minutes} ${period}`;
+};

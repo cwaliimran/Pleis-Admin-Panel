@@ -76,6 +76,10 @@ const MenuItemTableRow: FC<TableRowProps> = ({
       </TableCell>
 
       <TableCell className="text-left capitalize">
+        {item?.taxPercent || '-'}%
+      </TableCell>
+
+      <TableCell className="text-left capitalize">
         {item?.type || '-'}
       </TableCell>
 

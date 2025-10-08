@@ -3,19 +3,23 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import {
+  useDeleteVenueMutation,
+  useGetVenuesQuery,
+} from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import MenuItemTable from './menuItems-table';
-import MenuItemModal from './menuItems-modal';
-import {
-  useDeleteMenuItemMutation,
-  useGetMenuItemsQuery,
-} from '@/store/Reducer/menu-items-api';
+import StreaksTable from './streaks-table';
+import StreaksModal from './streaks-modal';
 
-const MenuItemView = () => {
+interface StreaksViewProps {
+  global?: boolean;
+}
+
+const StreaksView = ({ global }: StreaksViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -30,18 +34,15 @@ const MenuItemView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteMenuItem, { isLoading: deleteLoading }] =
-    useDeleteMenuItemMutation();
+  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
 
-  const { data: apiData, isLoading } = useGetMenuItemsQuery({
+  const { data: apiData, isLoading } = useGetVenuesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
-
-  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -74,30 +75,30 @@ const MenuItemView = () => {
   };
 
   // ------------ EDIT FUNCTION FOR STATIC ------------
-  // const handleEdit = (id: string) => {
-  //   console.log('id', id);
-  //   openModal.onTrue();
-  //   editModal.onTrue();
-  // };
+  const handleEdit = (id: string) => {
+    console.log('id', id);
+    openModal.onTrue();
+    editModal.onTrue();
+  };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (id: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
+  // const handleEdit = (id: string) => {
+  //   const selectedData = localData?.find((item: any) => item?._id === id);
 
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Reward not found');
-    }
-  };
+  //   if (selectedData) {
+  //     setSelectedId(id);
+  //     setSelectedRecord(selectedData);
+  //     editModal.onTrue();
+  //     openModal.onTrue();
+  //   } else {
+  //     showError('Reward not found');
+  //   }
+  // };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No menu item selected');
+        showError('No promotion selected');
         return;
       }
 
@@ -110,7 +111,7 @@ const MenuItemView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteMenuItem(selectedId).unwrap();
+      const response = await deleteVenue(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -136,12 +137,41 @@ const MenuItemView = () => {
             onClick={handleCreateNew}
           >
             <Plus />
-            Create Menu Item
+            Create Streaks
           </Button>
         </div>
       </div>
 
-      <MenuItemTable
+      <div className="mt-5 grid grid-cols-1 gap-4 rounded-md md:grid-cols-2">
+        {[1, 2, 3, 4].map((data, idx) => (
+          <div
+            key={idx}
+            className="card dark:bg-secondary rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-none"
+          >
+            <div className="card-body">
+              <div className="flex items-center justify-start gap-4">
+                <h5 className="flex size-10 items-center justify-center rounded-md bg-gray-800 text-lg font-semibold text-white dark:bg-gray-300 dark:text-black">
+                  5
+                </h5>
+
+                <div>
+                  <h5 className="card-title text-lg font-semibold">
+                    Every 5 Visits
+                  </h5>
+                  <p className="text-md font-medium">150 Points</p>
+                  {global && (
+                    <span className="text-sm text-gray-500">
+                      48 hours expiry
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <StreaksTable
         data={localData}
         meta={meta}
         loading={isLoading}
@@ -177,19 +207,17 @@ const MenuItemView = () => {
         }}
       />
 
-      {openModal.value && (
-        <MenuItemModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-        />
-      )}
+      <StreaksModal
+        open={openModal.value}
+        onClose={openModal.onFalse}
+        isEdit={editModal.value}
+        selectedData={selectedRecord}
+      />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Menu Item"
-        content="Are you sure you want to delete this menu item?"
+        title="Delete Promotion"
+        content="Are you sure you want to delete this promotion?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -201,4 +229,4 @@ const MenuItemView = () => {
   );
 };
 
-export default MenuItemView;
+export default StreaksView;

@@ -35,9 +35,14 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
     }
   };
 
-  // Get isDirty from formState
   const { formState } = methods;
   const isDirty = formState?.isDirty;
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    methods.handleSubmit(onSubmit)(e);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -52,7 +57,8 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
             </DialogTitle>
           </DialogHeader>
 
-          <FormProvider methods={methods} onSubmit={onSubmit}>
+          {/* <FormProvider methods={methods} onSubmit={onSubmit}> */}
+          <FormProvider methods={methods} onSubmit={handleFormSubmit}>
             <div className="mt-4 flex flex-col gap-4">
               <div className="space-y-3">
                 <RHFTextField

@@ -9,6 +9,7 @@ export const paths = {
     menuList: '/organizer/menu-list',
     rewards: '/organizer/rewards',
     challenges: '/organizer/challenges',
+    streak: '/organizer/streaks',
     promotions: '/organizer/promotions',
     members: '/organizer/members',
     settings: '/organizer/settings',

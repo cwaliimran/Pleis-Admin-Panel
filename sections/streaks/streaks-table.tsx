@@ -18,23 +18,18 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
-import MenuItemTableRow from './menuItems-table-row';
+import { StreakData } from './data';
+import StreaksTableRow from './streaks-table-row';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'description', label: 'Description', align: 'left' },
-  { id: 'menu', label: 'Menu', align: 'left' },
-  { id: 'tax', label: 'Tax', align: 'left' },
-  { id: 'type', label: 'Type', align: 'left' },
-  { id: 'category', label: 'Item category', align: 'left' },
-  { id: 'basePrice', label: 'Price (EUR)', align: 'left' },
-  { id: 'discount', label: 'Temp Discount', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'username', label: 'Username', align: 'left' },
+  { id: 'streak', label: 'Streak', align: 'left' },
+  { id: 'longestStreak', label: 'Longest Streak', align: 'left' },
+  { id: 'pointsEarned', label: 'Point Earned', align: 'left' },
 ];
 
-const MenuItemTable: FC<SamplePageProps> = ({
+const StreaksTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
@@ -68,9 +63,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Menu Items List
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Streaks List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -109,7 +102,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, menu, description...',
+                              placeholder: 'Search Streaks...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -151,8 +144,9 @@ const MenuItemTable: FC<SamplePageProps> = ({
                 colSpan={HEAD_LABEL.length}
                 dataLength={data?.length || 0}
               >
-                {data?.map((item, idx) => (
-                  <MenuItemTableRow
+                {StreakData?.map((item, idx) => (
+                  // {PromotionData?.map((item, idx) => (
+                  <StreaksTableRow
                     key={item?._id || idx}
                     item={item}
                     handleDelete={handleDelete}
@@ -176,4 +170,4 @@ const MenuItemTable: FC<SamplePageProps> = ({
   );
 };
 
-export default MenuItemTable;
+export default StreaksTable;

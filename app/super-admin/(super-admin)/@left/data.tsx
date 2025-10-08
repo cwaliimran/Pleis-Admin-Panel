@@ -9,18 +9,17 @@ import {
   Handshake,
   Hash,
   Highlighter,
-  // Home,
   List,
+  ListOrdered,
   Package,
   Settings,
   SlidersHorizontal,
   SquareMenu,
   Tags,
+  Ticket,
   TriangleDashed,
-  // Tags,
   User,
   UsersRound,
-  // UsersRound,
   VenetianMask,
 } from 'lucide-react';
 import { paths } from './paths';
@@ -52,68 +51,32 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.organizations.list,
     icon: Building,
   },
-  // {
-  //   label: 'Organizations',
-  //   key: paths.superAdmin.organizations.default,
-  //   icon: Building,
-  //   items: [
-  //     {
-  //       title: 'Create Organization',
-  //       url: paths.superAdmin.organizations.create,
-  //       icon: Home,
-  //     },
-  //     {
-  //       title: 'Organization List',
-  //       url: paths.superAdmin.organizations.list,
-  //       icon: Home,
-  //     },
-  //   ],
-  // },
-
   {
     label: 'Events',
     key: paths.superAdmin.events.default,
     icon: Calendar,
   },
-
-  // {
-  //   label: 'Events',
-  //   key: paths.superAdmin.events.default,
-  //   icon: Calendar,
-  //   items: [
-  //     {
-  //       title: 'Create Event',
-  //       url: paths.superAdmin.events.create,
-  //       icon: Tags,
-  //     },
-  //     {
-  //       title: 'Events List',
-  //       url: paths.superAdmin.events.list, // Example ID
-  //       icon: Tags,
-  //     },
-  //   ],
-  // },
   {
     label: 'Venue',
     key: paths.superAdmin.venue.default,
     icon: VenetianMask,
   },
-
+  {
+    label: 'Venue Type',
+    key: paths.superAdmin.venueType.default,
+    icon: VenetianMask,
+  },
   {
     label: 'Highlights',
     key: paths.superAdmin.hightLight.default,
     icon: Highlighter,
   },
+
   {
     label: 'Categories',
     key: paths.superAdmin.category.default,
     icon: List,
   },
-  // {
-  //   label: 'Global Loyalty Dashboard',
-  //   key: paths.superAdmin.globalLoyalty.default,
-  //   icon: Handshake,
-  // },
   {
     label: 'Global Loyalty',
     key: paths.superAdmin.globalLoyalty.default,
@@ -128,6 +91,11 @@ export const menuGroups: MenuGroup[] = [
         title: 'Rewards',
         url: paths.superAdmin.rewards,
         icon: Tags,
+      },
+      {
+        title: 'Streaks',
+        url: paths.superAdmin.globalStreak,
+        icon: ListOrdered,
       },
       {
         title: 'Third Party',
@@ -152,26 +120,6 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: 'Tiers',
-    key: paths.superAdmin.tiers,
-    icon: TriangleDashed,
-  },
-  {
-    label: 'Status',
-    key: paths.superAdmin.status,
-    icon: ChartNoAxesColumnIncreasing,
-  },
-  // {
-  //   label: 'User List',
-  //   key: paths.superAdmin.users.list,
-  //   icon: UsersRound,
-  // },
-  // {
-  //   label: 'Pending User List',
-  //   key: paths.superAdmin.users.pendingList,
-  //   icon: User,
-  // },
-  {
     label: 'Loyalty',
     key: paths.superAdmin.loyalty.default,
     icon: Handshake,
@@ -185,6 +133,11 @@ export const menuGroups: MenuGroup[] = [
         title: 'Rewards',
         url: paths.superAdmin.rewards,
         icon: Tags,
+      },
+      {
+        title: 'Streaks',
+        url: paths.superAdmin.streak,
+        icon: ListOrdered,
       },
       {
         title: 'Challenges',
@@ -219,26 +172,6 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: 'Supplier',
-    key: paths.superAdmin.suppliers.default,
-    icon: Package,
-  },
-  {
-    label: 'Venue Type',
-    key: paths.superAdmin.venueType.default,
-    icon: VenetianMask,
-  },
-  {
-    label: 'Browser Control',
-    key: paths.superAdmin.browserControl.default,
-    icon: Settings,
-  },
-  {
-    label: 'Tags',
-    key: paths.superAdmin.tags.default,
-    icon: Hash,
-  },
-  {
     label: 'Preset',
     key: paths.superAdmin.preset.default,
     icon: SlidersHorizontal,
@@ -257,15 +190,36 @@ export const menuGroups: MenuGroup[] = [
         },
       ]
     : []),
-  // {
-  //   label: 'Items Category',
-  //   key: paths.superAdmin.itemsCategory,
-  //   icon: SquareMenu,
-  // },
   {
     label: 'Menu Items',
     key: paths.superAdmin.menuItems,
     icon: SquareMenu,
+  },
+  {
+    label: 'Tiers',
+    key: paths.superAdmin.tiers,
+    icon: TriangleDashed,
+  },
+  {
+    label: 'Status',
+    key: paths.superAdmin.status,
+    icon: ChartNoAxesColumnIncreasing,
+  },
+  {
+    label: 'Browser Control',
+    key: paths.superAdmin.browserControl.default,
+    icon: Settings,
+  },
+  {
+    label: 'Tags',
+    key: paths.superAdmin.tags.default,
+    icon: Hash,
+  },
+
+  {
+    label: 'Ticketing',
+    key: paths.superAdmin.ticketing,
+    icon: Ticket,
   },
   {
     label: 'User List',
@@ -277,17 +231,17 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.users.list,
         icon: UsersRound,
       },
-      // {
-      //   title: 'User Access',
-      //   url: paths.superAdmin.userAccess.default,
-      //   icon: UsersRound,
-      // },
       {
         title: 'Pending User List',
         url: paths.superAdmin.users.pendingList,
         icon: UsersRound,
       },
     ],
+  },
+  {
+    label: 'Supplier',
+    key: paths.superAdmin.suppliers.default,
+    icon: Package,
   },
   {
     label: 'Terms & Conditions',
