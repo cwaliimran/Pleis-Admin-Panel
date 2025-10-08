@@ -9,6 +9,7 @@ import {
   Handshake,
   Hash,
   Highlighter,
+  Layers,
   List,
   ListOrdered,
   Package,
@@ -64,7 +65,7 @@ export const menuGroups: MenuGroup[] = [
   {
     label: 'Venue Type',
     key: paths.superAdmin.venueType.default,
-    icon: VenetianMask,
+    icon: Layers,
   },
   {
     label: 'Highlights',

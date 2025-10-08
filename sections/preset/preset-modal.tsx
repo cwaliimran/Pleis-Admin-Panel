@@ -83,7 +83,19 @@ const PresetModal = ({
 
   // Helper function to prepare form data from selectedData
   const prepareFormData = (data: any): PresetFormValues => ({
-    image: data?.imageInfo?.url || null,
+    // image: data?.imageInfo?.url || null,
+    image: (() => {
+      const img = data?.imageInfo?.url || null;
+      if (
+        !img ||
+        img === noImageUrl ||
+        img === noImageUrlDev ||
+        img.toLowerCase().includes('noimage.png')
+      ) {
+        return null;
+      }
+      return img;
+    })(),
     title: data?.title || '',
     description: data?.description || '',
     basePrice: data?.basePrice || 0,

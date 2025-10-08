@@ -169,8 +169,6 @@ const MenuItemModal = ({
 
   const { reset, formState, watch, setValue } = methods;
   const isDirty = formState?.isDirty;
-  const errors = formState?.errors;
-  console.log('errors', errors);
   const selectedPreset = watch('preset');
 
   useEffect(() => {
