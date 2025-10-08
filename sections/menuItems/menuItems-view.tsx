@@ -74,25 +74,25 @@ const MenuItemView = () => {
   };
 
   // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
+  // const handleEdit = (id: string) => {
+  //   console.log('id', id);
+  //   openModal.onTrue();
+  //   editModal.onTrue();
+  // };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Reward not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -177,12 +177,14 @@ const MenuItemView = () => {
         }}
       />
 
-      <MenuItemModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-      />
+      {openModal.value && (
+        <MenuItemModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

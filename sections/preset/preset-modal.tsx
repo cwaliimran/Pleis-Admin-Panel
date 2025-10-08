@@ -350,7 +350,7 @@ const PresetModal = ({
                     className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
                     disabled={isEdit ? !isDirty : false}
                   >
-                    {isEdit ? 'Update Menu Item' : 'Create Menu Item'}
+                    {isEdit ? 'Update Preset' : 'Create Preset'}
                   </Button>
                 )}
               </div>

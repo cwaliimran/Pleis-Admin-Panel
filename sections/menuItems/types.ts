@@ -32,7 +32,7 @@ export interface TableRowProps {
 
 export type MenuItemFormValues = {
   image?: any;
-  name: string;
+  title: string;
   type: string;
   itemCategory: string;
   menu: string;
@@ -40,7 +40,7 @@ export type MenuItemFormValues = {
   basePrice: string;
   discountPrice: string | null;
   description: string;
-  preset?: number | null;
+  preset?: string;
   startTime?: string;
   endTime?: string;
 };

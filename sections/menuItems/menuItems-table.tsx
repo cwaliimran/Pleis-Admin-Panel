@@ -25,6 +25,7 @@ const HEAD_LABEL = [
   { id: 'name', label: 'Name', align: 'left' },
   { id: 'description', label: 'Description', align: 'left' },
   { id: 'menu', label: 'Menu', align: 'left' },
+  { id: 'tax', label: 'Tax', align: 'left' },
   { id: 'type', label: 'Type', align: 'left' },
   { id: 'category', label: 'Item category', align: 'left' },
   { id: 'basePrice', label: 'Price (EUR)', align: 'left' },
