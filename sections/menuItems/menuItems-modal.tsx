@@ -2,6 +2,7 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomCreatableDropdown from '@/components/rhf/rhf-custom-create-dropdown';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
@@ -384,7 +385,15 @@ const MenuItemModal = ({
                       <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
                     </div>
                   ) : (
-                    <RHFCustomDropdown
+                    // <RHFCustomDropdown
+                    //   name="category"
+                    //   label="Item Category"
+                    //   placeholder="Select Item Category"
+                    //   options={itemCategoryOptions}
+                    //   isLoading={itemCategoryLoading}
+                    //   showNone={false}
+                    // />
+                    <RHFCustomCreatableDropdown
                       name="category"
                       label="Item Category"
                       placeholder="Select Item Category"
