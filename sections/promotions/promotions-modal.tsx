@@ -93,7 +93,7 @@ const PromotionModal = ({
   open,
   onClose,
   isEdit = false,
-  // global = false,
+  global = false,
   // selectedData,
 }: ChallengeModalProps) => {
   const methods = useForm<PromotionsFormValues>({
@@ -116,7 +116,7 @@ const PromotionModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
               {isEdit ? 'Edit Promotion' : 'Create Promotion'}

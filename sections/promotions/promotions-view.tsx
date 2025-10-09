@@ -4,9 +4,9 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
+  useDeletePromotionMutation,
+  useGetPromotionQuery,
+} from '@/store/Reducer/promotion-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -34,9 +34,10 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deletePromotion, { isLoading: deleteLoading }] =
+    useDeletePromotionMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetPromotionQuery({
     page: page - 1,
     search,
     limit,
@@ -74,26 +75,19 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
-
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Reward not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -111,7 +105,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deletePromotion(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);

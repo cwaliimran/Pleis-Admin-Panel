@@ -25,7 +25,7 @@ const TiersTableRow: FC<TableRowProps> = ({
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left">{item?.name || '-'}</TableCell>
+      <TableCell className="text-left">{item?.title || '-'}</TableCell>
       <TableCell className="text-left">{item?.entryPoints || '-'}</TableCell>
       <TableCell className="text-left">{item?.retainPoints || '-'}</TableCell>
       {/* <TableCell className="text-left">

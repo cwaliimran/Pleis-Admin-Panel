@@ -3,10 +3,6 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -14,6 +10,10 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import ChallengesTable from './challenges-table';
 import ChallengeModal from './challenges-modal';
+import {
+  useDeleteChallengeMutation,
+  useGetChallengesQuery,
+} from '@/store/Reducer/challenges-api';
 
 interface ChallengesViewProps {
   global?: boolean;
@@ -34,9 +34,10 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deleteChallenge, { isLoading: deleteLoading }] =
+    useDeleteChallengeMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetChallengesQuery({
     page: page - 1,
     search,
     limit,
@@ -74,26 +75,19 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
-
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Reward not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -111,7 +105,7 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deleteChallenge(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -178,13 +172,15 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
         }}
       />
 
-      <ChallengeModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-        global={global}
-      />
+      {openModal.value && (
+        <ChallengeModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          global={global}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

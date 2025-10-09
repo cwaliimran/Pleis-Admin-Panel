@@ -38,24 +38,32 @@ const RewardsTableRow: FC<TableRowProps> = ({
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="h-8 w-8">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt={item.photo}
-            className="object-cover"
-          />
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.mediaInfo?.url && item?.mediaInfo?.name !== 'noimage.png' ? (
+            <AvatarImage
+              src={item?.mediaInfo?.url}
+              alt="Menu Item"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+              {item?.title?.[0]?.toUpperCase() || ''}
+            </span>
+          )}
         </Avatar>
       </TableCell>
-      <TableCell className="text-left">{item.name}</TableCell>
+
+      <TableCell className="text-left">{item?.title || '-'}</TableCell>
+
       <TableCell className="text-left">
-        {item.description && item.description.length > 22 ? (
+        {item?.description && item?.description?.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
               <span
                 className="cursor-pointer hover:text-blue-600"
                 title="Click to view full description"
               >
-                {item.description.slice(0, 22) + '...'}
+                {item?.description?.slice(0, 22) + '...'}
               </span>
             </DialogTrigger>
             <DialogContent className="max-w-md">
@@ -64,31 +72,33 @@ const RewardsTableRow: FC<TableRowProps> = ({
               </DialogHeader>
               <div className="py-4">
                 <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {item.description}
+                  {item?.description}
                 </p>
               </div>
             </DialogContent>
           </Dialog>
         ) : (
-          item.description || '-'
+          item?.description || '-'
         )}
       </TableCell>
-      <TableCell className="text-left">{item.type}</TableCell>
+
+      <TableCell className="text-left">{item.rewardType}</TableCell>
+
       <TableCell className="text-left">
         <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
           {formatCreationMethod(item.creationMethod)}
         </span>
       </TableCell>
+
       <TableCell className="text-left">{item.pointValue}</TableCell>
-      <TableCell className="text-left">{formatValue(item.limit)}</TableCell>
+
+      <TableCell className="text-left">{formatValue(item?.claimLimit)}</TableCell>
+
       <TableCell className="text-left capitalize">
         {formatValue(item.tierLimit)}
       </TableCell>
-      <TableCell className="text-left">
-        {item.percentOff && Number(item.percentOff) > 0
-          ? `${item.percentOff}%`
-          : '-'}
-      </TableCell>
+
+      <TableCell className="text-left">{item?.percentOff}%</TableCell>
 
       {/* Action menu */}
       <TableCell className="text-end">

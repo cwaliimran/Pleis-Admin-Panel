@@ -18,7 +18,6 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
-import { ChallengesData } from './data';
 import TiersTableRow from './tiers-table-row';
 
 const HEAD_LABEL = [
@@ -145,8 +144,7 @@ const TiersTable: FC<SamplePageProps> = ({
                 colSpan={HEAD_LABEL.length}
                 dataLength={data?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {ChallengesData?.map((item, idx) => (
+                {data?.map((item, idx) => (
                   <TiersTableRow
                     key={item?._id || idx}
                     item={item}

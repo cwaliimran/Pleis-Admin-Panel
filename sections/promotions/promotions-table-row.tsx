@@ -18,19 +18,51 @@ const PromotionsTableRow: FC<TableRowProps> = ({
   handleDelete,
   handleEdit,
 }) => {
+  const getPromotionTypeLabel = (type: string) => {
+    switch (type) {
+      case 'buyMenuItem':
+        return 'Buy Menu Item';
+      case 'happyHour':
+        return 'Happy Hour';
+      default:
+        return '-';
+    }
+  };
+
+  const renderDateTime = (dateString: string) => {
+    if (!dateString) return <p>-</p>;
+    const [date, time, period] = dateString.split(' ');
+    return (
+      <>
+        <p>{date || '-'}</p>
+        {time && period && (
+          <p>
+            {time} {period}
+          </p>
+        )}
+      </>
+    );
+  };
+
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="h-8 w-8">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt={item.photo}
-            className="object-cover"
-          />
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.imageInfo?.url && item?.imageInfo?.name !== 'noimage.png' ? (
+            <AvatarImage
+              src={item?.imageInfo?.url}
+              alt="Menu Item"
+              className="h-full w-full cursor-pointer object-cover"
+            />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+              {item?.title?.[0]?.toUpperCase() || ''}
+            </span>
+          )}
         </Avatar>
       </TableCell>
-      <TableCell className="text-left">{item.title}</TableCell>
-      <TableCell className="text-left">
+      <TableCell className="text-left">{item?.title || '-'}</TableCell>
+      <TableCell className="text-left capitalize">
         {item.description.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
@@ -56,11 +88,23 @@ const PromotionsTableRow: FC<TableRowProps> = ({
           item.description
         )}
       </TableCell>
-      <TableCell className="text-left">{item?.startTime}</TableCell>
-      <TableCell className="text-left">{item?.endTime}</TableCell>
-      <TableCell className="text-left">{item?.tierLimit}</TableCell>
-      <TableCell className="text-left">{item?.repeatSettings}</TableCell>
-      <TableCell className="text-left">{item?.type}</TableCell>
+
+      <TableCell className="text-left">
+        {getPromotionTypeLabel(item?.promotionType)}
+      </TableCell>
+
+      <TableCell className="text-left">
+        {renderDateTime(item?.startDate)}
+      </TableCell>
+
+      <TableCell className="text-left">
+        {renderDateTime(item?.endDate)}
+      </TableCell>
+
+      <TableCell className="text-left">{item?.tierLimit || '-'}</TableCell>
+      <TableCell className="text-left capitalize">
+        {item?.repeatSettings || '-'}
+      </TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

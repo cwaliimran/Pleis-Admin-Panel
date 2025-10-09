@@ -19,12 +19,29 @@ import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
 import ChallengesTableRow from './challenges-table-row';
-import { ChallengesData } from './data';
+import { useTableSort } from '@/hooks/useTableSort';
 
 const HEAD_LABEL = [
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'reward', label: 'Rewards' },
-  { id: 'taskType', label: 'Task Type', align: 'left' },
+  {
+    id: 'name',
+    label: 'Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'reward',
+    label: 'Rewards',
+    sortable: true,
+    sortKey: 'reward.rewardType',
+  },
+  {
+    id: 'taskType',
+    label: 'Task Type',
+    align: 'left',
+    sortable: true,
+    sortKey: 'taskType',
+  },
   { id: 'taskParameters', label: 'Task Parameters', align: 'left' },
   { id: 'claimLimit', label: 'Claim Limit', align: 'left' },
   { id: 'endTime', label: 'End Time', align: 'left' },
@@ -54,6 +71,10 @@ const ChallengesTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -107,7 +128,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Challenges',
+                              placeholder: 'Search by Name, Reward, Task Type',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -142,15 +163,18 @@ const ChallengesTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom
+                headLabel={HEAD_LABEL}
+                onSort={handleSort}
+                sortConfig={sortConfig}
+              />
 
               <TableBodyWrapper
                 loading={loading}
                 colSpan={HEAD_LABEL.length}
-                dataLength={data?.length || 0}
+                dataLength={sortedData?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {ChallengesData?.map((item, idx) => (
+                {sortedData?.map((item, idx) => (
                   <ChallengesTableRow
                     key={item?._id || idx}
                     item={item}

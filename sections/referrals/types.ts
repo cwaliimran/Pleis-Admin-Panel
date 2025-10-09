@@ -7,6 +7,7 @@ export interface SampleMeta {
 
 export interface SamplePageProps {
   page: any;
+  global?: boolean;
   data: any[];
   meta: SampleMeta;
   userType: 'super-admin' | 'organizer';
@@ -27,6 +28,7 @@ export interface SamplePageProps {
 
 export interface TableRowProps {
   item: any;
+  global?: boolean;
   userType: 'super-admin' | 'organizer';
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;

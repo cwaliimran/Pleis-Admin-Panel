@@ -18,18 +18,37 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
-import { PromotionData } from './data';
 import PromotionsTableRow from './promotions-table-row';
+import { useTableSort } from '@/hooks/useTableSort';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'title', label: 'Title', align: 'left' },
-  { id: 'description', label: 'Description', align: 'left' },
-  { id: 'startTime', label: 'Start Time', align: 'left' },
-  { id: 'endTime', label: 'End Time', align: 'left' },
+  {
+    id: 'title',
+    label: 'Title',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'description',
+    label: 'Description',
+    align: 'left',
+    sortable: true,
+    sortKey: 'description',
+  },
+  {
+    id: 'type',
+    label: 'Promotion Type',
+    align: 'left',
+    sortable: true,
+    sortKey: 'promotionType',
+  },
+  { id: 'startTime', label: 'Start Date', align: 'left' },
+  { id: 'endTime', label: 'End Date', align: 'left' },
   { id: 'tierLimit', label: 'Tier limit', align: 'left' },
   { id: 'repeatSettings', label: 'Repeat Settings', align: 'left' },
-  { id: 'type', label: 'Promotion Type', align: 'left' },
+
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -55,6 +74,12 @@ const PromotionsTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  console.log('data', data);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -143,15 +168,18 @@ const PromotionsTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom
+                headLabel={HEAD_LABEL}
+                onSort={handleSort}
+                sortConfig={sortConfig}
+              />
 
               <TableBodyWrapper
                 loading={loading}
                 colSpan={HEAD_LABEL.length}
-                dataLength={data?.length || 0}
+                dataLength={sortedData?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {PromotionData?.map((item, idx) => (
+                {sortedData?.map((item, idx) => (
                   <PromotionsTableRow
                     key={item?._id || idx}
                     item={item}

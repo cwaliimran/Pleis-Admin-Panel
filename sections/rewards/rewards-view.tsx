@@ -4,19 +4,23 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
+  useDeleteRewardMutation,
+  useGetRewardsQuery,
+} from '@/store/Reducer/rewards-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import RewardsTable from './rewards-table';
 import RewardsCalculator from './rewards-calculator';
 import RewardFormModal from './rewards-modal';
+import RewardsTable from './rewards-table';
 
-const RewardsView = () => {
+type RewardsViewProps = {
+  global: boolean;
+};
+
+const RewardsView = ({ global }: RewardsViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -33,9 +37,10 @@ const RewardsView = () => {
 
   console.log('selectedRecord', selectedRecord);
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deleteReward, { isLoading: deleteLoading }] =
+    useDeleteRewardMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetRewardsQuery({
     page: page - 1,
     search,
     limit,
@@ -73,26 +78,19 @@ const RewardsView = () => {
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
-
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Reward not found');
+    }
+  };
 
   // const handleDelete = (id: string) => {
   //   if (!id) {
@@ -115,7 +113,7 @@ const RewardsView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deleteReward(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -190,6 +188,7 @@ const RewardsView = () => {
       />
 
       <RewardFormModal
+        global={global}
         open={openModal.value}
         onClose={closeModal}
         isEdit={editModal.value}

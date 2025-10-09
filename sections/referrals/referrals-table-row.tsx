@@ -7,12 +7,20 @@ import { Eye } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const ReferralsTableRow: FC<TableRowProps> = ({ item, userType }) => {
+const ReferralsTableRow: FC<TableRowProps> = ({ item, userType, global }) => {
   const { navigate } = useAppNavigator();
+
+  const handleNavigate = () => {
+    if (global) {
+      navigate(`/${userType}/global-referrals/${item?._id}`);
+    } else {
+      navigate(`/${userType}/referrals/${item?._id}`);
+    }
+  };
 
   return (
     <TableRow
-      onClick={() => navigate(`/${userType}/referrals/${item?._id}`)}
+      onClick={handleNavigate}
       className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
     >
       <TableCell className="flex items-center gap-2 text-left">

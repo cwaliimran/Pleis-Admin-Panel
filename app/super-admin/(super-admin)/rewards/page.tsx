@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <RewardsView />
+      <RewardsView global={false} />
     </div>
   );
 };

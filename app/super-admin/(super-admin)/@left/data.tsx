@@ -90,7 +90,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Rewards',
-        url: paths.superAdmin.rewards,
+        url: paths.superAdmin.globalRewards,
         icon: Tags,
       },
       {
@@ -105,17 +105,17 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Challenges',
-        url: paths.superAdmin.challenges,
+        url: paths.superAdmin.globalChallenges,
         icon: Tags,
       },
       {
         title: 'Promotions',
-        url: paths.superAdmin.promotions,
+        url: paths.superAdmin.globalPromotions,
         icon: Tags,
       },
       {
         title: 'Referrals',
-        url: paths.superAdmin.referrals,
+        url: paths.superAdmin.globalReferrals,
         icon: Tags,
       },
     ],

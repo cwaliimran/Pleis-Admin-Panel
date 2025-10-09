@@ -92,6 +92,13 @@ export const paths = {
     globalLoyalty: {
       default: '/super-admin/global-loyalty',
     },
+
+    globalRewards: '/super-admin/global-rewards',
+    // globalThirdParty: '/super-admin/global-third-party',
+    globalChallenges: '/super-admin/global-challenges',
+    globalPromotions: '/super-admin/global-promotions',
+    globalReferrals: '/super-admin/global-referrals',
+
     loyalty: {
       default: '/super-admin/loyalty',
     },

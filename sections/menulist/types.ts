@@ -42,6 +42,7 @@ export type MenuItemFormValues = {
 
 export type MenuItemModalProps = {
   open: boolean;
+  selectedId?: string;
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;

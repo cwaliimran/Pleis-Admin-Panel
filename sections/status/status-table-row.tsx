@@ -4,16 +4,24 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { getStatusVariant } from '@/utils/short-utils';
 import { Pencil, Trash2 } from 'lucide-react';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { TableRowProps } from './types';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 const StatusTableRow: FC<TableRowProps> = ({
   item,
   handleDelete,
   handleEdit,
 }) => {
+  const [openModal, setOpenModal] = useState(true);
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
@@ -30,7 +38,7 @@ const StatusTableRow: FC<TableRowProps> = ({
         {item?.name || '-'}
       </TableCell>
 
-      <TableCell>
+      {/* <TableCell>
         <Image
           src="https://cdn.shopify.com/s/files/1/0704/6378/2946/files/Group_1686555430.webp?v=1755673955"
           alt="background image"
@@ -38,6 +46,40 @@ const StatusTableRow: FC<TableRowProps> = ({
           width={32}
           height={32}
         />
+      </TableCell> */}
+
+      <TableCell className="text-left capitalize">
+        {openModal && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Image
+                src="https://pbs.twimg.com/media/Dz2jEEhX4AANpQH?format=jpg&name=4096x4096"
+                alt="background image"
+                className="w-16 cursor-pointer rounded-md object-cover"
+                width={250}
+                height={250}
+                onClick={() => setOpenModal(true)}
+              />
+            </DialogTrigger>
+            <DialogContent
+              aria-describedby={undefined}
+              className="dark:bg-secondary max-w-md"
+            >
+              <DialogHeader>
+                <DialogTitle>Background</DialogTitle>
+              </DialogHeader>
+              <div className="item-center mt-2 flex justify-center">
+                <Image
+                  src="https://pbs.twimg.com/media/Dz2jEEhX4AANpQH?format=jpg&name=4096x4096"
+                  alt="background image"
+                  className="w-full rounded-md object-cover"
+                  width={250}
+                  height={250}
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </TableCell>
 
       <TableCell className="text-left">{item?.entryPoint || '100'}</TableCell>

@@ -14,12 +14,12 @@ import {
 } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import MenuItemTableRow from './menuItems-table-row';
-import { useTableSort } from '@/hooks/useTableSort';
+import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },

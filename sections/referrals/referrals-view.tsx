@@ -10,9 +10,10 @@ import ReferralsTable from './referrals-table';
 
 interface ReferralsViewProps {
   userType: 'super-admin' | 'organizer';
+  global?: boolean;
 }
 
-const ReferralsView = ({ userType }: ReferralsViewProps) => {
+const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
   const openModal = useBoolean();
 
   // Pagination and filter state
@@ -72,6 +73,7 @@ const ReferralsView = ({ userType }: ReferralsViewProps) => {
 
       <ReferralsTable
         data={localData}
+        global={global}
         meta={meta}
         userType={userType}
         loading={isLoading}

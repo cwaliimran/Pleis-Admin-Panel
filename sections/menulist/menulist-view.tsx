@@ -22,7 +22,6 @@ const MenuListView = () => {
   const editModal = useBoolean();
   const deleteModal = useBoolean();
 
-  // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
@@ -42,8 +41,6 @@ const MenuListView = () => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
-
-  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -185,10 +182,13 @@ const MenuListView = () => {
         selectedData={selectedRecord}
       />
 
-      <DuplicateMenuModal
-        open={duplicateModal.value}
-        onClose={duplicateModal.onFalse}
-      />
+      {duplicateModal.value && (
+        <DuplicateMenuModal
+          open={duplicateModal.value}
+          onClose={duplicateModal.onFalse}
+          selectedId={selectedId}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
