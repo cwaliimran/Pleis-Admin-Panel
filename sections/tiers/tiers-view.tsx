@@ -3,10 +3,6 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -14,6 +10,10 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import TiersTable from './tiers-table';
 import TiersModal from './tiers-modal';
+import {
+  useDeleteTierMutation,
+  useGetTiersQuery,
+} from '@/store/Reducer/tiers-api';
 
 const TiersView = () => {
   const openModal = useBoolean();
@@ -30,15 +30,17 @@ const TiersView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deleteTier, { isLoading: deleteLoading }] = useDeleteTierMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetTiersQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
+
+  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -107,7 +109,7 @@ const TiersView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deleteTier(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);

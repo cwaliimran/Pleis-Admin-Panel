@@ -19,7 +19,6 @@ import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
 import RewardsTableRow from './rewards-table-row';
-import { RewardsData } from './data';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
@@ -56,6 +55,8 @@ const RewardsTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  console.log('data', data);
 
   const methods = useForm({
     defaultValues: {
@@ -149,8 +150,7 @@ const RewardsTable: FC<SamplePageProps> = ({
                 colSpan={HEAD_LABEL.length}
                 dataLength={data?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {RewardsData?.map((item, idx) => (
+                {data?.map((item, idx) => (
                   <RewardsTableRow
                     key={item?._id || idx}
                     item={item}

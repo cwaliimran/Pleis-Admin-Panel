@@ -111,7 +111,7 @@ const StatusModal = ({
                 </div>
 
                 {/* Tier Name */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <RHFTextField
                     name="title"
                     label="Status Name"

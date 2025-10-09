@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <PromotionsView global={true} />
+      <PromotionsView global={false} />
     </div>
   );
 };

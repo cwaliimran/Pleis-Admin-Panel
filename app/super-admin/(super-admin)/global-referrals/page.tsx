@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import ChallengesView from '@/sections/challenges/challenges-view';
+import ReferralsView from '@/sections/referrals/referrals-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Challenges - Pleis',
+  title: 'Global Referrals - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Challenges', href: '' },
+          { name: 'Global Referrals', href: '' },
         ]}
       />
 
-      <ChallengesView global={false} />
+      <ReferralsView userType="super-admin" global={true} />
     </div>
   );
 };

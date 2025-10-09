@@ -32,24 +32,31 @@ type RewardFormValues = {
 type RewardFormModalProps = {
   open: boolean;
   onClose: () => void;
+  global?: boolean;
   isEdit: boolean;
 };
 
-const defaultValues: RewardFormValues = {
-  image: null,
-  name: '',
-  type: '',
-  pointValue: '',
-  limit: '',
-  tierLimit: 'none',
-  description: '',
-  creationMethod: 'menu-items',
-  percentOff: '',
-  menuItems: '',
-  eventId: '',
-};
+const RewardFormModal = ({
+  open,
+  onClose,
+  isEdit,
+  global,
+}: RewardFormModalProps) => {
+  const defaultValues: RewardFormValues = {
+    image: null,
+    name: '',
+    type: '',
+    pointValue: '',
+    limit: '',
+    tierLimit: 'none',
+    description: '',
+    // creationMethod: 'menu-items',
+    creationMethod: `${global ? 'custom' : 'menu-items'}`,
+    percentOff: '',
+    menuItems: '',
+    eventId: '',
+  };
 
-const RewardFormModal = ({ open, onClose, isEdit }: RewardFormModalProps) => {
   const methods = useForm<RewardFormValues>({
     defaultValues,
   });
@@ -103,7 +110,16 @@ const RewardFormModal = ({ open, onClose, isEdit }: RewardFormModalProps) => {
                 placeholder="Select creation method"
                 className="w-full"
                 options={[
-                  { label: 'From Menu Items', value: 'menu-items' },
+                  ...(!global
+                    ? [
+                        {
+                          label: 'From Menu Items',
+                          value: 'menu-items',
+                        },
+                      ]
+                    : []),
+
+                  // { label: 'From Menu Items', value: 'menu-items' },
                   { label: 'Create Custom Reward', value: 'custom' },
                   { label: 'Add Ticket Reward', value: 'ticket' },
                 ]}

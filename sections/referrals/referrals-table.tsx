@@ -36,6 +36,7 @@ const HEAD_LABEL = [
 
 const ReferralsTable: FC<SamplePageProps> = ({
   data = [],
+  global = false,
   meta,
   loading,
   userType,
@@ -157,6 +158,7 @@ const ReferralsTable: FC<SamplePageProps> = ({
                   <ReferralsTableRow
                     key={item?._id || idx}
                     userType={userType}
+                    global={global}
                     item={item}
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}

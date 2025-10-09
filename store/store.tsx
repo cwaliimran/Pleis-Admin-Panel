@@ -23,6 +23,10 @@ import { presetMenuApi } from './Reducer/preset-menu-api';
 import { menuListApi } from './Reducer/menu-list-api';
 import { menuItemsApi } from './Reducer/menu-items-api';
 import { itemsCategoryApi } from './Reducer/items-category-api';
+import { rewardsApi } from './Reducer/rewards-api';
+import { promotionApi } from './Reducer/promotion-api';
+import { challengesApi } from './Reducer/challenges-api';
+import { tiersApi } from './Reducer/tiers-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -45,6 +49,10 @@ const appReducer = combineReducers({
   [menuListApi.reducerPath]: menuListApi.reducer,
   [menuItemsApi.reducerPath]: menuItemsApi.reducer,
   [itemsCategoryApi.reducerPath]: itemsCategoryApi.reducer,
+  [rewardsApi.reducerPath]: rewardsApi.reducer,
+  [promotionApi.reducerPath]: promotionApi.reducer,
+  [challengesApi.reducerPath]: challengesApi.reducer,
+  [tiersApi.reducerPath]: tiersApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -74,6 +82,10 @@ export const store = configureStore({
       presetMenuApi.middleware,
       menuItemsApi.middleware,
       itemsCategoryApi.middleware,
+      rewardsApi.middleware,
+      promotionApi.middleware,
+      challengesApi.middleware,
+      tiersApi.middleware,
       menuListApi.middleware
     ),
 });

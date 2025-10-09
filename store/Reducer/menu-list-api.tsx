@@ -39,6 +39,15 @@ export const menuListApi = createApi({
       invalidatesTags: ['menu-list'],
     }),
 
+    duplicateMenu: builder.mutation({
+      query: ({ id, ...updatedMenuList }) => ({
+        url: API_ROUTES.MENU_DUPLICATE_BY_ID(id),
+        method: 'POST',
+        body: updatedMenuList,
+      }),
+      invalidatesTags: ['menu-list'],
+    }),
+
     updateMenuList: builder.mutation({
       query: ({ id, ...updatedMenuList }) => ({
         url: API_ROUTES.MENU_BY_ID(id),
@@ -61,6 +70,7 @@ export const menuListApi = createApi({
 export const {
   useGetMenuListQuery,
   useAddMenuListMutation,
+  useDuplicateMenuMutation,
   useUpdateMenuListMutation,
   useDeleteMenuListMutation,
 } = menuListApi;

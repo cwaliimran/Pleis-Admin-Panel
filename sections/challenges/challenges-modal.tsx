@@ -1,10 +1,12 @@
 'use client';
 
+import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, {
   RHFDate,
   RHFSelectField,
   RHFTextField,
 } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,114 +16,137 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import {
+  useAddChallengeMutation,
+  useUpdateChallengeMutation,
+} from '@/store/Reducer/challenges-api';
+import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { fDate, formatStr } from '@/utils/format-time';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import RewardCalculatorFields from '../rewards/reward-calculation-fields';
 
-type RewardType = 'point' | 'item' | 'custom' | 'ticket';
-type TaskType = 'visit' | 'earn_points' | 'buy_menu_item' | 'refer_users';
-
-type ChallengesFormValues = {
-  name: string;
-  rewardType: RewardType;
-  pointReward: string;
-  itemRewardId: string;
-  customReward: {
-    name: string;
-    description: string;
-    photo?: string | null | undefined;
-  } | null;
-  ticketReward: string;
-  taskType: TaskType;
-  taskValue: number;
-  menuItemId: string;
-  claimLimit: string;
-  endTime: string;
-  tierLimit: string;
-};
-
 const defaultValues: ChallengesFormValues = {
-  name: '',
-  rewardType: 'point',
-  pointReward: '',
-  itemRewardId: '',
-  // customReward: null,
-  customReward: {
-    name: '',
-    description: '',
-    photo: undefined,
-  },
-  ticketReward: '',
+  title: '',
+  description: '',
+  rewardType: 'points',
+  rewardValue: 0,
+  rewardMenu: '',
+  rewardMenuItem: '',
+  customRewardImage: null,
+  customRewardTitle: '',
+  customRewardDescription: '',
   taskType: 'visit',
-  taskValue: 1,
-  menuItemId: '',
-  claimLimit: '',
-  endTime: '',
+  taskValue: 0,
+  taskMenuItem: '',
+  claimLimit: 0,
+  endDate: '',
   tierLimit: '',
+  status: 'active',
 };
 
-const schema = Yup.object({
-  name: Yup.string().default('').required('Name is required'),
+const schema = Yup.object().shape({
+  title: Yup.string().default('').required('Challenge name is required'),
+  description: Yup.string().default(''),
   rewardType: Yup.string()
-    .oneOf(['point', 'item', 'custom', 'ticket'])
-    .default('point')
+    .oneOf(['points', 'menuItem', 'customReward', 'specialTicket'] as const)
+    .default('points')
     .required('Reward type is required'),
-  pointReward: Yup.string()
+
+  // Points reward validation
+  rewardValue: Yup.number()
+    .default(0)
+    .transform((value, originalValue) => (originalValue === '' ? 0 : value))
+    .when('rewardType', {
+      is: (val: string) => val === 'points' || val === 'specialTicket',
+      then: (schema) =>
+        schema
+          .required('Reward value is required')
+          .min(1, 'Must be at least 1'),
+      otherwise: (schema) => schema.default(0),
+    }),
+
+  // Menu item reward validation
+  rewardMenu: Yup.string()
     .default('')
     .when('rewardType', {
-      is: 'point',
-      then: (schema) => schema.required('Point reward is required'),
+      is: 'menuItem',
+      then: (schema) => schema.required('Menu is required'),
       otherwise: (schema) => schema.default(''),
     }),
-  itemRewardId: Yup.string()
+  rewardMenuItem: Yup.string()
     .default('')
     .when('rewardType', {
-      is: 'item',
+      is: 'menuItem',
       then: (schema) => schema.required('Menu item is required'),
       otherwise: (schema) => schema.default(''),
     }),
-  customReward: Yup.object({
-    name: Yup.string().required('Custom reward name is required'),
-    description: Yup.string().required('Custom reward description is required'),
-    photo: Yup.string().nullable(),
-  })
-    .nullable()
-    .default(null)
-    .when('rewardType', {
-      is: 'custom',
-      then: (schema) => schema.required(),
-      otherwise: (schema) => schema.nullable().default(null),
-    }),
-  ticketReward: Yup.string()
+
+  // Custom reward validation
+  customRewardImage: Yup.mixed().nullable().default(null),
+  customRewardTitle: Yup.string()
     .default('')
     .when('rewardType', {
-      is: 'ticket',
-      then: (schema) => schema.required('Ticket reward is required'),
+      is: 'customReward',
+      then: (schema) => schema.required('Custom reward title is required'),
       otherwise: (schema) => schema.default(''),
     }),
+  customRewardDescription: Yup.string()
+    .default('')
+    .when('rewardType', {
+      is: 'customReward',
+      then: (schema) =>
+        schema.required('Custom reward description is required'),
+      otherwise: (schema) => schema.default(''),
+    }),
+
+  // Task validations
   taskType: Yup.string()
-    .oneOf(['visit', 'earn_points', 'buy_menu_item', 'refer_users'])
+    .oneOf(['visit', 'earnPoints', 'buyMenuItem', 'referUsers'] as const)
+    .default('visit')
     .required('Task type is required'),
-  taskValue: Yup.number().required('Task value is required').min(1),
-  menuItemId: Yup.string()
+  taskValue: Yup.number()
+    .default(1)
+    .transform((value, originalValue) => (originalValue === '' ? 1 : value))
+    .required('Task value is required')
+    .min(1, 'Must be at least 1'),
+  taskMenuItem: Yup.string()
     .default('')
     .when('taskType', {
-      is: 'buy_menu_item',
-      then: (schema) => schema.required('Menu item is required'),
+      is: 'buyMenuItem',
+      then: (schema) =>
+        schema.required('Menu item is required for this task type'),
       otherwise: (schema) => schema.default(''),
     }),
-  claimLimit: Yup.string().default(''),
-  endTime: Yup.string().default('').required('End Time is required'),
-  tierLimit: Yup.string().default('').required('Tier Limit is required'),
+
+  claimLimit: Yup.number()
+    .default(0)
+    .transform((value, originalValue) => (originalValue === '' ? 0 : value))
+    .min(0, 'Must be 0 or greater'),
+  endDate: Yup.string().default('').required('End date is required'),
+  tierLimit: Yup.string().default('').required('Tier limit is required'),
+  status: Yup.string().default('active'),
 });
+
+type ChallengesFormValues = Yup.InferType<typeof schema>;
 
 type ChallengeModalProps = {
   open: boolean;
   onClose: () => void;
   isEdit?: boolean;
-  selectedData?: ChallengesFormValues;
+  selectedData?: any;
   global?: boolean;
+  companyOrganizer?: string;
+  onSubmit?: (data: any) => void;
 };
 
 const ChallengeModal = ({
@@ -130,31 +155,245 @@ const ChallengeModal = ({
   isEdit = false,
   selectedData,
   global = false,
+  companyOrganizer,
 }: ChallengeModalProps) => {
-  const menuItems = [
-    { label: 'Burger', value: 'burger' },
-    { label: 'Pizza', value: 'pizza' },
-    { label: 'Soda', value: 'soda' },
-  ];
+  const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const [deleting, setDeleting] = useState(false);
 
-  const tiers = [
-    { label: 'Bronze', value: 'Bronze' },
-    { label: 'Silver', value: 'Silver' },
-    { label: 'Gold', value: 'Gold' },
-  ];
+  const [addChallenge, { isLoading: addChallengeLoading }] =
+    useAddChallengeMutation();
+
+  const [updateChallenge, { isLoading: updateChallengeLoading }] =
+    useUpdateChallengeMutation();
 
   const methods = useForm<ChallengesFormValues>({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
+    mode: 'onChange',
   });
 
-  const { reset, watch } = methods;
+  const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
 
-  const handleSubmit = (data: ChallengesFormValues) => {
-    console.log('Challenge data:', data);
-    // onSubmit(data);
-    reset(defaultValues);
-    onClose();
+  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
+
+  const { data: menuItemsData, isLoading: menuItemsLoading } =
+    useGetMenuItemsQuery({
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+    });
+
+  const menuOptions =
+    menuData?.data?.map((menu: any) => ({
+      label: menu?.title,
+      value: menu?._id,
+    })) || [];
+
+  const menuItemOptions =
+    menuItemsData?.data?.map((menuItem: any) => ({
+      label: menuItem?.title,
+      value: menuItem?._id,
+    })) || [];
+
+  const tiersOptions =
+    tiersData?.data?.map((tier: any) => ({
+      label: tier?.title,
+      value: tier?._id,
+    })) || [];
+
+  const {
+    reset,
+    watch,
+    formState: { isDirty },
+  } = methods;
+
+  const rewardType = watch('rewardType');
+  const taskType = watch('taskType');
+
+  useEffect(() => {
+    if (isEdit && selectedData) {
+      const { reward = {}, ...rest } = selectedData;
+
+      const mappedValues: any = {
+        title: rest?.title || '',
+        description: rest?.description || '',
+        taskType: rest?.taskType || 'visit',
+        taskValue: rest?.taskValue || 0,
+        claimLimit: rest?.claimLimit || 0,
+        endDate: rest?.endDate ? new Date(rest.endDate) : '',
+        tierLimit: rest?.tierLimit || '',
+        status: rest?.status || 'active',
+        rewardType: reward?.rewardType || 'points',
+
+        // Reward fields mapping
+        rewardValue:
+          reward?.rewardType === 'points' ||
+          reward?.rewardType === 'specialTicket'
+            ? reward?.rewardValue || 0
+            : 0,
+
+        rewardMenu:
+          reward?.rewardType === 'menuItem' ? reward?.rewardMenu || '' : '',
+        rewardMenuItem:
+          reward?.rewardType === 'menuItem' ? reward?.rewardMenuItem || '' : '',
+
+        customRewardImage:
+          reward?.rewardType === 'customReward'
+            ? reward?.customReward?.mediaInfo?.url || null
+            : null,
+        customRewardTitle:
+          reward?.rewardType === 'customReward'
+            ? reward?.customReward?.title || ''
+            : '',
+        customRewardDescription:
+          reward?.rewardType === 'customReward'
+            ? reward?.customReward?.description || ''
+            : '',
+      };
+
+      reset(mappedValues);
+    }
+  }, [isEdit, selectedData, reset]);
+
+  // Transform form data to API payload format
+  const transformToPayload = (data: ChallengesFormValues) => {
+    const basePayload: any = {
+      companyOrganizer: companyOrganizer || '68da7aa1e6f099d42e32da71',
+      title: data.title,
+      taskType: data.taskType,
+      taskValue: data.taskValue,
+      endDate: fDate(data.endDate, formatStr.paramCase.db),
+      tierLimit: data.tierLimit,
+      status: data.status || 'active',
+    };
+
+    // Add description only if provided
+    if (data.description && data.description.trim() !== '') {
+      basePayload.description = data.description;
+    }
+
+    // Add claimLimit only if provided and greater than 0
+    if (data.claimLimit && data.claimLimit > 0) {
+      basePayload.claimLimit = data.claimLimit;
+    }
+
+    // Add taskMenuItem only for buyMenuItem task type
+    if (data.taskType === 'buyMenuItem' && data.taskMenuItem) {
+      basePayload.taskMenuItem = data.taskMenuItem;
+    }
+
+    // Build reward object based on reward type
+    switch (data.rewardType) {
+      case 'points':
+        basePayload.reward = {
+          rewardType: 'points',
+          rewardValue: data.rewardValue,
+        };
+        break;
+
+      case 'menuItem':
+        basePayload.reward = {
+          rewardType: 'menuItem',
+          rewardMenu: data.rewardMenu,
+          rewardMenuItem: data.rewardMenuItem,
+        };
+        break;
+
+      case 'customReward':
+        basePayload.reward = {
+          rewardType: 'customReward',
+          customReward: {
+            title: data.customRewardTitle,
+            description: data.customRewardDescription,
+          },
+        };
+        break;
+
+      case 'specialTicket':
+        basePayload.reward = {
+          rewardType: 'specialTicket',
+          rewardValue: data.rewardValue,
+        };
+        break;
+    }
+
+    return basePayload;
+  };
+
+  const handleSubmit = async (formData: ChallengesFormValues) => {
+    let uploadedFileKey: string | null = null;
+
+    try {
+      if (
+        formData?.customRewardImage instanceof FileList &&
+        formData?.customRewardImage.length > 0
+      ) {
+        const file = formData.customRewardImage[0];
+        uploadedFileKey = await uploadImage(file);
+      }
+
+      const payload = transformToPayload(formData);
+
+      if (uploadedFileKey) {
+        payload.reward.customReward.image = uploadedFileKey;
+      }
+
+      if (isEdit && selectedData) {
+        payload.status = formData?.status;
+        payload.id = selectedData?._id;
+      }
+
+      const response =
+        isEdit && selectedData
+          ? await updateChallenge(payload).unwrap()
+          : await addChallenge(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(
+        response?.message ||
+          (isEdit
+            ? 'Challenge updated successfully'
+            : 'Challenge created successfully')
+      );
+
+      methods.reset(defaultValues);
+      onClose();
+    } catch (error) {
+      if (uploadedFileKey) {
+        setDeleting(true);
+        try {
+          await deleteFileFromAzure(uploadedFileKey);
+        } finally {
+          setDeleting(false);
+        }
+      }
+
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+    }
   };
 
   const handleClose = () => {
@@ -165,7 +404,10 @@ const ChallengeModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
+        <DialogContent
+          aria-describedby={undefined}
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+        >
           <DialogHeader>
             <DialogTitle>
               {isEdit ? 'Edit Challenge' : 'Create Challenge'}
@@ -178,11 +420,18 @@ const ChallengeModal = ({
               onSubmit={methods.handleSubmit(handleSubmit)}
             >
               <div className="mt-7 flex w-full flex-col gap-4">
-                {/* Challenge Name */}
+                {/* Challenge Title */}
                 <RHFTextField
-                  name="name"
+                  name="title"
                   label="Challenge Name"
                   placeholder="Enter Challenge Name"
+                />
+
+                {/* Challenge Description */}
+                <RHFTextField
+                  name="description"
+                  label="Description (Optional)"
+                  placeholder="Enter Challenge Description"
                 />
 
                 {/* Task Type and Parameters */}
@@ -194,16 +443,16 @@ const ChallengeModal = ({
                     className="w-full flex-1"
                     options={[
                       { label: 'Visit X Times', value: 'visit' },
-                      { label: 'Earn X Points', value: 'earn_points' },
+                      { label: 'Earn X Points', value: 'earnPoints' },
                       ...(!global
                         ? [
                             {
                               label: 'Buy Specific Menu Item X Times',
-                              value: 'buy_menu_item',
+                              value: 'buyMenuItem',
                             },
                           ]
                         : []),
-                      { label: 'Refer X Users', value: 'refer_users' },
+                      { label: 'Refer X Users', value: 'referUsers' },
                     ]}
                   />
 
@@ -214,41 +463,68 @@ const ChallengeModal = ({
                     placeholder="Enter value (e.g. 5)"
                     type="number"
                   />
-
-                  {/* Menu Item selection if taskType is buy_menu_item */}
-                  {watch('taskType') === 'buy_menu_item' && (
-                    <RHFSelectField
-                      name="menuItemId"
-                      label="Menu Item"
-                      placeholder="Select Menu Item"
-                      options={menuItems}
-                    />
-                  )}
                 </div>
+
+                {/* Menu Item selection if taskType is buyMenuItem */}
+                {taskType === 'buyMenuItem' && (
+                  <>
+                    {menuItemsLoading ? (
+                      <div className="mt-2 w-full space-y-2 md:w-[100%]">
+                        <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                        <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                      </div>
+                    ) : (
+                      <RHFCustomDropdown
+                        name="taskMenuItem"
+                        label="Menu Item"
+                        placeholder="Select Menu Item"
+                        options={menuItemOptions}
+                        isLoading={menuItemsLoading}
+                        showNone={false}
+                      />
+                    )}
+                  </>
+                )}
 
                 {/* Claim Limit */}
                 <RHFTextField
                   name="claimLimit"
-                  label="Claim Limit (optional)"
+                  label="Claim Limit (Optional)"
                   placeholder="Enter Claim Limit"
                   type="number"
                 />
 
                 {/* End Time */}
                 <RHFDate
-                  name="endTime"
+                  name="endDate"
                   label="End Date"
                   placeholder="Select End Date"
                 />
 
                 {/* Tier Limit */}
-                <RHFSelectField
+                {/* <RHFSelectField
                   name="tierLimit"
                   label="Tier Limit"
                   placeholder="Select Tier Limit"
                   className="w-full flex-1"
                   options={tiers}
-                />
+                /> */}
+
+                {tiersLoading ? (
+                  <div className="mt-2 w-full space-y-2 md:w-[100%]">
+                    <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                    <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                  </div>
+                ) : (
+                  <RHFCustomDropdown
+                    name="tierLimit"
+                    label="Tier Limit"
+                    placeholder="Select Tier Limit"
+                    options={tiersOptions}
+                    isLoading={tiersLoading}
+                    showNone={false}
+                  />
+                )}
 
                 {/* Reward Type Selection */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
@@ -257,87 +533,136 @@ const ChallengeModal = ({
                     label="Reward Type"
                     placeholder="Select Reward Type"
                     options={[
-                      { label: 'Point Reward', value: 'point' },
-                      { label: 'Menu Item Reward', value: 'item' },
-                      { label: 'Custom Reward', value: 'custom' },
-                      { label: 'Special Ticket', value: 'ticket' },
+                      { label: 'Point Reward', value: 'points' },
+                      { label: 'Menu Item Reward', value: 'menuItem' },
+                      { label: 'Custom Reward', value: 'customReward' },
+                      { label: 'Special Ticket', value: 'specialTicket' },
                     ]}
                   />
 
-                  {/* Point Reward Calculator */}
-                  {watch('rewardType') === 'point' && (
-                    <div className="flex flex-col gap-2">
-                      <RHFTextField
-                        name="pointReward"
-                        label="Point Reward"
-                        placeholder="Enter points to reward"
-                        type="number"
-                      />
-                      {/* <div className="text-muted-foreground text-xs">
-                        <span>Reward Calculator: </span>
-                        <span>
-                          Point Reward = Desired € value × (100 / Return %) ×
-                          [lowest points per EUR]
-                        </span>
-                      </div> */}
-                    </div>
+                  {/* Point Reward */}
+                  {rewardType === 'points' && (
+                    <RHFTextField
+                      name="rewardValue"
+                      label="Point Reward"
+                      placeholder="Enter points to reward"
+                      type="number"
+                    />
                   )}
 
                   {/* Menu Item Reward */}
-                  {watch('rewardType') === 'item' && (
-                    <RHFSelectField
-                      name="itemRewardId"
-                      label="Menu Item Reward"
-                      placeholder="Select Menu Item"
-                      options={menuItems}
-                    />
-                  )}
+                  {rewardType === 'menuItem' && (
+                    <>
+                      {/* <RHFSelectField
+                        name="rewardMenu"
+                        label="Menu"
+                        placeholder="Select Menu"
+                        options={menus}
+                      /> */}
 
-                  {/* Custom Reward */}
-                  {watch('rewardType') === 'custom' && (
-                    <div className="col-span-2 flex flex-col gap-2">
-                      <div className="mb-2 flex max-w-[10rem] items-center justify-start">
-                        <RHFUploadButton
-                          name="customReward.photo"
-                          label="Upload Photo"
-                          initialImage={null}
+                      {menuLoading ? (
+                        <div className="mt-2 w-full space-y-2 md:w-[100%]">
+                          <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                          <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                        </div>
+                      ) : (
+                        <RHFCustomDropdown
+                          name="rewardMenu"
+                          label="Menu"
+                          placeholder="Select Menu"
+                          options={menuOptions}
+                          isLoading={menuLoading}
+                          showNone={false}
                         />
-                      </div>
+                      )}
 
-                      <RHFTextField
-                        name="customReward.name"
-                        label="Custom Reward Name"
-                        placeholder="Enter custom reward name"
-                      />
-                      <RHFTextField
-                        name="customReward.description"
-                        label="Custom Reward Description"
-                        placeholder="Enter description"
-                      />
-                    </div>
+                      {menuItemsLoading ? (
+                        <div className="mt-2 w-full space-y-2 md:w-[100%]">
+                          <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                          <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                        </div>
+                      ) : (
+                        <RHFCustomDropdown
+                          name="rewardMenuItem"
+                          label="Menu Item"
+                          placeholder="Select Menu Item"
+                          options={menuItemOptions}
+                          isLoading={menuItemsLoading}
+                          showNone={false}
+                        />
+                      )}
+                    </>
                   )}
 
                   {/* Special Ticket Reward */}
-                  {watch('rewardType') === 'ticket' && (
+                  {rewardType === 'specialTicket' && (
                     <RHFTextField
-                      name="ticketReward"
+                      name="rewardValue"
                       label="Special Ticket Reward"
-                      placeholder="Enter ticket details"
+                      placeholder="Enter number of tickets"
+                      type="number"
                     />
                   )}
                 </div>
+
+                {/* Custom Reward */}
+                {rewardType === 'customReward' && (
+                  <div className="flex flex-col gap-4">
+                    <div className="mb-2 flex max-w-[10rem] items-center justify-start">
+                      <RHFUploadButton
+                        name="customRewardImage"
+                        label="Upload Photo"
+                        initialImage={null}
+                      />
+                    </div>
+
+                    <RHFTextField
+                      name="customRewardTitle"
+                      label="Custom Reward Title"
+                      placeholder="Enter custom reward title"
+                    />
+                    <RHFTextField
+                      name="customRewardDescription"
+                      label="Custom Reward Description"
+                      placeholder="Enter description"
+                    />
+                  </div>
+                )}
               </div>
 
               <RewardCalculatorFields />
 
-              <div className="mt-4 flex items-center justify-end gap-2">
-                <div className="flex w-full items-center justify-center">
+              <div className="mt-5 flex items-center justify-end gap-2">
+                <div className="flex w-full items-center justify-center gap-3">
                   <Button
-                    type="submit"
-                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
+                    type="button"
+                    variant="outline"
+                    onClick={handleClose}
+                    className="cursor-pointer px-7"
                   >
-                    Save
+                    Cancel
                   </Button>
+
+                  {addChallengeLoading ||
+                  updateChallengeLoading ||
+                  imageUploading ||
+                  deleting ? (
+                    <Button
+                      type="button"
+                      disabled
+                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
+                    >
+                      <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
+                      disabled={isEdit ? !isDirty : false}
+                    >
+                      {isEdit ? 'Update Challenge' : 'Create Challenge'}
+                    </Button>
+                  )}
                 </div>
               </div>
             </FormProvider>

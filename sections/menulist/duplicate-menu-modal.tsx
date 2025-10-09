@@ -1,5 +1,6 @@
 'use client';
 
+import ButtonLoading from '@/components/common/button-loading';
 import FormProvider from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
@@ -10,11 +11,13 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useDuplicateMenuMutation } from '@/store/Reducer/menu-list-api';
 import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { MenuItemModalProps } from './types';
 
 const defaultValues = {
   itemVenue: '',
@@ -26,23 +29,52 @@ const schema = Yup.object({
 
 const DuplicateMenuModal = ({
   open,
+  selectedId,
   onClose,
   selectedData,
-}: MenuItemModalProps) => {
+}: any) => {
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
+
+  const [duplicateMenu, { isLoading: duplicateMenuLoading }] =
+    useDuplicateMenuMutation();
 
   const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
     useGetVenuesQuery({ page: 0, limit: 10000 });
 
   const { reset } = methods;
 
-  const handleSubmit = (data: any) => {
-    console.log('Menu item data:', data);
-    reset(defaultValues);
-    onClose();
+  const handleSubmit = async (formData: any) => {
+    try {
+      const payload: any = {
+        id: selectedId,
+        venue: formData?.itemVenue,
+      };
+
+      console.log('payload', payload);
+
+      const response = await duplicateMenu(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || 'Menu duplicated successfully');
+
+      methods.reset(defaultValues);
+      onClose();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+    }
   };
 
   const handleClose = () => {
@@ -53,7 +85,10 @@ const DuplicateMenuModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[24vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
+        <DialogContent
+          aria-describedby={undefined}
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
+        >
           <DialogHeader className="w-full text-start">
             <DialogTitle>Duplicate Menu</DialogTitle>
           </DialogHeader>
@@ -77,41 +112,26 @@ const DuplicateMenuModal = ({
                       showNone={false}
                     />
                   </div>
-
-                  {/* <div className="col-span-2">
-                    <RHFCustomCombobox
-                      name="menu"
-                      label="Select Menu"
-                      placeholder="Select menu"
-                      className="w-full flex-1"
-                      multiple={true}
-                      allowCustom={venuesLoading}
-                      options={[
-                        { label: 'Vegan', value: 'vegan' },
-                        { label: 'Vegetarian', value: 'vegetarian' },
-                        { label: 'Gluten-Free', value: 'gluten-free' },
-                        { label: 'Dairy-Free', value: 'dairy-free' },
-                        { label: 'Nut-Free', value: 'nut-free' },
-                        { label: 'Halal', value: 'halal' },
-                        { label: 'Kosher', value: 'kosher' },
-                        { label: 'Low-Carb', value: 'low-carb' },
-                        { label: 'Low-Fat', value: 'low-fat' },
-                        { label: 'High-Protein', value: 'high-protein' },
-                      ]}
-                    />
-                  </div> */}
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-2">
-                <div className="flex w-full items-center justify-center">
+              <div className="mt-6 flex items-center justify-center gap-2">
+                {duplicateMenuLoading ? (
+                  <Button
+                    type="button"
+                    disabled
+                    className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
+                  >
+                    <ButtonLoading title="Duplicating" />
+                  </Button>
+                ) : (
                   <Button
                     type="submit"
-                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
+                    className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
                   >
                     Duplicate Menu
                   </Button>
-                </div>
+                )}
               </div>
             </FormProvider>
           </div>

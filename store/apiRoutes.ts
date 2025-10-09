@@ -53,9 +53,22 @@ export const API_ROUTES = {
 
   MENU: `/menu`,
   MENU_BY_ID: (id: string) => `/menu/${id}`,
+  MENU_DUPLICATE_BY_ID: (id: string) => `/menu/duplicate/${id}`,
 
   MENU_ITEMS: `/menu/items`,
   MENU_ITEMS_BY_ID: (id: string) => `/menu/items/${id}`,
+
+  LOYALTY_REWARDS: `/loyalty/rewards`,
+  LOYALTY_REWARDS_BY_ID: (id: string) => `/loyalty/rewards/${id}`,
+
+  LOYALTY_PROMOTION: `/loyalty/promotions`,
+  LOYALTY_PROMOTION_BY_ID: (id: string) => `/loyalty/promotions/${id}`,
+
+  LOYALTY_CHALLENGE: `/loyalty/challenges`,
+  LOYALTY_CHALLENGE_BY_ID: (id: string) => `/loyalty/challenges/${id}`,
+
+  TIERS: `/admin/tiers`,
+  TIERS_BY_ID: (id: string) => `/admin/tiers/${id}`,
 
   TWO_FACTOR_AUTH_SETUP: `/users/twofa/setup`,
   TWO_FACTOR_AUTH_CONFIRM: `/users/twofa/confirm`,

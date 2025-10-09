@@ -3,7 +3,7 @@ import ChallengesView from '@/sections/challenges/challenges-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Challenges - Pleis',
+  title: 'Global Challenges - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Challenges', href: '' },
+          { name: 'Global Challenges', href: '' },
         ]}
       />
 
-      <ChallengesView global={false} />
+      <ChallengesView global={true} />
     </div>
   );
 };

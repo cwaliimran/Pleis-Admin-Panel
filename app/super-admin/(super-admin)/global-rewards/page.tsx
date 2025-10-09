@@ -1,9 +1,9 @@
 import Header from '@/app/common/header';
-import ChallengesView from '@/sections/challenges/challenges-view';
+import RewardsView from '@/sections/rewards/rewards-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Challenges - Pleis',
+  title: 'Global Rewards - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Challenges', href: '' },
+          { name: 'Global Rewards', href: '' },
         ]}
       />
 
-      <ChallengesView global={false} />
+      <RewardsView global={true} />
     </div>
   );
 };
