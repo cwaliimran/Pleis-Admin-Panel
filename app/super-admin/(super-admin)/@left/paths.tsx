@@ -104,7 +104,10 @@ export const paths = {
     },
     menuItems: '/super-admin/menuItems',
     menuList: '/super-admin/menu-list',
+
     ticketing: '/super-admin/ticketing',
+    reservation: '/super-admin/reservation',
+
     streak: '/super-admin/streaks',
     globalStreak: '/super-admin/global-streaks',
     itemsCategory: '/super-admin/items-category',
