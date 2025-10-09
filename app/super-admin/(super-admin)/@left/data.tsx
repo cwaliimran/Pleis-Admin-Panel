@@ -1,6 +1,7 @@
 import {
   Building,
   Calendar,
+  CalendarDays,
   ChartColumnBig,
   ChartNoAxesColumnIncreasing,
   ClipboardPenLine,
@@ -221,6 +222,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Ticketing',
     key: paths.superAdmin.ticketing,
     icon: Ticket,
+  },
+  {
+    label: 'Reservation',
+    key: paths.superAdmin.reservation,
+    icon: CalendarDays,
   },
   {
     label: 'User List',
