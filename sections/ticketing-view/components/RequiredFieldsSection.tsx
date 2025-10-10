@@ -15,7 +15,7 @@ export const RequiredFieldsSection: React.FC<RequiredFieldsSectionProps> = ({
   isLoading,
 }) => {
   return (
-    <div className="dark:bg-secondary mb-3 bg-blue-50">
+    <div className="dark:bg-secondary mb-3">
       <SectionHeader
         title="Required Fields"
         icon={<AlertCircle className="text-blue-600" size={20} />}

@@ -1,9 +1,14 @@
 'use client';
 
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import QueryDialog from '@/components/comfirm-dialog/query-dialog';
+import { useBoolean } from '@/hooks/useBoolean';
 import { useState } from 'react';
 
 const ReservationBody = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const deleteModal = useBoolean();
+  const confirmModal = useBoolean();
 
   const pendingRequests = [
     {
@@ -77,7 +82,7 @@ const ReservationBody = () => {
             <button
               title="Edit Reservation"
               type="button"
-              className={`cursor-pointer text-white transition-transform duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
+              className={`cursor-pointer text-black transition-transform duration-300 dark:text-white ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
               onClick={() => setIsExpanded(!isExpanded)}
             >
               <svg
@@ -109,11 +114,11 @@ const ReservationBody = () => {
               Pending Confirmation Requests
             </h3>
 
-            <div className="space-y-4">
+            <div className="grid gap-6 md:grid-cols-2">
               {pendingRequests.map((request, index) => (
                 <div
                   key={request.id}
-                  className="dark:bg-secondary rounded-lg bg-gray-50 px-2 py-4 shadow-sm"
+                  className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-5 shadow-sm dark:border-[#3c3a3aae] dark:bg-[#222121]"
                   style={{
                     animation: isExpanded
                       ? `slideIn 0.4s ease-out ${index * 0.1}s backwards`
@@ -123,12 +128,12 @@ const ReservationBody = () => {
                   <div className="mb-4 flex items-center justify-between">
                     {/* User details */}
                     <div className="flex items-center justify-start gap-2">
-                      <h4 className="text-2xl font-bold">{request.name}</h4>
-                      <span
+                      <h4 className="text-xl font-bold">{request.name}</h4>
+                      <p
                         className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${request.memberColor}`}
                       >
                         {request.memberType}
-                      </span>
+                      </p>
                     </div>
 
                     {/* Date and Time */}
@@ -167,42 +172,47 @@ const ReservationBody = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
-                    <button className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-green-700">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      Accept
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={confirmModal.onTrue}
+                      className={[
+                        'inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium',
+                        'bg-emerald-600 text-white hover:bg-emerald-500 focus-visible:outline-none',
+                        'focus-visible:ring-2 focus-visible:ring-emerald-600/50 focus-visible:ring-offset-2',
+                        'cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
+                      ].join(' ')}
+                    >
+                      <span aria-hidden="true">✔</span>
+                      <span>Accept</span>
                     </button>
-                    <button className="flex-1 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-blue-700">
-                      Offer Upgrade
+
+                    <button
+                      type="button"
+                      // onClick={confirmModal.onTrue}
+                      className={[
+                        'inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium',
+                        'bg-blue-600 text-white hover:bg-blue-500 focus-visible:outline-none',
+                        'focus-visible:ring-2 focus-visible:ring-blue-600/50 focus-visible:ring-offset-2',
+                        'cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
+                      ].join(' ')}
+                    >
+                      <span aria-hidden="true">⇪</span>
+                      <span>Offer Upgrade</span>
                     </button>
-                    <button className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition-all duration-200 hover:bg-red-700">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                      Reject
+
+                    <button
+                      type="button"
+                      onClick={deleteModal.onTrue}
+                      className={[
+                        'inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium',
+                        'bg-red-600 text-white hover:bg-red-500 focus-visible:outline-none',
+                        'focus-visible:ring-2 focus-visible:ring-red-600/50 focus-visible:ring-offset-2',
+                        'cursor-pointer disabled:cursor-not-allowed disabled:opacity-50',
+                      ].join(' ')}
+                    >
+                      <span aria-hidden="true">✕</span>
+                      <span>Reject</span>
                     </button>
                   </div>
                 </div>
@@ -211,6 +221,29 @@ const ReservationBody = () => {
           </div>
         </div>
       </div>
+
+      <QueryDialog
+        open={confirmModal.value}
+        title="Accept Reservation"
+        content="Are you sure you want to accept this reservation?"
+        onClose={confirmModal.onFalse}
+        onConfirm={confirmModal.onTrue}
+        isLoading={false}
+        btnClassName="bg-green-700 text-white"
+      />
+
+      <ConfirmDialog
+        open={deleteModal.value}
+        title="Delete Reservation"
+        content="Are you sure you want to delete this reservation?"
+        onClose={() => {
+          deleteModal.onFalse();
+        }}
+        onConfirm={() => {
+          deleteModal.onFalse();
+        }}
+        isLoading={false}
+      />
 
       <style>{`
         @keyframes slideIn {
