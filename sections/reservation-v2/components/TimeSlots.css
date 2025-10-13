@@ -1,0 +1,19 @@
+.time-slots-container {
+  @apply space-y-4 rounded-xl border bg-white p-4 dark:bg-[#1E1E1E];
+}
+
+.time-slots-header {
+  @apply flex items-center justify-between rounded-lg border bg-white p-4;
+}
+
+.time-slots-toggle {
+  @apply cursor-pointer text-black transition-transform duration-300 dark:text-black;
+}
+
+.time-slots-content {
+  @apply overflow-hidden transition-all duration-300 ease-in-out;
+}
+
+.time-slot-item {
+  @apply rounded-lg border bg-white p-4 dark:bg-[#2A2A2A] mt-2;
+}

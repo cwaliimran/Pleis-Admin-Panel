@@ -12,6 +12,7 @@ import {
 interface ConfirmDialogProps {
   open: boolean;
   isLoading: boolean;
+  btnClassName?: string;
   title?: string;
   content?: string;
   onClose?: () => void;
@@ -25,6 +26,7 @@ const QueryDialog: FC<ConfirmDialogProps> = ({
   onClose,
   onConfirm,
   isLoading,
+  btnClassName,
 }) => {
   return (
     <div>
@@ -62,7 +64,7 @@ const QueryDialog: FC<ConfirmDialogProps> = ({
               ) : (
                 <Button
                   variant="default"
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${btnClassName}`}
                   onClick={onConfirm}
                 >
                   Confirm
