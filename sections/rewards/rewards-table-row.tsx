@@ -20,11 +20,11 @@ const RewardsTableRow: FC<TableRowProps> = ({
 }) => {
   const formatCreationMethod = (method: string) => {
     switch (method) {
-      case 'menu-items':
+      case 'buyMenuItemReward':
         return 'From Menu Items';
-      case 'custom':
+      case 'customReward':
         return 'Custom Reward';
-      case 'ticket':
+      case 'ticketReward':
         return 'Ticket Reward';
       default:
         return method;
@@ -66,7 +66,10 @@ const RewardsTableRow: FC<TableRowProps> = ({
                 {item?.description?.slice(0, 22) + '...'}
               </span>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent
+              aria-describedby={undefined}
+              className="dark:bg-secondary max-w-md"
+            >
               <DialogHeader>
                 <DialogTitle>Description</DialogTitle>
               </DialogHeader>
@@ -82,17 +85,23 @@ const RewardsTableRow: FC<TableRowProps> = ({
         )}
       </TableCell>
 
-      <TableCell className="text-left">{item.rewardType}</TableCell>
+      <TableCell className="text-left capitalize">
+        {item?.sortingType}
+      </TableCell>
 
       <TableCell className="text-left">
         <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          {formatCreationMethod(item.creationMethod)}
+          {formatCreationMethod(item?.rewardType)}
         </span>
       </TableCell>
 
-      <TableCell className="text-left">{item.pointValue}</TableCell>
+      <TableCell className="text-left">
+        {item?.minPointsRequiredToClaim}
+      </TableCell>
 
-      <TableCell className="text-left">{formatValue(item?.claimLimit)}</TableCell>
+      <TableCell className="text-left">
+        {formatValue(item?.claimLimit)}
+      </TableCell>
 
       <TableCell className="text-left capitalize">
         {formatValue(item.tierLimit)}

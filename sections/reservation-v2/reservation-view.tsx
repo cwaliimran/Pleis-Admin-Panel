@@ -99,7 +99,6 @@ const ReservationCalendar: React.FC = () => {
   const handleDateSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDateValue = e.target.value;
     if (selectedDateValue) {
-      //   console.log('Copying data from', selectedDate, 'to', selectedDateValue);
       showSuccess('Timeslots copied successfully!');
       setShowDatePicker(false);
     }

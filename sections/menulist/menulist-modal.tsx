@@ -1,5 +1,6 @@
 'use client';
 
+import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
@@ -10,31 +11,30 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import {
+  useAddMenuListMutation,
+  useUpdateMenuListMutation,
+} from '@/store/Reducer/menu-list-api';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
-import { showError, showSuccess } from '@/utils/toast';
-import { getErrorMessage } from '@/utils/api';
-import {
-  useAddMenuListMutation,
-  useUpdateMenuListMutation,
-} from '@/store/Reducer/menu-list-api';
-import ButtonLoading from '@/components/common/button-loading';
 
 const defaultValues: MenuItemFormValues = {
   title: '',
   description: '',
-  venue: '',
+  organization: '',
   status: 'active',
 };
 
 const schema = Yup.object().shape({
   title: Yup.string().required('Title is required'),
   description: Yup.string().required('Description is required'),
-  venue: Yup.string().required('Venue is required'),
+  organization: Yup.string().required('Organization is required'),
   status: Yup.string().required('Status is required'),
 });
 
@@ -49,7 +49,7 @@ const MenuItemModal = ({
     defaultValues,
   });
 
-  console.log("selectedData", selectedData);
+  console.log('selectedData', selectedData);
 
   const { reset, formState } = methods;
   const isDirty = formState?.isDirty;
@@ -57,7 +57,7 @@ const MenuItemModal = ({
   const prepareFormData = (data: any): MenuItemFormValues => ({
     title: data?.title || '',
     description: data?.description || '',
-    venue: data?.venue?._id || '',
+    organization: data?.organization?._id || '',
     status: data?.status || 'active',
   });
 
@@ -70,10 +70,16 @@ const MenuItemModal = ({
     }
   }, [open, isEdit, selectedData, reset]);
 
-  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } = useGetVenuesQuery({ page: 0, limit: 10000 });
+  const {
+    data: { data: organizations = [] } = {},
+    isLoading: organizationsLoading,
+  } = useGetOrganizationQuery({ page: 0, limit: 10000 });
 
-  const [addMenuList, { isLoading: addMenuListLoading }] = useAddMenuListMutation();
-  const [updateMenuList, { isLoading: updateMenuListLoading }] = useUpdateMenuListMutation();
+  const [addMenuList, { isLoading: addMenuListLoading }] =
+    useAddMenuListMutation();
+
+  const [updateMenuList, { isLoading: updateMenuListLoading }] =
+    useUpdateMenuListMutation();
 
   const handleSubmit = async (formData: any) => {
     try {
@@ -163,14 +169,14 @@ const MenuItemModal = ({
 
                   <div className="col-span-2">
                     <RHFCustomDropdown
-                      name="venue"
-                      label="Venue"
-                      placeholder="Select Venue"
-                      options={venues?.map((val: any) => ({
+                      name="organizations"
+                      label="Organizations"
+                      placeholder="Select Organizations"
+                      options={organizations?.map((val: any) => ({
                         value: val?._id,
-                        label: val?.title,
+                        label: val?.basicInfo?.name,
                       }))}
-                      isLoading={venuesLoading}
+                      isLoading={organizationsLoading}
                       showNone={false}
                     />
                   </div>

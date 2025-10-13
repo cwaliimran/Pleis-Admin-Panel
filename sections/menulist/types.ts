@@ -35,7 +35,7 @@ export interface TableRowProps {
 export type MenuItemFormValues = {
   image?: any;
   title?: string;
-  venue?: string;
+  organization?: string;
   description?: string;
   status?: string;
 };

@@ -37,8 +37,8 @@ const HEAD_LABEL = [
     sortKey: 'description',
   },
   {
-    id: 'venue',
-    label: 'Venue',
+    id: 'Organization',
+    label: 'Organization',
     align: 'left',
     sortable: true,
     sortKey: 'venue.title',

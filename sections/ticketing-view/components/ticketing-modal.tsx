@@ -53,7 +53,9 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
   const timeslotEnabled = watch('features.timeslot');
   const repeatableEnabled = watch('features.repeatable');
   const resaleProtection = watch('features.resale') || 'none';
-  const pricingType = watch('features.pricing') || 'none';
+  // const pricingType = watch('features.pricing') || 'none';
+  const earlyBirdEnabled = watch('features.earlyBirdEnabled');
+  const lastMinuteEnabled = watch('features.lastMinuteEnabled');
   const fasttrackEnabled = watch('features.fasttrack');
   const reservationEnabled = watch('features.reservation');
   const transferEnabled = watch('features.transfer');
@@ -112,10 +114,26 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                     isLoading={isLoading}
                   />
 
-                  <TimeSensitivePricingFeature
+                  {/* <TimeSensitivePricingFeature
                     value={pricingType}
                     onChange={(val) =>
                       setValue('features.pricing', val, { shouldDirty: true })
+                    }
+                    isLoading={isLoading}
+                  /> */}
+
+                  <TimeSensitivePricingFeature
+                    earlyBirdEnabled={earlyBirdEnabled}
+                    lastMinuteEnabled={lastMinuteEnabled}
+                    onEarlyBirdChange={(val) =>
+                      setValue('features.earlyBirdEnabled', val, {
+                        shouldDirty: true,
+                      })
+                    }
+                    onLastMinuteChange={(val) =>
+                      setValue('features.lastMinuteEnabled', val, {
+                        shouldDirty: true,
+                      })
                     }
                     isLoading={isLoading}
                   />
