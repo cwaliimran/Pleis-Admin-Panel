@@ -114,11 +114,12 @@ const ReservationCalendar: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-7">
+          <div className="space-y-6 lg:col-span-7">
             <CalendarView
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
             />
+            <ActiveBookings bookings={activeBookings} />
           </div>
 
           <div className="space-y-6 lg:col-span-5">
@@ -169,10 +170,6 @@ const ReservationCalendar: React.FC = () => {
               onEdit={() => console.log('Edit clicked')}
               onDelete={() => console.log('Delete clicked')}
             />
-          </div>
-
-          <div className="lg:col-span-12">
-            <ActiveBookings bookings={activeBookings} />
           </div>
         </div>
       </div>
