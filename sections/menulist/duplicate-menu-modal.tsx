@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useDuplicateMenuMutation } from '@/store/Reducer/menu-list-api';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -20,11 +20,11 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 const defaultValues = {
-  itemVenue: '',
+  organization: '',
 };
 
 const schema = Yup.object({
-  itemVenue: Yup.string().required('Venue is required'),
+  organization: Yup.string().required('Organization is required'),
 });
 
 const DuplicateMenuModal = ({
@@ -41,8 +41,13 @@ const DuplicateMenuModal = ({
   const [duplicateMenu, { isLoading: duplicateMenuLoading }] =
     useDuplicateMenuMutation();
 
-  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
-    useGetVenuesQuery({ page: 0, limit: 10000 });
+  // const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
+  //   useGetVenuesQuery({ page: 0, limit: 10000 });
+
+  const {
+    data: { data: organizations = [] } = {},
+    isLoading: organizationsLoading,
+  } = useGetOrganizationQuery({ page: 0, limit: 10000 });
 
   const { reset } = methods;
 
@@ -50,7 +55,7 @@ const DuplicateMenuModal = ({
     try {
       const payload: any = {
         id: selectedId,
-        venue: formData?.itemVenue,
+        organization: formData?.organization,
       };
 
       console.log('payload', payload);
@@ -101,14 +106,14 @@ const DuplicateMenuModal = ({
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="col-span-2">
                     <RHFCustomDropdown
-                      name="itemVenue"
-                      label="Venue"
-                      placeholder="Select Venue"
-                      options={venues?.map((val: any) => ({
+                      name="organizations"
+                      label="Organization"
+                      placeholder="Select Organization"
+                      options={organizations?.map((val: any) => ({
                         value: val?._id,
-                        label: val?.title,
+                        label: val?.basicInfo?.name,
                       }))}
-                      isLoading={venuesLoading}
+                      isLoading={organizationsLoading}
                       showNone={false}
                     />
                   </div>
