@@ -174,6 +174,28 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
+    label: 'Ticketing',
+    key: paths.superAdmin.ticketing,
+    icon: Ticket,
+  },
+  {
+    label: 'Reservation',
+    key: paths.superAdmin.reservation,
+    icon: CalendarDays,
+    items: [
+      {
+        title: 'Reservation',
+        url: paths.superAdmin.reservation,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Calendar',
+        url: paths.superAdmin.calendar,
+        icon: CalendarDays,
+      },
+    ],
+  },
+  {
     label: 'Preset',
     key: paths.superAdmin.preset.default,
     icon: SlidersHorizontal,
@@ -216,17 +238,6 @@ export const menuGroups: MenuGroup[] = [
     label: 'Tags',
     key: paths.superAdmin.tags.default,
     icon: Hash,
-  },
-
-  {
-    label: 'Ticketing',
-    key: paths.superAdmin.ticketing,
-    icon: Ticket,
-  },
-  {
-    label: 'Reservation',
-    key: paths.superAdmin.reservation,
-    icon: CalendarDays,
   },
   {
     label: 'User List',

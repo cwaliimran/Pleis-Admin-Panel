@@ -72,21 +72,23 @@ const schema: Yup.ObjectSchema<ReservationFormValues> = Yup.object({
   ),
   capacity: Yup.string().required('Max capacity is required'),
   condition: Yup.string().required('Condition type is required'),
-  price: Yup.string().when('condition', {
-    is: (val: string) =>
-      ['fixed_price', 'minimum_spend', 'prepay'].includes(val),
-    then: (schema) => schema.required('Price is required for this condition'),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  minimumSpendAmount: Yup.string().optional(),
-  minimumSpendText: Yup.string().optional(),
-  prepayAmount: Yup.string().optional(),
-  ticketRequired: Yup.string().optional(),
-  customConditionText: Yup.string().optional(),
+  price: Yup.string()
+    .when('condition', {
+      is: (val: string) =>
+        ['fixed_price', 'minimum_spend', 'prepay'].includes(val),
+      then: (schema) => schema.required('Price is required for this condition'),
+      otherwise: (schema) => schema.notRequired(),
+    })
+    .default(''),
+  minimumSpendAmount: Yup.string().default(''),
+  minimumSpendText: Yup.string().default(''),
+  prepayAmount: Yup.string().default(''),
+  ticketRequired: Yup.string().default(''),
+  customConditionText: Yup.string().default(''),
   taxPercent: Yup.string().required('Tax percentage is required'),
   needsConfirmation: Yup.boolean().required(),
-  eventLink: Yup.string().optional(),
-  status: Yup.string().optional(),
+  eventLink: Yup.string().default(''),
+  status: Yup.string().default(''),
 });
 
 const ReservationModal = ({
