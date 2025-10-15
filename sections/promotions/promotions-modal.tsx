@@ -18,6 +18,8 @@ import {
 import { useForm } from 'react-hook-form';
 // import * as Yup from 'yup';
 
+// claimPoints
+
 type PromotionsFormValues = {
   photo: any;
   title: string;
@@ -116,7 +118,7 @@ const PromotionModal = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]">
           <DialogHeader>
             <DialogTitle>
               {isEdit ? 'Edit Promotion' : 'Create Promotion'}
@@ -261,17 +263,25 @@ const PromotionModal = ({
                 )}
 
                 {selectedType === 'claim_promotions' && (
-                  <RHFSelectField
-                    name="claimReward"
-                    label="Claim Reward"
-                    placeholder="Select Reward"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'Cappuccino', value: 'cappuccino' },
-                      { label: 'VIP Event Entry', value: 'vip_event_entry' },
-                      { label: 'Branded T-Shirt', value: 'branded_tshirt' },
-                    ]}
-                  />
+                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    <RHFSelectField
+                      name="claimReward"
+                      label="Claim Reward"
+                      placeholder="Select Reward"
+                      className="w-full flex-1"
+                      options={[
+                        { label: 'Cappuccino', value: 'cappuccino' },
+                        { label: 'VIP Event Entry', value: 'vip_event_entry' },
+                        { label: 'Branded T-Shirt', value: 'branded_tshirt' },
+                      ]}
+                    />
+
+                    <RHFTextField
+                      name="claimPoints"
+                      label="Points Required to Claim"
+                      placeholder="Enter Points Required"
+                    />
+                  </div>
                 )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
@@ -330,7 +340,7 @@ const PromotionModal = ({
                   </div>
                 )}
 
-                {selectedType === 'Extra Points for Buying Menu Item' && (
+                {selectedType === 'extra_points_for_buying_menu_item' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <RHFSelectField
                       name="menuItem"
@@ -354,7 +364,7 @@ const PromotionModal = ({
                   </div>
                 )}
 
-                {selectedType === 'Product Sale' && (
+                {selectedType === 'product_sale' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <RHFSelectField
                       name="saleMenuItem"

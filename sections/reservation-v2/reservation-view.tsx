@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { ActiveBookings } from './components/active-bookings';
 import PendingRequests from './components/pending-request';
 import { ActiveBooking, Booking } from './components/types';
-import ReservationGrid from '../reservation-view/test';
+import ReservationGrid from '../reservation-view/new-reservation-chart';
 
 const mockBookings: Booking[] = [
   {

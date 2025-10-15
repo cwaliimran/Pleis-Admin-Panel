@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -17,6 +17,9 @@ import * as Yup from 'yup';
 
 interface ReservationFormValues {
   name: string;
+  phone: string;
+  tableType: string;
+  speicialRequirements?: string;
   guestNumber: number | string;
   startTime: string;
   endTime: string;
@@ -31,6 +34,9 @@ interface ReservationModalProps {
 
 const defaultValues: ReservationFormValues = {
   name: '',
+  phone: '',
+  tableType: '',
+  speicialRequirements: '',
   guestNumber: '',
   startTime: '',
   endTime: '',
@@ -38,6 +44,9 @@ const defaultValues: ReservationFormValues = {
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Name is required'),
+  phone: Yup.string().required('Phone number is required'),
+  tableType: Yup.string().required('Table type is required'),
+  speicialRequirements: Yup.string(),
   guestNumber: Yup.number()
     .typeError('Guest number must be a number')
     .positive('Guest number must be positive')
@@ -77,6 +86,9 @@ const ReservationModal = ({
 
     return {
       name: data?.customer || data?.name || '',
+      phone: data?.phone || '',
+      tableType: data?.table || '',
+      speicialRequirements: data?.note || data?.specialRequirements || '',
       guestNumber: data?.guests || data?.guestNumber || '',
       startTime: data?.startTime || '',
       endTime: data?.endTime || '',
@@ -100,6 +112,9 @@ const ReservationModal = ({
       const payload = {
         name: formData.name,
         guestNumber: formData.guestNumber,
+        phone: formData.phone,
+        tableType: formData.tableType,
+        speicialRequirements: formData.speicialRequirements,
         startTime: formData.startTime,
         endTime: formData.endTime,
         ...(selectedData && { id: selectedData?.id || selectedData?._id }),
@@ -148,6 +163,13 @@ const ReservationModal = ({
                     label="Name"
                     placeholder="Enter name"
                   />
+
+                  <RHFTextField
+                    type="number"
+                    name="phone"
+                    label="Phone"
+                    placeholder="Enter phone number"
+                  />
                 </div>
 
                 <div className="grid w-full grid-cols-1 gap-4">
@@ -156,6 +178,21 @@ const ReservationModal = ({
                     label="Guest Number"
                     placeholder="Enter number of guests"
                     type="number"
+                  />
+
+                  <RHFSelectField
+                    name="tableType"
+                    label="Table Type"
+                    placeholder="Select Table Type"
+                    className="w-full flex-1"
+                    options={[
+                      { label: 'Regular', value: 'regular' },
+                      { label: 'VIP', value: 'vip' },
+                      { label: 'Outdoor', value: 'outdoor' },
+                      { label: 'Private', value: 'private' },
+                      { label: 'Bar', value: 'bar' },
+                      { label: 'Window', value: 'window' },
+                    ]}
                   />
                 </div>
 
@@ -173,6 +210,16 @@ const ReservationModal = ({
                     label="End Time"
                     placeholder="Select end time"
                     type="time"
+                  />
+                </div>
+
+                <div className="grid w-full grid-cols-1 gap-4">
+                  <RHFTextField
+                    name="speicialRequirements"
+                    label="Special Requirements"
+                    placeholder="Special Requirements"
+                    rows={2}
+                    multiline
                   />
                 </div>
               </div>
