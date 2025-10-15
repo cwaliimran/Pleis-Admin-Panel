@@ -56,8 +56,6 @@ const RewardsTable: FC<SamplePageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  console.log('data', data);
-
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,

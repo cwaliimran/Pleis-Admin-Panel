@@ -47,7 +47,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   const isToday = (day: number): boolean => {
-    const today = new Date(2025, 9, 13);
+    const today = new Date();
     return (
       day === today.getDate() &&
       currentMonth.getMonth() === today.getMonth() &&

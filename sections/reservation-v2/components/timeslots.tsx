@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, Edit2, MapPin } from 'lucide-react';
+import { Clock, MapPin } from 'lucide-react';
 import React, { useState } from 'react';
 import { TimeSlot, TimeSlotsProps } from './types';
 
@@ -56,39 +56,33 @@ const TimeSlots: React.FC<TimeSlotsProps> = ({ slots, selectedTime }) => {
                   <MapPin className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <h4 className="font-semibold">{slot.name}</h4>
-                  <p className="text-sm">Max {slot.maxGuests} guests</p>
+                  <h4 className="font-semibold">{slot?.name}</h4>
+                  <p className="text-sm">Max {slot?.maxGuests} guests</p>
                 </div>
               </div>
-              <button
-                className="rounded-lg p-2 hover:bg-gray-100"
-                aria-label={`Edit ${slot.name}`}
-              >
-                <Edit2 className="h-4 w-4" />
-              </button>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {slot.available}
+                    {slot?.available}
                   </div>
                   <div className="text-xs">Available</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gray-600">
-                    {slot.booked}
+                    {slot?.booked}
                   </div>
                   <div className="text-xs">Booked</div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-lg font-bold text-gray-900">
-                  €{slot.price}
+                  €{slot?.price}
                 </div>
                 <div className="text-xs">
-                  {slot.booked > 0 ? 'Fixed' : 'Prepay'}
+                  {slot?.booked > 0 ? 'Fixed' : 'Prepay'}
                 </div>
               </div>
             </div>

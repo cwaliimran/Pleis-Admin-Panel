@@ -55,7 +55,7 @@ const RewardsTableRow: FC<TableRowProps> = ({
 
       <TableCell className="text-left">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left">
+      <TableCell className="text-left capitalize">
         {item?.description && item?.description?.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
