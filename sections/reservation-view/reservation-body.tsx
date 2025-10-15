@@ -114,7 +114,7 @@ const ReservationBody = () => {
               Pending Confirmation Requests
             </h3>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
               {pendingRequests.map((request, index) => (
                 <div
                   key={request.id}
@@ -145,12 +145,12 @@ const ReservationBody = () => {
                     </div>
                   </div>
 
-                  <div className="mb-4 grid grid-cols-3 gap-4">
+                  <div className="mb-4 grid grid-cols-3 gap-3">
                     <div>
                       <div className="mb-1 text-sm text-gray-500">
                         Reservation Type
                       </div>
-                      <div className="text-lg font-bold">
+                      <div className="text-md font-bold">
                         {request.reservationType}
                       </div>
                     </div>
@@ -158,7 +158,7 @@ const ReservationBody = () => {
                       <div className="mb-1 text-sm text-gray-500">
                         Number of People
                       </div>
-                      <div className="text-lg font-bold">
+                      <div className="text-md font-bold">
                         {request.numberOfPeople}
                       </div>
                     </div>
@@ -166,7 +166,7 @@ const ReservationBody = () => {
                       <div className="mb-1 text-sm text-gray-500">
                         Linked Ticket
                       </div>
-                      <div className="text-lg font-bold">
+                      <div className="text-md font-bold">
                         {request.linkedTicket}
                       </div>
                     </div>

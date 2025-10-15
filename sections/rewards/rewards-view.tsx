@@ -35,8 +35,6 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  console.log('selectedRecord', selectedRecord);
-
   const [deleteReward, { isLoading: deleteLoading }] =
     useDeleteRewardMutation();
 
@@ -192,6 +190,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
         open={openModal.value}
         onClose={closeModal}
         isEdit={editModal.value}
+        selectedData={selectedRecord}
       />
 
       <ConfirmDialog

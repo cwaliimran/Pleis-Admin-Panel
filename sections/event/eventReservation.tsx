@@ -1,9 +1,12 @@
-import React from 'react'
+import React from 'react';
+import ReservationView from '../reservation-view/reservation-view';
 
 const EventReservation = () => {
   return (
-    <div>EventReservation</div>
-  )
-}
+    <>
+      <ReservationView />
+    </>
+  );
+};
 
-export default EventReservation
+export default EventReservation;

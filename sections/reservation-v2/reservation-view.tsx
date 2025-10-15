@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Copy, Plus } from 'lucide-react';
-import { ActiveBooking, Booking, TimeSlot } from './components/types';
-import CalendarView from './components/calendar-view';
-import PendingRequests from './components/pending-request';
-import TimeSlots from './components/timeslots';
 import { showSuccess } from '@/utils/toast';
+import { Copy } from 'lucide-react';
+import React, { useState } from 'react';
 import { ActiveBookings } from './components/active-bookings';
+import PendingRequests from './components/pending-request';
+import { ActiveBooking, Booking } from './components/types';
+import ReservationGrid from '../reservation-view/test';
 
 const mockBookings: Booking[] = [
   {
@@ -52,27 +51,28 @@ const activeBookings: ActiveBooking[] = [
   },
 ];
 
-const timeSlots: TimeSlot[] = [
-  {
-    id: 1,
-    name: 'VIP Table',
-    maxGuests: 8,
-    available: 2,
-    booked: 3,
-    price: 200,
-  },
-  {
-    id: 2,
-    name: 'Lounge Area',
-    maxGuests: 6,
-    available: 1,
-    booked: 2,
-    price: 50,
-  },
-];
+// const timeSlots: TimeSlot[] = [
+//   {
+//     id: 1,
+//     name: 'VIP Table',
+//     maxGuests: 8,
+//     available: 2,
+//     booked: 3,
+//     price: 200,
+//   },
+//   {
+//     id: 2,
+//     name: 'Lounge Area',
+//     maxGuests: 6,
+//     available: 1,
+//     booked: 2,
+//     price: 50,
+//   },
+// ];
 
 const ReservationCalendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [click, setClick] = useState(false);
   const [pendingBookings, setPendingBookings] =
     useState<Booking[]>(mockBookings);
 
@@ -101,6 +101,7 @@ const ReservationCalendar: React.FC = () => {
     if (selectedDateValue) {
       showSuccess('Timeslots copied successfully!');
       setShowDatePicker(false);
+      setSelectedDate(new Date(selectedDateValue));
     }
   };
 
@@ -113,63 +114,69 @@ const ReservationCalendar: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="space-y-6 lg:col-span-7">
-            <CalendarView
+          <div
+            className={`col-span-12 space-y-6 ${click ? 'lg:col-span-7' : 'lg:col-span-12'}`}
+          >
+            {/* <CalendarView
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
-            />
-            <ActiveBookings bookings={activeBookings} />
+            /> */}
+            <ReservationGrid setClick={setClick} />
           </div>
 
-          <div className="space-y-6 lg:col-span-5">
-            <div className="rounded-lg border bg-white p-4 dark:bg-[#1E1E1E]">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-semibold">{formatDate(selectedDate)}</h3>
-                <div className="flex gap-2">
-                  {!showDatePicker ? (
-                    <button
-                      type="button"
-                      onClick={handleCopyToDate}
-                      className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                      <Copy className="h-4 w-4" /> Copy to Date
-                    </button>
-                  ) : (
-                    <input
-                      type="date"
-                      title="copy date"
-                      onChange={handleDateSelect}
-                      className="w-[180px] cursor-pointer rounded-lg border px-3 py-2 text-sm dark:bg-[#2A2A2A] dark:text-white"
-                      min={new Date().toISOString().split('T')[0]}
-                      autoFocus
-                    />
-                  )}
-
+          {click && (
+            <div className="col-span-12 space-y-6 lg:col-span-5">
+              <div className="rounded-lg border bg-white p-4 dark:bg-[#1E1E1E]">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="font-semibold">{formatDate(selectedDate)}</h3>
+                  <div className="flex gap-2">
+                    {!showDatePicker ? (
+                      <button
+                        type="button"
+                        onClick={handleCopyToDate}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <Copy className="h-4 w-4" /> Copy to Date
+                      </button>
+                    ) : (
+                      <input
+                        type="date"
+                        title="copy date"
+                        onChange={handleDateSelect}
+                        className="w-[180px] cursor-pointer rounded-lg border px-3 py-2 text-sm dark:bg-[#2A2A2A] dark:text-white"
+                        min={new Date().toISOString().split('T')[0]}
+                        autoFocus
+                      />
+                    )}
+                    {/* 
                   <button
                     type="button"
                     className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm text-white"
                   >
                     <Plus className="h-4 w-4" /> Add Slot
-                  </button>
+                  </button> */}
+                  </div>
                 </div>
+
+                <PendingRequests
+                  bookings={pendingBookings}
+                  onConfirm={handleConfirm}
+                  onReject={handleReject}
+                  onChange={handleChange}
+                />
               </div>
 
-              <PendingRequests
-                bookings={pendingBookings}
-                onConfirm={handleConfirm}
-                onReject={handleReject}
-                onChange={handleChange}
-              />
-            </div>
+              <ActiveBookings bookings={activeBookings} />
 
-            <TimeSlots
+              {/* <TimeSlots
               slots={timeSlots}
               selectedTime="18:00 - 21:00"
               onTimeSelect={() => console.log('Time selected')}
               onEdit={() => console.log('Edit clicked')}
               onDelete={() => console.log('Delete clicked')}
-            />
-          </div>
+            /> */}
+            </div>
+          )}
         </div>
       </div>
     </div>
