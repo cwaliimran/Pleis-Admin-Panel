@@ -114,6 +114,54 @@ export const memberCardHeaderData: LoyaltyCardData[] = [
   },
 ];
 
+export const reservationCardHeaderData = [
+  {
+    title: 'Total Reservations',
+    amount: 1234,
+  },
+  {
+    title: 'Confirmed Reservations',
+    amount: 980,
+  },
+  {
+    title: 'Pending Reservations',
+    amount: 150,
+  },
+  {
+    title: 'Rejected / Expired Reservations',
+    amount: 104,
+    percentage: '8%',
+  },
+  {
+    title: 'Reservation Conversion Rate',
+    amount: '87%',
+  },
+  {
+    title: 'Total Revenue from Reservations',
+    amount: '€12,340',
+  },
+  {
+    title: 'Prepay Revenue',
+    amount: '€4,520',
+  },
+  {
+    title: 'Average Reservation Value',
+    amount: '€125',
+  },
+  {
+    title: 'Average Group Size',
+    amount: 3.2,
+  },
+  {
+    title: 'Total Capacity Reserved',
+    amount: '820 / 1000',
+  },
+  {
+    title: 'Remaining Available Spots',
+    amount: 180,
+  },
+];
+
 export const loyaltyCardHeaderData: LoyaltyCardData[] = [
   {
     title: 'Total Members',

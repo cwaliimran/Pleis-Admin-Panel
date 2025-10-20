@@ -1,12 +1,19 @@
 'use client';
+
 import { Button } from '@/components/ui/button';
+import { RootState } from '@/store/store';
 import { useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
 
 const NotFound = () => {
   const router = useRouter();
 
+  const { user } = useSelector((state: RootState) => state.userSlice);
+
   const handleGoBack = () => {
-    router.back();
+    if (user?.role === 'admin') router.push('/super-admin');
+    else if (user?.role === 'organizer') router.push('/organizer');
+    else router.push('/');
   };
 
   return (

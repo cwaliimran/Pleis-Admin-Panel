@@ -22,6 +22,10 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
     router.push(`/${userType}/events/${item._id}`);
   };
 
+  const handleEdit = (id: any) => {
+    router.push(`/${userType}/events/edit-event/${id}`);
+  };
+
   return (
     <TableRow
       className="h-14 w-full cursor-pointer transition-colors"
@@ -131,6 +135,10 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
           <button
             title="Edit Event"
             type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleEdit?.(item?._id);
+            }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
