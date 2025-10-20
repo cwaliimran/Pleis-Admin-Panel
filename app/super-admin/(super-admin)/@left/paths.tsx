@@ -107,6 +107,7 @@ export const paths = {
 
     ticketing: '/super-admin/ticketing',
     reservation: '/super-admin/reservation',
+    analytics: '/super-admin/analytics',
     calendar: '/super-admin/calendar',
 
     streak: '/super-admin/streaks',
