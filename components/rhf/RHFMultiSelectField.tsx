@@ -127,7 +127,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                               <div className="mr-2">
                                 <Checkbox checked={checked} />
                               </div>
-                              <span className="flex-1">{opt.label}</span>
+                              <span className="flex-1 capitalize">{opt.label}</span>
                               {checked && <Check className="h-4 w-4" />}
                             </CommandItem>
                           );

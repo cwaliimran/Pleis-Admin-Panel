@@ -199,6 +199,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.analytics,
         icon: ChartBar,
       },
+      {
+        title: 'Transactions',
+        url: paths.superAdmin.reservationTransactions,
+        icon: ChartBar,
+      },
     ],
   },
   {

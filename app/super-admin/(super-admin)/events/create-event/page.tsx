@@ -1,5 +1,6 @@
 import Header from '@/app/common/header';
-import CreateEventView from '@/sections/event/create-event-view/create-event';
+import { CreateEventView } from '@/sections/event/eventV2';
+// import CreateEventView from '@/sections/event/create-event-view/create-event';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -17,7 +18,8 @@ const Page = () => {
           ]}
         />
 
-        <CreateEventView userType="super-admin" title={'Create'} />
+        <CreateEventView title="Create" userType="super-admin" />
+        {/* <CreateEventView userType="super-admin" title={'Create'} /> */}
       </div>
     </>
   );

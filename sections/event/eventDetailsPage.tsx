@@ -39,19 +39,24 @@ import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 
 const EventDetailsPage = () => {
-  // const [tabActive, setTabActive] = React.useState("all");
-  const router = useRouter();
-  const deleteModal = useBoolean();
   const { id } = useParams();
-  const [active, setActive] = React.useState('overview');
-  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
-  const [deleteId, setDeleteId] = React.useState<string | null>(null);
+  const router = useRouter();
+
+  const deleteModal = useBoolean();
+
   const [loading, setLoading] = React.useState(false);
-  const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
-  const [deleteEvent] = useDeleteeventMutation();
+  const [active, setActive] = React.useState('overview');
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
+  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+
   const [updateEvent] = useUpdateeventMutation();
+  const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
+  const [deleteEvent, { isLoading: deleteEventLoading }] =
+    useDeleteeventMutation();
+
   const [cloneEvent] = useCloneeventMutation();
   const userType = window?.location?.pathname?.split('/')[1];
+
   // const event = {
   //   id: "1",
   //   name: "Summer Music Festival 2025",
@@ -59,10 +64,12 @@ const EventDetailsPage = () => {
   //   fromDate: "2025-03-23T13:00:00Z",
   //   endDate: "2025-03-25T13:00:00Z",
   // };
+
   const handleDelete = (id: string) => {
     setDeleteId(id);
     deleteModal.onTrue();
   };
+
   const handleUpdateEvent = async () => {
     try {
       setLoading(true);
@@ -91,21 +98,18 @@ const EventDetailsPage = () => {
       setLoading(false);
     }
   };
+
   const onDelete = async () => {
     try {
-      // Call the delete function from your API or store
       if (deleteId) {
-        deleteModal.onFalse();
-        setLoading(true);
-        const res = await deleteEvent(deleteId).unwrap();
-        if (res?.data) {
-          router.back();
+        const response = await deleteEvent(deleteId).unwrap();
+        if (response && response.message === 'Event deleted successfully') {
+          router.push(`/${userType}/events`);
         }
       }
+      deleteModal.onFalse();
     } catch (error) {
       console.log('Failed to delete event', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -120,11 +124,11 @@ const EventDetailsPage = () => {
               <div className="col-span-12 lg:col-span-9">
                 <Card className="pb-0 shadow-md dark:bg-[#171717]">
                   <CardContent>
-                    <div className="flex flex-col gap-3 sm:flex-row">
+                    <div className="flex flex-col gap-4 sm:flex-row">
                       <div className="w-full sm:w-1/3">
                         <ImageWithFallback
                           url={event?.basicInfo?.mediaInfo?.url}
-                          size={100}
+                          size={300}
                           alt={event?.basicInfo?.title}
                           className="h-auto w-full rounded-md object-contain object-top"
                         />
@@ -142,6 +146,7 @@ const EventDetailsPage = () => {
                               {fDate(event?.schedule?.endDateTime) || '-'}
                             </span>
                           </div>
+
                           <div className="flex items-center">
                             <Pencil
                               className="h-4 w-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700 md:h-5 md:w-5"
@@ -159,13 +164,13 @@ const EventDetailsPage = () => {
                         </div>
 
                         {/* Title */}
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        <h2 className="text-xl font-semibold text-gray-900 capitalize dark:text-white">
                           {event?.basicInfo?.title || 'Untitled Event'}
                         </h2>
 
                         {/* Description */}
-                        <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                          {event?.basicInfo?.description ||
+                        <p className="-mt-2 text-sm leading-relaxed text-gray-700 capitalize dark:text-gray-300">
+                          {capitalizeFirst(event?.basicInfo?.description) ||
                             'No description available.'}
                         </p>
 
@@ -174,7 +179,7 @@ const EventDetailsPage = () => {
                           <h4 className="text-xs font-bold text-gray-500">
                             ORGANIZER
                           </h4>
-                          <div className="mt-1 flex items-center gap-2">
+                          <div className="mt-2 flex items-center gap-2">
                             <ImageWithFallback
                               url={
                                 event?.basicInfo?.organization?.basicInfo
@@ -500,9 +505,10 @@ const EventDetailsPage = () => {
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Event"
-        content="Are you sure you want to delete this?"
+        content="Are you sure you want to delete this event?"
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
+        isLoading={deleteEventLoading}
       />
     </>
   );

@@ -22,18 +22,18 @@ import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { CalendarIcon, ChevronDown, Clock, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, Resolver, useForm } from 'react-hook-form';
 // import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
 // import type { RootState } from '@/store/store';
 import ButtonLoading from '@/components/common/button-loading';
+import VenueTypeModal from '@/components/common/create-venue-modal';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Skeleton } from '@/components/ui/skeleton';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { skipToken } from '@reduxjs/toolkit/query';
 import Image from 'next/image';
-import VenueTypeModal from '@/components/common/create-venue-modal';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 
 interface EventFormValues {
   image: File | null;
@@ -621,7 +621,7 @@ const CreateEventView = (props: any) => {
                           <RHFTextField
                             name="name"
                             placeholder="Enter Event Name"
-                            className="rounded-4xl border border-gray-200 bg-[#F8F6F7] px-4 text-lg font-medium focus:border-blue-600"
+                            className="rounded-4xl border border-gray-200 bg-[#F8F6F7] px-4 text-lg font-medium focus:border-blue-600 dark:border-zinc-600 dark:hover:border-zinc-500"
                           />
 
                           {/* <Button
@@ -647,7 +647,7 @@ const CreateEventView = (props: any) => {
                           placeholder="Type Event Description"
                           multiline
                           rows={8}
-                          className="max-w-xl resize-none border-gray-200 bg-[#F8F6F7] break-words whitespace-pre-wrap focus:border-blue-600 sm:min-h-[120px] lg:min-h-[275px]"
+                          className="max-w-xl resize-none border-gray-200 bg-[#F8F6F7] break-words whitespace-pre-wrap focus:border-blue-600 sm:min-h-[120px] lg:min-h-[275px] dark:border-zinc-600 dark:hover:border-zinc-500"
                         />
                       </div>
                     </div>
