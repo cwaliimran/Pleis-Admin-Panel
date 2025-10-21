@@ -127,7 +127,9 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                               <div className="mr-2">
                                 <Checkbox checked={checked} />
                               </div>
-                              <span className="flex-1 capitalize">{opt.label}</span>
+                              <span className="flex-1 capitalize">
+                                {opt.label}
+                              </span>
                               {checked && <Check className="h-4 w-4" />}
                             </CommandItem>
                           );
@@ -136,7 +138,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                     </CommandList>
 
                     {selectedValues.length > 0 && (
-                      <div className="border-t p-1 dark:bg-secondary">
+                      <div className="dark:bg-secondary border-t p-1">
                         <Button
                           type="button"
                           variant="ghost"
@@ -165,7 +167,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
           {selectedOptions.map((opt) => (
             <Badge
               key={opt.value}
-              className="bg-secondary flex items-center gap-1 text-xs text-white dark:bg-white dark:text-black"
+              className="bg-secondary flex items-center gap-1 text-xs text-white capitalize dark:bg-white dark:text-black"
             >
               {opt.label}
               <button

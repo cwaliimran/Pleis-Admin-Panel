@@ -17,8 +17,8 @@ const CreateEventView = ({
   const {
     step,
     setStep,
-    version,
-    setVersion,
+    // version,
+    // setVersion,
     showPartnerOrganizer,
     setShowPartnerOrganizer,
     file,
@@ -109,14 +109,11 @@ const CreateEventView = ({
                     methods={methods}
                     watch={watch}
                     setValue={setValue}
-                    version={version}
-                    setVersion={setVersion}
                     loading={loading}
                     isAddingEvent={isAddingEvent}
                     isUpdatingEvent={isUpdatingEvent}
                     router={router}
                     setStep={setStep}
-                    userType={userType}
                   />
                 )}
               </FormProvider>

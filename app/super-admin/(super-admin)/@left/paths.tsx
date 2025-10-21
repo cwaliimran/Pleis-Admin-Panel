@@ -110,6 +110,7 @@ export const paths = {
     analytics: '/super-admin/analytics',
     calendar: '/super-admin/calendar',
     reservationTransactions: '/super-admin/reservation-transactions',
+    bundles: '/super-admin/bundles',
 
     streak: '/super-admin/streaks',
     globalStreak: '/super-admin/global-streaks',

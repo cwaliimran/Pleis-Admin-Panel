@@ -17,8 +17,9 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import TicketingModal from './components/ticketing-modal';
+// import TicketingModal from './components/ticketing-modal';
 import TicketingTable from './ticketing-table';
+import TicketingModal from './ticketing-modal';
 
 const defaultValues = {
   title: '',
