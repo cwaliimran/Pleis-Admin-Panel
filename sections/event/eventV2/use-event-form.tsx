@@ -22,24 +22,28 @@ import { eventValidationSchema } from './validation';
 import type { EventFormValues } from './types';
 
 export const useEventForm = (userType: string) => {
-  const [step, setStep] = useState(1);
-  const [version, setVersion] = useState(1);
-  const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [venueModal, setVenueModal] = useState<boolean>(false);
-  const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const router = useRouter();
+
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [venueModal, setVenueModal] = useState<boolean>(false);
+  const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
 
   const { data: event = {}, isLoading: eventLoading } = useGeteventByIdQuery(
     id ?? skipToken
   );
 
-  const { data: { data: organizations = [] } = {}, isLoading: orgLoading } =
-    useGetOrganizationQuery({
-      page: 0,
-      limit: 10000,
-    });
+  const {
+    data: { data: organizations = [] } = {},
+    isLoading: orgLoading,
+    refetch: refetchOrganizations,
+  } = useGetOrganizationQuery({
+    page: 0,
+    limit: 10000,
+  });
+
 
   const {
     data: { data: categoriesData = [] } = {},
@@ -105,7 +109,7 @@ export const useEventForm = (userType: string) => {
   // Scroll to top on step/version change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [step, version]);
+  }, [step]);
 
   // Handle organization change - clear venue and remove from partner organizers
   useEffect(() => {
@@ -134,8 +138,8 @@ export const useEventForm = (userType: string) => {
   const organizationOptions = useMemo(
     () =>
       organizations?.map((org: any) => ({
-        value: org?._id,
-        label: org?.basicInfo?.name,
+        value: org._id,
+        label: org.basicInfo?.name,
       })) || [],
     [organizations]
   );
@@ -143,8 +147,8 @@ export const useEventForm = (userType: string) => {
   const venueOptions = useMemo(
     () =>
       venues?.map((val: any) => ({
-        value: val?._id,
-        label: val?.title,
+        value: val._id,
+        label: val.title,
       })) || [],
     [venues]
   );
@@ -152,8 +156,8 @@ export const useEventForm = (userType: string) => {
   const categoryOptions = useMemo(
     () =>
       categoriesData?.map((val: any) => ({
-        value: val?._id,
-        label: val?.title,
+        value: val._id,
+        label: val.title,
       })) || [],
     [categoriesData]
   );
@@ -161,8 +165,8 @@ export const useEventForm = (userType: string) => {
   const tagOptions = useMemo(
     () =>
       tagsd?.map((val: any) => ({
-        value: val?._id,
-        label: val?.title,
+        value: val._id,
+        label: val.title,
       })) || [],
     [tagsd]
   );
@@ -217,11 +221,14 @@ export const useEventForm = (userType: string) => {
         ].every(Boolean);
       }
       if (step === 2) {
+        const fromTime = watch('fromTime');
+        const endTime = watch('endTime');
+
         const hasBasicFields = [
           watch('fromDate'),
           watch('endDate'),
-          watch('fromTime'),
-          watch('endTime'),
+          fromTime,
+          endTime,
           eventType,
         ].every(Boolean);
 
@@ -339,18 +346,27 @@ export const useEventForm = (userType: string) => {
 
   const setEditValues = useCallback(() => {
     if (!event) return;
+
+    const organizationId = event?.basicInfo?.organization?._id || '';
+    if (organizationId) {
+      setValue('organization', organizationId, { shouldValidate: true });
+    }
+
     const fromDate_ = event?.schedule?.startDateTime
       ? new Date(event.schedule.startDateTime)
       : null;
+
     const fromTime_ = event?.schedule?.startDateTime
       ? convertTimeFormat(
           event.schedule.startDateTime.split(' ').slice(1).join(' '),
           true
         )
       : '';
+
     const endDate_ = event?.schedule?.endDateTime
       ? new Date(event.schedule.endDateTime)
       : null;
+
     const endTime_ = event?.schedule?.endDateTime
       ? convertTimeFormat(
           event.schedule.endDateTime.split(' ').slice(1).join(' '),
@@ -391,7 +407,8 @@ export const useEventForm = (userType: string) => {
       organizerInput: '',
       partnerOrganizerInput: '',
 
-      organization: event?.basicInfo?.organization?._id || '',
+      // organization: event?.basicInfo?.organization?._id || '',
+      organization: organizationId,
       partnerOrganizers: event?.basicInfo?.partnerOrganizers
         ? event.basicInfo.partnerOrganizers.map((org: any) => org._id)
         : [],
@@ -411,7 +428,8 @@ export const useEventForm = (userType: string) => {
       event?._id &&
       event?.basicInfo?.venue?._id &&
       !venuesLoading &&
-      venues.length > 0
+      venues.length > 0 &&
+      organization
     ) {
       const venueExists = venues.some(
         (v: any) => v._id === event.basicInfo.venue._id
@@ -432,8 +450,8 @@ export const useEventForm = (userType: string) => {
   return {
     step,
     setStep,
-    version,
-    setVersion,
+    // version,
+    // setVersion,
     showPartnerOrganizer,
     setShowPartnerOrganizer,
     file,
@@ -480,11 +498,9 @@ export const useEventForm = (userType: string) => {
   };
 };
 
-// 'use client';
-
 // import { yupResolver } from '@hookform/resolvers/yup';
 // import { useParams, useRouter } from 'next/navigation';
-// import { useEffect, useRef, useState } from 'react';
+// import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 // import { Resolver, useForm } from 'react-hook-form';
 // import { skipToken } from '@reduxjs/toolkit/query';
 // import {
@@ -513,7 +529,9 @@ export const useEventForm = (userType: string) => {
 //   const { id } = useParams();
 //   const router = useRouter();
 
-//   const { data: event = {} } = useGeteventByIdQuery(id ?? skipToken);
+//   const { data: event = {}, isLoading: eventLoading } = useGeteventByIdQuery(
+//     id ?? skipToken
+//   );
 
 //   const { data: { data: organizations = [] } = {}, isLoading: orgLoading } =
 //     useGetOrganizationQuery({
@@ -544,6 +562,8 @@ export const useEventForm = (userType: string) => {
 //     resolver: yupResolver(
 //       eventValidationSchema
 //     ) as unknown as Resolver<EventFormValues>,
+//     mode: 'onBlur',
+//     reValidateMode: 'onChange',
 //   });
 
 //   const {
@@ -580,169 +600,242 @@ export const useEventForm = (userType: string) => {
 
 //   const prevOrganizationRef = useRef(organization);
 
+//   // Scroll to top on step/version change
 //   useEffect(() => {
 //     window.scrollTo({ top: 0, behavior: 'smooth' });
 //   }, [step, version]);
 
+//   // Handle organization change - clear venue and remove from partner organizers
 //   useEffect(() => {
+//     if (!organization) return;
+
+//     // Clear venue when organization changes
 //     if (
 //       prevOrganizationRef.current &&
 //       prevOrganizationRef.current !== organization
 //     ) {
 //       setValue('venue', '');
 //     }
-//     prevOrganizationRef.current = organization;
-//   }, [organization, setValue]);
 
-//   useEffect(() => {
-//     if (organization && partnerOrganizers?.includes(organization)) {
+//     // Remove partner organizer if it's the main organization
+//     if (partnerOrganizers?.includes(organization)) {
 //       setValue(
 //         'partnerOrganizers',
-//         partnerOrganizers?.filter((po) => po !== organization)
+//         partnerOrganizers.filter((po) => po !== organization)
 //       );
 //     }
+
+//     prevOrganizationRef.current = organization;
 //   }, [organization, partnerOrganizers, setValue]);
 
-//   const removePartnerOrganizer = (val: string) => {
-//     setValue(
-//       'partnerOrganizers',
-//       partnerOrganizers.filter((v) => v !== val)
-//     );
-//   };
+//   // Memoized options for dropdowns
+//   const organizationOptions = useMemo(
+//     () =>
+//       organizations?.map((org: any) => ({
+//         value: org?._id,
+//         label: org?.basicInfo?.name,
+//       })) || [],
+//     [organizations]
+//   );
 
-//   const toggleRecurringDay = (day: string) => {
-//     const newDays = recurringDays.includes(day)
-//       ? recurringDays.filter((d) => d !== day)
-//       : [...recurringDays, day];
-//     setValue('recurringDays', newDays);
-//   };
+//   const venueOptions = useMemo(
+//     () =>
+//       venues?.map((val: any) => ({
+//         value: val?._id,
+//         label: val?.title,
+//       })) || [],
+//     [venues]
+//   );
 
-//   const isStepValid = (step: number): boolean => {
-//     if (step === 1) {
-//       return [
-//         mediaUrl,
-//         mediaType,
-//         watch('name'),
-//         watch('description'),
-//         venue,
-//         categories && categories.length > 0,
-//         watch('tags').length > 0,
-//         watch('organization'),
-//       ].every(Boolean);
-//     }
-//     if (step === 2) {
-//       const hasBasicFields = [
-//         watch('fromDate'),
-//         watch('endDate'),
-//         watch('fromTime'),
-//         watch('endTime'),
-//         eventType,
-//       ].every(Boolean);
+//   const categoryOptions = useMemo(
+//     () =>
+//       categoriesData?.map((val: any) => ({
+//         value: val?._id,
+//         label: val?.title,
+//       })) || [],
+//     [categoriesData]
+//   );
 
-//       if (recurring) {
-//         const freq = watch('recurringType');
-//         const interval = watch('recurringInterval');
-//         const daysOfWeek = watch('recurringDays');
-//         const endType = watch('recurringEnd');
-//         const endDate = watch('recurringEndDate');
-//         const occurrences = watch('recurringEndCount');
+//   const tagOptions = useMemo(
+//     () =>
+//       tagsd?.map((val: any) => ({
+//         value: val?._id,
+//         label: val?.title,
+//       })) || [],
+//     [tagsd]
+//   );
 
-//         if (!freq || !interval || !endType || !daysOfWeek) return false;
+//   const partnerOrganizerOptions = useMemo(
+//     () =>
+//       organizations
+//         ?.filter(
+//           (org: any) =>
+//             org._id !== organization && !partnerOrganizers?.includes(org._id)
+//         )
+//         ?.map((org: any) => ({
+//           value: org._id,
+//           label: org.basicInfo?.name,
+//         })) || [],
+//     [organizations, organization, partnerOrganizers]
+//   );
 
-//         if (endType === 'never') {
-//           return hasBasicFields && !!freq && !!interval && !!endType;
-//         }
-//         if (endType === 'onDate') {
-//           return (
-//             hasBasicFields && !!freq && !!interval && !!endType && !!endDate
-//           );
-//         }
-//         if (endType === 'afterOccurrences') {
-//           return (
-//             hasBasicFields && !!freq && !!interval && !!endType && !!occurrences
-//           );
-//         }
-//         return false;
+//   // Memoized callbacks
+//   const removePartnerOrganizer = useCallback(
+//     (val: string) => {
+//       setValue(
+//         'partnerOrganizers',
+//         partnerOrganizers.filter((v) => v !== val)
+//       );
+//     },
+//     [partnerOrganizers, setValue]
+//   );
+
+//   const toggleRecurringDay = useCallback(
+//     (day: string) => {
+//       const newDays = recurringDays.includes(day)
+//         ? recurringDays.filter((d) => d !== day)
+//         : [...recurringDays, day];
+//       setValue('recurringDays', newDays);
+//     },
+//     [recurringDays, setValue]
+//   );
+
+//   const isStepValid = useCallback(
+//     (step: number): boolean => {
+//       if (step === 1) {
+//         return [
+//           mediaUrl,
+//           mediaType,
+//           watch('name'),
+//           watch('description'),
+//           venue,
+//           categories && categories.length > 0,
+//           watch('tags').length > 0,
+//           watch('organization'),
+//         ].every(Boolean);
 //       }
+//       if (step === 2) {
+//         const hasBasicFields = [
+//           watch('fromDate'),
+//           watch('endDate'),
+//           watch('fromTime'),
+//           watch('endTime'),
+//           eventType,
+//         ].every(Boolean);
 
-//       return hasBasicFields;
-//     }
-//     return false;
-//   };
+//         if (recurring) {
+//           const freq = watch('recurringType');
+//           const interval = watch('recurringInterval');
+//           const daysOfWeek = watch('recurringDays');
+//           const endType = watch('recurringEnd');
+//           const endDate = watch('recurringEndDate');
+//           const occurrences = watch('recurringEndCount');
 
-//   const onSubmit = async (data: any) => {
-//     let imageFileString = '';
-//     try {
-//       setLoading(true);
-//       if (file) {
-//         imageFileString = await uploadFileToAzure(file);
-//         console.log('Uploaded file URL:', imageFileString);
-//       } else {
-//         imageFileString = data.mediaUrl || '';
+//           if (!freq || !interval || !endType || !daysOfWeek) return false;
+
+//           if (endType === 'never') {
+//             return hasBasicFields && !!freq && !!interval && !!endType;
+//           }
+//           if (endType === 'onDate') {
+//             return (
+//               hasBasicFields && !!freq && !!interval && !!endType && !!endDate
+//             );
+//           }
+//           if (endType === 'afterOccurrences') {
+//             return (
+//               hasBasicFields &&
+//               !!freq &&
+//               !!interval &&
+//               !!endType &&
+//               !!occurrences
+//             );
+//           }
+//           return false;
+//         }
+
+//         return hasBasicFields;
 //       }
-//       const payload = {
-//         basicInfo: {
-//           media: {
-//             type: data.mediaType,
-//             name: imageFileString,
+//       return false;
+//     },
+//     [mediaUrl, mediaType, venue, categories, eventType, recurring, watch]
+//   );
+
+//   const onSubmit = useCallback(
+//     async (data: any) => {
+//       let imageFileString = '';
+//       try {
+//         setLoading(true);
+//         if (file) {
+//           imageFileString = await uploadFileToAzure(file);
+//           console.log('Uploaded file URL:', imageFileString);
+//         } else {
+//           imageFileString = data.mediaUrl || '';
+//         }
+//         const payload = {
+//           basicInfo: {
+//             media: {
+//               type: data.mediaType,
+//               name: imageFileString,
+//             },
+//             title: data.name,
+//             description: data.description,
+//             organization: data.organization,
+//             partnerOrganizers: data.partnerOrganizers,
+//             venue: data.venue,
+//             categories: data.categories,
+//             tags: data.tags,
 //           },
-//           title: data.name,
-//           description: data.description,
-//           organization: data.organization,
-//           partnerOrganizers: data.partnerOrganizers,
-//           venue: data.venue,
-//           categories: data.categories,
-//           tags: data.tags,
-//         },
-//         schedule: {
-//           type: data.eventType,
-//           startDateTime: data.fromDate
-//             ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}`
-//             : '',
-//           endDateTime: data.endDate
-//             ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}`
-//             : '',
-//           ...(data.recurring
-//             ? {
-//                 recurringDetails: {
-//                   isEnabled: data.recurring,
-//                   frequency: data.recurringType,
-//                   interval: data.recurringInterval,
-//                   daysOfWeek: data.recurringDays.map((day: string) =>
-//                     day.substring(0, 3).toLowerCase()
-//                   ),
-//                   endType: data.recurringEnd,
-//                   endDate: data.recurringEndDate,
-//                   occurrences: data.recurringEndCount,
-//                 },
-//               }
-//             : {}),
-//         },
-//       };
+//           schedule: {
+//             type: data.eventType,
+//             startDateTime: data.fromDate
+//               ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}`
+//               : '',
+//             endDateTime: data.endDate
+//               ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}`
+//               : '',
+//             ...(data.recurring
+//               ? {
+//                   recurringDetails: {
+//                     isEnabled: data.recurring,
+//                     frequency: data.recurringType,
+//                     interval: data.recurringInterval,
+//                     daysOfWeek: data.recurringDays.map((day: string) =>
+//                       day.substring(0, 3).toLowerCase()
+//                     ),
+//                     endType: data.recurringEnd,
+//                     endDate: data.recurringEndDate,
+//                     occurrences: data.recurringEndCount,
+//                   },
+//                 }
+//               : {}),
+//           },
+//         };
 
-//       console.log('Final Payload:', payload);
+//         console.log('Final Payload:', payload);
 
-//       let res = null;
-//       if (!id) {
-//         res = await addEvent(payload).unwrap();
-//       } else {
-//         res = await updateEvent({ id: id, ...payload }).unwrap();
+//         let res = null;
+//         if (!id) {
+//           res = await addEvent(payload).unwrap();
+//         } else {
+//           res = await updateEvent({ id: id, ...payload }).unwrap();
+//         }
+
+//         if (res?.data) {
+//           router.push(`/${userType}/events/${res?.data?._id}`);
+//         }
+//       } catch (error) {
+//         if (imageFileString) {
+//           await deleteFileFromAzure(imageFileString);
+//         }
+//         console.log('Error adding event:', error);
+//       } finally {
+//         setLoading(false);
 //       }
+//     },
+//     [file, id, addEvent, updateEvent, router, userType]
+//   );
 
-//       if (res?.data) {
-//         router.push(`/${userType}/events/${res?.data?._id}`);
-//       }
-//     } catch (error) {
-//       if (imageFileString) {
-//         await deleteFileFromAzure(imageFileString);
-//       }
-//       console.log('Error adding event:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const setEditValues = () => {
+//   const setEditValues = useCallback(() => {
 //     if (!event) return;
 //     const fromDate_ = event?.schedule?.startDateTime
 //       ? new Date(event.schedule.startDateTime)
@@ -801,13 +894,38 @@ export const useEventForm = (userType: string) => {
 //         ? event.basicInfo.partnerOrganizers.map((org: any) => org._id)
 //         : [],
 //     });
-//   };
+//   }, [event, reset]);
 
+//   // Load event data when editing
 //   useEffect(() => {
-//     if (event && event._id) {
+//     if (event && event._id && !eventLoading) {
 //       setEditValues();
 //     }
-//   }, [event?._id, reset]);
+//   }, [event?._id, eventLoading, setEditValues]);
+
+//   // CRITICAL FIX: Wait for venues to load before setting venue value
+//   useEffect(() => {
+//     if (
+//       event?._id &&
+//       event?.basicInfo?.venue?._id &&
+//       !venuesLoading &&
+//       venues.length > 0
+//     ) {
+//       const venueExists = venues.some(
+//         (v: any) => v._id === event.basicInfo.venue._id
+//       );
+//       if (venueExists && watch('venue') !== event.basicInfo.venue._id) {
+//         setValue('venue', event.basicInfo.venue._id, { shouldValidate: true });
+//       }
+//     }
+//   }, [
+//     event?._id,
+//     event?.basicInfo?.venue?._id,
+//     venues,
+//     venuesLoading,
+//     setValue,
+//     watch,
+//   ]);
 
 //   return {
 //     step,
@@ -851,5 +969,385 @@ export const useEventForm = (userType: string) => {
 //     recurringDays,
 //     recurringEnd,
 //     organization,
+//     // Export memoized options
+//     organizationOptions,
+//     venueOptions,
+//     categoryOptions,
+//     tagOptions,
+//     partnerOrganizerOptions,
 //   };
 // };
+
+// // 'use client';
+
+// // import { yupResolver } from '@hookform/resolvers/yup';
+// // import { useParams, useRouter } from 'next/navigation';
+// // import { useEffect, useRef, useState } from 'react';
+// // import { Resolver, useForm } from 'react-hook-form';
+// // import { skipToken } from '@reduxjs/toolkit/query';
+// // import {
+// //   useAddeventMutation,
+// //   useGeteventByIdQuery,
+// //   useUpdateeventMutation,
+// // } from '@/store/Reducer/events';
+// // import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+// // import { useGetCategoriesQuery } from '@/store/Reducer/categories';
+// // import { useGetTagsQuery } from '@/store/Reducer/tags';
+// // import { useGetVenuesQuery } from '@/store/Reducer/venue';
+// // import { uploadFileToAzure } from '@/utils/fileUpload';
+// // import { deleteFileFromAzure } from '@/utils/deleteFile';
+// // import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
+// // import { defaultValues } from './constants';
+// // import { eventValidationSchema } from './validation';
+// // import type { EventFormValues } from './types';
+
+// // export const useEventForm = (userType: string) => {
+// //   const [step, setStep] = useState(1);
+// //   const [version, setVersion] = useState(1);
+// //   const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
+// //   const [file, setFile] = useState<File | null>(null);
+// //   const [venueModal, setVenueModal] = useState<boolean>(false);
+// //   const [loading, setLoading] = useState(false);
+// //   const { id } = useParams();
+// //   const router = useRouter();
+
+// //   const { data: event = {} } = useGeteventByIdQuery(id ?? skipToken);
+
+// //   const { data: { data: organizations = [] } = {}, isLoading: orgLoading } =
+// //     useGetOrganizationQuery({
+// //       page: 0,
+// //       limit: 10000,
+// //     });
+
+// //   const {
+// //     data: { data: categoriesData = [] } = {},
+// //     isLoading: categoriesLoading,
+// //   } = useGetCategoriesQuery({
+// //     page: 0,
+// //     limit: 10000,
+// //   });
+
+// //   const { data: { data: tagsd = [] } = {}, isLoading: tagsLoading } =
+// //     useGetTagsQuery({
+// //       page: 0,
+// //       limit: 10000,
+// //     });
+
+// //   const [addEvent, { isLoading: isAddingEvent }] = useAddeventMutation();
+// //   const [updateEvent, { isLoading: isUpdatingEvent }] =
+// //     useUpdateeventMutation();
+
+// //   const methods = useForm<EventFormValues>({
+// //     defaultValues,
+// //     resolver: yupResolver(
+// //       eventValidationSchema
+// //     ) as unknown as Resolver<EventFormValues>,
+// //   });
+
+// //   const {
+// //     watch,
+// //     setValue,
+// //     reset,
+// //     formState: { errors },
+// //   } = methods;
+
+// //   console.log('errors', errors);
+
+// //   const {
+// //     mediaUrl,
+// //     mediaType,
+// //     venue,
+// //     categories,
+// //     partnerOrganizers,
+// //     eventType,
+// //     recurring,
+// //     recurringDays,
+// //     recurringEnd,
+// //     organization,
+// //   } = watch();
+
+// //   const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
+// //     useGetVenuesQuery(
+// //       organization
+// //         ? { page: 0, limit: 1000, organization: organization }
+// //         : { page: 0, limit: 1000 },
+// //       {
+// //         skip: !organization,
+// //       }
+// //     );
+
+// //   const prevOrganizationRef = useRef(organization);
+
+// //   useEffect(() => {
+// //     window.scrollTo({ top: 0, behavior: 'smooth' });
+// //   }, [step, version]);
+
+// //   useEffect(() => {
+// //     if (
+// //       prevOrganizationRef.current &&
+// //       prevOrganizationRef.current !== organization
+// //     ) {
+// //       setValue('venue', '');
+// //     }
+// //     prevOrganizationRef.current = organization;
+// //   }, [organization, setValue]);
+
+// //   useEffect(() => {
+// //     if (organization && partnerOrganizers?.includes(organization)) {
+// //       setValue(
+// //         'partnerOrganizers',
+// //         partnerOrganizers?.filter((po) => po !== organization)
+// //       );
+// //     }
+// //   }, [organization, partnerOrganizers, setValue]);
+
+// //   const removePartnerOrganizer = (val: string) => {
+// //     setValue(
+// //       'partnerOrganizers',
+// //       partnerOrganizers.filter((v) => v !== val)
+// //     );
+// //   };
+
+// //   const toggleRecurringDay = (day: string) => {
+// //     const newDays = recurringDays.includes(day)
+// //       ? recurringDays.filter((d) => d !== day)
+// //       : [...recurringDays, day];
+// //     setValue('recurringDays', newDays);
+// //   };
+
+// //   const isStepValid = (step: number): boolean => {
+// //     if (step === 1) {
+// //       return [
+// //         mediaUrl,
+// //         mediaType,
+// //         watch('name'),
+// //         watch('description'),
+// //         venue,
+// //         categories && categories.length > 0,
+// //         watch('tags').length > 0,
+// //         watch('organization'),
+// //       ].every(Boolean);
+// //     }
+// //     if (step === 2) {
+// //       const hasBasicFields = [
+// //         watch('fromDate'),
+// //         watch('endDate'),
+// //         watch('fromTime'),
+// //         watch('endTime'),
+// //         eventType,
+// //       ].every(Boolean);
+
+// //       if (recurring) {
+// //         const freq = watch('recurringType');
+// //         const interval = watch('recurringInterval');
+// //         const daysOfWeek = watch('recurringDays');
+// //         const endType = watch('recurringEnd');
+// //         const endDate = watch('recurringEndDate');
+// //         const occurrences = watch('recurringEndCount');
+
+// //         if (!freq || !interval || !endType || !daysOfWeek) return false;
+
+// //         if (endType === 'never') {
+// //           return hasBasicFields && !!freq && !!interval && !!endType;
+// //         }
+// //         if (endType === 'onDate') {
+// //           return (
+// //             hasBasicFields && !!freq && !!interval && !!endType && !!endDate
+// //           );
+// //         }
+// //         if (endType === 'afterOccurrences') {
+// //           return (
+// //             hasBasicFields && !!freq && !!interval && !!endType && !!occurrences
+// //           );
+// //         }
+// //         return false;
+// //       }
+
+// //       return hasBasicFields;
+// //     }
+// //     return false;
+// //   };
+
+// //   const onSubmit = async (data: any) => {
+// //     let imageFileString = '';
+// //     try {
+// //       setLoading(true);
+// //       if (file) {
+// //         imageFileString = await uploadFileToAzure(file);
+// //         console.log('Uploaded file URL:', imageFileString);
+// //       } else {
+// //         imageFileString = data.mediaUrl || '';
+// //       }
+// //       const payload = {
+// //         basicInfo: {
+// //           media: {
+// //             type: data.mediaType,
+// //             name: imageFileString,
+// //           },
+// //           title: data.name,
+// //           description: data.description,
+// //           organization: data.organization,
+// //           partnerOrganizers: data.partnerOrganizers,
+// //           venue: data.venue,
+// //           categories: data.categories,
+// //           tags: data.tags,
+// //         },
+// //         schedule: {
+// //           type: data.eventType,
+// //           startDateTime: data.fromDate
+// //             ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}`
+// //             : '',
+// //           endDateTime: data.endDate
+// //             ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}`
+// //             : '',
+// //           ...(data.recurring
+// //             ? {
+// //                 recurringDetails: {
+// //                   isEnabled: data.recurring,
+// //                   frequency: data.recurringType,
+// //                   interval: data.recurringInterval,
+// //                   daysOfWeek: data.recurringDays.map((day: string) =>
+// //                     day.substring(0, 3).toLowerCase()
+// //                   ),
+// //                   endType: data.recurringEnd,
+// //                   endDate: data.recurringEndDate,
+// //                   occurrences: data.recurringEndCount,
+// //                 },
+// //               }
+// //             : {}),
+// //         },
+// //       };
+
+// //       console.log('Final Payload:', payload);
+
+// //       let res = null;
+// //       if (!id) {
+// //         res = await addEvent(payload).unwrap();
+// //       } else {
+// //         res = await updateEvent({ id: id, ...payload }).unwrap();
+// //       }
+
+// //       if (res?.data) {
+// //         router.push(`/${userType}/events/${res?.data?._id}`);
+// //       }
+// //     } catch (error) {
+// //       if (imageFileString) {
+// //         await deleteFileFromAzure(imageFileString);
+// //       }
+// //       console.log('Error adding event:', error);
+// //     } finally {
+// //       setLoading(false);
+// //     }
+// //   };
+
+// //   const setEditValues = () => {
+// //     if (!event) return;
+// //     const fromDate_ = event?.schedule?.startDateTime
+// //       ? new Date(event.schedule.startDateTime)
+// //       : null;
+// //     const fromTime_ = event?.schedule?.startDateTime
+// //       ? convertTimeFormat(
+// //           event.schedule.startDateTime.split(' ').slice(1).join(' '),
+// //           true
+// //         )
+// //       : '';
+// //     const endDate_ = event?.schedule?.endDateTime
+// //       ? new Date(event.schedule.endDateTime)
+// //       : null;
+// //     const endTime_ = event?.schedule?.endDateTime
+// //       ? convertTimeFormat(
+// //           event.schedule.endDateTime.split(' ').slice(1).join(' '),
+// //           true
+// //         )
+// //       : '';
+
+// //     reset({
+// //       image: event?.basicInfo?.mediaInfo?.url || null,
+// //       mediaUrl: event?.basicInfo?.mediaInfo?.url || '',
+// //       mediaType: event?.basicInfo?.mediaInfo?.type || 'image',
+
+// //       name: event?.basicInfo?.title || '',
+// //       description: event?.basicInfo?.description || '',
+
+// //       venue: event?.basicInfo?.venue?._id || '',
+// //       categories:
+// //         event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
+// //       tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
+
+// //       eventType: event?.schedule?.type || 'oneTime',
+
+// //       fromDate: fromDate_,
+// //       fromTime: fromTime_,
+// //       endDate: endDate_,
+// //       endTime: endTime_,
+
+// //       recurring: event?.schedule?.recurringDetails?.isEnabled || false,
+// //       recurringType: event?.schedule?.recurringDetails?.frequency || 'weekly',
+// //       recurringInterval: event?.schedule?.recurringDetails?.interval || 1,
+// //       recurringDays: event?.schedule?.recurringDetails?.daysOfWeek || [],
+// //       recurringEnd: event?.schedule?.recurringDetails?.endType || 'never',
+// //       recurringEndDate: event?.schedule?.recurringDetails?.endDate || null,
+// //       recurringEndCount: event?.schedule?.recurringDetails?.occurrences || 1,
+
+// //       categoryInput: '',
+// //       tagInput: '',
+// //       organizerInput: '',
+// //       partnerOrganizerInput: '',
+
+// //       organization: event?.basicInfo?.organization?._id || '',
+// //       partnerOrganizers: event?.basicInfo?.partnerOrganizers
+// //         ? event.basicInfo.partnerOrganizers.map((org: any) => org._id)
+// //         : [],
+// //     });
+// //   };
+
+// //   useEffect(() => {
+// //     if (event && event._id) {
+// //       setEditValues();
+// //     }
+// //   }, [event?._id, reset]);
+
+// //   return {
+// //     step,
+// //     setStep,
+// //     version,
+// //     setVersion,
+// //     showPartnerOrganizer,
+// //     setShowPartnerOrganizer,
+// //     file,
+// //     setFile,
+// //     venueModal,
+// //     setVenueModal,
+// //     loading,
+// //     methods,
+// //     watch,
+// //     setValue,
+// //     organizations,
+// //     orgLoading,
+// //     venues,
+// //     venuesLoading,
+// //     categoriesData,
+// //     categoriesLoading,
+// //     tagsd,
+// //     tagsLoading,
+// //     addEvent,
+// //     isAddingEvent,
+// //     updateEvent,
+// //     isUpdatingEvent,
+// //     removePartnerOrganizer,
+// //     toggleRecurringDay,
+// //     isStepValid,
+// //     onSubmit,
+// //     router,
+// //     mediaUrl,
+// //     mediaType,
+// //     venue,
+// //     categories,
+// //     partnerOrganizers,
+// //     eventType,
+// //     recurring,
+// //     recurringDays,
+// //     recurringEnd,
+// //     organization,
+// //   };
+// // };
