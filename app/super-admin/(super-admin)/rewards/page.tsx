@@ -1,4 +1,5 @@
 import Header from '@/app/common/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import RewardsView from '@/sections/rewards/rewards-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <RewardsView global={false} />
+      <CompanyGuard>
+        <RewardsView global={false} />
+      </CompanyGuard>
     </div>
   );
 };

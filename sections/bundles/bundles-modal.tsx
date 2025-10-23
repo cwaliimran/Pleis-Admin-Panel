@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,6 +25,8 @@ import {
   Plus,
   ChevronDown,
 } from 'lucide-react';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import { useGeteventsQuery } from '@/store/Reducer/events';
 
 // Professional Dropdown Component
 const ProfessionalDropdown = ({
@@ -108,6 +110,9 @@ const ProfessionalDropdown = ({
 const defaultValues: BundleFormValues = {
   name: '',
   description: '',
+  event: '',
+  startDate: '',
+  endDate: '',
   price: 0,
   tickets: [],
   reservations: [],
@@ -118,6 +123,9 @@ const defaultValues: BundleFormValues = {
 const schema = Yup.object().shape({
   name: Yup.string().required('Bundle name is required'),
   description: Yup.string().required('Description is required'),
+  event: Yup.string().optional(),
+  startDate: Yup.string().required('Start date is required'),
+  endDate: Yup.string().required('End date is required'),
   price: Yup.number()
     .required('Bundle price is required')
     .min(0, 'Price must be at least 0'),
@@ -255,7 +263,19 @@ const BundleModal = ({
     price: menuItem.price,
   }));
 
-  const methods = useForm<BundleFormValues>({
+  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
+
+  const eventOptions = (eventData?.data || []).map((v: any) => ({
+    value: v?._id.toString(),
+    label: v?.basicInfo?.title || 'No Title',
+  }));
+
+  const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
     mode: 'onChange',
@@ -272,6 +292,7 @@ const BundleModal = ({
   const reservations = watch('reservations') || [];
   const preorders = watch('preorders') || [];
   const bundlePrice = watch('price');
+  const event = watch('event');
 
   useEffect(() => {
     if (isEdit && selectedData) {
@@ -533,6 +554,33 @@ const BundleModal = ({
                       placeholder="Describe the value proposition and what makes this bundle special"
                     />
                   </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="col-span-2">
+                      <RHFCustomDropdown
+                        name="event"
+                        label="Event (Optional)"
+                        placeholder="Select Event"
+                        options={eventOptions}
+                        isLoading={isLoadingEvents}
+                        showNone={true}
+                      />
+                    </div>
+
+                    <RHFDate
+                      label="Start Date"
+                      name="startDate"
+                      minDate={new Date()}
+                      placeholder="Select Start Date"
+                    />
+
+                    <RHFDate
+                      label="End Date"
+                      name="endDate"
+                      minDate={new Date()}
+                      placeholder="Select End Date"
+                    />
+                  </div>
                 </div>
 
                 {/* Bundle Builder */}
@@ -557,19 +605,24 @@ const BundleModal = ({
                   <div className="dark:bg-secondary mb-6 flex gap-2 rounded-lg bg-white p-1">
                     <button
                       type="button"
-                      onClick={() => setActiveTab('tickets')}
+                      onClick={() => event && setActiveTab('tickets')}
                       className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium transition ${
                         activeTab === 'tickets'
                           ? 'bg-[#272727] text-gray-100 shadow dark:bg-[#272727] dark:text-white'
                           : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                      }`}
+                      } ${!event ? 'cursor-not-allowed opacity-50' : ''}`}
                       aria-label="Tickets tab"
+                      disabled={!event}
                     >
                       <Ticket size={18} />
                       Tickets
                       {tickets.length > 0 && (
                         <span
-                          className={`ml-1 rounded-full px-2 py-0.5 text-xs ${activeTab === 'tickets' ? 'bg-opacity-20 bg-white text-black' : 'bg-gray-200 dark:bg-gray-700'}`}
+                          className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
+                            activeTab === 'tickets'
+                              ? 'bg-opacity-20 bg-white text-black'
+                              : 'bg-gray-200 dark:bg-gray-700'
+                          }`}
                         >
                           {tickets.length}
                         </span>
@@ -631,12 +684,14 @@ const BundleModal = ({
                   <div className="min-h-[300px]">
                     {activeTab === 'tickets' && (
                       <div>
-                        <ProfessionalDropdown
-                          options={ticketOptions}
-                          onSelect={addTicket}
-                          placeholder="+ Select a ticket to add"
-                          icon={Ticket}
-                        />
+                        {event && (
+                          <ProfessionalDropdown
+                            options={ticketOptions}
+                            onSelect={addTicket}
+                            placeholder="+ Select a ticket to add"
+                            icon={Ticket}
+                          />
+                        )}
                         {/* {ticketsLoading ? (
                           <Skeleton className="h-12 w-full rounded-lg" />
                         ) : (
@@ -660,7 +715,30 @@ const BundleModal = ({
                           </select>
                         )} */}
 
-                        {tickets.length === 0 ? (
+                        {/* {tickets.length === 0 ? (
+                          <div className="py-12 text-center text-gray-400">
+                            <Ticket
+                              size={48}
+                              className="mx-auto mb-3 opacity-30"
+                            />
+                            <p className="text-sm">
+                              No tickets added yet. Select from the dropdown
+                              above.
+                            </p>
+                          </div>
+                        ) : ( */}
+
+                        {!event ? (
+                          <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+                            <Ticket
+                              size={48}
+                              className="mx-auto mb-3 opacity-50"
+                            />
+                            <p className="text-sm">
+                              Please select an event before choosing a ticket.
+                            </p>
+                          </div>
+                        ) : tickets.length === 0 ? (
                           <div className="py-12 text-center text-gray-400">
                             <Ticket
                               size={48}
@@ -773,10 +851,10 @@ const BundleModal = ({
                         )} */}
 
                         {reservations.length === 0 ? (
-                          <div className="py-12 text-center text-gray-400">
+                          <div className="py-12 text-center text-gray-500 dark:text-gray-400">
                             <Calendar
                               size={48}
-                              className="mx-auto mb-3 opacity-30"
+                              className="mx-auto mb-3 opacity-50"
                             />
                             <p className="text-sm">
                               No reservations added yet. Select from the
@@ -903,10 +981,10 @@ const BundleModal = ({
                         )} */}
 
                         {preorders.length === 0 ? (
-                          <div className="py-12 text-center text-gray-400">
+                          <div className="py-12 text-center text-gray-500 dark:text-gray-400">
                             <Package
                               size={48}
-                              className="mx-auto mb-3 opacity-30"
+                              className="mx-auto mb-3 opacity-50"
                             />
                             <p className="text-sm">
                               No pre-order items added yet. Select from the

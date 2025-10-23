@@ -51,7 +51,7 @@ const headLabel = [
     sortable: true,
     sortKey: 'createdAt',
   },
-  // { id: 'status', label: 'Status', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 

@@ -259,7 +259,21 @@ const RewardFormModal = ({
     let uploadedFileKey: string | null = null;
     let customRewardPhotoKey: string | null = null;
 
+    const selectedCompany = JSON.parse(
+      localStorage.getItem('selectedCompany') || 'null'
+    );
+
+    if (!selectedCompany) {
+      showError('Please select a company first before submitting the form');
+      return;
+    }
+
     try {
+      if (!formData?.image) {
+        showError('Please upload an image');
+        return;
+      }
+
       if (formData?.image instanceof FileList && formData?.image.length > 0) {
         const file = formData.image[0];
         uploadedFileKey = await uploadImage(file);
@@ -287,7 +301,7 @@ const RewardFormModal = ({
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
         // companyOrganizer: formData.companyOrganizer || '',
-        companyOrganizer: '68d0f11c279de86135f3a553',
+        companyOrganizer: selectedCompany,
       };
 
       // Add main image if uploaded
@@ -319,8 +333,6 @@ const RewardFormModal = ({
         payload.status = formData?.status;
         payload.id = selectedData?._id;
       }
-
-      console.log('Final Payload', payload);
 
       const response =
         isEdit && selectedData

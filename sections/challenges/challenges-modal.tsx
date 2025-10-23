@@ -155,7 +155,6 @@ const ChallengeModal = ({
   isEdit = false,
   selectedData,
   global = false,
-  companyOrganizer,
 }: ChallengeModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
@@ -271,8 +270,17 @@ const ChallengeModal = ({
 
   // Transform form data to API payload format
   const transformToPayload = (data: ChallengesFormValues) => {
+    const selectedCompany = JSON.parse(
+      localStorage.getItem('selectedCompany') || 'null'
+    );
+
+    if (!selectedCompany) {
+      showError('Please select a company first before submitting the form');
+      return;
+    }
+
     const basePayload: any = {
-      companyOrganizer: companyOrganizer || '68da7aa1e6f099d42e32da71',
+      companyOrganizer: selectedCompany,
       title: data.title,
       taskType: data.taskType,
       taskValue: data.taskValue,

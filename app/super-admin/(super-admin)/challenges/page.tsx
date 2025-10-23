@@ -1,4 +1,5 @@
 import Header from '@/app/common/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import ChallengesView from '@/sections/challenges/challenges-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <ChallengesView global={false} />
+      <CompanyGuard>
+        <ChallengesView global={false} />
+      </CompanyGuard>
     </div>
   );
 };
