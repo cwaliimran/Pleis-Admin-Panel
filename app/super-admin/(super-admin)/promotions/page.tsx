@@ -1,4 +1,5 @@
 import Header from '@/app/common/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import PromotionsView from '@/sections/promotions/promotions-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <PromotionsView global={false} />
+      <CompanyGuard>
+        <PromotionsView global={false} />
+      </CompanyGuard>
     </div>
   );
 };

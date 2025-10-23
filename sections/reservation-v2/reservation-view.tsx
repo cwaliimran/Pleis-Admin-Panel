@@ -3,10 +3,10 @@
 import { showSuccess } from '@/utils/toast';
 import { Copy } from 'lucide-react';
 import React, { useState } from 'react';
+import ReservationGrid from '../reservation-view/new-reservation-chart';
 import { ActiveBookings } from './components/active-bookings';
 import PendingRequests from './components/pending-request';
 import { ActiveBooking, Booking } from './components/types';
-import ReservationGrid from '../reservation-view/new-reservation-chart';
 
 const mockBookings: Booking[] = [
   {
@@ -51,25 +51,6 @@ const activeBookings: ActiveBooking[] = [
   },
 ];
 
-// const timeSlots: TimeSlot[] = [
-//   {
-//     id: 1,
-//     name: 'VIP Table',
-//     maxGuests: 8,
-//     available: 2,
-//     booked: 3,
-//     price: 200,
-//   },
-//   {
-//     id: 2,
-//     name: 'Lounge Area',
-//     maxGuests: 6,
-//     available: 1,
-//     booked: 2,
-//     price: 50,
-//   },
-// ];
-
 const ReservationCalendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [click, setClick] = useState(false);
@@ -108,19 +89,30 @@ const ReservationCalendar: React.FC = () => {
   return (
     <div className="min-h-screen p-4">
       <div className="mx-auto w-full">
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold">Reservation Calendar</h1>
-          <p>Manage timeslots and bookings across dates</p>
+        <div className="mb-8 flex items-end justify-between">
+          <div className="heading">
+            <h1 className="mb-2 text-3xl font-bold">Reservation Calendar</h1>
+            <p>Manage timeslots and bookings across dates</p>
+          </div>
+
+          {click && (
+            <div className="close_button">
+              <button
+                title="close"
+                type="button"
+                onClick={() => setClick(false)}
+                className="cursor-pointer rounded-md bg-gray-800 px-5 py-1.5 text-white hover:bg-gray-700 dark:bg-gray-300 dark:text-black dark:hover:bg-gray-400"
+              >
+                Close
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div
             className={`col-span-12 space-y-6 ${click ? 'lg:col-span-7' : 'lg:col-span-12'}`}
           >
-            {/* <CalendarView
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-            /> */}
             <ReservationGrid setClick={setClick} />
           </div>
 
@@ -167,14 +159,6 @@ const ReservationCalendar: React.FC = () => {
               </div>
 
               <ActiveBookings bookings={activeBookings} />
-
-              {/* <TimeSlots
-              slots={timeSlots}
-              selectedTime="18:00 - 21:00"
-              onTimeSelect={() => console.log('Time selected')}
-              onEdit={() => console.log('Edit clicked')}
-              onDelete={() => console.log('Delete clicked')}
-            /> */}
             </div>
           )}
         </div>

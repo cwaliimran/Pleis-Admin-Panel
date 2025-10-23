@@ -185,13 +185,15 @@ const RewardsView = ({ global }: RewardsViewProps) => {
         }}
       />
 
-      <RewardFormModal
-        global={global}
-        open={openModal.value}
-        onClose={closeModal}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-      />
+      {openModal.value && (
+        <RewardFormModal
+          global={global}
+          open={openModal.value}
+          onClose={closeModal}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

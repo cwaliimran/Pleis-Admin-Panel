@@ -1,6 +1,6 @@
 'use client';
 
-// import CustomBadge from '@/components/ui/custom-badge';
+import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -39,7 +39,7 @@ const TicketingTableRow: FC<PageProps> = ({
         {fDate(item?.createdAt, formatStr.paramCase.date)}
       </TableCell>
 
-      {/* <TableCell className="text-muted-foreground text-left text-sm">
+      <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge
           variant={
             item?.status === 'active'
@@ -51,7 +51,7 @@ const TicketingTableRow: FC<PageProps> = ({
         >
           {item?.status}
         </CustomBadge>
-      </TableCell> */}
+      </TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

@@ -2,6 +2,7 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import QueryDialog from '@/components/comfirm-dialog/query-dialog';
+import CustomBadge from '@/components/ui/custom-badge';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useState } from 'react';
 
@@ -74,6 +75,10 @@ const ReservationBody = () => {
                 <div className="text-lg font-semibold text-green-600">
                   €90.40
                 </div>
+              </div>
+              <div>
+                <div className="text-gray-500">Status</div>
+                <CustomBadge variant="success">Active</CustomBadge>
               </div>
             </div>
           </div>

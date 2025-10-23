@@ -1,4 +1,5 @@
 import {
+  Box,
   Building,
   Calendar,
   CalendarDays,
@@ -204,12 +205,12 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.reservationTransactions,
         icon: ChartBar,
       },
-      {
-        title: 'Bundles',
-        url: paths.superAdmin.bundles,
-        icon: ChartBar,
-      },
     ],
+  },
+  {
+    label: 'Bundles',
+    key: paths.superAdmin.bundles,
+    icon: Box,
   },
   {
     label: 'Preset',
