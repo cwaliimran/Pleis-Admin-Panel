@@ -1,14 +1,13 @@
 'use client';
 
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { FC } from 'react';
 import { TableRowProps } from './types';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 
 const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
   return (
     <TableRow className="h-14">
-      {/* User Info */}
       <TableCell>
         <div className="flex items-center gap-3">
           <Avatar>
@@ -18,19 +17,11 @@ const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
         </div>
       </TableCell>
 
-      {/* Reservation Type */}
       <TableCell className="text-start">{item.reservationType}</TableCell>
-
-      {/* Timeslot */}
       <TableCell className="text-start">{item.timeslot}</TableCell>
-
-      {/* Tickets */}
       <TableCell className="text-start">{item.tickets}</TableCell>
+      <TableCell className="text-start">{item.amount}</TableCell>
 
-      {/* Amount */}
-      <TableCell className="text-start font-semibold">{item.amount}</TableCell>
-
-      {/* Payment Status */}
       <TableCell className="text-start">
         <span
           className={`rounded-full px-2 py-1 text-xs font-medium ${
@@ -45,7 +36,6 @@ const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
         </span>
       </TableCell>
 
-      {/* Confirmation */}
       <TableCell className="text-start">
         <span
           className={`rounded-full px-2 py-1 text-xs font-medium ${
@@ -71,4 +61,5 @@ const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
     </TableRow>
   );
 };
+
 export default ReservationTransactionTableRow;

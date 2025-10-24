@@ -39,15 +39,15 @@ const DAYS = [
   { label: 'Sat', value: 'saturday' },
 ];
 
-const SLOT_DURATIONS = [
-  { label: '30 minutes', value: '30' },
-  { label: '1 hour', value: '60' },
-  { label: '2 hours', value: '120' },
-  { label: '3 hours', value: '180' },
-  { label: '4 hours', value: '240' },
-  { label: '6 hours', value: '360' },
-  { label: '8 hours', value: '480' },
-];
+// const SLOT_DURATIONS = [
+//   { label: '30 minutes', value: '30' },
+//   { label: '1 hour', value: '60' },
+//   { label: '2 hours', value: '120' },
+//   { label: '3 hours', value: '180' },
+//   { label: '4 hours', value: '240' },
+//   { label: '6 hours', value: '360' },
+//   { label: '8 hours', value: '480' },
+// ];
 
 const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
   open,
@@ -57,7 +57,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
   const [showDate, setShowDate] = React.useState<boolean>(false);
   const [selectedDate, setSelectedDate] = React.useState<string>('');
 
-  const [slotDuration, setSlotDuration] = React.useState('120'); // 2 hours default
+  const [slotDuration, setSlotDuration] = React.useState('120');
   const [operatingDays, setOperatingDays] = React.useState<string[]>([
     'monday',
     'tuesday',
@@ -67,10 +67,6 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
   ]);
   const [timeSlots, setTimeSlots] = React.useState<TimeSlot[]>([
     { id: '1', startTime: '09:00', endTime: '11:00' },
-    { id: '2', startTime: '11:00', endTime: '13:00' },
-    { id: '3', startTime: '13:00', endTime: '15:00' },
-    { id: '4', startTime: '15:00', endTime: '17:00' },
-    { id: '5', startTime: '17:00', endTime: '19:00' },
   ]);
 
   const toggleDay = (day: string) => {
@@ -165,6 +161,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
   const handleSelectDate = (date: string) => {
     setSelectedDate(date);
     setShowDate(false);
+    setSlotDuration('120');
   };
 
   // const handleSaveAsTemplate = () => {
@@ -208,7 +205,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
 
           <div className="space-y-6">
             {/* Slot Duration */}
-            <div>
+            {/* <div>
               <label className="mb-2 block text-sm font-medium">
                 Slot Duration
               </label>
@@ -226,14 +223,21 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
                   ))}
                 </select>
               </div>
+            </div> */}
 
-              {/* <div className="mt-2 rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-semibold">Example:</span> Working hours
-                  09:00-19:00 (10 hours) ÷ {parseInt(slotDuration) / 60} hour
-                  slots = {calculateSlotsPerDay()} slots per day
-                </p>
-              </div> */}
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Select Date
+              </label>
+              <div className="flex flex-1 items-center gap-3">
+                <input
+                  type="date"
+                  title="select date"
+                  // value={selectedDate}
+                  // onChange={(e) => handleSelectDate(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                />
+              </div>
             </div>
 
             {/* Operating Days */}

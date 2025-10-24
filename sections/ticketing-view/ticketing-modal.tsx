@@ -2,6 +2,7 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,23 +11,21 @@ import {
   DialogOverlay,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useGeteventsQuery } from '@/store/Reducer/events';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Calendar } from 'lucide-react';
 import * as React from 'react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 import TimeSlotConfigModal from './timelotConfig';
-import { useGeteventsQuery } from '@/store/Reducer/events';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 
 interface TicketingModalProps {
   open: boolean;
   onClose: () => void;
-  editMode: boolean;
-  isLoading: boolean;
-  methods: any;
-  onSubmit: (data: any) => void;
+  editMode?: boolean;
   selectedVenueType?: any;
 }
 
-// Reusable Components
 const FeatureSection: React.FC<{
   children: React.ReactNode;
   className?: string;
@@ -86,28 +85,109 @@ const ToggleSwitch: React.FC<{
   </div>
 );
 
-// Main Modal Component
+const defaultValues = {
+  title: '',
+  type: '',
+  quantity: 0,
+  price: 0,
+  tax: '',
+  event: '',
+  status: 'active',
+  features: {
+    timeslot: false,
+    timeSlotConfig: null,
+    repeatable: false,
+    resale: 'none',
+    earlyBirdEnabled: false,
+    earlyBirdDate: '',
+    earlyBirdPrice: '',
+    lastMinuteEnabled: false,
+    lastMinuteDate: '',
+    lastMinutePrice: '',
+    fasttrack: false,
+    fasttrackQuantity: '',
+    fasttrackPrice: '',
+    reservation: false,
+    reservationType: '',
+    transfer: false,
+  },
+};
+
+const schema = Yup.object().shape({
+  title: Yup.string().required('Title is required'),
+  type: Yup.string().required('Ticket type is required'),
+  quantity: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === '' ? undefined : Number(originalValue)
+    )
+    .typeError('Quantity must be a number')
+    .required('Quantity is required')
+    .min(1, 'Quantity must be at least 1'),
+  price: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === '' ? undefined : Number(originalValue)
+    )
+    .typeError('Price must be a number')
+    .required('Price is required')
+    .min(0, 'Price cannot be negative'),
+
+  tax: Yup.string().required('Tax percentage is required'),
+  event: Yup.string().required('Event selection is required'),
+  status: Yup.string().oneOf(['active', 'inactive']),
+  features: Yup.object().shape({
+    timeslot: Yup.boolean(),
+    timeSlotConfig: Yup.mixed().nullable(),
+    repeatable: Yup.boolean(),
+    resale: Yup.string().oneOf(['none', 'name', 'full']),
+    earlyBirdEnabled: Yup.boolean(),
+    earlyBirdDate: Yup.string().when('earlyBirdEnabled', {
+      is: true,
+      then: (s) => s.required('Early bird date required'),
+    }),
+    earlyBirdPrice: Yup.string().when('earlyBirdEnabled', {
+      is: true,
+      then: (s) => s.required('Early bird price required'),
+    }),
+    lastMinuteEnabled: Yup.boolean(),
+    lastMinuteDate: Yup.string().when('lastMinuteEnabled', {
+      is: true,
+      then: (s) => s.required('Last minute date required'),
+    }),
+    lastMinutePrice: Yup.string().when('lastMinuteEnabled', {
+      is: true,
+      then: (s) => s.required('Last minute price required'),
+    }),
+    fasttrack: Yup.boolean(),
+    fasttrackQuantity: Yup.string(),
+    fasttrackPrice: Yup.string(),
+    reservation: Yup.boolean(),
+    reservationType: Yup.string(),
+    transfer: Yup.boolean(),
+  }),
+});
+
 const TicketingModal: React.FC<TicketingModalProps> = ({
   open,
   onClose,
   editMode,
-  methods,
-  onSubmit,
-  isLoading,
 }) => {
   const handleClose = () => {
-    if (!isLoading) {
-      onClose();
-    }
+    onClose();
   };
 
-  const { formState, watch, setValue } = methods;
-  const isDirty = formState?.isDirty;
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  // Watch feature toggles
+  const methods = useForm({
+    resolver: yupResolver(schema),
+    defaultValues,
+  });
+
+  const { handleSubmit, formState, watch, setValue } = methods;
+  const isDirty = formState.isDirty;
+
   const timeslotEnabled = watch('features.timeslot');
   const repeatableEnabled = watch('features.repeatable');
-  const resaleProtection = watch('features.resale') || 'none';
+  const resaleProtection = watch('features.resale');
   const earlyBirdEnabled = watch('features.earlyBirdEnabled');
   const lastMinuteEnabled = watch('features.lastMinuteEnabled');
   const fasttrackEnabled = watch('features.fasttrack');
@@ -120,7 +200,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
 
   const handleTimeSlotSave = (config: any) => {
     setTimeSlotConfig(config);
-    // You can also store this in form state if needed
     setValue('features.timeSlotConfig', config, { shouldDirty: true });
   };
 
@@ -135,6 +214,11 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
     value: v?._id.toString(),
     label: v?.basicInfo?.title || 'No Title',
   }));
+
+  const onSubmit = handleSubmit((formData) => {
+    console.log('✅ Final Submitted Ticket Data:', formData);
+    setIsLoading(false);
+  });
 
   return (
     <>
@@ -262,7 +346,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
 
                     <FeatureSection>
                       <ToggleSwitch
-                        value={timeslotEnabled}
+                        value={!!timeslotEnabled}
                         onChange={(val) =>
                           setValue('features.timeslot', val, {
                             shouldDirty: true,
@@ -301,7 +385,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                     {/* Repeatable Feature */}
                     <FeatureSection>
                       <ToggleSwitch
-                        value={repeatableEnabled}
+                        value={!!repeatableEnabled}
                         onChange={(val) =>
                           setValue('features.repeatable', val, {
                             shouldDirty: true,
@@ -489,7 +573,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                     {/* Fast Track Feature */}
                     <FeatureSection>
                       <ToggleSwitch
-                        value={fasttrackEnabled}
+                        value={!!fasttrackEnabled}
                         onChange={(val) =>
                           setValue('features.fasttrack', val, {
                             shouldDirty: true,
@@ -527,7 +611,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                     {/* Reservation Feature */}
                     <FeatureSection>
                       <ToggleSwitch
-                        value={reservationEnabled}
+                        value={!!reservationEnabled}
                         onChange={(val) =>
                           setValue('features.reservation', val, {
                             shouldDirty: true,
@@ -557,7 +641,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                     {/* Transfer Feature */}
                     <FeatureSection>
                       <ToggleSwitch
-                        value={transferEnabled}
+                        value={!!transferEnabled}
                         onChange={(val) =>
                           setValue('features.transfer', val, {
                             shouldDirty: true,
@@ -579,24 +663,25 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                         </FeatureSectionContent>
                       )}
                     </FeatureSection>
+
+                    <div>
+                      {editMode && (
+                        <RHFSelectField
+                          name="status"
+                          placeholder="Select Status"
+                          label="Status"
+                          options={[
+                            { label: 'Active', value: 'active' },
+                            { label: 'Inactive', value: 'inactive' },
+                          ]}
+                          disabled={isLoading}
+                        />
+                      )}
+                    </div>
                   </div>
 
-                  {/* Status field for edit mode */}
-                  {editMode && (
-                    <RHFSelectField
-                      name="status"
-                      placeholder="Select Status"
-                      label="Status"
-                      options={[
-                        { label: 'Active', value: 'active' },
-                        { label: 'Inactive', value: 'inactive' },
-                      ]}
-                      disabled={isLoading}
-                    />
-                  )}
-
                   {/* Action Buttons */}
-                  <div className="flex justify-end gap-2 border-t pt-4">
+                  <div className="flex justify-center gap-2">
                     <Button
                       type="button"
                       variant="outline"

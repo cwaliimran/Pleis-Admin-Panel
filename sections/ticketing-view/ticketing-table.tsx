@@ -30,6 +30,13 @@ const headLabel = [
     sortKey: 'title',
   },
   {
+    id: 'event',
+    label: 'Event',
+    align: 'left',
+    sortable: true,
+    sortKey: 'event',
+  },
+  {
     id: 'quantity',
     label: 'Quantity',
     align: 'left',

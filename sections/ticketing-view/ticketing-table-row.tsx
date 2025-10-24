@@ -23,6 +23,10 @@ const TicketingTableRow: FC<PageProps> = ({
         {item?.title || '-'}
       </TableCell>
 
+      <TableCell className="text-left font-medium capitalize">
+        {item?.event || '-'}
+      </TableCell>
+
       <TableCell className="text-left font-medium">
         {item?.quantity || '-'}
       </TableCell>

@@ -75,8 +75,8 @@ const ChallengesTableRow: FC<TableRowProps> = ({
         </div>
       </TableCell>
 
-      <TableCell className="text-left">{item?.price || '-'}</TableCell>
-      <TableCell className="text-left">{item?.discount || '-'}</TableCell>
+      <TableCell className="text-left">€{item?.price || '-'}</TableCell>
+      <TableCell className="text-left">€{item?.discount || '-'}</TableCell>
       <TableCell className="text-left">{item?.createdAt || '-'}</TableCell>
       <TableCell className="text-left">
         <CustomBadge variant={getStatusVariant(item?.status)}>
