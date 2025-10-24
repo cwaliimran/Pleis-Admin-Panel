@@ -86,6 +86,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
       value: u?.basicInfo?._id,
     })) || [];
 
+    
   useEffect(() => {
     if (organizationsValue === undefined) return;
 
@@ -101,6 +102,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     localStorage.setItem('selectedCompany', JSON.stringify(organizationsValue));
     window.dispatchEvent(new Event('companyChanged'));
   }, [organizationsValue]);
+
 
   const superAdminUrls = [
     '/super-admin/loyalty',

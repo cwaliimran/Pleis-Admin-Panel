@@ -2,6 +2,7 @@ export const ticketingData = [
   {
     _id: '1',
     title: 'General Admission',
+    event: 'Music Concert',
     quantity: 100,
     tax: 5,
     price: 50.0,
@@ -11,6 +12,7 @@ export const ticketingData = [
   {
     _id: '2',
     title: 'VIP Ticket',
+    event: 'Music Concert',
     quantity: 50,
     tax: 10,
     price: 150.0,
@@ -20,6 +22,7 @@ export const ticketingData = [
   {
     _id: '3',
     title: 'Early Bird',
+    event: 'Music Concert',
     quantity: 200,
     tax: 3,
     price: 30.0,

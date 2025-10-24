@@ -1,14 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import React from 'react';
 import { VisitorInterest } from '../invoices';
 import { Button } from '@/components/ui/button';
-import { Dot, Ellipsis, Plus } from 'lucide-react';
+import { Dot, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { updates } from './data';
-// import { useBoolean } from '@/hooks/useBoolean';
+import TicketingModal from '../ticketing-view/ticketing-modal';
+import { useBoolean } from '@/hooks/useBoolean';
 
 const EventTicket = () => {
-  // const openModal = useBoolean();
+  const openModal = useBoolean();
 
   return (
     <div>
@@ -73,7 +73,10 @@ const EventTicket = () => {
             </CardContent>
           </Card>
 
-          <Button className="bg-primary hover:bg-primary mt-4 w-full cursor-pointer rounded-3xl text-white">
+          <Button
+            onClick={openModal.onTrue}
+            className="bg-primary hover:bg-primary mt-4 h-10 w-full cursor-pointer rounded-3xl text-white"
+          >
             <Plus /> Add Tickets
           </Button>
         </div>
@@ -156,7 +159,24 @@ const EventTicket = () => {
                     <div className="text-muted-foreground flex items-center gap-4 text-sm">
                       <span>0/250</span>
                       <span>$10.00</span>
-                      <Ellipsis className="cursor-pointer" />
+                      {/* <CustomBadge variant="success">Active</CustomBadge> */}
+
+                      <div>
+                        {/* <p>Active</p> */}
+                        <label className="relative inline-flex cursor-pointer items-center">
+                          <input
+                            title="status"
+                            type="checkbox"
+                            // checked={update.active}
+                            onChange={() => {
+                              console.log(`Toggled active for ${update.title}`);
+                            }}
+                            className="peer sr-only"
+                          />
+                          <div className="peer-focus:ring-primary peer peer-checked:bg-primary h-6 w-10 rounded-full bg-gray-200 transition-colors duration-200 peer-focus:ring-2 peer-focus:outline-none"></div>
+                          <div className="absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 peer-checked:translate-x-4"></div>
+                        </label>
+                      </div>
                     </div>
                   </div>
                   <hr />
@@ -188,14 +208,7 @@ const EventTicket = () => {
         </div>
       </div>
 
-      {/* <TicketingModal
-        open={openModal.value}
-        onClose={CloseModal}
-        editMode={editModal.value}
-        methods={methods}
-        onSubmit={onSubmit}
-        isLoading={addItemsCategoryLoading || updateItemsCategoryLoading}
-      /> */}
+      <TicketingModal open={openModal.value} onClose={openModal.onFalse} />
     </div>
   );
 };

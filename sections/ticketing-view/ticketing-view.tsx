@@ -4,10 +4,8 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import {
-  useAddItemsCategoryMutation,
   useDeleteItemsCategoryMutation,
   useGetItemsCategoryQuery,
-  useUpdateItemsCategoryMutation,
 } from '@/store/Reducer/items-category-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -17,9 +15,8 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-// import TicketingModal from './components/ticketing-modal';
-import TicketingTable from './ticketing-table';
 import TicketingModal from './ticketing-modal';
+import TicketingTable from './ticketing-table';
 
 const defaultValues = {
   title: '',
@@ -40,12 +37,6 @@ const TicketingView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
-
-  const [addItemsCategory, { isLoading: addItemsCategoryLoading }] =
-    useAddItemsCategoryMutation();
-
-  const [updateItemsCategory, { isLoading: updateItemsCategoryLoading }] =
-    useUpdateItemsCategoryMutation();
 
   const [deleteItemsCategory, { isLoading: deleteItemsCategoryLoading }] =
     useDeleteItemsCategoryMutation();
@@ -96,20 +87,6 @@ const TicketingView = () => {
     defaultValues: defaultValues,
   });
 
-  const { handleSubmit, reset } = methods;
-
-  // Effect to populate form when editing
-  useEffect(() => {
-    if (editModal.value && selectedVenueType) {
-      reset({
-        title: selectedVenueType.title || '',
-        status: selectedVenueType.status || 'active',
-      });
-    } else if (!editModal.value) {
-      reset(defaultValues);
-    }
-  }, [editModal.value, selectedVenueType, reset]);
-
   const CloseModal = () => {
     methods.reset(defaultValues);
     setSelectedVenueType(null);
@@ -140,66 +117,6 @@ const TicketingView = () => {
     setSelectedId(id);
     deleteModal.onTrue();
   };
-
-  // CREATE/UPDATE API CALL
-  const onSubmit = handleSubmit(async (formData) => {
-    try {
-      let response;
-      if (editModal.value && selectedId) {
-        response = await updateItemsCategory({
-          id: selectedId,
-          ...formData,
-        }).unwrap();
-      } else {
-        response = await addItemsCategory({
-          title: formData.title,
-        }).unwrap();
-      }
-
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
-
-      if (response.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      // Handle success and update local state
-      // if (response?.data) {
-      //   if (editModal.value && selectedId) {
-      //     // Edit: update the item in local state
-      //     setVenueTypes((prev) =>
-      //       prev.map((item) => (item._id === selectedId ? response.data : item))
-      //     );
-      //   } else {
-      //     // Add: add new item to local state
-      //     setVenueTypes((prev) => [response.data, ...prev]);
-      //     setMeta((prev: any) => ({
-      //       ...prev,
-      //       totalRecords: prev.totalRecords + 1,
-      //     }));
-      //   }
-      // }
-
-      if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value
-              ? 'Tags updated successfully'
-              : 'Tags created successfully')
-        );
-      }
-
-      CloseModal();
-    } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      console.log('Failed to save tag:', errorMessage);
-      showError(errorMessage);
-    }
-  });
 
   // DELETE API CALL
   const onDelete = async () => {
@@ -285,9 +202,6 @@ const TicketingView = () => {
         open={openModal.value}
         onClose={CloseModal}
         editMode={editModal.value}
-        methods={methods}
-        onSubmit={onSubmit}
-        isLoading={addItemsCategoryLoading || updateItemsCategoryLoading}
         selectedVenueType={selectedVenueType}
       />
 
