@@ -70,6 +70,19 @@ export const API_ROUTES = {
   TIERS: `/admin/tiers`,
   TIERS_BY_ID: (id: string) => `/admin/tiers/${id}`,
 
+  PROMO_SECTION: `/admin/top-promos`,
+  PROMO_SECTION_REORDER: `/admin/top-promos/reorder`,
+  PROMO_SECTION_BY_ID: (id: string) => `/admin/top-promos/${id}`,
+
+  CUSTOM_CATEGORIES: `/admin/custom-categories`,
+  CUSTOM_CATEGORIES_BY_ID: (id: string) => `/admin/custom-categories/${id}`,
+
+  PINNED_CONTENT: `/admin/pinned-content`,
+  PINNED_CONTENT_BY_ID: (id: string) => `/admin/pinned-content/${id}`,
+
+  BANNER_CONTROL: `/admin/banners`,
+  BANNER_CONTROL_BY_ID: (id: string) => `/admin/banners/${id}`,
+
   TWO_FACTOR_AUTH_SETUP: `/users/twofa/setup`,
   TWO_FACTOR_AUTH_CONFIRM: `/users/twofa/confirm`,
   TWO_FACTOR_AUTH_DISABLE: `/users/twofa/disable`,

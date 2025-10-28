@@ -27,6 +27,8 @@ import { rewardsApi } from './Reducer/rewards-api';
 import { promotionApi } from './Reducer/promotion-api';
 import { challengesApi } from './Reducer/challenges-api';
 import { tiersApi } from './Reducer/tiers-api';
+import { promoSectionApi } from './Reducer/promo-section-api';
+import { bannerControlApi } from './Reducer/banner-control-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -53,6 +55,8 @@ const appReducer = combineReducers({
   [promotionApi.reducerPath]: promotionApi.reducer,
   [challengesApi.reducerPath]: challengesApi.reducer,
   [tiersApi.reducerPath]: tiersApi.reducer,
+  [promoSectionApi.reducerPath]: promoSectionApi.reducer,
+  [bannerControlApi.reducerPath]: bannerControlApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -86,6 +90,8 @@ export const store = configureStore({
       promotionApi.middleware,
       challengesApi.middleware,
       tiersApi.middleware,
+      promoSectionApi.middleware,
+      bannerControlApi.middleware,
       menuListApi.middleware
     ),
 });

@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { EventSelector } from "./EventSelector";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useState } from 'react';
+import { EventSelector } from './EventSelector';
 
 interface CreatePromoModalProps {
   isOpen: boolean;
@@ -44,7 +44,10 @@ export const CreatePromoModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg dark:bg-secondary">
+      <DialogContent
+        aria-describedby={undefined}
+        className="dark:bg-secondary sm:max-w-lg"
+      >
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             Add New Promo Event
@@ -76,7 +79,7 @@ export const CreatePromoModal = ({
               />
               <Label
                 htmlFor="add-to-top10"
-                className="text-sm font-medium text-gray-700 dark:text-white cursor-pointer"
+                className="cursor-pointer text-sm font-medium text-gray-700 dark:text-white"
               >
                 Add To Top 10
               </Label>

@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import LinkedClubsView from './linked-clubs/linked-clubs-view';
 
 const SettingsView = () => {
+  const [clubTitle, setClubTitle] = useState('');
   const [selectedModel, setSelectedModel] = useState('essential');
   const [pointValue, setPointValue] = useState(5);
 
@@ -37,6 +38,27 @@ const SettingsView = () => {
 
   return (
     <div className="space-y-7 p-6 sm:space-y-12">
+      {/* Club Title Field */}
+      <div>
+        <h2 className="mb-4 text-xl font-semibold">Club Information</h2>
+        <div className="flex w-full items-center justify-between gap-4">
+          <div className="max-w-sm flex-1">
+            <Input
+              id="clubTitle"
+              type="text"
+              placeholder="Enter club title"
+              value={clubTitle}
+              onChange={(e) => setClubTitle(e.target.value)}
+              className="h-12"
+            />
+          </div>
+
+          <Button className="px-7" onClick={handleSave}>
+            Save
+          </Button>
+        </div>
+      </div>
+
       {/* Step 1 */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">

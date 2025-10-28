@@ -115,13 +115,13 @@ const QuickAccess = () => {
   const [activePromo, setActivePromo] = useState<PromoEvent | null>(null);
   const [editAddToTop10, setEditAddToTop10] = useState(false);
 
-  console.log(
-    isEditModalOpen,
-    selectedEvent,
-    editingPromo,
-    activePromo,
-    editAddToTop10
-  );
+  // console.log(
+  //   isEditModalOpen,
+  //   selectedEvent,
+  //   editingPromo,
+  //   activePromo,
+  //   editAddToTop10
+  // );
 
   // const handleCreate = () => {
   //   if (selectedEvent) {
