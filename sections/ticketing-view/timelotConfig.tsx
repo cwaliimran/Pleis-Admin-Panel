@@ -29,15 +29,15 @@ interface TimeSlotConfig {
   timeSlots: TimeSlot[];
 }
 
-const DAYS = [
-  { label: 'Sun', value: 'sunday' },
-  { label: 'Mon', value: 'monday' },
-  { label: 'Tue', value: 'tuesday' },
-  { label: 'Wed', value: 'wednesday' },
-  { label: 'Thu', value: 'thursday' },
-  { label: 'Fri', value: 'friday' },
-  { label: 'Sat', value: 'saturday' },
-];
+// const DAYS = [
+//   { label: 'Sun', value: 'sunday' },
+//   { label: 'Mon', value: 'monday' },
+//   { label: 'Tue', value: 'tuesday' },
+//   { label: 'Wed', value: 'wednesday' },
+//   { label: 'Thu', value: 'thursday' },
+//   { label: 'Fri', value: 'friday' },
+//   { label: 'Sat', value: 'saturday' },
+// ];
 
 // const SLOT_DURATIONS = [
 //   { label: '30 minutes', value: '30' },
@@ -74,6 +74,8 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
   };
+
+  console.log('toggleDay', toggleDay);
 
   const addTimeSlot = () => {
     const lastSlot = timeSlots[timeSlots.length - 1];
@@ -241,7 +243,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
             </div>
 
             {/* Operating Days */}
-            <div>
+            {/* <div>
               <label className="mb-3 block text-sm font-medium">
                 Operating Days
               </label>
@@ -261,7 +263,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             {/* Daily Time Slots */}
             <div>

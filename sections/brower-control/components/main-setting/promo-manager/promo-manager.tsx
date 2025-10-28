@@ -1,127 +1,201 @@
-/* eslint-disable react/forbid-dom-props */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react/no-unknown-property */
-/* eslint-disable @next/next/no-css-tags */
-"use client";
+'use client';
 
-import { CustomDndProvider } from "@/components/providers/DndProvider";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { CustomDndProvider } from '@/components/providers/DndProvider';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import {
+  useDeletePromoSectionMutation,
+  useGetPromoSectionQuery,
+  useReorderPromoSectionMutation,
+} from '@/store/Reducer/promo-section-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
+import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {
   SortableContext,
   arrayMove,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { CreatePromoModal } from "./CreatePromoModal";
-import { DraggablePromoItem } from "./DraggablePromoItem";
-import { EditPromoModal } from "./EditPromoModal";
-import { PromoEvent, mockEvents } from "./types";
+} from '@dnd-kit/sortable';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DraggablePromoItem } from './DraggablePromoItem';
+import { DraggablePromoItemSkeleton } from './DraggablePromoItemSkeleton';
+import PromoSectionModal from './PromoSectionModal';
+import { PromoEvent, ReorderPayload } from './types';
 
 const PromoManager = () => {
-  const [promoEvents, setPromoEvents] = useState<PromoEvent[]>([
-    { id: 1, eventId: 1, eventName: "Summer Music Festival", position: 1 },
-    { id: 2, eventId: 2, eventName: "Tech Conference 2024", position: 2 },
-    { id: 3, eventId: 3, eventName: "Food & Wine Expo", position: 3 },
-    { id: 4, eventId: 4, eventName: "Art Gallery Opening", position: 4 },
-    { id: 5, eventId: 5, eventName: "Marathon Championship", position: 5 },
-    { id: 6, eventId: 6, eventName: "Business Networking", position: 6 },
-    { id: 7, eventId: 7, eventName: "Comedy Night Special", position: 7 },
-    { id: 8, eventId: 8, eventName: "Photography Workshop", position: 8 },
-    { id: 9, eventId: 9, eventName: "Photography Workshop", position: 9 },
-    { id: 10, eventId: 10, eventName: "Photography Workshop", position: 10 },
-    { id: 11, eventId: 11, eventName: "Photography Workshop", position: 11 },
-    { id: 12, eventId: 12, eventName: "Photography Workshop", position: 12 },
-  ]);
-
   const router = useRouter();
+  const openModal = useBoolean();
+  const editModal = useBoolean();
+  const deleteModal = useBoolean();
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingPromo, setEditingPromo] = useState<PromoEvent | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [promoEvents, setPromoEvents] = useState<any[]>([]);
   const [activePromo, setActivePromo] = useState<PromoEvent | null>(null);
+  const [editingPromo, setEditingPromo] = useState<PromoEvent | null>(null);
 
-  const handleCreatePromo = (eventId: number, addToTop10: boolean) => {
-    const event = mockEvents.find((e) => e.id === eventId);
-    if (event) {
-      const newPromo: PromoEvent = {
-        id: Date.now(),
-        eventId: event.id,
-        eventName: event.name,
-        position: promoEvents.length + 1,
-      };
-      setPromoEvents([...promoEvents, newPromo]);
+  const [deletePromo, { isLoading: deletePromoLoading }] =
+    useDeletePromoSectionMutation();
+
+  const [reorderPromo, { isLoading: reorderLoading }] =
+    useReorderPromoSectionMutation();
+
+  const { data: apiData, isLoading } = useGetPromoSectionQuery({
+    page: 0,
+    limit: 10,
+  });
+
+  // Update local state when API data changes
+  useEffect(() => {
+    if (apiData?.data) {
+      const sortedData = [...apiData.data].sort((a, b) => a.order - b.order);
+      setPromoEvents(sortedData);
     }
-  };
+  }, [apiData]);
 
-  const handleUpdatePromo = (eventId: number, addToTop10: boolean) => {
-    if (editingPromo) {
-      const event = mockEvents.find((e) => e.id === eventId);
-      if (event) {
-        setPromoEvents(
-          promoEvents.map((p) =>
-            p.id === editingPromo.id
-              ? { ...p, eventId: event.id, eventName: event.name }
-              : p
-          )
-        );
-        setEditingPromo(null);
+  // Handle delete action
+  const handleDelete = useCallback(
+    (id: string) => {
+      if (!id) {
+        showError('No promo selected');
+        return;
       }
+
+      setSelectedId(id);
+      deleteModal.onTrue();
+    },
+    [deleteModal]
+  );
+
+  // Delete API call
+  const onDelete = useCallback(async () => {
+    if (!selectedId) return;
+
+    try {
+      const response = await deletePromo(selectedId).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Deleted successfully');
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
-  };
+  }, [selectedId, deletePromo, deleteModal]);
 
-  const handleDelete = (id: number) => {
-    setPromoEvents(promoEvents.filter((p) => p.id !== id));
-  };
+  // Open edit modal
+  const openEditModal = useCallback(
+    (promo: PromoEvent) => {
+      if (promo) {
+        setEditingPromo(promo);
+        editModal.onTrue();
+        openModal.onTrue();
+      } else {
+        showError('Promo not found');
+      }
+    },
+    [editModal, openModal]
+  );
 
-  const openEditModal = (promo: PromoEvent) => {
-    setEditingPromo(promo);
-    setIsEditModalOpen(true);
-  };
+  // Handle drag start
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+      const draggedPromo = promoEvents.find((promo) => promo._id === active.id);
+      setActivePromo(draggedPromo || null);
+    },
+    [promoEvents]
+  );
 
-  // Drag and Drop Handlers
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const draggedPromo = promoEvents.find(
-      (promo) => promo.id.toString() === active.id
-    );
-    setActivePromo(draggedPromo || null);
-  };
+  // Handle drag end with API call
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActivePromo(null);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActivePromo(null);
+      if (!over || active.id === over.id) return;
 
-    if (!over || active.id === over.id) return;
+      const activeIndex = promoEvents.findIndex(
+        (promo: any) => promo._id === active.id
+      );
+      const overIndex = promoEvents.findIndex(
+        (promo: any) => promo._id === over.id
+      );
 
-    const activeIndex = promoEvents.findIndex(
-      (promo) => promo.id.toString() === active.id
-    );
-    const overIndex = promoEvents.findIndex(
-      (promo) => promo.id.toString() === over.id
-    );
+      if (activeIndex === -1 || overIndex === -1) return;
 
-    if (activeIndex !== -1 && overIndex !== -1) {
-      const newPromoEvents = arrayMove(promoEvents, activeIndex, overIndex);
+      // Get the moved promo and its previous order
+      const movedPromo = promoEvents[activeIndex];
+      const previousOrder = movedPromo.order;
+      const newOrder = promoEvents[overIndex].order;
 
-      // Update positions
-      const updatedPromoEvents = newPromoEvents.map((promo, index) => ({
+      // Optimistically update UI
+      const reorderedArray = arrayMove(promoEvents, activeIndex, overIndex);
+      const updatedPromoEvents = reorderedArray.map((promo, index) => ({
         ...promo,
-        position: index + 1,
+        order: index + 1,
       }));
 
       setPromoEvents(updatedPromoEvents);
-    }
-  };
 
-  const navigateToAllPromos = () => {
-    router.push("/super-admin/browser-control/all-promos");
-  };
+      // Call reorder API
+      try {
+        const payload: ReorderPayload = {
+          movedId: movedPromo?._id,
+          previousOrder,
+          newOrder,
+        };
 
-  const displayedEvents = promoEvents.slice(0, 10);
+        const response = await reorderPromo(payload).unwrap();
+
+        if (response?.error) {
+          // Revert on error
+          setPromoEvents(promoEvents);
+          const errorMessage = getErrorMessage(response.error);
+          showError(errorMessage);
+          return;
+        }
+
+        showSuccess(response?.message || 'Reordered successfully');
+      } catch (error) {
+        // Revert on error
+        setPromoEvents(promoEvents);
+        showError(getErrorMessage(error));
+      }
+    },
+    [promoEvents, reorderPromo]
+  );
+
+  // Navigate to all promos
+  const navigateToAllPromos = useCallback(() => {
+    router.push('/super-admin/browser-control/all-promos');
+  }, [router]);
+
+  // Close modal
+  const handleCloseModal = useCallback(() => {
+    openModal.onFalse();
+    editModal.onFalse();
+    setEditingPromo(null);
+  }, [openModal, editModal]);
+
+  // Display only top 10
+  const displayedEvents = useMemo(
+    () => promoEvents.slice(0, 10),
+    [promoEvents]
+  );
+
+  // Memoize sortable items
+  const sortableIds = useMemo(
+    () => displayedEvents.map((promo: any) => promo?._id),
+    [displayedEvents]
+  );
 
   return (
     <CustomDndProvider
@@ -139,67 +213,83 @@ const PromoManager = () => {
       }
     >
       <div className="p-0">
-        <div className="max-w-full mx-auto">
+        <div className="mx-auto max-w-full">
           {/* Header */}
-          <div className="flex justify-between flex-col sm:flex-row gap-y-2 items-center mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold w-full sm:w-auto text-center sm:text-start text-gray-900 dark:text-white">
+          <div className="mb-6 flex flex-col items-center justify-between gap-y-2 sm:flex-row">
+            <h1 className="w-full text-center text-xl font-bold text-gray-900 sm:w-auto sm:text-start sm:text-2xl dark:text-white">
               Top 10 / Promo Section
             </h1>
 
-            <div>
-              <Dialog
-                open={isCreateModalOpen}
-                onOpenChange={setIsCreateModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button className="rounded-full bg-primary px-3 cursor-pointer text-white hover:bg-primary">
-                    <Plus className="w-4 h-4 mr-1" />
-                    New Promo
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
-            </div>
+            <Button
+              onClick={() => openModal.onTrue()}
+              className="bg-primary hover:bg-primary cursor-pointer rounded-full px-3 text-white"
+              disabled={reorderLoading}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              New Promo
+            </Button>
           </div>
 
           {/* Promo Events List */}
           <SortableContext
-            items={displayedEvents.map((promo) => promo.id.toString())}
+            items={sortableIds}
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-2">
-              {displayedEvents.map((promo) => (
-                <DraggablePromoItem
-                  key={promo.id}
-                  promo={promo}
-                  onEdit={openEditModal}
-                  onDelete={handleDelete}
-                />
-              ))}
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <DraggablePromoItemSkeleton key={i} />
+                ))
+              ) : displayedEvents.length === 0 ? (
+                <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    No promos available. Create your first promo!
+                  </p>
+                </div>
+              ) : (
+                displayedEvents.map((promo: any) => (
+                  <DraggablePromoItem
+                    key={promo?._id}
+                    promo={promo}
+                    onEdit={openEditModal}
+                    onDelete={handleDelete}
+                  />
+                ))
+              )}
             </div>
           </SortableContext>
 
-          <div className="flex justify-center mt-6">
-            <Button
-              variant="outline"
-              onClick={navigateToAllPromos}
-              className="px-6 py-2 border-gray-300 hover:border-gray-400 bg-white"
-            >
-              View All
-            </Button>
-          </div>
+          {/* View All Button */}
+          {displayedEvents.length > 0 && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={navigateToAllPromos}
+                className="border-gray-300 bg-white px-6 py-2 hover:border-gray-400"
+              >
+                View All
+              </Button>
+            </div>
+          )}
 
           {/* Modals */}
-          <CreatePromoModal
-            isOpen={isCreateModalOpen}
-            onOpenChange={setIsCreateModalOpen}
-            onCreatePromo={handleCreatePromo}
+          <PromoSectionModal
+            open={openModal.value}
+            isEdit={editModal.value}
+            onClose={handleCloseModal}
+            selectedData={editingPromo}
           />
 
-          <EditPromoModal
-            isOpen={isEditModalOpen}
-            onOpenChange={setIsEditModalOpen}
-            editingPromo={editingPromo}
-            onUpdatePromo={handleUpdatePromo}
+          <ConfirmDialog
+            open={deleteModal.value}
+            title="Delete Promo"
+            content="Are you sure you want to delete this promo? This action cannot be undone."
+            onClose={() => {
+              deleteModal.onFalse();
+              setSelectedId(null);
+            }}
+            onConfirm={onDelete}
+            isLoading={deletePromoLoading}
           />
         </div>
       </div>

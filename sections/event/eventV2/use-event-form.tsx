@@ -20,16 +20,19 @@ import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
 import { defaultValues } from './constants';
 import { eventValidationSchema } from './validation';
 import type { EventFormValues } from './types';
+import { showError } from '@/utils/toast';
+import { getErrorMessage } from '@/utils/api';
 
 export const useEventForm = (userType: string) => {
-  const [step, setStep] = useState(1);
-  const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [venueModal, setVenueModal] = useState<boolean>(false);
-  const [loading, setLoading] = useState(false);
-  const [isFormInitialized, setIsFormInitialized] = useState(false);
   const { id } = useParams();
   const router = useRouter();
+
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [venueModal, setVenueModal] = useState<boolean>(false);
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
+  const [showPartnerOrganizer, setShowPartnerOrganizer] = useState(false);
 
   // Track if we've set the initial values to prevent re-initialization
   const hasInitializedRef = useRef(false);
@@ -59,8 +62,7 @@ export const useEventForm = (userType: string) => {
     });
 
   const [addEvent, { isLoading: isAddingEvent }] = useAddeventMutation();
-  const [updateEvent, { isLoading: isUpdatingEvent }] =
-    useUpdateeventMutation();
+  const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateeventMutation();
 
   const methods = useForm<EventFormValues>({
     defaultValues,
@@ -73,10 +75,10 @@ export const useEventForm = (userType: string) => {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    // formState: { errors },
   } = methods;
 
-  console.log('errors', errors);
+  // console.log('errors', errors);
 
   const {
     mediaUrl,
@@ -196,14 +198,16 @@ export const useEventForm = (userType: string) => {
 
   const onSubmit = async (data: any) => {
     let imageFileString = '';
+
     try {
       setLoading(true);
-      if (file) {
+      if (file && (file instanceof FileList || Array.isArray(file))) {
         imageFileString = await uploadFileToAzure(file);
         console.log('Uploaded file URL:', imageFileString);
       } else {
         imageFileString = data.mediaUrl || '';
       }
+
       const payload = {
         basicInfo: {
           media: {
@@ -246,15 +250,29 @@ export const useEventForm = (userType: string) => {
 
       console.log('Final Payload:', payload);
 
-      let res = null;
+      let response = null;
+
       if (!id) {
-        res = await addEvent(payload).unwrap();
+        response = await addEvent(payload).unwrap();
       } else {
-        res = await updateEvent({ id: id, ...payload }).unwrap();
+        response = await updateEvent({ id: id, ...payload }).unwrap();
       }
 
-      if (res?.data) {
-        router.push(`/${userType}/events/${res?.data?._id}`);
+      console.log('response', response);
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      if (response?.data) {
+        router.push(`/${userType}/events`);
       }
     } catch (error) {
       if (imageFileString) {

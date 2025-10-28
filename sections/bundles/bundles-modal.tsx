@@ -11,22 +11,22 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 // import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import { useGeteventsQuery } from '@/store/Reducer/events';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import {
+  Calendar,
+  ChevronDown,
+  Package,
+  Plus,
+  Ticket,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import {
-  Package,
-  Ticket,
-  Calendar,
-  Trash2,
-  Plus,
-  ChevronDown,
-} from 'lucide-react';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
-import { useGeteventsQuery } from '@/store/Reducer/events';
 
 // Professional Dropdown Component
 const ProfessionalDropdown = ({
@@ -606,17 +606,17 @@ const BundleModal = ({
                     <button
                       type="button"
                       onClick={() => event && setActiveTab('tickets')}
-                      className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium transition ${
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3 font-medium transition ${
                         activeTab === 'tickets'
                           ? 'bg-[#272727] text-gray-100 shadow dark:bg-[#272727] dark:text-white'
-                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
-                      } ${!event ? 'cursor-not-allowed opacity-50' : ''}`}
+                          : 'cursor-pointer text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+                      } ${!event ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       aria-label="Tickets tab"
                       disabled={!event}
                     >
                       <Ticket size={18} />
                       Tickets
-                      {tickets.length > 0 && (
+                      {tickets?.length > 0 && (
                         <span
                           className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
                             activeTab === 'tickets'
@@ -624,7 +624,7 @@ const BundleModal = ({
                               : 'bg-gray-200 dark:bg-gray-700'
                           }`}
                         >
-                          {tickets.length}
+                          {tickets?.length}
                         </span>
                       )}
                     </button>
