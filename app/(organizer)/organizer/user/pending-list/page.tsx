@@ -80,7 +80,6 @@ const Page = () => {
           { name: 'Pending Users List', href: '' },
         ]}
       />
-      <div></div>
 
       <ConfirmDialog
         open={deleteModal.value}
@@ -89,6 +88,7 @@ const Page = () => {
         onClose={deleteModal.onFalse}
         onConfirm={onDelete}
       />
+
       <ConfirmDialog
         open={pendingModal.value}
         title="Active User"
@@ -96,6 +96,7 @@ const Page = () => {
         onClose={pendingModal.onFalse}
         onConfirm={onPending}
       />
+
       <UserTable
         handleDelete={handleDelete}
         handleEdit={handleEdit}

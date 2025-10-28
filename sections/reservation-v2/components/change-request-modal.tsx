@@ -1,7 +1,8 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,7 +36,7 @@ interface ReservationModalProps {
 const defaultValues: ReservationFormValues = {
   name: '',
   phone: '',
-  tableType: '',
+  tableType: 'regular',
   speicialRequirements: '',
   guestNumber: '',
   startTime: '',
@@ -180,11 +181,10 @@ const ReservationModal = ({
                     type="number"
                   />
 
-                  <RHFSelectField
+                  <RHFCustomDropdown
                     name="tableType"
                     label="Table Type"
                     placeholder="Select Table Type"
-                    className="w-full flex-1"
                     options={[
                       { label: 'Regular', value: 'regular' },
                       { label: 'VIP', value: 'vip' },
@@ -193,6 +193,8 @@ const ReservationModal = ({
                       { label: 'Bar', value: 'bar' },
                       { label: 'Window', value: 'window' },
                     ]}
+                    isLoading={false}
+                    showNone={false}
                   />
                 </div>
 

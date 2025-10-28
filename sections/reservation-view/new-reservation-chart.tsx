@@ -21,8 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { showSuccess } from '@/utils/toast';
 import { format } from 'date-fns';
-import { Calendar, Clock, Copy, Timer } from 'lucide-react';
+import { Calendar, Copy, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function ReservationGrid({ setClick }: any) {
@@ -39,8 +40,16 @@ export default function ReservationGrid({ setClick }: any) {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
+  // Copy-paste state
+  const [copiedSlot, setCopiedSlot] = useState<any>(null);
+  const [pasteMode, setPasteMode] = useState(false);
+
+  // All requests state
+  const [allRequests, setAllRequests] = useState<any[]>([]);
+
   useEffect(() => {
     setMounted(true);
+    setAllRequests(generateDummyRequests());
   }, []);
 
   // Generate time slots for dropdowns
@@ -111,16 +120,7 @@ export default function ReservationGrid({ setClick }: any) {
     const typeRequests = {
       Regular: [
         {
-          startTime: '09:15 AM',
-          durationSlots: 3,
-          bookingId: 'BK001',
-          pendingCount: 2,
-          bookedCount: 5,
-          table: 'T101',
-          size: 1,
-        },
-        {
-          startTime: '10:30 AM',
+          startTime: '10:00 AM',
           durationSlots: 4,
           bookingId: 'BK002',
           pendingCount: 0,
@@ -204,8 +204,6 @@ export default function ReservationGrid({ setClick }: any) {
     return requests;
   };
 
-  const allRequests = generateDummyRequests();
-
   const getRequestAtSlot = (type: string, timeIdx: number) => {
     return allRequests.find((request: any) => {
       if (request.type !== type) return false;
@@ -229,28 +227,106 @@ export default function ReservationGrid({ setClick }: any) {
     return endIdx - startIdx;
   };
 
-  // Handle timer icon click
-  // const handleTimerClick = (e: React.MouseEvent, request: any) => {
-  //   e.stopPropagation();
-  //   setSelectedBooking(request);
-  //   setStartTime(request.startTime);
-  //   setEndTime(request.endTime);
-  //   setTimeModalOpen(true);
-  // };
+  // Handle copy slot
+  const handleCopySlot = (e: React.MouseEvent, request: any) => {
+    e.stopPropagation();
+    setCopiedSlot(request);
+    setPasteMode(true);
+    showSuccess('Slot copied! Click on any cell to paste.');
+  };
 
-  // Handle timer icon click (fixed for showing correct times)
+  // Handle paste slot
+  const handlePasteSlot = (type: string, timeIdx: number) => {
+    if (!copiedSlot || !pasteMode) return;
+
+    const clickedTime = timeSlots[timeIdx];
+    const startIdx = getTimeIndex(copiedSlot.startTime);
+    const endIdx = getTimeIndex(copiedSlot.endTime);
+    const duration = endIdx - startIdx;
+
+    // Calculate new start and end time
+    const newStartTime = clickedTime;
+    const newEndTime = addMinutesToTime(newStartTime, duration * 15);
+
+    // Check if there's any existing slot in the target range
+    const conflictingSlots = allRequests.filter((req: any) => {
+      if (req.type !== type) return false;
+      const reqStartIdx = getTimeIndex(req.startTime);
+      const reqEndIdx = getTimeIndex(req.endTime);
+
+      // Check if there's any overlap
+      return (
+        (timeIdx >= reqStartIdx && timeIdx < reqEndIdx) ||
+        (timeIdx + duration > reqStartIdx && timeIdx + duration <= reqEndIdx) ||
+        (timeIdx <= reqStartIdx && timeIdx + duration >= reqEndIdx)
+      );
+    });
+
+    // Shift conflicting slots forward
+    const updatedRequests = allRequests.map((req: any) => {
+      const isConflicting = conflictingSlots.find(
+        (cs: any) => cs.bookingId === req.bookingId
+      );
+
+      if (isConflicting && req.type === type) {
+        const reqStartIdx = getTimeIndex(req.startTime);
+        const reqEndIdx = getTimeIndex(req.endTime);
+        const reqDuration = reqEndIdx - reqStartIdx;
+
+        // Calculate how much to shift
+        const shiftAmount = timeIdx + duration - reqStartIdx;
+
+        if (shiftAmount > 0) {
+          // Shift the slot forward
+          const newReqStartTime = addMinutesToTime(
+            req.startTime,
+            shiftAmount * 15
+          );
+          const newReqEndTime = addMinutesToTime(
+            newReqStartTime,
+            reqDuration * 15
+          );
+
+          return {
+            ...req,
+            startTime: newReqStartTime,
+            endTime: newReqEndTime,
+          };
+        }
+      }
+
+      return req;
+    });
+
+    // Add the new pasted slot
+    const newSlot = {
+      ...copiedSlot,
+      type: type,
+      startTime: newStartTime,
+      endTime: newEndTime,
+      bookingId: `BK${String(Date.now()).slice(-3)}`,
+    };
+
+    setAllRequests([...updatedRequests, newSlot]);
+    setPasteMode(false);
+    setCopiedSlot(null);
+    showSuccess('Slot pasted successfully!');
+  };
+
+  // Handle cell click for pasting
+  const handleCellClick = (type: string, timeIdx: number) => {
+    if (pasteMode && copiedSlot) {
+      handlePasteSlot(type, timeIdx);
+    }
+  };
+
+  // Handle timer icon click
   const handleTimerClick = (e: React.MouseEvent, request: any) => {
     e.stopPropagation();
     setSelectedBooking(request);
-
-    // Ensure modal opens after times are set
-    setStartTime(request.startTime || '10:00 AM');
-    setEndTime(request.endTime || '12:00 PM');
-
-    // Small delay ensures state is updated before opening modal
-    setTimeout(() => {
-      setTimeModalOpen(true);
-    }, 0);
+    setStartTime(request.startTime);
+    setEndTime(request.endTime);
+    setTimeModalOpen(true);
   };
 
   // Handle calendar icon click
@@ -262,29 +338,47 @@ export default function ReservationGrid({ setClick }: any) {
 
   // Handle time update
   const handleTimeUpdate = () => {
-    console.log('Updated time:', {
-      bookingId: selectedBooking?.bookingId,
-      startTime,
-      endTime,
+    if (!selectedBooking) return;
+
+    const updatedRequests = allRequests.map((req: any) => {
+      if (req.bookingId === selectedBooking.bookingId) {
+        return {
+          ...req,
+          startTime: startTime,
+          endTime: endTime,
+        };
+      }
+      return req;
     });
+
+    setAllRequests(updatedRequests);
     setTimeModalOpen(false);
+    setSelectedBooking(null);
+    showSuccess('Time updated successfully!');
   };
 
-  // Handle multi-date selection
+  // Handle date selection for multi-date picker
   const handleDateSelect = (dates: Date[] | undefined) => {
-    if (!dates) {
-      setSelectedDates([]);
-      return;
+    if (dates) {
+      setSelectedDates(dates);
     }
-    setSelectedDates(dates);
   };
 
+  // Handle multi-date confirmation
   const handleMultiDateConfirm = () => {
-    console.log('Selected dates for booking:', {
-      bookingId: selectedBooking?.bookingId,
-      dates: selectedDates.map((d) => format(d, 'dd MMM yyyy')),
-    });
+    if (selectedDates.length === 0 || !selectedBooking) return;
+
+    showSuccess(`Slot copied to ${selectedDates.length} date(s)!`);
     setDatePickerOpen(false);
+    setSelectedDates([]);
+    setSelectedBooking(null);
+  };
+
+  // Cancel paste mode
+  const handleCancelPaste = () => {
+    setPasteMode(false);
+    setCopiedSlot(null);
+    showSuccess('Paste mode cancelled.');
   };
 
   if (!mounted) {
@@ -292,48 +386,54 @@ export default function ReservationGrid({ setClick }: any) {
   }
 
   return (
-    <div className="w-full text-black dark:bg-black dark:text-white">
+    <div>
       {/* Time Update Modal */}
       <Dialog open={timeModalOpen} onOpenChange={setTimeModalOpen}>
-        <DialogContent className="border-gray-300 bg-white sm:max-w-md dark:border-zinc-700 dark:bg-zinc-900">
+        <DialogContent className="border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Update Time
-            </DialogTitle>
+            <DialogTitle>Update Booking Time</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Start Time</label>
-              <Select value={startTime} onValueChange={setStartTime}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-[20rem]">
-                  {timeSlotOptions.map((slot) => (
-                    <SelectItem key={slot} value={slot}>
-                      {slot}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-4 pt-2 pb-4">
+            <div className="flex items-center justify-start gap-x-2">
+              <label className="text-md font-medium">Booking ID:</label>
+              <div className="text-md font-medium">
+                {selectedBooking?.bookingId}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">End Time</label>
-              <Select value={endTime} onValueChange={setEndTime}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="max-h-[20rem]">
-                  {timeSlotOptions.map((slot) => (
-                    <SelectItem key={slot} value={slot}>
-                      {slot}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="w-full space-y-2">
+                <label className="text-sm font-medium">Start Time</label>
+                <Select value={startTime} onValueChange={setStartTime}>
+                  <SelectTrigger className="w-full border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[20rem] border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                    {timeSlotOptions.map((time) => (
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">End Time</label>
+                <Select value={endTime} onValueChange={setEndTime}>
+                  <SelectTrigger className="w-full border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[20rem] border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+                    {timeSlotOptions.map((time) => (
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -349,7 +449,7 @@ export default function ReservationGrid({ setClick }: any) {
               onClick={handleTimeUpdate}
               className="bg-green-600 text-white hover:bg-green-700"
             >
-              Update Time
+              Update
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -373,7 +473,7 @@ export default function ReservationGrid({ setClick }: any) {
               mode="multiple"
               selected={selectedDates}
               onSelect={handleDateSelect}
-              className="w-full rounded-md border border-gray-300 dark:border-zinc-700"
+              className="w-full rounded-md border border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
             />
 
             {selectedDates && selectedDates.length > 0 && (
@@ -386,7 +486,7 @@ export default function ReservationGrid({ setClick }: any) {
                     <Badge
                       key={idx}
                       variant="secondary"
-                      className="text-xs text-white"
+                      className="bg-black text-xs text-white dark:bg-white dark:text-black"
                     >
                       {date instanceof Date
                         ? format(date, 'dd-MM-yy')
@@ -445,6 +545,22 @@ export default function ReservationGrid({ setClick }: any) {
                 </PopoverContent>
               </Popover>
             </CardTitle>
+
+            {pasteMode && (
+              <div className="flex items-center gap-2">
+                <Badge className="bg-blue-600 text-white">
+                  Paste Mode Active - Click any cell to paste
+                </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancelPaste}
+                  className="border-red-500 text-red-500 hover:bg-red-50"
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
       </Card>
@@ -487,7 +603,12 @@ export default function ReservationGrid({ setClick }: any) {
                       <td
                         key={timeIdx}
                         colSpan={isStart ? span : 1}
-                        className="border border-gray-300 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-950"
+                        onClick={() => handleCellClick(type, timeIdx)}
+                        className={`border border-gray-300 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-950 ${
+                          pasteMode && !request
+                            ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                            : ''
+                        }`}
                       >
                         {request && isStart && (
                           <div
@@ -542,6 +663,7 @@ export default function ReservationGrid({ setClick }: any) {
                                   title="Copy"
                                   type="button"
                                   className="cursor-pointer transition-colors hover:text-green-600"
+                                  onClick={(e) => handleCopySlot(e, request)}
                                 >
                                   <Copy className="size-4" />
                                 </button>

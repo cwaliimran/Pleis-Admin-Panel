@@ -52,17 +52,14 @@ const activeBookings: ActiveBooking[] = [
 ];
 
 const ReservationCalendar: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [click, setClick] = useState(false);
-  const [pendingBookings, setPendingBookings] =
-    useState<Booking[]>(mockBookings);
-
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [pendingBookings, setPendingBookings] = useState<Booking[]>(mockBookings);
 
-  const handleConfirm = (id: number) =>
-    setPendingBookings((prev) => prev.filter((b) => b.id !== id));
-  const handleReject = (id: number) =>
-    setPendingBookings((prev) => prev.filter((b) => b.id !== id));
+
+  const handleConfirm = (id: number) => setPendingBookings((prev) => prev.filter((b) => b.id !== id));
+  const handleReject = (id: number) => setPendingBookings((prev) => prev.filter((b) => b.id !== id));
   const handleChange = (id: number) => console.log('Change booking:', id);
 
   const formatDate = (date: Date) =>
@@ -110,9 +107,7 @@ const ReservationCalendar: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div
-            className={`col-span-12 space-y-6 ${click ? 'lg:col-span-7' : 'lg:col-span-12'}`}
-          >
+          <div className={`col-span-12 space-y-6 ${click ? 'lg:col-span-7' : 'lg:col-span-12'}`}>
             <ReservationGrid setClick={setClick} />
           </div>
 
