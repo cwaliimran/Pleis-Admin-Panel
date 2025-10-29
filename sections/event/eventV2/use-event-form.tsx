@@ -62,7 +62,8 @@ export const useEventForm = (userType: string) => {
     });
 
   const [addEvent, { isLoading: isAddingEvent }] = useAddeventMutation();
-  const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateeventMutation();
+  const [updateEvent, { isLoading: isUpdatingEvent }] =
+    useUpdateeventMutation();
 
   const methods = useForm<EventFormValues>({
     defaultValues,
@@ -201,7 +202,8 @@ export const useEventForm = (userType: string) => {
 
     try {
       setLoading(true);
-      if (file && (file instanceof FileList || Array.isArray(file))) {
+      // if (file && (file instanceof FileList || Array.isArray(file))) {
+      if (file && file instanceof File) {
         imageFileString = await uploadFileToAzure(file);
         console.log('Uploaded file URL:', imageFileString);
       } else {
@@ -416,6 +418,7 @@ export const useEventForm = (userType: string) => {
     organization,
   };
 };
+
 // 'use client';
 
 // import { yupResolver } from '@hookform/resolvers/yup';
