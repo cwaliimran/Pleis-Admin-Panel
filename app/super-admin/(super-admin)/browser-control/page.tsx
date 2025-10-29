@@ -1,5 +1,5 @@
-import Header from "@/app/common/header";
-import BrowserControlPage from "@/sections/brower-control/browser-control-view";
+import Header from '@/app/common/header';
+import BrowserControlPage from '@/sections/brower-control/browser-control-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -11,8 +11,8 @@ const Page = () => {
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Browser Control", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Browser Control', href: '' },
         ]}
       />
 

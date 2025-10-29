@@ -25,7 +25,13 @@ import { DraggablePromoItemSkeleton } from './DraggablePromoItemSkeleton';
 import PromoSectionModal from './PromoSectionModal';
 import { PromoEvent, ReorderPayload } from './types';
 
-const PromoManager = () => {
+type PromoManagerProps = {
+  heading?: string;
+  viewAll?: boolean;
+  fixLength?: boolean;
+};
+
+const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
   const router = useRouter();
   const openModal = useBoolean();
   const editModal = useBoolean();
@@ -173,7 +179,6 @@ const PromoManager = () => {
     [promoEvents, reorderPromo]
   );
 
-  // Navigate to all promos
   const navigateToAllPromos = useCallback(() => {
     router.push('/super-admin/browser-control/all-promos');
   }, [router]);
@@ -185,13 +190,11 @@ const PromoManager = () => {
     setEditingPromo(null);
   }, [openModal, editModal]);
 
-  // Display only top 10
   const displayedEvents = useMemo(
     () => promoEvents.slice(0, 10),
     [promoEvents]
   );
 
-  // Memoize sortable items
   const sortableIds = useMemo(
     () => displayedEvents.map((promo: any) => promo?._id),
     [displayedEvents]
@@ -217,7 +220,7 @@ const PromoManager = () => {
           {/* Header */}
           <div className="mb-6 flex flex-col items-center justify-between gap-y-2 sm:flex-row">
             <h1 className="w-full text-center text-xl font-bold text-gray-900 sm:w-auto sm:text-start sm:text-2xl dark:text-white">
-              Top 10 / Promo Section
+              {heading}
             </h1>
 
             <Button
@@ -240,27 +243,29 @@ const PromoManager = () => {
                 Array.from({ length: 3 }).map((_, i) => (
                   <DraggablePromoItemSkeleton key={i} />
                 ))
-              ) : displayedEvents.length === 0 ? (
+              ) : promoEvents.length === 0 ? (
                 <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
                   <p className="text-gray-500 dark:text-gray-400">
                     No promos available. Create your first promo!
                   </p>
                 </div>
               ) : (
-                displayedEvents.map((promo: any) => (
-                  <DraggablePromoItem
-                    key={promo?._id}
-                    promo={promo}
-                    onEdit={openEditModal}
-                    onDelete={handleDelete}
-                  />
-                ))
+                (fixLength ? promoEvents.slice(0, 10) : promoEvents).map(
+                  (promo: any) => (
+                    <DraggablePromoItem
+                      key={promo?._id}
+                      promo={promo}
+                      onEdit={openEditModal}
+                      onDelete={handleDelete}
+                    />
+                  )
+                )
               )}
             </div>
           </SortableContext>
 
           {/* View All Button */}
-          {displayedEvents.length > 0 && (
+          {displayedEvents.length > 0 && viewAll && (
             <div className="mt-6 flex justify-center">
               <Button
                 variant="outline"

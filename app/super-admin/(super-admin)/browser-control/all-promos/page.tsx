@@ -1,18 +1,23 @@
-import Header from "@/app/common/header";
-import ViewAllPromos from "@/sections/brower-control/components/main-setting/view-all-promo/view-all-promo";
+import Header from '@/app/common/header';
+import PromoManager from '@/sections/brower-control/components/main-setting/promo-manager/promo-manager';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Browser Control - Pleis',
+};
 
 const Page = () => {
   return (
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Browser Control", href: "/super-admin/browser-control" },
-          { name: "All Promos", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Browser Control', href: '/super-admin/browser-control' },
+          { name: 'All Promos', href: '' },
         ]}
       />
 
-      <ViewAllPromos />
+      <PromoManager heading="All Promos" viewAll={false} fixLength={false} />
     </div>
   );
 };

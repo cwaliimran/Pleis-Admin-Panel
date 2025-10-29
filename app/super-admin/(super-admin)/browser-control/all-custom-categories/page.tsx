@@ -1,5 +1,10 @@
 import Header from "@/app/common/header";
 import { ViewAllCategoryManagement } from "@/sections/brower-control/components/main-setting/view-all-custom-categories/view-all-custom-categories";
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Browser Control - Pleis',
+};
 
 const Page = () => {
   return (

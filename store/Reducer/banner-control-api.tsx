@@ -9,18 +9,18 @@ export const bannerControlApi = createApi({
 
   endpoints: (builder) => ({
     getBannerControl: builder.query({
-      query: ({ search, page, status, date, limit }) => {
-        const params: any = {
-          keyword: search,
-          status,
-          page: page + 1,
-          limit,
-        };
-        if (date) (params as any).date = date;
+      query: () => {
+        // const params: any = {
+        //   keyword: search,
+        //   status,
+        //   page: page + 1,
+        //   limit,
+        // };
+        // if (date) (params as any).date = date;
         return {
           url: API_ROUTES.BANNER_CONTROL,
           method: 'GET',
-          params,
+          // params,
         };
       },
       transformResponse: (res) => ({
