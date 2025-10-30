@@ -1,5 +1,6 @@
-import Header from "@/app/common/header";
-import { ViewAllCategoryManagement } from "@/sections/brower-control/components/main-setting/view-all-custom-categories/view-all-custom-categories";
+import Header from '@/app/common/header';
+import { CategoryManagement } from '@/sections/brower-control/components/main-setting/category/category';
+// import { ViewAllCategoryManagement } from '@/sections/brower-control/components/main-setting/view-all-custom-categories/view-all-custom-categories';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -11,13 +12,14 @@ const Page = () => {
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Browser Control", href: "/super-admin/browser-control" },
-          { name: "All Custom Categories", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Browser Control', href: '/super-admin/browser-control' },
+          { name: 'All Custom Categories', href: '' },
         ]}
       />
 
-      <ViewAllCategoryManagement />
+      {/* <ViewAllCategoryManagement /> */}
+      <CategoryManagement heading="All Promos" viewAll={false} fixLength={false}/>
     </div>
   );
 };

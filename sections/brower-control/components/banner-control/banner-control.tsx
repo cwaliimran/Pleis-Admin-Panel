@@ -78,7 +78,8 @@ const BannerControl = () => {
   };
 
   // ------- DELETE BANNER ------- //
-  const [deleteBanner, { isLoading: deleteLoading }] = useDeleteBannerControlMutation();
+  const [deleteBanner, { isLoading: deleteLoading }] =
+    useDeleteBannerControlMutation();
 
   const handleDelete = useCallback(
     (id: string) => {

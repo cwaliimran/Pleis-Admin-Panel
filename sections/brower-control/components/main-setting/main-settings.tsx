@@ -10,13 +10,17 @@ const MainSettings = () => {
         <PromoManager
           heading="Top 10 / Promo Section"
           viewAll={true}
-          fixLength={false}
+          fixLength={true}
         />
       </div>
 
       <div className="mt-8 grid w-full grid-cols-1 gap-4 px-4 lg:grid-cols-2">
         <div>
-          <CategoryManagement />
+          <CategoryManagement
+            heading="Custom Categories"
+            viewAll={true}
+            fixLength={true}
+          />
         </div>
         <div>
           <PinnedContentV2 />

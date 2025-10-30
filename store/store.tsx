@@ -29,6 +29,7 @@ import { challengesApi } from './Reducer/challenges-api';
 import { tiersApi } from './Reducer/tiers-api';
 import { promoSectionApi } from './Reducer/promo-section-api';
 import { bannerControlApi } from './Reducer/banner-control-api';
+import { customCategoriesApi } from './Reducer/custom-categories-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -57,6 +58,7 @@ const appReducer = combineReducers({
   [tiersApi.reducerPath]: tiersApi.reducer,
   [promoSectionApi.reducerPath]: promoSectionApi.reducer,
   [bannerControlApi.reducerPath]: bannerControlApi.reducer,
+  [customCategoriesApi.reducerPath]: customCategoriesApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -92,6 +94,7 @@ export const store = configureStore({
       tiersApi.middleware,
       promoSectionApi.middleware,
       bannerControlApi.middleware,
+      customCategoriesApi.middleware,
       menuListApi.middleware
     ),
 });
