@@ -1,23 +1,15 @@
 'use client';
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
+import { capitalizeFirstLetter } from '@/utils/format-time';
 
-const RewardsTableRow: FC<TableRowProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
+const RewardsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   const formatCreationMethod = (method: string) => {
     switch (method) {
       case 'buyMenuItemReward':
@@ -39,55 +31,39 @@ const RewardsTableRow: FC<TableRowProps> = ({
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.mediaInfo?.url && item?.mediaInfo?.name !== 'noimage.png' ? (
-            <AvatarImage
-              src={item?.mediaInfo?.url}
-              alt="Menu Item"
-              className="h-full w-full cursor-pointer object-cover"
-            />
+          {item?.media && item.media !== noImageUrl && item.media !== noImageUrlDev ? (
+            <AvatarImage src={item?.media} alt="Menu Item" className="h-full w-full cursor-pointer object-cover" />
           ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.title?.[0]?.toUpperCase() || ''}
-            </span>
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
           )}
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left">{item?.title || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left capitalize">
+      <TableCell className="text-left">
         {item?.description && item?.description?.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
-              <span
-                className="cursor-pointer hover:text-blue-600"
-                title="Click to view full description"
-              >
+              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
                 {item?.description?.slice(0, 22) + '...'}
               </span>
             </DialogTrigger>
-            <DialogContent
-              aria-describedby={undefined}
-              className="dark:bg-secondary max-w-md"
-            >
+            <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
               <DialogHeader>
                 <DialogTitle>Description</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {item?.description}
-                </p>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{capitalizeFirstLetter(item?.description || '-')}</p>
               </div>
             </DialogContent>
           </Dialog>
         ) : (
-          item?.description || '-'
+          capitalizeFirstLetter(item?.description || '-')
         )}
       </TableCell>
 
-      <TableCell className="text-left capitalize">
-        {item?.sortingType}
-      </TableCell>
+      <TableCell className="text-left capitalize">{item?.sortingType}</TableCell>
 
       <TableCell className="text-left">
         <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -95,17 +71,11 @@ const RewardsTableRow: FC<TableRowProps> = ({
         </span>
       </TableCell>
 
-      <TableCell className="text-left">
-        {item?.minPointsRequiredToClaim}
-      </TableCell>
+      <TableCell className="text-left">{item?.minPointsRequiredToClaim}</TableCell>
 
-      <TableCell className="text-left">
-        {formatValue(item?.claimLimit)}
-      </TableCell>
+      <TableCell className="text-left">{formatValue(item?.claimLimit)}</TableCell>
 
-      <TableCell className="text-left capitalize">
-        {formatValue(item.tierLimit)}
-      </TableCell>
+      <TableCell className="text-left capitalize">{formatValue(item.tierLimit)}</TableCell>
 
       <TableCell className="text-left">{item?.percentOff}%</TableCell>
 

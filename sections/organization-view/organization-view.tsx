@@ -3,10 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteOrganizationMutation,
-  useGetOrganizationQuery,
-} from '@/store/Reducer/organization';
+import { useDeleteOrganizationMutation, useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -32,8 +29,7 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [deleteOrganization, { isLoading: deleteOrganizationLoading }] =
-    useDeleteOrganizationMutation();
+  const [deleteOrganization, { isLoading: deleteOrganizationLoading }] = useDeleteOrganizationMutation();
 
   const { data: apiData, isLoading } = useGetOrganizationQuery({
     page: page - 1,
@@ -111,10 +107,7 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleNavigateToCreate}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleNavigateToCreate}>
             <Plus />
             Create Organization
           </Button>

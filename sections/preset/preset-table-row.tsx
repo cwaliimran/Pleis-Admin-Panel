@@ -1,92 +1,63 @@
 'use client';
 
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+import CustomBadge from '@/components/ui/custom-badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { capitalizeFirstLetter, fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
-import CustomBadge from '@/components/ui/custom-badge';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { fDate, formatStr } from '@/utils/format-time';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 
-const PresetTableRow: FC<TableRowProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
+const PresetTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="w-20">
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
-            <AvatarImage
-              src={item.imageInfo.url}
-              alt="Store"
-              className="h-full w-full cursor-pointer object-cover"
-            />
+          {/* {item?.imageInfo?.url && item.imageInfo.name !== 'noimage.png' ? (
+            <AvatarImage src={item.imageInfo.url} alt="Store" className="h-full w-full cursor-pointer object-cover" />
           ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.title?.[0]?.toUpperCase() || ''}
-            </span>
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
+          )} */}
+
+          {item?.image && item.image !== noImageUrl && item.image !== noImageUrlDev ? (
+            <AvatarImage src={item?.image} alt="Store" className="h-full w-full cursor-pointer object-cover" />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
           )}
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left">{item?.title}</TableCell>
+      <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
       <TableCell className="text-left">
         {item.description.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
-              <span
-                className="cursor-pointer hover:text-blue-600"
-                title="Click to view full description"
-              >
+              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
                 {item.description.slice(0, 22) + '...'}
               </span>
             </DialogTrigger>
-            <DialogContent
-              aria-describedby={undefined}
-              className="dark:bg-secondary max-w-md"
-            >
+            <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
               <DialogHeader>
                 <DialogTitle>Description</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {item.description}
-                </p>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{capitalizeFirstLetter(item?.description || '-')}</p>
               </div>
             </DialogContent>
           </Dialog>
         ) : (
-          item.description
+          capitalizeFirstLetter(item?.description || '-')
         )}
       </TableCell>
 
       <TableCell className="text-left">{item?.basePrice}</TableCell>
 
-      <TableCell className="text-left">
-        {fDate(item?.createdAt, formatStr.paramCase.date)}
-      </TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge
-          variant={
-            item.status === 'active'
-              ? 'success'
-              : item.status === 'inactive'
-                ? 'error'
-                : 'info'
-          }
-        >
-          {item.status}
-        </CustomBadge>
+        <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="w-32 text-end">

@@ -2,11 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useAddUserMutation,
-  useAddUserSuperAdminAndGuestMutation,
-  useGetUserListQuery,
-} from '@/store/Reducer/user-list';
+import { useAddUserMutation, useAddUserSuperAdminAndGuestMutation, useGetUserListQuery } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -39,11 +35,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const [imageUploading, setimageUploading] = useState<boolean>(false);
 
   const [addUser, { isLoading: addUserLoading }] = useAddUserMutation();
-
-  const [
-    addUserSuperAdminAndGuest,
-    { isLoading: addUserSuperAdminAndGuestLoading },
-  ] = useAddUserSuperAdminAndGuestMutation();
+  const [addUserSuperAdminAndGuest, { isLoading: addUserSuperAdminAndGuestLoading }] = useAddUserSuperAdminAndGuestMutation();
 
   const { data: apiData, isLoading } = useGetUserListQuery({
     page: page - 1,
@@ -140,9 +132,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   };
 
   const handleEdit = (id: string) => {
-    const userToEdit = venueTypes.find(
-      (item: any) => item?.basicInfo?._id === id
-    );
+    const userToEdit = venueTypes.find((item: any) => item?.basicInfo?._id === id);
     if (userToEdit) {
       setSelectedId(id);
       editModal.onTrue();
@@ -156,10 +146,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
       {!memberPage && (
         <div>
           <div className="flex w-full items-center justify-end">
-            <Button
-              className="cursor-pointer rounded-4xl bg-blue-700 py-2 text-white hover:bg-blue-800"
-              onClick={createModal.onTrue}
-            >
+            <Button className="cursor-pointer rounded-4xl bg-blue-700 py-2 text-white hover:bg-blue-800" onClick={createModal.onTrue}>
               <Plus />
               Create User
             </Button>
@@ -210,39 +197,33 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
         }}
       />
 
-      <CustomUserModal
-        open={createModal.value}
-        isEdit={false}
-        onClose={CloseCreateModal}
-        userType={usertype}
-        onSubmit={onCreateSubmit}
-        isLoading={
-          addUserLoading || addUserSuperAdminAndGuestLoading || imageUploading
-        }
-        initialData={null}
-      />
+      {createModal.value && (
+        <CustomUserModal
+          open={createModal.value}
+          isEdit={false}
+          onClose={CloseCreateModal}
+          userType={usertype}
+          onSubmit={onCreateSubmit}
+          isLoading={addUserLoading || addUserSuperAdminAndGuestLoading || imageUploading}
+          initialData={null}
+        />
+      )}
 
-      <EditUserModal
-        open={editModal.value}
-        onClose={() => editModal.onFalse()}
-        selectedId={selectedId}
-        userData={venueTypes.find(
-          (item: any) => item?.basicInfo?._id === selectedId
-        )}
-        onUpdateSuccess={(updatedUser) => {
-          setVenueTypes((prev) =>
-            prev.map((item) =>
-              item.basicInfo?._id === selectedId
-                ? { ...item, ...updatedUser }
-                : item
-            )
-          );
-          showSuccess('User updated successfully');
-          editModal.onFalse();
-        }}
-        isLoading={false}
-        userType={usertype}
-      />
+      {editModal.value && (
+        <EditUserModal
+          open={editModal.value}
+          onClose={() => editModal.onFalse()}
+          selectedId={selectedId}
+          userData={venueTypes.find((item: any) => item?.basicInfo?._id === selectedId)}
+          onUpdateSuccess={(updatedUser) => {
+            setVenueTypes((prev) => prev.map((item) => (item.basicInfo?._id === selectedId ? { ...item, ...updatedUser } : item)));
+            showSuccess('User updated successfully');
+            editModal.onFalse();
+          }}
+          isLoading={false}
+          userType={usertype}
+        />
+      )}
     </div>
   );
 };

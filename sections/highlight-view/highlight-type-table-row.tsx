@@ -1,11 +1,7 @@
 'use client';
 
 import CustomBadge from '@/components/ui/custom-badge';
-import {
-  Dialog,
-  DialogContent, DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
@@ -17,53 +13,31 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
-const HighlightTypeTableRow: FC<PageProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
+const HighlightTypeTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell className="text-left font-medium capitalize">
-        {item?.title || '-'}
-      </TableCell>
+      <TableCell className="text-left font-medium capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell>
-        {item?.type === 'organization' ? item?.object?.basicInfo?.name : '-'}
-      </TableCell>
+      <TableCell>{item?.type === 'organization' ? item?.object?.basicInfo?.name : '-'}</TableCell>
 
-      <TableCell>
-        {item?.type === 'event' ? item?.object?.basicInfo?.title : '-'}
-      </TableCell>
+      <TableCell>{item?.type === 'event' ? item?.object?.basicInfo?.title : '-'}</TableCell>
 
       <TableCell>
         <Dialog>
           <DialogTrigger asChild>
             <Play className="text-primary h-4 w-4 cursor-pointer" />
           </DialogTrigger>
-          <DialogContent
-            aria-description={undefined}
-            className="max-w-2xl overflow-hidden p-2"
-          >
+          <DialogContent aria-description={undefined} className="max-w-2xl overflow-hidden p-2">
             <DialogTitle className="sr-only">Media Preview</DialogTitle>
-            <video
-              controls
-              autoPlay
-              className="h-full w-full"
-              src={item?.mediaInfo?.url || ''}
-            />
+            <video controls autoPlay className="h-full w-full" src={item?.media || ''} />
           </DialogContent>
         </Dialog>
       </TableCell>
 
-      <TableCell className="text-left text-sm">
-        {fDate(item?.createdAt, formatStr.paramCase.date)}
-      </TableCell>
+      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
-        <CustomBadge variant={getStatusVariant(item?.status)}>
-          {item?.status}
-        </CustomBadge>
+        <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

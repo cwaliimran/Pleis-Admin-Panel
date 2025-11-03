@@ -6,21 +6,12 @@ import RHFCustomCreatableDropdown from '@/components/rhf/rhf-custom-create-dropd
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
-import {
-  useAddMenuItemMutation,
-  useUpdateMenuItemMutation,
-} from '@/store/Reducer/menu-items-api';
+import { useAddMenuItemMutation, useUpdateMenuItemMutation } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
 import { getErrorMessage } from '@/utils/api';
@@ -33,18 +24,11 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 // Utility function to convert hh:mm A to HH:mm
-const parse12HourTo24Hour = (
-  time: string | null | undefined
-): string | null => {
+const parse12HourTo24Hour = (time: string | null | undefined): string | null => {
   if (!time) return null;
   const [timePart, period] = time.split(' ');
   const [hours, minutes] = timePart.split(':').map(Number);
-  const formattedHour =
-    period === 'PM' && hours !== 12
-      ? hours + 12
-      : period === 'AM' && hours === 12
-        ? 0
-        : hours;
+  const formattedHour = period === 'PM' && hours !== 12 ? hours + 12 : period === 'AM' && hours === 12 ? 0 : hours;
   return `${formattedHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 
@@ -103,21 +87,11 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   status: Yup.string(),
 });
 
-const MenuItemModal = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-}: MenuItemModalProps) => {
-  console.log('selectedData', selectedData);
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItemModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const [addMenuItem, { isLoading: addMenuItemLoading }] = useAddMenuItemMutation();
+  const [updateMenuItem, { isLoading: updateMenuItemLoading }] = useUpdateMenuItemMutation();
   const [deleting, setDeleting] = useState(false);
-
-  const [addMenuItem, { isLoading: addMenuItemLoading }] =
-    useAddMenuItemMutation();
-
-  const [updateMenuItem, { isLoading: updateMenuItemLoading }] =
-    useUpdateMenuItemMutation();
 
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema),
@@ -132,14 +106,13 @@ const MenuItemModal = ({
     date: undefined,
   });
 
-  const { data: itemCategoryData, isLoading: itemCategoryLoading } =
-    useGetItemsCategoryQuery({
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-      date: undefined,
-    });
+  const { data: itemCategoryData, isLoading: itemCategoryLoading } = useGetItemsCategoryQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
 
   const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery({
     page: 0,
@@ -176,12 +149,7 @@ const MenuItemModal = ({
       reset({
         image: (() => {
           const img = selectedData?.imageInfo?.url;
-          if (
-            !img ||
-            img === noImageUrl ||
-            img === noImageUrlDev ||
-            img.toLowerCase().includes('noimage.png')
-          ) {
+          if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
             return null;
           }
           return img;
@@ -206,9 +174,7 @@ const MenuItemModal = ({
 
   useEffect(() => {
     if (selectedPreset && presetData?.data) {
-      const selectedPresetData = presetData.data.find(
-        (preset: any) => preset._id === selectedPreset
-      );
+      const selectedPresetData = presetData.data.find((preset: any) => preset._id === selectedPreset);
       if (selectedPresetData) {
         setValue('title', selectedPresetData.title || '');
         setValue('basePrice', selectedPresetData.basePrice || '');
@@ -245,9 +211,7 @@ const MenuItemModal = ({
         title: formData.title,
         description: formData.description,
         basePrice: Number(formData.basePrice),
-        discountPrice: formData.discountPrice
-          ? Number(formData.discountPrice)
-          : null,
+        discountPrice: formData.discountPrice ? Number(formData.discountPrice) : null,
         taxPercent: Number(formData.taxPercent),
         type: formData.type,
         category: formData.category,
@@ -265,10 +229,7 @@ const MenuItemModal = ({
         payload.id = selectedData?._id;
       }
 
-      const response =
-        isEdit && selectedData
-          ? await updateMenuItem(payload).unwrap()
-          : await addMenuItem(payload).unwrap();
+      const response = isEdit && selectedData ? await updateMenuItem(payload).unwrap() : await addMenuItem(payload).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -280,12 +241,7 @@ const MenuItemModal = ({
         return;
       }
 
-      showSuccess(
-        response?.message ||
-          (isEdit
-            ? 'Menu item updated successfully'
-            : 'Menu item created successfully')
-      );
+      showSuccess(response?.message || (isEdit ? 'Menu item updated successfully' : 'Menu item created successfully'));
 
       methods.reset(defaultValues);
       onClose();
@@ -317,28 +273,17 @@ const MenuItemModal = ({
           className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]"
         >
           <DialogHeader>
-            <DialogTitle>
-              {isEdit ? 'Edit Menu Item' : 'Create Menu Item'}
-            </DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Menu Item' : 'Create Menu Item'}</DialogTitle>
           </DialogHeader>
           <div className="w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
-                {/* <RHFUploadAvatar name="image" label="Item Image" /> */}
                 <RHFUploadAvatar
                   name="image"
                   label="Profile Image"
                   initialImage={(() => {
-                    const img = selectedData?.imageInfo?.url;
-                    if (
-                      !img ||
-                      img === noImageUrl ||
-                      img === noImageUrlDev ||
-                      img.toLowerCase().includes('noimage.png')
-                    ) {
+                    const img = selectedData?.image;
+                    if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
                       return null;
                     }
                     return img;
@@ -366,16 +311,8 @@ const MenuItemModal = ({
                     )}
                   </div>
 
-                  <RHFTextField
-                    name="title"
-                    label="Name"
-                    placeholder="Enter Name"
-                  />
-                  <RHFTextField
-                    name="type"
-                    label="Type"
-                    placeholder="Enter Type"
-                  />
+                  <RHFTextField name="title" label="Name" placeholder="Enter Name" />
+                  <RHFTextField name="type" label="Type" placeholder="Enter Type" />
 
                   {itemCategoryLoading ? (
                     <div className="mt-2 w-full space-y-2 md:w-[100%]">
@@ -401,19 +338,9 @@ const MenuItemModal = ({
                     />
                   )}
 
-                  <RHFTextField
-                    name="basePrice"
-                    label="Base Price"
-                    type="number"
-                    placeholder="Enter Base Price"
-                  />
+                  <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" />
 
-                  <RHFTextField
-                    name="discountPrice"
-                    label="Discount Price"
-                    type="number"
-                    placeholder="Enter Discount Price"
-                  />
+                  <RHFTextField name="discountPrice" label="Discount Price" type="number" placeholder="Enter Discount Price" />
 
                   <RHFSelectField
                     name="taxPercent"
@@ -449,13 +376,7 @@ const MenuItemModal = ({
 
                 {/* Description */}
                 <div className="grid w-full grid-cols-1 gap-4">
-                  <RHFTextField
-                    name="description"
-                    label="Description"
-                    placeholder="Enter Description"
-                    multiline
-                    rows={2}
-                  />
+                  <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
                 </div>
 
                 {isEdit && (
@@ -472,32 +393,15 @@ const MenuItemModal = ({
 
                 {/* Time Fields */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField
-                    name="startTime"
-                    label="Start Time (Optional)"
-                    placeholder="Enter Start Time"
-                    type="time"
-                  />
-                  <RHFTextField
-                    name="endTime"
-                    label="End Time (Optional)"
-                    placeholder="Enter End Time"
-                    type="time"
-                  />
+                  <RHFTextField name="startTime" label="Start Time (Optional)" placeholder="Enter Start Time" type="time" />
+                  <RHFTextField name="endTime" label="End Time (Optional)" placeholder="Enter End Time" type="time" />
                 </div>
               </div>
 
               <div className="mt-6 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
-                  {addMenuItemLoading ||
-                  updateMenuItemLoading ||
-                  imageUploading ||
-                  deleting ? (
-                    <Button
-                      type="button"
-                      disabled
-                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                    >
+                  {addMenuItemLoading || updateMenuItemLoading || imageUploading || deleting ? (
+                    <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                       <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                     </Button>
                   ) : (

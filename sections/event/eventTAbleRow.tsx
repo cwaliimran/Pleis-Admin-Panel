@@ -1,9 +1,10 @@
 'use client';
 
 import ImageWithFallback from '@/components/common/img-with-fallback';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { formatDateTime, getStatusVariant } from '@/utils/short-utils';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -27,31 +28,33 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
   };
 
   return (
-    <TableRow
-      className="h-14 w-full cursor-pointer transition-colors"
-      onClick={handleNavigateToDetails}
-    >
+    <TableRow className="h-14 w-full cursor-pointer transition-colors" onClick={handleNavigateToDetails}>
       <TableCell>
-        <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm">
-          {item?.basicInfo?.mediaInfo?.url &&
-          item.basicInfo.mediaInfo.name !== 'noimage.png' ? (
+        {/* <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm"> */}
+        {/* {item?.basicInfo?.media && item.basicInfo.media !== 'noimage.png' ? (
             <ImageWithFallback
-              url={item?.basicInfo?.mediaInfo?.url}
-              alt={item?.basicInfo?.title}
-              className="h-full w-full cursor-pointer object-cover"
+            url={item?.basicInfo?.mediaInfo?.url}
+            alt={item?.basicInfo?.title}
+            className="h-full w-full cursor-pointer object-cover"
             />
+            ) : (
+              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.title?.[0]?.toUpperCase() || ''}</span>
+              )} */}
+
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.basicInfo?.media &&
+          item?.basicInfo?.media !== noImageUrl &&
+          item?.basicInfo?.media !== noImageUrlDev &&
+          !item?.basicInfo?.media.toLowerCase().endsWith('.mp4') ? (
+            <AvatarImage src={item?.basicInfo?.media} alt="Store" className="h-full w-full cursor-pointer object-cover" />
           ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.basicInfo?.title?.[0]?.toUpperCase() || ''}
-            </span>
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.title?.[0]?.toUpperCase() || ''}</span>
           )}
         </Avatar>
       </TableCell>
 
       <TableCell className="text-left capitalize">
-        {item?.basicInfo?.title?.length > 20
-          ? item.basicInfo.title.slice(0, 20) + '...'
-          : item.basicInfo.title}
+        {item?.basicInfo?.title?.length > 20 ? item.basicInfo.title.slice(0, 20) + '...' : item.basicInfo.title}
       </TableCell>
 
       <TableCell className="text-left">
@@ -59,9 +62,7 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
           {item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url && (
             <Avatar className="h-6 w-6 !rounded">
               <ImageWithFallback
-                url={
-                  item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url
-                }
+                url={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
                 alt={item?.basicInfo?.organization?.basicInfo?.name}
                 className="h-full w-full object-cover"
               />
@@ -76,34 +77,20 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
         </div>
       </TableCell>
 
-      <TableCell className="text-left capitalize">
-        {item?.basicInfo?.venue?.title || '-'}
-      </TableCell>
+      <TableCell className="text-left capitalize">{item?.basicInfo?.venue?.title || '-'}</TableCell>
 
-      <TableCell>
-        {item?.schedule?.startDateTime
-          ? formatDateTime(item.schedule.startDateTime)
-          : '-'}
-      </TableCell>
+      <TableCell>{item?.schedule?.startDateTime ? formatDateTime(item.schedule.startDateTime) : '-'}</TableCell>
 
-      <TableCell className="text-left">
-        {item?.schedule?.endDateTime
-          ? formatDateTime(item.schedule.endDateTime)
-          : '-'}
-      </TableCell>
+      <TableCell className="text-left">{item?.schedule?.endDateTime ? formatDateTime(item.schedule.endDateTime) : '-'}</TableCell>
 
       <TableCell>{item?.meta?.revenue ? item.meta.revenue : '-'}</TableCell>
 
-      <TableCell className="text-left">
-        {item?.meta?.views ? item.meta.views : '-'}
-      </TableCell>
+      <TableCell className="text-left">{item?.meta?.views ? item.meta.views : '-'}</TableCell>
 
       <TableCell className="text-left">{item?.meta?.region || '-'}</TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
-        <CustomBadge variant={getStatusVariant(item?.status)}>
-          {item?.status}
-        </CustomBadge>
+        <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>
       </TableCell>
 
       {/* Category */}

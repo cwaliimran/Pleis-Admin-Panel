@@ -4,14 +4,7 @@ import { ModeToggle } from '@/components/atoms/mode-toggle';
 import FormProvider from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Input } from '@/components/ui/input';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
@@ -73,37 +66,6 @@ const Header: FC<HeaderProps> = ({ links }) => {
   const { watch } = methods;
   const organizationsValue = watch('organizations');
 
-  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery({
-    page: 0,
-    search: '',
-    limit: 10000,
-    userType: 'organizer',
-  });
-
-  const userOptions =
-    apiData?.data?.map((u: any) => ({
-      label: u?.basicInfo?.companyDetails?.name || 'Unknown Company',
-      value: u?.basicInfo?._id,
-    })) || [];
-
-    
-  useEffect(() => {
-    if (organizationsValue === undefined) return;
-
-    if (
-      !organizationsValue ||
-      (Array.isArray(organizationsValue) && organizationsValue.length === 0)
-    ) {
-      localStorage.removeItem('selectedCompany');
-      window.dispatchEvent(new Event('companyChanged'));
-      return;
-    }
-
-    localStorage.setItem('selectedCompany', JSON.stringify(organizationsValue));
-    window.dispatchEvent(new Event('companyChanged'));
-  }, [organizationsValue]);
-
-
   const superAdminUrls = [
     '/super-admin/loyalty',
     '/super-admin/rewards',
@@ -117,12 +79,40 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/super-admin/menuItems',
   ];
 
-  const shouldShowDropdown = superAdminUrls.some((url) =>
-    pathname?.startsWith(url)
+  const shouldShowDropdown = superAdminUrls.some((url) => pathname?.startsWith(url));
+
+  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery(
+    {
+      page: 0,
+      search: '',
+      limit: 10000,
+      userType: 'organizer',
+    },
+    {
+      skip: !shouldShowDropdown || user?.accountState?.userType !== 'admin',
+    }
   );
 
-  const showAdminDropdown =
-    user?.accountState?.userType === 'admin' && shouldShowDropdown;
+  const userOptions =
+    apiData?.data?.map((u: any) => ({
+      label: u?.basicInfo?.companyDetails?.name || 'Unknown Company',
+      value: u?.basicInfo?._id,
+    })) || [];
+
+  useEffect(() => {
+    if (organizationsValue === undefined) return;
+
+    if (!organizationsValue || (Array.isArray(organizationsValue) && organizationsValue.length === 0)) {
+      localStorage.removeItem('selectedCompany');
+      window.dispatchEvent(new Event('companyChanged'));
+      return;
+    }
+
+    localStorage.setItem('selectedCompany', JSON.stringify(organizationsValue));
+    window.dispatchEvent(new Event('companyChanged'));
+  }, [organizationsValue]);
+
+  const showAdminDropdown = user?.accountState?.userType === 'admin' && shouldShowDropdown;
   const showOrganizerDropdown = user?.role === 'organizer';
 
   return (
@@ -133,11 +123,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
             {links?.map((link, i) => (
               <div key={i} className="flex items-center">
                 <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    {link.href ? (
-                      <Link href={link.href}>{link.name}</Link>
-                    ) : null}
-                  </BreadcrumbLink>
+                  <BreadcrumbLink asChild>{link.href ? <Link href={link.href}>{link.name}</Link> : null}</BreadcrumbLink>
                   {!link.href && <BreadcrumbPage>{link.name}</BreadcrumbPage>}
                 </BreadcrumbItem>
                 {link.href && <BreadcrumbSeparator />}
@@ -151,13 +137,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
         <FormProvider methods={methods} onSubmit={() => {}}>
           {showAdminDropdown && (
             <div className="w-full rounded-md bg-white md:w-[240px] dark:bg-[#171717]">
-              <RHFCustomDropdown
-                name="organizations"
-                placeholder="Select Company"
-                options={userOptions}
-                isLoading={isUserLoading}
-                showNone
-              />
+              <RHFCustomDropdown name="organizations" placeholder="Select Company" options={userOptions} isLoading={isUserLoading} showNone />
             </div>
           )}
 
@@ -176,10 +156,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
           )}
         </FormProvider>
 
-        <Input
-          placeholder="Search..."
-          className="h-10 w-[100%] rounded-full bg-white pl-5 md:w-[240px] lg:w-[280px]"
-        />
+        <Input placeholder="Search..." className="h-10 w-[100%] rounded-full bg-white pl-5 md:w-[240px] lg:w-[280px]" />
 
         <div className="flex items-center justify-end gap-3">
           <ModeToggle />

@@ -1,12 +1,10 @@
 'use client';
+
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { EventTable } from '@/sections/event';
-import {
-  useDeleteeventMutation,
-  useGeteventsQuery,
-} from '@/store/Reducer/events';
+import { useDeleteeventMutation, useGeteventsQuery } from '@/store/Reducer/events';
 import { formatDate } from '@/utils/format-time';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -86,14 +84,9 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
   // Pagination handlers
   const onPageChange = (newPage: number) => updateFilter('page', newPage);
   const onLimitChange = (newLimit: number) => updateFilter('limit', newLimit);
-  const onSearchChange = (searchTerm: string) =>
-    updateFilter('search', searchTerm);
-  const onStatusChange = (newStatus: string) =>
-    updateFilter('status', newStatus);
-  const onDateChange = (
-    newStartDate: Date | undefined,
-    newEndDate: Date | undefined
-  ) => {
+  const onSearchChange = (searchTerm: string) => updateFilter('search', searchTerm);
+  const onStatusChange = (newStatus: string) => updateFilter('status', newStatus);
+  const onDateChange = (newStartDate: Date | undefined, newEndDate: Date | undefined) => {
     updateFilter('startDate', newStartDate);
     updateFilter('endDate', newEndDate);
   };
@@ -114,10 +107,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
       {/* Create Event Button */}
       <div className="mt-3 flex w-full items-center justify-end md:mt-0">
         {!organization && (
-          <Button
-            className="bg-primary hover:bg-primary/80 cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleNavigateToCreate}
-          >
+          <Button className="bg-primary hover:bg-primary/80 cursor-pointer rounded-4xl py-2 text-white" onClick={handleNavigateToCreate}>
             <Plus />
             Create Event
           </Button>

@@ -64,6 +64,37 @@ export const promoSectionApi = createApi({
       }),
       invalidatesTags: ['promo-section'],
     }),
+
+    // Get quick access
+    getQuickAccess: builder.query({
+      query: ({ search, page, status, date, limit }) => {
+        const params: any = {
+          keyword: search,
+          status,
+          page: page + 1,
+          limit,
+        };
+        if (date) (params as any).date = date;
+        return {
+          url: API_ROUTES.QUICK_ACCESS,
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['promo-section'],
+    }),
+
+    reorderQuickAccess: builder.mutation({
+      query: (newQuickAccess) => ({
+        url: API_ROUTES.QUICK_ACCESS_REORDER,
+        method: 'POST',
+        body: newQuickAccess,
+      }),
+    }),
   }),
 });
 
@@ -73,4 +104,7 @@ export const {
   useReorderPromoSectionMutation,
   useUpdatePromoSectionMutation,
   useDeletePromoSectionMutation,
+
+  useGetQuickAccessQuery,
+  useReorderQuickAccessMutation,
 } = promoSectionApi;

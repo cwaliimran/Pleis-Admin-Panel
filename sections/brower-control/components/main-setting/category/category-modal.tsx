@@ -278,7 +278,9 @@ const BannerModalV2 = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Event">Event</SelectItem>
-                        <SelectItem value="Organizations">Organizations</SelectItem>
+                        <SelectItem value="Organizations">
+                          Organizations
+                        </SelectItem>
                         <SelectItem value="User">Loyalty Club</SelectItem>
                       </SelectContent>
                     </Select>

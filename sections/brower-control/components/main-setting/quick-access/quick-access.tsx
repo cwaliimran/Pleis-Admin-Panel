@@ -2,20 +2,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-unknown-property */
 /* eslint-disable @next/next/no-css-tags */
-"use client";
+'use client';
 
-import { GripVertical } from "lucide-react";
-import { useState } from "react";
+import { GripVertical } from 'lucide-react';
+import { useState } from 'react';
 
-import { CustomDndProvider } from "@/components/providers/DndProvider";
-import { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { CustomDndProvider } from '@/components/providers/DndProvider';
+import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface PromoEvent {
   id: number;
@@ -46,25 +46,25 @@ function DraggablePromoItem({
   } = useSortable({
     id: promo.id.toString(),
     data: {
-      type: "promo",
+      type: 'promo',
       promo,
     },
   });
 
   const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-600 p-4 flex items-center justify-between border-l-4 border-l-blue-500 ${
-    isDragging ? "opacity-50" : ""
+    isDragging ? 'opacity-50' : ''
   } hover:shadow-sm transition-shadow`;
 
   if (isOverlay) {
     return (
-      <div className="bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between border-l-4 border-l-blue-500 shadow-lg opacity-95 rotate-1 scale-105">
+      <div className="dark:bg-secondary flex scale-105 rotate-1 items-center justify-between rounded-lg border border-l-4 border-gray-200 border-l-blue-500 bg-white p-4 opacity-95 shadow-lg dark:border-gray-800">
         <div>
           <h3 className="font-semibold text-gray-900 dark:text-white">
             {promo.eventName}
           </h3>
         </div>
         <div className="flex items-center space-x-2">
-          <GripVertical className="w-4 h-4 text-gray-400" />
+          <GripVertical className="h-4 w-4 text-gray-400" />
         </div>
       </div>
     );
@@ -90,9 +90,9 @@ function DraggablePromoItem({
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab hover:cursor-grabbing p-1 rounded hover:bg-gray-100 hover:dark:bg-gray-700"
+          className="cursor-grab rounded p-1 hover:cursor-grabbing hover:bg-gray-100 hover:dark:bg-gray-700"
         >
-          <GripVertical className="w-4 h-4 text-gray-400" />
+          <GripVertical className="h-4 w-4 text-gray-400" />
         </div>
       </div>
     </div>
@@ -225,9 +225,9 @@ const QuickAccess = () => {
       }
     >
       <div className="p-0">
-        <div className="max-w-full mx-auto">
+        <div className="mx-auto max-w-full">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Quick Access
             </h1>

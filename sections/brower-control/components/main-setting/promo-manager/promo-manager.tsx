@@ -44,7 +44,6 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
 
   const [deletePromo, { isLoading: deletePromoLoading }] =
     useDeletePromoSectionMutation();
-
   const [reorderPromo, { isLoading: reorderLoading }] =
     useReorderPromoSectionMutation();
 
@@ -278,12 +277,14 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
           )}
 
           {/* Modals */}
-          <PromoSectionModal
-            open={openModal.value}
-            isEdit={editModal.value}
-            onClose={handleCloseModal}
-            selectedData={editingPromo}
-          />
+          {openModal.value && (
+            <PromoSectionModal
+              open={openModal.value}
+              isEdit={editModal.value}
+              onClose={handleCloseModal}
+              selectedData={editingPromo}
+            />
+          )}
 
           <ConfirmDialog
             open={deleteModal.value}

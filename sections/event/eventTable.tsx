@@ -5,13 +5,7 @@ import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { useTableSort } from '@/hooks/useTableSort';
@@ -100,10 +94,7 @@ interface PageProps {
   startDate?: Date;
   endDate?: Date;
   userType?: any;
-  onDateChange?: (
-    startDate: Date | undefined,
-    endDate: Date | undefined
-  ) => void;
+  onDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
   onResetFilters?: () => void;
 }
 
@@ -154,11 +145,7 @@ const EventTable: FC<PageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent
-                aria-describedby={undefined}
-                side="right"
-                className="dark:bg-secondary p-0"
-              >
+              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -172,15 +159,13 @@ const EventTable: FC<PageProps> = ({
                           id: 'start-date',
                           placeholder: 'Select start date',
                           value: startDate,
-                          onChange: (newStartDate) =>
-                            onDateChange(newStartDate, endDate),
+                          onChange: (newStartDate) => onDateChange(newStartDate, endDate),
                         },
                         endDate: {
                           id: 'end-date',
                           placeholder: 'Select end date',
                           value: endDate,
-                          onChange: (newEndDate) =>
-                            onDateChange(startDate, newEndDate),
+                          onChange: (newEndDate) => onDateChange(startDate, newEndDate),
                         },
                       }}
                       selectFilters={[
@@ -216,24 +201,11 @@ const EventTable: FC<PageProps> = ({
           {/* Table with event data */}
           <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom
-                headLabel={headLabel}
-                sortConfig={sortConfig}
-                onSort={handleSort}
-              />
+              <TableHeadCustom headLabel={headLabel} sortConfig={sortConfig} onSort={handleSort} />
 
-              <TableBodyWrapper
-                loading={loading}
-                colSpan={headLabel.length}
-                dataLength={sortedData?.length || 0}
-              >
+              <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, index) => (
-                  <EventTableRow
-                    key={item?._id || index}
-                    item={item}
-                    handleDelete={handleDelete}
-                    userType={userType}
-                  />
+                  <EventTableRow key={item?._id || index} item={item} handleDelete={handleDelete} userType={userType} />
                 ))}
               </TableBodyWrapper>
             </Table>

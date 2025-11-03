@@ -6,13 +6,7 @@ import ImageWithFallback from '@/components/common/img-with-fallback';
 import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
 import { cn } from '@/lib/utils';
@@ -26,15 +20,11 @@ import EventTicket from '@/sections/event/eventTicket';
 import LastTransaction from '@/sections/event/lastTransaction';
 import { TransactionHistory } from '@/sections/invoices';
 import UserCard from '@/sections/users/userCard';
-import {
-  useCloneeventMutation,
-  useDeleteeventMutation,
-  useGeteventByIdQuery,
-  useUpdateeventMutation,
-} from '@/store/Reducer/events';
+import { useCloneeventMutation, useDeleteeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
 import { fDate } from '@/utils/format-time';
 import { capitalizeFirst } from '@/utils/short-utils';
 import { Calendar, Copy, Pencil, Trash2 } from 'lucide-react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -51,8 +41,7 @@ const EventDetailsPage = () => {
 
   const [updateEvent] = useUpdateeventMutation();
   const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
-  const [deleteEvent, { isLoading: deleteEventLoading }] =
-    useDeleteeventMutation();
+  const [deleteEvent, { isLoading: deleteEventLoading }] = useDeleteeventMutation();
 
   const [cloneEvent] = useCloneeventMutation();
   const userType = window?.location?.pathname?.split('/')[1];
@@ -126,12 +115,28 @@ const EventDetailsPage = () => {
                   <CardContent>
                     <div className="flex flex-col gap-4 sm:flex-row">
                       <div className="w-full sm:w-1/3">
-                        <ImageWithFallback
-                          url={event?.basicInfo?.mediaInfo?.url}
+                        {/* <ImageWithFallback
+                          url={event?.basicInfo?.media}
                           size={300}
                           alt={event?.basicInfo?.title}
                           className="h-auto w-full rounded-md object-contain object-top"
                         />
+                         */}
+
+                        {event?.basicInfo?.media?.endsWith('.mp4') ? (
+                          <video src={event?.basicInfo?.media} controls className="h-full w-full object-cover" />
+                        ) : (
+                          <Image
+                            src={event?.basicInfo?.media}
+                            alt="Event preview"
+                            className="rounded-lg object-cover"
+                            sizes="(max-width: 768px) 100vw, 40vw"
+                            priority
+                            // quality={85}
+                            height={300}
+                            width={300}
+                          />
+                        )}
                       </div>
 
                       {/* Right Content */}
@@ -142,19 +147,13 @@ const EventDetailsPage = () => {
                             <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800">
                               {capitalizeFirst(event?.status) || 'Upcoming'}
                             </span>
-                            <span>
-                              {fDate(event?.schedule?.endDateTime) || '-'}
-                            </span>
+                            <span>{fDate(event?.schedule?.endDateTime) || '-'}</span>
                           </div>
 
                           <div className="flex items-center">
                             <Pencil
                               className="h-4 w-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700 md:h-5 md:w-5"
-                              onClick={() =>
-                                router.push(
-                                  `/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`
-                                )
-                              }
+                              onClick={() => router.push(`/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`)}
                             />
                             <Trash2
                               className="ml-1 h-4 w-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700 md:ml-4 md:h-5 md:w-5"
@@ -170,30 +169,21 @@ const EventDetailsPage = () => {
 
                         {/* Description */}
                         <p className="-mt-2 text-sm leading-relaxed text-gray-700 capitalize dark:text-gray-300">
-                          {capitalizeFirst(event?.basicInfo?.description) ||
-                            'No description available.'}
+                          {capitalizeFirst(event?.basicInfo?.description) || 'No description available.'}
                         </p>
 
                         {/* Organizer */}
                         <div className="mt-2">
-                          <h4 className="text-xs font-bold text-gray-500">
-                            ORGANIZER
-                          </h4>
+                          <h4 className="text-xs font-bold text-gray-500">ORGANIZER</h4>
                           <div className="mt-2 flex items-center gap-2">
                             <ImageWithFallback
-                              url={
-                                event?.basicInfo?.organization?.basicInfo
-                                  ?.mediaInfo?.logo?.url
-                              }
-                              alt={
-                                event?.basicInfo?.organization?.basicInfo?.name
-                              }
+                              url={event?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
+                              alt={event?.basicInfo?.organization?.basicInfo?.name}
                               className="h-6 w-6 rounded-full"
                             />
 
                             <span className="text-sm font-medium text-gray-800 dark:text-white">
-                              {event?.basicInfo?.organization?.basicInfo
-                                ?.name || 'Unknown Organizer'}
+                              {event?.basicInfo?.organization?.basicInfo?.name || 'Unknown Organizer'}
                             </span>
                           </div>
                         </div>
@@ -267,11 +257,7 @@ const EventDetailsPage = () => {
                         </Select>
                       </div>
                       {/* Tabs for larger screens */}
-                      <Tabs
-                        value={active}
-                        onValueChange={setActive}
-                        className="hidden w-full sm:block"
-                      >
+                      <Tabs value={active} onValueChange={setActive} className="hidden w-full sm:block">
                         <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
                           <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
                             {tabsData.map((tab: any) => (
@@ -322,26 +308,18 @@ const EventDetailsPage = () => {
                       <div className="flex min-w-[140px] flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">
-                            START DATE
-                          </p>
+                          <p className="text-xs font-semibold text-gray-600 dark:text-white">START DATE</p>
                         </div>
-                        <p className="text-sm font-medium text-black dark:text-white">
-                          {fDate(event?.schedule?.startDateTime) || 'N/A'}
-                        </p>
+                        <p className="text-sm font-medium text-black dark:text-white">{fDate(event?.schedule?.startDateTime) || 'N/A'}</p>
                       </div>
 
                       {/* END DATE */}
                       <div className="mt-4 flex min-w-[140px] flex-col gap-1 md:mt-0">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">
-                            END DATE
-                          </p>
+                          <p className="text-xs font-semibold text-gray-600 dark:text-white">END DATE</p>
                         </div>
-                        <p className="text-sm font-medium text-black dark:text-white">
-                          {fDate(event?.schedule?.endDateTime) || 'N/A'}
-                        </p>
+                        <p className="text-sm font-medium text-black dark:text-white">{fDate(event?.schedule?.endDateTime) || 'N/A'}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -414,9 +392,7 @@ const EventDetailsPage = () => {
                 </CardHeader> */}
                   <CardHeader>
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <h3 className="text-xl font-semibold">
-                        Transaction History
-                      </h3>
+                      <h3 className="text-xl font-semibold">Transaction History</h3>
                       <div>
                         <div className="w-full">
                           {/* Show select on small screens */}
@@ -427,9 +403,7 @@ const EventDetailsPage = () => {
                               </SelectTrigger>
                               <SelectContent className="dark:bg-secondary">
                                 <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="transactions">
-                                  Transactions
-                                </SelectItem>
+                                <SelectItem value="transactions">Transactions</SelectItem>
                                 <SelectItem value="refunds">Refunds</SelectItem>
                               </SelectContent>
                             </Select>
@@ -437,34 +411,23 @@ const EventDetailsPage = () => {
 
                           {/* Show tabs on medium and larger screens */}
                           <div className="hidden sm:block">
-                            <Tabs
-                              value={active}
-                              onValueChange={setActive}
-                              defaultValue="all"
-                              className="w-full"
-                            >
+                            <Tabs value={active} onValueChange={setActive} defaultValue="all" className="w-full">
                               <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
                                 <TabsTrigger
                                   value="all"
-                                  className={cn(
-                                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                                  )}
+                                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
                                 >
                                   All
                                 </TabsTrigger>
                                 <TabsTrigger
                                   value="transactions"
-                                  className={cn(
-                                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                                  )}
+                                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
                                 >
                                   Transactions
                                 </TabsTrigger>
                                 <TabsTrigger
                                   value="refunds"
-                                  className={cn(
-                                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                                  )}
+                                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
                                 >
                                   Refunds
                                 </TabsTrigger>

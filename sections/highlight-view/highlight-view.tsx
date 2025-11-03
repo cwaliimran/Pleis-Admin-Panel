@@ -44,12 +44,9 @@ const HighlightsView = () => {
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
-  const [addHighlights, { isLoading: addHighlightsLoading }] =
-    useAddHighlightsMutation();
-  const [updateHighlights, { isLoading: updateHighlightsLoading }] =
-    useUpdateHighlightsMutation();
-  const [deleteHighlights, { isLoading: deleteHighlightsLoading }] =
-    useDeleteHighlightsMutation();
+  const [addHighlights, { isLoading: addHighlightsLoading }] = useAddHighlightsMutation();
+  const [updateHighlights, { isLoading: updateHighlightsLoading }] = useUpdateHighlightsMutation();
+  const [deleteHighlights, { isLoading: deleteHighlightsLoading }] = useDeleteHighlightsMutation();
 
   const {
     data: apiData,
@@ -97,13 +94,9 @@ const HighlightsView = () => {
   const schema = Yup.object({
     video: Yup.mixed()
       .nullable()
-      .test(
-        'video-required',
-        'Please upload a video or keep the existing one',
-        function (value) {
-          return value !== null && value !== undefined;
-        }
-      ),
+      .test('video-required', 'Please upload a video or keep the existing one', function (value) {
+        return value !== null && value !== undefined;
+      }),
     // video: Yup.mixed()
     //   .nullable()
     //   .notRequired()
@@ -115,14 +108,10 @@ const HighlightsView = () => {
     status: Yup.string().required('Status is required'),
     event: Yup.string().notRequired(),
     organization: Yup.string().notRequired(),
-  }).test(
-    'event-or-organization',
-    'Either Event or Organization is required',
-    function (value) {
-      const { event, organization } = value;
-      return !!(event || organization);
-    }
-  );
+  }).test('event-or-organization', 'Either Event or Organization is required', function (value) {
+    const { event, organization } = value;
+    return !!(event || organization);
+  });
 
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -140,17 +129,11 @@ const HighlightsView = () => {
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
       reset({
-        video: selectedVenueType?.mediaInfo?.url || '',
+        video: selectedVenueType?.media || '',
         title: selectedVenueType.title || '',
         status: selectedVenueType.status || '',
-        event:
-          selectedVenueType.type === 'event'
-            ? selectedVenueType.object._id
-            : undefined,
-        organization:
-          selectedVenueType.type === 'organization'
-            ? selectedVenueType.object._id
-            : undefined,
+        event: selectedVenueType.type === 'event' ? selectedVenueType.object._id : undefined,
+        organization: selectedVenueType.type === 'organization' ? selectedVenueType.object._id : undefined,
       });
     } else if (!editModal.value) {
       reset(defaultValues);
@@ -188,10 +171,7 @@ const HighlightsView = () => {
       let videoFileString: string | undefined = undefined;
 
       // Upload new video if provided
-      if (
-        formData.video &&
-        (formData.video instanceof FileList || Array.isArray(formData.video))
-      ) {
+      if (formData.video && (formData.video instanceof FileList || Array.isArray(formData.video))) {
         const file = formData.video[0];
         if (file) {
           setImageUploading(true);
@@ -257,9 +237,7 @@ const HighlightsView = () => {
       // Handle success
       if (response?.data) {
         if (editModal.value && selectedId) {
-          setVenueTypes((prev) =>
-            prev.map((item) => (item._id === selectedId ? response.data : item))
-          );
+          setVenueTypes((prev) => prev.map((item) => (item._id === selectedId ? response.data : item)));
         } else {
           setVenueTypes((prev) => {
             const updated = [response.data, ...prev];
@@ -273,12 +251,7 @@ const HighlightsView = () => {
       }
 
       if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value
-              ? 'Highlight updated successfully'
-              : 'Highlight created successfully')
-        );
+        showSuccess(response?.message || (editModal.value ? 'Highlight updated successfully' : 'Highlight created successfully'));
       }
 
       CloseModal();
@@ -332,10 +305,7 @@ const HighlightsView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus className="" />
             Create Highlight
           </Button>
@@ -378,17 +348,17 @@ const HighlightsView = () => {
         }}
       />
 
-      <HighlightTypeModal
-        open={openModal.value}
-        onClose={CloseModal}
-        editMode={editModal.value}
-        methods={methods}
-        onSubmit={onSubmit}
-        isLoading={
-          addHighlightsLoading || updateHighlightsLoading || imageUploading
-        }
-        selectedVenueType={selectedVenueType}
-      />
+      {openModal.value && (
+        <HighlightTypeModal
+          open={openModal.value}
+          onClose={CloseModal}
+          editMode={editModal.value}
+          methods={methods}
+          onSubmit={onSubmit}
+          isLoading={addHighlightsLoading || updateHighlightsLoading || imageUploading}
+          selectedVenueType={selectedVenueType}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
