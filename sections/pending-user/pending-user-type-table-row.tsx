@@ -5,17 +5,14 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { Check, Eye, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import PendingUserDetailsModal from './pending-user-details-modal';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 
 interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
   handlePending?: (id: string) => void;
 }
-const SupplierTypeTableRow: FC<PageProps> = ({
-  item,
-  handleDelete,
-  handlePending,
-}) => {
+const SupplierTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePending }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleViewUser = (e: React.MouseEvent) => {
@@ -28,20 +25,10 @@ const SupplierTypeTableRow: FC<PageProps> = ({
       <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
         <TableCell>
           <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-            {item?.basicInfo?.profileIcon &&
-            item?.basicInfo?.profileIcon !==
-              'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' &&
-            item?.basicInfo?.profileIcon !==
-              'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
-              <AvatarImage
-                src={item?.basicInfo?.profileIcon}
-                alt="Store"
-                className="h-full w-full cursor-pointer object-cover"
-              />
+            {item?.basicInfo?.profileIcon && item?.basicInfo?.profileIcon !== noImageUrl && item?.basicInfo?.profileIcon !== noImageUrlDev ? (
+              <AvatarImage src={item?.basicInfo?.profileIcon} alt="Store" className="h-full w-full cursor-pointer object-cover" />
             ) : (
-              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-                {item?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}
-              </span>
+              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}</span>
             )}
           </Avatar>
         </TableCell>
@@ -50,9 +37,7 @@ const SupplierTypeTableRow: FC<PageProps> = ({
           {item?.basicInfo?.firstName || '-'} {item?.basicInfo?.lastName || ''}
         </TableCell>
 
-        <TableCell className="text-left text-sm">
-          {item?.basicInfo?.organizationName || '-'}
-        </TableCell>
+        <TableCell className="text-left text-sm">{item?.basicInfo?.organizationName || '-'}</TableCell>
 
         <TableCell className="text-left text-sm">
           {item?.basicInfo?.phoneNumber?.code || ''}
@@ -97,11 +82,7 @@ const SupplierTypeTableRow: FC<PageProps> = ({
         </TableCell>
       </TableRow>
 
-      <PendingUserDetailsModal
-        user={item}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <PendingUserDetailsModal user={item} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   );
 };

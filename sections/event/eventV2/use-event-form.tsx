@@ -1,27 +1,23 @@
 'use client';
 
+import { useGetCategoriesQuery } from '@/store/Reducer/categories';
+import { useAddeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useGetTagsQuery } from '@/store/Reducer/tags';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { uploadFileToAzure } from '@/utils/fileUpload';
+import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
+import { showError } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Resolver, useForm } from 'react-hook-form';
-import { skipToken } from '@reduxjs/toolkit/query';
-import {
-  useAddeventMutation,
-  useGeteventByIdQuery,
-  useUpdateeventMutation,
-} from '@/store/Reducer/events';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
-import { useGetCategoriesQuery } from '@/store/Reducer/categories';
-import { useGetTagsQuery } from '@/store/Reducer/tags';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
-import { uploadFileToAzure } from '@/utils/fileUpload';
-import { deleteFileFromAzure } from '@/utils/deleteFile';
-import { convertTimeFormat, fDate, formatStr } from '@/utils/format-time';
 import { defaultValues } from './constants';
-import { eventValidationSchema } from './validation';
 import type { EventFormValues } from './types';
-import { showError } from '@/utils/toast';
-import { getErrorMessage } from '@/utils/api';
+import { eventValidationSchema } from './validation';
 
 export const useEventForm = (userType: string) => {
   const { id } = useParams();
@@ -37,39 +33,29 @@ export const useEventForm = (userType: string) => {
   // Track if we've set the initial values to prevent re-initialization
   const hasInitializedRef = useRef(false);
 
-  const { data: event = {}, isSuccess: eventLoaded } = useGeteventByIdQuery(
-    id ?? skipToken
-  );
+  const { data: event = {}, isSuccess: eventLoaded } = useGeteventByIdQuery(id ?? skipToken);
 
-  const { data: { data: organizations = [] } = {}, isLoading: orgLoading } =
-    useGetOrganizationQuery({
-      page: 0,
-      limit: 10000,
-    });
-
-  const {
-    data: { data: categoriesData = [] } = {},
-    isLoading: categoriesLoading,
-  } = useGetCategoriesQuery({
+  const { data: { data: organizations = [] } = {}, isLoading: orgLoading } = useGetOrganizationQuery({
     page: 0,
     limit: 10000,
   });
 
-  const { data: { data: tagsd = [] } = {}, isLoading: tagsLoading } =
-    useGetTagsQuery({
-      page: 0,
-      limit: 10000,
-    });
+  const { data: { data: categoriesData = [] } = {}, isLoading: categoriesLoading } = useGetCategoriesQuery({
+    page: 0,
+    limit: 10000,
+  });
+
+  const { data: { data: tagsd = [] } = {}, isLoading: tagsLoading } = useGetTagsQuery({
+    page: 0,
+    limit: 10000,
+  });
 
   const [addEvent, { isLoading: isAddingEvent }] = useAddeventMutation();
-  const [updateEvent, { isLoading: isUpdatingEvent }] =
-    useUpdateeventMutation();
+  const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateeventMutation();
 
   const methods = useForm<EventFormValues>({
     defaultValues,
-    resolver: yupResolver(
-      eventValidationSchema
-    ) as unknown as Resolver<EventFormValues>,
+    resolver: yupResolver(eventValidationSchema) as unknown as Resolver<EventFormValues>,
   });
 
   const {
@@ -81,28 +67,14 @@ export const useEventForm = (userType: string) => {
 
   // console.log('errors', errors);
 
-  const {
-    mediaUrl,
-    mediaType,
-    venue,
-    categories,
-    partnerOrganizers,
-    eventType,
-    recurring,
-    recurringDays,
-    recurringEnd,
-    organization,
-  } = watch();
+  const { mediaUrl, mediaType, venue, categories, partnerOrganizers, eventType, recurring, recurringDays, recurringEnd, organization } = watch();
 
-  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
-    useGetVenuesQuery(
-      organization
-        ? { page: 0, limit: 1000, organization: organization }
-        : skipToken,
-      {
-        skip: !organization,
-      }
-    );
+  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } = useGetVenuesQuery(
+    organization ? { page: 0, limit: 1000, organization: organization } : skipToken,
+    {
+      skip: !organization,
+    }
+  );
 
   const prevOrganizationRef = useRef(organization);
 
@@ -111,11 +83,7 @@ export const useEventForm = (userType: string) => {
   }, [step]);
 
   useEffect(() => {
-    if (
-      prevOrganizationRef.current &&
-      prevOrganizationRef.current !== organization &&
-      isFormInitialized
-    ) {
+    if (prevOrganizationRef.current && prevOrganizationRef.current !== organization && isFormInitialized) {
       setValue('venue', '');
     }
     prevOrganizationRef.current = organization;
@@ -138,9 +106,7 @@ export const useEventForm = (userType: string) => {
   };
 
   const toggleRecurringDay = (day: string) => {
-    const newDays = recurringDays.includes(day)
-      ? recurringDays.filter((d) => d !== day)
-      : [...recurringDays, day];
+    const newDays = recurringDays.includes(day) ? recurringDays.filter((d) => d !== day) : [...recurringDays, day];
     setValue('recurringDays', newDays);
   };
 
@@ -158,13 +124,7 @@ export const useEventForm = (userType: string) => {
       ].every(Boolean);
     }
     if (step === 2) {
-      const hasBasicFields = [
-        watch('fromDate'),
-        watch('endDate'),
-        watch('fromTime'),
-        watch('endTime'),
-        eventType,
-      ].every(Boolean);
+      const hasBasicFields = [watch('fromDate'), watch('endDate'), watch('fromTime'), watch('endTime'), eventType].every(Boolean);
 
       if (recurring) {
         const freq = watch('recurringType');
@@ -180,14 +140,10 @@ export const useEventForm = (userType: string) => {
           return hasBasicFields && !!freq && !!interval && !!endType;
         }
         if (endType === 'onDate') {
-          return (
-            hasBasicFields && !!freq && !!interval && !!endType && !!endDate
-          );
+          return hasBasicFields && !!freq && !!interval && !!endType && !!endDate;
         }
         if (endType === 'afterOccurrences') {
-          return (
-            hasBasicFields && !!freq && !!interval && !!endType && !!occurrences
-          );
+          return hasBasicFields && !!freq && !!interval && !!endType && !!occurrences;
         }
         return false;
       }
@@ -226,21 +182,15 @@ export const useEventForm = (userType: string) => {
         },
         schedule: {
           type: data.eventType,
-          startDateTime: data.fromDate
-            ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}`
-            : '',
-          endDateTime: data.endDate
-            ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}`
-            : '',
+          startDateTime: data.fromDate ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}` : '',
+          endDateTime: data.endDate ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}` : '',
           ...(data.recurring
             ? {
                 recurringDetails: {
                   isEnabled: data.recurring,
                   frequency: data.recurringType,
                   interval: data.recurringInterval,
-                  daysOfWeek: data.recurringDays.map((day: string) =>
-                    day.substring(0, 3).toLowerCase()
-                  ),
+                  daysOfWeek: data.recurringDays.map((day: string) => day.substring(0, 3).toLowerCase()),
                   endType: data.recurringEnd,
                   endDate: data.recurringEndDate,
                   occurrences: data.recurringEndCount,
@@ -291,37 +241,22 @@ export const useEventForm = (userType: string) => {
 
     const organizationId = event?.basicInfo?.organization?._id || '';
 
-    const fromDate_ = event?.schedule?.startDateTime
-      ? new Date(event.schedule.startDateTime)
-      : null;
-    const fromTime_ = event?.schedule?.startDateTime
-      ? convertTimeFormat(
-          event.schedule.startDateTime.split(' ').slice(1).join(' '),
-          true
-        )
-      : '';
-    const endDate_ = event?.schedule?.endDateTime
-      ? new Date(event.schedule.endDateTime)
-      : null;
-    const endTime_ = event?.schedule?.endDateTime
-      ? convertTimeFormat(
-          event.schedule.endDateTime.split(' ').slice(1).join(' '),
-          true
-        )
-      : '';
+    const fromDate_ = event?.schedule?.startDateTime ? new Date(event.schedule.startDateTime) : null;
+    const fromTime_ = event?.schedule?.startDateTime ? convertTimeFormat(event.schedule.startDateTime.split(' ').slice(1).join(' '), true) : '';
+    const endDate_ = event?.schedule?.endDateTime ? new Date(event.schedule.endDateTime) : null;
+    const endTime_ = event?.schedule?.endDateTime ? convertTimeFormat(event.schedule.endDateTime.split(' ').slice(1).join(' '), true) : '';
 
     const formData = {
-      image: event?.basicInfo?.mediaInfo?.url || null,
-      mediaUrl: event?.basicInfo?.mediaInfo?.url || '',
-      mediaType: event?.basicInfo?.mediaInfo?.type || 'image',
+      image: event?.basicInfo?.media || null,
+      mediaUrl: event?.basicInfo?.media || '',
+      mediaType: event?.basicInfo?.media?.endsWith('.mp4') ? 'video' : 'image',
 
       name: event?.basicInfo?.title || '',
       description: event?.basicInfo?.description || '',
 
       organization: organizationId,
       venue: event?.basicInfo?.venue?._id || '',
-      categories:
-        event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
+      categories: event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
       tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
 
       eventType: event?.schedule?.type || 'oneTime',
@@ -344,9 +279,7 @@ export const useEventForm = (userType: string) => {
       organizerInput: '',
       partnerOrganizerInput: '',
 
-      partnerOrganizers: event?.basicInfo?.partnerOrganizers
-        ? event.basicInfo.partnerOrganizers.map((org: any) => org._id)
-        : [],
+      partnerOrganizers: event?.basicInfo?.partnerOrganizers ? event.basicInfo.partnerOrganizers.map((org: any) => org._id) : [],
     };
 
     reset(formData);

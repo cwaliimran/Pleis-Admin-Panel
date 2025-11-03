@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { FC, useState } from 'react';
 import { useSelector } from 'react-redux';
 import GiftPointsModal from './gift-points-modal';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 
 interface PageProps {
   item: any;
@@ -20,16 +21,10 @@ interface PageProps {
   handleEdit?: (id: string) => void;
 }
 
-const UserListTypeTableRow: FC<PageProps> = ({
-  item,
-  userType,
-  memberPage,
-  handleEdit,
-}) => {
+const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handleEdit }) => {
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.userSlice);
 
-  // --- State for modals ---
   const [giftModalOpen, setGiftModalOpen] = useState(false);
 
   // const handleNavigate = () => {
@@ -53,7 +48,7 @@ const UserListTypeTableRow: FC<PageProps> = ({
     const userId = item?.basicInfo?._id;
     const accountUserType = item?.accountState?.userType;
 
-    if (!userId || !userType) return; 
+    if (!userId || !userType) return;
 
     if (memberPage) {
       router.push(`/${userType}/members/${userId}`);
@@ -79,26 +74,13 @@ const UserListTypeTableRow: FC<PageProps> = ({
 
   return (
     <>
-      <TableRow
-        onClick={handleNavigate}
-        className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
-      >
+      <TableRow onClick={handleNavigate} className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
         <TableCell>
           <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-            {item?.basicInfo?.profileIcon &&
-            ![
-              'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png',
-              'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png',
-            ].includes(item?.basicInfo?.profileIcon) ? (
-              <AvatarImage
-                src={item?.basicInfo?.profileIcon}
-                alt="Store"
-                className="h-full w-full cursor-pointer object-cover"
-              />
+            {item?.basicInfo?.profileIcon && ![noImageUrl, noImageUrlDev].includes(item?.basicInfo?.profileIcon) ? (
+              <AvatarImage src={item?.basicInfo?.profileIcon} alt="Store" className="h-full w-full cursor-pointer object-cover" />
             ) : (
-              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-                {item?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}
-              </span>
+              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}</span>
             )}
           </Avatar>
         </TableCell>
@@ -107,23 +89,17 @@ const UserListTypeTableRow: FC<PageProps> = ({
           <TableCell className="text-left font-medium capitalize">
             <div className="flex flex-col">
               <div>
-                {item?.basicInfo?.firstName || '-'}{' '}
-                {item?.basicInfo?.lastName || ''}{' '}
-                {user?.basicInfo?._id === item?.basicInfo?._id ? '(You)' : ''}
+                {item?.basicInfo?.firstName || '-'} {item?.basicInfo?.lastName || ''} {user?.basicInfo?._id === item?.basicInfo?._id ? '(You)' : ''}
               </div>
             </div>
           </TableCell>
         )}
 
-        <TableCell className={`text-left text-sm`}>
-          {!memberPage ? item?.basicInfo?.username || '-' : 'johndoe123'}
-        </TableCell>
+        <TableCell className={`text-left text-sm`}>{!memberPage ? item?.basicInfo?.username || '-' : 'johndoe123'}</TableCell>
 
         {memberPage ? null : (
           <TableCell className="text-left text-sm capitalize">
-            <Badge className="bg-secondary text-white dark:bg-white dark:text-black">
-              {item?.accountState?.userType}
-            </Badge>
+            <Badge className="bg-secondary text-white dark:bg-white dark:text-black">{item?.accountState?.userType}</Badge>
           </TableCell>
         )}
 
@@ -132,14 +108,10 @@ const UserListTypeTableRow: FC<PageProps> = ({
         <TableCell className="text-left text-sm">-</TableCell>
 
         <TableCell className="text-muted-foreground text-left text-sm">
-          <CustomBadge variant={getStatusVariant(item?.accountState?.status)}>
-            {item?.accountState?.status}
-          </CustomBadge>
+          <CustomBadge variant={getStatusVariant(item?.accountState?.status)}>{item?.accountState?.status}</CustomBadge>
         </TableCell>
 
-        <TableCell className="text-left text-sm">
-          {item?.metadata?.timezone || '-'}
-        </TableCell>
+        <TableCell className="text-left text-sm">{item?.metadata?.timezone || '-'}</TableCell>
 
         <TableCell className="text-end">
           <div className={`flex gap-2 ${memberPage ? 'justify-center' : ''}`}>
@@ -187,11 +159,7 @@ const UserListTypeTableRow: FC<PageProps> = ({
       </TableRow>
 
       {/* Modals */}
-      <GiftPointsModal
-        open={giftModalOpen}
-        onOpenChange={setGiftModalOpen}
-        onConfirm={handleGiftConfirm}
-      />
+      <GiftPointsModal open={giftModalOpen} onOpenChange={setGiftModalOpen} onConfirm={handleGiftConfirm} />
     </>
   );
 };

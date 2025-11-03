@@ -52,11 +52,7 @@ const StepOne = ({
                 <label className="relative flex h-80 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-gray-300 bg-[#F8F6F7] transition-colors hover:border-gray-400 dark:border-zinc-700 dark:bg-[#171717] dark:hover:border-zinc-500">
                   {mediaUrl ? (
                     mediaType === 'video' ? (
-                      <video
-                        src={mediaUrl}
-                        controls
-                        className="h-full w-full object-cover"
-                      />
+                      <video src={mediaUrl} controls className="h-full w-full object-cover" />
                     ) : (
                       <Image
                         src={mediaUrl}
@@ -75,12 +71,8 @@ const StepOne = ({
                     <div className="flex flex-row text-gray-400">
                       <span className="mr-2 text-3xl"> + </span>
                       <div className="flex flex-col">
-                        <span className="text-[22.9px] font-semibold">
-                          Add photo
-                        </span>
-                        <span className="align-middle text-[22.9px] font-semibold">
-                          or video
-                        </span>
+                        <span className="text-[22.9px] font-semibold">Add photo</span>
+                        <span className="align-middle text-[22.9px] font-semibold">or video</span>
                       </div>
                     </div>
                   )}
@@ -96,10 +88,7 @@ const StepOne = ({
                         reader.onloadend = () => {
                           const result = reader.result as string;
                           setValue('mediaUrl', result);
-                          setValue(
-                            'mediaType',
-                            file.type.startsWith('video/') ? 'video' : 'image'
-                          );
+                          setValue('mediaType', file.type.startsWith('video/') ? 'video' : 'image');
                         };
                         reader.readAsDataURL(file);
                         field.onChange(file);
@@ -133,9 +122,7 @@ const StepOne = ({
       </div>
 
       <div>
-        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-          Organization
-        </label>
+        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">Organization</label>
 
         {orgLoading ? (
           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -161,9 +148,7 @@ const StepOne = ({
       </div>
 
       <div>
-        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-          VENUE
-        </label>
+        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">VENUE</label>
 
         {venuesLoading ? (
           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -173,9 +158,7 @@ const StepOne = ({
           <div className="w-full items-center gap-2 md:flex md:w-[70%]">
             <RHFCustomDropdown
               name="venue"
-              placeholder={
-                !organization ? 'Select organization first' : 'Suggested Venue'
-              }
+              placeholder={!organization ? 'Select organization first' : 'Suggested Venue'}
               className="sm:max-w-[120px] lg:max-w-[440px]"
               triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
               contentClassName="rounded-xl shadow-md"
@@ -199,9 +182,7 @@ const StepOne = ({
         )}
 
         <div className="mt-8">
-          <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-            Category
-          </label>
+          <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">Category</label>
 
           {categoriesLoading ? (
             <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -225,9 +206,7 @@ const StepOne = ({
 
       {/* Tags */}
       <div>
-        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-          TAGS
-        </label>
+        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">TAGS</label>
 
         {tagsLoading ? (
           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -269,11 +248,7 @@ const StepOne = ({
               contentClassName="rounded-xl shadow-md"
               disabled={!organization}
               options={organizations
-                ?.filter(
-                  (org: any) =>
-                    org._id !== organization &&
-                    !partnerOrganizers?.includes(org._id)
-                )
+                ?.filter((org: any) => org._id !== organization && !partnerOrganizers?.includes(org._id))
                 ?.map((org: any) => ({
                   value: org?._id,
                   label: org?.basicInfo?.name,
@@ -286,12 +261,8 @@ const StepOne = ({
         {partnerOrganizers?.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
             {partnerOrganizers?.map((po: string) => (
-              <Badge
-                key={po}
-                className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black"
-              >
-                {organizations?.find((org: any) => org._id === po)?.basicInfo
-                  ?.name || po}
+              <Badge key={po} className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black">
+                {organizations?.find((org: any) => org._id === po)?.basicInfo?.name || po}
                 <button
                   title="Remove Organizer"
                   type="button"
@@ -308,12 +279,7 @@ const StepOne = ({
 
       {/* Navigation buttons */}
       <div className="mt-22 flex flex-wrap items-center justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          className="cursor-pointer rounded-4xl py-2 md:mt-2 md:min-w-[90px]"
-        >
+        <Button type="button" variant="outline" onClick={() => router.back()} className="cursor-pointer rounded-4xl py-2 md:mt-2 md:min-w-[90px]">
           Cancel
         </Button>
 

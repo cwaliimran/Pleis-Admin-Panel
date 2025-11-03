@@ -14,47 +14,30 @@ interface PageProps {
   handleDelete?: (id: string) => void;
   userType?: any;
 }
-const OrganizationTypeTableRow: FC<PageProps> = ({
-  item,
-  handleDelete,
-  userType,
-}) => {
+
+const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
   const router = useRouter();
 
   return (
     <TableRow
       className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
       onClick={() =>
-        userType === 'organizer'
-          ? router.push(`/organizer/organization/${item?._id}`)
-          : router.push(`/super-admin/organization/${item?._id}`)
+        userType === 'organizer' ? router.push(`/organizer/organization/${item?._id}`) : router.push(`/super-admin/organization/${item?._id}`)
       }
     >
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.basicInfo?.mediaInfo?.logo?.url &&
-          item?.basicInfo?.mediaInfo?.logo?.url !== noImageUrl &&
-          item?.basicInfo?.mediaInfo?.logo?.url !== noImageUrlDev ? (
-            <AvatarImage
-              src={item?.basicInfo?.mediaInfo?.logo?.url}
-              alt="Store"
-              className="h-full w-full cursor-pointer object-cover"
-            />
+          {item?.basicInfo?.media?.logo && item?.basicInfo?.media?.logo !== noImageUrl && item?.basicInfo?.media?.logo !== noImageUrlDev ? (
+            <AvatarImage src={item?.basicInfo?.media?.logo} alt="Store" className="h-full w-full cursor-pointer object-cover" />
           ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.basicInfo?.name?.[0]?.toUpperCase() || ''}
-            </span>
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.name?.[0]?.toUpperCase() || ''}</span>
           )}
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left font-medium capitalize">
-        {item?.basicInfo?.name || '-'}
-      </TableCell>
+      <TableCell className="text-left font-medium capitalize">{item?.basicInfo?.name || '-'}</TableCell>
 
-      <TableCell className="text-left text-sm">
-        {fDate(item?.createdAt, formatStr.paramCase.date)}
-      </TableCell>
+      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
       <TableCell className="text-left text-sm">-</TableCell>
 
@@ -67,17 +50,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({
       <TableCell className="text-left text-sm">-</TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
-        <CustomBadge
-          variant={
-            item?.status === 'active'
-              ? 'success'
-              : item?.status === 'inactive'
-                ? 'error'
-                : 'default'
-          }
-        >
-          {item?.status}
-        </CustomBadge>
+        <CustomBadge variant={item?.status === 'active' ? 'success' : item?.status === 'inactive' ? 'error' : 'default'}>{item?.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

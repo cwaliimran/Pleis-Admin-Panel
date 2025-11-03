@@ -1,18 +1,9 @@
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, {
-  RHFSelectField,
-  RHFTextField,
-  RHFUploadVideo,
-} from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField, RHFUploadVideo } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useGeteventsQuery } from '@/store/Reducer/events';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import * as React from 'react';
@@ -27,27 +18,19 @@ interface HighlightTypeModalProps {
   selectedVenueType?: any;
 }
 
-const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
-  open,
-  onClose,
-  editMode,
-  methods,
-  onSubmit,
-  isLoading,
-}) => {
+const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({ open, onClose, editMode, methods, onSubmit, isLoading }) => {
   const handleClose = () => {
     if (!isLoading) {
       onClose();
     }
   };
 
-  const { data: apiData, isLoading: isLoadingOrganizations } =
-    useGetOrganizationQuery({
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-    });
+  const { data: apiData, isLoading: isLoadingOrganizations } = useGetOrganizationQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
 
   const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
     page: 0,
@@ -73,14 +56,9 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0" />
-      <DialogContent
-        aria-describedby={undefined}
-        className="w-full md:!max-w-screen-md dark:bg-[#171717]"
-      >
+      <DialogContent aria-describedby={undefined} className="w-full md:!max-w-screen-md dark:bg-[#171717]">
         <DialogHeader>
-          <DialogTitle>
-            {editMode ? 'Edit Highlight' : 'Create Highlight'}
-          </DialogTitle>
+          <DialogTitle>{editMode ? 'Edit Highlight' : 'Create Highlight'}</DialogTitle>
         </DialogHeader>
 
         <FormProvider methods={methods} onSubmit={onSubmit}>
@@ -94,46 +72,42 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
                 name="title"
                 label="Highlight Title"
                 placeholder="Enter Highlight Title"
-                className={`${
-                  methods.formState.errors.title ? 'border-red-400' : ''
-                }`}
+                className={`${methods.formState.errors.title ? 'border-red-400' : ''}`}
               />
 
-              {/* <RHFCustomDropdown
-                name="event"
-                label="Event"
-                placeholder="Select Event"
-                options={eventOptions}
-                isLoading={isLoadingEvents}
-              />
+              {isLoadingEvents ? (
+                <div className="mt-2 w-full space-y-2 md:w-[100%]">
+                  <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                  <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-lg border-gray-200 px-5" />
+                </div>
+              ) : (
+                <RHFCustomDropdown
+                  name="event"
+                  label="Event"
+                  placeholder="Select Event"
+                  options={eventOptions}
+                  isLoading={isLoadingEvents}
+                  disabled={!!methods.watch('organization')}
+                  showNone={true}
+                />
+              )}
 
-              <RHFCustomDropdown
-                name="organization"
-                label="Organization"
-                placeholder="Select Organization"
-                options={organizationOptions}
-                isLoading={isLoadingOrganizations}
-              /> */}
-
-              <RHFCustomDropdown
-                name="event"
-                label="Event"
-                placeholder="Select Event"
-                options={eventOptions}
-                isLoading={isLoadingEvents}
-                disabled={!!methods.watch('organization')}
-                showNone={true}
-              />
-
-              <RHFCustomDropdown
-                name="organization"
-                label="Organization"
-                placeholder="Select Organization"
-                options={organizationOptions}
-                isLoading={isLoadingOrganizations}
-                disabled={!!methods.watch('event')}
-                showNone={true}
-              />
+              {isLoadingOrganizations ? (
+                <div className="mt-2 w-full space-y-2 md:w-[100%]">
+                  <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                  <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-lg border-gray-200 px-5" />
+                </div>
+              ) : (
+                <RHFCustomDropdown
+                  name="organization"
+                  label="Organization"
+                  placeholder="Select Organization"
+                  options={organizationOptions}
+                  isLoading={isLoadingOrganizations}
+                  disabled={!!methods.watch('event')}
+                  showNone={true}
+                />
+              )}
 
               <RHFSelectField
                 name="status"
@@ -148,22 +122,12 @@ const HighlightTypeModal: React.FC<HighlightTypeModalProps> = ({
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLoading}
-              className="px-4 py-2"
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="px-4 py-2">
               Cancel
             </Button>
 
             {isLoading ? (
-              <Button
-                type="button"
-                disabled
-                className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-              >
+              <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                 <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
               </Button>
             ) : (

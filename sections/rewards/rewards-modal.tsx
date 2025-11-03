@@ -2,22 +2,18 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import {
-  useAddRewardMutation,
-  useUpdateRewardMutation,
-} from '@/store/Reducer/rewards-api';
+import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
+import { useAddRewardMutation, useUpdateRewardMutation } from '@/store/Reducer/rewards-api';
+import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -26,11 +22,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import RewardCalculatorFields from './reward-calculation-fields';
-import { useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
-import { useGeteventsQuery } from '@/store/Reducer/events';
 
 type RewardFormValues = {
   image: null;
@@ -71,22 +62,18 @@ const schema = yup.object({
     .test('is-positive', 'Point value must be greater than 0', (value) => {
       return value ? Number(value) > 0 : false;
     }),
-  claimLimit: yup
-    .string()
-    .test('is-valid', 'Claim limit must be a positive number', (value) => {
-      if (!value || value === '') return true;
-      return Number(value) > 0;
-    }),
+  claimLimit: yup.string().test('is-valid', 'Claim limit must be a positive number', (value) => {
+    if (!value || value === '') return true;
+    return Number(value) > 0;
+  }),
   tierLimit: yup.string(),
   description: yup.string(),
   rewardType: yup.string().required('Creation method is required'),
-  percentOff: yup
-    .string()
-    .test('is-valid-percent', 'Must be between 0 and 100', (value) => {
-      if (!value || value === '') return true;
-      const num = Number(value);
-      return num >= 0 && num <= 100;
-    }),
+  percentOff: yup.string().test('is-valid-percent', 'Must be between 0 and 100', (value) => {
+    if (!value || value === '') return true;
+    const num = Number(value);
+    return num >= 0 && num <= 100;
+  }),
   menuItem: yup.string().when('rewardType', {
     is: 'buyMenuItemReward',
     then: (schema) => schema.required('Menu item is required'),
@@ -108,26 +95,18 @@ const schema = yup.object({
     }),
     description: yup.string().when('$rewardType', {
       is: 'customReward',
-      then: (schema) =>
-        schema.required('Custom reward description is required'),
+      then: (schema) => schema.required('Custom reward description is required'),
       otherwise: (schema) => schema,
     }),
   }),
 });
 
-const RewardFormModal = ({
-  open,
-  onClose,
-  isEdit,
-  global = false,
-  selectedData,
-}: RewardFormModalProps) => {
+const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }: RewardFormModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
 
   const [addReward, { isLoading: addRewardLoading }] = useAddRewardMutation();
-  const [updateReward, { isLoading: updateRewardLoading }] =
-    useUpdateRewardMutation();
+  const [updateReward, { isLoading: updateRewardLoading }] = useUpdateRewardMutation();
 
   const defaultValues: RewardFormValues = {
     image: null,
@@ -232,11 +211,10 @@ const RewardFormModal = ({
   useEffect(() => {
     if (isEdit && selectedData && open) {
       reset({
-        image: selectedData?.mediaInfo?.url || '',
+        image: selectedData?.media || '',
         title: selectedData.title || '',
         sortingType: selectedData.sortingType || '',
-        minPointsRequiredToClaim:
-          selectedData.minPointsRequiredToClaim?.toString() || '',
+        minPointsRequiredToClaim: selectedData.minPointsRequiredToClaim?.toString() || '',
         claimLimit: selectedData.claimLimit?.toString() || '',
         tierLimit: selectedData.tierLimit || 'none',
         percentOff: selectedData.percentOff?.toString() || '',
@@ -259,9 +237,7 @@ const RewardFormModal = ({
     let uploadedFileKey: string | null = null;
     let customRewardPhotoKey: string | null = null;
 
-    const selectedCompany = JSON.parse(
-      localStorage.getItem('selectedCompany') || 'null'
-    );
+    const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
 
     if (!selectedCompany) {
       showError('Please select a company first before submitting the form');
@@ -279,11 +255,7 @@ const RewardFormModal = ({
         uploadedFileKey = await uploadImage(file);
       }
 
-      if (
-        formData.rewardType === 'customReward' &&
-        formData?.customReward?.image instanceof FileList &&
-        formData?.customReward?.image.length > 0
-      ) {
+      if (formData.rewardType === 'customReward' && formData?.customReward?.image instanceof FileList && formData?.customReward?.image.length > 0) {
         const file = formData.customReward.image[0];
         customRewardPhotoKey = await uploadImage(file);
       }
@@ -295,9 +267,7 @@ const RewardFormModal = ({
         description: formData.description || '',
         sortingType: formData.sortingType,
         minPointsRequiredToClaim: Number(formData.minPointsRequiredToClaim),
-        claimLimit: formData.claimLimit
-          ? Number(formData.claimLimit)
-          : undefined,
+        claimLimit: formData.claimLimit ? Number(formData.claimLimit) : undefined,
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
         // companyOrganizer: formData.companyOrganizer || '',
@@ -334,10 +304,7 @@ const RewardFormModal = ({
         payload.id = selectedData?._id;
       }
 
-      const response =
-        isEdit && selectedData
-          ? await updateReward(payload).unwrap()
-          : await addReward(payload).unwrap();
+      const response = isEdit && selectedData ? await updateReward(payload).unwrap() : await addReward(payload).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -349,12 +316,7 @@ const RewardFormModal = ({
         return;
       }
 
-      showSuccess(
-        response?.message ||
-          (isEdit
-            ? 'Reward updated successfully'
-            : 'Reward created successfully')
-      );
+      showSuccess(response?.message || (isEdit ? 'Reward updated successfully' : 'Reward created successfully'));
 
       // methods.reset(defaultValues);
       reset(defaultValues, {
@@ -403,28 +365,18 @@ const RewardFormModal = ({
           className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[700px]"
         >
           <DialogHeader>
-            <DialogTitle>
-              {isEdit ? 'Edit Reward' : 'Create Reward'}
-            </DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Reward' : 'Create Reward'}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
                 <RHFUploadAvatar
                   name="image"
                   label="Image"
                   initialImage={(() => {
-                    const img = selectedData?.imageInfo?.url;
-                    if (
-                      !img ||
-                      img === noImageUrl ||
-                      img === noImageUrlDev ||
-                      img.toLowerCase().includes('noimage.png')
-                    ) {
+                    const img = selectedData?.media;
+                    if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
                       return null;
                     }
                     return img;
@@ -453,9 +405,7 @@ const RewardFormModal = ({
                 {rewardType === 'buyMenuItemReward' && (
                   <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
                     <p className="text-xs text-blue-800 dark:text-blue-200">
-                      💡 Select menu items to link directly for easier scanning
-                      and fulfillment. Use the calculator below to determine
-                      point values.
+                      💡 Select menu items to link directly for easier scanning and fulfillment. Use the calculator below to determine point values.
                     </p>
                   </div>
                 )}
@@ -463,9 +413,7 @@ const RewardFormModal = ({
                 {rewardType === 'customReward' && (
                   <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                     <p className="text-xs text-green-800 dark:text-green-200">
-                      💡 Create custom rewards for items not in your menu
-                      (merchandise, entry perks, etc.). Set your own point value
-                      and description.
+                      💡 Create custom rewards for items not in your menu (merchandise, entry perks, etc.). Set your own point value and description.
                     </p>
                   </div>
                 )}
@@ -473,9 +421,7 @@ const RewardFormModal = ({
                 {rewardType === 'ticketReward' && (
                   <div className="rounded-lg bg-purple-50 p-3 dark:bg-purple-900/20">
                     <p className="text-xs text-purple-800 dark:text-purple-200">
-                      💡 Create exclusive tickets available only through loyalty
-                      rewards. These are not for sale and provide special access
-                      to events.
+                      💡 Create exclusive tickets available only through loyalty rewards. These are not for sale and provide special access to events.
                     </p>
                   </div>
                 )}
@@ -535,33 +481,15 @@ const RewardFormModal = ({
                 )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField
-                    name="title"
-                    label="Name"
-                    placeholder="Enter reward name"
-                  />
+                  <RHFTextField name="title" label="Name" placeholder="Enter reward name" />
 
-                  <RHFTextField
-                    name="sortingType"
-                    label="Type"
-                    placeholder="Enter type for sorting"
-                  />
+                  <RHFTextField name="sortingType" label="Type" placeholder="Enter type for sorting" />
 
                   <div className="relative">
-                    <RHFTextField
-                      name="minPointsRequiredToClaim"
-                      label="Point Value"
-                      placeholder="Points required to claim"
-                      type="number"
-                    />
+                    <RHFTextField name="minPointsRequiredToClaim" label="Point Value" placeholder="Points required to claim" type="number" />
                   </div>
 
-                  <RHFTextField
-                    name="claimLimit"
-                    label="Limit (Optional)"
-                    placeholder="Max times claimable"
-                    type="number"
-                  />
+                  <RHFTextField name="claimLimit" label="Limit (Optional)" placeholder="Max times claimable" type="number" />
 
                   {tiersLoading ? (
                     <div className="mt-2 w-full space-y-2 md:w-[100%]">
@@ -592,42 +520,23 @@ const RewardFormModal = ({
                 {percentOff && Number(percentOff) > 0 && (
                   <div className="rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
                     <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                      💡 This reward will provide {percentOff}% off instead of a
-                      free item. Customers will pay the remaining amount.
+                      💡 This reward will provide {percentOff}% off instead of a free item. Customers will pay the remaining amount.
                     </p>
                   </div>
                 )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
-                  <RHFTextField
-                    name="description"
-                    label="Description (Optional)"
-                    placeholder="Enter reward details"
-                    multiline
-                    rows={2}
-                  />
+                  <RHFTextField name="description" label="Description (Optional)" placeholder="Enter reward details" multiline rows={2} />
                 </div>
 
                 {rewardType === 'customReward' && (
                   <div className="col-span-2 flex flex-col gap-2 gap-y-3">
                     <div className="mb-2 flex max-w-[10rem] items-center justify-start">
-                      <RHFUploadButton
-                        name="customReward.image"
-                        label="Upload Photo"
-                        initialImage={null}
-                      />
+                      <RHFUploadButton name="customReward.image" label="Upload Photo" initialImage={null} />
                     </div>
 
-                    <RHFTextField
-                      name="customReward.title"
-                      label="Custom Reward Name"
-                      placeholder="Enter custom reward name"
-                    />
-                    <RHFTextField
-                      name="customReward.description"
-                      label="Custom Reward Description"
-                      placeholder="Enter description"
-                    />
+                    <RHFTextField name="customReward.title" label="Custom Reward Name" placeholder="Enter custom reward name" />
+                    <RHFTextField name="customReward.description" label="Custom Reward Description" placeholder="Enter description" />
                   </div>
                 )}
 
@@ -636,22 +545,12 @@ const RewardFormModal = ({
 
               <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
-                  {addRewardLoading ||
-                  updateRewardLoading ||
-                  imageUploading ||
-                  deleting ? (
-                    <Button
-                      type="button"
-                      disabled
-                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                    >
+                  {addRewardLoading || updateRewardLoading || imageUploading || deleting ? (
+                    <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                       <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                     </Button>
                   ) : (
-                    <Button
-                      type="submit"
-                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
-                    >
+                    <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white">
                       {isEdit ? 'Update' : 'Create'} Reward
                     </Button>
                   )}

@@ -10,10 +10,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import PresetModal from './preset-modal';
 import { default as PresetTable } from './preset-table';
-import {
-  useDeletePresetMenuMutation,
-  useGetPresetMenuQuery,
-} from '@/store/Reducer/preset-menu-api';
+import { useDeletePresetMenuMutation, useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
 
 const PresetView = () => {
   const openModal = useBoolean();
@@ -30,8 +27,7 @@ const PresetView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deletePresetMenu, { isLoading: deleteLoading }] =
-    useDeletePresetMenuMutation();
+  const [deletePresetMenu, { isLoading: deleteLoading }] = useDeletePresetMenuMutation();
 
   const { data: apiData, isLoading } = useGetPresetMenuQuery({
     page: page - 1,
@@ -40,8 +36,6 @@ const PresetView = () => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
-
-  console.log('isLoading', isLoading);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -131,10 +125,7 @@ const PresetView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Preset
           </Button>
@@ -177,12 +168,7 @@ const PresetView = () => {
         }}
       />
 
-      <PresetModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-      />
+      <PresetModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
 
       <ConfirmDialog
         open={deleteModal.value}

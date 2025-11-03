@@ -4,19 +4,10 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import {
-  useAddPresetMenuMutation,
-  useUpdatePresetMenuMutation,
-} from '@/store/Reducer/preset-menu-api';
+import { useAddPresetMenuMutation, useUpdatePresetMenuMutation } from '@/store/Reducer/preset-menu-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -46,9 +37,7 @@ const schema = Yup.object().shape({
   title: Yup.string().required('Title is required'),
   description: Yup.string().required('Description is required'),
   status: Yup.string().required('Status is required'),
-  basePrice: Yup.number()
-    .required('Base Price is required')
-    .typeError('Base Price must be a number'),
+  basePrice: Yup.number().required('Base Price is required').typeError('Base Price must be a number'),
 });
 
 type PresetModalProps = {
@@ -58,20 +47,12 @@ type PresetModalProps = {
   selectedData?: any;
 };
 
-const PresetModal = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-}: PresetModalProps) => {
+const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
+
+  const [addPreset, { isLoading: addPresetLoading }] = useAddPresetMenuMutation();
+  const [updatePreset, { isLoading: updatePresetLoading }] = useUpdatePresetMenuMutation();
   const [deleting, setDeleting] = useState(false);
-
-  const [addPreset, { isLoading: addPresetLoading }] =
-    useAddPresetMenuMutation();
-
-  const [updatePreset, { isLoading: updatePresetLoading }] =
-    useUpdatePresetMenuMutation();
 
   const methods = useForm<PresetFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<PresetFormValues>),
@@ -81,17 +62,10 @@ const PresetModal = ({
   const { reset, formState } = methods;
   const isDirty = formState?.isDirty;
 
-  // Helper function to prepare form data from selectedData
   const prepareFormData = (data: any): PresetFormValues => ({
-    // image: data?.imageInfo?.url || null,
     image: (() => {
-      const img = data?.imageInfo?.url || null;
-      if (
-        !img ||
-        img === noImageUrl ||
-        img === noImageUrlDev ||
-        img.toLowerCase().includes('noimage.png')
-      ) {
+      const img = data?.image || null;
+      if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
         return null;
       }
       return img;
@@ -102,7 +76,6 @@ const PresetModal = ({
     status: data?.status || 'active',
   });
 
-  // Prefill form when modal opens for editing
   useEffect(() => {
     if (open && isEdit && selectedData) {
       const formData = prepareFormData(selectedData);
@@ -137,10 +110,7 @@ const PresetModal = ({
         payload.id = selectedData?._id;
       }
 
-      const response =
-        isEdit && selectedData
-          ? await updatePreset(payload).unwrap()
-          : await addPreset(payload).unwrap();
+      const response = isEdit && selectedData ? await updatePreset(payload).unwrap() : await addPreset(payload).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -152,12 +122,7 @@ const PresetModal = ({
         return;
       }
 
-      showSuccess(
-        response?.message ||
-          (isEdit
-            ? 'Preset updated successfully'
-            : 'Preset created successfully')
-      );
+      showSuccess(response?.message || (isEdit ? 'Preset updated successfully' : 'Preset created successfully'));
 
       methods.reset(defaultValues);
       onClose();
@@ -175,95 +140,6 @@ const PresetModal = ({
       showError(errorMessage);
     }
   };
-
-  // const handleSubmit = async (formData: any) => {
-  //   let imageFileString: string | null = null;
-
-  //   if (formData?.image instanceof FileList && formData?.image?.length > 0) {
-  //     const file = formData.image[0];
-  //     imageFileString = await uploadImage(file);
-  //   }
-
-  //   const payload: any = {
-  //     title: formData.title,
-  //     description: formData.description,
-  //     basePrice: formData.basePrice,
-  //   };
-
-  //   if (imageFileString) payload.image = imageFileString;
-  //   if (isEdit && selectedData) {
-  //     payload.status = formData.status;
-  //     payload.id = selectedData._id;
-  //   }
-
-  //   let uploadedFileKey: string | null = null;
-  //   try {
-  //     let imageFileString = undefined;
-
-  //     if (formData?.image instanceof FileList && formData?.image?.length > 0) {
-  //       const file = formData.image[0];
-  //       if (file) {
-  //         setImageUploading(true);
-  //         try {
-  //           uploadedFileKey = await uploadFileToAzure(file);
-  //           imageFileString = uploadedFileKey;
-  //         } finally {
-  //           setImageUploading(false);
-  //         }
-  //       }
-  //     }
-
-  //     const payload: any = {
-  //       title: formData.title,
-  //       description: formData.description,
-  //       basePrice: formData.basePrice,
-  //     };
-
-  //     if (imageFileString) {
-  //       payload.image = imageFileString;
-  //     }
-
-  //     if (isEdit && selectedData) {
-  //       payload.status = formData.status;
-  //       payload.id = selectedData._id;
-  //     }
-
-  //     let response;
-  //     if (isEdit && selectedData) {
-  //       response = await updatePreset(payload).unwrap();
-  //     } else {
-  //       response = await addPreset(payload).unwrap();
-  //     }
-
-  //     if (!response) {
-  //       showError('No response from server. Please try again later.');
-  //     }
-
-  //     if (response.error) {
-  //       showError(getErrorMessage(response.error));
-  //     }
-
-  //     showSuccess(
-  //       response?.message ||
-  //         (isEdit
-  //           ? 'Preset updated successfully'
-  //           : 'Preset created successfully')
-  //     );
-
-  //     reset(defaultValues);
-  //     onClose();
-  //   } catch (error) {
-  //     setImageUploading(false);
-  //     const errorMessage = getErrorMessage(error);
-  //     console.log('Failed to save preset:', errorMessage);
-  //     showError(errorMessage);
-
-  //     if (uploadedFileKey) {
-  //       console.log('Rolling back uploaded image:', uploadedFileKey);
-  //       await deleteFileFromAzure(uploadedFileKey);
-  //     }
-  //   }
-  // };
 
   const handleClose = () => {
     if (isEdit && selectedData) {
@@ -283,16 +159,11 @@ const PresetModal = ({
           className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]"
         >
           <DialogHeader>
-            <DialogTitle>
-              {isEdit ? 'Edit Preset' : 'Create Preset'}
-            </DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Preset' : 'Create Preset'}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-6 flex w-full flex-col gap-4">
                 <RHFUploadAvatar
                   name="image"
@@ -307,18 +178,9 @@ const PresetModal = ({
                 />
 
                 <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-                  <RHFTextField
-                    name="title"
-                    label="Item Name"
-                    placeholder="Enter Item Name"
-                  />
+                  <RHFTextField name="title" label="Item Name" placeholder="Enter Item Name" />
 
-                  <RHFTextField
-                    name="basePrice"
-                    label="Base Price"
-                    placeholder="Enter Base Price"
-                    type="number"
-                  />
+                  <RHFTextField name="basePrice" label="Base Price" placeholder="Enter Base Price" type="number" />
                 </div>
 
                 {isEdit && (
@@ -334,26 +196,13 @@ const PresetModal = ({
                 )}
 
                 <div className="grid w-full grid-cols-1 gap-4">
-                  <RHFTextField
-                    name="description"
-                    label="Description"
-                    placeholder="Enter Description"
-                    multiline
-                    rows={2}
-                  />
+                  <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
                 </div>
               </div>
 
               <div className="mt-6 flex items-center justify-center">
-                {addPresetLoading ||
-                updatePresetLoading ||
-                imageUploading ||
-                deleting ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                  >
+                {addPresetLoading || updatePresetLoading || imageUploading || deleting ? (
+                  <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                     <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                   </Button>
                 ) : (

@@ -3,10 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteRewardMutation,
-  useGetRewardsQuery,
-} from '@/store/Reducer/rewards-api';
+import { useDeleteRewardMutation, useGetRewardsQuery } from '@/store/Reducer/rewards-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -35,8 +32,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteReward, { isLoading: deleteLoading }] =
-    useDeleteRewardMutation();
+  const [deleteReward, { isLoading: deleteLoading }] = useDeleteRewardMutation();
 
   const { data: apiData, isLoading } = useGetRewardsQuery({
     page: page - 1,
@@ -137,10 +133,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Reward
           </Button>
@@ -186,13 +179,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
       />
 
       {openModal.value && (
-        <RewardFormModal
-          global={global}
-          open={openModal.value}
-          onClose={closeModal}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-        />
+        <RewardFormModal global={global} open={openModal.value} onClose={closeModal} isEdit={editModal.value} selectedData={selectedRecord} />
       )}
 
       <ConfirmDialog

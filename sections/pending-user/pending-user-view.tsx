@@ -3,10 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import QueryDialog from '@/components/comfirm-dialog/query-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useGetUserListQuery,
-  useUpdatePendingUserMutation,
-} from '@/store/Reducer/user-list';
+import { useGetUserListQuery, useUpdatePendingUserMutation } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -25,8 +22,7 @@ const PendingUserView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [updateUser, { isLoading: updateUserLoading }] =
-    useUpdatePendingUserMutation();
+  const [updateUser, { isLoading: updateUserLoading }] = useUpdatePendingUserMutation();
 
   const { data: apiData, isLoading } = useGetUserListQuery({
     page: page - 1,

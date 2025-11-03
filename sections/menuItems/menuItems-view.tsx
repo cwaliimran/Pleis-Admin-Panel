@@ -3,17 +3,14 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteMenuItemMutation, useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import MenuItemTable from './menuItems-table';
 import MenuItemModal from './menuItems-modal';
-import {
-  useDeleteMenuItemMutation,
-  useGetMenuItemsQuery,
-} from '@/store/Reducer/menu-items-api';
+import MenuItemTable from './menuItems-table';
 
 const MenuItemView = () => {
   const openModal = useBoolean();
@@ -30,8 +27,7 @@ const MenuItemView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteMenuItem, { isLoading: deleteLoading }] =
-    useDeleteMenuItemMutation();
+  const [deleteMenuItem, { isLoading: deleteLoading }] = useDeleteMenuItemMutation();
 
   const { data: apiData, isLoading } = useGetMenuItemsQuery({
     page: page - 1,
@@ -131,10 +127,7 @@ const MenuItemView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Menu Item
           </Button>
@@ -177,14 +170,7 @@ const MenuItemView = () => {
         }}
       />
 
-      {openModal.value && (
-        <MenuItemModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-        />
-      )}
+      {openModal.value && <MenuItemModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
 
       <ConfirmDialog
         open={deleteModal.value}

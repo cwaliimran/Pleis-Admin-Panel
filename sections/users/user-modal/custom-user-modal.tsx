@@ -1,31 +1,23 @@
 'use client';
 
-import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
-
 import ButtonLoading from '@/components/common/button-loading';
 import { RHFSelectField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetSuppliersQuery } from '@/store/Reducer/suppliers';
 import { getErrorMessage } from '@/utils/api';
 import { showError } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useEffect } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import CommonFields from './common-fields';
 import { formatDobDMY, splitPhoneByDial } from './helpers';
 import RoleSpecificFields from './role-specific-fields';
 import { generateValidationSchema } from './validation';
 
 type RoleKey = 'admin' | 'organizer' | 'manager' | 'staff' | 'guest' | 'user';
-
 type Option = { value: string; label: string };
 
 const roleOptionsFor = (userType?: string): Option[] => {
@@ -45,8 +37,7 @@ const roleOptionsFor = (userType?: string): Option[] => {
   ];
 };
 
-const getDefaultRole = (userType?: string): RoleKey =>
-  userType === 'organizer' ? 'staff' : 'manager';
+const getDefaultRole = (userType?: string): RoleKey => (userType === 'organizer' ? 'staff' : 'manager');
 
 const defaultValues = {
   role: '' as RoleKey,
@@ -87,17 +78,8 @@ interface UserModalProps {
   initialData?: any; // Not used for create
 }
 
-const CustomUserModal: React.FC<UserModalProps> = ({
-  open,
-  isEdit,
-  isLoading,
-  onClose,
-  onSubmit,
-  userType,
-}) => {
-  const [currentRole, setCurrentRole] = React.useState<RoleKey>(
-    getDefaultRole(userType)
-  );
+const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, onClose, onSubmit, userType }) => {
+  const [currentRole, setCurrentRole] = React.useState<RoleKey>(getDefaultRole(userType));
 
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
@@ -132,12 +114,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
   );
 
   const resolver = React.useCallback(
-    (values: any, context: any, options: any) =>
-      yupResolver(generateValidationSchema(currentRole, isEdit))(
-        values,
-        context,
-        options
-      ),
+    (values: any, context: any, options: any) => yupResolver(generateValidationSchema(currentRole, isEdit))(values, context, options),
     [currentRole, isEdit]
   );
 
@@ -175,19 +152,12 @@ const CustomUserModal: React.FC<UserModalProps> = ({
   const submit = async (data: any) => {
     try {
       const { phone, phoneCode } = data;
-      const phoneNumber = splitPhoneByDial(
-        String(phone || ''),
-        String(phoneCode || '')
-      );
+      const phoneNumber = splitPhoneByDial(String(phone || ''), String(phoneCode || ''));
 
       let profileIcon = data.image;
       if (data.image instanceof FileList && data.image.length > 0) {
         profileIcon = data.image[0];
-      } else if (
-        Array.isArray(data.image) &&
-        data.image.length > 0 &&
-        data.image[0] instanceof File
-      ) {
+      } else if (Array.isArray(data.image) && data.image.length > 0 && data.image[0] instanceof File) {
         profileIcon = data.image[0];
       }
 
@@ -284,15 +254,8 @@ const CustomUserModal: React.FC<UserModalProps> = ({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form
-            onSubmit={handleSubmit(submit)}
-            className="mt-2 w-full space-y-4"
-          >
-            <RHFUploadAvatar
-              name="image"
-              label="Profile Image"
-              initialImage={null}
-            />
+          <form onSubmit={handleSubmit(submit)} className="mt-2 w-full space-y-4">
+            <RHFUploadAvatar name="image" label="Profile Image" initialImage={null} />
 
             <RHFSelectField
               name="role"
@@ -320,11 +283,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
                 // disabled={!formState.isValid || isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <ButtonLoading title="Adding" />
-                ) : (
-                  `Add ${currentRole}`
-                )}
+                {isLoading ? <ButtonLoading title="Adding" /> : `Add ${currentRole}`}
               </Button>
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel

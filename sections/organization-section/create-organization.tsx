@@ -42,10 +42,7 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
 
   const schema = Yup.object().shape({
     image: Yup.mixed().nullable(),
-    name: Yup.string()
-      .required('Organization Name is required')
-      .trim()
-      .min(2, 'Organization Name must be at least 2 characters'),
+    name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
     instagram: Yup.string().nullable().optional(),
     facebook: Yup.string().nullable().optional(),
     youtube: Yup.string().nullable().optional(),
@@ -60,13 +57,7 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
   // Handle cover image upload
   const handleCoverImageUpload = async (file: File) => {
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/jpg',
-      'image/webp',
-    ];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
 
     if (!allowedTypes.includes(file.type)) {
       showError('Only JPEG, PNG, or GIF images are allowed.');
@@ -135,31 +126,17 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
           <Card className="dark:bg-secondary overflow-hidden p-4 shadow-md">
             <div className="relative w-full">
               <div className="relative h-72 rounded-lg bg-cover bg-center">
-                {newOrganization?.basicInfo?.mediaInfo?.cover?.url &&
-                newOrganization?.basicInfo?.mediaInfo?.cover?.url !==
-                  noImageUrl &&
-                newOrganization?.basicInfo?.mediaInfo?.cover?.url !==
-                  noImageUrlDev ? (
-                  <Image
-                    src={newOrganization?.basicInfo?.mediaInfo?.cover?.url}
-                    alt="Cover Image"
-                    fill
-                    className="rounded-lg object-cover"
-                    priority
-                  />
+                {newOrganization?.basicInfo?.media?.cover &&
+                newOrganization?.basicInfo?.media?.cover !== noImageUrl &&
+                newOrganization?.basicInfo?.media?.cover !== noImageUrlDev ? (
+                  <Image src={newOrganization?.basicInfo?.media?.cover} alt="Cover Image" fill className="rounded-lg object-cover" priority />
                 ) : (
-                  <Image
-                    src="/images/blank-img.png"
-                    alt="Cover Image"
-                    fill
-                    className="rounded-lg object-cover"
-                    priority
-                  />
+                  <Image src="/images/blank-img.png" alt="Cover Image" fill className="rounded-lg object-cover" priority />
                 )}
 
                 {coverImageUploading && (
                   <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-lg bg-black">
-                    <ButtonLoading title="Uploading..." />
+                    <ButtonLoading title="Uploading" />
                   </div>
                 )}
               </div>
@@ -198,16 +175,14 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
               )}
 
               <div className="absolute bottom-[-30] left-5">
-                {newOrganization?.basicInfo?.mediaInfo?.logo?.url &&
-                newOrganization?.basicInfo?.mediaInfo?.logo?.url !==
-                  'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png' &&
-                newOrganization?.basicInfo?.mediaInfo?.logo?.url !==
-                  'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noimage.png' ? (
+                {newOrganization?.basicInfo?.media?.logo &&
+                newOrganization?.basicInfo?.media?.logo !== noImageUrl &&
+                newOrganization?.basicInfo?.media?.logo !== noImageUrlDev ? (
                   <Image
-                    src={newOrganization?.basicInfo?.mediaInfo?.logo?.url}
+                    src={newOrganization?.basicInfo?.media?.logo}
                     alt="User Avatar"
                     priority
-                    className="z-10 h-20 w-20 rounded-full bg-white shadow-lg md:h-30 md:w-30"
+                    className="z-10 h-20 w-20 rounded-full bg-white object-cover shadow-lg md:h-30 md:w-30"
                     width={100}
                     height={100}
                   />
@@ -225,11 +200,7 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
             </div>
 
             <div className="flex justify-end">
-              <Pencil
-                width={22}
-                className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
-                onClick={openModal.onTrue}
-              />
+              <Pencil width={22} className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
               {/* <Trash2
                 width={22}
                 className="ml-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
@@ -239,55 +210,28 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
 
             <div className="mt-2 items-center gap-2 pt-0 md:mt-0 md:flex">
               <h1 className="mt-0 pt-0 text-2xl font-bold capitalize md:ml-2 md:text-3xl">
-                {newOrganization
-                  ? newOrganization?.basicInfo?.name
-                  : 'Organization Name'}
+                {newOrganization ? newOrganization?.basicInfo?.name : 'Organization Name'}
               </h1>
-              <Badge
-                className={`mt-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black md:mt-0`}
-              >
-                Basic
-              </Badge>
+              <Badge className={`mt-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black md:mt-0`}>Basic</Badge>
             </div>
 
-            <Badge
-              className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-            >
-              0 Subscriptions
-            </Badge>
+            <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Subscriptions</Badge>
 
             <div className="flex items-center gap-2">
-              <Badge
-                className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-              >
-                0% Commission
-              </Badge>
-              <Badge
-                className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-              >
-                0 Boost
-              </Badge>
+              <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0% Commission</Badge>
+              <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Boost</Badge>
             </div>
             <div className="mt-4 -mb-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-end"></div>
           </Card>
 
           <div className="mt-4 rounded-lg">
             {/* {active === "info" && <UserInfo />} */}
-            <UserInfo
-              newOrganization={newOrganization}
-              setNewOrganization={setNewOrganization}
-            />
+            <UserInfo newOrganization={newOrganization} setNewOrganization={setNewOrganization} />
           </div>
         </div>
       </div>
 
-      <OrganizationModal
-        open={openModal.value}
-        onClose={CloseModal}
-        organization={newOrganization}
-        onSuccess={handleSuccess}
-        userType={userType}
-      />
+      <OrganizationModal open={openModal.value} onClose={CloseModal} organization={newOrganization} onSuccess={handleSuccess} userType={userType} />
     </div>
   );
 };

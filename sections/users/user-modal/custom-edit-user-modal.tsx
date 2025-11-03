@@ -1,38 +1,27 @@
 'use client';
 
-import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useCallback, useEffect, useState } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
-
 import ButtonLoading from '@/components/common/button-loading';
 import { RHFSelectField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetSuppliersQuery } from '@/store/Reducer/suppliers';
-import {
-  useUpdateUserForUserListMutation,
-  useUpdateUserSuperAdminAndGuestMutation,
-} from '@/store/Reducer/user-list';
+import { useUpdateUserForUserListMutation, useUpdateUserSuperAdminAndGuestMutation } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import CommonFields from './common-fields';
 import { splitPhoneByDial } from './helpers';
 import RoleSpecificFields from './role-specific-fields';
 import { generateValidationSchema } from './validation';
 
 type RoleKey = 'admin' | 'organizer' | 'manager' | 'staff' | 'guest' | 'user';
-
 type Option = { value: string; label: string };
 
 const roleOptionsFor = (parentUserType?: string): Option[] => {
@@ -101,20 +90,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   isLoading,
   userType,
 }) => {
-  const [currentRole, setCurrentRole] = useState<RoleKey>(
-    userData?.accountState?.userType || 'manager'
-  );
-
-  console.log('userData', userData);
-
   const [imageUploading, setImageUploading] = useState(false);
+  const [currentRole, setCurrentRole] = useState<RoleKey>(userData?.accountState?.userType || 'manager');
 
-  const [updateUser, { isLoading: updateUserLoading }] =
-    useUpdateUserForUserListMutation();
-  const [
-    updateUserSuperAdminAndGuest,
-    { isLoading: updateUserSuperAdminAndGuestLoading },
-  ] = useUpdateUserSuperAdminAndGuestMutation();
+  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
+  const [updateUserSuperAdminAndGuest, { isLoading: updateUserSuperAdminAndGuestLoading }] = useUpdateUserSuperAdminAndGuestMutation();
 
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
@@ -123,13 +103,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     status: '',
   });
 
-  const { data: supplierData, isLoading: supplierLoading } =
-    useGetSuppliersQuery({
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-    });
+  const { data: supplierData, isLoading: supplierLoading } = useGetSuppliersQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+  });
 
   const organizationOptions = React.useMemo(
     () =>
@@ -150,12 +129,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   );
 
   const resolver = useCallback(
-    (values: any, context: any, options: any) =>
-      yupResolver(generateValidationSchema(currentRole, true))(
-        values,
-        context,
-        options
-      ),
+    (values: any, context: any, options: any) => yupResolver(generateValidationSchema(currentRole, true))(values, context, options),
     [currentRole]
   );
 
@@ -168,14 +142,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   const { handleSubmit, watch, reset } = methods;
 
-  const watchedRole = watch(
-    'role',
-    userData?.accountState?.userType || 'manager'
-  );
+  const watchedRole = watch('role', userData?.accountState?.userType || 'manager');
 
-  const roleValue = roleOptionsFor(userType).some(
-    (opt) => opt.value === watchedRole
-  )
+  const roleValue = roleOptionsFor(userType).some((opt) => opt.value === watchedRole)
     ? (watchedRole as RoleKey)
     : ((userData?.accountState?.userType || 'manager') as RoleKey);
 
@@ -191,12 +160,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         role: userData?.accountState?.userType as RoleKey,
         image: (() => {
           const img = userData?.basicInfo?.profileIcon;
-          if (
-            !img ||
-            img === noImageUrl ||
-            img === noImageUrlDev ||
-            img.toLowerCase().includes('noimage.png')
-          ) {
+          if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
             return null;
           }
           return img;
@@ -204,39 +168,26 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         firstName: userData?.basicInfo?.firstName || '',
         lastName: userData?.basicInfo?.lastName || '',
         email: userData?.basicInfo?.email || '',
-        phone: userData?.basicInfo?.phoneNumber
-          ? `${userData?.basicInfo?.phoneNumber?.code}${userData?.basicInfo?.phoneNumber?.number}`
-          : '',
+        phone: userData?.basicInfo?.phoneNumber ? `${userData?.basicInfo?.phoneNumber?.code}${userData?.basicInfo?.phoneNumber?.number}` : '',
         phoneCode: userData?.basicInfo?.phoneNumber?.code || '',
         organizationName: userData?.basicInfo?.organizationName || '',
         companyName: userData?.basicInfo?.companyDetails?.name || '',
         oib: userData?.basicInfo?.companyDetails?.oib || '',
-        bankAccountNumber:
-          userData?.basicInfo?.companyDetails?.bankAccountNumber || '',
-        representativeName:
-          userData?.basicInfo?.companyDetails?.representativeName || '',
+        bankAccountNumber: userData?.basicInfo?.companyDetails?.bankAccountNumber || '',
+        representativeName: userData?.basicInfo?.companyDetails?.representativeName || '',
         location: {
-          fullAddress:
-            userData?.basicInfo?.companyDetails?.location?.fullAddress || '',
+          fullAddress: userData?.basicInfo?.companyDetails?.location?.fullAddress || '',
           country: userData?.basicInfo?.companyDetails?.location?.country || '',
           city: userData?.basicInfo?.companyDetails?.location?.city || '',
           state: userData?.basicInfo?.companyDetails?.location?.state || '',
-          postalCode:
-            userData?.basicInfo?.companyDetails?.location?.postalCode || '',
-          coordinates: userData?.basicInfo?.companyDetails?.location
-            ?.coordinates || [0, 0],
+          postalCode: userData?.basicInfo?.companyDetails?.location?.postalCode || '',
+          coordinates: userData?.basicInfo?.companyDetails?.location?.coordinates || [0, 0],
         },
-        suppliers:
-          userData?.basicInfo?.companyDetails?.suppliers?.map(
-            (sup: any) => sup?._id
-          ) || [],
-        organizations:
-          userData?.organizations?.map((org: any) => org?._id) || [],
+        suppliers: userData?.basicInfo?.companyDetails?.suppliers?.map((sup: any) => sup?._id) || [],
+        organizations: userData?.organizations?.map((org: any) => org?._id) || [],
         modules: userData?.organizations?.[0]?.staff?.[0]?.featuresAccess || [],
         username: userData?.basicInfo?.username || '',
-        dob: userData?.basicInfo?.dob
-          ? new Date(userData?.basicInfo?.dob)
-          : null,
+        dob: userData?.basicInfo?.dob ? new Date(userData?.basicInfo?.dob) : null,
         gender: userData?.basicInfo?.gender || '',
         status: userData?.accountState?.status || 'active',
       };
@@ -264,10 +215,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
       // Check if current profile icon is a "no image" URL
       const isCurrentlyNoImage =
-        !profileIconUrl ||
-        profileIconUrl === noImageUrl ||
-        profileIconUrl === noImageUrlDev ||
-        profileIconUrl.toLowerCase().includes('noimage.png');
+        !profileIconUrl || profileIconUrl === noImageUrl || profileIconUrl === noImageUrlDev || profileIconUrl.toLowerCase().includes('noimage.png');
 
       if (data.image === null) {
         // User explicitly removed the image
@@ -275,10 +223,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       } else if (typeof data.image === 'string') {
         // User kept existing image or has a URL
         profileIconUrl = data.image;
-      } else if (
-        data.image &&
-        (data.image instanceof FileList || Array.isArray(data.image))
-      ) {
+      } else if (data.image && (data.image instanceof FileList || Array.isArray(data.image))) {
         // User uploaded a new image
         const file = data.image[0];
         if (file) {
@@ -298,10 +243,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         if (key === 'image') {
           const currentIcon = initialValues.basicInfo?.profileIcon;
           const isInitiallyNoImage =
-            !currentIcon ||
-            currentIcon === noImageUrl ||
-            currentIcon === noImageUrlDev ||
-            currentIcon.toLowerCase().includes('noimage.png');
+            !currentIcon || currentIcon === noImageUrl || currentIcon === noImageUrlDev || currentIcon.toLowerCase().includes('noimage.png');
 
           // Normalize both values for comparison
           const normalizedCurrent =
@@ -318,15 +260,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             payload.profileIcon = profileIconUrl;
           }
         } else if (key === 'phone') {
-          const phoneNumber = splitPhoneByDial(
-            String(value || ''),
-            String(data.phoneCode || '')
-          );
+          const phoneNumber = splitPhoneByDial(String(value || ''), String(data.phoneCode || ''));
           const initialPhone = initialValues.basicInfo?.phoneNumber || {};
-          if (
-            phoneNumber.number !== initialPhone.number ||
-            phoneNumber.code !== initialPhone.code
-          ) {
+          if (phoneNumber.number !== initialPhone.number || phoneNumber.code !== initialPhone.code) {
             payload.phoneNumber = phoneNumber;
           }
         } else if (key === 'location' && value) {
@@ -339,46 +275,27 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             postalCode: value.postalCode || '',
             coordinates: value.coordinates || [0, 0],
           };
-          const initialLocation =
-            initialValues.basicInfo?.companyDetails?.location || {};
+          const initialLocation = initialValues.basicInfo?.companyDetails?.location || {};
 
-          if (
-            JSON.stringify(currentLocation) !== JSON.stringify(initialLocation)
-          ) {
+          if (JSON.stringify(currentLocation) !== JSON.stringify(initialLocation)) {
             payload.location = currentLocation;
           }
         } else if (Array.isArray(value)) {
           if (JSON.stringify(value) !== JSON.stringify(initialValue)) {
             payload[key] = value;
           }
-        } else if (
-          value !== initialValue &&
-          value !== undefined &&
-          value !== ''
-        ) {
+        } else if (value !== initialValue && value !== undefined && value !== '') {
           payload[key] = value;
         }
       };
 
       // Base fields
-      compareAndAdd(
-        'firstName',
-        data.firstName,
-        initialValues.basicInfo?.firstName
-      );
-      compareAndAdd(
-        'lastName',
-        data.lastName,
-        initialValues.basicInfo?.lastName
-      );
+      compareAndAdd('firstName', data.firstName, initialValues.basicInfo?.firstName);
+      compareAndAdd('lastName', data.lastName, initialValues.basicInfo?.lastName);
       compareAndAdd('email', data.email, initialValues.basicInfo?.email);
       compareAndAdd('phone', data.phone, initialValues.basicInfo?.phoneNumber);
       compareAndAdd('image', data.image, initialValues.basicInfo?.profileIcon);
-      compareAndAdd(
-        'organizationName',
-        data.organizationName,
-        initialValues.basicInfo?.organizationName
-      );
+      compareAndAdd('organizationName', data.organizationName, initialValues.basicInfo?.organizationName);
       compareAndAdd('status', data.status, initialValues.accountState?.status); // Compare status
 
       // Role-specific fields
@@ -410,19 +327,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           break;
         case 'manager':
           payload.userType = 'manager';
-          compareAndAdd(
-            'organizations',
-            data.organizations,
-            initialValues.organizations
-          );
+          compareAndAdd('organizations', data.organizations, initialValues.organizations);
           break;
         case 'staff':
           payload.userType = 'staff';
-          compareAndAdd(
-            'organizations',
-            data.organizations,
-            initialValues.organizations
-          );
+          compareAndAdd('organizations', data.organizations, initialValues.organizations);
           compareAndAdd('modules', data.modules, initialValues.modules);
           break;
         case 'guest':
@@ -433,20 +342,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           compareAndAdd('username', data.username, initialValues.username);
           compareAndAdd('gender', data.gender, initialValues.gender);
           compareAndAdd('dob', data.dob, initialValues.dob);
-          compareAndAdd(
-            'organizations',
-            data.organizations,
-            initialValues.organizations
-          );
+          compareAndAdd('organizations', data.organizations, initialValues.organizations);
           break;
       }
 
       // Remove empty objects or arrays if no changes
       Object.keys(payload).forEach((key) => {
-        if (
-          typeof payload[key] === 'object' &&
-          Object.keys(payload[key]).length === 0
-        ) {
+        if (typeof payload[key] === 'object' && Object.keys(payload[key]).length === 0) {
           delete payload[key];
         }
       });
@@ -499,34 +401,20 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form
-            onSubmit={handleSubmit(submit)}
-            className="mt-2 w-full space-y-4"
-          >
+          <form onSubmit={handleSubmit(submit)} className="mt-2 w-full space-y-4">
             <RHFUploadAvatar
               name="image"
               label="Profile Image"
               initialImage={(() => {
                 const img = userData?.basicInfo?.profileIcon;
-                if (
-                  !img ||
-                  img === noImageUrl ||
-                  img === noImageUrlDev ||
-                  img.toLowerCase().includes('noimage.png')
-                ) {
+                if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
                   return null;
                 }
                 return img;
               })()}
             />
 
-            <RHFSelectField
-              name="role"
-              label="Role"
-              placeholder="Select Role"
-              options={roleOptionsFor(userType)}
-              disabled={true}
-            />
+            <RHFSelectField name="role" label="Role" placeholder="Select Role" options={roleOptionsFor(userType)} disabled={true} />
 
             <RHFSelectField
               name="status"
@@ -535,8 +423,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               options={[
                 { value: 'active', label: 'Active' },
                 { value: 'suspended', label: 'Suspended' },
-                ...(userData?.accountState?.userType === 'organizer' &&
-                userData?.accountState?.status === 'pending'
+                ...(userData?.accountState?.userType === 'organizer' && userData?.accountState?.status === 'pending'
                   ? [{ value: 'pending', label: 'Pending' }]
                   : []),
               ]}
@@ -554,21 +441,12 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             </div>
 
             <div className="mt-6 flex justify-center gap-2">
-              {isLoading ||
-              imageUploading ||
-              updateUserLoading ||
-              updateUserSuperAdminAndGuestLoading ? (
-                <Button
-                  type="button"
-                  className="bg-primary/80 cursor-not-allowed text-white"
-                >
+              {isLoading || imageUploading || updateUserLoading || updateUserSuperAdminAndGuestLoading ? (
+                <Button type="button" className="bg-primary/80 cursor-not-allowed text-white">
                   <ButtonLoading title="Updating" />
                 </Button>
               ) : (
-                <Button
-                  type="submit"
-                  className="bg-primary hover:bg-primary/80 text-white"
-                >
+                <Button type="submit" className="bg-primary hover:bg-primary/80 text-white">
                   Update
                 </Button>
               )}

@@ -26,9 +26,7 @@ import PasswordUpdateModal from './update-password-modal';
 const profileSchema = Yup.object({
   firstName: Yup.string().required('First name is required'),
   lastName: Yup.string().required('Last name is required'),
-  email: Yup.string()
-    .email('Invalid email address')
-    .required('Email is required'),
+  email: Yup.string().email('Invalid email address').required('Email is required'),
   phone: Yup.string()
     .matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
     .required('Phone number is required'),
@@ -40,8 +38,7 @@ const AdminProfileSection = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.userSlice);
 
-  const [updateUser, { isLoading: updateUserLoading }] =
-    useUpdateUserMutation();
+  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserMutation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -164,12 +161,8 @@ const AdminProfileSection = () => {
         <Card className="dark:bg-secondary border-gray-200 bg-white shadow-sm dark:border-none">
           <CardHeader className="flex flex-col-reverse items-center justify-between md:flex-row">
             <div>
-              <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Personal Information
-              </CardTitle>
-              <p className="mt-1 text-sm text-gray-600 dark:text-white">
-                Use a permanent address where you can receive mail.
-              </p>
+              <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">Personal Information</CardTitle>
+              <p className="mt-1 text-sm text-gray-600 dark:text-white">Use a permanent address where you can receive mail.</p>
             </div>
             <TwoFactorAuth user={user} />
           </CardHeader>
@@ -177,22 +170,14 @@ const AdminProfileSection = () => {
           <CardContent className="space-y-6 pt-0 pb-3 md:px-8">
             <FormProvider methods={methods} onSubmit={onSubmit}>
               {/* Hidden file input */}
-              <Input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
+              <Input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
 
               {/* Avatar Section */}
               <div className="flex items-center space-x-2 border-b border-gray-200 pb-6 md:space-x-8">
                 <Avatar className="h-24 w-24">
                   <AvatarImage src={avatarUrl} />
                   <AvatarFallback className="bg-gray-100 text-gray-700">
-                    <span className="text-2xl font-semibold">
-                      {user?.basicInfo?.firstName[0]}
-                    </span>
+                    <span className="text-2xl font-semibold">{user?.basicInfo?.firstName[0]}</span>
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -210,24 +195,11 @@ const AdminProfileSection = () => {
 
               {/* Form Fields */}
               <div className="mt-6 mb-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                <RHFTextField
-                  name="firstName"
-                  label="First Name"
-                  placeholder="Enter your first name"
-                />
+                <RHFTextField name="firstName" label="First Name" placeholder="Enter your first name" />
 
-                <RHFTextField
-                  name="lastName"
-                  label="Last Name"
-                  placeholder="Enter your last name"
-                />
+                <RHFTextField name="lastName" label="Last Name" placeholder="Enter your last name" />
 
-                <RHFTextField
-                  name="email"
-                  type="email"
-                  label="Email"
-                  placeholder="Enter your email address"
-                />
+                <RHFTextField name="email" type="email" label="Email" placeholder="Enter your email address" />
 
                 <Controller
                   name="phone"
@@ -269,15 +241,9 @@ const AdminProfileSection = () => {
             disabled:opacity-50 md:text-sm
             focus-visible:ring-ring/50 focus-visible:ring-[3px]
             aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
-            aria-invalid:border-destructive ${
-              fieldState.invalid ? 'border-destructive ring-destructive/40' : ''
-            }`}
+            aria-invalid:border-destructive ${fieldState.invalid ? 'border-destructive ring-destructive/40' : ''}`}
                       />
-                      {fieldState.error && (
-                        <p className="mt-1 text-xs text-red-500">
-                          {fieldState.error.message}
-                        </p>
-                      )}
+                      {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
                     </div>
                   )}
                 />
@@ -285,19 +251,12 @@ const AdminProfileSection = () => {
 
               {/* Save Button */}
               <div className="flex items-center justify-end gap-4 pt-4">
-                <Button
-                  type="button"
-                  onClick={() => setIsPasswordModalOpen(true)}
-                  className="h-10 bg-gray-200 px-5 text-black hover:bg-gray-300"
-                >
+                <Button type="button" onClick={() => setIsPasswordModalOpen(true)} className="h-10 bg-gray-200 px-5 text-black hover:bg-gray-300">
                   Update Password
                 </Button>
 
                 {updateUserLoading || imageUploading ? (
-                  <Button
-                    type="button"
-                    className="bg-primary hover:bg-primary h-10 cursor-not-allowed px-7 text-white"
-                  >
+                  <Button type="button" className="bg-primary hover:bg-primary h-10 cursor-not-allowed px-7 text-white">
                     <ButtonLoading title="Saving" />
                   </Button>
                 ) : (
@@ -315,10 +274,7 @@ const AdminProfileSection = () => {
         </Card>
 
         {/* Password Update Modal */}
-        <PasswordUpdateModal
-          isOpen={isPasswordModalOpen}
-          onClose={() => setIsPasswordModalOpen(false)}
-        />
+        <PasswordUpdateModal isOpen={isPasswordModalOpen} onClose={() => setIsPasswordModalOpen(false)} />
       </div>
     </div>
   );

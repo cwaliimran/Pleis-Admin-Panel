@@ -2,12 +2,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useAddCategoryMutation,
-  useDeleteCategoryMutation,
-  useGetCategoriesQuery,
-  useUpdateCategoryMutation,
-} from '@/store/Reducer/categories';
+import { useAddCategoryMutation, useDeleteCategoryMutation, useGetCategoriesQuery, useUpdateCategoryMutation } from '@/store/Reducer/categories';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -43,12 +38,9 @@ const CategoriesView = () => {
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
-  const [addCategory, { isLoading: addCategoryLoading }] =
-    useAddCategoryMutation();
-  const [updateCategory, { isLoading: updateCategoryLoading }] =
-    useUpdateCategoryMutation();
-  const [deleteCategory, { isLoading: deleteCategoryLoading }] =
-    useDeleteCategoryMutation();
+  const [addCategory, { isLoading: addCategoryLoading }] = useAddCategoryMutation();
+  const [updateCategory, { isLoading: updateCategoryLoading }] = useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: deleteCategoryLoading }] = useDeleteCategoryMutation();
 
   const { data: apiData, isLoading } = useGetCategoriesQuery({
     page: page - 1,
@@ -137,10 +129,7 @@ const CategoriesView = () => {
     try {
       let imageFileString = undefined;
 
-      if (
-        formData.image &&
-        (formData.image instanceof FileList || Array.isArray(formData.image))
-      ) {
+      if (formData.image && (formData.image instanceof FileList || Array.isArray(formData.image))) {
         const file = formData.image[0];
         if (file) {
           setImageUploading(true);
@@ -187,9 +176,7 @@ const CategoriesView = () => {
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
-          setVenueTypes((prev) =>
-            prev.map((item) => (item._id === selectedId ? response.data : item))
-          );
+          setVenueTypes((prev) => prev.map((item) => (item._id === selectedId ? response.data : item)));
         } else {
           // Add: add new item to local state but keep only first `limit`
           setVenueTypes((prev) => {
@@ -205,12 +192,7 @@ const CategoriesView = () => {
       }
 
       if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value
-              ? 'Category updated successfully'
-              : 'Category created successfully')
-        );
+        showSuccess(response?.message || (editModal.value ? 'Category updated successfully' : 'Category created successfully'));
       }
 
       CloseModal();
@@ -261,10 +243,7 @@ const CategoriesView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus className="" />
             Create Category
           </Button>
@@ -313,9 +292,7 @@ const CategoriesView = () => {
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={
-          addCategoryLoading || updateCategoryLoading || imageUploading
-        }
+        isLoading={addCategoryLoading || updateCategoryLoading || imageUploading}
         selectedVenueType={selectedVenueType}
       />
 

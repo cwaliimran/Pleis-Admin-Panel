@@ -45,6 +45,7 @@ export const categoriesApi = createApi({
         method: 'PUT',
         body: updatedCategory,
       }),
+      invalidatesTags: ['category'],
     }),
 
     deleteCategory: builder.mutation({
@@ -57,9 +58,4 @@ export const categoriesApi = createApi({
   }),
 });
 
-export const {
-  useGetCategoriesQuery,
-  useAddCategoryMutation,
-  useUpdateCategoryMutation,
-  useDeleteCategoryMutation,
-} = categoriesApi;
+export const { useGetCategoriesQuery, useAddCategoryMutation, useUpdateCategoryMutation, useDeleteCategoryMutation } = categoriesApi;

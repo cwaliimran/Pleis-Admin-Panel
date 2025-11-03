@@ -10,11 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
-import {
-  useDeleteOrganizationMutation,
-  useGetOrganizationByIdQuery,
-  useUpdateOrganizationMutation,
-} from '@/store/Reducer/organization';
+import { useDeleteOrganizationMutation, useGetOrganizationByIdQuery, useUpdateOrganizationMutation } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -25,12 +21,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import {
-  ActivePromontion,
-  BusinessInfo,
-  TotalFollowers,
-  UserCalender,
-} from '.';
+import { ActivePromontion, BusinessInfo, TotalFollowers, UserCalender } from '.';
 import OrganizationModal from '../organization-section/create-edit-organization-modal';
 import { tabsData, userData } from './data';
 import UserInfo from './orgInfo';
@@ -39,6 +30,7 @@ import UserCard from './userCard';
 import UserEvents from './userEvents';
 import UserLoyalty from './userLoyalty';
 import UserNotifications from './userNotifications';
+
 interface IdType {
   userType?: string;
 }
@@ -59,8 +51,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
   const [updateOrganization] = useUpdateOrganizationMutation();
 
-  const [deleteOrganization, { isLoading: deleteOrganizationLoading }] =
-    useDeleteOrganizationMutation();
+  const [deleteOrganization, { isLoading: deleteOrganizationLoading }] = useDeleteOrganizationMutation();
 
   const organizationData = data?.data;
   // console.log('organizationData', organizationData);
@@ -100,13 +91,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
   // Handle cover image upload
   const handleCoverImageUpload = async (file: File) => {
     const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = [
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'image/jpg',
-      'image/webp',
-    ];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg', 'image/webp'];
 
     if (!allowedTypes.includes(file.type)) {
       showError('Only JPEG, PNG, WEBP, or GIF images are allowed.');
@@ -214,29 +199,18 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
               <Card className="dark:bg-secondary overflow-hidden p-4 shadow-md md:pb-0">
                 <div className="relative w-full">
                   <div className="relative h-72 rounded-lg bg-cover bg-center">
-                    {organizationData?.basicInfo?.mediaInfo?.cover?.url &&
-                    organizationData?.basicInfo?.mediaInfo?.cover?.url !==
-                      noImageUrl &&
-                    organizationData?.basicInfo?.mediaInfo?.cover?.url !==
-                      noImageUrlDev ? (
+                    {organizationData?.basicInfo?.media?.cover &&
+                    organizationData?.basicInfo?.media?.cover !== noImageUrl &&
+                    organizationData?.basicInfo?.media?.cover !== noImageUrlDev ? (
                       <Image
-                        src={
-                          newOrganization?.basicInfo?.mediaInfo?.cover?.url ||
-                          organizationData?.basicInfo?.mediaInfo?.cover?.url
-                        }
+                        src={newOrganization?.basicInfo?.media?.cover || organizationData?.basicInfo?.media?.cover}
                         alt="Cover Image"
                         fill
                         className="rounded-lg object-cover"
                         priority
                       />
                     ) : (
-                      <Image
-                        src="/images/blank-img.png"
-                        alt="Cover Image"
-                        fill
-                        className="rounded-lg object-cover"
-                        priority
-                      />
+                      <Image src="/images/blank-img.png" alt="Cover Image" fill className="rounded-lg object-cover" priority />
                     )}
 
                     {coverImageUploading && (
@@ -262,25 +236,21 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                         if (file && organizationData?._id) {
                           handleCoverImageUpload(file);
                         } else if (!organizationData?._id) {
-                          showError(
-                            'Organization must be created before uploading a cover image.'
-                          );
+                          showError('Organization must be created before uploading a cover image.');
                         }
                       }}
                     />
                   </label>
 
                   <div className="absolute bottom-[-30] left-5">
-                    {organizationData?.basicInfo?.mediaInfo?.logo?.url &&
-                    organizationData?.basicInfo?.mediaInfo?.logo?.url !==
-                      noImageUrl &&
-                    organizationData?.basicInfo?.mediaInfo?.logo?.url !==
-                      noImageUrlDev ? (
+                    {organizationData?.basicInfo?.media?.logo &&
+                    organizationData?.basicInfo?.media?.logo !== noImageUrl &&
+                    organizationData?.basicInfo?.media?.logo !== noImageUrlDev ? (
                       <Image
-                        src={organizationData?.basicInfo?.mediaInfo?.logo?.url}
+                        src={organizationData?.basicInfo?.media?.logo}
                         alt="User Avatar"
                         priority
-                        className="z-10 h-20 w-20 rounded-full bg-white shadow-lg md:h-30 md:w-30"
+                        className="z-10 h-20 w-20 rounded-full bg-white object-cover shadow-lg md:h-30 md:w-30"
                         width={100}
                         height={100}
                       />
@@ -297,56 +267,27 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                   </div>
                 </div>
                 <div className="flex justify-end">
-                  <Pencil
-                    className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
-                    onClick={openModal.onTrue}
-                  />
+                  <Pencil className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
                   <Trash2
                     className="ml-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
                     onClick={() => handleDelete(organizationData?._id)}
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl">
-                    {organizationData?.basicInfo?.name || '-'}
-                  </h1>
-                  <Badge
-                    className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-                  >
-                    -
-                  </Badge>
+                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl">{organizationData?.basicInfo?.name || '-'}</h1>
+                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>-</Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge
-                    className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-                  >
-                    0 Subscriptions
-                  </Badge>
-                  <Badge
-                    className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-                  >
-                    Hide
-                  </Badge>
+                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Subscriptions</Badge>
+                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>Hide</Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge
-                    className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-                  >
-                    0% Commission
-                  </Badge>
-                  <Badge
-                    className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}
-                  >
-                    0 Boost
-                  </Badge>
+                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0% Commission</Badge>
+                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Boost</Badge>
                 </div>
 
                 <div className="mt-4 flex flex-col-reverse gap-4 md:items-end md:justify-between lg:flex-row">
-                  <Tabs
-                    value={active}
-                    onValueChange={setActive}
-                    className="w-full"
-                  >
+                  <Tabs value={active} onValueChange={setActive} className="w-full">
                     <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
                       <TabsList className="inline-flex items-end rounded-full bg-transparent">
                         {tabsData.map((tab: any) => (
@@ -371,13 +312,9 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
               </Card>
 
               <div className="mt-4 rounded-lg">
-                {active === 'info' && (
-                  <UserInfo organizationData={organizationData} />
-                )}
+                {active === 'info' && <UserInfo organizationData={organizationData} />}
 
-                {active === 'events' && (
-                  <UserEvents organizationData={organizationData} />
-                )}
+                {active === 'events' && <UserEvents organizationData={organizationData} />}
 
                 {active === 'loyalty' && <UserLoyalty />}
 

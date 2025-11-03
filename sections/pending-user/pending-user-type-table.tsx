@@ -1,19 +1,12 @@
 'use client';
 
-import TableHeadCustom from '@/components/table/table-head-custom';
-import { Card } from '@/components/ui/card';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
 import { LoadingBar } from '@/components/table/table-bar-loading';
+import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table, TableBody } from '@/components/ui/table';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
@@ -88,9 +81,7 @@ const PendingUserTypeTable: FC<PageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Pending User List
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Pending User List</h3>
 
             <Sheet>
               <SheetTrigger asChild>
@@ -99,11 +90,7 @@ const PendingUserTypeTable: FC<PageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent
-                aria-describedby={undefined}
-                side="right"
-                className="dark:bg-secondary p-0"
-              >
+              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -112,10 +99,7 @@ const PendingUserTypeTable: FC<PageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label
-                          htmlFor="sheet-event-start-date"
-                          className="px-1 text-sm font-medium"
-                        >
+                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
                           Select Date
                         </label>
                         <div className="w-full">
@@ -159,26 +143,15 @@ const PendingUserTypeTable: FC<PageProps> = ({
                       <LoadingBar variant="default" />
                     </td>
                   </tr>
-                ) : data.filter((item: any) => item.status !== 'deleted')
-                    .length === 0 ? (
+                ) : data.filter((item: any) => item.status !== 'deleted').length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={headLabel.length}
-                      className="h-[40vh] border-b-0 text-center align-middle"
-                    >
-                      <div className="flex h-full w-full items-center justify-center text-xl">
-                        No data found
-                      </div>
+                    <td colSpan={headLabel.length} className="h-[40vh] border-b-0 text-center align-middle">
+                      <div className="flex h-full w-full items-center justify-center text-xl">No data found</div>
                     </td>
                   </tr>
                 ) : (
                   data.map((item: any, index: number) => (
-                    <SupplierTypeTableRow
-                      key={item._id || index}
-                      item={item}
-                      handleDelete={handleDelete}
-                      handlePending={handleEdit}
-                    />
+                    <SupplierTypeTableRow key={item._id || index} item={item} handleDelete={handleDelete} handlePending={handleEdit} />
                   ))
                 )}
               </TableBody>

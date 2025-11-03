@@ -5,12 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { VenueTypeTable } from '@/sections/venueType';
 import VenueTypeModal from '@/sections/venueType/VenueTypeModal';
-import {
-    useAddVenueTypeMutation,
-    useDeleteVenueTypeMutation,
-    useGetVenueTypesQuery,
-    useUpdateVenueTypeMutation,
-} from '@/store/Reducer/venueType';
+import { useAddVenueTypeMutation, useDeleteVenueTypeMutation, useGetVenueTypesQuery, useUpdateVenueTypeMutation } from '@/store/Reducer/venueType';
 import { getErrorMessage } from '@/utils/api';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { formatDate } from '@/utils/format-time';
@@ -44,12 +39,9 @@ const VenueTypeView = () => {
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
   const [imageUploading, setImageUploading] = useState(false);
 
-  const [addVenueType, { isLoading: addVenueTypeLoading }] =
-    useAddVenueTypeMutation();
-  const [updateVenueType, { isLoading: updateVenueTypeLoading }] =
-    useUpdateVenueTypeMutation();
-  const [deleteVenueType, { isLoading: deleteVenueTypeLoading }] =
-    useDeleteVenueTypeMutation();
+  const [addVenueType, { isLoading: addVenueTypeLoading }] = useAddVenueTypeMutation();
+  const [updateVenueType, { isLoading: updateVenueTypeLoading }] = useUpdateVenueTypeMutation();
+  const [deleteVenueType, { isLoading: deleteVenueTypeLoading }] = useDeleteVenueTypeMutation();
 
   const { data: apiData, isLoading } = useGetVenueTypesQuery({
     page: page - 1,
@@ -139,10 +131,7 @@ const VenueTypeView = () => {
     try {
       let imageFileString = undefined;
       // If image is present and is a FileList or array
-      if (
-        formData.image &&
-        (formData.image instanceof FileList || Array.isArray(formData.image))
-      ) {
+      if (formData.image && (formData.image instanceof FileList || Array.isArray(formData.image))) {
         const file = formData.image[0];
         if (file) {
           setImageUploading(true);
@@ -206,9 +195,7 @@ const VenueTypeView = () => {
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
-          setVenueTypes((prev) =>
-            prev.map((item) => (item._id === selectedId ? response.data : item))
-          );
+          setVenueTypes((prev) => prev.map((item) => (item._id === selectedId ? response.data : item)));
         } else {
           // Add: add new item to local state, keep max 10
           setVenueTypes((prev) => {
@@ -224,12 +211,7 @@ const VenueTypeView = () => {
       }
 
       if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value
-              ? 'Venue type updated successfully'
-              : 'Venue type created successfully')
-        );
+        showSuccess(response?.message || (editModal.value ? 'Venue type updated successfully' : 'Venue type created successfully'));
       }
 
       CloseModal();
@@ -274,10 +256,7 @@ const VenueTypeView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus className="" />
             Create Venue Type
           </Button>
@@ -326,9 +305,7 @@ const VenueTypeView = () => {
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={
-          addVenueTypeLoading || updateVenueTypeLoading || imageUploading
-        }
+        isLoading={addVenueTypeLoading || updateVenueTypeLoading || imageUploading}
         selectedVenueType={selectedVenueType}
       />
 

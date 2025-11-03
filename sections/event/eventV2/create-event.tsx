@@ -10,10 +10,7 @@ import ProgressHeader from './progress-header';
 import { useEventForm } from './use-event-form';
 import type { CreateEventViewProps } from './types';
 
-const CreateEventView = ({
-  title = 'Create',
-  userType,
-}: CreateEventViewProps) => {
+const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) => {
   const {
     step,
     setStep,
@@ -60,10 +57,7 @@ const CreateEventView = ({
             <CardContent className="dark:bg-secondary p-2 md:p-8">
               <ProgressHeader step={step} title={title} />
 
-              <FormProvider
-                methods={methods}
-                onSubmit={methods.handleSubmit(onSubmit)}
-              >
+              <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                 {step === 1 && (
                   <StepOne
                     methods={methods}
