@@ -159,7 +159,7 @@ export function CategoryManagement({
         </div>
       )}
 
-      {categories.length === 0 && viewAll && (
+      {!isLoading && categories.length === 0 && viewAll && (
         <div className="py-12 text-center">
           <p className="mb-4 text-gray-500 dark:text-white">
             No categories created yet
