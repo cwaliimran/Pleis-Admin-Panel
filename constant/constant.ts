@@ -1,4 +1,4 @@
-export const CurrentUrl = process.env.NEXT_PUBLIC_LOCAL_URL;
+export const CurrentUrl = process.env.NEXT_PUBLIC_LIVE_URL;
 export const noImageUrl = 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png';
 export const noImageUrlDev = 'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noimage.png';
 
