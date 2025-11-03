@@ -60,6 +60,12 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       // user: Yup.string().required('User is required').trim().min(2, 'User must be at least 2 characters'),
       user: Yup.string().optional(),
     }),
+    website: Yup.string().nullable().optional().matches(urlRegex, {
+      message: 'Website link must be a valid URL',
+      excludeEmptyString: true,
+    }),
+    phone: Yup.string().nullable().optional(),
+
     instagram: Yup.string().nullable().optional().matches(urlRegex, {
       message: 'Instagram link must be a valid URL',
       excludeEmptyString: true,
@@ -85,6 +91,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
     ...(userType !== 'organizer' && {
       user: organization?.basicInfo?.user || '',
     }),
+    phone: organization?.basicInfo?.phone || '',
+    website: organization?.basicInfo?.website || '',
     instagram: organization?.basicInfo?.socialLinks?.instagram || '',
     facebook: organization?.basicInfo?.socialLinks?.facebook || '',
     youtube: organization?.basicInfo?.socialLinks?.youtube || '',
@@ -195,10 +203,6 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
         response = await addOrganization(payload).unwrap();
       }
 
-      if (!response) {
-        throw new Error('No response from server. Please try again later.');
-      }
-
       if (response.error) {
         throw new Error(getErrorMessage(response.error));
       }
@@ -226,67 +230,80 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
-        <DialogContent aria-describedby={undefined} className="mx-4 w-full max-w-md dark:bg-[#171717]">
+        {/* <DialogContent aria-describedby={undefined} className="mx-4 w-full max-w-md dark:bg-[#171717]"> */}
+        <DialogContent
+          aria-describedby={undefined}
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+        >
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-lg font-semibold">{isEdit ? 'Edit Organization' : 'Create Organization'}</DialogTitle>
           </DialogHeader>
 
-          <FormProvider methods={methods} onSubmit={onSubmit}>
-            <div className="mt-4 flex flex-col gap-4">
-              <div className="space-y-2">
-                <RHFUploadAvatar
-                  name="image"
-                  label="Organization Icon"
-                  initialImage={(() => {
-                    const img = organization?.basicInfo?.media?.logo;
-                    if (img && img !== noImageUrl && img !== noImageUrlDev) {
-                      return img;
-                    }
-                    return null;
-                  })()}
-                />
-              </div>
-
-              <div className="space-y-5">
-                <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
-
-                {userType !== 'organizer' && (
-                  <RHFCustomDropdown
-                    name="user"
-                    label="Company Name"
-                    placeholder="Select Company"
-                    options={userOptions}
-                    isLoading={isUserLoading}
-                    showNone={false}
+          <div className="w-full">
+            <FormProvider methods={methods} onSubmit={onSubmit}>
+              <div className="mt-4 flex w-full flex-col gap-4">
+                <div className="space-y-2">
+                  <RHFUploadAvatar
+                    name="image"
+                    label="Organization Icon"
+                    initialImage={(() => {
+                      const img = organization?.basicInfo?.media?.logo;
+                      if (img && img !== noImageUrl && img !== noImageUrlDev) {
+                        return img;
+                      }
+                      return null;
+                    })()}
                   />
-                )}
+                </div>
 
-                <RHFTextField name="instagram" label="Instagram Link" placeholder="Enter Instagram Link" />
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
 
-                <RHFTextField name="facebook" label="Facebook Link" placeholder="Enter Facebook Link" />
+                  {userType !== 'organizer' && (
+                    <RHFCustomDropdown
+                      name="user"
+                      label="Company Name"
+                      placeholder="Select Company"
+                      options={userOptions}
+                      isLoading={isUserLoading}
+                      showNone={false}
+                    />
+                  )}
 
-                <RHFTextField name="youtube" label="YouTube Link" placeholder="Enter YouTube Link" />
+                  <RHFTextField name="phone" type="number" label="Phone Number" placeholder="Enter Phone Number" />
 
-                <RHFTextField name="linkedin" label="LinkedIn Link" placeholder="Enter LinkedIn Link" />
-              </div>
+                  <RHFTextField name="website" label="Website Link" placeholder="Enter Website Link" />
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading || imageUploading} className="px-4 py-2">
-                  Cancel
-                </Button>
+                  {/* SINGLE LINE FIELDS */}
+                  <div className="col-span-2 space-y-4">
+                    <RHFTextField name="instagram" label="Instagram Link" placeholder="Enter Instagram Link" />
 
-                {isLoading || imageUploading ? (
-                  <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
-                    <ButtonLoading title="Saving" />
+                    <RHFTextField name="facebook" label="Facebook Link" placeholder="Enter Facebook Link" />
+
+                    <RHFTextField name="youtube" label="YouTube Link" placeholder="Enter YouTube Link" />
+
+                    <RHFTextField name="linkedin" label="LinkedIn Link" placeholder="Enter LinkedIn Link" />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading || imageUploading} className="px-4 py-2">
+                    Cancel
                   </Button>
-                ) : (
-                  <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white">
-                    Save
-                  </Button>
-                )}
+
+                  {isLoading || imageUploading ? (
+                    <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
+                      <ButtonLoading title="Saving" />
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-7 py-2 text-white">
+                      Save
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </FormProvider>
+            </FormProvider>
+          </div>
         </DialogContent>
       </DialogOverlay>
     </Dialog>
