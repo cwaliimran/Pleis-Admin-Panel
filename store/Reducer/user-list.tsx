@@ -7,7 +7,7 @@ const ADMIN_ACCESS_TOKEN = process.env.NEXT_PUBLIC_ADMIN_ACCESS_TOKEN;
 export const userListApi = createApi({
   reducerPath: 'userListApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['userList'],
+  tagTypes: ['userList', 'companyList'],
 
   endpoints: (builder) => ({
     getUserList: builder.query({
@@ -89,7 +89,16 @@ export const userListApi = createApi({
         method: 'PUT',
         body: body,
       }),
-      invalidatesTags: ['userList'],
+      invalidatesTags: ['userList', 'companyList'],
+    }),
+
+    getCompanyList: builder.query({
+      query: () => ({
+        url: API_ROUTES.LOYALTY_LISTINGS,
+        method: 'GET',
+      }),
+      transformResponse: (res) => res.data,
+      providesTags: ['companyList'],
     }),
 
     updatePendingUser: builder.mutation({
@@ -117,6 +126,7 @@ export const {
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
   useUpdateUserMutation,
+  useGetCompanyListQuery,
   useUpdateUserForUserListMutation,
   useUpdateUserSuperAdminAndGuestMutation,
   useUpdatePendingUserMutation,

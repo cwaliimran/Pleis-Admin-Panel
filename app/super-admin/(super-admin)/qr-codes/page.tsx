@@ -1,10 +1,9 @@
 import Header from '@/app/common/header';
-import CompanyGuard from '@/components/guards/CompanyGuard';
-import SettingsView from '@/sections/settings-view/settings-view';
+// import QrCodesView from '@/sections/qr-codes/qr-codes-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Settings - Pleis',
+  title: 'Qr Codes - Pleis',
 };
 
 const Page = () => {
@@ -13,12 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Settings', href: '' },
+          { name: 'Qr Codes', href: '' },
         ]}
       />
-      <CompanyGuard>
-        <SettingsView />
-      </CompanyGuard>
+
+      {/* <QrCodesView /> */}
     </div>
   );
 };

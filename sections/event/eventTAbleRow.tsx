@@ -27,6 +27,10 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
     router.push(`/${userType}/events/edit-event/${id}`);
   };
 
+  const media = item?.basicInfo?.media;
+  const mediaUrl = typeof media === 'string' ? media.toLowerCase() : '';
+  const isVideo = mediaUrl.endsWith('.mp4');
+
   return (
     <TableRow className="h-14 w-full cursor-pointer transition-colors" onClick={handleNavigateToDetails}>
       <TableCell>
@@ -42,10 +46,7 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
               )} */}
 
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.basicInfo?.media &&
-          item?.basicInfo?.media !== noImageUrl &&
-          item?.basicInfo?.media !== noImageUrlDev &&
-          !item?.basicInfo?.media.toLowerCase().endsWith('.mp4') ? (
+          {item?.basicInfo?.media && item?.basicInfo?.media !== noImageUrl && item?.basicInfo?.media !== noImageUrlDev && isVideo ? (
             <AvatarImage src={item?.basicInfo?.media} alt="Store" className="h-full w-full cursor-pointer object-cover" />
           ) : (
             <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.title?.[0]?.toUpperCase() || ''}</span>

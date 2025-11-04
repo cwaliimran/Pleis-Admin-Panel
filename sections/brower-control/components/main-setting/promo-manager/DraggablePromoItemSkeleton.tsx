@@ -12,7 +12,6 @@ export function DraggablePromoItemSkeleton() {
       <div className="flex items-center space-x-2">
         <Skeleton className="h-4 w-4 rounded bg-gray-300 dark:bg-gray-700" />
         <Skeleton className="h-4 w-4 rounded bg-gray-300 dark:bg-gray-700" />
-        <Skeleton className="h-4 w-4 rounded bg-gray-300 dark:bg-gray-700" />
       </div>
     </div>
   );

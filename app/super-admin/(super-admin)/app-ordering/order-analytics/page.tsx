@@ -1,10 +1,9 @@
 import Header from '@/app/common/header';
-import CompanyGuard from '@/components/guards/CompanyGuard';
-import SettingsView from '@/sections/settings-view/settings-view';
+// import OrderAnalyticsView from '@/sections/order-analytics/order-analytics-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Settings - Pleis',
+  title: 'Order Analytics - Pleis',
 };
 
 const Page = () => {
@@ -13,12 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Settings', href: '' },
+          { name: 'Order Analytics', href: '' },
         ]}
       />
-      <CompanyGuard>
-        <SettingsView />
-      </CompanyGuard>
+
+      {/* <OrderAnalyticsView /> */}
     </div>
   );
 };

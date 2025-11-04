@@ -102,6 +102,10 @@ const EventDetailsPage = () => {
     }
   };
 
+  const media = event?.basicInfo?.media?.url;
+  const mediaUrl = typeof media === 'string' ? media.toLowerCase() : null;
+  const isVideo = mediaUrl?.endsWith('.mp4');
+
   return (
     <>
       {isLoading || loading ? (
@@ -123,11 +127,11 @@ const EventDetailsPage = () => {
                         />
                          */}
 
-                        {event?.basicInfo?.media?.endsWith('.mp4') ? (
-                          <video src={event?.basicInfo?.media} controls className="h-full w-full object-cover" />
+                        {isVideo ? (
+                          <video src={event?.basicInfo?.media?.url} controls className="h-full w-full rounded-lg object-cover" />
                         ) : (
                           <Image
-                            src={event?.basicInfo?.media}
+                            src={event?.basicInfo?.media?.url}
                             alt="Event preview"
                             className="rounded-lg object-cover"
                             sizes="(max-width: 768px) 100vw, 40vw"

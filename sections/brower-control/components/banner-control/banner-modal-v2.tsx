@@ -4,34 +4,19 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import {
-  useAddBannerControlMutation,
-  useUpdateBannerControlMutation,
-} from '@/store/Reducer/banner-control-api';
+import { useAddBannerControlMutation, useUpdateBannerControlMutation } from '@/store/Reducer/banner-control-api';
 import { useGeteventsQuery } from '@/store/Reducer/events';
-import { useGetUserListQuery } from '@/store/Reducer/user-list';
+import { useGetCompanyListQuery, useGetUserListQuery } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
@@ -53,22 +38,19 @@ const schema = Yup.object().shape({
   }),
   url: Yup.string().when('linkType', {
     is: 'Other',
-    then: (schema) =>
-      schema.url('Please enter a valid URL').required('URL is required'),
+    then: (schema) => schema.url('Please enter a valid URL').required('URL is required'),
     otherwise: (schema) => schema.notRequired(),
   }),
   status: Yup.string().required('Status is required'),
 });
 
-const BannerModalV2 = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-}: any) => {
+const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const isInitialLoad = useRef(true);
+
+  console.log('selectedData', selectedData);
 
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -78,6 +60,13 @@ const BannerModalV2 = ({
   const { watch, reset, formState, setValue } = methods;
   const isDirty = formState?.isDirty;
   const linkType = watch('linkType');
+  const selectedObject = watch('selectedObject');
+  const urlValue = watch('url');
+
+  // Debug logs
+  useEffect(() => {
+    console.log('Current form values:', { linkType, selectedObject, urlValue });
+  }, [linkType, selectedObject, urlValue]);
 
   // Fetch Events
   const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
@@ -93,13 +82,12 @@ const BannerModalV2 = ({
   }));
 
   // Fetch Organizers
-  const { data: organizerData, isLoading: isLoadingOrganizers } =
-    useGetUserListQuery({
-      page: 0,
-      search: '',
-      limit: 10000,
-      userType: 'organizer',
-    });
+  const { data: organizerData, isLoading: isLoadingOrganizers } = useGetUserListQuery({
+    page: 0,
+    search: '',
+    limit: 10000,
+    userType: 'organizer',
+  });
 
   const organizerOptions =
     organizerData?.data?.map((u: any) => ({
@@ -107,10 +95,17 @@ const BannerModalV2 = ({
       value: u?.basicInfo?._id,
     })) || [];
 
-  const [addBanner, { isLoading: addBannerLoading }] =
-    useAddBannerControlMutation();
-  const [updateBanner, { isLoading: updateBannerLoading }] =
-    useUpdateBannerControlMutation();
+  // Fetch Companies for Loyalty
+  const { data: companyList, isLoading: isLoadingCompanies } = useGetCompanyListQuery({});
+
+  const loyaltyDataOptions =
+    companyList?.map((data: any) => ({
+      label: data?.companyDetails?.name || 'Unknown Company',
+      value: data?._id,
+    })) || [];
+
+  const [addBanner, { isLoading: addBannerLoading }] = useAddBannerControlMutation();
+  const [updateBanner, { isLoading: updateBannerLoading }] = useUpdateBannerControlMutation();
 
   // Handle image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,22 +153,17 @@ const BannerModalV2 = ({
     };
 
     if (data?.type === 'Other') {
-      formData.url = data?.url || '';
+      // For "Other" type, the object field contains the URL
+      formData.url = data?.object || '';
+      formData.selectedObject = '';
     } else {
-      let objectId = '';
-
-      if (data?.type === 'Event' || data?.type === 'LoyaltyProgram') {
-        objectId = data?.basicInfo?.object?._id?.toString() || '';
-      } else if (data?.type === 'Organizer') {
-        objectId =
-          data?.object?._id?.toString() ||
-          (data?.objectModel === 'User' && data?._id)
-            ? data._id
-            : '';
-      }
-
-      formData.selectedObject = objectId;
+      // For Event, Organizer, LoyaltyProgram - object contains the ID string
+      formData.selectedObject = data?.object || '';
+      formData.url = '';
     }
+
+    console.log('Preparing banner form data:', formData);
+    console.log('Original banner data:', data);
 
     return formData;
   };
@@ -182,6 +172,7 @@ const BannerModalV2 = ({
     if (open && isEdit && selectedData) {
       const formData = prepareFormData(selectedData);
       reset(formData);
+      isInitialLoad.current = true; // Set flag when loading edit data
 
       // Set image preview if exists
       if (selectedData?.image) {
@@ -191,21 +182,24 @@ const BannerModalV2 = ({
       reset(defaultValues);
       setImageFile(null);
       setImagePreview('');
+      isInitialLoad.current = true; // Set flag when opening create modal
     }
   }, [open, isEdit, selectedData, reset]);
 
-  // Reset selectedObject when linkType changes
+  // Reset selectedObject when linkType changes (but not during initial load)
   useEffect(() => {
-    if (linkType) {
+    if (linkType && !isInitialLoad.current) {
       setValue('selectedObject', '', { shouldDirty: true });
       setValue('url', '', { shouldDirty: true });
     }
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+    }
   }, [linkType, setValue]);
 
+  // HANDLE SUBMIT
   const handleSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
-
-    console.log('imageFile', imageFile);
 
     try {
       if (imageFile && imageFile instanceof File) {
@@ -221,7 +215,7 @@ const BannerModalV2 = ({
 
       // Add object or url based on type
       if (formData.linkType === 'Other') {
-        payload.url = formData.url;
+        payload.object = formData.url;
       } else {
         payload.object = formData.selectedObject;
       }
@@ -229,13 +223,10 @@ const BannerModalV2 = ({
       // Add status and id for edit mode
       if (isEdit && selectedData) {
         payload.status = formData.status;
-        payload.id = selectedData._id;
+        payload.id = selectedData.id;
       }
 
-      const response =
-        isEdit && selectedData
-          ? await updateBanner(payload).unwrap()
-          : await addBanner(payload).unwrap();
+      const response = isEdit && selectedData ? await updateBanner(payload).unwrap() : await addBanner(payload).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -247,12 +238,7 @@ const BannerModalV2 = ({
         return;
       }
 
-      showSuccess(
-        response?.message ||
-          (isEdit
-            ? 'Banner updated successfully'
-            : 'Banner created successfully')
-      );
+      showSuccess(response?.message || (isEdit ? 'Banner updated successfully' : 'Banner created successfully'));
 
       methods.reset(defaultValues);
       setImageFile(null);
@@ -277,8 +263,9 @@ const BannerModalV2 = ({
       case 'Organizer':
         return organizerOptions;
       case 'Event':
-      case 'LoyaltyProgram':
         return eventOptions;
+      case 'LoyaltyProgram':
+        return loyaltyDataOptions;
       default:
         return [];
     }
@@ -291,7 +278,7 @@ const BannerModalV2 = ({
       case 'Event':
         return 'Select Event';
       case 'LoyaltyProgram':
-        return 'Select Loyalty Program Event';
+        return 'Select Loyalty';
       default:
         return 'Select Option';
     }
@@ -302,8 +289,9 @@ const BannerModalV2 = ({
       case 'Organizer':
         return isLoadingOrganizers;
       case 'Event':
-      case 'LoyaltyProgram':
         return isLoadingEvents;
+      case 'LoyaltyProgram':
+        return isLoadingCompanies;
       default:
         return false;
     }
@@ -317,46 +305,25 @@ const BannerModalV2 = ({
           className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
         >
           <DialogHeader>
-            <DialogTitle>
-              {isEdit ? 'Edit Banner' : 'Create New Banner'}
-            </DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Banner' : 'Create New Banner'}</DialogTitle>
           </DialogHeader>
           <div className="mt-4 w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="grid w-full grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-2">
                   {/* Banner Name */}
                   <div className="col-span-2">
-                    <RHFTextField
-                      name="title"
-                      label="Banner Name"
-                      placeholder="Enter Banner Name"
-                    />
+                    <RHFTextField name="title" label="Banner Name" placeholder="Enter Banner Name" />
                   </div>
 
                   {/* Image Upload */}
                   <div className="col-span-2 space-y-2">
                     <Label htmlFor="image">Banner Image</Label>
                     <div className="flex items-center space-x-4">
-                      <Input
-                        id="image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="flex-1"
-                      />
+                      <Input id="image" type="file" accept="image/*" onChange={handleImageUpload} className="flex-1" />
                       {imagePreview && (
                         <div className="h-16 w-16 overflow-hidden rounded-lg border">
-                          <Image
-                            src={imagePreview}
-                            alt="Preview"
-                            width={64}
-                            height={64}
-                            className="h-full w-full object-cover"
-                          />
+                          <Image src={imagePreview} alt="Preview" width={64} height={64} className="h-full w-full object-cover" />
                         </div>
                       )}
                     </div>
@@ -367,27 +334,18 @@ const BannerModalV2 = ({
                     <Label htmlFor="linkType">
                       Link Type <span className="text-red-500">*</span>
                     </Label>
-                    <Select
-                      value={linkType}
-                      onValueChange={handleLinkTypeChange}
-                    >
+                    <Select value={linkType} onValueChange={handleLinkTypeChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select link type" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="LoyaltyProgram">
-                          Loyalty Program
-                        </SelectItem>
+                      <SelectContent className="dark:bg-secondary">
+                        <SelectItem value="LoyaltyProgram">Loyalty Program</SelectItem>
                         <SelectItem value="Event">Event</SelectItem>
                         <SelectItem value="Organizer">Organizer</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
-                    {formState.errors.linkType && (
-                      <p className="text-sm text-red-500">
-                        {formState.errors.linkType.message as string}
-                      </p>
-                    )}
+                    {formState.errors.linkType && <p className="text-sm text-red-500">{formState.errors.linkType.message as string}</p>}
                   </div>
 
                   {/* Dynamic Dropdown or URL Field */}
@@ -406,12 +364,7 @@ const BannerModalV2 = ({
 
                   {linkType === 'Other' && (
                     <div className="col-span-2">
-                      <RHFTextField
-                        name="url"
-                        label="Custom URL"
-                        placeholder="Enter URL (e.g., https://example.com)"
-                        type="url"
-                      />
+                      <RHFTextField name="url" label="Custom URL" placeholder="Enter URL (e.g., https://example.com)" type="url" />
                     </div>
                   )}
 
@@ -436,20 +389,11 @@ const BannerModalV2 = ({
               {/* Action Buttons */}
               <div className="mt-6 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleClose}
-                    className="px-6 py-2"
-                  >
+                  <Button type="button" variant="outline" onClick={handleClose} className="px-6 py-2">
                     Cancel
                   </Button>
                   {addBannerLoading || updateBannerLoading || imageUploading ? (
-                    <Button
-                      type="button"
-                      disabled
-                      className="bg-primary hover:bg-primary cursor-not-allowed px-6 py-2 text-white"
-                    >
+                    <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-6 py-2 text-white">
                       <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                     </Button>
                   ) : (

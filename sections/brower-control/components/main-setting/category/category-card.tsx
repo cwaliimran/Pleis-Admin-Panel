@@ -21,24 +21,15 @@ export function CategoryCard({
         <div className="flex flex-1 items-center space-x-4">
           <div className="flex-1">
             <div className="flex items-center space-x-3">
-              <h3 className="text-md font-semibold text-gray-900 dark:text-white">
-                {category?.title || ''}
-              </h3>
+              <h3 className="text-md font-semibold text-gray-900 dark:text-white">{category?.title || ''}</h3>
             </div>
 
-            <p className="mt-0 text-sm text-gray-600 dark:text-white">
-              {category?.type || 'N/A'}
-            </p>
+            <p className="mt-0 text-sm text-gray-600 dark:text-white">{category?.type === 'User' ? 'Loyalty Club' : category?.type || 'N/A'}</p>
           </div>
         </div>
 
         <div className="flex space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit(category)}
-            className="h-8 w-8 cursor-pointer p-0"
-          >
+          <Button variant="ghost" size="sm" onClick={() => onEdit(category)} className="h-8 w-8 cursor-pointer p-0">
             <Edit className="h-5 w-5" />
           </Button>
           <Button

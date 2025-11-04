@@ -1,4 +1,5 @@
 import {
+  BellRing,
   Box,
   Building,
   Calendar,
@@ -16,7 +17,9 @@ import {
   List,
   ListOrdered,
   Package,
+  QrCode,
   Settings,
+  ShoppingBasket,
   SlidersHorizontal,
   SquareMenu,
   Tags,
@@ -176,11 +179,6 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: 'Ticketing',
-    key: paths.superAdmin.ticketing,
-    icon: Ticket,
-  },
-  {
     label: 'Reservation',
     key: paths.superAdmin.reservation,
     icon: CalendarDays,
@@ -206,6 +204,48 @@ export const menuGroups: MenuGroup[] = [
         icon: ChartBar,
       },
     ],
+  },
+  {
+    label: 'App Ordering',
+    key: paths.superAdmin.orderManagement,
+    icon: ShoppingBasket,
+    items: [
+      {
+        title: 'Order Management',
+        url: paths.superAdmin.orderManagement,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Menu Management',
+        url: paths.superAdmin.menuManagement,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Analytics',
+        url: paths.superAdmin.orderAnalytics,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Settings',
+        url: paths.superAdmin.orderSettings,
+        icon: CalendarDays,
+      },
+    ],
+  },
+  {
+    label: 'QR Codes',
+    key: paths.superAdmin.qrCodes,
+    icon: QrCode,
+  },
+  {
+    label: 'Notifications',
+    key: paths.superAdmin.notification.default,
+    icon: BellRing,
+  },
+  {
+    label: 'Ticketing',
+    key: paths.superAdmin.ticketing,
+    icon: Ticket,
   },
   {
     label: 'Bundles',

@@ -8,7 +8,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Input } from '@/components/ui/input';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
-import { useGetUserListQuery } from '@/store/Reducer/user-list';
+import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -30,17 +30,11 @@ interface DropdownOption {
 }
 
 interface FormValues {
-  organizations: DropdownOption | null;
+  organizations: string | null;
 }
 
 const schema: yup.ObjectSchema<FormValues> = yup.object({
-  organizations: yup
-    .object({
-      label: yup.string().required(),
-      value: yup.string().required(),
-    })
-    .nullable()
-    .defined(),
+  organizations: yup.string().nullable().defined(),
 });
 
 const Header: FC<HeaderProps> = ({ links }) => {
@@ -52,7 +46,9 @@ const Header: FC<HeaderProps> = ({ links }) => {
     if (typeof window === 'undefined') return null;
     try {
       const stored = localStorage.getItem('selectedCompany');
-      return stored ? JSON.parse(stored) : null;
+      const parsed = stored ? JSON.parse(stored) : null;
+      // Return just the value (ID) since schema expects string
+      return parsed?.value || null;
     } catch {
       return null;
     }
@@ -81,36 +77,39 @@ const Header: FC<HeaderProps> = ({ links }) => {
 
   const shouldShowDropdown = superAdminUrls.some((url) => pathname?.startsWith(url));
 
-  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery(
-    {
-      page: 0,
-      search: '',
-      limit: 10000,
-      userType: 'organizer',
-    },
+  const { data: companyList, isLoading: isUserLoading } = useGetCompanyListQuery(
+    {},
     {
       skip: !shouldShowDropdown || user?.accountState?.userType !== 'admin',
     }
   );
 
-  const userOptions =
-    apiData?.data?.map((u: any) => ({
-      label: u?.basicInfo?.companyDetails?.name || 'Unknown Company',
-      value: u?.basicInfo?._id,
-    })) || [];
+  const userOptions = useMemo(
+    () =>
+      companyList?.map((u: any) => ({
+        label: u?.companyDetails?.name || 'Unknown Company',
+        value: u?._id,
+      })) || [],
+    [companyList]
+  );
 
   useEffect(() => {
     if (organizationsValue === undefined) return;
 
-    if (!organizationsValue || (Array.isArray(organizationsValue) && organizationsValue.length === 0)) {
+    if (!organizationsValue) {
       localStorage.removeItem('selectedCompany');
       window.dispatchEvent(new Event('companyChanged'));
       return;
     }
 
-    localStorage.setItem('selectedCompany', JSON.stringify(organizationsValue));
+    // organizationsValue is now just a string (the ID)
+    // Find the full option object to save both label and value
+    const fullOption = userOptions.find((opt: DropdownOption) => opt.value === organizationsValue);
+    const companyToSave = fullOption || { value: organizationsValue, label: 'Unknown' };
+
+    localStorage.setItem('selectedCompany', JSON.stringify(companyToSave));
     window.dispatchEvent(new Event('companyChanged'));
-  }, [organizationsValue]);
+  }, [organizationsValue, userOptions]);
 
   const showAdminDropdown = user?.accountState?.userType === 'admin' && shouldShowDropdown;
   const showOrganizerDropdown = user?.role === 'organizer';

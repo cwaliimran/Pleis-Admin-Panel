@@ -135,7 +135,6 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
         }
       }
 
-      // Prepare payload with only changed fields for update
       const payload: any = {
         basicInfo: {},
       };
@@ -143,6 +142,14 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       // Add fields to payload only if they have changed
       if (formData.name !== organization?.basicInfo?.name) {
         payload.basicInfo.name = formData.name;
+      }
+
+      if (formData.phone !== (organization?.basicInfo?.phone || '')) {
+        payload.basicInfo.phone = formData.phone || '';
+      }
+
+      if (formData.website !== (organization?.basicInfo?.website || '')) {
+        payload.basicInfo.website = formData.website || '';
       }
 
       // Add user only if userType is not organizer
@@ -179,16 +186,17 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
         return;
       }
 
+      console.log('payload', payload);
+
       let response;
+
       if (isEdit) {
-        response = await updateOrganization({
-          id: organization._id,
-          ...payload,
-        }).unwrap();
+        response = await updateOrganization({ id: organization._id, ...payload }).unwrap();
       } else {
-        // For create, include all fields
         payload.basicInfo = {
           name: formData.name,
+          phone: formData.phone || '',
+          website: formData.website || '',
           ...(userType !== 'organizer' && { user: formData.user }),
           socialLinks: {
             youtube: formData.youtube || '',
@@ -197,9 +205,11 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
             linkedin: formData.linkedin || '',
           },
         };
+
         if (logoKey) {
           payload.basicInfo.media = { logo: logoKey };
         }
+
         response = await addOrganization(payload).unwrap();
       }
 
@@ -230,7 +240,6 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
-        {/* <DialogContent aria-describedby={undefined} className="mx-4 w-full max-w-md dark:bg-[#171717]"> */}
         <DialogContent
           aria-describedby={undefined}
           className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
