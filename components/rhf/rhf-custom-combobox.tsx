@@ -1,18 +1,7 @@
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Check, X } from 'lucide-react';
 import { useState } from 'react';
@@ -28,7 +17,7 @@ interface RHFCustomComboboxProps {
   allowCustom: boolean;
   options: { value: string; label: string }[];
   onChange?: (value: string[]) => void;
-  maxSelected?: number; 
+  maxSelected?: number;
 }
 
 export const RHFCustomCombobox = ({
@@ -89,9 +78,7 @@ export const RHFCustomCombobox = ({
               aria-expanded={open}
               className="w-full justify-between font-normal text-gray-600 dark:text-slate-400"
             >
-              {selectedValues.length > 0
-                ? `${selectedValues.length} selected`
-                : placeholder}
+              {selectedValues.length > 0 ? `${selectedValues.length} selected` : placeholder}
             </Button>
           </PopoverTrigger>
           <PopoverContent
@@ -107,47 +94,29 @@ export const RHFCustomCombobox = ({
                 className="h-11 border-0 focus:ring-0 focus:outline-none"
               />
               <CommandList className="max-h-[240px] overflow-y-auto">
-                <CommandEmpty className="py-6 text-center text-sm text-gray-500">
-                  No results found.
-                </CommandEmpty>
+                <CommandEmpty className="py-6 text-center text-sm text-gray-500">No results found.</CommandEmpty>
                 <CommandGroup>
                   {options.map((option) => (
-                    <CommandItem
-                      key={option.value}
-                      value={option.label}
-                      onSelect={() => handleSelect(option.value)}
-                      className="cursor-pointer"
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          selectedValues.includes(option.value)
-                            ? 'opacity-100'
-                            : 'opacity-0'
-                        )}
-                      />
+                    <CommandItem key={option.value} value={option.label} onSelect={() => handleSelect(option.value)} className="cursor-pointer capitalize">
+                      <Check className={cn('mr-2 h-4 w-4', selectedValues.includes(option.value) ? 'opacity-100' : 'opacity-0')} />
                       {option.label}
                     </CommandItem>
                   ))}
-                  {allowCustom &&
-                    search &&
-                    !options.some(
-                      (opt) => opt.label.toLowerCase() === search.toLowerCase()
-                    ) && (
-                      <CommandItem
-                        value={search}
-                        onSelect={() => {
-                          const newOption = {
-                            value: search.toLowerCase().replace(/\s+/g, '-'),
-                            label: search,
-                          };
-                          options.push(newOption);
-                          handleSelect(newOption.value);
-                        }}
-                      >
-                        &quot;{search}&quot;
-                      </CommandItem>
-                    )}
+                  {allowCustom && search && !options.some((opt) => opt.label.toLowerCase() === search.toLowerCase()) && (
+                    <CommandItem
+                      value={search}
+                      onSelect={() => {
+                        const newOption = {
+                          value: search.toLowerCase().replace(/\s+/g, '-'),
+                          label: search,
+                        };
+                        options.push(newOption);
+                        handleSelect(newOption.value);
+                      }}
+                    >
+                      &quot;{search}&quot;
+                    </CommandItem>
+                  )}
                 </CommandGroup>
               </CommandList>
             </Command>
@@ -155,24 +124,13 @@ export const RHFCustomCombobox = ({
         </Popover>
       </div>
 
-      <div
-        className={`flex flex-wrap gap-2 ${
-          selectedValues.length > 0 ? 'mt-2' : 'mt-0'
-        }`}
-      >
+      <div className={`flex flex-wrap gap-2 ${selectedValues.length > 0 ? 'mt-2' : 'mt-0'}`}>
         {selectedValues.map((value: string) => {
           const option = options.find((opt) => opt.value === value);
           return (
-            <CustomBadge
-              key={value}
-              variant="info"
-              className="flex items-center gap-1"
-            >
+            <CustomBadge key={value} variant="info" className="flex items-center gap-1">
               {option?.label || value}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => handleRemove(value)}
-              />
+              <X className="h-3 w-3 cursor-pointer" onClick={() => handleRemove(value)} />
             </CustomBadge>
           );
         })}

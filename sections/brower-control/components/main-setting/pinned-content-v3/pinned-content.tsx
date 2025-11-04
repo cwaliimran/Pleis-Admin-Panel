@@ -116,15 +116,6 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
         )}
       </div>
 
-      {!isLoading && categories.length === 0 && (
-        <div className="py-12 text-center">
-          <p className="mb-4 text-gray-500 dark:text-white">No pinned content created yet</p>
-          <Button onClick={handleCreateCategory} variant="outline">
-            Create Your First Pinned Content
-          </Button>
-        </div>
-      )}
-
       <CategoryModal open={isModalOpen} onClose={() => setIsModalOpen(false)} isEdit={modalMode === 'edit'} selectedData={editingCategory} />
 
       {/* Delete Confirm */}

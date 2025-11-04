@@ -1,14 +1,14 @@
 'use client';
 
+import VenueTypeModal from '@/components/common/create-venue-modal';
 import FormProvider from '@/components/rhf';
 import { Card, CardContent } from '@/components/ui/card';
-import VenueTypeModal from '@/components/common/create-venue-modal';
-import StepOne from './step-one';
-import StepTwo from './step-two';
-import StepThree from './step-three';
 import ProgressHeader from './progress-header';
-import { useEventForm } from './use-event-form';
+import StepOne from './step-one';
+import StepThree from './step-three';
+import StepTwo from './step-two';
 import type { CreateEventViewProps } from './types';
+import { useEventForm } from './use-event-form';
 
 const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) => {
   const {

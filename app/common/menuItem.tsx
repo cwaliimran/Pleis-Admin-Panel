@@ -1,14 +1,10 @@
-"use client";
+'use client';
 
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import { useQuickNavigation } from "@/hooks/useQuickNavigation";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { FC, memo, useCallback, useState } from "react";
+import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+import { useQuickNavigation } from '@/hooks/useQuickNavigation';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { FC, memo, useCallback, useState } from 'react';
 
 type MenuItem = {
   title: string;
@@ -23,11 +19,7 @@ interface MenuItemsProps {
   isCollapsed?: boolean;
 }
 
-const MenuItem: FC<MenuItemsProps> = ({
-  items,
-  parentKey,
-  isCollapsed = false,
-}) => {
+const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false }) => {
   const pathname = usePathname();
   const { navigate } = useQuickNavigation();
 
@@ -35,7 +27,7 @@ const MenuItem: FC<MenuItemsProps> = ({
 
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
-  console.log("hoveredItem", hoveredItem);
+  console.log('hoveredItem', hoveredItem);
 
   const toggleSubMenu = useCallback((itemKey: string) => {
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
@@ -60,45 +52,28 @@ const MenuItem: FC<MenuItemsProps> = ({
 
         const ButtonContent = (
           <div
-            className={`sidebar-nav-item flex items-center justify-between w-full gap-2 text-sm px-3 py-1 rounded hover:bg-muted transition-colors duration-100 ${
-              isActive ? "bg-muted font-medium" : ""
+            className={`sidebar-nav-item hover:bg-muted flex w-full items-center justify-between gap-2 rounded px-3 py-1 text-sm transition-colors duration-100 ${
+              isActive ? 'bg-muted font-medium' : ''
             } cursor-pointer`}
           >
             <div className="flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full dark:bg-white bg-gray-500 ml-3" />
+              <div className="ml-3 h-1 w-1 rounded-full bg-gray-500 dark:bg-white" />
               <span>{item.title}</span>
             </div>
-            {hasChildren &&
-              (openSubMenus[itemKey] ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              ))}
+            {hasChildren && (openSubMenus[itemKey] ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />)}
           </div>
         );
 
         return (
-          <div
-            key={itemKey}
-            onMouseEnter={() => isCollapsed && setHoveredItem(itemKey)}
-            onMouseLeave={() => isCollapsed && setHoveredItem(null)}
-          >
+          <div key={itemKey} onMouseEnter={() => isCollapsed && setHoveredItem(itemKey)} onMouseLeave={() => isCollapsed && setHoveredItem(null)}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 {hasChildren ? (
-                  <button
-                    type="button"
-                    onClick={() => !isCollapsed && toggleSubMenu(itemKey)}
-                    className="w-full text-left"
-                  >
+                  <button type="button" onClick={() => !isCollapsed && toggleSubMenu(itemKey)} className="w-full text-left">
                     {ButtonContent}
                   </button>
                 ) : item.url ? (
-                  <button
-                    type="button"
-                    onClick={() => handleClick(item.url!)}
-                    className="w-full text-left"
-                  >
+                  <button type="button" onClick={() => handleClick(item.url!)} className="w-full text-left">
                     {ButtonContent}
                   </button>
                 ) : (
@@ -142,11 +117,7 @@ const MenuItem: FC<MenuItemsProps> = ({
             {hasChildren && !isCollapsed && openSubMenus[itemKey] && (
               <div className="ml-5 border-l pl-3">
                 <SidebarMenuButton>
-                  <MenuItem
-                    items={item.items!}
-                    parentKey={itemKey}
-                    isCollapsed={false}
-                  />
+                  <MenuItem items={item.items!} parentKey={itemKey} isCollapsed={false} />
                 </SidebarMenuButton>
               </div>
             )}

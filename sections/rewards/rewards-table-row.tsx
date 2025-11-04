@@ -46,7 +46,7 @@ const RewardsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
           <Dialog>
             <DialogTrigger asChild>
               <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
-                {item?.description?.slice(0, 22) + '...'}
+                {capitalizeFirstLetter(item?.description?.slice(0, 22) + '...')}
               </span>
             </DialogTrigger>
             <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">

@@ -37,6 +37,7 @@ export const API_ROUTES = {
   USER_LIST: `/users`,
   CHANGE_PASSWORD: `/auth/change-password`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
+  LOYALTY_LISTINGS: `/loyalty/listings`,
   PENDING_USER_LIST_BY_ID: (id: string) => `/users/${id}`,
 
   HIGHLIGHT_LIST: `/highlights`,

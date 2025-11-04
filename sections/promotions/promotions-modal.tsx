@@ -1,24 +1,15 @@
 'use client';
 
-import FormProvider, {
-  RHFDate,
-  RHFSelectField,
-  RHFTextField,
-} from '@/components/rhf';
+import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { useForm } from 'react-hook-form';
 // import * as Yup from 'yup';
-
-// claimPoints
 
 type PromotionsFormValues = {
   photo: any;
@@ -102,6 +93,14 @@ const PromotionModal = ({
     defaultValues,
   });
 
+  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
+
   const { reset, watch } = methods;
   const selectedType = watch('type');
   const repeatSettings = watch('repeatSettings');
@@ -120,16 +119,11 @@ const PromotionModal = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]">
           <DialogHeader>
-            <DialogTitle>
-              {isEdit ? 'Edit Promotion' : 'Create Promotion'}
-            </DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Promotion' : 'Create Promotion'}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(onSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
               <div className="mt-7 flex w-full flex-col gap-4">
                 <RHFUploadAvatar name="photo" label="Promotion Image" />
 
@@ -169,30 +163,22 @@ const PromotionModal = ({
 
                 {selectedType === 'happy_hour' && (
                   <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                    <p className="text-xs text-blue-800 dark:text-blue-200">
-                      💡 Boost loyalty point earnings during specific time
-                      windows.
-                    </p>
+                    <p className="text-xs text-blue-800 dark:text-blue-200">💡 Boost loyalty point earnings during specific time windows.</p>
                   </div>
                 )}
 
                 {selectedType === 'claim_promotions' && (
                   <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                     <p className="text-xs text-green-800 dark:text-green-200">
-                      💡 Allow users to claim a global reward or point reward
-                      once during the promo.
+                      💡 Allow users to claim a global reward or point reward once during the promo.
                     </p>
                   </div>
                 )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField
-                    name="title"
-                    label="Title"
-                    placeholder="Enter Title"
-                  />
+                  <RHFTextField name="title" label="Title" placeholder="Enter Title" />
 
-                  <RHFSelectField
+                  {/* <RHFSelectField
                     name="tierLimit"
                     label="Tier Limit"
                     placeholder="Select Tier Limit"
@@ -203,21 +189,32 @@ const PromotionModal = ({
                       { label: 'Gold', value: 'Gold' },
                       { label: 'Platinum', value: 'Platinum' },
                     ]}
-                  />
+                  /> */}
 
-                  <RHFDate
-                    name="startTime"
-                    label="Start Date"
-                    placeholder="Select Start Date"
-                    className="cursor-pointe h-10 w-full"
-                  />
+                  {tiersLoading ? (
+                    <div className="mt-2 w-full space-y-2 md:w-[100%]">
+                      <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                      <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                    </div>
+                  ) : (
+                    <RHFCustomDropdown
+                      name="tierLimit"
+                      label="Tier Limit"
+                      placeholder="Minimum tier required"
+                      options={
+                        tiersData?.data?.map((tier: any) => ({
+                          label: tier?.title,
+                          value: tier?._id,
+                        })) || []
+                      }
+                      isLoading={tiersLoading}
+                      showNone={false}
+                    />
+                  )}
 
-                  <RHFDate
-                    name="endTime"
-                    label="End Date"
-                    placeholder="Select End Date"
-                    className="cursor-pointe h-10 w-full"
-                  />
+                  <RHFDate name="startTime" label="Start Date" placeholder="Select Start Date" className="cursor-pointe h-10 w-full" />
+
+                  <RHFDate name="endTime" label="End Date" placeholder="Select End Date" className="cursor-pointe h-10 w-full" />
 
                   <RHFSelectField
                     name="repeatSettings"
@@ -232,17 +229,11 @@ const PromotionModal = ({
                     ]}
                   />
 
-                  <RHFTextField
-                    name="repeatInterval"
-                    label="Repeat Interval"
-                    placeholder="Enter Repeat Interval"
-                    type="number"
-                  />
+                  <RHFTextField name="repeatInterval" label="Repeat Interval" placeholder="Enter Repeat Interval" type="number" />
                 </div>
 
                 {/* Day selection for Weekly and Monthly repeat settings */}
-                {(repeatSettings === 'Weekly' ||
-                  repeatSettings === 'Monthly') && (
+                {(repeatSettings === 'Weekly' || repeatSettings === 'Monthly') && (
                   <div className="grid w-full grid-cols-1 gap-4">
                     <RHFMultiSelectField
                       name="selectedDays"
@@ -276,39 +267,19 @@ const PromotionModal = ({
                       ]}
                     />
 
-                    <RHFTextField
-                      name="claimPoints"
-                      label="Points Required to Claim"
-                      placeholder="Enter Points Required"
-                    />
+                    <RHFTextField name="claimPoints" label="Points Required to Claim" placeholder="Enter Points Required" />
                   </div>
                 )}
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
-                  <RHFTextField
-                    name="description"
-                    label="Description"
-                    placeholder="Enter Description"
-                    multiline
-                    rows={2}
-                  />
+                  <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
                 </div>
 
                 {/* Dynamic fields based on promotion type */}
                 {selectedType === 'happy_hour' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFTextField
-                      name="timeRangeStart"
-                      label="Promotion Time Start"
-                      placeholder="Enter Start Time (e.g. 17:00)"
-                      type="time"
-                    />
-                    <RHFTextField
-                      name="timeRangeEnd"
-                      label="Promotion Time End"
-                      placeholder="Enter End Time (e.g. 20:00)"
-                      type="time"
-                    />
+                    <RHFTextField name="timeRangeStart" label="Promotion Time Start" placeholder="Enter Start Time (e.g. 17:00)" type="time" />
+                    <RHFTextField name="timeRangeEnd" label="Promotion Time End" placeholder="Enter End Time (e.g. 20:00)" type="time" />
                     <RHFSelectField
                       name="pointMultiplier"
                       label="Point Multiplier"
@@ -355,12 +326,7 @@ const PromotionModal = ({
                         { label: 'Burger', value: 'Burger' },
                       ]}
                     />
-                    <RHFTextField
-                      name="extraPoints"
-                      label="Extra Points"
-                      placeholder="Enter Extra Points"
-                      type="number"
-                    />
+                    <RHFTextField name="extraPoints" label="Extra Points" placeholder="Enter Extra Points" type="number" />
                   </div>
                 )}
 
@@ -379,23 +345,14 @@ const PromotionModal = ({
                         { label: 'Burger', value: 'Burger' },
                       ]}
                     />
-                    <RHFTextField
-                      name="discountedPrice"
-                      label="Discounted Price"
-                      placeholder="Enter Discounted Price"
-                      type="number"
-                      step="0.01"
-                    />
+                    <RHFTextField name="discountedPrice" label="Discounted Price" placeholder="Enter Discounted Price" type="number" step="0.01" />
                   </div>
                 )}
               </div>
 
               <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
-                  <Button
-                    type="submit"
-                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
-                  >
+                  <Button type="submit" className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white">
                     Save
                   </Button>
                 </div>

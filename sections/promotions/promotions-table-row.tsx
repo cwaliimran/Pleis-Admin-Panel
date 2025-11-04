@@ -5,43 +5,21 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { capitalizeFirstLetter, fDate, formatStr } from '@/utils/format-time';
 
-const PromotionsTableRow: FC<TableRowProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
+const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   const getPromotionTypeLabel = (type: string) => {
     switch (type) {
       case 'buyMenuItem':
         return 'Buy Menu Item';
       case 'happyHour':
         return 'Happy Hour';
+      case 'claimPromotion':
+        return 'Claim Promotion';
       default:
         return '-';
     }
-  };
-
-  const renderDateTime = (dateString: string) => {
-    if (!dateString) return <p>-</p>;
-    const [date, time, period] = dateString.split(' ');
-    return (
-      <>
-        <p>{date || '-'}</p>
-        {time && period && (
-          <p>
-            {time} {period}
-          </p>
-        )}
-      </>
-    );
   };
 
   return (
@@ -49,28 +27,21 @@ const PromotionsTableRow: FC<TableRowProps> = ({
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.imageInfo?.url && item?.imageInfo?.name !== 'noimage.png' ? (
-            <AvatarImage
-              src={item?.imageInfo?.url}
-              alt="Menu Item"
-              className="h-full w-full cursor-pointer object-cover"
-            />
+            <AvatarImage src={item?.imageInfo?.url} alt="Menu Item" className="h-full w-full cursor-pointer object-cover" />
           ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
-              {item?.title?.[0]?.toUpperCase() || ''}
-            </span>
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
           )}
         </Avatar>
       </TableCell>
-      <TableCell className="text-left">{item?.title || '-'}</TableCell>
-      <TableCell className="text-left capitalize">
+
+      <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
+
+      <TableCell className="text-left">
         {item.description.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
-              <span
-                className="cursor-pointer hover:text-blue-600"
-                title="Click to view full description"
-              >
-                {item.description.slice(0, 22) + '...'}
+              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
+                {capitalizeFirstLetter(item?.description?.slice(0, 22) + '...')}
               </span>
             </DialogTrigger>
             <DialogContent className="dark:bg-secondary max-w-md">
@@ -78,33 +49,32 @@ const PromotionsTableRow: FC<TableRowProps> = ({
                 <DialogTitle>Description</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {item.description}
-                </p>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{capitalizeFirstLetter(item?.description || '-')}</p>
               </div>
             </DialogContent>
           </Dialog>
         ) : (
-          item.description
+          capitalizeFirstLetter(item?.description || '-')
         )}
       </TableCell>
 
       <TableCell className="text-left">
-        {getPromotionTypeLabel(item?.promotionType)}
+        <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+          {getPromotionTypeLabel(item?.promotionType)}
+        </span>
       </TableCell>
 
       <TableCell className="text-left">
-        {renderDateTime(item?.startDate)}
+        {fDate(item?.startDate, item?.promotionType === 'buyMenuItem' ? formatStr.paramCase.date : formatStr.paramCase.dateTime)}
       </TableCell>
 
       <TableCell className="text-left">
-        {renderDateTime(item?.endDate)}
+        {fDate(item?.endDate, item?.promotionType === 'buyMenuItem' ? formatStr.paramCase.date : formatStr.paramCase.dateTime)}
       </TableCell>
 
       <TableCell className="text-left">{item?.tierLimit || '-'}</TableCell>
-      <TableCell className="text-left capitalize">
-        {item?.repeatSettings || '-'}
-      </TableCell>
+
+      <TableCell className="text-left capitalize">{item?.repeatSettings || '-'}</TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

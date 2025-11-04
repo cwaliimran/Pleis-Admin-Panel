@@ -105,12 +105,21 @@ export const paths = {
     menuItems: '/super-admin/menuItems',
     menuList: '/super-admin/menu-list',
 
+    // Ticketing and Reservation Paths
     ticketing: '/super-admin/ticketing',
     reservation: '/super-admin/reservation',
     analytics: '/super-admin/analytics',
     calendar: '/super-admin/calendar',
     reservationTransactions: '/super-admin/reservation-transactions',
     bundles: '/super-admin/bundles',
+
+    // App Ordering Paths
+    orderManagement: '/super-admin/app-ordering/order-management',
+    menuManagement: '/super-admin/app-ordering/menu-management',
+    orderAnalytics: '/super-admin/app-ordering/order-analytics',
+    orderSettings: '/super-admin/app-ordering/order-settings',
+
+    qrCodes: '/super-admin/qr-codes',
 
     streak: '/super-admin/streaks',
     globalStreak: '/super-admin/global-streaks',

@@ -47,8 +47,7 @@ const CompanyGuard = ({ children }: CompanyGuardProps) => {
 
         setIsCompanySelected(true);
         setIsLoading(false);
-      } catch (error) {
-        console.error('Error checking selected company:', error);
+      } catch {
         setIsCompanySelected(false);
         setIsLoading(false);
       }
@@ -99,13 +98,8 @@ const CompanyGuard = ({ children }: CompanyGuardProps) => {
           <div className="bg-primary/10 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full">
             <Building2 className="text-primary h-10 w-10" />
           </div>
-          <h2 className="text-foreground mb-3 text-2xl font-semibold">
-            Select a Company
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Please select a company from the dropdown in the header to view and
-            manage rewards.
-          </p>
+          <h2 className="text-foreground mb-3 text-2xl font-semibold">Select a Company</h2>
+          <p className="text-muted-foreground mb-6">Please select a company from the dropdown in the header to view and manage rewards.</p>
         </div>
       </div>
     );

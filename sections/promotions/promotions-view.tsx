@@ -3,10 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeletePromotionMutation,
-  useGetPromotionQuery,
-} from '@/store/Reducer/promotion-api';
+import { useDeletePromotionMutation, useGetPromotionQuery } from '@/store/Reducer/promotion-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -34,8 +31,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deletePromotion, { isLoading: deleteLoading }] =
-    useDeletePromotionMutation();
+  const [deletePromotion, { isLoading: deleteLoading }] = useDeletePromotionMutation();
 
   const { data: apiData, isLoading } = useGetPromotionQuery({
     page: page - 1,
@@ -124,16 +120,11 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
-            <Plus />
-            Create Promotion
-          </Button>
-        </div>
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+        <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+          <Plus />
+          Create Promotion
+        </Button>
       </div>
 
       <PromotionsTable
@@ -172,13 +163,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
         }}
       />
 
-      <PromotionsModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-        global={global}
-      />
+      <PromotionsModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} global={global} />
 
       <ConfirmDialog
         open={deleteModal.value}
