@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import RouteGuard from "./RouteGuard";
+import RouteGuard from './RouteGuard';
 
 interface SuperAdminGuardProps {
   children: React.ReactNode;
 }
 
 export default function SuperAdminGuard({ children }: SuperAdminGuardProps) {
-  return <RouteGuard allowedRoles={["admin"]}>{children}</RouteGuard>;
+  return <RouteGuard allowedRoles={['admin']}>{children}</RouteGuard>;
 }

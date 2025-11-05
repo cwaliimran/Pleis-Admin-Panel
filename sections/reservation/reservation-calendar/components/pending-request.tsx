@@ -32,33 +32,23 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
       <div className="space-y-4 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-[#155efcbd] dark:bg-[#155efcbd]">
         <div className="flex items-center gap-2 text-orange-800 dark:text-white">
           <Clock className="h-5 w-5" />
-          <h3 className="font-semibold">
-            Pending Confirmation Requests ({bookings.length})
-          </h3>
+          <h3 className="font-semibold">Pending Confirmation Requests ({bookings.length})</h3>
         </div>
 
         {bookings?.map((booking: Booking) => (
-          <div
-            key={booking.id}
-            className="dark:bg-secondary space-y-3 rounded-lg bg-white p-4 shadow-sm"
-          >
+          <div key={booking.id} className="dark:bg-secondary space-y-3 rounded-lg bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{booking.customer}</span>
                   <span
-                    className={`rounded px-2 py-1 text-xs ${
-                      booking.tier === 'Gold'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
+                    className={`rounded px-2 py-1 text-xs ${booking.tier === 'Gold' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}
                   >
                     {booking.tier}
                   </span>
                 </div>
                 <div className="mt-1 text-sm">
-                  {booking.table} · {booking.guests} guests ·{' '}
-                  {booking.startTime} - {booking.endTime}
+                  {booking.table} · {booking.guests} guests · {booking.startTime} - {booking.endTime}
                 </div>
               </div>
             </div>
@@ -93,13 +83,7 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
         ))}
       </div>
 
-      {openModal.value && (
-        <ChangeRequestModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          selectedData={selectedBooking}
-        />
-      )}
+      {openModal.value && <ChangeRequestModal open={openModal.value} onClose={openModal.onFalse} selectedData={selectedBooking} />}
 
       <QueryDialog
         open={confirmModal.value}

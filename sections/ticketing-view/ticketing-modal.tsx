@@ -4,13 +4,7 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useGeteventsQuery } from '@/store/Reducer/events';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Calendar } from 'lucide-react';
@@ -29,28 +23,19 @@ interface TicketingModalProps {
 const FeatureSection: React.FC<{
   children: React.ReactNode;
   className?: string;
-}> = ({ children, className = '' }) => (
-  <div className={`mb-4 overflow-hidden rounded-lg border ${className}`}>
-    {children}
-  </div>
-);
+}> = ({ children, className = '' }) => <div className={`mb-4 overflow-hidden rounded-lg border ${className}`}>{children}</div>;
 
 const FeatureSectionHeader: React.FC<{ title: string }> = ({ title }) => (
   <div className="dark:bg-secondary bg-gray-50 p-3">
-    <span className="font-medium text-gray-700 dark:text-gray-300">
-      {title}
-    </span>
+    <span className="font-medium text-gray-700 dark:text-gray-300">{title}</span>
   </div>
 );
 
-const FeatureSectionContent: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => <div className="dark:bg-secondary border-t bg-white p-4">{children}</div>;
+const FeatureSectionContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="dark:bg-secondary border-t bg-white p-4">{children}</div>
+);
 
-const SectionHeader: React.FC<{ title: string; icon?: React.ReactNode }> = ({
-  title,
-  icon,
-}) => (
+const SectionHeader: React.FC<{ title: string; icon?: React.ReactNode }> = ({ title, icon }) => (
   <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-200">
     {icon}
     {title}
@@ -64,9 +49,7 @@ const ToggleSwitch: React.FC<{
   disabled?: boolean;
 }> = ({ value, onChange, label, disabled = false }) => (
   <div className="dark:bg-secondary flex items-center justify-between rounded-lg bg-gray-50 p-3">
-    <span className="font-medium text-gray-700 dark:text-gray-300">
-      {label}
-    </span>
+    <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
     <button
       title="Toggle Switch"
       type="button"
@@ -76,11 +59,7 @@ const ToggleSwitch: React.FC<{
         value ? 'bg-blue-600' : 'bg-gray-300'
       } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
     >
-      <div
-        className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${
-          value ? 'translate-x-6 transform' : ''
-        }`}
-      />
+      <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${value ? 'translate-x-6 transform' : ''}`} />
     </button>
   </div>
 );
@@ -117,16 +96,12 @@ const schema = Yup.object().shape({
   title: Yup.string().required('Title is required'),
   type: Yup.string().required('Ticket type is required'),
   quantity: Yup.number()
-    .transform((value, originalValue) =>
-      originalValue === '' ? undefined : Number(originalValue)
-    )
+    .transform((value, originalValue) => (originalValue === '' ? undefined : Number(originalValue)))
     .typeError('Quantity must be a number')
     .required('Quantity is required')
     .min(1, 'Quantity must be at least 1'),
   price: Yup.number()
-    .transform((value, originalValue) =>
-      originalValue === '' ? undefined : Number(originalValue)
-    )
+    .transform((value, originalValue) => (originalValue === '' ? undefined : Number(originalValue)))
     .typeError('Price must be a number')
     .required('Price is required')
     .min(0, 'Price cannot be negative'),
@@ -166,11 +141,7 @@ const schema = Yup.object().shape({
   }),
 });
 
-const TicketingModal: React.FC<TicketingModalProps> = ({
-  open,
-  onClose,
-  editMode,
-}) => {
+const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode }) => {
   const handleClose = () => {
     onClose();
   };
@@ -229,9 +200,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
             className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:!max-w-[700px]"
           >
             <DialogHeader className="flex flex-row items-center justify-between">
-              <DialogTitle className="text-xl font-bold">
-                {editMode ? 'Edit Ticket' : 'Create New Ticket'}
-              </DialogTitle>
+              <DialogTitle className="text-xl font-bold">{editMode ? 'Edit Ticket' : 'Create New Ticket'}</DialogTitle>
             </DialogHeader>
 
             <div className="w-full">
@@ -239,20 +208,13 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                 <div className="mt-4 flex flex-col gap-6">
                   {/* Required Fields Section */}
                   <div className="dark:bg-secondary mb-3">
-                    <SectionHeader
-                      title="Required Fields"
-                      icon={<AlertCircle className="text-blue-600" size={20} />}
-                    />
+                    <SectionHeader title="Required Fields" icon={<AlertCircle className="text-blue-600" size={20} />} />
                     <div className="grid gap-4 md:grid-cols-2">
                       <RHFTextField
                         name="type"
                         label="Ticket Type"
                         placeholder="e.g., General Admission, VIP Pass"
-                        className={`${
-                          formState.errors.type
-                            ? 'border-red-400 focus:border-red-400'
-                            : ''
-                        }`}
+                        className={`${formState.errors.type ? 'border-red-400 focus:border-red-400' : ''}`}
                         disabled={isLoading}
                       />
 
@@ -262,11 +224,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                         type="number"
                         placeholder="Enter quantity"
                         min="1"
-                        className={`${
-                          formState.errors.quantity
-                            ? 'border-red-400 focus:border-red-400'
-                            : ''
-                        }`}
+                        className={`${formState.errors.quantity ? 'border-red-400 focus:border-red-400' : ''}`}
                         disabled={isLoading}
                       />
 
@@ -277,11 +235,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                         placeholder="0.00"
                         step="0.01"
                         min="0"
-                        className={`${
-                          formState.errors.price
-                            ? 'border-red-400 focus:border-red-400'
-                            : ''
-                        }`}
+                        className={`${formState.errors.price ? 'border-red-400 focus:border-red-400' : ''}`}
                         disabled={isLoading}
                       />
 
@@ -359,8 +313,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                         <FeatureSectionContent>
                           <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
                             <Calendar className="mr-1 inline" size={14} />
-                            Divide event into bookable time windows. Manage via
-                            time slot configuration.
+                            Divide event into bookable time windows. Manage via time slot configuration.
                           </p>
                           <button
                             type="button"
@@ -372,9 +325,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                           {timeSlotConfig && (
                             <div className="mt-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                               <p className="text-sm text-green-700 dark:text-green-300">
-                                ✓ Time slots configured:{' '}
-                                {timeSlotConfig.timeSlots.length} slots on{' '}
-                                {timeSlotConfig.operatingDays.length} days
+                                ✓ Time slots configured: {timeSlotConfig.timeSlots.length} slots on {timeSlotConfig.operatingDays.length} days
                               </p>
                             </div>
                           )}
@@ -407,10 +358,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                             disabled={isLoading}
                           />
                           {timeslotEnabled && (
-                            <p className="mt-2 text-xs text-amber-600">
-                              ⚠ With timeslots enabled, users must select
-                              multiple slots
-                            </p>
+                            <p className="mt-2 text-xs text-amber-600">⚠ With timeslots enabled, users must select multiple slots</p>
                           )}
                         </FeatureSectionContent>
                       )}
@@ -429,10 +377,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                               label: 'Name + Surname + PID/Date of Birth',
                             },
                           ].map((option) => (
-                            <label
-                              key={option.value}
-                              className="flex cursor-pointer items-center gap-2"
-                            >
+                            <label key={option.value} className="flex cursor-pointer items-center gap-2">
                               <input
                                 type="radio"
                                 value={option.value}
@@ -452,6 +397,25 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                       </FeatureSectionContent>
                     </FeatureSection>
 
+                    {/* Transfer Feature */}
+                    <FeatureSection>
+                      <ToggleSwitch
+                        value={!!transferEnabled}
+                        onChange={(val) =>
+                          setValue('features.transfer', val, {
+                            shouldDirty: true,
+                          })
+                        }
+                        label="Transfer Fee"
+                        disabled={isLoading}
+                      />
+                      {transferEnabled && (
+                        <FeatureSectionContent>
+                          <RHFTextField name="price" type="number" placeholder="Enter Transfer Fee" step="0.01" min="0" disabled={isLoading} />
+                        </FeatureSectionContent>
+                      )}
+                    </FeatureSection>
+
                     {/* Time Sensitive Pricing Feature */}
                     <FeatureSection>
                       <FeatureSectionHeader title="Time Sensitive Pricing" />
@@ -465,13 +429,9 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                                 checked={earlyBirdEnabled || false}
                                 onChange={(e) => {
                                   const checked = e.target.checked;
-                                  setValue(
-                                    'features.earlyBirdEnabled',
-                                    checked,
-                                    {
-                                      shouldDirty: true,
-                                    }
-                                  );
+                                  setValue('features.earlyBirdEnabled', checked, {
+                                    shouldDirty: true,
+                                  });
                                   if (!checked) {
                                     setValue('features.earlyBirdDate', '', {
                                       shouldDirty: true,
@@ -484,9 +444,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                                 disabled={isLoading}
                                 className="h-4 w-4 rounded text-blue-600"
                               />
-                              <span className="text-sm font-medium">
-                                Early Bird Pricing
-                              </span>
+                              <span className="text-sm font-medium">Early Bird Pricing</span>
                             </label>
 
                             {earlyBirdEnabled && (
@@ -520,13 +478,9 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                                 checked={lastMinuteEnabled || false}
                                 onChange={(e) => {
                                   const checked = e.target.checked;
-                                  setValue(
-                                    'features.lastMinuteEnabled',
-                                    checked,
-                                    {
-                                      shouldDirty: true,
-                                    }
-                                  );
+                                  setValue('features.lastMinuteEnabled', checked, {
+                                    shouldDirty: true,
+                                  });
                                   if (!checked) {
                                     setValue('features.lastMinuteDate', '', {
                                       shouldDirty: true,
@@ -539,9 +493,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                                 disabled={isLoading}
                                 className="h-4 w-4 rounded text-blue-600"
                               />
-                              <span className="text-sm font-medium">
-                                Last Minute Pricing
-                              </span>
+                              <span className="text-sm font-medium">Last Minute Pricing</span>
                             </label>
 
                             {lastMinuteEnabled && (
@@ -638,32 +590,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
                       )}
                     </FeatureSection>
 
-                    {/* Transfer Feature */}
-                    <FeatureSection>
-                      <ToggleSwitch
-                        value={!!transferEnabled}
-                        onChange={(val) =>
-                          setValue('features.transfer', val, {
-                            shouldDirty: true,
-                          })
-                        }
-                        label="Transfer Fee"
-                        disabled={isLoading}
-                      />
-                      {transferEnabled && (
-                        <FeatureSectionContent>
-                          <RHFTextField
-                            name="price"
-                            type="number"
-                            placeholder="Enter Transfer Fee"
-                            step="0.01"
-                            min="0"
-                            disabled={isLoading}
-                          />
-                        </FeatureSectionContent>
-                      )}
-                    </FeatureSection>
-
                     <div>
                       {editMode && (
                         <RHFSelectField
@@ -682,25 +608,13 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
 
                   {/* Action Buttons */}
                   <div className="flex justify-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleClose}
-                      disabled={isLoading}
-                      className="px-4 py-2"
-                    >
+                    <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="px-4 py-2">
                       Cancel
                     </Button>
 
                     {isLoading ? (
-                      <Button
-                        type="button"
-                        disabled
-                        className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                      >
-                        <ButtonLoading
-                          title={editMode ? 'Updating' : 'Creating'}
-                        />
+                      <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
+                        <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
                       </Button>
                     ) : (
                       <Button
@@ -720,11 +634,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({
       </Dialog>
 
       {/* Time Slot Configuration Modal */}
-      <TimeSlotConfigModal
-        open={showTimeSlotModal}
-        onClose={() => setShowTimeSlotModal(false)}
-        onSave={handleTimeSlotSave}
-      />
+      <TimeSlotConfigModal open={showTimeSlotModal} onClose={() => setShowTimeSlotModal(false)} onSave={handleTimeSlotSave} />
     </>
   );
 };

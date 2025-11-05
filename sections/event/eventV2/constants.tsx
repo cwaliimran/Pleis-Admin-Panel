@@ -66,9 +66,9 @@ export const defaultValues: EventFormValues = {
 };
 
 export const recurringTypeOptions = [
+  { label: 'Daily', value: 'daily' },
   { label: 'Weekly', value: 'weekly' },
   { label: 'Monthly', value: 'monthly' },
-  { label: 'Daily', value: 'daily' },
 ];
 
 export const currencyOptions = [

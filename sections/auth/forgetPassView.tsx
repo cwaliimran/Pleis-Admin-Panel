@@ -73,12 +73,8 @@ function ForgotPasswordView() {
           className="hidden w-1/2 items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-black p-10 text-white md:flex"
         >
           <div className="space-y-4 text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight">
-              Forgot Password?
-            </h1>
-            <p className="mx-auto max-w-sm text-lg text-gray-300">
-              We’ll send you a reset link via email.
-            </p>
+            <h1 className="text-4xl font-extrabold tracking-tight">Forgot Password?</h1>
+            <p className="mx-auto max-w-sm text-lg text-gray-300">We’ll send you a reset link via email.</p>
           </div>
         </motion.div>
 
@@ -89,21 +85,12 @@ function ForgotPasswordView() {
           transition={{ duration: 0.5 }}
           className="flex w-full flex-col justify-center p-8 md:w-1/2 md:p-16"
         >
-          <h2 className="mb-1 text-center text-3xl font-extrabold">
-            Reset Your Password
-          </h2>
-          <p className="text-muted-foreground mb-6 text-center text-sm">
-            Enter your email and we&#39;ll send you instructions to reset it.
-          </p>
+          <h2 className="mb-1 text-center text-3xl font-extrabold">Reset Your Password</h2>
+          <p className="text-muted-foreground mb-6 text-center text-sm">Enter your email and we&#39;ll send you instructions to reset it.</p>
 
           <FormProvider methods={methods} onSubmit={onSubmit}>
             <div className="space-y-4">
-              <RHFTextField
-                name="email"
-                type="email"
-                placeholder="Email Address"
-                className="h-[45px] rounded-md"
-              />
+              <RHFTextField name="email" type="email" placeholder="Email Address" className="h-[45px] rounded-md" />
 
               {!isLoading ? (
                 <Button
@@ -123,10 +110,7 @@ function ForgotPasswordView() {
 
               <p className="text-muted-foreground mt-4 text-center text-sm">
                 Remember your password?{' '}
-                <Link
-                  href="/"
-                  className="font-medium text-[#0f172b] hover:underline dark:text-white"
-                >
+                <Link href="/" className="font-medium text-[#0f172b] hover:underline dark:text-white">
                   Go back to login
                 </Link>
               </p>

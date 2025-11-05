@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { FC, useState } from 'react';
 import { useSelector } from 'react-redux';
 import GiftPointsModal from './gift-points-modal';
-import { noImageUrl, noImageUrlDev } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
 
 interface PageProps {
   item: any;
@@ -77,7 +77,10 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
       <TableRow onClick={handleNavigate} className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
         <TableCell>
           <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-            {item?.basicInfo?.profileIcon && ![noImageUrl, noImageUrlDev].includes(item?.basicInfo?.profileIcon) ? (
+            {item?.basicInfo?.profileIcon &&
+            item?.basicInfo?.profileIcon !== noImageUrl &&
+            item?.basicInfo?.profileIcon !== noImageUrlDev &&
+            item?.basicInfo?.profileIcon !== noImageUrlDevCap ? (
               <AvatarImage src={item?.basicInfo?.profileIcon} alt="Store" className="h-full w-full cursor-pointer object-cover" />
             ) : (
               <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}</span>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
 import { cn } from '@/lib/utils';
 import CapacityGaugeChart from '@/sections/event/CapacityGaugeChart';
@@ -45,6 +46,8 @@ const EventDetailsPage = () => {
 
   const [cloneEvent] = useCloneeventMutation();
   const userType = window?.location?.pathname?.split('/')[1];
+
+  // console.log('Event in details page', event);
 
   // const event = {
   //   id: "1",
@@ -102,9 +105,9 @@ const EventDetailsPage = () => {
     }
   };
 
-  const media = event?.basicInfo?.media?.url;
-  const mediaUrl = typeof media === 'string' ? media.toLowerCase() : null;
-  const isVideo = mediaUrl?.endsWith('.mp4');
+  // const media = event?.basicInfo?.media?.url;
+  // const mediaUrl = typeof media === 'string' ? media.toLowerCase() : null;
+  // const isVideo = mediaUrl?.endsWith('.mp4');
 
   return (
     <>
@@ -119,6 +122,22 @@ const EventDetailsPage = () => {
                   <CardContent>
                     <div className="flex flex-col gap-4 sm:flex-row">
                       <div className="w-full sm:w-1/3">
+                        {event?.basicInfo?.media && event?.basicInfo?.media !== noImageUrl && event?.basicInfo?.media !== noImageUrlDev ? (
+                          <Image
+                            src={event?.basicInfo?.media || ''}
+                            alt="Event preview"
+                            className="rounded-lg object-cover"
+                            // sizes="(max-width: 768px) 100vw, 40vw"
+                            priority
+                            height={400}
+                            width={400}
+                          />
+                        ) : (
+                          <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">
+                            {event?.basicInfo?.title?.[0]?.toUpperCase() || ''}
+                          </span>
+                        )}
+
                         {/* <ImageWithFallback
                           url={event?.basicInfo?.media}
                           size={300}
@@ -127,7 +146,7 @@ const EventDetailsPage = () => {
                         />
                          */}
 
-                        {isVideo ? (
+                        {/* {isVideo ? (
                           <video src={event?.basicInfo?.media?.url} controls className="h-full w-full rounded-lg object-cover" />
                         ) : (
                           <Image
@@ -140,7 +159,7 @@ const EventDetailsPage = () => {
                             height={300}
                             width={300}
                           />
-                        )}
+                        )} */}
                       </div>
 
                       {/* Right Content */}

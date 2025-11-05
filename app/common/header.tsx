@@ -136,7 +136,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
         <FormProvider methods={methods} onSubmit={() => {}}>
           {showAdminDropdown && (
             <div className="w-full rounded-md bg-white md:w-[240px] dark:bg-[#171717]">
-              <RHFCustomDropdown name="organizations" placeholder="Select Company" options={userOptions} isLoading={isUserLoading} showNone />
+              <RHFCustomDropdown name="organizations" placeholder="Select Company" options={userOptions} isLoading={isUserLoading} showNone={false} />
             </div>
           )}
 

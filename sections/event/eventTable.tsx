@@ -12,7 +12,7 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import EventTableRow from './eventTAbleRow';
+import EventTableRow from './eventTableRow';
 
 const headLabel = [
   { id: 'image', label: 'Image', align: 'left', sortable: false },

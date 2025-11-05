@@ -126,9 +126,9 @@ const StepTwo = ({
                 type="checkbox"
                 checked={recurring}
                 onChange={(e) => setValue('recurring', e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="cursor-pointe h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable</span>
+              <span className="cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300">Enable</span>
             </label>
           </div>
 
@@ -211,11 +211,14 @@ const StepTwo = ({
                       onChange={(e) => setValue('recurringEnd', e.target.value as any)}
                       className="h-4 w-4 cursor-pointer rounded-2xl text-blue-600"
                     />
-                    <span className="text-sm">On Day</span>
+                    <span className="text-sm">On Date</span>
                   </label>
                   {recurringEnd === 'onDate' && (
-                    <div className="mt-3 w-full bg-white md:mt-0 md:w-[30%] dark:bg-[#23272f]">
-                      <RHFDate name="recurringEndDate" className="w-full cursor-pointer rounded-2xl border-gray-200 focus:border-blue-600" />
+                    <div className="mt-3 w-full md:mt-0 md:w-[30%]">
+                      <RHFDate
+                        name="recurringEndDate"
+                        className="h-10 w-full cursor-pointer rounded-2xl border-gray-200 bg-white focus:border-blue-600 dark:bg-[#23272f]"
+                      />
                     </div>
                   )}
                 </div>

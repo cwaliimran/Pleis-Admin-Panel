@@ -1,5 +1,5 @@
 import Header from '@/app/common/header';
-import ItemsCategoryView from '@/sections/items-category/items-category-view';
+import ItemsCategoryView from '@/sections/menu-management/items-category/items-category-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

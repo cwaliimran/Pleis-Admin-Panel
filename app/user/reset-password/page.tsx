@@ -1,4 +1,5 @@
 import ResetPasswordView from '@/sections/auth/resetPassView';
+import { GuestGuard } from '@/components/guards';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
 
 const Page = () => {
   return (
-    <>
+    <GuestGuard>
       <ResetPasswordView />
-    </>
+    </GuestGuard>
   );
 };
 

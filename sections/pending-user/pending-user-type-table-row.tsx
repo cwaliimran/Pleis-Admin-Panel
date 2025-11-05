@@ -5,7 +5,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { Check, Eye, Trash2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import PendingUserDetailsModal from './pending-user-details-modal';
-import { noImageUrl, noImageUrlDev } from '@/constant/constant';
+import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
 
 interface PageProps {
   item: any;
@@ -25,7 +25,10 @@ const SupplierTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePending
       <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
         <TableCell>
           <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-            {item?.basicInfo?.profileIcon && item?.basicInfo?.profileIcon !== noImageUrl && item?.basicInfo?.profileIcon !== noImageUrlDev ? (
+            {item?.basicInfo?.profileIcon &&
+            item?.basicInfo?.profileIcon !== noImageUrl &&
+            item?.basicInfo?.profileIcon !== noImageUrlDev &&
+            item?.basicInfo?.profileIcon !== noImageUrlDevCap ? (
               <AvatarImage src={item?.basicInfo?.profileIcon} alt="Store" className="h-full w-full cursor-pointer object-cover" />
             ) : (
               <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}</span>

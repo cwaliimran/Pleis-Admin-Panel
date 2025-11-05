@@ -8,8 +8,6 @@ import { capitalizeFirst, formatDateTime } from '@/utils/short-utils';
 import Image from 'next/image';
 
 const EventOverView = ({ event }: { event: any }) => {
-  console.log('event', event);
-
   const router = useRouter();
 
   const tickets = [
@@ -30,8 +28,7 @@ const EventOverView = ({ event }: { event: any }) => {
   const updates = [
     {
       title: 'Early Bird Tickets',
-      description:
-        'Lorem ipsum dolor sit amet consectetur. Posuere tellus sagittis morbi eu ac justo. Phasellus in in porta egestas eget massa.',
+      description: 'Lorem ipsum dolor sit amet consectetur. Posuere tellus sagittis morbi eu ac justo. Phasellus in in porta egestas eget massa.',
     },
     {
       title: 'Early Bird Tickets',
@@ -50,17 +47,13 @@ const EventOverView = ({ event }: { event: any }) => {
               <div className="mt-2">
                 <div className="mt-1 items-center gap-2 md:flex">
                   <ImageWithFallback
-                    url={
-                      event?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo
-                        ?.url
-                    }
+                    url={event?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
                     alt={event?.basicInfo?.organization?.basicInfo?.name}
                     className="h-6 w-6 rounded-full"
                   />
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-gray-800 dark:text-white">
-                      {event?.basicInfo?.organization?.basicInfo?.name ||
-                        'Unknown Organizer'}
+                      {event?.basicInfo?.organization?.basicInfo?.name || 'Unknown Organizer'}
                     </span>
                     {/* <div className="flex">
                       <MapPin className="h-4 w-4" />
@@ -69,17 +62,12 @@ const EventOverView = ({ event }: { event: any }) => {
                   </div>
                 </div>
 
-                <h1 className="my-2 text-slate-500 dark:text-slate-200">
-                  {event?.basicInfo?.organization?.otherInfo?.description ||
-                    'No description available.'}
+                <h1 className="my-3 text-sm text-slate-500 dark:text-slate-300">
+                  {event?.basicInfo?.organization?.otherInfo?.description || 'No description available.'}
                 </h1>
 
                 <Badge
-                  onClick={() =>
-                    router.push(
-                      `/${window.location.pathname.split('/')[1]}/organization/${event?.basicInfo?.organization?._id}`
-                    )
-                  }
+                  onClick={() => router.push(`/${window.location.pathname.split('/')[1]}/organization/${event?.basicInfo?.organization?._id}`)}
                   className="text-md w-full cursor-pointer rounded-full border border-gray-400 bg-transparent px-4 py-1 font-medium text-black transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white"
                 >
                   Profile
@@ -92,10 +80,7 @@ const EventOverView = ({ event }: { event: any }) => {
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">DESCRIPTION</h1>
-              <p className="mt-2">
-                {capitalizeFirst(event?.basicInfo?.description) ||
-                  'No description available.'}
-              </p>
+              <p className="mt-2">{capitalizeFirst(event?.basicInfo?.description) || 'No description available.'}</p>
             </CardHeader>
           </Card>
 
@@ -105,9 +90,7 @@ const EventOverView = ({ event }: { event: any }) => {
               <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
               <div className="flex items-center gap-2">
                 {/* <PartyPopper /> */}
-                <p className="text-md mt-2 capitalize">
-                  {event?.basicInfo?.venue?.title || 'Unknown Type'}
-                </p>
+                <p className="text-md mt-2 capitalize">{event?.basicInfo?.venue?.title || 'Unknown Type'}</p>
               </div>
             </CardHeader>
           </Card>
@@ -117,16 +100,14 @@ const EventOverView = ({ event }: { event: any }) => {
             <CardHeader>
               <h1 className="font-semibold text-slate-500">CATEGORIES</h1>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                {event?.basicInfo?.categories?.map(
-                  (item: any, index: number) => (
-                    <Badge
-                      key={index}
-                      className="rounded-full border border-gray-500 bg-white px-3 py-1 text-sm font-medium text-gray-500 capitalize transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
-                    >
-                      {item?.title}
-                    </Badge>
-                  )
-                )}
+                {event?.basicInfo?.categories?.map((item: any, index: number) => (
+                  <Badge
+                    key={index}
+                    className="rounded-full border border-gray-500 bg-white px-3 py-1 text-sm font-medium text-gray-500 capitalize transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
+                  >
+                    {item?.title}
+                  </Badge>
+                ))}
               </div>
             </CardHeader>
           </Card>
@@ -151,9 +132,7 @@ const EventOverView = ({ event }: { event: any }) => {
             <CardHeader>
               {/* Top: Status + Ellipsis */}
               <div className="flex items-center justify-between">
-                <Badge className="rounded-full bg-gray-100 px-4 py-1 text-sm font-medium text-black dark:bg-white">
-                  Active
-                </Badge>
+                <Badge className="rounded-full bg-gray-100 px-4 py-1 text-sm font-medium text-black dark:bg-white">Active</Badge>
                 <Ellipsis className="h-4 w-4 cursor-pointer" />
               </div>
 
@@ -173,20 +152,14 @@ const EventOverView = ({ event }: { event: any }) => {
                   {/* Row 1: Label + Days Left */}
                   <div className="mb-1 flex items-center justify-between">
                     <h1 className="font-semibold text-slate-500">PROMOTION</h1>
-                    <h1 className="font-semibold whitespace-nowrap text-green-500">
-                      24 Days left
-                    </h1>
+                    <h1 className="font-semibold whitespace-nowrap text-green-500">24 Days left</h1>
                   </div>
 
                   {/* Row 2: Title */}
-                  <h1 className="text-lg font-medium sm:text-xl">
-                    Promotion Name
-                  </h1>
+                  <h1 className="text-lg font-medium sm:text-xl">Promotion Name</h1>
 
                   {/* Row 3: Description */}
-                  <p className="mt-1 text-sm text-slate-500">
-                    lorem ipsum dolor sit amet, consectetur ...
-                  </p>
+                  <p className="mt-1 text-sm text-slate-500">lorem ipsum dolor sit amet, consectetur ...</p>
                 </div>
               </div>
             </CardHeader>
@@ -212,9 +185,7 @@ const EventOverView = ({ event }: { event: any }) => {
 
               {/* Reward Availability */}
               <div className="mt-4 flex items-center justify-between text-sm">
-                <h1 className="font-semibold text-slate-500">
-                  REWARD AVAILABILITY
-                </h1>
+                <h1 className="font-semibold text-slate-500">REWARD AVAILABILITY</h1>
                 <h1 className="text-slate-500">488/2300</h1>
               </div>
 
@@ -228,14 +199,10 @@ const EventOverView = ({ event }: { event: any }) => {
           </Card>
           <div className="mt-5 grid grid-cols-12 gap-4">
             <div className="col-span-12 w-full rounded-full border-2 border-gray-300 bg-white text-center shadow-lg hover:bg-gray-100 md:col-span-6 dark:bg-black">
-              <Badge className="text-md bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-500">
-                New Promotion
-              </Badge>
+              <Badge className="text-md bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-500">New Promotion</Badge>
             </div>
             <div className="col-span-12 w-full rounded-full border-2 border-gray-300 bg-white text-center shadow-lg hover:bg-gray-100 md:col-span-6 dark:bg-black">
-              <Badge className="text-md bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-500">
-                New Notification
-              </Badge>
+              <Badge className="text-md bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-500">New Notification</Badge>
             </div>
           </div>
         </div>
@@ -251,18 +218,14 @@ const EventOverView = ({ event }: { event: any }) => {
                     <Calendar className="h-4 w-4" />
                     <p className="text-sm text-slate-500">START DATE</p>
                   </div>
-                  <p className="text-sm">
-                    {formatDateTime(event?.schedule?.startDateTime) || '-'}
-                  </p>
+                  <p className="text-sm">{formatDateTime(event?.schedule?.startDateTime) || '-'}</p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <p className="text-sm text-slate-500">END DATE</p>
                   </div>
-                  <p className="text-sm">
-                    {formatDateTime(event?.schedule?.endDateTime) || '-'}
-                  </p>
+                  <p className="text-sm">{formatDateTime(event?.schedule?.endDateTime) || '-'}</p>
                 </div>
               </div>
             </CardHeader>
@@ -276,10 +239,7 @@ const EventOverView = ({ event }: { event: any }) => {
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                <span className="text-sm">
-                  {event?.basicInfo?.venue?.location?.fullAddress ||
-                    'Unknown Address'}
-                </span>
+                <span className="text-sm">{event?.basicInfo?.venue?.location?.fullAddress || 'Unknown Address'}</span>
               </div>
 
               <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
@@ -291,9 +251,7 @@ const EventOverView = ({ event }: { event: any }) => {
                     referrerPolicy="no-referrer-when-downgrade"
                   ></iframe>
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-gray-400">
-                    No location selected
-                  </div>
+                  <div className="flex h-full w-full items-center justify-center text-gray-400">No location selected</div>
                 )}
               </div>
             </CardHeader>
@@ -302,9 +260,7 @@ const EventOverView = ({ event }: { event: any }) => {
           {/* Tickets Section */}
           <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
-              <h2 className="text-muted-foreground text-sm font-semibold">
-                TICKETS
-              </h2>
+              <h2 className="text-muted-foreground text-sm font-semibold">TICKETS</h2>
 
               {tickets.map((ticket, index) => (
                 <div key={index}>
@@ -312,12 +268,8 @@ const EventOverView = ({ event }: { event: any }) => {
                     <div className="flex-1 space-y-1">
                       <div className="mr-2 flex items-center justify-between">
                         <div>
-                          <p className="text-base font-medium">
-                            {ticket.title}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            From {ticket.from}
-                          </p>
+                          <p className="text-base font-medium">{ticket.title}</p>
+                          <p className="text-muted-foreground text-xs">From {ticket.from}</p>
                         </div>
                         <p>
                           {ticket.sold}/ {ticket.total}
@@ -350,9 +302,7 @@ const EventOverView = ({ event }: { event: any }) => {
               {/* Total Summary */}
               <div className="flex items-center justify-between pt-2 md:pt-4">
                 <div>
-                  <p className="text-muted-foreground text-sm font-semibold">
-                    Total
-                  </p>
+                  <p className="text-muted-foreground text-sm font-semibold">Total</p>
                   <p className="text-lg font-bold">12,026 €</p>
                 </div>
                 <Button variant="outline" size="sm">
@@ -364,9 +314,7 @@ const EventOverView = ({ event }: { event: any }) => {
           {/* Updates Section */}
           <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
-              <h2 className="text-muted-foreground text-sm font-semibold">
-                UPDATES
-              </h2>
+              <h2 className="text-muted-foreground text-sm font-semibold">UPDATES</h2>
 
               {updates.map((update, index) => (
                 <div key={index}>
@@ -376,9 +324,7 @@ const EventOverView = ({ event }: { event: any }) => {
                         <Dot className="text-primary bg-primary -ml-1 h-2 w-2 rounded-full" />
                         <p className="text-sm font-medium">{update.title}</p>
                       </div>
-                      <p className="text-muted-foreground text-sm">
-                        {update.description}
-                      </p>
+                      <p className="text-muted-foreground text-sm">{update.description}</p>
                     </div>
                     {/* <Button variant="outline" size="sm">
                       Boost
@@ -390,9 +336,7 @@ const EventOverView = ({ event }: { event: any }) => {
 
               {/* Optional Summary Section */}
               <div className="flex items-center justify-between px-2 pt-5">
-                <p className="text-muted-foreground text-sm font-semibold">
-                  Last updated: 2 hours ago
-                </p>
+                <p className="text-muted-foreground text-sm font-semibold">Last updated: 2 hours ago</p>
                 <Button variant="outline" size="sm">
                   Manage Updates
                 </Button>
