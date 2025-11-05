@@ -1,6 +1,4 @@
 import TableHeadCustom from '@/components/table/table-head-custom';
-import { Table } from '@/components/ui/table';
-import LoyaltyTableRow from './loyaltyTableRow2';
 import {
   Pagination,
   PaginationContent,
@@ -10,14 +8,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table } from '@/components/ui/table';
+import LoyaltyTableRow from './loyaltyTableRow2';
 
 const headLabel = [
   { id: 'user', label: 'User', align: 'left' },
@@ -27,6 +20,7 @@ const headLabel = [
   { id: 'amount', label: 'Total Amount', align: 'start' },
   { id: 'paymentStatus', label: 'Payment Status', align: 'start' },
   { id: 'confirmation', label: 'Confirmation', align: 'start' },
+  { id: 'staff', label: 'Staff', align: 'start' },
   { id: 'actions', label: '', align: 'center' },
 ];
 
@@ -39,6 +33,7 @@ export const reservationListData = [
     tickets: '2 VIP Tickets',
     amount: '€250',
     paymentStatus: 'Paid',
+    staff: 'Alice Smith',
     confirmation: 'Confirmed',
   },
   {
@@ -49,6 +44,7 @@ export const reservationListData = [
     tickets: '1 Standard Ticket',
     amount: '€120',
     paymentStatus: 'Pending',
+    staff: 'Alice Smith',
     confirmation: 'Awaiting',
   },
   {
@@ -59,52 +55,10 @@ export const reservationListData = [
     tickets: '3 Entry Passes',
     amount: '€400',
     paymentStatus: 'Paid',
+    staff: 'Alice Smith',
     confirmation: 'Completed',
   },
 ];
-
-// const headLabel = [
-//   {
-//     id: 'menuItem',
-//     label: 'Menu Item',
-//     align: 'left',
-//   },
-//   {
-//     id: 'buyerName',
-//     label: 'Buyer Name',
-//     align: 'center',
-//   },
-//   {
-//     id: 'venue',
-//     label: 'Venue',
-//     align: 'left',
-//   },
-//   {
-//     id: 'points',
-//     label: 'Points',
-//     align: 'center',
-//   },
-//   {
-//     id: 'dateTime',
-//     label: 'Date and Time',
-//     align: 'center',
-//   },
-//   {
-//     id: 'amount',
-//     label: 'Amount',
-//     align: 'center',
-//   },
-//   {
-//     id: 'total',
-//     label: 'Total',
-//     align: 'center',
-//   },
-//   {
-//     id: 'actions',
-//     label: '',
-//     align: 'center',
-//   },
-// ];
 
 const ReservationList = () => {
   return (

@@ -1,4 +1,5 @@
 import LoginPageView from '@/sections/auth/signinView';
+import { GuestGuard } from '@/components/guards';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -7,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <>
+    <GuestGuard>
       <LoginPageView userType="organizer" />
-    </>
+    </GuestGuard>
   );
 }

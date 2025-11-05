@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import CustomBadge from '@/components/ui/custom-badge';
+import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
 
 interface UserDetailsModalProps {
   user?: any;
@@ -27,7 +28,10 @@ const PendingUserDetailsModal: React.FC<UserDetailsModalProps> = ({ user, isOpen
         <div className="grid gap-6">
           <div className="dark:bg-secondary flex items-center gap-4 rounded-lg border bg-gray-50 p-4">
             <Avatar className="flex h-16 w-16 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-              {user?.basicInfo?.profileIcon && user?.basicInfo?.profileIcon !== 'noimage.png' ? (
+              {user?.basicInfo?.profileIcon &&
+              user?.basicInfo?.profileIcon !== noImageUrl &&
+              user?.basicInfo?.profileIcon !== noImageUrlDev &&
+              user?.basicInfo?.profileIcon !== noImageUrlDevCap ? (
                 <AvatarImage src={user?.basicInfo?.profileIcon} alt="User" className="h-full w-full cursor-pointer object-cover" />
               ) : (
                 <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{user?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}</span>

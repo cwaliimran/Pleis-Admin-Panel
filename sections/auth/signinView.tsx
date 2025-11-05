@@ -1,34 +1,27 @@
 'use client';
 
-import { yupResolver } from '@hookform/resolvers/yup';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import * as Yup from 'yup';
-
 import { ModeToggle } from '@/components/atoms/mode-toggle';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
-import { useBoolean } from '@/hooks/useBoolean';
-import Image from 'next/image';
-import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
-import { getDeviceType } from '@/utils/getDeviceType';
-import { useAdminLoginMutation, useLoginMutation } from '@/store/Reducer/user';
-import { useDispatch, useSelector } from 'react-redux';
-import { setUser } from '@/store/slice/userSlice';
-import { useCallback, useEffect, useState } from 'react';
-import type { RootState } from '@/store/store';
-import { useConfirmTwoFactorAuthLoginMutation } from '@/store/Reducer/twoFactorAuth';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useBoolean } from '@/hooks/useBoolean';
+import { useConfirmTwoFactorAuthLoginMutation } from '@/store/Reducer/twoFactorAuth';
+import { useAdminLoginMutation, useLoginMutation } from '@/store/Reducer/user';
+import { setUser } from '@/store/slice/userSlice';
+import { getErrorMessage } from '@/utils/api';
+import { getDeviceType } from '@/utils/getDeviceType';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
+import * as Yup from 'yup';
 
 const defaultValues = {
   email: '',
@@ -37,10 +30,7 @@ const defaultValues = {
 
 const schema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
-
-  password: Yup.string()
-    .min(6, 'Password must be at least 6 characters')
-    .required('Password is required'),
+  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
 });
 
 type LoginPageViewProps = {
@@ -48,15 +38,14 @@ type LoginPageViewProps = {
 };
 
 export default function LoginPageView({ userType }: LoginPageViewProps) {
-  const dispatch = useDispatch();
   const open = useBoolean();
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const dispatch = useDispatch();
+
   const [otp, setOtp] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOtpLoading, setIsOtpLoading] = useState(false);
   const [tempUser, setTempUser] = useState<any>(null);
-
-  const { user } = useSelector((state: RootState) => state.userSlice);
 
   const [login, { isLoading }] = useLoginMutation();
   const [adminLogin, { isLoading: isAdminLoading }] = useAdminLoginMutation();
@@ -83,18 +72,6 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
     },
     [router]
   );
-
-  // Remove or adjust useEffect to prevent premature navigation
-  useEffect(() => {
-    if (
-      user &&
-      user.token &&
-      user.key === process.env.NEXT_PUBLIC_PROJECT_KEY &&
-      !user.accountState?.twoFactorAuth
-    ) {
-      goTo(user?.role);
-    }
-  }, [user, goTo]);
 
   const { reset, handleSubmit } = methods;
 
@@ -156,7 +133,6 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
       reset();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to login:', errorMessage);
       showError(errorMessage);
     }
   });
@@ -168,9 +144,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
     }
 
     if (!tempUser?.token) {
-      showError(
-        'Authentication token is missing. Please try logging in again.'
-      );
+      showError('Authentication token is missing. Please try logging in again.');
       setIsModalOpen(false);
       return;
     }
@@ -198,9 +172,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
         return;
       }
 
-      showSuccess(
-        response?.message || 'Two-factor authentication verified successfully'
-      );
+      showSuccess(response?.message || 'Two-factor authentication verified successfully');
 
       dispatch(setUser(tempUser));
       goTo(tempUser?.role || '');
@@ -236,12 +208,9 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
             className="relative hidden w-1/2 items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-black p-10 text-white md:flex"
           >
             <div className="space-y-4 text-center">
-              <h1 className="text-5xl font-extrabold tracking-tight">
-                Welcome Back
-              </h1>
+              <h1 className="text-5xl font-extrabold tracking-tight">Welcome Back</h1>
               <p className="mx-auto max-w-sm text-lg text-gray-300">
-                Let’s get <span onClick={navigateToAdminLogin}>you</span> signed
-                in to continue.
+                Let’s get <span onClick={navigateToAdminLogin}>you</span> signed in to continue.
               </p>
             </div>
           </motion.div>
@@ -253,21 +222,12 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
             transition={{ duration: 0.5 }}
             className="flex w-full flex-col justify-center p-6 sm:p-8 md:w-1/2 md:p-16"
           >
-            <h2 className="mb-1 text-center text-3xl font-extrabold">
-              Login to PLEIS
-            </h2>
-            <p className="text-muted-foreground mb-6 text-center text-sm">
-              Enter your credentials to access your account
-            </p>
+            <h2 className="mb-1 text-center text-3xl font-extrabold">Login to PLEIS</h2>
+            <p className="text-muted-foreground mb-6 text-center text-sm">Enter your credentials to access your account</p>
 
             <FormProvider methods={methods} onSubmit={onSubmit}>
               <div className="space-y-4">
-                <RHFTextField
-                  name="email"
-                  type="email"
-                  placeholder="Email Address"
-                  className="h-[40px] rounded-md text-sm sm:text-lg"
-                />
+                <RHFTextField name="email" type="email" placeholder="Email Address" className="h-[40px] rounded-md text-sm sm:text-lg" />
                 <RHFTextField
                   name="password"
                   type="password"
@@ -277,13 +237,8 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                   onTogglePassword={open.onToggle}
                 />
 
-                <Link
-                  href={'/user/forgot-password'}
-                  className="text-muted-foreground text-end text-sm hover:underline"
-                >
-                  <p className="text-muted-foreground my-4 text-end text-sm">
-                    Forgot Password?
-                  </p>
+                <Link href={'/user/forgot-password'} className="text-muted-foreground text-end text-sm hover:underline">
+                  <p className="text-muted-foreground my-4 text-end text-sm">Forgot Password?</p>
                 </Link>
 
                 {!isLoading && !isAdminLoading ? (
@@ -304,15 +259,10 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
 
                 {userType === 'organizer' && (
                   <>
-                    <div className="text-muted-foreground text-center text-sm">
-                      Or sign in with
-                    </div>
+                    <div className="text-muted-foreground text-center text-sm">Or sign in with</div>
 
                     <div className="flex items-center justify-center gap-4">
-                      <Button
-                        variant="outline"
-                        className="h-[60px] w-[60px] cursor-pointer rounded-full py-3"
-                      >
+                      <Button variant="outline" className="h-[60px] w-[60px] cursor-pointer rounded-full py-3">
                         <span className="flex h-6 w-6 items-center justify-center">
                           <Image
                             src="/images/appleIcon.png"
@@ -334,10 +284,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                         </span>
                       </Button>
 
-                      <Button
-                        variant="outline"
-                        className="h-[60px] w-[60px] cursor-pointer rounded-full"
-                      >
+                      <Button variant="outline" className="h-[60px] w-[60px] cursor-pointer rounded-full">
                         <span className="flex h-6 w-6 items-center justify-center">
                           <Image
                             src="/images/googleIcon.png"
@@ -350,10 +297,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                         </span>
                       </Button>
 
-                      <Button
-                        variant="outline"
-                        className="h-[60px] w-[60px] cursor-pointer rounded-full"
-                      >
+                      <Button variant="outline" className="h-[60px] w-[60px] cursor-pointer rounded-full">
                         <span className="flex h-6 w-6 items-center justify-center">
                           <Image
                             src="/images/metaIcon.png"
@@ -369,10 +313,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
 
                     <p className="text-muted-foreground mt-4 text-center text-sm">
                       Don&#39;t have an account?{' '}
-                      <Link
-                        href="/user/register"
-                        className="font-medium text-[#0f172b] hover:underline dark:text-white"
-                      >
+                      <Link href="/user/register" className="font-medium text-[#0f172b] hover:underline dark:text-white">
                         Sign Up
                       </Link>
                     </p>
@@ -384,17 +325,11 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
             {userType === 'organizer' && (
               <p className="text-muted-foreground mt-10 text-center text-xs">
                 By continuing, you agree to our{' '}
-                <Link
-                  href="/term-and-service"
-                  className="hover:text-primary underline transition-colors"
-                >
+                <Link href="/term-and-service" className="hover:text-primary underline transition-colors">
                   Terms
                 </Link>{' '}
                 and{' '}
-                <Link
-                  href="/privacy-policy"
-                  className="hover:text-primary underline transition-colors"
-                >
+                <Link href="/privacy-policy" className="hover:text-primary underline transition-colors">
                   Privacy Policy
                 </Link>
                 .
@@ -405,19 +340,12 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent
-          aria-describedby={undefined}
-          className="dark:bg-secondary sm:max-w-md"
-        >
+        <DialogContent aria-describedby={undefined} className="dark:bg-secondary sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="mb-3 text-center">
-              Two-Factor Authentication
-            </DialogTitle>
+            <DialogTitle className="mb-3 text-center">Two-Factor Authentication</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center space-y-4">
-            <p className="text-center text-sm text-gray-600 dark:text-gray-300">
-              Enter the OTP from your authenticator app to verify your identity.
-            </p>
+            <p className="text-center text-sm text-gray-600 dark:text-gray-300">Enter the OTP from your authenticator app to verify your identity.</p>
             <Input
               type="text"
               placeholder="Enter OTP"
@@ -426,16 +354,8 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
               className="w-full py-2"
               disabled={isOtpLoading}
             />
-            <Button
-              onClick={handleConfirmOtp}
-              className="w-full"
-              disabled={isOtpLoading}
-            >
-              {isOtpLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                'Verify OTP'
-              )}
+            <Button onClick={handleConfirmOtp} className="w-full" disabled={isOtpLoading}>
+              {isOtpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Verify OTP'}
             </Button>
           </div>
         </DialogContent>

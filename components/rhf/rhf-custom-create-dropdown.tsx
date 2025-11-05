@@ -1,19 +1,7 @@
 'use client';
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,7 +14,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { showSuccess, showError } from '@/utils/toast';
 import { getErrorMessage } from '@/utils/api';
 import { useAddItemsCategoryMutation } from '@/store/Reducer/items-category-api';
-import TagsTypeModal from '@/sections/items-category/items-category-modal';
+import TagsTypeModal from '@/sections/menu-management/items-category/items-category-modal';
 
 interface DropdownOption {
   value: string;
@@ -51,10 +39,7 @@ const categorySchema = Yup.object({
     .required('Category name is required')
     .min(2, 'Category name must be at least 2 characters')
     .max(50, 'Category name cannot exceed 50 characters')
-    .matches(
-      /^[a-zA-Z0-9\s]+$/,
-      'Category name can only contain letters, numbers, and spaces'
-    ),
+    .matches(/^[a-zA-Z0-9\s]+$/, 'Category name can only contain letters, numbers, and spaces'),
   status: Yup.string().oneOf(['active', 'inactive']).optional(),
 });
 
@@ -77,8 +62,7 @@ const RHFCustomCreatableDropdown: FC<Props> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
 
-  const [addItemCategory, { isLoading: addCategoryLoading }] =
-    useAddItemsCategoryMutation();
+  const [addItemCategory, { isLoading: addCategoryLoading }] = useAddItemsCategoryMutation();
 
   const categoryFormMethods = useForm({
     resolver: yupResolver(categorySchema),
@@ -112,13 +96,9 @@ const RHFCustomCreatableDropdown: FC<Props> = ({
   }
 
   const filteredOptions = useMemo(() => {
-    const baseOptions = options.filter((option) =>
-      option.label.toLowerCase().includes(debouncedSearch.toLowerCase())
-    );
+    const baseOptions = options.filter((option) => option.label.toLowerCase().includes(debouncedSearch.toLowerCase()));
 
-    return showNone
-      ? [{ value: 'none', label: 'None' }, ...baseOptions]
-      : baseOptions;
+    return showNone ? [{ value: 'none', label: 'None' }, ...baseOptions] : baseOptions;
   }, [options, debouncedSearch, showNone]);
 
   const handleSearchChange = (value: string) => {
@@ -164,9 +144,7 @@ const RHFCustomCreatableDropdown: FC<Props> = ({
         control={control}
         name={name}
         render={({ field }) => {
-          const selectedOption = field.value
-            ? options.find((option) => option.value === field.value)
-            : null;
+          const selectedOption = field.value ? options.find((option) => option.value === field.value) : null;
 
           return (
             <FormItem className={cn('w-full', className)}>
@@ -184,22 +162,10 @@ const RHFCustomCreatableDropdown: FC<Props> = ({
                   }}
                   disabled={disabled}
                 >
-                  <SelectTrigger
-                    className={cn(
-                      'h-[40px] w-full capitalize',
-                      triggerClassName
-                    )}
-                  >
-                    <SelectValue placeholder={placeholder}>
-                      {selectedOption?.label || placeholder}
-                    </SelectValue>
+                  <SelectTrigger className={cn('h-[40px] w-full capitalize', triggerClassName)}>
+                    <SelectValue placeholder={placeholder}>{selectedOption?.label || placeholder}</SelectValue>
                   </SelectTrigger>
-                  <SelectContent
-                    className={cn(
-                      'max-h-[300px] w-full dark:bg-[#171717]',
-                      contentClassName
-                    )}
-                  >
+                  <SelectContent className={cn('max-h-[300px] w-full dark:bg-[#171717]', contentClassName)}>
                     <div className="relative px-3 pb-2">
                       <Search className="absolute top-2 left-6 h-4 w-4 opacity-50" />
                       <Input
@@ -233,22 +199,14 @@ const RHFCustomCreatableDropdown: FC<Props> = ({
                     </div>
                     <div className="max-h-[200px] overflow-y-auto">
                       {isLoading ? (
-                        <div className="text-muted-foreground py-6 text-center text-sm">
-                          Loading...
-                        </div>
+                        <div className="text-muted-foreground py-6 text-center text-sm">Loading...</div>
                       ) : filteredOptions.length === 0 ? (
                         <div className="text-muted-foreground py-6 text-center text-sm">
-                          {debouncedSearch
-                            ? 'No results found.'
-                            : 'No options available.'}
+                          {debouncedSearch ? 'No results found.' : 'No options available.'}
                         </div>
                       ) : (
                         filteredOptions.map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            value={option.value}
-                            className="w-full cursor-pointer capitalize"
-                          >
+                          <SelectItem key={option.value} value={option.value} className="w-full cursor-pointer capitalize">
                             {option.label}
                           </SelectItem>
                         ))

@@ -72,13 +72,13 @@ const StepOne = ({
                       <span className="mr-2 text-3xl"> + </span>
                       <div className="flex flex-col">
                         <span className="text-[22.9px] font-semibold">Add photo</span>
-                        <span className="align-middle text-[22.9px] font-semibold">or video</span>
+                        {/* <span className="align-middle text-[22.9px] font-semibold">or video</span> */}
                       </div>
                     </div>
                   )}
                   <input
                     type="file"
-                    accept="image/*,video/*"
+                    accept="image/*"
                     className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                     onChange={(e) => {
                       const file = e.target.files?.[0];

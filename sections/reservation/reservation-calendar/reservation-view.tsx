@@ -5,8 +5,8 @@ import { Copy } from 'lucide-react';
 import React, { useState } from 'react';
 import ReservationGrid from '../reservation-view/new-reservation-chart';
 import { ActiveBookings } from './components/active-bookings';
-import PendingRequests from './components/pending-request';
 import { ActiveBooking, Booking } from './components/types';
+import PendingRequests from './components/pending-request';
 
 const mockBookings: Booking[] = [
   {
@@ -56,7 +56,6 @@ const ReservationCalendar: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [pendingBookings, setPendingBookings] = useState<Booking[]>(mockBookings);
-
 
   const handleConfirm = (id: number) => setPendingBookings((prev) => prev.filter((b) => b.id !== id));
   const handleReject = (id: number) => setPendingBookings((prev) => prev.filter((b) => b.id !== id));
@@ -145,12 +144,7 @@ const ReservationCalendar: React.FC = () => {
                   </div>
                 </div>
 
-                <PendingRequests
-                  bookings={pendingBookings}
-                  onConfirm={handleConfirm}
-                  onReject={handleReject}
-                  onChange={handleChange}
-                />
+                <PendingRequests bookings={pendingBookings} onConfirm={handleConfirm} onReject={handleReject} onChange={handleChange} />
               </div>
 
               <ActiveBookings bookings={activeBookings} />

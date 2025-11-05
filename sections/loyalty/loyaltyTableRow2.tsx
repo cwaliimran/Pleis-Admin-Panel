@@ -51,8 +51,7 @@ const ReservationTableRow: FC<PageProps> = ({ item }) => {
       <TableCell className="text-start">
         <span
           className={`rounded-full px-2 py-1 text-xs font-medium ${
-            item.confirmation === 'Confirmed' ||
-            item.confirmation === 'Completed'
+            item.confirmation === 'Confirmed' || item.confirmation === 'Completed'
               ? 'bg-blue-100 text-blue-700'
               : item.confirmation === 'Awaiting'
                 ? 'bg-orange-100 text-orange-700'
@@ -63,12 +62,11 @@ const ReservationTableRow: FC<PageProps> = ({ item }) => {
         </span>
       </TableCell>
 
+      <TableCell className="text-start font-semibold">{item.staff}</TableCell>
+
       {/* Actions */}
       <TableCell className="text-end">
-        <Ellipsis
-          className="cursor-pointer text-gray-500 hover:text-gray-700"
-          onClick={(e) => e.stopPropagation()}
-        />
+        <Ellipsis className="cursor-pointer text-gray-500 hover:text-gray-700" onClick={(e) => e.stopPropagation()} />
       </TableCell>
     </TableRow>
   );

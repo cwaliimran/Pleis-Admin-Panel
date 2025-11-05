@@ -1,3 +1,3 @@
-export {default as EventTable} from './eventTable';
+export { default as EventTable } from './eventTable';
 
-export {default as EventTableRow} from './eventTAbleRow';
+export { default as EventTableRow } from './eventTableRow';

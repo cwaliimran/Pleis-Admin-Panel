@@ -2,30 +2,16 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  GenderDonutChart,
-  ViewsOverTime,
-  VisitorAge,
-} from '@/sections/invoices';
+import { GenderDonutChart, ViewsOverTime, VisitorAge } from '@/sections/invoices';
 import ReservationStatsCard from '@/sections/invoices/ReservationCard';
 import VisitorRegionV2 from '@/sections/invoices/visitorRegionv2';
 import { reservationCardHeaderData } from '@/sections/loyalty/data';
 import ReservationList from '../ReservationTransactionList';
 import StaffConfirmationsLog from '../StaffConfirmation';
 
-const ReservationAnalyticsView = ({
-  userType,
-}: {
-  global: boolean;
-  userType: string;
-}) => {
+const ReservationAnalyticsView = ({ userType }: { global: boolean; userType: string }) => {
   const openModal = useBoolean();
   console.log('userType', userType);
   const activePercent = 75;
@@ -45,9 +31,7 @@ const ReservationAnalyticsView = ({
         <div className="col-span-12 md:col-span-12">
           <Card className="dark:bg-secondary col-span-12 shadow-md md:col-span-6">
             <CardHeader>
-              <h3 className="text-md mb-3 font-medium">
-                Reservation Volume Over Time
-              </h3>
+              <h3 className="text-md mb-3 font-medium">Reservation Volume Over Time</h3>
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold">+10%</h3>
                 <h3 className="text-md font-[400] text-gray-400">
@@ -125,16 +109,13 @@ const ReservationAnalyticsView = ({
           <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
             <CardHeader>
               <div className="mb-4 flex items-start justify-between">
-                <h3 className="text-xl font-semibold">
-                  Reservation Type Breakdown
-                </h3>
+                <h3 className="text-xl font-semibold">Reservation Type Breakdown</h3>
 
                 <div className="flex flex-col items-end space-y-1">
                   <div className="flex items-center">
                     <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
                     <h1 className="text-[13px]">
-                      VIP table{' '}
-                      <span className="font-semibold">(20% / 2000)</span>
+                      VIP table <span className="font-semibold">(20% / 2000)</span>
                     </h1>
                   </div>
                   <div className="flex items-center">
@@ -146,8 +127,7 @@ const ReservationAnalyticsView = ({
                   <div className="flex items-center">
                     <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4] leading-10" />
                     <h1 className="text-[13px] text-[#7DAEF4]">
-                      Standing Area{' '}
-                      <span className="font-semibold">(10% / 1000)</span>
+                      Standing Area <span className="font-semibold">(10% / 1000)</span>
                     </h1>
                   </div>
                 </div>
@@ -206,10 +186,7 @@ const ReservationAnalyticsView = ({
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="bg-primary h-full transition-all duration-500"
-                      style={{ width: `${activePercent}%` }}
-                    ></div>
+                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${activePercent}%` }}></div>
                   </div>
                   <h4 className="text-md mb-2 font-medium">6000</h4>
                 </div>
@@ -217,16 +194,11 @@ const ReservationAnalyticsView = ({
                 {/* GOLD */}
                 <div className="mx-4 mt-2 flex items-start justify-between">
                   <h4 className="text-md mb-2 font-medium">Gold</h4>
-                  <h4 className="text-md mb-2 font-medium">
-                    {inactivePercent}%
-                  </h4>
+                  <h4 className="text-md mb-2 font-medium">{inactivePercent}%</h4>
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="bg-primary h-full transition-all duration-500"
-                      style={{ width: `${inactivePercent}%` }}
-                    ></div>
+                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${inactivePercent}%` }}></div>
                   </div>
                   <h4 className="text-md mb-2 font-medium">2000</h4>
                 </div>
@@ -238,10 +210,7 @@ const ReservationAnalyticsView = ({
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="bg-primary h-full transition-all duration-500"
-                      style={{ width: `${thirdPercent}%` }}
-                    ></div>
+                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${thirdPercent}%` }}></div>
                   </div>
                   <h4 className="text-md mb-2 font-medium">2000</h4>
                 </div>
@@ -255,9 +224,7 @@ const ReservationAnalyticsView = ({
         <Card className="dark:bg-secondary gap-0 shadow-md">
           <CardHeader>
             <div className="mb-3 flex flex-col items-center gap-4 md:flex-row md:justify-between">
-              <h3 className="ml-4 text-xl font-semibold">
-                Reservation Transaction List
-              </h3>
+              <h3 className="ml-4 text-xl font-semibold">Reservation Transaction List</h3>
             </div>
           </CardHeader>
 
@@ -271,9 +238,7 @@ const ReservationAnalyticsView = ({
         <Card className="dark:bg-secondary gap-0 shadow-md">
           <CardHeader>
             <div className="mb-3 flex flex-col items-center gap-4 md:flex-row md:justify-between">
-              <h3 className="ml-4 text-xl font-semibold">
-                Staff Confirmations Log
-              </h3>
+              <h3 className="ml-4 text-xl font-semibold">Staff Confirmations Log</h3>
             </div>
           </CardHeader>
 
@@ -288,33 +253,13 @@ const ReservationAnalyticsView = ({
           <DialogContent>
             <DialogTitle>Create Program </DialogTitle>
             <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="Organizer Name"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="text"
-                placeholder="Address"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
+              <input type="text" placeholder="Organizer Name" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="email" placeholder="Email" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="tel" placeholder="Phone Number" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="text" placeholder="Address" className="z-10 rounded-md p-2 shadow-md" />
             </div>
             <div className="mt-4 flex justify-end">
-              <Button
-                onClick={openModal.onFalse}
-                variant={'outline'}
-                className="mr-2 cursor-pointer"
-              >
+              <Button onClick={openModal.onFalse} variant={'outline'} className="mr-2 cursor-pointer">
                 Cancel
               </Button>
               <Button onClick={openModal.onFalse} className="cursor-pointer">

@@ -34,6 +34,7 @@ export const useEventForm = (userType: string) => {
   const hasInitializedRef = useRef(false);
 
   const { data: event = {}, isSuccess: eventLoaded } = useGeteventByIdQuery(id ?? skipToken);
+  console.log('event', event);
 
   const { data: { data: organizations = [] } = {}, isLoading: orgLoading } = useGetOrganizationQuery({
     page: 0,
@@ -248,8 +249,8 @@ export const useEventForm = (userType: string) => {
 
     const formData = {
       image: event?.basicInfo?.media || null,
-      mediaUrl: event?.basicInfo?.media?.url || '',
-      mediaType: event?.basicInfo?.media?.url?.endsWith('.mp4') ? 'video' : 'image',
+      mediaUrl: event?.basicInfo?.media || '',
+      mediaType: event?.basicInfo?.media?.endsWith('.mp4') ? 'video' : 'image',
 
       name: event?.basicInfo?.title || '',
       description: event?.basicInfo?.description || '',
