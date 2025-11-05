@@ -17,6 +17,7 @@ const BrowserControlPage = () => {
           </TabsTrigger>
         </TabsList>
 
+
         <TabsContent value="account">
           <MainSettings />
         </TabsContent>
