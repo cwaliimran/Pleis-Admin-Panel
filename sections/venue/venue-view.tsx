@@ -4,12 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
 // import { uploadFileToAzure } from '@/utils/fileUpload';
-import {
-  useAddVenueMutation,
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-  useUpdateVenueMutation,
-} from '@/store/Reducer/venue';
+import { useAddVenueMutation, useDeleteVenueMutation, useGetVenuesQuery, useUpdateVenueMutation } from '@/store/Reducer/venue';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -54,10 +49,8 @@ const VenueView = () => {
   const [imageUploading, setImageUploading] = useState(false);
 
   const [addVenue, { isLoading: addVenueLoading }] = useAddVenueMutation();
-  const [updateVenue, { isLoading: updateVenueLoading }] =
-    useUpdateVenueMutation();
-  const [deleteVenue, { isLoading: deleteVenueLoading }] =
-    useDeleteVenueMutation();
+  const [updateVenue, { isLoading: updateVenueLoading }] = useUpdateVenueMutation();
+  const [deleteVenue, { isLoading: deleteVenueLoading }] = useDeleteVenueMutation();
 
   const { data: apiData, isLoading } = useGetVenuesQuery({
     page: page - 1,
@@ -105,10 +98,7 @@ const VenueView = () => {
       state: Yup.string().required('State/Province is required'),
       country: Yup.string().required('Country is required'),
       postalCode: Yup.string().nullable(),
-      coordinates: Yup.array()
-        .of(Yup.number())
-        .length(2, 'Coordinates must be [lat, lng]')
-        .required(),
+      coordinates: Yup.array().of(Yup.number()).length(2, 'Coordinates must be [lat, lng]').required(),
     }),
   });
 
@@ -139,16 +129,11 @@ const VenueView = () => {
 
       reset({
         title: selectedVenueType.title || '',
-        venueType:
-          typeof selectedVenueType.venueType === 'string'
-            ? selectedVenueType.venueType
-            : selectedVenueType.venueType?._id?.toString() || '',
+        venueType: typeof selectedVenueType.venueType === 'string' ? selectedVenueType.venueType : selectedVenueType.venueType?._id?.toString() || '',
 
         // organization: selectedVenueType.organization || '',
         organization:
-          typeof selectedVenueType.organization === 'string'
-            ? selectedVenueType.organization
-            : selectedVenueType.organization?._id?.toString() || '',
+          typeof selectedVenueType.organization === 'string' ? selectedVenueType.organization : selectedVenueType.organization?._id?.toString() || '',
 
         location: {
           fullAddress: selectedVenueType.location?.fullAddress || '',
@@ -158,10 +143,7 @@ const VenueView = () => {
           country: selectedVenueType.location?.country || '',
           coordinates: selectedVenueType.location?.coordinates || [],
         },
-        floorPlan:
-          selectedVenueType.floorPlanInfo?.url ||
-          selectedVenueType.imageInfo?.url ||
-          undefined,
+        floorPlan: selectedVenueType.floorPlanInfo?.url || selectedVenueType.imageInfo?.url || undefined,
         status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
@@ -200,11 +182,7 @@ const VenueView = () => {
     try {
       let imageFileString = undefined;
 
-      if (
-        formData.floorPlan &&
-        (formData.floorPlan instanceof FileList ||
-          Array.isArray(formData.floorPlan))
-      ) {
+      if (formData.floorPlan && (formData.floorPlan instanceof FileList || Array.isArray(formData.floorPlan))) {
         const file = formData.floorPlan[0];
         if (file) {
           setImageUploading(true);
@@ -255,9 +233,7 @@ const VenueView = () => {
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
-          setVenueTypes((prev) =>
-            prev.map((item) => (item._id === selectedId ? response.data : item))
-          );
+          setVenueTypes((prev) => prev.map((item) => (item._id === selectedId ? response.data : item)));
         } else {
           // Add: add new item to local state
           setVenueTypes((prev) => [response.data, ...prev]);
@@ -269,12 +245,7 @@ const VenueView = () => {
       }
 
       if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value
-              ? 'Venue updated successfully'
-              : 'Venue created successfully')
-        );
+        showSuccess(response?.message || (editModal.value ? 'Venue updated successfully' : 'Venue created successfully'));
       }
 
       CloseModal();
@@ -370,10 +341,7 @@ const VenueView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus className="" />
             Create Venue
           </Button>

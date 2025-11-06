@@ -4,17 +4,8 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  useAddMenuListMutation,
-  useUpdateMenuListMutation,
-} from '@/store/Reducer/menu-list-api';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useAddMenuListMutation, useUpdateMenuListMutation } from '@/store/Reducer/menu-list-api';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
@@ -38,12 +29,7 @@ const schema = Yup.object().shape({
   status: Yup.string().required('Status is required'),
 });
 
-const MenuItemModal = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-}: MenuItemModalProps) => {
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItemModalProps) => {
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
     defaultValues,
@@ -70,23 +56,18 @@ const MenuItemModal = ({
     }
   }, [open, isEdit, selectedData, reset]);
 
-  const {
-    data: { data: organizations = [] } = {},
-    isLoading: organizationsLoading,
-  } = useGetOrganizationQuery({ page: 0, limit: 10000 });
+  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationQuery({ page: 0, limit: 10000 });
 
-  const [addMenuList, { isLoading: addMenuListLoading }] =
-    useAddMenuListMutation();
+  const [addMenuList, { isLoading: addMenuListLoading }] = useAddMenuListMutation();
 
-  const [updateMenuList, { isLoading: updateMenuListLoading }] =
-    useUpdateMenuListMutation();
+  const [updateMenuList, { isLoading: updateMenuListLoading }] = useUpdateMenuListMutation();
 
   const handleSubmit = async (formData: any) => {
     try {
       const payload: any = {
         title: formData?.title,
         description: formData?.description,
-        venue: formData?.venue,
+        organization: formData?.organization,
       };
 
       if (isEdit && selectedData) {
@@ -94,10 +75,7 @@ const MenuItemModal = ({
         payload.id = selectedData?._id;
       }
 
-      const response =
-        isEdit && selectedData
-          ? await updateMenuList(payload).unwrap()
-          : await addMenuList(payload).unwrap();
+      const response = isEdit && selectedData ? await updateMenuList(payload).unwrap() : await addMenuList(payload).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -109,12 +87,7 @@ const MenuItemModal = ({
         return;
       }
 
-      showSuccess(
-        response?.message ||
-          (isEdit
-            ? 'Preset updated successfully'
-            : 'Preset created successfully')
-      );
+      showSuccess(response?.message || (isEdit ? 'Menu List updated successfully' : 'Menu List created successfully'));
 
       methods.reset(defaultValues);
       onClose();
@@ -140,18 +113,11 @@ const MenuItemModal = ({
             <DialogTitle>{isEdit ? 'Edit Menu' : 'Create Menu'}</DialogTitle>
           </DialogHeader>
           <div className="mt-4 w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className={`${isEdit ? 'col-span-1' : 'col-span-2'}`}>
-                    <RHFTextField
-                      name="title"
-                      label="Name"
-                      placeholder="Enter Name"
-                    />
+                    <RHFTextField name="title" label="Name" placeholder="Enter Name" />
                   </div>
 
                   {isEdit && (
@@ -169,7 +135,7 @@ const MenuItemModal = ({
 
                   <div className="col-span-2">
                     <RHFCustomDropdown
-                      name="organizations"
+                      name="organization"
                       label="Organizations"
                       placeholder="Select Organizations"
                       options={organizations?.map((val: any) => ({
@@ -184,24 +150,14 @@ const MenuItemModal = ({
 
                 {/* Description */}
                 <div className="grid w-full grid-cols-1 gap-4">
-                  <RHFTextField
-                    name="description"
-                    label="Description"
-                    placeholder="Enter Description"
-                    multiline
-                    rows={2}
-                  />
+                  <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
                 </div>
               </div>
 
               <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
                   {addMenuListLoading || updateMenuListLoading ? (
-                    <Button
-                      type="button"
-                      disabled
-                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                    >
+                    <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                       <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                     </Button>
                   ) : (

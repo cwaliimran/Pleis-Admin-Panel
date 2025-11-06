@@ -1,27 +1,14 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, {
-  RHFDate,
-  RHFSelectField,
-  RHFTextField,
-} from '@/components/rhf';
+import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import {
-  useAddChallengeMutation,
-  useUpdateChallengeMutation,
-} from '@/store/Reducer/challenges-api';
+import { useAddChallengeMutation, useUpdateChallengeMutation } from '@/store/Reducer/challenges-api';
 import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
@@ -68,10 +55,7 @@ const schema = Yup.object().shape({
     .transform((value, originalValue) => (originalValue === '' ? 0 : value))
     .when('rewardType', {
       is: (val: string) => val === 'points' || val === 'specialTicket',
-      then: (schema) =>
-        schema
-          .required('Reward value is required')
-          .min(1, 'Must be at least 1'),
+      then: (schema) => schema.required('Reward value is required').min(1, 'Must be at least 1'),
       otherwise: (schema) => schema.default(0),
     }),
 
@@ -104,8 +88,7 @@ const schema = Yup.object().shape({
     .default('')
     .when('rewardType', {
       is: 'customReward',
-      then: (schema) =>
-        schema.required('Custom reward description is required'),
+      then: (schema) => schema.required('Custom reward description is required'),
       otherwise: (schema) => schema.default(''),
     }),
 
@@ -123,8 +106,7 @@ const schema = Yup.object().shape({
     .default('')
     .when('taskType', {
       is: 'buyMenuItem',
-      then: (schema) =>
-        schema.required('Menu item is required for this task type'),
+      then: (schema) => schema.required('Menu item is required for this task type'),
       otherwise: (schema) => schema.default(''),
     }),
 
@@ -149,21 +131,12 @@ type ChallengeModalProps = {
   onSubmit?: (data: any) => void;
 };
 
-const ChallengeModal = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-  global = false,
-}: ChallengeModalProps) => {
-  const { uploadImage, uploading: imageUploading } = useImageUpload();
+const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = false }: ChallengeModalProps) => {
   const [deleting, setDeleting] = useState(false);
 
-  const [addChallenge, { isLoading: addChallengeLoading }] =
-    useAddChallengeMutation();
-
-  const [updateChallenge, { isLoading: updateChallengeLoading }] =
-    useUpdateChallengeMutation();
+  const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const [addChallenge, { isLoading: addChallengeLoading }] = useAddChallengeMutation();
+  const [updateChallenge, { isLoading: updateChallengeLoading }] = useUpdateChallengeMutation();
 
   const methods = useForm<ChallengesFormValues>({
     resolver: yupResolver(schema),
@@ -187,14 +160,13 @@ const ChallengeModal = ({
     date: undefined,
   });
 
-  const { data: menuItemsData, isLoading: menuItemsLoading } =
-    useGetMenuItemsQuery({
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-      date: undefined,
-    });
+  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemsQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
 
   const menuOptions =
     menuData?.data?.map((menu: any) => ({
@@ -239,29 +211,14 @@ const ChallengeModal = ({
         rewardType: reward?.rewardType || 'points',
 
         // Reward fields mapping
-        rewardValue:
-          reward?.rewardType === 'points' ||
-          reward?.rewardType === 'specialTicket'
-            ? reward?.rewardValue || 0
-            : 0,
+        rewardValue: reward?.rewardType === 'points' || reward?.rewardType === 'specialTicket' ? reward?.rewardValue || 0 : 0,
 
-        rewardMenu:
-          reward?.rewardType === 'menuItem' ? reward?.rewardMenu || '' : '',
-        rewardMenuItem:
-          reward?.rewardType === 'menuItem' ? reward?.rewardMenuItem || '' : '',
+        rewardMenu: reward?.rewardType === 'menuItem' ? reward?.rewardMenu || '' : '',
+        rewardMenuItem: reward?.rewardType === 'menuItem' ? reward?.rewardMenuItem || '' : '',
 
-        customRewardImage:
-          reward?.rewardType === 'customReward'
-            ? reward?.customReward?.mediaInfo?.url || null
-            : null,
-        customRewardTitle:
-          reward?.rewardType === 'customReward'
-            ? reward?.customReward?.title || ''
-            : '',
-        customRewardDescription:
-          reward?.rewardType === 'customReward'
-            ? reward?.customReward?.description || ''
-            : '',
+        customRewardImage: reward?.rewardType === 'customReward' ? reward?.customReward?.mediaInfo?.url || null : null,
+        customRewardTitle: reward?.rewardType === 'customReward' ? reward?.customReward?.title || '' : '',
+        customRewardDescription: reward?.rewardType === 'customReward' ? reward?.customReward?.description || '' : '',
       };
 
       reset(mappedValues);
@@ -270,9 +227,7 @@ const ChallengeModal = ({
 
   // Transform form data to API payload format
   const transformToPayload = (data: ChallengesFormValues) => {
-    const selectedCompany = JSON.parse(
-      localStorage.getItem('selectedCompany') || 'null'
-    );
+    const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
 
     if (!selectedCompany) {
       showError('Please select a company first before submitting the form');
@@ -346,10 +301,7 @@ const ChallengeModal = ({
     let uploadedFileKey: string | null = null;
 
     try {
-      if (
-        formData?.customRewardImage instanceof FileList &&
-        formData?.customRewardImage.length > 0
-      ) {
+      if (formData?.customRewardImage instanceof FileList && formData?.customRewardImage.length > 0) {
         const file = formData.customRewardImage[0];
         uploadedFileKey = await uploadImage(file);
       }
@@ -365,10 +317,7 @@ const ChallengeModal = ({
         payload.id = selectedData?._id;
       }
 
-      const response =
-        isEdit && selectedData
-          ? await updateChallenge(payload).unwrap()
-          : await addChallenge(payload).unwrap();
+      const response = isEdit && selectedData ? await updateChallenge(payload).unwrap() : await addChallenge(payload).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -380,12 +329,7 @@ const ChallengeModal = ({
         return;
       }
 
-      showSuccess(
-        response?.message ||
-          (isEdit
-            ? 'Challenge updated successfully'
-            : 'Challenge created successfully')
-      );
+      showSuccess(response?.message || (isEdit ? 'Challenge updated successfully' : 'Challenge created successfully'));
 
       methods.reset(defaultValues);
       onClose();
@@ -414,33 +358,20 @@ const ChallengeModal = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[630px]!"
         >
           <DialogHeader>
-            <DialogTitle>
-              {isEdit ? 'Edit Challenge' : 'Create Challenge'}
-            </DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Challenge' : 'Create Challenge'}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-7 flex w-full flex-col gap-4">
                 {/* Challenge Title */}
-                <RHFTextField
-                  name="title"
-                  label="Challenge Name"
-                  placeholder="Enter Challenge Name"
-                />
+                <RHFTextField name="title" label="Challenge Name" placeholder="Enter Challenge Name" />
 
                 {/* Challenge Description */}
-                <RHFTextField
-                  name="description"
-                  label="Description (Optional)"
-                  placeholder="Enter Challenge Description"
-                />
+                <RHFTextField name="description" label="Description (Optional)" placeholder="Enter Challenge Description" />
 
                 {/* Task Type and Parameters */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
@@ -465,21 +396,16 @@ const ChallengeModal = ({
                   />
 
                   {/* Task Value (X) */}
-                  <RHFTextField
-                    name="taskValue"
-                    label="Task Value (X)"
-                    placeholder="Enter value (e.g. 5)"
-                    type="number"
-                  />
+                  <RHFTextField name="taskValue" label="Task Value (X)" placeholder="Enter value (e.g. 5)" type="number" />
                 </div>
 
                 {/* Menu Item selection if taskType is buyMenuItem */}
                 {taskType === 'buyMenuItem' && (
                   <>
                     {menuItemsLoading ? (
-                      <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                        <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                      <div className="mt-2 w-full space-y-2 md:w-full">
+                        <Skeleton className="ml-1 h-3 w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                        <Skeleton className="h-8 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
                       </div>
                     ) : (
                       <RHFCustomDropdown
@@ -495,19 +421,10 @@ const ChallengeModal = ({
                 )}
 
                 {/* Claim Limit */}
-                <RHFTextField
-                  name="claimLimit"
-                  label="Claim Limit (Optional)"
-                  placeholder="Enter Claim Limit"
-                  type="number"
-                />
+                <RHFTextField name="claimLimit" label="Claim Limit (Optional)" placeholder="Enter Claim Limit" type="number" />
 
                 {/* End Time */}
-                <RHFDate
-                  name="endDate"
-                  label="End Date"
-                  placeholder="Select End Date"
-                />
+                <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
 
                 {/* Tier Limit */}
                 {/* <RHFSelectField
@@ -519,9 +436,9 @@ const ChallengeModal = ({
                 /> */}
 
                 {tiersLoading ? (
-                  <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                    <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                    <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                  <div className="mt-2 w-full space-y-2 md:w-full">
+                    <Skeleton className="ml-1 h-3 w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                    <Skeleton className="h-8 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
                   </div>
                 ) : (
                   <RHFCustomDropdown
@@ -550,12 +467,7 @@ const ChallengeModal = ({
 
                   {/* Point Reward */}
                   {rewardType === 'points' && (
-                    <RHFTextField
-                      name="rewardValue"
-                      label="Point Reward"
-                      placeholder="Enter points to reward"
-                      type="number"
-                    />
+                    <RHFTextField name="rewardValue" label="Point Reward" placeholder="Enter points to reward" type="number" />
                   )}
 
                   {/* Menu Item Reward */}
@@ -569,9 +481,9 @@ const ChallengeModal = ({
                       /> */}
 
                       {menuLoading ? (
-                        <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                          <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                          <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                        <div className="mt-2 w-full space-y-2 md:w-full">
+                          <Skeleton className="ml-1 h-3 w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                          <Skeleton className="h-8 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
                         </div>
                       ) : (
                         <RHFCustomDropdown
@@ -585,9 +497,9 @@ const ChallengeModal = ({
                       )}
 
                       {menuItemsLoading ? (
-                        <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                          <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                          <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                        <div className="mt-2 w-full space-y-2 md:w-full">
+                          <Skeleton className="ml-1 h-3 w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                          <Skeleton className="h-8 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
                         </div>
                       ) : (
                         <RHFCustomDropdown
@@ -604,36 +516,19 @@ const ChallengeModal = ({
 
                   {/* Special Ticket Reward */}
                   {rewardType === 'specialTicket' && (
-                    <RHFTextField
-                      name="rewardValue"
-                      label="Special Ticket Reward"
-                      placeholder="Enter number of tickets"
-                      type="number"
-                    />
+                    <RHFTextField name="rewardValue" label="Special Ticket Reward" placeholder="Enter number of tickets" type="number" />
                   )}
                 </div>
 
                 {/* Custom Reward */}
                 {rewardType === 'customReward' && (
                   <div className="flex flex-col gap-4">
-                    <div className="mb-2 flex max-w-[10rem] items-center justify-start">
-                      <RHFUploadButton
-                        name="customRewardImage"
-                        label="Upload Photo"
-                        initialImage={null}
-                      />
+                    <div className="mb-2 flex max-w-40 items-center justify-start">
+                      <RHFUploadButton name="customRewardImage" label="Upload Photo" initialImage={null} />
                     </div>
 
-                    <RHFTextField
-                      name="customRewardTitle"
-                      label="Custom Reward Title"
-                      placeholder="Enter custom reward title"
-                    />
-                    <RHFTextField
-                      name="customRewardDescription"
-                      label="Custom Reward Description"
-                      placeholder="Enter description"
-                    />
+                    <RHFTextField name="customRewardTitle" label="Custom Reward Title" placeholder="Enter custom reward title" />
+                    <RHFTextField name="customRewardDescription" label="Custom Reward Description" placeholder="Enter description" />
                   </div>
                 )}
               </div>
@@ -642,24 +537,12 @@ const ChallengeModal = ({
 
               <div className="mt-5 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleClose}
-                    className="cursor-pointer px-7"
-                  >
+                  <Button type="button" variant="outline" onClick={handleClose} className="cursor-pointer px-7">
                     Cancel
                   </Button>
 
-                  {addChallengeLoading ||
-                  updateChallengeLoading ||
-                  imageUploading ||
-                  deleting ? (
-                    <Button
-                      type="button"
-                      disabled
-                      className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                    >
+                  {addChallengeLoading || updateChallengeLoading || imageUploading || deleting ? (
+                    <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                       <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                     </Button>
                   ) : (

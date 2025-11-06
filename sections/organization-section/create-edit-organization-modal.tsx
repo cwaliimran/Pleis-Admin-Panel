@@ -14,8 +14,9 @@ import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import PhoneInput from 'react-phone-input-2';
 import * as Yup from 'yup';
 
 interface OrganizationModalProps {
@@ -28,8 +29,8 @@ interface OrganizationModalProps {
 
 const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }: OrganizationModalProps) => {
   const isEdit = !!organization;
-  const [imageUploading, setImageUploading] = useState(false);
 
+  const [imageUploading, setImageUploading] = useState(false);
   const [addOrganization, { isLoading: isAdding }] = useAddOrganizationMutation();
   const [updateOrganization, { isLoading: isUpdating }] = useUpdateOrganizationMutation();
 
@@ -64,7 +65,11 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       message: 'Website link must be a valid URL',
       excludeEmptyString: true,
     }),
-    phone: Yup.string().nullable().optional(),
+
+    phone: Yup.string()
+      .matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
+      .required('Phone number is required'),
+    phoneCode: Yup.string(),
 
     instagram: Yup.string().nullable().optional().matches(urlRegex, {
       message: 'Instagram link must be a valid URL',
@@ -85,19 +90,24 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   });
 
   // Define default values
-  const defaultValues = {
-    image: null,
-    name: organization?.basicInfo?.name || '',
-    ...(userType !== 'organizer' && {
-      user: organization?.basicInfo?.user || '',
+  const defaultValues = useMemo(
+    () => ({
+      image: null,
+      name: organization?.basicInfo?.name || '',
+      ...(userType !== 'organizer' && {
+        user: organization?.basicInfo?.user || '',
+      }),
+      // phone: organization?.basicInfo?.phone || '',
+      phone: organization?.basicInfo?.phoneNumber?.number || '',
+      phoneCode: organization?.basicInfo?.phoneNumber?.code || '',
+      website: organization?.basicInfo?.website || '',
+      instagram: organization?.basicInfo?.socialLinks?.instagram || '',
+      facebook: organization?.basicInfo?.socialLinks?.facebook || '',
+      youtube: organization?.basicInfo?.socialLinks?.youtube || '',
+      linkedin: organization?.basicInfo?.socialLinks?.linkedin || '',
     }),
-    phone: organization?.basicInfo?.phone || '',
-    website: organization?.basicInfo?.website || '',
-    instagram: organization?.basicInfo?.socialLinks?.instagram || '',
-    facebook: organization?.basicInfo?.socialLinks?.facebook || '',
-    youtube: organization?.basicInfo?.socialLinks?.youtube || '',
-    linkedin: organization?.basicInfo?.socialLinks?.linkedin || '',
-  };
+    [organization, userType]
+  );
 
   // Use `any` to bypass TypeScript strict checking
   const methods = useForm<any>({
@@ -105,11 +115,11 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
     defaultValues,
   });
 
-  const { handleSubmit, reset } = methods;
+  const { handleSubmit, setValue, control, reset } = methods;
 
   useEffect(() => {
     reset(defaultValues);
-  }, [organization, userType, reset]);
+  }, [defaultValues, reset]);
 
   const handleClose = () => {
     reset();
@@ -118,6 +128,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
 
   const onSubmit = handleSubmit(async (formData) => {
     let uploadedFileKey: string | null = null;
+
     try {
       let logoKey = isEdit ? organization?.basicInfo?.media?.logo || null : null;
 
@@ -144,15 +155,17 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
         payload.basicInfo.name = formData.name;
       }
 
-      if (formData.phone !== (organization?.basicInfo?.phone || '')) {
-        payload.basicInfo.phone = formData.phone || '';
+      if (formData.phone || formData.phoneCode) {
+        payload.basicInfo.phoneNumber = {
+          code: formData.phoneCode || '',
+          number: formData.phone || '',
+        };
       }
 
       if (formData.website !== (organization?.basicInfo?.website || '')) {
         payload.basicInfo.website = formData.website || '';
       }
 
-      // Add user only if userType is not organizer
       if (userType !== 'organizer' && formData.user !== organization?.basicInfo?.user) {
         payload.basicInfo.user = formData.user;
       }
@@ -195,8 +208,11 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       } else {
         payload.basicInfo = {
           name: formData.name,
-          phone: formData.phone || '',
           website: formData.website || '',
+          phoneNumber: {
+            code: formData.phoneCode || '',
+            number: formData.phone || '',
+          },
           ...(userType !== 'organizer' && { user: formData.user }),
           socialLinks: {
             youtube: formData.youtube || '',
@@ -209,6 +225,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
         if (logoKey) {
           payload.basicInfo.media = { logo: logoKey };
         }
+
+        console.log('payload for create ', payload);
 
         response = await addOrganization(payload).unwrap();
       }
@@ -279,7 +297,47 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                     />
                   )}
 
-                  <RHFTextField name="phone" type="number" label="Phone Number" placeholder="Enter Phone Number" />
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field, fieldState }) => {
+                      const phoneCodeValue = methods.getValues('phoneCode') || '';
+                      const displayValue = field.value && phoneCodeValue ? `${phoneCodeValue}${field.value}` : field.value || '';
+
+                      return (
+                        <div>
+                          <p className="mb-0.5 text-sm font-medium">Phone</p>
+                          <PhoneInput
+                            value={displayValue}
+                            country="pk"
+                            onChange={(value, country: any) => {
+                              const phoneCode = `+${country?.dialCode || ''}`;
+                              const phoneNumber = value.replace(country?.dialCode || '', '');
+                              field.onChange(phoneNumber);
+                              setValue('phoneCode', phoneCode, {
+                                shouldValidate: true,
+                                shouldDirty: true,
+                              });
+                            }}
+                            placeholder="Phone Number"
+                            inputProps={{
+                              required: true,
+                              'aria-invalid': fieldState.invalid,
+                            }}
+                            containerClass="w-full"
+                            dropdownStyle={{
+                              zIndex: 9999,
+                              position: 'fixed',
+                              width: '16rem',
+                            }}
+                            buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                            inputClass={`file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input !border-gray-100 dark:!border-gray-500 !shadow-sm flex !h-[42px] !w-full min-w-0 rounded-lg !bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive ${fieldState.invalid ? 'border-destructive ring-destructive/40' : ''}`}
+                          />
+                          {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
+                        </div>
+                      );
+                    }}
+                  />
 
                   <RHFTextField name="website" label="Website Link" placeholder="Enter Website Link" />
 

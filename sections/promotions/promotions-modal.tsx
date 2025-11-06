@@ -222,13 +222,14 @@ const PromotionModal = ({
                     placeholder="Select Repeat Settings"
                     className="w-full flex-1"
                     options={[
-                      // { label: 'None', value: 'None' },
+                      { label: 'None', value: 'None' },
                       { label: 'Daily', value: 'Daily' },
                       { label: 'Weekly', value: 'Weekly' },
                       { label: 'Monthly', value: 'Monthly' },
                     ]}
                   />
 
+                  {/* Hide Repeat Interval if Repeat Settings is None */}
                   <RHFTextField name="repeatInterval" label="Repeat Interval" placeholder="Enter Repeat Interval" type="number" />
                 </div>
 
@@ -292,6 +293,7 @@ const PromotionModal = ({
                         { label: '3x', value: '3' },
                       ]}
                     />
+
                     {/* <RHFSelectField
                       name="repeatOptions"
                       label="Repeat Options"

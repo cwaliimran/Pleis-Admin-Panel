@@ -1,22 +1,12 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const ChallengesTableRow: FC<TableRowProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
+const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   const getChallengesTypeLabel = (type: string) => {
     switch (type) {
       case 'menuItem':
@@ -48,10 +38,7 @@ const ChallengesTableRow: FC<TableRowProps> = ({
         {item?.title?.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
-              <span
-                className="cursor-pointer hover:text-blue-600"
-                title="Click to view full description"
-              >
+              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
                 {item?.title?.slice(0, 22) + '...'}
               </span>
             </DialogTrigger>
@@ -60,9 +47,7 @@ const ChallengesTableRow: FC<TableRowProps> = ({
                 <DialogTitle>Challenge Title</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {item.title}
-                </p>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{item.title}</p>
               </div>
             </DialogContent>
           </Dialog>
@@ -71,18 +56,14 @@ const ChallengesTableRow: FC<TableRowProps> = ({
         )}
       </TableCell>
 
-      <TableCell className="text-left">
-        {getChallengesTypeLabel(item?.reward?.rewardType) || '-'}
-      </TableCell>
+      <TableCell className="text-left">{getChallengesTypeLabel(item?.reward?.rewardType) || '-'}</TableCell>
 
-      <TableCell className="text-left">
-        {getChallengesTypeLabel(item?.taskType) || '-'}
-      </TableCell>
+      <TableCell className="text-left">{getChallengesTypeLabel(item?.taskType) || '-'}</TableCell>
 
       <TableCell className="text-left">{item?.taskValue || '-'}</TableCell>
       <TableCell className="text-left">{item?.claimLimit || '-'}</TableCell>
       <TableCell className="text-left">{item?.endDate || '-'}</TableCell>
-      <TableCell className="text-left capitalize">{item?.tierLimit || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.tierLimit?.title || '-'}</TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

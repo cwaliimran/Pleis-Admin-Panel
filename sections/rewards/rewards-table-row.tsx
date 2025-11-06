@@ -75,7 +75,7 @@ const RewardsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
 
       <TableCell className="text-left">{formatValue(item?.claimLimit)}</TableCell>
 
-      <TableCell className="text-left capitalize">{formatValue(item.tierLimit)}</TableCell>
+      <TableCell className="text-left capitalize">{item.tierLimit?.title || '-'}</TableCell>
 
       <TableCell className="text-left">{item?.percentOff}%</TableCell>
 

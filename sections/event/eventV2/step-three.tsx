@@ -398,7 +398,7 @@ const StepThree: React.FC<StepThreeProps> = ({ methods, watch, setValue, loading
             {transferEnabled && (
               <FeatureSectionContent>
                 <RHFTextField
-                  name="transferPrice"
+                  name="ticketing.transferPrice"
                   label="Transfer Fee (€)"
                   type="number"
                   placeholder="Enter Transfer Fee"

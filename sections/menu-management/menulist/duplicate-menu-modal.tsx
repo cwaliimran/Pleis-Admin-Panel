@@ -4,13 +4,7 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useDuplicateMenuMutation } from '@/store/Reducer/menu-list-api';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
@@ -27,27 +21,14 @@ const schema = Yup.object({
   organization: Yup.string().required('Organization is required'),
 });
 
-const DuplicateMenuModal = ({
-  open,
-  selectedId,
-  onClose,
-  selectedData,
-}: any) => {
+const DuplicateMenuModal = ({ open, selectedId, onClose, selectedData }: any) => {
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
 
-  const [duplicateMenu, { isLoading: duplicateMenuLoading }] =
-    useDuplicateMenuMutation();
-
-  // const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
-  //   useGetVenuesQuery({ page: 0, limit: 10000 });
-
-  const {
-    data: { data: organizations = [] } = {},
-    isLoading: organizationsLoading,
-  } = useGetOrganizationQuery({ page: 0, limit: 10000 });
+  const [duplicateMenu, { isLoading: duplicateMenuLoading }] = useDuplicateMenuMutation();
+  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationQuery({ page: 0, limit: 10000 });
 
   const { reset } = methods;
 
@@ -57,8 +38,6 @@ const DuplicateMenuModal = ({
         id: selectedId,
         organization: formData?.organization,
       };
-
-      console.log('payload', payload);
 
       const response = await duplicateMenu(payload).unwrap();
 
@@ -98,15 +77,12 @@ const DuplicateMenuModal = ({
             <DialogTitle>Duplicate Menu</DialogTitle>
           </DialogHeader>
           <div className="mt-4 w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="col-span-2">
                     <RHFCustomDropdown
-                      name="organizations"
+                      name="organization"
                       label="Organization"
                       placeholder="Select Organization"
                       options={organizations?.map((val: any) => ({
@@ -122,18 +98,11 @@ const DuplicateMenuModal = ({
 
               <div className="mt-6 flex items-center justify-center gap-2">
                 {duplicateMenuLoading ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                  >
+                  <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                     <ButtonLoading title="Duplicating" />
                   </Button>
                 ) : (
-                  <Button
-                    type="submit"
-                    className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
-                  >
+                  <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white">
                     Duplicate Menu
                   </Button>
                 )}

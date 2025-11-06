@@ -72,7 +72,7 @@ const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
         {fDate(item?.endDate, item?.promotionType === 'buyMenuItem' ? formatStr.paramCase.date : formatStr.paramCase.dateTime)}
       </TableCell>
 
-      <TableCell className="text-left">{item?.tierLimit || '-'}</TableCell>
+      <TableCell className="text-left">{item?.tierLimit?.title || '-'}</TableCell>
 
       <TableCell className="text-left capitalize">{item?.repeatSettings || '-'}</TableCell>
 
