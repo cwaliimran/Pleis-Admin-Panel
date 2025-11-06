@@ -5,26 +5,27 @@ import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { default as TiersTableRow } from './tiers-table-row';
 import { SamplePageProps } from './types';
+import TiersTableRow from './tiers-table-row';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'name', label: 'Tier Name', align: 'left' },
-  { id: 'bonusPointsPerEuro', label: 'Bonus / €', align: 'left' },
-  { id: 'entryPoints', label: 'Ess. Entry', align: 'left' },
-  { id: 'retainPoints', label: 'Ess. Retain', align: 'left' },
-  { id: 'preferredentryPoints', label: 'Pref. Entry', align: 'left' },
-  { id: 'preferredretainPoints', label: 'Pref. Retain', align: 'left' },
-  { id: 'premierentryPoints', label: 'Prem. Entry', align: 'left' },
-  { id: 'premierretainPoints', label: 'Prem. Retain', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left' },
+  { id: 'entryPoints', label: 'Entry Points', align: 'left' },
+  { id: 'retainPoints', label: 'Retain Points', align: 'left' },
+  // { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -41,8 +42,8 @@ const TiersTable: FC<SamplePageProps> = ({
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
-  // date,
-  // onDateChange = () => {},
+  date,
+  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -50,10 +51,6 @@ const TiersTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
-
-  const { sortedData, sortConfig, handleSort } = useTableSort({
-    data: data || [],
-  });
 
   const methods = useForm({
     defaultValues: {
@@ -76,7 +73,11 @@ const TiersTable: FC<SamplePageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
+              <SheetContent
+                aria-describedby={undefined}
+                side="right"
+                className="dark:bg-secondary p-0"
+              >
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -85,18 +86,21 @@ const TiersTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        {/* <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
+                        <label
+                          htmlFor="sheet-event-start-date"
+                          className="px-1 text-sm font-medium"
+                        >
                           Select Date
-                        </label> */}
+                        </label>
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            // dateFilter={{
-                            //   id: 'organization-date',
-                            //   placeholder: 'Select date',
-                            //   value: date,
-                            //   onChange: onDateChange,
-                            // }}
+                            dateFilter={{
+                              id: 'organization-date',
+                              placeholder: 'Select date',
+                              value: date,
+                              onChange: onDateChange,
+                            }}
                             searchFilter={{
                               placeholder: 'Search tiers...',
                               value: search,
@@ -133,11 +137,20 @@ const TiersTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
+              <TableHeadCustom headLabel={HEAD_LABEL} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item, idx) => (
-                  <TiersTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+              <TableBodyWrapper
+                loading={loading}
+                colSpan={HEAD_LABEL.length}
+                dataLength={data?.length || 0}
+              >
+                {data?.map((item, idx) => (
+                  <TiersTableRow
+                    key={item?._id || idx}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                  />
                 ))}
               </TableBodyWrapper>
             </Table>

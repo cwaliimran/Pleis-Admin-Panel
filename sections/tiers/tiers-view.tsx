@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteTierMutation, useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -10,10 +11,6 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import TiersTable from './tiers-table';
 import TiersModal from './tiers-modal';
-import {
-  useDeleteTierMutation,
-  useGetTiersQuery,
-} from '@/store/Reducer/tiers-api';
 
 const TiersView = () => {
   const openModal = useBoolean();
@@ -40,7 +37,7 @@ const TiersView = () => {
     date: date ? formatDate(date) : undefined,
   });
 
-  console.log('apiData', apiData?.data);
+  console.log('Tiers', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -72,31 +69,24 @@ const TiersView = () => {
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
-
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Tiers not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No tier selected');
+        showError('No tiers selected');
         return;
       }
 
@@ -130,10 +120,7 @@ const TiersView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Tiers
           </Button>
@@ -176,12 +163,7 @@ const TiersView = () => {
         }}
       />
 
-      <TiersModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-      />
+      {openModal.value && <TiersModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
 
       <ConfirmDialog
         open={deleteModal.value}

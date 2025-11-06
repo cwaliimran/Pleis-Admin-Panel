@@ -1,37 +1,30 @@
 'use client';
 
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
+// import CustomBadge from '@/components/ui/custom-badge';
+// import { getStatusVariant } from '@/utils/short-utils';
 
 const TiersTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.image && item?.image !== noImageUrl && item?.image !== noImageUrlDev && item?.image !== noImageUrlDevCap ? (
-            <AvatarImage src={item?.image} alt="Tiers" className="h-full w-full cursor-pointer object-cover" />
-          ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
-          )}
+        <Avatar className="h-8 w-8">
+          <AvatarImage src="https://github.com/shadcn.png" alt={item.photo} className="object-cover" />
         </Avatar>
       </TableCell>
 
       <TableCell className="text-left">{item?.title || '-'}</TableCell>
-
-      <TableCell className="text-left">{item?.bonusPointsPerEuro || '-'}</TableCell>
-
-      <TableCell className="text-left">{item?.essential?.entryPoints || '-'}</TableCell>
-      <TableCell className="text-left">{item?.essential?.retainPoints || '-'}</TableCell>
-
-      <TableCell className="text-left">{item?.preferred?.entryPoints || '-'}</TableCell>
-      <TableCell className="text-left">{item?.preferred?.retainPoints || '-'}</TableCell>
-
-      <TableCell className="text-left">{item?.premier?.entryPoints || '-'}</TableCell>
-      <TableCell className="text-left">{item?.premier?.retainPoints || '-'}</TableCell>
+      <TableCell className="text-left">{item?.entryPoints || '-'}</TableCell>
+      <TableCell className="text-left">{item?.retainPoints || '-'}</TableCell>
+      {/* <TableCell className="text-left">
+        <CustomBadge variant={getStatusVariant(item?.status)}>
+          {item?.status}
+        </CustomBadge>
+      </TableCell> */}
 
       <TableCell className="text-end">
         <div className="flex gap-2">

@@ -12,7 +12,8 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import EventTableRow from './eventTableRow';
+import EventTableRowV2 from './event-table-row';
+// import EventTableRow from './eventTableRow';
 
 const headLabel = [
   { id: 'image', label: 'Image', align: 'left', sortable: false },
@@ -69,7 +70,6 @@ const headLabel = [
   },
   { id: 'actions', label: 'Action', align: 'left', sortable: false },
 ];
-
 interface Meta {
   currentPage: number;
   totalPages: number;
@@ -205,7 +205,7 @@ const EventTable: FC<PageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, index) => (
-                  <EventTableRow key={item?._id || index} item={item} handleDelete={handleDelete} userType={userType} />
+                  <EventTableRowV2 key={item?._id || index} item={item} handleDelete={handleDelete} userType={userType} />
                 ))}
               </TableBodyWrapper>
             </Table>

@@ -16,7 +16,7 @@ interface PageProps {
   userType?: string;
 }
 
-const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
+const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
   const router = useRouter();
 
   const handleNavigateToDetails = () => {
@@ -149,4 +149,4 @@ const EventTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
   );
 };
 
-export default EventTableRow;
+export default EventTableRowV2;

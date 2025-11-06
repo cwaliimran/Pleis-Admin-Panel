@@ -3,22 +3,21 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeleteMenuListMutation, useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import DuplicateMenuModal from './duplicate-menu-modal';
-import MenuItemModal from './menulist-modal';
-import MenuItemTable from './menulist-table';
+import TiersTable from './tiers-table';
+import TiersModal from './tiers-modal';
+import { useDeleteTierMutation, useGetTiersQuery } from '@/store/Reducer/tiers-api';
 
-const MenuListView = () => {
+const TiersView = () => {
   const openModal = useBoolean();
-  const duplicateModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
 
+  // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
@@ -28,15 +27,17 @@ const MenuListView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteMenuList, { isLoading: deleteLoading }] = useDeleteMenuListMutation();
+  const [deleteTier, { isLoading: deleteLoading }] = useDeleteTierMutation();
 
-  const { data: apiData, isLoading } = useGetMenuListQuery({
+  const { data: apiData, isLoading } = useGetTiersQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
+
+  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -68,29 +69,31 @@ const MenuListView = () => {
     openModal.onTrue();
   };
 
-  const handleDuplicate = (id: string) => {
-    setSelectedId(id);
-    duplicateModal.onTrue();
+  // ------------ EDIT FUNCTION FOR STATIC ------------
+  const handleEdit = (id: string) => {
+    console.log('id', id);
+    openModal.onTrue();
+    editModal.onTrue();
   };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (id: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
+  // const handleEdit = (id: string) => {
+  //   const selectedData = localData?.find((item: any) => item?._id === id);
 
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Reward not found');
-    }
-  };
+  //   if (selectedData) {
+  //     setSelectedId(id);
+  //     setSelectedRecord(selectedData);
+  //     editModal.onTrue();
+  //     openModal.onTrue();
+  //   } else {
+  //     showError('Reward not found');
+  //   }
+  // };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No menu item selected');
+        showError('No tier selected');
         return;
       }
 
@@ -103,7 +106,7 @@ const MenuListView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteMenuList(selectedId).unwrap();
+      const response = await deleteTier(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -123,21 +126,20 @@ const MenuListView = () => {
   return (
     <div>
       <div>
-        <div className="mt-3 flex w-full items-center justify-end gap-x-3 md:mt-0">
+        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
-            Create Menu
+            Create Tiers
           </Button>
         </div>
       </div>
 
-      <MenuItemTable
+      <TiersTable
         data={localData}
         meta={meta}
         loading={isLoading}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
-        handleDuplicate={handleDuplicate}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -168,14 +170,12 @@ const MenuListView = () => {
         }}
       />
 
-      <MenuItemModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
-
-      {duplicateModal.value && <DuplicateMenuModal open={duplicateModal.value} onClose={duplicateModal.onFalse} selectedId={selectedId} />}
+      <TiersModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Menu"
-        content="Are you sure you want to delete this menu?"
+        title="Delete Tiers"
+        content="Are you sure you want to delete this tiers?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -187,4 +187,4 @@ const MenuListView = () => {
   );
 };
 
-export default MenuListView;
+export default TiersView;

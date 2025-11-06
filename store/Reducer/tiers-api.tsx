@@ -58,9 +58,4 @@ export const tiersApi = createApi({
   }),
 });
 
-export const {
-  useGetTiersQuery,
-  useAddTierMutation,
-  useUpdateTierMutation,
-  useDeleteTierMutation,
-} = tiersApi;
+export const { useGetTiersQuery, useAddTierMutation, useUpdateTierMutation, useDeleteTierMutation } = tiersApi;
