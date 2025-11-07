@@ -9,7 +9,7 @@ export const menuItemsApi = createApi({
 
   endpoints: (builder) => ({
     getMenuItems: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,6 +17,7 @@ export const menuItemsApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
           url: API_ROUTES.MENU_ITEMS,
           method: 'GET',
@@ -58,9 +59,4 @@ export const menuItemsApi = createApi({
   }),
 });
 
-export const {
-  useGetMenuItemsQuery,
-  useAddMenuItemMutation,
-  useUpdateMenuItemMutation,
-  useDeleteMenuItemMutation,
-} = menuItemsApi;
+export const { useGetMenuItemsQuery, useAddMenuItemMutation, useUpdateMenuItemMutation, useDeleteMenuItemMutation } = menuItemsApi;

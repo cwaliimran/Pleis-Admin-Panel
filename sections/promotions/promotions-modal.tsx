@@ -1,5 +1,6 @@
 'use client';
 
+import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
@@ -7,91 +8,187 @@ import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
+import { useAddPromotionMutation, useUpdatePromotionMutation } from '@/store/Reducer/promotion-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
+import { getErrorMessage } from '@/utils/api';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { fDate, formatStr } from '@/utils/format-time';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-// import * as Yup from 'yup';
+import * as Yup from 'yup';
 
+/* -------------------------------------------------------------------------- */
+/*                                 FORM VALUES                                */
+/* -------------------------------------------------------------------------- */
 type PromotionsFormValues = {
-  photo: any;
+  photo: FileList | string | null;
   title: string;
   description: string;
-  startTime: string;
-  endTime: string;
+  startDate: Date | string;
+  endDate: Date | string;
   tierLimit: string;
-  repeatSettings: string;
-  selectedDays: string[];
-  type: string;
-  // Happy Hour specific fields
-  timeRangeStart: string;
-  timeRangeEnd: string;
-  pointMultiplier: string;
-  repeatOptions: string;
-  // Extra Points for Buying Menu Item fields
+  /* ---- recurring ---- */
+  recurringEnabled: 'true' | 'false';
+  frequency: 'daily' | 'weekly' | 'monthly' | '';
+  interval: number;
+  daysOfWeek: string[];
+  /* ---- type ---- */
+  promotionType: 'happyHour' | 'claimPromotion' | 'buyMenuItem' | 'productSale';
+  /* ---- Happy Hour ---- */
+  timeStart: string;
+  timeEnd: string;
+  pointsMultiplier: string; // string for RHFSelectField
+  /* ---- Buy Menu Item ---- */
   menuItem: string;
-  extraPoints: string;
-  // Product Sale fields
+  extraPoints: number;
+  /* ---- Product Sale ---- */
   saleMenuItem: string;
-  discountedPrice: string;
+  discountedPrice: number;
+  /* ---- Claim Promotion ---- */
+  claimReward: string;
+  claimPoints: number;
 };
 
-const defaultValues = {
+/* -------------------------------------------------------------------------- */
+/*                               DEFAULT VALUES                               */
+/* -------------------------------------------------------------------------- */
+const defaultValues: PromotionsFormValues = {
   photo: null,
   title: '',
   description: '',
-  startTime: '',
-  endTime: '',
+  startDate: '',
+  endDate: '',
   tierLimit: '',
-  repeatSettings: '',
-  selectedDays: [],
-  type: 'happy_hour',
-  timeRangeStart: '',
-  timeRangeEnd: '',
-  pointMultiplier: '',
-  repeatOptions: '',
+  recurringEnabled: 'false',
+  frequency: '',
+  interval: 1,
+  daysOfWeek: [],
+  promotionType: 'happyHour',
+  timeStart: '',
+  timeEnd: '',
+  pointsMultiplier: '1.5',
   menuItem: '',
-  extraPoints: '',
+  extraPoints: 0,
   saleMenuItem: '',
-  discountedPrice: '',
+  discountedPrice: 0,
+  claimReward: '',
+  claimPoints: 0,
 };
 
-// const schema = Yup.object().shape({
-//   photo: Yup.mixed().nullable().required('Photo is required'),
-//   title: Yup.string().required('Title is required'),
-//   description: Yup.string().required('Description is required'),
-//   startTime: Yup.string().required('Start Time is required'),
-//   endTime: Yup.string().required('End Time is required'),
-//   tierLimit: Yup.string().required('Tier Limit is required'),
-//   repeatSettings: Yup.string().required('Repeat Settings is required'),
-//   type: Yup.string().required('Type is required'),
-//   // Fields for different promotion types
-//   timeRangeStart: Yup.string(),
-//   timeRangeEnd: Yup.string(),
-//   pointMultiplier: Yup.string(),
-//   repeatOptions: Yup.string(),
-//   menuItem: Yup.string(),
-//   extraPoints: Yup.string(),
-//   saleMenuItem: Yup.string(),
-//   discountedPrice: Yup.string(),
-// });
+/* -------------------------------------------------------------------------- */
+/*                                 YUP SCHEMA                                 */
+/* -------------------------------------------------------------------------- */
+const schema = Yup.object().shape({
+  photo: Yup.mixed().nullable().required('Promotion image is required'),
+  title: Yup.string().required('Title is required'),
+  description: Yup.string().required('Description is required'),
+  startDate: Yup.date().required('Start date is required').typeError('Invalid date'),
+  endDate: Yup.date().required('End date is required').min(Yup.ref('startDate'), 'End date must be after start date').typeError('Invalid date'),
+  tierLimit: Yup.string().required('Tier limit is required'),
 
-type ChallengeModalProps = {
+  /* ---- Recurring ---- */
+  recurringEnabled: Yup.string().oneOf(['true', 'false']),
+  frequency: Yup.string().when('recurringEnabled', {
+    is: 'true',
+    then: (s) => s.oneOf(['daily', 'weekly', 'monthly']).required('Frequency is required'),
+    otherwise: (s) => s.notRequired(),
+  }),
+  interval: Yup.number()
+    .transform((v, o) => (o === '' ? 1 : v))
+    .when('recurringEnabled', {
+      is: 'true',
+      then: (s) => s.min(1, 'Interval must be ≥ 1').required(),
+      otherwise: (s) => s.notRequired(),
+    }),
+  daysOfWeek: Yup.array()
+    .of(Yup.string())
+    .when(['recurringEnabled', 'frequency'], {
+      is: (enabled: string, freq: string) => enabled === 'true' && (freq === 'weekly' || freq === 'monthly'),
+      then: (s) => s.min(1, 'Select at least one day').required(),
+      otherwise: (s) => s.notRequired(),
+    }),
+
+  promotionType: Yup.string().oneOf(['happyHour', 'claimPromotion', 'buyMenuItem', 'productSale']).required('Promotion type is required'),
+
+  /* ---- Happy Hour ---- */
+  timeStart: Yup.string().when('promotionType', {
+    is: 'happyHour',
+    then: (s) => s.required('Start time is required').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time'),
+  }),
+  timeEnd: Yup.string().when('promotionType', {
+    is: 'happyHour',
+    then: (s) => s.required('End time is required').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time'),
+  }),
+  pointsMultiplier: Yup.string().when('promotionType', {
+    is: 'happyHour',
+    then: (s) => s.required('Multiplier is required'),
+  }),
+
+  /* ---- Buy Menu Item ---- */
+  menuItem: Yup.string().when('promotionType', {
+    is: 'buyMenuItem',
+    then: (s) => s.required('Menu item is required'),
+  }),
+  extraPoints: Yup.number().when('promotionType', {
+    is: 'buyMenuItem',
+    then: (s) => s.min(1, 'Extra points ≥ 1').required('Extra points required'),
+  }),
+
+  /* ---- Product Sale ---- */
+  saleMenuItem: Yup.string().when('promotionType', {
+    is: 'productSale',
+    then: (s) => s.required('Menu item is required'),
+  }),
+  discountedPrice: Yup.number().when('promotionType', {
+    is: 'productSale',
+    then: (s) => s.min(0.01, 'Price > 0').required('Discounted price required'),
+  }),
+
+  /* ---- Claim Promotion ---- */
+  claimReward: Yup.string().when('promotionType', {
+    is: 'claimPromotion',
+    then: (s) => s.required('Reward is required'),
+  }),
+  claimPoints: Yup.number().when('promotionType', {
+    is: 'claimPromotion',
+    then: (s) => s.min(1, 'Points ≥ 1').required('Claim points required'),
+  }),
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                 COMPONENT                                  */
+/* -------------------------------------------------------------------------- */
+type PromotionModalProps = {
   open: boolean;
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
   global?: boolean;
+  selectedCompany?: any;
 };
 
-const PromotionModal = ({
-  open,
-  onClose,
-  isEdit = false,
-  global = false,
-  // selectedData,
-}: ChallengeModalProps) => {
+const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = false, selectedCompany }: PromotionModalProps) => {
+  const [deleting, setDeleting] = useState(false);
+  const { uploadImage, uploading: imageUploading } = useImageUpload();
+
+  const [addPromotion, { isLoading: addLoading }] = useAddPromotionMutation();
+  const [updatePromotion, { isLoading: updateLoading }] = useUpdatePromotionMutation();
+
   const methods = useForm<PromotionsFormValues>({
+    resolver: yupResolver(schema),
     defaultValues,
+    mode: 'onChange',
   });
+
+  const {
+    reset,
+    watch,
+    formState: { isDirty },
+  } = methods;
 
   const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery({
     page: 0,
@@ -101,12 +198,185 @@ const PromotionModal = ({
     date: undefined,
   });
 
-  const { reset, watch } = methods;
-  const selectedType = watch('type');
-  const repeatSettings = watch('repeatSettings');
+  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemsQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
+  });
 
-  const onSubmit = (data: any) => {
-    console.log('data', data);
+  const menuItemOptions =
+    menuItemsData?.data?.map((menuItem: any) => ({
+      label: menuItem?.title,
+      value: menuItem?._id,
+    })) || [];
+
+  const promotionType = watch('promotionType');
+  const recurringEnabled = watch('recurringEnabled') === 'true';
+  const frequency = watch('frequency');
+
+  /* ---------------------------------------------------------------------- */
+  /*                              EDIT PRE-FILL                             */
+  /* ---------------------------------------------------------------------- */
+  useEffect(() => {
+    if (!isEdit || !selectedData) return;
+
+    const {
+      image,
+      title,
+      description,
+      startDate,
+      endDate,
+      tierLimit,
+      recurringDetails,
+      promotionType,
+      pointsMultiplier,
+      menuItem,
+      discountedPrice,
+      reward,
+      claimPoints,
+    } = selectedData;
+
+    const mapped: Partial<PromotionsFormValues> = {
+      photo: image || null,
+      title: title || '',
+      description: description || '',
+      startDate: startDate ? new Date(startDate) : '',
+      endDate: endDate ? new Date(endDate) : '',
+      tierLimit: tierLimit?._id || '',
+      promotionType: promotionType as any,
+
+      // recurring
+      recurringEnabled: !recurringDetails || !recurringDetails.isEnabled ? 'false' : 'true',
+      frequency: recurringDetails?.frequency || '',
+      interval: recurringDetails?.interval || 1,
+      daysOfWeek: recurringDetails?.daysOfWeek || [],
+    };
+
+    // type-specific
+    if (promotionType === 'happyHour') {
+      const startTimeMatch = startDate?.match(/(\d{2}:\d{2})/);
+      const endTimeMatch = endDate?.match(/(\d{2}:\d{2})/);
+      mapped.timeStart = startTimeMatch ? startTimeMatch[1] : '';
+      mapped.timeEnd = endTimeMatch ? endTimeMatch[1] : '';
+      mapped.pointsMultiplier = String(pointsMultiplier || 1.5);
+    }
+    if (promotionType === 'buyMenuItem') {
+      mapped.menuItem = menuItem?._id || '';
+      mapped.extraPoints = selectedData.extraPoints || 0;
+    }
+    if (promotionType === 'productSale') {
+      mapped.saleMenuItem = menuItem?._id || '';
+      mapped.discountedPrice = discountedPrice || 0;
+    }
+    if (promotionType === 'claimPromotion') {
+      mapped.claimReward = reward?._id || reward || '';
+      mapped.claimPoints = claimPoints || 0;
+    }
+
+    reset(mapped as PromotionsFormValues);
+  }, [isEdit, selectedData, reset]);
+
+  /* ---------------------------------------------------------------------- */
+  /*                           PAYLOAD TRANSFORMER                          */
+  /* ---------------------------------------------------------------------- */
+  const transformToPayload = (data: PromotionsFormValues) => {
+    // const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
+    if (!selectedCompany?.value) {
+      showError('Please select a company first');
+      return null;
+    }
+
+    const base: any = {
+      companyOrganizer: selectedCompany.value,
+      title: data.title,
+      description: data.description,
+      startDate: fDate(data.startDate, formatStr.paramCase.db),
+      endDate: fDate(data.endDate, formatStr.paramCase.db),
+      tierLimit: data.tierLimit,
+      promotionType: data.promotionType === 'buyMenuItem' ? 'buyMenuItemPromotion' : data.promotionType,
+    };
+
+    // Recurring: only if enabled
+    if (data.recurringEnabled === 'true') {
+      base.recurringDetails = {
+        isEnabled: true,
+        frequency: data.frequency,
+        interval: data.interval,
+        daysOfWeek: data.daysOfWeek,
+        endType: 'onDate',
+        endDate: fDate(data.endDate, formatStr.paramCase.db),
+      };
+    }
+
+    // Type-specific
+    switch (data.promotionType) {
+      case 'happyHour':
+        base.startDate = fDate(data.startDate, formatStr.paramCase.dateTimeRev);
+        base.endDate = fDate(data.endDate, formatStr.paramCase.dateTimeRev);
+        base.pointsMultiplier = parseFloat(data.pointsMultiplier);
+        break;
+
+      case 'buyMenuItem':
+        base.menuItem = data.menuItem;
+        base.extraPoints = data.extraPoints;
+        break;
+
+      case 'productSale':
+        base.menuItem = data.saleMenuItem;
+        base.discountedPrice = data.discountedPrice;
+        break;
+
+      case 'claimPromotion':
+        base.reward = data.claimReward;
+        base.claimPoints = data.claimPoints;
+        break;
+    }
+
+    return base;
+  };
+
+  /* ---------------------------------------------------------------------- */
+  /*                               SUBMIT HANDLER                           */
+  /* ---------------------------------------------------------------------- */
+  const handleSubmit = async (formData: any) => {
+    let uploadedFileKey: string | null = null;
+
+    try {
+      if (formData.photo instanceof FileList && formData.photo.length > 0) {
+        uploadedFileKey = await uploadImage(formData.photo[0]);
+      }
+
+      const payload = transformToPayload(formData);
+      if (!payload) return;
+
+      if (uploadedFileKey) payload.image = uploadedFileKey;
+
+      if (isEdit && selectedData?._id) {
+        payload.id = selectedData._id;
+        payload.status = selectedData.status;
+      }
+
+      const response = isEdit ? await updatePromotion(payload).unwrap() : await addPromotion(payload).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || (isEdit ? 'Promotion updated' : 'Promotion created'));
+      methods.reset(defaultValues);
+      onClose();
+    } catch (err: any) {
+      if (uploadedFileKey) {
+        setDeleting(true);
+        await deleteFileFromAzure(uploadedFileKey).finally(() => setDeleting(false));
+      }
+      showError(getErrorMessage(err));
+    }
   };
 
   const handleClose = () => {
@@ -114,178 +384,141 @@ const PromotionModal = ({
     onClose();
   };
 
+  /* ---------------------------------------------------------------------- */
+  /*                                 RENDER                                 */
+  /* ---------------------------------------------------------------------- */
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]">
+        <DialogContent
+          aria-describedby={undefined}
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
+        >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Promotion' : 'Create Promotion'}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-7 flex w-full flex-col gap-4">
+                {/* IMAGE */}
                 <RHFUploadAvatar name="photo" label="Promotion Image" />
 
+                {/* TYPE */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
                   <RHFSelectField
-                    name="type"
+                    name="promotionType"
                     label="Promotion Type"
                     placeholder="Select Type"
-                    className="w-full flex-1"
                     options={[
-                      { label: 'Happy Hour', value: 'happy_hour' },
-                      { label: 'Claim Promotions', value: 'claim_promotions' },
-
-                      ...(!global
-                        ? [
-                            {
-                              label: 'Extra Points for Buying Menu Item',
-                              value: 'extra_points_for_buying_menu_item',
-                            },
-                          ]
-                        : []),
-
-                      ...(!global
-                        ? [
-                            {
-                              label: 'Product Sale',
-                              value: 'product_sale',
-                            },
-                          ]
-                        : []),
-
-                      // { label: 'Extra Points for Buying Menu Item', value: 'extra_points_for_buying_menu_item' },
-                      // { label: 'Product Sale', value: 'product_sale' },
+                      { label: 'Happy Hour', value: 'happyHour' },
+                      { label: 'Claim Promotion', value: 'claimPromotion' },
+                      ...(!global ? [{ label: 'Buy Menu Item (Extra Points)', value: 'buyMenuItem' }] : []),
+                      ...(!global ? [{ label: 'Product Sale', value: 'productSale' }] : []),
                     ]}
                   />
                 </div>
 
-                {selectedType === 'happy_hour' && (
-                  <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
-                    <p className="text-xs text-blue-800 dark:text-blue-200">💡 Boost loyalty point earnings during specific time windows.</p>
-                  </div>
-                )}
-
-                {selectedType === 'claim_promotions' && (
-                  <div className="rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
-                    <p className="text-xs text-green-800 dark:text-green-200">
-                      💡 Allow users to claim a global reward or point reward once during the promo.
-                    </p>
-                  </div>
-                )}
-
+                {/* TITLE & TIER */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFTextField name="title" label="Title" placeholder="Enter Title" />
-
-                  {/* <RHFSelectField
-                    name="tierLimit"
-                    label="Tier Limit"
-                    placeholder="Select Tier Limit"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'Bronze', value: 'Bronze' },
-                      { label: 'Silver', value: 'Silver' },
-                      { label: 'Gold', value: 'Gold' },
-                      { label: 'Platinum', value: 'Platinum' },
-                    ]}
-                  /> */}
-
                   {tiersLoading ? (
-                    <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                      <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                    <div className="mt-2 w-full space-y-2">
+                      <Skeleton className="ml-1 h-3 w-20 rounded-4xl border-gray-200 px-5" />
+                      <Skeleton className="h-8 rounded-4xl border-gray-200 px-5" />
                     </div>
                   ) : (
                     <RHFCustomDropdown
                       name="tierLimit"
                       label="Tier Limit"
                       placeholder="Minimum tier required"
-                      options={
-                        tiersData?.data?.map((tier: any) => ({
-                          label: tier?.title,
-                          value: tier?._id,
-                        })) || []
-                      }
+                      options={tiersData?.data?.map((t: any) => ({ label: t.title, value: t._id })) || []}
                       isLoading={tiersLoading}
                       showNone={false}
                     />
                   )}
-
-                  <RHFDate name="startTime" label="Start Date" placeholder="Select Start Date" className="cursor-pointe h-10 w-full" />
-
-                  <RHFDate name="endTime" label="End Date" placeholder="Select End Date" className="cursor-pointe h-10 w-full" />
-
-                  <RHFSelectField
-                    name="repeatSettings"
-                    label="Repeat Settings"
-                    placeholder="Select Repeat Settings"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'None', value: 'None' },
-                      { label: 'Daily', value: 'Daily' },
-                      { label: 'Weekly', value: 'Weekly' },
-                      { label: 'Monthly', value: 'Monthly' },
-                    ]}
-                  />
-
-                  {/* Hide Repeat Interval if Repeat Settings is None */}
-                  <RHFTextField name="repeatInterval" label="Repeat Interval" placeholder="Enter Repeat Interval" type="number" />
                 </div>
 
-                {/* Day selection for Weekly and Monthly repeat settings */}
-                {(repeatSettings === 'Weekly' || repeatSettings === 'Monthly') && (
-                  <div className="grid w-full grid-cols-1 gap-4">
-                    <RHFMultiSelectField
-                      name="selectedDays"
-                      label="Select Days"
-                      placeholder="Choose days of the week"
-                      className="w-full"
-                      options={[
-                        { label: 'Monday', value: 'Monday' },
-                        { label: 'Tuesday', value: 'Tuesday' },
-                        { label: 'Wednesday', value: 'Wednesday' },
-                        { label: 'Thursday', value: 'Thursday' },
-                        { label: 'Friday', value: 'Friday' },
-                        { label: 'Saturday', value: 'Saturday' },
-                        { label: 'Sunday', value: 'Sunday' },
-                      ]}
-                    />
-                  </div>
+                {/* DATES */}
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFDate name="startDate" label="Start Date" placeholder="Select Start Date" />
+                  <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
+                </div>
+
+                {/* RECURRING TOGGLE */}
+                <RHFSelectField
+                  name="recurringEnabled"
+                  label="Recurring"
+                  placeholder="Enable recurring"
+                  options={[
+                    { label: 'No', value: 'false' },
+                    { label: 'Yes', value: 'true' },
+                  ]}
+                />
+
+                {/* RECURRING FIELDS */}
+                {recurringEnabled && (
+                  <>
+                    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                      <RHFSelectField
+                        name="frequency"
+                        label="Frequency"
+                        placeholder="Select Frequency"
+                        options={[
+                          { label: 'Daily', value: 'daily' },
+                          { label: 'Weekly', value: 'weekly' },
+                          { label: 'Monthly', value: 'monthly' },
+                        ]}
+                      />
+                      <RHFTextField name="interval" label="Interval" placeholder="e.g. 1" type="number" />
+                    </div>
+
+                    {(frequency === 'weekly' || frequency === 'monthly') && (
+                      <RHFMultiSelectField
+                        name="daysOfWeek"
+                        label="Days"
+                        placeholder="Select days"
+                        options={[
+                          { label: 'Mon', value: 'mon' },
+                          { label: 'Tue', value: 'tue' },
+                          { label: 'Wed', value: 'wed' },
+                          { label: 'Thu', value: 'thu' },
+                          { label: 'Fri', value: 'fri' },
+                          { label: 'Sat', value: 'sat' },
+                          { label: 'Sun', value: 'sun' },
+                        ]}
+                      />
+                    )}
+                  </>
                 )}
 
-                {selectedType === 'claim_promotions' && (
+                {/* CLAIM PROMOTION FIELDS */}
+                {promotionType === 'claimPromotion' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFSelectField
+                    <RHFCustomDropdown
                       name="claimReward"
                       label="Claim Reward"
                       placeholder="Select Reward"
-                      className="w-full flex-1"
-                      options={[
-                        { label: 'Cappuccino', value: 'cappuccino' },
-                        { label: 'VIP Event Entry', value: 'vip_event_entry' },
-                        { label: 'Branded T-Shirt', value: 'branded_tshirt' },
-                      ]}
+                      options={menuItemOptions}
+                      isLoading={menuItemsLoading}
+                      showNone={false}
                     />
-
-                    <RHFTextField name="claimPoints" label="Points Required to Claim" placeholder="Enter Points Required" />
+                    <RHFTextField name="claimPoints" label="Points Required" placeholder="0" type="number" />
                   </div>
                 )}
 
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
-                  <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
-                </div>
+                {/* DESCRIPTION */}
+                <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
 
-                {/* Dynamic fields based on promotion type */}
-                {selectedType === 'happy_hour' && (
+                {/* HAPPY HOUR */}
+                {promotionType === 'happyHour' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFTextField name="timeRangeStart" label="Promotion Time Start" placeholder="Enter Start Time (e.g. 17:00)" type="time" />
-                    <RHFTextField name="timeRangeEnd" label="Promotion Time End" placeholder="Enter End Time (e.g. 20:00)" type="time" />
+                    <RHFTextField name="timeStart" label="Promotion Time Start" placeholder="17:00" type="time" />
+                    <RHFTextField name="timeEnd" label="Promotion Time End" placeholder="20:00" type="time" />
                     <RHFSelectField
-                      name="pointMultiplier"
-                      label="Point Multiplier"
-                      placeholder="Select Multiplier"
-                      className="w-full flex-1"
+                      name="pointsMultiplier"
+                      label="Points Multiplier"
+                      placeholder="Select"
                       options={[
                         { label: '1.1x', value: '1.1' },
                         { label: '1.5x', value: '1.5' },
@@ -293,70 +526,60 @@ const PromotionModal = ({
                         { label: '3x', value: '3' },
                       ]}
                     />
-
-                    {/* <RHFSelectField
-                      name="repeatOptions"
-                      label="Repeat Options"
-                      placeholder="Select Repeat Options"
-                      className="w-full flex-1"
-                      options={[
-                        { label: 'Daily', value: 'Daily' },
-                        { label: 'Monday', value: 'Monday' },
-                        { label: 'Tuesday', value: 'Tuesday' },
-                        { label: 'Wednesday', value: 'Wednesday' },
-                        { label: 'Thursday', value: 'Thursday' },
-                        { label: 'Friday', value: 'Friday' },
-                        { label: 'Saturday', value: 'Saturday' },
-                        { label: 'Sunday', value: 'Sunday' },
-                      ]}
-                    /> */}
                   </div>
                 )}
 
-                {selectedType === 'extra_points_for_buying_menu_item' && (
+                {/* BUY MENU ITEM */}
+                {promotionType === 'buyMenuItem' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFSelectField
+                    <RHFCustomDropdown
                       name="menuItem"
                       label="Menu Item"
                       placeholder="Select Menu Item"
-                      className="w-full flex-1"
-                      options={[
-                        { label: 'Coffee', value: 'Coffee' },
-                        { label: 'Tea', value: 'Tea' },
-                        { label: 'Sandwich', value: 'Sandwich' },
-                        { label: 'Pizza', value: 'Pizza' },
-                        { label: 'Burger', value: 'Burger' },
-                      ]}
+                      options={menuItemOptions}
+                      isLoading={menuItemsLoading}
+                      showNone={false}
                     />
-                    <RHFTextField name="extraPoints" label="Extra Points" placeholder="Enter Extra Points" type="number" />
+                    <RHFTextField name="extraPoints" label="Extra Points" placeholder="0" type="number" />
                   </div>
                 )}
 
-                {selectedType === 'product_sale' && (
+                {/* PRODUCT SALE */}
+                {promotionType === 'productSale' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFSelectField
+                    <RHFCustomDropdown
                       name="saleMenuItem"
                       label="Menu Item"
-                      placeholder="Select Menu Item"
-                      className="w-full flex-1"
-                      options={[
-                        { label: 'Coffee', value: 'Coffee' },
-                        { label: 'Tea', value: 'Tea' },
-                        { label: 'Sandwich', value: 'Sandwich' },
-                        { label: 'Pizza', value: 'Pizza' },
-                        { label: 'Burger', value: 'Burger' },
-                      ]}
+                      placeholder="Select Item"
+                      options={menuItemOptions}
+                      isLoading={menuItemsLoading}
+                      showNone={false}
                     />
-                    <RHFTextField name="discountedPrice" label="Discounted Price" placeholder="Enter Discounted Price" type="number" step="0.01" />
+                    <RHFTextField name="discountedPrice" label="Discounted Price" placeholder="0.00" type="number" step="0.01" />
                   </div>
                 )}
               </div>
 
-              <div className="mt-4 flex items-center justify-end gap-2">
-                <div className="flex w-full items-center justify-center">
-                  <Button type="submit" className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white">
-                    Save
+              {/* SUBMIT */}
+              <div className="mt-5 flex items-center justify-end gap-2">
+                <div className="flex w-full items-center justify-center gap-3">
+                  <Button type="button" variant="outline" onClick={handleClose} className="px-7">
+                    Cancel
                   </Button>
+
+                  {addLoading || updateLoading || imageUploading || deleting ? (
+                    <Button disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
+                      <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
+                      disabled={isEdit ? !isDirty : false}
+                    >
+                      {isEdit ? 'Update Promotion' : 'Create Promotion'}
+                    </Button>
+                  )}
                 </div>
               </div>
             </FormProvider>

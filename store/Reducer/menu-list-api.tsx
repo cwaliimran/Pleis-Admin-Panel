@@ -9,7 +9,7 @@ export const menuListApi = createApi({
 
   endpoints: (builder) => ({
     getMenuList: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,6 +17,7 @@ export const menuListApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
           url: API_ROUTES.MENU,
           method: 'GET',
@@ -67,10 +68,5 @@ export const menuListApi = createApi({
   }),
 });
 
-export const {
-  useGetMenuListQuery,
-  useAddMenuListMutation,
-  useDuplicateMenuMutation,
-  useUpdateMenuListMutation,
-  useDeleteMenuListMutation,
-} = menuListApi;
+export const { useGetMenuListQuery, useAddMenuListMutation, useDuplicateMenuMutation, useUpdateMenuListMutation, useDeleteMenuListMutation } =
+  menuListApi;

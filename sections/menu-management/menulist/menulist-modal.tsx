@@ -29,7 +29,7 @@ const schema = Yup.object().shape({
   status: Yup.string().required('Status is required'),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItemModalProps) => {
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCompany }: MenuItemModalProps) => {
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
     defaultValues,
@@ -56,7 +56,11 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
     }
   }, [open, isEdit, selectedData, reset]);
 
-  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationQuery({ page: 0, limit: 10000 });
+  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationQuery({
+    page: 0,
+    limit: 10000,
+    companyOrganizer: selectedCompany?.value || undefined,
+  });
 
   const [addMenuList, { isLoading: addMenuListLoading }] = useAddMenuListMutation();
 

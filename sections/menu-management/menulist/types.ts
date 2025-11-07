@@ -46,4 +46,5 @@ export type MenuItemModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
+  selectedCompany?: any;
 };

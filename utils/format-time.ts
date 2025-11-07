@@ -20,6 +20,7 @@ export const formatStr = {
   },
   paramCase: {
     dateTime: 'DD-MM-YYYY h:mm a', // 17-04-2022 12:00 am
+    dateTimeRev: 'YYYY-MM-DD h:mm a', // 17-04-2022 12:00 am
     date: 'DD-MM-YYYY', // 17-04-2022
     db: 'YYYY-MM-DD', // 2022-04-17
   },
