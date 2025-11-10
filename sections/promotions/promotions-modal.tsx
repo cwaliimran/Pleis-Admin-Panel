@@ -276,7 +276,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       description: description || '',
       startDate: startDate ? new Date(startDate) : '',
       endDate: endDate ? new Date(endDate) : '',
-      tierLimit: tierLimit || '',
+      tierLimit: tierLimit?._id || '',
       promotionType: promotionType as any,
 
       // recurring
