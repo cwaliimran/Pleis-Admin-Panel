@@ -235,7 +235,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     }
 
     const basePayload: any = {
-      companyOrganizer: selectedCompany,
+      companyOrganizer: selectedCompany.value || '',
       title: data.title,
       taskType: data.taskType,
       taskValue: data.taskValue,

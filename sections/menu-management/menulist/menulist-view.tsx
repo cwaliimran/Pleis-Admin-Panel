@@ -30,12 +30,15 @@ const MenuListView = () => {
 
   const [deleteMenuList, { isLoading: deleteLoading }] = useDeleteMenuListMutation();
 
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
   const { data: apiData, isLoading } = useGetMenuListQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -168,7 +171,15 @@ const MenuListView = () => {
         }}
       />
 
-      <MenuItemModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
+      {openModal.value && (
+        <MenuItemModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedCompany={selectedCompany}
+          selectedData={selectedRecord}
+        />
+      )}
 
       {duplicateModal.value && <DuplicateMenuModal open={duplicateModal.value} onClose={duplicateModal.onFalse} selectedId={selectedId} />}
 

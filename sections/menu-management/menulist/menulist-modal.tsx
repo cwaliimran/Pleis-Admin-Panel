@@ -6,11 +6,11 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useAddMenuListMutation, useUpdateMenuListMutation } from '@/store/Reducer/menu-list-api';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
@@ -29,7 +29,7 @@ const schema = Yup.object().shape({
   status: Yup.string().required('Status is required'),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItemModalProps) => {
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCompany }: MenuItemModalProps) => {
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
     defaultValues,
@@ -56,7 +56,9 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
     }
   }, [open, isEdit, selectedData, reset]);
 
-  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationQuery({ page: 0, limit: 10000 });
+  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationByCompanyQuery({
+    companyOrganizer: selectedCompany?.value || undefined,
+  });
 
   const [addMenuList, { isLoading: addMenuListLoading }] = useAddMenuListMutation();
 
@@ -112,10 +114,11 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Menu' : 'Create Menu'}</DialogTitle>
           </DialogHeader>
+
           <div className="mt-4 w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid w-full grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-2">
                   <div className={`${isEdit ? 'col-span-1' : 'col-span-2'}`}>
                     <RHFTextField name="title" label="Name" placeholder="Enter Name" />
                   </div>
@@ -136,8 +139,8 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
                   <div className="col-span-2">
                     <RHFCustomDropdown
                       name="organization"
-                      label="Organizations"
-                      placeholder="Select Organizations"
+                      label="Organization"
+                      placeholder="Select Organization"
                       options={organizations?.map((val: any) => ({
                         value: val?._id,
                         label: val?.basicInfo?.name,

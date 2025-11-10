@@ -5,7 +5,7 @@ import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import { extractAddress } from '@/utils/format-google-address';
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-const googleMapsLibraries: ('places')[] = ['places'];
+const googleMapsLibraries: 'places'[] = ['places'];
 
 interface GoogleLocationInputProps {
   name: string;
@@ -13,11 +13,7 @@ interface GoogleLocationInputProps {
   label: string;
 }
 
-const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
-  name,
-  label,
-  showLabel = true,
-}) => {
+const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({ name, label, showLabel = true }) => {
   const { control, setValue } = useFormContext();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
@@ -40,7 +36,8 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
         city: address.city || '',
         postalCode: address.postal_code || '',
         country: address.country || '',
-        coordinates: [address.latitude || 0, address.longitude || 0],
+        // coordinates: [address.latitude || 0, address.longitude || 0],
+        coordinates: [address.longitude || 0, address.latitude || 0],
       };
       setValue(name, locationPayload, { shouldValidate: true });
     }
@@ -49,10 +46,7 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
   return (
     <div className="w-full">
       {showLabel && (
-        <label
-          htmlFor={`${name}-input`}
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
+        <label htmlFor={`${name}-input`} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
         </label>
       )}
@@ -70,9 +64,7 @@ const GoogleLocationInput: React.FC<GoogleLocationInputProps> = ({
                 className={`${
                   showLabel ? 'mt-2' : 'mt-0'
                 } h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400`}
-                onChange={(e) =>
-                  field.onChange({ ...field.value, address: e.target.value })
-                }
+                onChange={(e) => field.onChange({ ...field.value, address: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
               />
             </Autocomplete>

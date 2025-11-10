@@ -9,7 +9,7 @@ export const itemsCategoryApi = createApi({
 
   endpoints: (builder) => ({
     getItemsCategory: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,8 +17,9 @@ export const itemsCategoryApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.MENU_CATEGORIES,
+          url: API_ROUTES.ADMIN_MENU_CATEGORIES,
           method: 'GET',
           params,
         };
@@ -32,7 +33,7 @@ export const itemsCategoryApi = createApi({
 
     addItemsCategory: builder.mutation({
       query: (newItemsCategory) => ({
-        url: API_ROUTES.MENU_CATEGORIES,
+        url: API_ROUTES.ADMIN_MENU_CATEGORIES,
         method: 'POST',
         body: newItemsCategory,
       }),
@@ -41,7 +42,7 @@ export const itemsCategoryApi = createApi({
 
     updateItemsCategory: builder.mutation({
       query: ({ id, ...updatedItemsCategory }) => ({
-        url: API_ROUTES.MENU_CATEGORIES_BY_ID(id),
+        url: API_ROUTES.ADMIN_MENU_CATEGORIES_BY_ID(id),
         method: 'PUT',
         body: updatedItemsCategory,
       }),
@@ -50,7 +51,7 @@ export const itemsCategoryApi = createApi({
 
     deleteItemsCategory: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.MENU_CATEGORIES_BY_ID(id),
+        url: API_ROUTES.ADMIN_MENU_CATEGORIES_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['items-category'],
@@ -58,9 +59,5 @@ export const itemsCategoryApi = createApi({
   }),
 });
 
-export const {
-  useGetItemsCategoryQuery,
-  useAddItemsCategoryMutation,
-  useUpdateItemsCategoryMutation,
-  useDeleteItemsCategoryMutation,
-} = itemsCategoryApi;
+export const { useGetItemsCategoryQuery, useAddItemsCategoryMutation, useUpdateItemsCategoryMutation, useDeleteItemsCategoryMutation } =
+  itemsCategoryApi;

@@ -4,14 +4,7 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 
 import { extractAddress } from '@/utils/format-google-address';
@@ -63,10 +56,7 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
       state: Yup.string().required('State/Province is required'),
       country: Yup.string().required('Country is required'),
       postalCode: Yup.string().nullable(),
-      coordinates: Yup.array()
-        .of(Yup.number())
-        .length(2, 'Coordinates must be [lat, lng]')
-        .required(),
+      coordinates: Yup.array().of(Yup.number()).length(2, 'Coordinates must be [lat, lng]').required(),
     }),
   });
 
@@ -137,7 +127,8 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
         city: address.city || '',
         postalCode: address.postal_code || '',
         country: address.country || '',
-        coordinates: [address.latitude, address.longitude],
+        // coordinates: [address.latitude, address.longitude],
+        coordinates: [address.longitude || 0, address.latitude || 0],
       };
 
       setValue('location', locationPayload, { shouldValidate: true });
@@ -150,11 +141,7 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
       let imageFileString = undefined;
 
       // Handle floor plan upload
-      if (
-        formData.floorPlan &&
-        (formData.floorPlan instanceof FileList ||
-          Array.isArray(formData.floorPlan))
-      ) {
+      if (formData.floorPlan && (formData.floorPlan instanceof FileList || Array.isArray(formData.floorPlan))) {
         const file = formData.floorPlan[0];
         if (file) {
           setImageUploading(true);
@@ -230,12 +217,8 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
           }}
         >
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">
-              Create Venue
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              Fill in the details below to create a new venue.
-            </DialogDescription>
+            <DialogTitle className="text-lg font-semibold">Create Venue</DialogTitle>
+            <DialogDescription className="sr-only">Fill in the details below to create a new venue.</DialogDescription>
           </DialogHeader>
 
           <FormProvider methods={methods} onSubmit={onSubmit}>
@@ -244,9 +227,7 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
                 name="title"
                 label="Venue Name"
                 placeholder="Enter Venue Name"
-                className={
-                  methods.formState.errors.title ? 'border-red-400' : ''
-                }
+                className={methods.formState.errors.title ? 'border-red-400' : ''}
               />
 
               {/* <RHFSelectScrollable
@@ -313,9 +294,7 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
               </div>
 
               <div className="w-full">
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Map Preview
-                </label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Map Preview</label>
                 <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
                   {watch('location.coordinates')?.length === 2 ? (
                     <iframe
@@ -325,38 +304,22 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
                       referrerPolicy="no-referrer-when-downgrade"
                     ></iframe>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400">
-                      No location selected
-                    </div>
+                    <div className="flex h-full w-full items-center justify-center text-gray-400">No location selected</div>
                   )}
                 </div>
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                  disabled={isLoading}
-                  className="mr-2"
-                >
+                <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="mr-2">
                   Cancel
                 </Button>
 
                 {isLoading ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
-                  >
+                  <Button type="button" disabled className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800">
                     <ButtonLoading title="Creating" />
                   </Button>
                 ) : (
-                  <Button
-                    type="submit"
-                    className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
-                    disabled={!methods.formState.isValid}
-                  >
+                  <Button type="submit" className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800" disabled={!methods.formState.isValid}>
                     Add Venue
                   </Button>
                 )}

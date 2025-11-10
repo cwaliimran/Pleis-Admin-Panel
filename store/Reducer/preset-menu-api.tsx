@@ -18,7 +18,7 @@ export const presetMenuApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.PRESET,
+          url: API_ROUTES.ADMIN_PRESET,
           method: 'GET',
           params,
         };
@@ -32,7 +32,7 @@ export const presetMenuApi = createApi({
 
     addPresetMenu: builder.mutation({
       query: (newPresetMenu) => ({
-        url: API_ROUTES.PRESET,
+        url: API_ROUTES.ADMIN_PRESET,
         method: 'POST',
         body: newPresetMenu,
       }),
@@ -41,7 +41,7 @@ export const presetMenuApi = createApi({
 
     updatePresetMenu: builder.mutation({
       query: ({ id, ...updatedPresetMenu }) => ({
-        url: API_ROUTES.PRESET_BY_ID(id),
+        url: API_ROUTES.ADMIN_PRESET_BY_ID(id),
         method: 'PUT',
         body: updatedPresetMenu,
       }),
@@ -50,7 +50,7 @@ export const presetMenuApi = createApi({
 
     deletePresetMenu: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.PRESET_BY_ID(id),
+        url: API_ROUTES.ADMIN_PRESET_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['preset-menu'],
@@ -58,9 +58,4 @@ export const presetMenuApi = createApi({
   }),
 });
 
-export const {
-  useGetPresetMenuQuery,
-  useAddPresetMenuMutation,
-  useUpdatePresetMenuMutation,
-  useDeletePresetMenuMutation,
-} = presetMenuApi;
+export const { useGetPresetMenuQuery, useAddPresetMenuMutation, useUpdatePresetMenuMutation, useDeletePresetMenuMutation } = presetMenuApi;

@@ -32,6 +32,8 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
   const [deleteReward, { isLoading: deleteLoading }] = useDeleteRewardMutation();
 
   const { data: apiData, isLoading } = useGetRewardsQuery({
@@ -40,6 +42,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);

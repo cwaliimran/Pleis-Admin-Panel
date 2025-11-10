@@ -1,26 +1,51 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
-import { customFetchBaseQuery } from '../customFetchBaseQuery';
+import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
 export const organizationApi = createApi({
   reducerPath: 'organizationApi',
-  baseQuery: customFetchBaseQuery(),
+  baseQuery: customFetchBaseQueryWithRoleRouting(),
   tagTypes: ['organization'],
 
   endpoints: (builder) => ({
     getOrganization: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
           page: page + 1,
           limit,
         };
+
         if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+
         return {
-          url: API_ROUTES.ORGANIZATION,
+          url: '',
           method: 'GET',
           params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_ORGANIZATION,
+            organizerRoute: API_ROUTES.ORGANIZATION,
+            adminOnlyParams: ['companyOrganizer'], // Only admins can use this param
+          },
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['organization'],
+    }),
+
+    getOrganizationByCompany: builder.query({
+      query: ({ companyOrganizer }) => {
+        return {
+          url: API_ROUTES.ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER(companyOrganizer),
+          method: 'GET',
+          roleBasedRouting: {
+            adminOnly: true, // Only admins can access this endpoint
+          },
         };
       },
       transformResponse: (res) => ({
@@ -32,17 +57,25 @@ export const organizationApi = createApi({
 
     addOrganization: builder.mutation({
       query: (newOrganization) => ({
-        url: API_ROUTES.ORGANIZATION,
+        url: '',
         method: 'POST',
         body: newOrganization,
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_ORGANIZATION,
+          organizerRoute: API_ROUTES.ORGANIZATION,
+        },
       }),
       invalidatesTags: ['organization'],
     }),
 
     getOrganizationById: builder.query({
       query: ({ id }) => ({
-        url: API_ROUTES.ORGANIZATION_BY_ID(id),
+        url: '',
         method: 'GET',
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_ORGANIZATION_BY_ID(id),
+          organizerRoute: API_ROUTES.ORGANIZATION_BY_ID(id),
+        },
       }),
       transformResponse: (res) => ({
         data: res.data,
@@ -52,17 +85,25 @@ export const organizationApi = createApi({
 
     updateOrganization: builder.mutation({
       query: ({ id, ...updatedOrganization }) => ({
-        url: API_ROUTES.ORGANIZATION_BY_ID(id),
+        url: '',
         method: 'PUT',
         body: updatedOrganization,
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_ORGANIZATION_BY_ID(id),
+          organizerRoute: API_ROUTES.ORGANIZATION_BY_ID(id),
+        },
       }),
       invalidatesTags: ['organization'],
     }),
 
     deleteOrganization: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.ORGANIZATION_BY_ID(id),
+        url: '',
         method: 'DELETE',
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_ORGANIZATION_BY_ID(id),
+          organizerRoute: API_ROUTES.ORGANIZATION_BY_ID(id),
+        },
       }),
       invalidatesTags: ['organization'],
     }),
@@ -71,6 +112,7 @@ export const organizationApi = createApi({
 
 export const {
   useGetOrganizationQuery,
+  useGetOrganizationByCompanyQuery,
   useAddOrganizationMutation,
   useGetOrganizationByIdQuery,
   useUpdateOrganizationMutation,

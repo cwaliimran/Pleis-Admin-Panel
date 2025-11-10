@@ -271,7 +271,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
         // companyOrganizer: formData.companyOrganizer || '',
-        companyOrganizer: selectedCompany,
+        companyOrganizer: selectedCompany?.value || '',
       };
 
       // Add main image if uploaded

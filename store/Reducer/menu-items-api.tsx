@@ -9,7 +9,7 @@ export const menuItemsApi = createApi({
 
   endpoints: (builder) => ({
     getMenuItems: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,8 +17,9 @@ export const menuItemsApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.MENU_ITEMS,
+          url: API_ROUTES.ADMIN_MENU_ITEMS,
           method: 'GET',
           params,
         };
@@ -32,7 +33,7 @@ export const menuItemsApi = createApi({
 
     addMenuItem: builder.mutation({
       query: (newMenuItem) => ({
-        url: API_ROUTES.MENU_ITEMS,
+        url: API_ROUTES.ADMIN_MENU_ITEMS,
         method: 'POST',
         body: newMenuItem,
       }),
@@ -41,7 +42,7 @@ export const menuItemsApi = createApi({
 
     updateMenuItem: builder.mutation({
       query: ({ id, ...updatedMenuItem }) => ({
-        url: API_ROUTES.MENU_ITEMS_BY_ID(id),
+        url: API_ROUTES.ADMIN_MENU_ITEMS_BY_ID(id),
         method: 'PUT',
         body: updatedMenuItem,
       }),
@@ -50,7 +51,7 @@ export const menuItemsApi = createApi({
 
     deleteMenuItem: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.MENU_ITEMS_BY_ID(id),
+        url: API_ROUTES.ADMIN_MENU_ITEMS_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['menu-item'],
@@ -58,9 +59,4 @@ export const menuItemsApi = createApi({
   }),
 });
 
-export const {
-  useGetMenuItemsQuery,
-  useAddMenuItemMutation,
-  useUpdateMenuItemMutation,
-  useDeleteMenuItemMutation,
-} = menuItemsApi;
+export const { useGetMenuItemsQuery, useAddMenuItemMutation, useUpdateMenuItemMutation, useDeleteMenuItemMutation } = menuItemsApi;

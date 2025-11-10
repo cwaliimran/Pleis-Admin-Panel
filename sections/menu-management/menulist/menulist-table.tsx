@@ -132,7 +132,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, description...',
+                              placeholder: 'Search name, organization...',
                               value: search,
                               onChange: onSearch,
                             }}

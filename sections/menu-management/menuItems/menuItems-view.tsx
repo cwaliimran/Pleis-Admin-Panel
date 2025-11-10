@@ -29,12 +29,15 @@ const MenuItemView = () => {
 
   const [deleteMenuItem, { isLoading: deleteLoading }] = useDeleteMenuItemMutation();
 
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
   const { data: apiData, isLoading } = useGetMenuItemsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
   });
 
   console.log('apiData', apiData?.data);

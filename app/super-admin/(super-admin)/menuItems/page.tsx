@@ -1,4 +1,5 @@
 import Header from '@/app/common/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import MenuItemView from '@/sections/menu-management/menuItems/menuItems-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <MenuItemView />
+      <CompanyGuard>
+        <MenuItemView />
+      </CompanyGuard>
     </div>
   );
 };

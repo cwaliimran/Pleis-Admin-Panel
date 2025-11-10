@@ -64,10 +64,10 @@ export const useEventForm = (userType: string) => {
     watch,
     setValue,
     reset,
-    // formState: { errors },
+    formState: { errors },
   } = methods;
 
-  // console.log('errors', errors);
+  console.log('errors', errors);
 
   const { mediaUrl, mediaType, venue, categories, partnerOrganizers, recurring, recurringDays, recurringEnd, organization } = watch();
 
@@ -171,7 +171,7 @@ export const useEventForm = (userType: string) => {
       const payload: any = {
         basicInfo: {
           media: {
-            type: data.mediaType,
+            type: 'image',
             name: imageFileString,
           },
           title: data.name,
@@ -201,11 +201,13 @@ export const useEventForm = (userType: string) => {
           interval: data.recurringInterval,
           daysOfWeek: data.recurringDays.map((day: string) => day.substring(0, 3).toLowerCase()),
           endType: data.recurringEnd,
+          // endType: fDate(data.endDate, formatStr.paramCase.db),
         };
 
         // Add endDate or occurrences based on endType
         if (data.recurringEnd === 'onDate' && data.recurringEndDate) {
-          payload.schedule.recurringDetails.endDate = data.recurringEndDate;
+          // payload.schedule.recurringDetails.endDate = data.recurringEndDate;
+          payload.schedule.recurringDetails.endDate = fDate(data.recurringEndDate, formatStr.paramCase.db);
         } else if (data.recurringEnd === 'afterOccurrences' && data.recurringEndCount) {
           payload.schedule.recurringDetails.occurrences = data.recurringEndCount;
         }

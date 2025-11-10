@@ -25,13 +25,13 @@ import {
   useAddPinnedContentMutation,
   useUpdatePinnedContentMutation,
 } from '@/store/Reducer/pinned-content-api';
-import { useGetVenuesQuery } from '@/store/Reducer/sample';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
 
 type Option = { value: string; label: string };
 

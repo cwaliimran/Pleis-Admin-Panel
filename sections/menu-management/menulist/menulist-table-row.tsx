@@ -54,7 +54,6 @@ const MenuItemTableRow: FC<TableRowProps> = ({
       </TableCell>
 
       <TableCell className="text-left capitalize">
-        {/* {item?.venue?.title || '-'} */}
         {item?.organization?.basicInfo?.name || '-'}
       </TableCell>
 

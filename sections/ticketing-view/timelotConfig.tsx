@@ -1,13 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Calendar, Plus, Trash2 } from 'lucide-react';
 import * as React from 'react';
 
@@ -49,30 +43,16 @@ interface TimeSlotConfig {
 //   { label: '8 hours', value: '480' },
 // ];
 
-const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
-  open,
-  onClose,
-  onSave,
-}) => {
+const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose, onSave }) => {
   const [showDate, setShowDate] = React.useState<boolean>(false);
   const [selectedDate, setSelectedDate] = React.useState<string>('');
 
   const [slotDuration, setSlotDuration] = React.useState('120');
-  const [operatingDays, setOperatingDays] = React.useState<string[]>([
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-  ]);
-  const [timeSlots, setTimeSlots] = React.useState<TimeSlot[]>([
-    { id: '1', startTime: '09:00', endTime: '11:00' },
-  ]);
+  const [operatingDays, setOperatingDays] = React.useState<string[]>(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
+  const [timeSlots, setTimeSlots] = React.useState<TimeSlot[]>([{ id: '1', startTime: '09:00', endTime: '11:00' }]);
 
   const toggleDay = (day: string) => {
-    setOperatingDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
+    setOperatingDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]));
   };
 
   console.log('toggleDay', toggleDay);
@@ -103,16 +83,8 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
     setTimeSlots(timeSlots.filter((slot) => slot.id !== id));
   };
 
-  const updateTimeSlot = (
-    id: string,
-    field: 'startTime' | 'endTime',
-    value: string
-  ) => {
-    setTimeSlots(
-      timeSlots.map((slot) =>
-        slot.id === id ? { ...slot, [field]: value } : slot
-      )
-    );
+  const updateTimeSlot = (id: string, field: 'startTime' | 'endTime', value: string) => {
+    setTimeSlots(timeSlots.map((slot) => (slot.id === id ? { ...slot, [field]: value } : slot)));
   };
 
   // const autoGenerateSlots = () => {
@@ -200,9 +172,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
           className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col overflow-y-auto md:!max-w-[800px]"
         >
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              Configure Time Slots
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold">Configure Time Slots</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6">
@@ -227,16 +197,28 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
               </div>
             </div> */}
 
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Select Date
-              </label>
-              <div className="flex flex-1 items-center gap-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Select Date</label>
+                <div className="flex flex-1 items-center gap-3">
+                  <input
+                    type="date"
+                    title="select date"
+                    // value={selectedDate}
+                    // onChange={(e) => handleSelectDate(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">Quantity</label>
                 <input
-                  type="date"
-                  title="select date"
-                  // value={selectedDate}
-                  // onChange={(e) => handleSelectDate(e.target.value)}
+                  type="number"
+                  title="quantity"
+                  placeholder="Enter quantity"
+                  min={1}
+                  // value={1}
                   className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                 />
               </div>
@@ -285,18 +267,14 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
                     key={slot.id}
                     className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
                   >
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                      #{index + 1}
-                    </span>
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">#{index + 1}</span>
 
                     <div className="relative flex-1">
                       <input
                         title="time"
                         type="time"
                         value={slot.startTime}
-                        onChange={(e) =>
-                          updateTimeSlot(slot.id, 'startTime', e.target.value)
-                        }
+                        onChange={(e) => updateTimeSlot(slot.id, 'startTime', e.target.value)}
                         className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200"
                       />
                       {/* <Clock
@@ -312,9 +290,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
                         title="time"
                         type="time"
                         value={slot.endTime}
-                        onChange={(e) =>
-                          updateTimeSlot(slot.id, 'endTime', e.target.value)
-                        }
+                        onChange={(e) => updateTimeSlot(slot.id, 'endTime', e.target.value)}
                         className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-200"
                       />
                       {/* <Clock
@@ -339,8 +315,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
 
             {selectedDate && (
               <div className="rounded-lg bg-green-50 p-3 text-sm text-green-800 dark:bg-blue-600 dark:text-white">
-                Time slots copied to date:{' '}
-                <span className="font-semibold">{selectedDate}</span>
+                Time slots copied to date: <span className="font-semibold">{selectedDate}</span>
               </div>
             )}
 
@@ -357,11 +332,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
                   />
                 </div>
               ) : (
-                <Button
-                  type="button"
-                  onClick={() => setShowDate(true)}
-                  className="h-11 flex-1 bg-blue-600 text-white hover:bg-blue-700"
-                >
+                <Button type="button" onClick={() => setShowDate(true)} className="h-11 flex-1 bg-blue-600 text-white hover:bg-blue-700">
                   <span>
                     <Calendar size={16} />
                   </span>
@@ -369,11 +340,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({
                 </Button>
               )}
 
-              <Button
-                type="button"
-                onClick={handleSave}
-                className="h-11 flex-1 bg-blue-600 text-white hover:bg-blue-700"
-              >
+              <Button type="button" onClick={handleSave} className="h-11 flex-1 bg-blue-600 text-white hover:bg-blue-700">
                 Save
               </Button>
             </div>

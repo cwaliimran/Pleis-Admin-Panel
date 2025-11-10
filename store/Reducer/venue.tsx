@@ -19,7 +19,7 @@ export const venueApi = createApi({
         if (date) (params as any).date = date;
         if (organization) (params as any).organization = organization;
         return {
-          url: API_ROUTES.VENUES,
+          url: API_ROUTES.ADMIN_VENUES,
           method: 'GET',
           params,
         };
@@ -33,7 +33,7 @@ export const venueApi = createApi({
 
     addVenue: builder.mutation({
       query: (newVenue) => ({
-        url: API_ROUTES.VENUES,
+        url: API_ROUTES.ADMIN_VENUES,
         method: 'POST',
         body: newVenue,
       }),
@@ -42,7 +42,7 @@ export const venueApi = createApi({
 
     updateVenue: builder.mutation({
       query: ({ id, ...updatedVenue }) => ({
-        url: API_ROUTES.VENUES_BY_ID(id),
+        url: API_ROUTES.ADMIN_VENUES_BY_ID(id),
         method: 'PUT',
         body: updatedVenue,
       }),
@@ -51,7 +51,7 @@ export const venueApi = createApi({
 
     deleteVenue: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.VENUES_BY_ID(id),
+        url: API_ROUTES.ADMIN_VENUES_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['venue'],
@@ -59,9 +59,4 @@ export const venueApi = createApi({
   }),
 });
 
-export const {
-  useGetVenuesQuery,
-  useAddVenueMutation,
-  useUpdateVenueMutation,
-  useDeleteVenueMutation,
-} = venueApi;
+export const { useGetVenuesQuery, useAddVenueMutation, useUpdateVenueMutation, useDeleteVenueMutation } = venueApi;

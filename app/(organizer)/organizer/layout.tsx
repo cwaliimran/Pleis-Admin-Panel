@@ -1,34 +1,3 @@
-// "use client"
-// import SidebarToggleButton from "@/app/common/siebarToggleButton";
-// import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-// import React, { FC } from "react";
-
-// interface DashboardLayoutProps {
-//     left?: React.ReactNode;
-//     right?: React.ReactNode;
-//     children: React.ReactNode;
-// }
-
-// const DashboardLayout: FC<DashboardLayoutProps> = ({ left, right, children }) => {
-//     return (
-//         <div className="flex min-h-screen ">
-//             <SidebarProvider >
-//                 <aside className=" border-r">{left}</aside>
-
-//                 <SidebarToggleButton fromOrganizer={true}/>
-//                 <main className="flex-1 dark:bg-black md:px-5 px-2  bg-[#f8f6f7]">{children}</main>
-
-//                 <aside className="fixed top-5 right-5 md:top-10 md:right-10">
-//                     {right}
-//                 </aside>
-//             </SidebarProvider>
-
-//         </div>
-//     );
-// };
-
-// export default DashboardLayout;
-
 'use client';
 
 import SidebarToggleButton from '@/app/common/siebarToggleButton';
@@ -38,17 +7,12 @@ import React, { FC, useEffect, useState } from 'react';
 import '../../common/terms-html.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { useUpdateUserMutation } from '@/store/Reducer/user-list';
+import { useUpdateUserTermsMutation } from '@/store/Reducer/user-list';
 import { showError, showSuccess } from '@/utils/toast';
 import { getErrorMessage } from '@/utils/api';
 import { setUser } from '@/store/slice/userSlice';
 import { useGetTermsAndConditionQuery } from '@/store/Reducer/settings';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -59,11 +23,7 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const DashboardLayout: FC<DashboardLayoutProps> = ({
-  left,
-  right,
-  children,
-}) => {
+const DashboardLayout: FC<DashboardLayoutProps> = ({ left, right, children }) => {
   const dispatch = useDispatch();
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -74,10 +34,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
 
   // Only call API if termsAccepted is false and userType is not 'admin'
   const shouldCallTermsApi = userTerm === false && userType !== 'admin';
-  const { data: apiData, isLoading } = useGetTermsAndConditionQuery(
-    {},
-    { skip: !shouldCallTermsApi }
-  );
+  const { data: apiData, isLoading } = useGetTermsAndConditionQuery({}, { skip: !shouldCallTermsApi });
 
   useEffect(() => {
     if (userTerm === false && userType !== 'admin') {
@@ -87,8 +44,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
     }
   }, [userTerm, userType]);
 
-  const [updateUser, { isLoading: updateUserLoading }] =
-    useUpdateUserMutation();
+  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserTermsMutation();
 
   const handleTermsSubmit = async () => {
     if (acceptedTerms) {
@@ -134,13 +90,9 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
           <aside className="sticky top-0 z-20 h-screen">{left}</aside>
           <SidebarToggleButton />
 
-          <main className="flex-1 bg-[#f8f6f7] px-2 md:px-5 dark:bg-black">
-            {children}
-          </main>
+          <main className="flex-1 bg-[#f8f6f7] px-2 md:px-5 dark:bg-black">{children}</main>
 
-          <aside className="fixed top-5 right-5 md:top-10 md:right-10">
-            {right}
-          </aside>
+          <aside className="fixed top-5 right-5 md:top-10 md:right-10">{right}</aside>
         </SidebarProvider>
 
         {/* Terms and Conditions Modal */}
@@ -151,9 +103,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
             className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col overflow-y-auto pb-3 md:!max-w-[700px] [&>button]:hidden"
           >
             <DialogHeader className="p-2 pb-0 sm:p-3 sm:pb-0">
-              <DialogTitle className="text-2xl font-bold">
-                Terms and Conditions
-              </DialogTitle>
+              <DialogTitle className="text-2xl font-bold">Terms and Conditions</DialogTitle>
             </DialogHeader>
 
             <div className="p-2 sm:p-3">
@@ -175,9 +125,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
                   <div
                     className="terms-html"
                     dangerouslySetInnerHTML={{
-                      __html:
-                        apiData?.data?.terms_and_conditions ||
-                        'Loading terms...',
+                      __html: apiData?.data?.terms_and_conditions || 'Loading terms...',
                     }}
                   />
                 </div>
@@ -190,28 +138,17 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({
                   id="accept-terms"
                   checked={acceptedTerms}
                   className={`cursor-pointer border border-black ${acceptedTerms ? 'dark:border-primary' : 'dark:border-white'}`}
-                  onCheckedChange={(checked) =>
-                    setAcceptedTerms(checked as boolean)
-                  }
+                  onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
                   disabled={isLoading}
                 />
-                <label
-                  htmlFor="accept-terms"
-                  className={`cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed`}
-                >
+                <label htmlFor="accept-terms" className={`cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed`}>
                   I accept the Terms and Conditions
                 </label>
               </div>
 
               <div className="flex">
-                <Button
-                  onClick={handleTermsSubmit}
-                  disabled={!acceptedTerms || updateUserLoading || isLoading}
-                  className="w-full md:w-auto"
-                >
-                  {updateUserLoading
-                    ? 'Processing...'
-                    : 'Continue to Dashboard'}
+                <Button onClick={handleTermsSubmit} disabled={!acceptedTerms || updateUserLoading || isLoading} className="w-full md:w-auto">
+                  {updateUserLoading ? 'Processing...' : 'Continue to Dashboard'}
                 </Button>
               </div>
             </div>

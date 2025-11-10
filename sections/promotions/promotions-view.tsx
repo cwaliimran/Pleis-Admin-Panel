@@ -31,15 +31,26 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
   const [deletePromotion, { isLoading: deleteLoading }] = useDeletePromotionMutation();
 
-  const { data: apiData, isLoading } = useGetPromotionQuery({
+  const {
+    data: apiData,
+    isLoading,
+    // refetch,
+  } = useGetPromotionQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
   });
+
+  // useEffect(() => {
+  //   refetch();
+  // }, [selectedCompany, refetch]);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -163,7 +174,16 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
         }}
       />
 
-      <PromotionsModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} global={global} />
+      {openModal.value && (
+        <PromotionsModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          selectedCompany={selectedCompany}
+          global={global}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
