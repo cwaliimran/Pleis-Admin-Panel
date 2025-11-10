@@ -19,7 +19,7 @@ export const promotionApi = createApi({
         if (date) (params as any).date = date;
         if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.LOYALTY_PROMOTION,
+          url: API_ROUTES.ADMIN_LOYALTY_PROMOTION,
           method: 'GET',
           params,
         };
@@ -33,7 +33,7 @@ export const promotionApi = createApi({
 
     addPromotion: builder.mutation({
       query: (newPromotion) => ({
-        url: API_ROUTES.LOYALTY_PROMOTION,
+        url: API_ROUTES.ADMIN_LOYALTY_PROMOTION,
         method: 'POST',
         body: newPromotion,
       }),
@@ -42,7 +42,7 @@ export const promotionApi = createApi({
 
     updatePromotion: builder.mutation({
       query: ({ id, ...updatedPromotion }) => ({
-        url: API_ROUTES.LOYALTY_PROMOTION_BY_ID(id),
+        url: API_ROUTES.ADMIN_LOYALTY_PROMOTION_BY_ID(id),
         method: 'PUT',
         body: updatedPromotion,
       }),
@@ -51,7 +51,7 @@ export const promotionApi = createApi({
 
     deletePromotion: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.LOYALTY_PROMOTION_BY_ID(id),
+        url: API_ROUTES.ADMIN_LOYALTY_PROMOTION_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['promotion'],

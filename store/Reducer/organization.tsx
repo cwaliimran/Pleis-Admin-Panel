@@ -19,7 +19,7 @@ export const organizationApi = createApi({
         if (date) (params as any).date = date;
         if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.ORGANIZATION,
+          url: API_ROUTES.ADMIN_ORGANIZATION,
           method: 'GET',
           params,
         };
@@ -33,7 +33,7 @@ export const organizationApi = createApi({
 
     addOrganization: builder.mutation({
       query: (newOrganization) => ({
-        url: API_ROUTES.ORGANIZATION,
+        url: API_ROUTES.ADMIN_ORGANIZATION,
         method: 'POST',
         body: newOrganization,
       }),
@@ -42,7 +42,7 @@ export const organizationApi = createApi({
 
     getOrganizationById: builder.query({
       query: ({ id }) => ({
-        url: API_ROUTES.ORGANIZATION_BY_ID(id),
+        url: API_ROUTES.ADMIN_ORGANIZATION_BY_ID(id),
         method: 'GET',
       }),
       transformResponse: (res) => ({
@@ -53,7 +53,7 @@ export const organizationApi = createApi({
 
     updateOrganization: builder.mutation({
       query: ({ id, ...updatedOrganization }) => ({
-        url: API_ROUTES.ORGANIZATION_BY_ID(id),
+        url: API_ROUTES.ADMIN_ORGANIZATION_BY_ID(id),
         method: 'PUT',
         body: updatedOrganization,
       }),
@@ -62,7 +62,7 @@ export const organizationApi = createApi({
 
     deleteOrganization: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.ORGANIZATION_BY_ID(id),
+        url: API_ROUTES.ADMIN_ORGANIZATION_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['organization'],

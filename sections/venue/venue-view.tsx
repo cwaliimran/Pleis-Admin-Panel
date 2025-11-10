@@ -385,15 +385,17 @@ const VenueView = () => {
         }}
       />
 
-      <VenueTypeModal
-        open={openModal.value}
-        onClose={CloseModal}
-        editMode={editModal.value}
-        methods={methods}
-        onSubmit={onSubmit}
-        isLoading={addVenueLoading || updateVenueLoading || imageUploading}
-        selectedVenueType={selectedVenueType}
-      />
+      {openModal.value && (
+        <VenueTypeModal
+          open={openModal.value}
+          onClose={CloseModal}
+          editMode={editModal.value}
+          methods={methods}
+          onSubmit={onSubmit}
+          isLoading={addVenueLoading || updateVenueLoading || imageUploading}
+          selectedVenueType={selectedVenueType}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

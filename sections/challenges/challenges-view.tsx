@@ -10,10 +10,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import ChallengesTable from './challenges-table';
 import ChallengeModal from './challenges-modal';
-import {
-  useDeleteChallengeMutation,
-  useGetChallengesQuery,
-} from '@/store/Reducer/challenges-api';
+import { useDeleteChallengeMutation, useGetChallengesQuery } from '@/store/Reducer/challenges-api';
 
 interface ChallengesViewProps {
   global?: boolean;
@@ -34,8 +31,9 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteChallenge, { isLoading: deleteLoading }] =
-    useDeleteChallengeMutation();
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
+  const [deleteChallenge, { isLoading: deleteLoading }] = useDeleteChallengeMutation();
 
   const { data: apiData, isLoading } = useGetChallengesQuery({
     page: page - 1,
@@ -43,6 +41,7 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -126,10 +125,7 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Challenges
           </Button>
@@ -173,13 +169,7 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
       />
 
       {openModal.value && (
-        <ChallengeModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          global={global}
-        />
+        <ChallengeModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} global={global} />
       )}
 
       <ConfirmDialog

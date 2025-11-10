@@ -171,13 +171,15 @@ const MenuListView = () => {
         }}
       />
 
-      <MenuItemModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedCompany={selectedCompany}
-        selectedData={selectedRecord}
-      />
+      {openModal.value && (
+        <MenuItemModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedCompany={selectedCompany}
+          selectedData={selectedRecord}
+        />
+      )}
 
       {duplicateModal.value && <DuplicateMenuModal open={duplicateModal.value} onClose={duplicateModal.onFalse} selectedId={selectedId} />}
 

@@ -21,7 +21,7 @@ export const userListApi = createApi({
         if (date) params.date = date;
         if (userType) params.userType = userType;
         return {
-          url: API_ROUTES.USER_LIST,
+          url: API_ROUTES.ADMIN_USER_LIST,
           method: 'GET',
           params,
         };
@@ -35,7 +35,7 @@ export const userListApi = createApi({
 
     getUserById: builder.query({
       query: ({ id }) => ({
-        url: API_ROUTES.USER_LIST_BY_ID(id),
+        url: API_ROUTES.ADMIN_USER_LIST_BY_ID(id),
         method: 'GET',
       }),
       transformResponse: (res) => res.data,
@@ -43,7 +43,7 @@ export const userListApi = createApi({
 
     addUser: builder.mutation({
       query: (newUser) => ({
-        url: API_ROUTES.USER_LIST,
+        url: API_ROUTES.ADMIN_USER_LIST,
         method: 'POST',
         body: newUser,
       }),
@@ -52,7 +52,7 @@ export const userListApi = createApi({
 
     addUserSuperAdminAndGuest: builder.mutation({
       query: (newUser) => ({
-        url: API_ROUTES.USER_LIST,
+        url: API_ROUTES.ADMIN_USER_LIST,
         method: 'POST',
         body: newUser,
         headers: {
@@ -64,7 +64,7 @@ export const userListApi = createApi({
 
     updateUserSuperAdminAndGuest: builder.mutation({
       query: (updateUser) => ({
-        url: API_ROUTES.USER_LIST_BY_ID(updateUser.id),
+        url: API_ROUTES.ADMIN_USER_LIST_BY_ID(updateUser.id),
         method: 'PUT',
         body: updateUser,
         headers: {
@@ -76,7 +76,7 @@ export const userListApi = createApi({
 
     updateUserForUserList: builder.mutation({
       query: (updateUser) => ({
-        url: API_ROUTES.PENDING_USER_LIST_BY_ID(updateUser.id),
+        url: API_ROUTES.ADMIN_PENDING_USER_LIST_BY_ID(updateUser.id),
         method: 'PUT',
         body: updateUser,
       }),
@@ -85,7 +85,7 @@ export const userListApi = createApi({
 
     updateUser: builder.mutation({
       query: ({ id, body }) => ({
-        url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
+        url: API_ROUTES.ADMIN_PENDING_USER_LIST_BY_ID(id),
         method: 'PUT',
         body: body,
       }),
@@ -103,7 +103,7 @@ export const userListApi = createApi({
 
     updatePendingUser: builder.mutation({
       query: ({ id, status }) => ({
-        url: API_ROUTES.PENDING_USER_LIST_BY_ID(id),
+        url: API_ROUTES.ADMIN_PENDING_USER_LIST_BY_ID(id),
         method: 'PUT',
         body: { status },
       }),

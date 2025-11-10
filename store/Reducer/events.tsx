@@ -9,15 +9,7 @@ export const eventApi = createApi({
 
   endpoints: (builder) => ({
     getevents: builder.query({
-      query: ({
-        search,
-        page,
-        status,
-        startDate,
-        endDate,
-        limit,
-        organization,
-      }) => {
+      query: ({ search, page, status, startDate, endDate, limit, organization }) => {
         const params: any = {
           keyword: search,
           status,
@@ -28,7 +20,7 @@ export const eventApi = createApi({
         if (endDate) params.endDate = endDate;
         if (organization) params.organization = organization;
         return {
-          url: API_ROUTES.EVENTS,
+          url: API_ROUTES.ADMIN_EVENTS,
           method: 'GET',
           params,
         };
@@ -42,7 +34,7 @@ export const eventApi = createApi({
 
     geteventById: builder.query({
       query: (id) => ({
-        url: API_ROUTES.EVENTS_BY_ID(id),
+        url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
         method: 'GET',
       }),
       transformResponse: (res) => res.data,
@@ -51,15 +43,16 @@ export const eventApi = createApi({
 
     addevent: builder.mutation({
       query: (newevent) => ({
-        url: API_ROUTES.EVENTS,
+        url: API_ROUTES.ADMIN_EVENTS,
         method: 'POST',
         body: newevent,
       }),
       invalidatesTags: ['event'],
     }),
+
     cloneevent: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.EVENTS_BY_ID(id) + '/clone',
+        url: API_ROUTES.ADMIN_EVENTS_BY_ID(id) + '/clone',
         method: 'POST',
       }),
       invalidatesTags: ['event'],
@@ -67,7 +60,7 @@ export const eventApi = createApi({
 
     updateevent: builder.mutation({
       query: ({ id, ...updatedevent }) => ({
-        url: API_ROUTES.EVENTS_BY_ID(id),
+        url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
         method: 'PUT',
         body: updatedevent,
       }),
@@ -76,7 +69,7 @@ export const eventApi = createApi({
 
     deleteevent: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.EVENTS_BY_ID(id),
+        url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['event'],
@@ -84,11 +77,5 @@ export const eventApi = createApi({
   }),
 });
 
-export const {
-  useGeteventsQuery,
-  useGeteventByIdQuery,
-  useAddeventMutation,
-  useUpdateeventMutation,
-  useCloneeventMutation,
-  useDeleteeventMutation,
-} = eventApi;
+export const { useGeteventsQuery, useGeteventByIdQuery, useAddeventMutation, useUpdateeventMutation, useCloneeventMutation, useDeleteeventMutation } =
+  eventApi;

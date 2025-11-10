@@ -9,7 +9,7 @@ export const rewardsApi = createApi({
 
   endpoints: (builder) => ({
     getRewards: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,8 +17,9 @@ export const rewardsApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.LOYALTY_REWARDS,
+          url: API_ROUTES.ADMIN_LOYALTY_REWARDS,
           method: 'GET',
           params,
         };
@@ -32,7 +33,7 @@ export const rewardsApi = createApi({
 
     addReward: builder.mutation({
       query: (newReward) => ({
-        url: API_ROUTES.LOYALTY_REWARDS,
+        url: API_ROUTES.ADMIN_LOYALTY_REWARDS,
         method: 'POST',
         body: newReward,
       }),
@@ -41,7 +42,7 @@ export const rewardsApi = createApi({
 
     updateReward: builder.mutation({
       query: ({ id, ...updatedReward }) => ({
-        url: API_ROUTES.LOYALTY_REWARDS_BY_ID(id),
+        url: API_ROUTES.ADMIN_LOYALTY_REWARDS_BY_ID(id),
         method: 'PUT',
         body: updatedReward,
       }),
@@ -50,7 +51,7 @@ export const rewardsApi = createApi({
 
     deleteReward: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.LOYALTY_REWARDS_BY_ID(id),
+        url: API_ROUTES.ADMIN_LOYALTY_REWARDS_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['reward'],
@@ -58,9 +59,4 @@ export const rewardsApi = createApi({
   }),
 });
 
-export const {
-  useGetRewardsQuery,
-  useAddRewardMutation,
-  useUpdateRewardMutation,
-  useDeleteRewardMutation,
-} = rewardsApi;
+export const { useGetRewardsQuery, useAddRewardMutation, useUpdateRewardMutation, useDeleteRewardMutation } = rewardsApi;

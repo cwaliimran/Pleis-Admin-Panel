@@ -18,7 +18,7 @@ export const highlightsApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.HIGHLIGHT_LIST,
+          url: API_ROUTES.ADMIN_HIGHLIGHT_LIST,
           method: 'GET',
           params,
         };
@@ -32,7 +32,7 @@ export const highlightsApi = createApi({
 
     addHighlights: builder.mutation({
       query: (newHighlight) => ({
-        url: API_ROUTES.HIGHLIGHT_LIST,
+        url: API_ROUTES.ADMIN_HIGHLIGHT_LIST,
         method: 'POST',
         body: newHighlight,
       }),
@@ -41,7 +41,7 @@ export const highlightsApi = createApi({
 
     updateHighlights: builder.mutation({
       query: ({ id, ...updatedHighlight }) => ({
-        url: API_ROUTES.HIGHLIGHT_LIST_BY_ID(id),
+        url: API_ROUTES.ADMIN_HIGHLIGHT_LIST_BY_ID(id),
         method: 'PUT',
         body: updatedHighlight,
       }),
@@ -49,7 +49,7 @@ export const highlightsApi = createApi({
 
     deleteHighlights: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.HIGHLIGHT_LIST_BY_ID(id),
+        url: API_ROUTES.ADMIN_HIGHLIGHT_LIST_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['highlights'],
@@ -57,9 +57,4 @@ export const highlightsApi = createApi({
   }),
 });
 
-export const {
-  useGetHighlightsQuery,
-  useAddHighlightsMutation,
-  useUpdateHighlightsMutation,
-  useDeleteHighlightsMutation,
-} = highlightsApi;
+export const { useGetHighlightsQuery, useAddHighlightsMutation, useUpdateHighlightsMutation, useDeleteHighlightsMutation } = highlightsApi;

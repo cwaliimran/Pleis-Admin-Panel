@@ -18,7 +18,7 @@ export const itemsCategoryApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.MENU_CATEGORIES,
+          url: API_ROUTES.ADMIN_MENU_CATEGORIES,
           method: 'GET',
           params,
         };
@@ -32,7 +32,7 @@ export const itemsCategoryApi = createApi({
 
     addItemsCategory: builder.mutation({
       query: (newItemsCategory) => ({
-        url: API_ROUTES.MENU_CATEGORIES,
+        url: API_ROUTES.ADMIN_MENU_CATEGORIES,
         method: 'POST',
         body: newItemsCategory,
       }),
@@ -41,7 +41,7 @@ export const itemsCategoryApi = createApi({
 
     updateItemsCategory: builder.mutation({
       query: ({ id, ...updatedItemsCategory }) => ({
-        url: API_ROUTES.MENU_CATEGORIES_BY_ID(id),
+        url: API_ROUTES.ADMIN_MENU_CATEGORIES_BY_ID(id),
         method: 'PUT',
         body: updatedItemsCategory,
       }),
@@ -50,7 +50,7 @@ export const itemsCategoryApi = createApi({
 
     deleteItemsCategory: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.MENU_CATEGORIES_BY_ID(id),
+        url: API_ROUTES.ADMIN_MENU_CATEGORIES_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['items-category'],
@@ -58,9 +58,5 @@ export const itemsCategoryApi = createApi({
   }),
 });
 
-export const {
-  useGetItemsCategoryQuery,
-  useAddItemsCategoryMutation,
-  useUpdateItemsCategoryMutation,
-  useDeleteItemsCategoryMutation,
-} = itemsCategoryApi;
+export const { useGetItemsCategoryQuery, useAddItemsCategoryMutation, useUpdateItemsCategoryMutation, useDeleteItemsCategoryMutation } =
+  itemsCategoryApi;
