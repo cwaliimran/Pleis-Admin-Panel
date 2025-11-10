@@ -14,7 +14,7 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit })
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.image && item.image !== noImageUrl && item.image !== noImageUrlDev ? (
             <AvatarImage src={item?.image} alt="Store" className="h-full w-full cursor-pointer object-cover" />
           ) : (
@@ -48,6 +48,8 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit })
       </TableCell>
 
       <TableCell className="text-left capitalize">{item?.menu?.title || '-'}</TableCell>
+
+      <TableCell className="text-left capitalize">{item?.organization?.basicInfo?.name || '-'}</TableCell>
 
       <TableCell className="text-left capitalize">{item?.taxPercent || '-'}%</TableCell>
 

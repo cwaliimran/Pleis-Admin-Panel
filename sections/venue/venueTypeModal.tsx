@@ -5,14 +5,7 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
@@ -20,7 +13,7 @@ import { extractAddress } from '@/utils/format-google-address';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 import React, { useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 interface CreateVenueModalProps {
@@ -36,7 +29,7 @@ interface CreateVenueModalProps {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries: 'places'[] = ['places'];
-console.log("GOOGLE_MAPS_API_KEY", GOOGLE_MAPS_API_KEY);
+console.log('GOOGLE_MAPS_API_KEY', GOOGLE_MAPS_API_KEY);
 
 const VenueTypeModal = ({
   open,
@@ -74,10 +67,7 @@ const VenueTypeModal = ({
       state: Yup.string().required('State/Province is required'),
       country: Yup.string().required('Country is required'),
       postalCode: Yup.string().nullable(),
-      coordinates: Yup.array()
-        .of(Yup.number())
-        .length(2, 'Coordinates must be [lat, lng]')
-        .required(),
+      coordinates: Yup.array().of(Yup.number()).length(2, 'Coordinates must be [lat, lng]').required(),
     }),
   });
 
@@ -117,7 +107,7 @@ const VenueTypeModal = ({
         state: address.province || '',
         postalCode: address.postal_code || '',
         country: address.country || '',
-        coordinates: [address.latitude || 0, address.longitude || 0],
+        coordinates: [address.longitude || 0, address.latitude || 0],
       };
       console.log('Setting location payload:', locationPayload);
       methods.setValue('location', locationPayload, { shouldValidate: true });
@@ -167,13 +157,9 @@ const VenueTypeModal = ({
           }}
         >
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">
-              {editMode ? 'Edit Venue' : 'Create Venue'}
-            </DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{editMode ? 'Edit Venue' : 'Create Venue'}</DialogTitle>
             <DialogDescription className="sr-only">
-              {!editMode
-                ? 'Fill in the details below to create a new venue.'
-                : 'Update the venue information below.'}
+              {!editMode ? 'Fill in the details below to create a new venue.' : 'Update the venue information below.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -183,9 +169,7 @@ const VenueTypeModal = ({
                 name="title"
                 label="Venue Name"
                 placeholder="Enter Venue Name"
-                className={
-                  methods.formState.errors.title ? 'border-red-400' : ''
-                }
+                className={methods.formState.errors.title ? 'border-red-400' : ''}
               />
 
               <RHFCustomDropdown
@@ -238,10 +222,7 @@ const VenueTypeModal = ({
               </div>
 
               <div className="w-full">
-                <label
-                  htmlFor="location-input"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
+                <label htmlFor="location-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Location
                 </label>
                 {isLoaded && (
@@ -249,10 +230,7 @@ const VenueTypeModal = ({
                     name="location"
                     control={methods.control}
                     render={({ field }) => (
-                      <Autocomplete
-                        onLoad={onLoad}
-                        onPlaceChanged={onPlaceChanged}
-                      >
+                      <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
                         <input
                           id="location-input"
                           type="text"
@@ -265,9 +243,7 @@ const VenueTypeModal = ({
                               fullAddress: e.target.value,
                             })
                           }
-                          onKeyDown={(e) =>
-                            e.key === 'Enter' && e.preventDefault()
-                          }
+                          onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
                         />
                       </Autocomplete>
                     )}
@@ -276,9 +252,7 @@ const VenueTypeModal = ({
               </div>
 
               <div className="w-full">
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Map Preview
-                </label>
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Map Preview</label>
                 <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
                   {methods.watch('location.coordinates')?.length === 2 ? (
                     <iframe
@@ -288,40 +262,24 @@ const VenueTypeModal = ({
                       referrerPolicy="no-referrer-when-downgrade"
                     ></iframe>
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400">
-                      No location selected
-                    </div>
+                    <div className="flex h-full w-full items-center justify-center text-gray-400">No location selected</div>
                   )}
                 </div>
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                  disabled={isLoading}
-                  className="mr-2"
-                >
+                <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="mr-2">
                   Cancel
                 </Button>
 
                 {isLoading ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
-                  >
+                  <Button type="button" disabled className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800">
                     <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
                   </Button>
                 ) : (
                   <Button
                     type={buttonType}
-                    onClick={
-                      buttonType === 'button'
-                        ? methods.handleSubmit(onSubmit)
-                        : undefined
-                    }
+                    onClick={buttonType === 'button' ? methods.handleSubmit(onSubmit) : undefined}
                     className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
                     disabled={isLoading || !methods.formState.isValid}
                   >

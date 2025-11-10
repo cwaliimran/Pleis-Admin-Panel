@@ -9,7 +9,7 @@ export const itemsCategoryApi = createApi({
 
   endpoints: (builder) => ({
     getItemsCategory: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,6 +17,7 @@ export const itemsCategoryApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
           url: API_ROUTES.ADMIN_MENU_CATEGORIES,
           method: 'GET',

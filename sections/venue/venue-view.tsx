@@ -1,20 +1,20 @@
 'use client';
+
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { getErrorMessage } from '@/utils/api';
-// import { uploadFileToAzure } from '@/utils/fileUpload';
 import { useAddVenueMutation, useDeleteVenueMutation, useGetVenuesQuery, useUpdateVenueMutation } from '@/store/Reducer/venue';
+import { getErrorMessage } from '@/utils/api';
 import { uploadFileToAzure } from '@/utils/fileUpload';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import VenueTypeTable from './venueTypeTable';
 import VenueTypeModal from './venueTypeModal';
-import { formatDate } from '@/utils/format-time';
+import VenueTypeTable from './venueTypeTable';
 
 const defaultValues = {
   title: '',

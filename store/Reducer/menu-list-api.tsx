@@ -31,6 +31,20 @@ export const menuListApi = createApi({
       providesTags: ['menu-list'],
     }),
 
+    getMenuByCompany: builder.query({
+      query: ({ companyOrganizer }) => {
+        return {
+          url: API_ROUTES.ADMIN_MENU_BY_COMPANY_ORGANIZER(companyOrganizer),
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['menu-list'],
+    }),
+
     addMenuList: builder.mutation({
       query: (newMenuList) => ({
         url: API_ROUTES.ADMIN_MENU,
@@ -68,5 +82,11 @@ export const menuListApi = createApi({
   }),
 });
 
-export const { useGetMenuListQuery, useAddMenuListMutation, useDuplicateMenuMutation, useUpdateMenuListMutation, useDeleteMenuListMutation } =
-  menuListApi;
+export const {
+  useGetMenuListQuery,
+  useGetMenuByCompanyQuery,
+  useAddMenuListMutation,
+  useDuplicateMenuMutation,
+  useUpdateMenuListMutation,
+  useDeleteMenuListMutation,
+} = menuListApi;

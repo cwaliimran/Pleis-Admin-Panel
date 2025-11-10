@@ -92,6 +92,15 @@ export const userListApi = createApi({
       invalidatesTags: ['userList', 'companyList'],
     }),
 
+    updateUserTerms: builder.mutation({
+      query: ({ id, body }) => ({
+        url: API_ROUTES.UPDATE_TERMS(id),
+        method: 'PUT',
+        body: body,
+      }),
+      invalidatesTags: ['userList', 'companyList'],
+    }),
+
     getCompanyList: builder.query({
       query: () => ({
         url: API_ROUTES.LOYALTY_LISTINGS,
@@ -126,6 +135,7 @@ export const {
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
   useUpdateUserMutation,
+  useUpdateUserTermsMutation,
   useGetCompanyListQuery,
   useUpdateUserForUserListMutation,
   useUpdateUserSuperAdminAndGuestMutation,

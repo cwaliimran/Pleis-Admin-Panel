@@ -38,6 +38,13 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'menu.title',
   },
+  {
+    id: 'Organization',
+    label: 'Organization',
+    align: 'left',
+    sortable: true,
+    sortKey: 'venue.title',
+  },
   { id: 'tax', label: 'Tax', align: 'left' },
   { id: 'type', label: 'Type', align: 'left' },
   { id: 'category', label: 'Item category', align: 'left' },
@@ -123,7 +130,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, menu, description...',
+                              placeholder: 'Search name, menu, organization...',
                               value: search,
                               onChange: onSearch,
                             }}

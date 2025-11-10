@@ -27,7 +27,7 @@ const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, ha
 
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
-      <TableCell className="flex items-center gap-2 text-left">
+      <TableCell className="flex items-center justify-start gap-x-2 pt-3 text-left">
         <Avatar className="">
           {item?.organization?.basicInfo?.media?.logo &&
           item?.organization?.basicInfo?.media?.logo !== noImageUrl &&
@@ -45,7 +45,7 @@ const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, ha
       </TableCell>
 
       <TableCell className="text-left">
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+        <Avatar className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.floorPlan && item?.floorPlan !== noImageUrl && item?.floorPlan !== noImageUrlDev ? (
             <AvatarImage src={item?.floorPlan} alt="Store" className="h-full w-full cursor-pointer object-cover" />
           ) : (

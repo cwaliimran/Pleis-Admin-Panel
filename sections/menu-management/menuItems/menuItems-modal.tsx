@@ -7,19 +7,19 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
 import { useAddMenuItemMutation, useUpdateMenuItemMutation } from '@/store/Reducer/menu-items-api';
-import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useGetMenuByCompanyQuery } from '@/store/Reducer/menu-list-api';
 import { useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { formatTimeTo12Hour } from '@/utils/short-utils';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
@@ -88,10 +88,13 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
 });
 
 const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItemModalProps) => {
+  const [deleting, setDeleting] = useState(false);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
+
   const [addMenuItem, { isLoading: addMenuItemLoading }] = useAddMenuItemMutation();
   const [updateMenuItem, { isLoading: updateMenuItemLoading }] = useUpdateMenuItemMutation();
-  const [deleting, setDeleting] = useState(false);
+
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
 
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema),
@@ -112,14 +115,11 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
     limit: '10000',
     status: '',
     date: undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
   });
 
-  const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-    date: undefined,
+  const { data: menuData, isLoading: menuLoading } = useGetMenuByCompanyQuery({
+    companyOrganizer: selectedCompany?.value || undefined,
   });
 
   const presetOptions =
@@ -270,7 +270,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[600px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[600px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Menu Item' : 'Create Menu Item'}</DialogTitle>
@@ -293,10 +293,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="col-span-2">
                     {presetLoading ? (
-                      <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                        <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      </div>
+                      <FieldSkeleton />
                     ) : (
                       <>
                         <h4 className="mb-2 text-sm font-semibold">Presets</h4>
@@ -315,19 +312,8 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
                   <RHFTextField name="type" label="Type" placeholder="Enter Type" />
 
                   {itemCategoryLoading ? (
-                    <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                      <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                    </div>
+                    <FieldSkeleton />
                   ) : (
-                    // <RHFCustomDropdown
-                    //   name="category"
-                    //   label="Item Category"
-                    //   placeholder="Select Item Category"
-                    //   options={itemCategoryOptions}
-                    //   isLoading={itemCategoryLoading}
-                    //   showNone={false}
-                    // />
                     <RHFCustomCreatableDropdown
                       name="category"
                       label="Item Category"
@@ -357,10 +343,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
 
                   <div className="col-span-2">
                     {menuLoading ? (
-                      <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                        <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      </div>
+                      <FieldSkeleton />
                     ) : (
                       <RHFCustomDropdown
                         name="menu"

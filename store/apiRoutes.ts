@@ -12,6 +12,7 @@ export const API_ROUTES = {
   TWO_FACTOR_AUTH_SETUP: `/users/twofa/setup`,
   TWO_FACTOR_AUTH_CONFIRM: `/users/twofa/confirm`,
   TWO_FACTOR_AUTH_DISABLE: `/users/twofa/disable`,
+  UPDATE_TERMS: (id: string) => `/organizer/users/${id}`,
 
   // ── SIMPLE / USER ROUTES ───────────────────────────────────
   TERMSANDCONDITION: `/settings/terms-conditions`,
@@ -22,8 +23,8 @@ export const API_ROUTES = {
   VENUES: `/venues`,
   VENUES_BY_ID: (id: string) => `/venues/${id}`,
 
-  ORGANIZATION: `/organizations`,
-  ORGANIZATION_BY_ID: (id: string) => `/organizations/${id}`,
+  ORGANIZATION: `/organizer/organizations`,
+  ORGANIZATION_BY_ID: (id: string) => `/organizer/organizations/${id}`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -61,6 +62,7 @@ export const API_ROUTES = {
 
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
+  ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
 
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
@@ -97,6 +99,7 @@ export const API_ROUTES = {
   ADMIN_MENU: `/admin/menu`,
   ADMIN_MENU_BY_ID: (id: string) => `/admin/menu/${id}`,
   ADMIN_MENU_DUPLICATE_BY_ID: (id: string) => `/admin/menu/duplicate/${id}`,
+  ADMIN_MENU_BY_COMPANY_ORGANIZER: (id: string) => `/admin/menu/names/by-company-organizer/${id}`,
 
   ADMIN_MENU_ITEMS: `/admin/menu/items`,
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
