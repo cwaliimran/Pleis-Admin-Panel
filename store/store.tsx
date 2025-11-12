@@ -31,6 +31,7 @@ import { promoSectionApi } from './Reducer/promo-section-api';
 import { bannerControlApi } from './Reducer/banner-control-api';
 import { customCategoriesApi } from './Reducer/custom-categories-api';
 import { pinnedContentApi } from './Reducer/pinned-content-api';
+import { ticketingApi } from './Reducer/ticketing-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -61,6 +62,7 @@ const appReducer = combineReducers({
   [bannerControlApi.reducerPath]: bannerControlApi.reducer,
   [customCategoriesApi.reducerPath]: customCategoriesApi.reducer,
   [pinnedContentApi.reducerPath]: pinnedContentApi.reducer,
+  [ticketingApi.reducerPath]: ticketingApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -98,6 +100,7 @@ export const store = configureStore({
       bannerControlApi.middleware,
       customCategoriesApi.middleware,
       pinnedContentApi.middleware,
+      ticketingApi.middleware,
       menuListApi.middleware
     ),
 });

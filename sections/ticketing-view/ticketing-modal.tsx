@@ -6,18 +6,22 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useAddTicketingMutation, useUpdateTicketingMutation } from '@/store/Reducer/ticketing-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Calendar } from 'lucide-react';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TimeSlotConfigModal from './timelotConfig';
+import ToggleSwitch from './toogle';
 
 interface TicketingModalProps {
   open: boolean;
   onClose: () => void;
   editMode?: boolean;
-  selectedVenueType?: any;
+  selectedData?: any;
 }
 
 const FeatureSection: React.FC<{
@@ -42,28 +46,6 @@ const SectionHeader: React.FC<{ title: string; icon?: React.ReactNode }> = ({ ti
   </h3>
 );
 
-const ToggleSwitch: React.FC<{
-  value: boolean;
-  onChange: (value: boolean) => void;
-  label: string;
-  disabled?: boolean;
-}> = ({ value, onChange, label, disabled = false }) => (
-  <div className="dark:bg-secondary flex items-center justify-between rounded-lg bg-gray-50 p-3">
-    <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-    <button
-      title="Toggle Switch"
-      type="button"
-      onClick={() => onChange(!value)}
-      disabled={disabled}
-      className={`relative h-6 w-12 cursor-pointer rounded-full transition-colors ${
-        value ? 'bg-blue-600' : 'bg-gray-300'
-      } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
-    >
-      <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${value ? 'translate-x-6 transform' : ''}`} />
-    </button>
-  </div>
-);
-
 const defaultValues = {
   title: '',
   type: '',
@@ -72,6 +54,10 @@ const defaultValues = {
   tax: '',
   event: '',
   status: 'active',
+  publishSettings: {
+    publishType: 'instant',
+    scheduledDate: '',
+  },
   features: {
     timeslot: false,
     timeSlotConfig: null,
@@ -109,6 +95,13 @@ const schema = Yup.object().shape({
   tax: Yup.string().required('Tax percentage is required'),
   event: Yup.string().required('Event selection is required'),
   status: Yup.string().oneOf(['active', 'inactive']),
+  publishSettings: Yup.object().shape({
+    publishType: Yup.string().oneOf(['instant', 'scheduled', 'manual']).required('Publish type is required'),
+    scheduledDate: Yup.string().when('publishType', {
+      is: 'scheduled',
+      then: (s) => s.required('Scheduled date is required for scheduled publish'),
+    }),
+  }),
   features: Yup.object().shape({
     timeslot: Yup.boolean(),
     timeSlotConfig: Yup.mixed().nullable(),
@@ -141,7 +134,10 @@ const schema = Yup.object().shape({
   }),
 });
 
-const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode }) => {
+const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData }) => {
+  const [addTicketing, { isLoading: addTicketingLoading }] = useAddTicketingMutation();
+  const [updateTicketing, { isLoading: updateTicketingLoading }] = useUpdateTicketingMutation();
+
   const handleClose = () => {
     onClose();
   };
@@ -165,6 +161,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   const reservationEnabled = watch('features.reservation');
   const transferEnabled = watch('features.transfer');
   const baseQuantity = watch('quantity');
+  const publishType = watch('publishSettings.publishType');
 
   const [showTimeSlotModal, setShowTimeSlotModal] = React.useState(false);
   const [timeSlotConfig, setTimeSlotConfig] = React.useState<any>(null);
@@ -186,9 +183,37 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
     label: v?.basicInfo?.title || 'No Title',
   }));
 
-  const onSubmit = handleSubmit((formData) => {
-    console.log('✅ Final Submitted Ticket Data:', formData);
-    setIsLoading(false);
+  const onSubmit = handleSubmit(async (formData) => {
+    try {
+      const payload: any = {
+        title: formData?.title,
+      };
+
+      if (editMode && selectedData) {
+        payload.status = formData?.status;
+        payload.id = selectedData?._id;
+      }
+
+      const response = editMode && selectedData ? await updateTicketing(payload).unwrap() : await addTicketing(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || (editMode ? 'Menu List updated successfully' : 'Menu List created successfully'));
+
+      methods.reset(defaultValues);
+      onClose();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+    }
   });
 
   return (
@@ -265,38 +290,104 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                     </div>
                   </div>
 
+                  {/* Publishing Options Section */}
+                  <div>
+                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-200">Publishing Options</h3>
+
+                    <FeatureSection>
+                      <div className="dark:bg-secondary bg-gray-50 p-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">Publish Settings</span>
+                      </div>
+                      <div className="dark:bg-secondary border-t bg-white p-4">
+                        <div className="space-y-3">
+                          {/* Instant Publish Option */}
+                          <label className="flex cursor-pointer items-start gap-3">
+                            <input
+                              type="radio"
+                              value="instant"
+                              checked={publishType === 'instant'}
+                              onChange={(e) =>
+                                setValue('publishSettings.publishType', e.target.value as 'instant', {
+                                  shouldDirty: true,
+                                })
+                              }
+                              disabled={isLoading}
+                              className="mt-1 h-4 w-4 text-blue-600"
+                            />
+                            <div className="flex-1">
+                              <span className="text-sm font-medium">Instant Publish</span>
+                              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                Becomes immediately visible and available to users in the app once created and saved.
+                              </p>
+                            </div>
+                          </label>
+
+                          {/* Scheduled Publish Option */}
+                          <div>
+                            <label className="flex cursor-pointer items-start gap-3">
+                              <input
+                                type="radio"
+                                value="scheduled"
+                                checked={publishType === 'scheduled'}
+                                onChange={(e) =>
+                                  setValue('publishSettings.publishType', e.target.value as 'scheduled', {
+                                    shouldDirty: true,
+                                  })
+                                }
+                                disabled={isLoading}
+                                className="mt-1 h-4 w-4 text-blue-600"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium">Scheduled Publish</span>
+                                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                  Set a specific date and time when the ticket should automatically go live. The system will automatically update its
+                                  status at the scheduled moment.
+                                </p>
+                              </div>
+                            </label>
+
+                            {publishType === 'scheduled' && (
+                              <div className="mt-3 ml-7">
+                                <RHFTextField
+                                  name="publishSettings.scheduledDate"
+                                  label="Schedule Date & Time"
+                                  type="datetime-local"
+                                  disabled={isLoading}
+                                  required={publishType === 'scheduled'}
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Manual Publish Option */}
+                          <label className="flex cursor-pointer items-start gap-3">
+                            <input
+                              type="radio"
+                              value="manual"
+                              checked={publishType === 'manual'}
+                              onChange={(e) =>
+                                setValue('publishSettings.publishType', e.target.value as 'manual', {
+                                  shouldDirty: true,
+                                })
+                              }
+                              disabled={isLoading}
+                              className="mt-1 h-4 w-4 text-blue-600"
+                            />
+                            <div className="flex-1">
+                              <span className="text-sm font-medium">Manual Publish</span>
+                              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                Tickets remain hidden until you explicitly switch their status to Published using the admin panel.
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    </FeatureSection>
+                  </div>
+
                   {/* Optional Features */}
                   <div>
                     <SectionHeader title="Optional Features" />
-
-                    {/* Timeslot Feature */}
-                    {/* <FeatureSection>
-                    <ToggleSwitch
-                      value={timeslotEnabled}
-                      onChange={(val) =>
-                        setValue('features.timeslot', val, {
-                          shouldDirty: true,
-                        })
-                      }
-                      label="Time Slot Ticketing"
-                      disabled={isLoading}
-                    />
-                    {timeslotEnabled && (
-                      <FeatureSectionContent>
-                        <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-                          <Calendar className="mr-1 inline" size={14} />
-                          Divide event into bookable time windows. Manage via
-                          calendar view.
-                        </p>
-                        <button
-                          type="button"
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          Configure Time Slots →
-                        </button>
-                      </FeatureSectionContent>
-                    )}
-                  </FeatureSection> */}
 
                     <FeatureSection>
                       <ToggleSwitch
@@ -612,7 +703,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       Cancel
                     </Button>
 
-                    {isLoading ? (
+                    {isLoading || addTicketingLoading || updateTicketingLoading ? (
                       <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                         <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
                       </Button>

@@ -1,21 +1,21 @@
 'use client';
 
 import SidebarToggleButton from '@/app/common/siebarToggleButton';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { OrganizerGuard } from '@/components/guards';
-import React, { FC, useEffect, useState } from 'react';
-import '../../common/terms-html.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import { useUpdateUserTermsMutation } from '@/store/Reducer/user-list';
-import { showError, showSuccess } from '@/utils/toast';
-import { getErrorMessage } from '@/utils/api';
-import { setUser } from '@/store/slice/userSlice';
-import { useGetTermsAndConditionQuery } from '@/store/Reducer/settings';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGetTermsAndConditionQuery } from '@/store/Reducer/settings';
+import { useUpdateUserTermsMutation } from '@/store/Reducer/user-list';
+import { setUser } from '@/store/slice/userSlice';
+import { RootState } from '@/store/store';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
+import React, { FC, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import '../../common/terms-html.css';
 
 interface DashboardLayoutProps {
   left: React.ReactNode;

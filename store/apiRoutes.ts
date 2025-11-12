@@ -126,6 +126,9 @@ export const API_ROUTES = {
   SUPPLIERS: `/admin/suppliers`,
   SUPPLIERS_BY_ID: (id: string) => `/admin/suppliers/${id}`,
 
+  TICKETING: `/admin/ticketing`,
+  TICKETING_BY_ID: (id: string) => `/admin/ticketing/${id}`,
+
   TAGS: `/admin/tags`,
   TAGS_BY_ID: (id: string) => `/admin/tags/${id}`,
 
