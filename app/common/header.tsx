@@ -73,6 +73,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/super-admin/transactions',
     '/super-admin/menu-list',
     '/super-admin/menuItems',
+    '/super-admin/ticketing',
   ];
 
   const shouldShowDropdown = superAdminUrls.some((url) => pathname?.startsWith(url));
@@ -155,7 +156,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
           )}
         </FormProvider>
 
-        <Input placeholder="Search..." className="h-10 w-[100%] rounded-full bg-white pl-5 md:w-[240px] lg:w-[280px]" />
+        <Input placeholder="Search..." className="h-10 w-full rounded-full bg-white pl-5 md:w-[240px] lg:w-[280px]" />
 
         <div className="flex items-center justify-end gap-3">
           <ModeToggle />

@@ -35,6 +35,8 @@ const TicketingView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
   const [deleteTicketing, { isLoading: deleteTicketingLoading }] = useDeleteTicketingMutation();
 
   const {

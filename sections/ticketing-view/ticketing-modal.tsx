@@ -47,7 +47,6 @@ const SectionHeader: React.FC<{ title: string; icon?: React.ReactNode }> = ({ ti
 );
 
 const defaultValues = {
-  title: '',
   type: '',
   quantity: 0,
   price: 0,
@@ -62,6 +61,7 @@ const defaultValues = {
     timeslot: false,
     timeSlotConfig: null,
     repeatable: false,
+    repeatableVisits: '',
     resale: 'none',
     earlyBirdEnabled: false,
     earlyBirdDate: '',
@@ -75,17 +75,44 @@ const defaultValues = {
     reservation: false,
     reservationType: '',
     transfer: false,
+    transferFee: '',
   },
 };
 
+// Utility function to convert datetime-local to API format (YYYY-MM-DD HH:MM AM/PM)
+const formatDateTimeForAPI = (datetimeLocal: string): string => {
+  if (!datetimeLocal) return '';
+  const date = new Date(datetimeLocal);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
+  return `${year}-${month}-${day} ${hours12}:${minutes} ${period}`;
+};
+
+// Utility function to convert datetime-local to date only (YYYY-MM-DD)
+const formatDateForAPI = (datetimeLocal: string): string => {
+  if (!datetimeLocal) return '';
+  const date = new Date(datetimeLocal);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const schema = Yup.object().shape({
-  title: Yup.string().required('Title is required'),
   type: Yup.string().required('Ticket type is required'),
   quantity: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : Number(originalValue)))
     .typeError('Quantity must be a number')
-    .required('Quantity is required')
-    .min(1, 'Quantity must be at least 1'),
+    .when('features.timeslot', {
+      is: false,
+      then: (s) => s.required('Quantity is required').min(1, 'Quantity must be at least 1'),
+      otherwise: (s) => s,
+    }),
   price: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : Number(originalValue)))
     .typeError('Price must be a number')
@@ -104,8 +131,20 @@ const schema = Yup.object().shape({
   }),
   features: Yup.object().shape({
     timeslot: Yup.boolean(),
-    timeSlotConfig: Yup.mixed().nullable(),
+    timeSlotConfig: Yup.mixed()
+      .nullable()
+      .when('timeslot', {
+        is: true,
+        then: (s) =>
+          s.required('Time slot configuration is required').test('is-array', 'Time slot configuration must have at least one date', (value) => {
+            return Array.isArray(value) && value.length > 0;
+          }),
+      }),
     repeatable: Yup.boolean(),
+    repeatableVisits: Yup.string().when('repeatable', {
+      is: true,
+      then: (s) => s.required('Number of visits is required'),
+    }),
     resale: Yup.string().oneOf(['none', 'name', 'full']),
     earlyBirdEnabled: Yup.boolean(),
     earlyBirdDate: Yup.string().when('earlyBirdEnabled', {
@@ -131,6 +170,10 @@ const schema = Yup.object().shape({
     reservation: Yup.boolean(),
     reservationType: Yup.string(),
     transfer: Yup.boolean(),
+    transferFee: Yup.string().when('transfer', {
+      is: true,
+      then: (s) => s.required('Transfer fee is required'),
+    }),
   }),
 });
 
@@ -185,30 +228,133 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
 
   const onSubmit = handleSubmit(async (formData) => {
     try {
+      // Map publishType to status
+      let status = 'active';
+      if (formData.publishSettings.publishType === 'scheduled') {
+        status = 'scheduled';
+      } else if (formData.publishSettings.publishType === 'manual') {
+        status = 'inactive';
+      }
+
       const payload: any = {
-        title: formData?.title,
+        title: formData.type, // API uses 'title' but form uses 'type'
+        price: formData.price,
+        taxPercentage: parseInt(formData.tax),
+        event: formData.event,
+        status: status,
       };
 
+      // Only include quantity if timingSlots is not enabled
+      if (!formData.features.timeslot) {
+        payload.quantity = formData.quantity;
+      }
+
+      // Add scheduledPublishAt if status is scheduled
+      if (status === 'scheduled' && formData.publishSettings.scheduledDate) {
+        payload.scheduledPublishAt = formatDateTimeForAPI(formData.publishSettings.scheduledDate);
+      }
+
+      // Handle timingSlots
+      if (formData.features.timeslot) {
+        payload.timingSlots = {
+          enabled: true,
+          dateTimeSlots: formData.features.timeSlotConfig || [],
+        };
+      } else {
+        payload.timingSlots = {
+          enabled: false,
+        };
+      }
+
+      // Handle repeatable
+      if (formData.features.repeatable) {
+        payload.repeatable = {
+          isRepeatable: true,
+          visits: parseInt(formData.features.repeatableVisits) || 1,
+        };
+      } else {
+        payload.repeatable = {
+          isRepeatable: false,
+        };
+      }
+
+      // Handle resaleProtection - map values
+      const resaleMap: { [key: string]: string } = {
+        none: 'none',
+        name: 'nameSurname',
+        full: 'nameSurnamePid',
+      };
+      payload.resaleProtection = resaleMap[formData.features.resale] || 'none';
+
+      // Handle transferFee
+      if (formData.features.transfer && formData.features.transferFee) {
+        payload.transferFee = parseFloat(formData.features.transferFee);
+      }
+
+      // Handle timeSensitivePricing
+      const timeSensitivePricing: any = {};
+      if (formData.features.earlyBirdEnabled) {
+        timeSensitivePricing.earlyBird = {
+          endDate: formatDateForAPI(formData.features.earlyBirdDate),
+          discountedPrice: parseFloat(formData.features.earlyBirdPrice),
+        };
+      }
+      if (formData.features.lastMinuteEnabled) {
+        timeSensitivePricing.lastMinute = {
+          startDate: formatDateForAPI(formData.features.lastMinuteDate),
+          discountedPrice: parseFloat(formData.features.lastMinutePrice),
+        };
+      }
+      if (Object.keys(timeSensitivePricing).length > 0) {
+        payload.timeSensitivePricing = timeSensitivePricing;
+      }
+
+      // Handle fastTrackEntry
+      if (formData.features.fasttrack) {
+        payload.fastTrackEntry = {
+          enabled: true,
+          quantity: parseInt(formData.features.fasttrackQuantity) || 0,
+          extraPrice: parseFloat(formData.features.fasttrackPrice) || 0,
+        };
+      } else {
+        payload.fastTrackEntry = {
+          enabled: false,
+        };
+      }
+
+      // Handle requiresReservation
+      if (formData.features.reservation) {
+        payload.requiresReservation = {
+          enabled: true,
+          type: formData.features.reservationType || 'any',
+        };
+      } else {
+        payload.requiresReservation = {
+          enabled: false,
+        };
+      }
+
       if (editMode && selectedData) {
-        payload.status = formData?.status;
         payload.id = selectedData?._id;
       }
 
-      const response = editMode && selectedData ? await updateTicketing(payload).unwrap() : await addTicketing(payload).unwrap();
+      console.log('payload', payload);
 
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
+      // const response = editMode && selectedData ? await updateTicketing(payload).unwrap() : await addTicketing(payload).unwrap();
 
-      if (response?.error) {
-        showError(getErrorMessage(response.error));
-        return;
-      }
+      // if (!response) {
+      //   showError('No response from server. Please try again later.');
+      //   return;
+      // }
 
-      showSuccess(response?.message || (editMode ? 'Menu List updated successfully' : 'Menu List created successfully'));
+      // if (response?.error) {
+      //   showError(getErrorMessage(response.error));
+      //   return;
+      // }
 
-      methods.reset(defaultValues);
+      showSuccess(response?.message || (editMode ? 'Ticket updated successfully' : 'Ticket created successfully'));
+
+      // methods.reset(defaultValues);
       onClose();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
@@ -243,15 +389,17 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                         disabled={isLoading}
                       />
 
-                      <RHFTextField
-                        name="quantity"
-                        label="Quantity"
-                        type="number"
-                        placeholder="Enter quantity"
-                        min="1"
-                        className={`${formState.errors.quantity ? 'border-red-400 focus:border-red-400' : ''}`}
-                        disabled={isLoading}
-                      />
+                      {!timeslotEnabled && (
+                        <RHFTextField
+                          name="quantity"
+                          label="Quantity"
+                          type="number"
+                          placeholder="Enter quantity"
+                          min="1"
+                          className={`${formState.errors.quantity ? 'border-red-400 focus:border-red-400' : ''}`}
+                          disabled={isLoading}
+                        />
+                      )}
 
                       <RHFTextField
                         name="price"
@@ -413,10 +561,11 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                           >
                             Configure Time Slots →
                           </button>
-                          {timeSlotConfig && (
+                          {timeSlotConfig && Array.isArray(timeSlotConfig) && timeSlotConfig.length > 0 && (
                             <div className="mt-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                               <p className="text-sm text-green-700 dark:text-green-300">
-                                ✓ Time slots configured: {timeSlotConfig.timeSlots.length} slots on {timeSlotConfig.operatingDays.length} days
+                                ✓ Time slots configured: {timeSlotConfig.reduce((total, dts) => total + dts.timeSlots.length, 0)} slots across{' '}
+                                {timeSlotConfig.length} date{timeSlotConfig.length > 1 ? 's' : ''}
                               </p>
                             </div>
                           )}
@@ -439,7 +588,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       {repeatableEnabled && (
                         <FeatureSectionContent>
                           <RHFTextField
-                            name="number"
+                            name="features.repeatableVisits"
                             label="Number of visits per ticket"
                             type="number"
                             min="1"
@@ -502,7 +651,15 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       />
                       {transferEnabled && (
                         <FeatureSectionContent>
-                          <RHFTextField name="price" type="number" placeholder="Enter Transfer Fee" step="0.01" min="0" disabled={isLoading} />
+                          <RHFTextField
+                            name="features.transferFee"
+                            label="Transfer Fee (€)"
+                            type="number"
+                            placeholder="Enter Transfer Fee"
+                            step="0.01"
+                            min="0"
+                            disabled={isLoading}
+                          />
                         </FeatureSectionContent>
                       )}
                     </FeatureSection>
@@ -725,7 +882,12 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
       </Dialog>
 
       {/* Time Slot Configuration Modal */}
-      <TimeSlotConfigModal open={showTimeSlotModal} onClose={() => setShowTimeSlotModal(false)} onSave={handleTimeSlotSave} />
+      <TimeSlotConfigModal
+        open={showTimeSlotModal}
+        onClose={() => setShowTimeSlotModal(false)}
+        onSave={handleTimeSlotSave}
+        totalQuantity={baseQuantity}
+      />
     </>
   );
 };
