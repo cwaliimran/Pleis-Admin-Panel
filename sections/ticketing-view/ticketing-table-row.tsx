@@ -19,19 +19,17 @@ const TicketingTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) =>
 
       <TableCell className="text-left font-medium capitalize">{item?.event?.basicInfo?.title || '-'}</TableCell>
 
-      <TableCell className="text-left font-medium">{item?.quantity || '-'}</TableCell>
+      <TableCell className="text-left font-medium">{item?.quantity || 'N/A'}</TableCell>
 
       <TableCell className="text-left font-medium">{item?.taxPercentage || '-'}%</TableCell>
 
       <TableCell className="text-left font-medium">{item?.price || '-'}</TableCell>
 
-      <TableCell className="text-left font-medium">
-        <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          {item?.timingSlots?.enabled ? 'Enabled' : 'Disabled'}
-        </span>
-      </TableCell>
-
       <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+
+      <TableCell className="text-muted-foreground text-left text-sm">
+        <CustomBadge variant={item?.timingSlots?.enabled ? 'success' : 'error'}>{item?.timingSlots?.enabled ? 'Enabled' : 'Disabled'}</CustomBadge>
+      </TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge

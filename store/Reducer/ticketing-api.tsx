@@ -9,16 +9,17 @@ export const ticketingApi = createApi({
 
   endpoints: (builder) => ({
     getTicketing: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, organization }) => {
         const params: any = {
-          keyword: search,
+          // keyword: search,
           status,
           page: page + 1,
           limit,
         };
         if (date) (params as any).date = date;
+        if (search) (params as any).keyword = search;
         return {
-          url: API_ROUTES.TICKETING,
+          url: API_ROUTES.TICKETING_BY_ORGANIZATION(organization),
           method: 'GET',
           params,
         };

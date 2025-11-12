@@ -8,11 +8,12 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Input } from '@/components/ui/input';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
+import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
 import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FC, useEffect, useMemo } from 'react';
+import { FC, useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import Profile from './profile';
@@ -31,10 +32,12 @@ interface DropdownOption {
 
 interface FormValues {
   organizations: string | null;
+  ticketingOrganization: string | null;
 }
 
 const schema: yup.ObjectSchema<FormValues> = yup.object({
   organizations: yup.string().nullable().defined(),
+  ticketingOrganization: yup.string().nullable().defined(),
 });
 
 const Header: FC<HeaderProps> = ({ links }) => {
@@ -54,13 +57,35 @@ const Header: FC<HeaderProps> = ({ links }) => {
     }
   }, []);
 
+  const defaultOrganization = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const storedCompany = localStorage.getItem('selectedCompany');
+      const parsedCompany = storedCompany ? JSON.parse(storedCompany) : null;
+      const activeCompanyId = parsedCompany?.value;
+
+      const stored = localStorage.getItem('selectedOrganization');
+      const parsed = stored ? JSON.parse(stored) : null;
+
+      if (parsed?.companyId && parsed.companyId !== activeCompanyId) {
+        return null;
+      }
+
+      return parsed?.value || null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const methods = useForm<FormValues>({
     resolver: yupResolver<FormValues, any, FormValues>(schema),
-    defaultValues: { organizations: defaultCompany },
+    defaultValues: { organizations: defaultCompany, ticketingOrganization: defaultOrganization },
   });
 
-  const { watch } = methods;
+  const { watch, setValue } = methods;
   const organizationsValue = watch('organizations');
+  const ticketingOrganizationValue = watch('ticketingOrganization');
+  const previousCompanyRef = useRef<string | null>(organizationsValue ?? null);
 
   const superAdminUrls = [
     '/super-admin/loyalty',
@@ -77,11 +102,21 @@ const Header: FC<HeaderProps> = ({ links }) => {
   ];
 
   const shouldShowDropdown = superAdminUrls.some((url) => pathname?.startsWith(url));
+  const requiresOrganizationDropdown = pathname?.startsWith('/super-admin/ticketing') ?? false;
 
   const { data: companyList, isLoading: isUserLoading } = useGetCompanyListQuery(
     {},
     {
       skip: !shouldShowDropdown || user?.accountState?.userType !== 'admin',
+    }
+  );
+
+  const { data: organizationResponse, isLoading: isOrganizationsLoading } = useGetOrganizationByCompanyQuery(
+    {
+      companyOrganizer: organizationsValue || undefined,
+    },
+    {
+      skip: !shouldShowDropdown || !requiresOrganizationDropdown || user?.accountState?.userType !== 'admin' || !organizationsValue,
     }
   );
 
@@ -93,6 +128,75 @@ const Header: FC<HeaderProps> = ({ links }) => {
       })) || [],
     [companyList]
   );
+
+  const organizationOptions = useMemo(
+    () =>
+      organizationResponse?.data?.map((organization: any) => ({
+        label: organization?.basicInfo?.name || 'Unknown Organization',
+        value: organization?._id,
+      })) || [],
+    [organizationResponse]
+  );
+
+  useEffect(() => {
+    if (!requiresOrganizationDropdown) return;
+
+    if (!organizationsValue) {
+      if (ticketingOrganizationValue !== null) {
+        setValue('ticketingOrganization', null, { shouldDirty: false, shouldValidate: false });
+      }
+      previousCompanyRef.current = null;
+      localStorage.removeItem('selectedOrganization');
+      window.dispatchEvent(new Event('organizationChanged'));
+      return;
+    }
+
+    const previousCompany = previousCompanyRef.current;
+    if (previousCompany && previousCompany !== organizationsValue) {
+      setValue('ticketingOrganization', null, { shouldDirty: false, shouldValidate: false });
+      localStorage.removeItem('selectedOrganization');
+      window.dispatchEvent(new Event('organizationChanged'));
+    }
+
+    previousCompanyRef.current = organizationsValue;
+  }, [organizationsValue, requiresOrganizationDropdown, setValue, ticketingOrganizationValue]);
+
+  useEffect(() => {
+    if (!requiresOrganizationDropdown) return;
+    if (ticketingOrganizationValue === undefined) return;
+
+    if (!ticketingOrganizationValue || !organizationsValue) {
+      localStorage.removeItem('selectedOrganization');
+      window.dispatchEvent(new Event('organizationChanged'));
+      return;
+    }
+
+    const fullOption = organizationOptions.find((opt: DropdownOption) => opt.value === ticketingOrganizationValue);
+    const organizationToSave = fullOption || { value: ticketingOrganizationValue, label: 'Unknown Organization', companyId: organizationsValue };
+
+    localStorage.setItem(
+      'selectedOrganization',
+      JSON.stringify({
+        ...organizationToSave,
+        companyId: organizationsValue,
+      })
+    );
+    window.dispatchEvent(new Event('organizationChanged'));
+  }, [ticketingOrganizationValue, organizationOptions, requiresOrganizationDropdown, organizationsValue]);
+
+  useEffect(() => {
+    if (!requiresOrganizationDropdown) return;
+    if (!ticketingOrganizationValue) return;
+    if (isOrganizationsLoading) return;
+
+    const hasMatchingOption = organizationOptions.some((opt: DropdownOption) => opt.value === ticketingOrganizationValue);
+
+    if (!hasMatchingOption) {
+      setValue('ticketingOrganization', null, { shouldDirty: false, shouldValidate: false });
+      localStorage.removeItem('selectedOrganization');
+      window.dispatchEvent(new Event('organizationChanged'));
+    }
+  }, [organizationOptions, requiresOrganizationDropdown, ticketingOrganizationValue, setValue, isOrganizationsLoading]);
 
   useEffect(() => {
     if (organizationsValue === undefined) return;
@@ -113,6 +217,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
   }, [organizationsValue, userOptions]);
 
   const showAdminDropdown = user?.accountState?.userType === 'admin' && shouldShowDropdown;
+  const showOrganizationDropdown = showAdminDropdown && requiresOrganizationDropdown && Boolean(organizationsValue);
   const showOrganizerDropdown = user?.role === 'organizer';
 
   return (
@@ -135,11 +240,31 @@ const Header: FC<HeaderProps> = ({ links }) => {
 
       <div className="flex w-full flex-col-reverse gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4 md:items-start">
         <FormProvider methods={methods} onSubmit={() => {}}>
-          {showAdminDropdown && (
-            <div className="w-full rounded-md bg-white md:w-[240px] dark:bg-[#171717]">
-              <RHFCustomDropdown name="organizations" placeholder="Select Company" options={userOptions} isLoading={isUserLoading} showNone={false} />
-            </div>
-          )}
+          <div className="flex gap-3">
+            {showAdminDropdown && (
+              <div className="w-full rounded-md bg-white md:w-[240px] dark:bg-[#171717]">
+                <RHFCustomDropdown
+                  name="organizations"
+                  placeholder="Select Company"
+                  options={userOptions}
+                  isLoading={isUserLoading}
+                  showNone={false}
+                />
+              </div>
+            )}
+
+            {showOrganizationDropdown && (
+              <div className="w-full rounded-md bg-white md:w-[240px] dark:bg-[#171717]">
+                <RHFCustomDropdown
+                  name="ticketingOrganization"
+                  placeholder="Select Organization"
+                  options={organizationOptions}
+                  isLoading={isOrganizationsLoading}
+                  showNone={false}
+                />
+              </div>
+            )}
+          </div>
 
           {showOrganizerDropdown && (
             <div className="w-full rounded-md bg-white md:w-[240px] dark:bg-[#171717]">

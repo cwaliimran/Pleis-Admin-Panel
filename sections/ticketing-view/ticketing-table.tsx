@@ -44,7 +44,6 @@ const headLabel = [
     sortable: true,
     sortKey: 'price',
   },
-  { id: 'timeslot', label: 'Timeslot', align: 'left' },
   {
     id: 'createdAt',
     label: 'Created At',
@@ -52,6 +51,7 @@ const headLabel = [
     sortable: true,
     sortKey: 'createdAt',
   },
+  { id: 'timeslot', label: 'Timeslot', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];

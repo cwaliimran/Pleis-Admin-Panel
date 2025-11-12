@@ -66,6 +66,7 @@ export const API_ROUTES = {
 
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
+  ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
 
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_ID: (id: string) => `/admin/venues/${id}`,
@@ -128,6 +129,7 @@ export const API_ROUTES = {
 
   TICKETING: `/admin/ticketing`,
   TICKETING_BY_ID: (id: string) => `/admin/ticketing/${id}`,
+  TICKETING_BY_ORGANIZATION: (id: string) => `/admin/ticketing/organization/${id}`,
 
   TAGS: `/admin/tags`,
   TAGS_BY_ID: (id: string) => `/admin/tags/${id}`,

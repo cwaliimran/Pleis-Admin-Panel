@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteTicketingMutation, useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -13,7 +14,6 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TicketingModal from './ticketing-modal';
 import TicketingTable from './ticketing-table';
-import { useDeleteTicketingMutation, useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 
 const defaultValues = {
   title: '',
@@ -35,7 +35,7 @@ const TicketingView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  const selectedOrganization = JSON.parse(localStorage.getItem('selectedOrganization') || 'null');
 
   const [deleteTicketing, { isLoading: deleteTicketingLoading }] = useDeleteTicketingMutation();
 
@@ -43,13 +43,19 @@ const TicketingView = () => {
     data: apiData,
     isLoading,
     refetch,
-  } = useGetTicketingQuery({
-    page: page - 1,
-    search,
-    limit,
-    status: status === 'all' ? undefined : status,
-    date: date ? formatDate(date) : undefined,
-  });
+  } = useGetTicketingQuery(
+    {
+      page: page - 1,
+      search,
+      limit,
+      status: status === 'all' ? undefined : status,
+      date: date ? formatDate(date) : undefined,
+      organization: selectedOrganization?.value,
+    },
+    {
+      skip: !selectedOrganization?.value,
+    }
+  );
 
   // console.log('apiData', apiData?.data || []);
 
@@ -195,7 +201,15 @@ const TicketingView = () => {
         }}
       />
 
-      <TicketingModal open={openModal.value} onClose={CloseModal} editMode={editModal.value} selectedData={selectedVenueType} />
+      {openModal.value && (
+        <TicketingModal
+          open={openModal.value}
+          onClose={CloseModal}
+          editMode={editModal.value}
+          selectedData={selectedVenueType}
+          selectedOrganization={selectedOrganization}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

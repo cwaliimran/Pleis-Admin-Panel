@@ -5,10 +5,10 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
 import { useAddTicketingMutation, useUpdateTicketingMutation } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
+import { showError } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Calendar } from 'lucide-react';
 import * as React from 'react';
@@ -22,6 +22,7 @@ interface TicketingModalProps {
   onClose: () => void;
   editMode?: boolean;
   selectedData?: any;
+  selectedOrganization?: any;
 }
 
 const FeatureSection: React.FC<{
@@ -177,7 +178,7 @@ const schema = Yup.object().shape({
   }),
 });
 
-const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData }) => {
+const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization }) => {
   const [addTicketing, { isLoading: addTicketingLoading }] = useAddTicketingMutation();
   const [updateTicketing, { isLoading: updateTicketingLoading }] = useUpdateTicketingMutation();
 
@@ -214,14 +215,16 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
     setValue('features.timeSlotConfig', config, { shouldDirty: true });
   };
 
-  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-  });
+  const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
+    {
+      organization: selectedOrganization?.value,
+    },
+    {
+      skip: !selectedOrganization?.value,
+    }
+  );
 
-  const eventOptions = (eventData?.data || []).map((v: any) => ({
+  const eventOptions = (eventData || []).map((v: any) => ({
     value: v?._id.toString(),
     label: v?.basicInfo?.title || 'No Title',
   }));
@@ -352,7 +355,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
       //   return;
       // }
 
-      showSuccess(response?.message || (editMode ? 'Ticket updated successfully' : 'Ticket created successfully'));
+      // showSuccess(response?.message || (editMode ? 'Ticket updated successfully' : 'Ticket created successfully'));
 
       // methods.reset(defaultValues);
       onClose();

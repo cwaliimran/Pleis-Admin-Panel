@@ -32,6 +32,15 @@ export const eventApi = createApi({
       providesTags: ['event'],
     }),
 
+    getEventsByOrganization: builder.query({
+      query: ({ organization }) => ({
+        url: API_ROUTES.ADMIN_EVENTS_BY_ORGANIZATION(organization),
+        method: 'GET',
+      }),
+      transformResponse: (res) => res.data,
+      providesTags: ['event'],
+    }),
+
     geteventById: builder.query({
       query: (id) => ({
         url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
@@ -77,5 +86,12 @@ export const eventApi = createApi({
   }),
 });
 
-export const { useGeteventsQuery, useGeteventByIdQuery, useAddeventMutation, useUpdateeventMutation, useCloneeventMutation, useDeleteeventMutation } =
-  eventApi;
+export const {
+  useGeteventsQuery,
+  useGetEventsByOrganizationQuery,
+  useGeteventByIdQuery,
+  useAddeventMutation,
+  useUpdateeventMutation,
+  useCloneeventMutation,
+  useDeleteeventMutation,
+} = eventApi;

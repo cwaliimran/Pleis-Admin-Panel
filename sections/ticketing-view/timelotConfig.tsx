@@ -96,16 +96,18 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
   const removeTimeSlot = (date: string, slotId: string) => {
     setDateTimeSlots(
-      dateTimeSlots.map((dts) => {
-        if (dts.date === date) {
-          const filtered = dts.timeSlots.filter((slot) => slot.id !== slotId);
-          if (filtered.length === 0) {
-            return null; // Remove date if no slots left
+      dateTimeSlots
+        .map((dts) => {
+          if (dts.date === date) {
+            const filtered = dts.timeSlots.filter((slot) => slot.id !== slotId);
+            if (filtered.length === 0) {
+              return null; // Remove date if no slots left
+            }
+            return { ...dts, timeSlots: filtered };
           }
-          return { ...dts, timeSlots: filtered };
-        }
-        return dts;
-      }).filter((dts): dts is DateTimeSlot => dts !== null)
+          return dts;
+        })
+        .filter((dts): dts is DateTimeSlot => dts !== null)
     );
   };
 
@@ -196,12 +198,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                 />
-                <Button
-                  type="button"
-                  onClick={addDate}
-                  className="bg-blue-600 text-white hover:bg-blue-700"
-                  disabled={!selectedDate}
-                >
+                <Button type="button" onClick={addDate} className="bg-blue-600 text-white hover:bg-blue-700" disabled={!selectedDate}>
                   <Plus size={16} className="mr-1" />
                   Add Date
                 </Button>
@@ -221,10 +218,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
             {/* Date Time Slots */}
             <div className="space-y-4">
               {dateTimeSlots.map((dateTimeSlot) => (
-                <div
-                  key={dateTimeSlot.date}
-                  className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800"
-                >
+                <div key={dateTimeSlot.date} className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
                   <div className="mb-3 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Calendar size={16} className="text-blue-600" />
