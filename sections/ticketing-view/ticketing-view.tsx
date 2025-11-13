@@ -102,22 +102,16 @@ const TicketingView = () => {
   };
 
   const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
+    const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
+    if (venueTypeToEdit) {
+      setSelectedVenueType(venueTypeToEdit);
+      setSelectedId(id);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Ticket not found');
+    }
   };
-
-  // const handleEdit = (id: string) => {
-  //   const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
-  //   if (venueTypeToEdit) {
-  //     setSelectedVenueType(venueTypeToEdit);
-  //     setSelectedId(id);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Tag not found');
-  //   }
-  // };
 
   const handleDelete = (id: string) => {
     setSelectedId(id);
@@ -227,3 +221,6 @@ const TicketingView = () => {
 };
 
 export default TicketingView;
+
+
+

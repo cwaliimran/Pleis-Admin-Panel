@@ -134,6 +134,10 @@ export const API_ROUTES = {
   TAGS: `/admin/tags`,
   TAGS_BY_ID: (id: string) => `/admin/tags/${id}`,
 
+  STATUS_BADGE: `/admin/status-badges`,
+  STATUS_BADGE_REORDER: `/admin/status-badges/reorder`,
+  STATUS_BADGE_BY_ID: (id: string) => `/admin/status-badges/${id}`,
+
   USER_ACCESS: `/admin/features`,
   USER_ACCESS_BY_ID: (id: string) => `/admin/features/${id}`,
 

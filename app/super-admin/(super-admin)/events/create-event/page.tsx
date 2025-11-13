@@ -1,6 +1,6 @@
 import Header from '@/app/common/header';
+// import CompanyGuard from '@/components/guards/CompanyGuard';
 import { CreateEventView } from '@/sections/event/eventV2';
-// import CreateEventView from '@/sections/event/create-event-view/create-event';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -18,7 +18,9 @@ const Page = () => {
           ]}
         />
 
+        {/* <CompanyGuard> */}
         <CreateEventView title="Create" userType="super-admin" />
+        {/* </CompanyGuard> */}
         {/* <CreateEventView userType="super-admin" title={'Create'} /> */}
       </div>
     </>

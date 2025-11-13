@@ -2,10 +2,9 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Plus, Trash2, X } from 'lucide-react';
+import { Calendar, Plus, X } from 'lucide-react';
 import * as React from 'react';
-import { EventData, getEventDateConstraints, isDateWithinEventSchedule } from './ticket-helpers';
-import { testDateParsing } from './debug-date-parsing';
+import { EventData, getEventDateConstraints, isDateWithinEventSchedule } from './event-ticketing-helpers';
 
 interface TimeSlot {
   id: string;
@@ -60,10 +59,6 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
   const eventConstraints = React.useMemo(() => {
     try {
-      if (eventData && process.env.NODE_ENV === 'development') {
-        testDateParsing(eventData);
-      }
-
       return getEventDateConstraints(eventData ?? null);
     } catch (error) {
       console.error('Error getting event constraints:', error);
@@ -135,20 +130,6 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
     );
   };
 
-  const removeTimeSlot = (date: string, slotId: string) => {
-    setDateTimeSlots(
-      dateTimeSlots.map((dts) => {
-        if (dts.date === date) {
-          return {
-            ...dts,
-            timeSlots: dts.timeSlots.filter((slot) => slot.id !== slotId),
-          };
-        }
-        return dts;
-      })
-    );
-  };
-
   const updateTimeSlot = (date: string, slotId: string, field: 'startTime' | 'endTime' | 'quantity', value: string | number) => {
     setDateTimeSlots(
       dateTimeSlots.map((dts) => {
@@ -203,12 +184,6 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
     onSave(apiFormat);
     onClose();
   };
-
-  // const handleSelectDate = (date: string) => {
-  //   setSelectedDate(date);
-  //   setShowDate(false);
-  //   setSlotDuration('120');
-  // };
 
   const totalAllocated = getTotalAllocated();
   const remainingQuantity = totalQuantity - totalAllocated;
@@ -368,16 +343,6 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           />
                         </div>
-
-                        <button
-                          title="remove slot"
-                          type="button"
-                          onClick={() => removeTimeSlot(dateTimeSlot.date, slot.id)}
-                          className="cursor-pointer text-red-500 hover:text-red-600"
-                          disabled={dateTimeSlot.timeSlots.length === 1}
-                        >
-                          <Trash2 size={20} />
-                        </button>
                       </div>
                     ))}
                   </div>

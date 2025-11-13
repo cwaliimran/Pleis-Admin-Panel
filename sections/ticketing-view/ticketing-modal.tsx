@@ -8,12 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
 import { useAddTicketingMutation, useUpdateTicketingMutation } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
-import { showError } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Calendar } from 'lucide-react';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
+import { FormData, transformApiDataToForm, transformTicketPayload } from './ticket-helpers';
 import TimeSlotConfigModal from './timelotConfig';
 import ToggleSwitch from './toogle';
 
@@ -53,9 +54,9 @@ const defaultValues = {
   price: 0,
   tax: '',
   event: '',
-  status: 'active',
+  status: 'active' as const,
   publishSettings: {
-    publishType: 'instant',
+    publishType: 'instant' as 'instant' | 'scheduled' | 'manual',
     scheduledDate: '',
   },
   features: {
@@ -63,7 +64,7 @@ const defaultValues = {
     timeSlotConfig: null,
     repeatable: false,
     repeatableVisits: '',
-    resale: 'none',
+    resale: 'none' as 'none' | 'name' | 'full',
     earlyBirdEnabled: false,
     earlyBirdDate: '',
     earlyBirdPrice: '',
@@ -78,30 +79,6 @@ const defaultValues = {
     transfer: false,
     transferFee: '',
   },
-};
-
-// Utility function to convert datetime-local to API format (YYYY-MM-DD HH:MM AM/PM)
-const formatDateTimeForAPI = (datetimeLocal: string): string => {
-  if (!datetimeLocal) return '';
-  const date = new Date(datetimeLocal);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = date.getHours();
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const hours12 = hours % 12 || 12;
-  return `${year}-${month}-${day} ${hours12}:${minutes} ${period}`;
-};
-
-// Utility function to convert datetime-local to date only (YYYY-MM-DD)
-const formatDateForAPI = (datetimeLocal: string): string => {
-  if (!datetimeLocal) return '';
-  const date = new Date(datetimeLocal);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 };
 
 const schema = Yup.object().shape({
@@ -179,21 +156,38 @@ const schema = Yup.object().shape({
 });
 
 const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization }) => {
+  console.log('selectedData', selectedData);
   const [addTicketing, { isLoading: addTicketingLoading }] = useAddTicketingMutation();
   const [updateTicketing, { isLoading: updateTicketingLoading }] = useUpdateTicketingMutation();
 
+  const [isLoading, setIsLoading] = React.useState(false);
+
   const handleClose = () => {
+    reset(defaultValues);
+    setTimeSlotConfig(null);
     onClose();
   };
-
-  const [isLoading, setIsLoading] = React.useState(false);
 
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues,
   });
 
-  const { handleSubmit, formState, watch, setValue } = methods;
+  const { handleSubmit, formState, watch, setValue, reset } = methods;
+
+  React.useEffect(() => {
+    if (editMode && selectedData) {
+      const formData = transformApiDataToForm(selectedData);
+      reset({ ...defaultValues, ...formData });
+
+      if (formData.features?.timeSlotConfig) {
+        setTimeSlotConfig(formData.features.timeSlotConfig);
+      }
+    } else {
+      reset(defaultValues);
+      setTimeSlotConfig(null);
+    }
+  }, [editMode, selectedData, reset]);
   const isDirty = formState.isDirty;
 
   const timeslotEnabled = watch('features.timeslot');
@@ -206,6 +200,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   const transferEnabled = watch('features.transfer');
   const baseQuantity = watch('quantity');
   const publishType = watch('publishSettings.publishType');
+  const selectedEventId = watch('event');
 
   const [showTimeSlotModal, setShowTimeSlotModal] = React.useState(false);
   const [timeSlotConfig, setTimeSlotConfig] = React.useState<any>(null);
@@ -229,139 +224,41 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
     label: v?.basicInfo?.title || 'No Title',
   }));
 
+  const selectedEvent = React.useMemo(() => {
+    if (!selectedEventId || !eventData) return null;
+    return eventData.find((event: any) => event._id === selectedEventId) || null;
+  }, [selectedEventId, eventData]);
+
   const onSubmit = handleSubmit(async (formData) => {
     try {
-      // Map publishType to status
-      let status = 'active';
-      if (formData.publishSettings.publishType === 'scheduled') {
-        status = 'scheduled';
-      } else if (formData.publishSettings.publishType === 'manual') {
-        status = 'inactive';
-      }
+      setIsLoading(true);
 
-      const payload: any = {
-        title: formData.type, // API uses 'title' but form uses 'type'
-        price: formData.price,
-        taxPercentage: parseInt(formData.tax),
-        event: formData.event,
-        status: status,
-      };
-
-      // Only include quantity if timingSlots is not enabled
-      if (!formData.features.timeslot) {
-        payload.quantity = formData.quantity;
-      }
-
-      // Add scheduledPublishAt if status is scheduled
-      if (status === 'scheduled' && formData.publishSettings.scheduledDate) {
-        payload.scheduledPublishAt = formatDateTimeForAPI(formData.publishSettings.scheduledDate);
-      }
-
-      // Handle timingSlots
-      if (formData.features.timeslot) {
-        payload.timingSlots = {
-          enabled: true,
-          dateTimeSlots: formData.features.timeSlotConfig || [],
-        };
-      } else {
-        payload.timingSlots = {
-          enabled: false,
-        };
-      }
-
-      // Handle repeatable
-      if (formData.features.repeatable) {
-        payload.repeatable = {
-          isRepeatable: true,
-          visits: parseInt(formData.features.repeatableVisits) || 1,
-        };
-      } else {
-        payload.repeatable = {
-          isRepeatable: false,
-        };
-      }
-
-      // Handle resaleProtection - map values
-      const resaleMap: { [key: string]: string } = {
-        none: 'none',
-        name: 'nameSurname',
-        full: 'nameSurnamePid',
-      };
-      payload.resaleProtection = resaleMap[formData.features.resale] || 'none';
-
-      // Handle transferFee
-      if (formData.features.transfer && formData.features.transferFee) {
-        payload.transferFee = parseFloat(formData.features.transferFee);
-      }
-
-      // Handle timeSensitivePricing
-      const timeSensitivePricing: any = {};
-      if (formData.features.earlyBirdEnabled) {
-        timeSensitivePricing.earlyBird = {
-          endDate: formatDateForAPI(formData.features.earlyBirdDate),
-          discountedPrice: parseFloat(formData.features.earlyBirdPrice),
-        };
-      }
-      if (formData.features.lastMinuteEnabled) {
-        timeSensitivePricing.lastMinute = {
-          startDate: formatDateForAPI(formData.features.lastMinuteDate),
-          discountedPrice: parseFloat(formData.features.lastMinutePrice),
-        };
-      }
-      if (Object.keys(timeSensitivePricing).length > 0) {
-        payload.timeSensitivePricing = timeSensitivePricing;
-      }
-
-      // Handle fastTrackEntry
-      if (formData.features.fasttrack) {
-        payload.fastTrackEntry = {
-          enabled: true,
-          quantity: parseInt(formData.features.fasttrackQuantity) || 0,
-          extraPrice: parseFloat(formData.features.fasttrackPrice) || 0,
-        };
-      } else {
-        payload.fastTrackEntry = {
-          enabled: false,
-        };
-      }
-
-      // Handle requiresReservation
-      if (formData.features.reservation) {
-        payload.requiresReservation = {
-          enabled: true,
-          type: formData.features.reservationType || 'any',
-        };
-      } else {
-        payload.requiresReservation = {
-          enabled: false,
-        };
-      }
-
-      if (editMode && selectedData) {
-        payload.id = selectedData?._id;
-      }
+      const payload = transformTicketPayload(formData as FormData, editMode, selectedData?._id, selectedData);
 
       console.log('payload', payload);
 
-      // const response = editMode && selectedData ? await updateTicketing(payload).unwrap() : await addTicketing(payload).unwrap();
+      const response = editMode && selectedData ? await updateTicketing(payload).unwrap() : await addTicketing(payload).unwrap();
 
-      // if (!response) {
-      //   showError('No response from server. Please try again later.');
-      //   return;
-      // }
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
 
-      // if (response?.error) {
-      //   showError(getErrorMessage(response.error));
-      //   return;
-      // }
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
 
-      // showSuccess(response?.message || (editMode ? 'Ticket updated successfully' : 'Ticket created successfully'));
+      showSuccess(response?.message || (editMode ? 'Ticket updated successfully' : 'Ticket created successfully'));
 
-      // methods.reset(defaultValues);
+      reset(defaultValues);
+      setTimeSlotConfig(null);
       onClose();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       showError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   });
 
@@ -371,7 +268,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
         <DialogOverlay className="fixed inset-0 z-50 flex w-full items-center justify-center bg-black/50">
           <DialogContent
             aria-describedby={undefined}
-            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:!max-w-[700px]"
+            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[700px]"
           >
             <DialogHeader className="flex flex-row items-center justify-between">
               <DialogTitle className="text-xl font-bold">{editMode ? 'Edit Ticket' : 'Create New Ticket'}</DialogTitle>
@@ -380,7 +277,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
             <div className="w-full">
               <FormProvider methods={methods} onSubmit={onSubmit}>
                 <div className="mt-4 flex flex-col gap-6">
-                  {/* Required Fields Section */}
                   <div className="dark:bg-secondary mb-3">
                     <SectionHeader title="Required Fields" icon={<AlertCircle className="text-blue-600" size={20} />} />
                     <div className="grid gap-4 md:grid-cols-2">
@@ -392,17 +288,15 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                         disabled={isLoading}
                       />
 
-                      {!timeslotEnabled && (
-                        <RHFTextField
-                          name="quantity"
-                          label="Quantity"
-                          type="number"
-                          placeholder="Enter quantity"
-                          min="1"
-                          className={`${formState.errors.quantity ? 'border-red-400 focus:border-red-400' : ''}`}
-                          disabled={isLoading}
-                        />
-                      )}
+                      <RHFTextField
+                        name="quantity"
+                        label="Quantity"
+                        type="number"
+                        placeholder={timeslotEnabled ? 'Managed by time slots' : 'Enter quantity'}
+                        min="1"
+                        className={`${formState.errors.quantity ? 'border-red-400 focus:border-red-400' : ''}`}
+                        disabled={isLoading || timeslotEnabled}
+                      />
 
                       <RHFTextField
                         name="price"
@@ -441,7 +335,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                     </div>
                   </div>
 
-                  {/* Publishing Options Section */}
                   <div>
                     <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-200">Publishing Options</h3>
 
@@ -451,7 +344,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       </div>
                       <div className="dark:bg-secondary border-t bg-white p-4">
                         <div className="space-y-3">
-                          {/* Instant Publish Option */}
                           <label className="flex cursor-pointer items-start gap-3">
                             <input
                               type="radio"
@@ -473,7 +365,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                             </div>
                           </label>
 
-                          {/* Scheduled Publish Option */}
                           <div>
                             <label className="flex cursor-pointer items-start gap-3">
                               <input
@@ -510,7 +401,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                             )}
                           </div>
 
-                          {/* Manual Publish Option */}
                           <label className="flex cursor-pointer items-start gap-3">
                             <input
                               type="radio"
@@ -536,7 +426,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                     </FeatureSection>
                   </div>
 
-                  {/* Optional Features */}
                   <div>
                     <SectionHeader title="Optional Features" />
 
@@ -576,7 +465,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       )}
                     </FeatureSection>
 
-                    {/* Repeatable Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!repeatableEnabled}
@@ -607,7 +495,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       )}
                     </FeatureSection>
 
-                    {/* Resale Protection Feature */}
                     <FeatureSection>
                       <FeatureSectionHeader title="Resale Protection" />
                       <FeatureSectionContent>
@@ -640,7 +527,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       </FeatureSectionContent>
                     </FeatureSection>
 
-                    {/* Transfer Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!transferEnabled}
@@ -667,12 +553,10 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       )}
                     </FeatureSection>
 
-                    {/* Time Sensitive Pricing Feature */}
                     <FeatureSection>
                       <FeatureSectionHeader title="Time Sensitive Pricing" />
                       <FeatureSectionContent>
                         <div className="space-y-3">
-                          {/* Early Bird Option */}
                           <div>
                             <label className="flex cursor-pointer items-center gap-2">
                               <input
@@ -721,7 +605,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                             )}
                           </div>
 
-                          {/* Last Minute Option */}
                           <div>
                             <label className="flex cursor-pointer items-center gap-2">
                               <input
@@ -773,7 +656,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       </FeatureSectionContent>
                     </FeatureSection>
 
-                    {/* Fast Track Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!fasttrackEnabled}
@@ -811,7 +693,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       )}
                     </FeatureSection>
 
-                    {/* Reservation Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!reservationEnabled}
@@ -840,30 +721,14 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                         </FeatureSectionContent>
                       )}
                     </FeatureSection>
-
-                    <div>
-                      {editMode && (
-                        <RHFSelectField
-                          name="status"
-                          placeholder="Select Status"
-                          label="Status"
-                          options={[
-                            { label: 'Active', value: 'active' },
-                            { label: 'Inactive', value: 'inactive' },
-                          ]}
-                          disabled={isLoading}
-                        />
-                      )}
-                    </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex justify-center gap-2">
-                    <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="px-4 py-2">
+                    <Button type="button" variant="outline" onClick={handleClose} className="px-4 py-2">
                       Cancel
                     </Button>
 
-                    {isLoading || addTicketingLoading || updateTicketingLoading ? (
+                    {addTicketingLoading || updateTicketingLoading ? (
                       <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                         <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
                       </Button>
@@ -884,12 +749,13 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
         </DialogOverlay>
       </Dialog>
 
-      {/* Time Slot Configuration Modal */}
       <TimeSlotConfigModal
         open={showTimeSlotModal}
         onClose={() => setShowTimeSlotModal(false)}
         onSave={handleTimeSlotSave}
         totalQuantity={baseQuantity}
+        eventData={selectedEvent}
+        initialConfig={timeSlotConfig}
       />
     </>
   );

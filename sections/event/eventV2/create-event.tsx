@@ -14,6 +14,7 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
   const {
     step,
     setStep,
+    isEditMode,
     showPartnerOrganizer,
     setShowPartnerOrganizer,
     file,
@@ -38,11 +39,14 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
     toggleRecurringDay,
     isStepValid,
     onSubmit,
+    handleSkipTicketing,
     router,
     recurring,
     recurringDays,
     recurringEnd,
   } = useEventForm(userType);
+
+  const maxSteps = isEditMode ? 2 : 3;
 
   return (
     <div>
@@ -52,7 +56,8 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
         <div className="w-full md:mx-auto md:max-w-5xl">
           <Card className="dark:bg-secondary shadow-sm">
             <CardContent className="dark:bg-secondary p-2 md:p-8">
-              <ProgressHeader step={step} title={title} />
+              {/* Hide progress header in edit mode OR show only 2 steps */}
+              <ProgressHeader step={step} title={title} totalSteps={maxSteps} isEditMode={isEditMode} />
 
               <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                 {step === 1 && (
@@ -91,10 +96,14 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
                     toggleRecurringDay={toggleRecurringDay}
                     setStep={setStep}
                     isStepValid={isStepValid}
+                    isEditMode={isEditMode}
+                    loading={loading}
+                    isUpdatingEvent={isUpdatingEvent}
                   />
                 )}
 
-                {step === 3 && (
+                {/* Only show Step 3 in CREATE mode */}
+                {step === 3 && !isEditMode && (
                   <StepThree
                     methods={methods}
                     watch={watch}
@@ -104,6 +113,8 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
                     isUpdatingEvent={isUpdatingEvent}
                     router={router}
                     setStep={setStep}
+                    onSubmit={onSubmit}
+                    handleSkipTicketing={handleSkipTicketing}
                   />
                 )}
               </FormProvider>
@@ -135,8 +146,6 @@ export default CreateEventView;
 //   const {
 //     step,
 //     setStep,
-//     // version,
-//     // setVersion,
 //     showPartnerOrganizer,
 //     setShowPartnerOrganizer,
 //     file,
@@ -165,8 +174,13 @@ export default CreateEventView;
 //     recurring,
 //     recurringDays,
 //     recurringEnd,
-//     eventType,
+//     event, // ADDED: Event data from API
 //   } = useEventForm(userType);
+
+//   // ADDED: Wrapper to handle both Skip and Publish
+//   const handleSubmitWithTicketing = (skipTicketing: boolean) => {
+//     return methods.handleSubmit((data) => onSubmit(data, skipTicketing))();
+//   };
 
 //   return (
 //     <div>
@@ -212,7 +226,6 @@ export default CreateEventView;
 //                     recurring={recurring}
 //                     recurringDays={recurringDays}
 //                     recurringEnd={recurringEnd}
-//                     eventType={eventType}
 //                     toggleRecurringDay={toggleRecurringDay}
 //                     setStep={setStep}
 //                     isStepValid={isStepValid}
@@ -229,6 +242,8 @@ export default CreateEventView;
 //                     isUpdatingEvent={isUpdatingEvent}
 //                     router={router}
 //                     setStep={setStep}
+//                     eventData={event} // ADDED: Pass event data for date constraints
+//                     onSubmitWithTicketing={handleSubmitWithTicketing} // ADDED: Handle Skip vs Publish
 //                   />
 //                 )}
 //               </FormProvider>
@@ -243,3 +258,246 @@ export default CreateEventView;
 // };
 
 // export default CreateEventView;
+
+// // 'use client';
+
+// // import VenueTypeModal from '@/components/common/create-venue-modal';
+// // import FormProvider from '@/components/rhf';
+// // import { Card, CardContent } from '@/components/ui/card';
+// // import ProgressHeader from './progress-header';
+// // import StepOne from './step-one';
+// // import StepThree from './step-three';
+// // import StepTwo from './step-two';
+// // import type { CreateEventViewProps } from './types';
+// // import { useEventForm } from './use-event-form';
+
+// // const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) => {
+// //   const {
+// //     step,
+// //     setStep,
+// //     showPartnerOrganizer,
+// //     setShowPartnerOrganizer,
+// //     file,
+// //     setFile,
+// //     venueModal,
+// //     setVenueModal,
+// //     loading,
+// //     methods,
+// //     watch,
+// //     setValue,
+// //     organizations,
+// //     orgLoading,
+// //     venues,
+// //     venuesLoading,
+// //     categoriesData,
+// //     categoriesLoading,
+// //     tagsd,
+// //     tagsLoading,
+// //     isAddingEvent,
+// //     isUpdatingEvent,
+// //     removePartnerOrganizer,
+// //     toggleRecurringDay,
+// //     isStepValid,
+// //     onSubmit,
+// //     router,
+// //     recurring,
+// //     recurringDays,
+// //     recurringEnd,
+// //   } = useEventForm(userType);
+
+// //   return (
+// //     <div>
+// //       <div className="flex min-h-screen w-full flex-col items-center bg-[#f8f6f7] py-4 dark:bg-black">
+// //         <div className="mb-2 flex w-full justify-end"></div>
+
+// //         <div className="w-full md:mx-auto md:max-w-5xl">
+// //           <Card className="dark:bg-secondary shadow-sm">
+// //             <CardContent className="dark:bg-secondary p-2 md:p-8">
+// //               <ProgressHeader step={step} title={title} />
+
+// //               <FormProvider methods={methods} onSubmit={methods.handleSubmit((data) => onSubmit(data, false))}>
+// //                 {step === 1 && (
+// //                   <StepOne
+// //                     methods={methods}
+// //                     watch={watch}
+// //                     setValue={setValue}
+// //                     organizations={organizations}
+// //                     orgLoading={orgLoading}
+// //                     venues={venues}
+// //                     venuesLoading={venuesLoading}
+// //                     categoriesData={categoriesData}
+// //                     categoriesLoading={categoriesLoading}
+// //                     tagsd={tagsd}
+// //                     tagsLoading={tagsLoading}
+// //                     file={file}
+// //                     setFile={setFile}
+// //                     showPartnerOrganizer={showPartnerOrganizer}
+// //                     setShowPartnerOrganizer={setShowPartnerOrganizer}
+// //                     removePartnerOrganizer={removePartnerOrganizer}
+// //                     setVenueModal={setVenueModal}
+// //                     router={router}
+// //                     setStep={setStep}
+// //                     isStepValid={isStepValid}
+// //                   />
+// //                 )}
+
+// //                 {step === 2 && (
+// //                   <StepTwo
+// //                     methods={methods}
+// //                     watch={watch}
+// //                     setValue={setValue}
+// //                     recurring={recurring}
+// //                     recurringDays={recurringDays}
+// //                     recurringEnd={recurringEnd}
+// //                     toggleRecurringDay={toggleRecurringDay}
+// //                     setStep={setStep}
+// //                     isStepValid={isStepValid}
+// //                   />
+// //                 )}
+
+// //                 {step === 3 && (
+// //                   <StepThree
+// //                     methods={methods}
+// //                     watch={watch}
+// //                     setValue={setValue}
+// //                     loading={loading}
+// //                     isAddingEvent={isAddingEvent}
+// //                     isUpdatingEvent={isUpdatingEvent}
+// //                     router={router}
+// //                     setStep={setStep}
+// //                     onSubmit={onSubmit}
+// //                   />
+// //                 )}
+// //               </FormProvider>
+// //             </CardContent>
+// //           </Card>
+// //         </div>
+// //       </div>
+
+// //       <VenueTypeModal open={venueModal} onClose={() => setVenueModal(false)} />
+// //     </div>
+// //   );
+// // };
+
+// // export default CreateEventView;
+
+// // // 'use client';
+
+// // // import VenueTypeModal from '@/components/common/create-venue-modal';
+// // // import FormProvider from '@/components/rhf';
+// // // import { Card, CardContent } from '@/components/ui/card';
+// // // import ProgressHeader from './progress-header';
+// // // import StepOne from './step-one';
+// // // import StepThree from './step-three';
+// // // import StepTwo from './step-two';
+// // // import type { CreateEventViewProps } from './types';
+// // // import { useEventForm } from './use-event-form';
+
+// // // const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) => {
+// // //   const {
+// // //     step,
+// // //     setStep,
+// // //     showPartnerOrganizer,
+// // //     setShowPartnerOrganizer,
+// // //     file,
+// // //     setFile,
+// // //     venueModal,
+// // //     setVenueModal,
+// // //     loading,
+// // //     methods,
+// // //     watch,
+// // //     setValue,
+// // //     organizations,
+// // //     orgLoading,
+// // //     venues,
+// // //     venuesLoading,
+// // //     categoriesData,
+// // //     categoriesLoading,
+// // //     tagsd,
+// // //     tagsLoading,
+// // //     isAddingEvent,
+// // //     isUpdatingEvent,
+// // //     removePartnerOrganizer,
+// // //     toggleRecurringDay,
+// // //     isStepValid,
+// // //     onSubmit,
+// // //     router,
+// // //     recurring,
+// // //     recurringDays,
+// // //     recurringEnd,
+// // //   } = useEventForm(userType);
+
+// // //   return (
+// // //     <div>
+// // //       <div className="flex min-h-screen w-full flex-col items-center bg-[#f8f6f7] py-4 dark:bg-black">
+// // //         <div className="mb-2 flex w-full justify-end"></div>
+
+// // //         <div className="w-full md:mx-auto md:max-w-5xl">
+// // //           <Card className="dark:bg-secondary shadow-sm">
+// // //             <CardContent className="dark:bg-secondary p-2 md:p-8">
+// // //               <ProgressHeader step={step} title={title} />
+
+// // //               <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
+// // //                 {step === 1 && (
+// // //                   <StepOne
+// // //                     methods={methods}
+// // //                     watch={watch}
+// // //                     setValue={setValue}
+// // //                     organizations={organizations}
+// // //                     orgLoading={orgLoading}
+// // //                     venues={venues}
+// // //                     venuesLoading={venuesLoading}
+// // //                     categoriesData={categoriesData}
+// // //                     categoriesLoading={categoriesLoading}
+// // //                     tagsd={tagsd}
+// // //                     tagsLoading={tagsLoading}
+// // //                     file={file}
+// // //                     setFile={setFile}
+// // //                     showPartnerOrganizer={showPartnerOrganizer}
+// // //                     setShowPartnerOrganizer={setShowPartnerOrganizer}
+// // //                     removePartnerOrganizer={removePartnerOrganizer}
+// // //                     setVenueModal={setVenueModal}
+// // //                     router={router}
+// // //                     setStep={setStep}
+// // //                     isStepValid={isStepValid}
+// // //                   />
+// // //                 )}
+
+// // //                 {step === 2 && (
+// // //                   <StepTwo
+// // //                     methods={methods}
+// // //                     watch={watch}
+// // //                     setValue={setValue}
+// // //                     recurring={recurring}
+// // //                     recurringDays={recurringDays}
+// // //                     recurringEnd={recurringEnd}
+// // //                     toggleRecurringDay={toggleRecurringDay}
+// // //                     setStep={setStep}
+// // //                     isStepValid={isStepValid}
+// // //                   />
+// // //                 )}
+
+// // //                 {step === 3 && (
+// // //                   <StepThree
+// // //                     methods={methods}
+// // //                     watch={watch}
+// // //                     setValue={setValue}
+// // //                     loading={loading}
+// // //                     isAddingEvent={isAddingEvent}
+// // //                     isUpdatingEvent={isUpdatingEvent}
+// // //                     router={router}
+// // //                     setStep={setStep}
+// // //                   />
+// // //                 )}
+// // //               </FormProvider>
+// // //             </CardContent>
+// // //           </Card>
+// // //         </div>
+// // //       </div>
+
+// // //       <VenueTypeModal open={venueModal} onClose={() => setVenueModal(false)} />
+// // //     </div>
+// // //   );
+// // // };
+
+// // // export default CreateEventView;

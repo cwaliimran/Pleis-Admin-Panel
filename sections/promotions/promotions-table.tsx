@@ -69,8 +69,6 @@ const PromotionsTable: FC<SamplePageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  console.log('data', data);
-
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
   });
