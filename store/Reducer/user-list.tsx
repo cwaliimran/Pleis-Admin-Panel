@@ -110,6 +110,22 @@ export const userListApi = createApi({
       providesTags: ['companyList'],
     }),
 
+    getLoyaltyClubsList: builder.query({
+      query: ({ search, page, limit }) => {
+        const params: any = {
+          keyword: search,
+          page: page + 1,
+          limit,
+        };
+        return {
+          url: API_ROUTES.LOYALTY_LISTINGS,
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => res.data,
+    }),
+
     updatePendingUser: builder.mutation({
       query: ({ id, status }) => ({
         url: API_ROUTES.ADMIN_PENDING_USER_LIST_BY_ID(id),
@@ -137,6 +153,7 @@ export const {
   useUpdateUserMutation,
   useUpdateUserTermsMutation,
   useGetCompanyListQuery,
+  useGetLoyaltyClubsListQuery,
   useUpdateUserForUserListMutation,
   useUpdateUserSuperAdminAndGuestMutation,
   useUpdatePendingUserMutation,

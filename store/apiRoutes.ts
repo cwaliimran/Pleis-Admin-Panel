@@ -81,6 +81,7 @@ export const API_ROUTES = {
   CATEGORIES_BY_ID: (id: string) => `/admin/categories/${id}`,
 
   LOYALTY_LISTINGS: `/admin/loyalty/listings`,
+  ADMIN_REQUEST_LOYALTY_CLUBS: `/admin/loyalty/club-collaborations`,
 
   ADMIN_LOYALTY_REWARDS: `/admin/loyalty/rewards`,
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string) => `/admin/loyalty/rewards/${id}`,
