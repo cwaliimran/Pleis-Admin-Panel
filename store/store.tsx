@@ -34,6 +34,7 @@ import { pinnedContentApi } from './Reducer/pinned-content-api';
 import { ticketingApi } from './Reducer/ticketing-api';
 import { statusApi } from './Reducer/status-api';
 import { streaksApi } from './Reducer/streaks-api';
+import { promoCodesApi } from './Reducer/promo-codes-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -67,6 +68,7 @@ const appReducer = combineReducers({
   [ticketingApi.reducerPath]: ticketingApi.reducer,
   [statusApi.reducerPath]: statusApi.reducer,
   [streaksApi.reducerPath]: streaksApi.reducer,
+  [promoCodesApi.reducerPath]: promoCodesApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -107,6 +109,7 @@ export const store = configureStore({
       ticketingApi.middleware,
       statusApi.middleware,
       streaksApi.middleware,
+      promoCodesApi.middleware,
       menuListApi.middleware
     ),
 });

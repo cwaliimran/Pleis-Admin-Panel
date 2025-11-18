@@ -1,7 +1,5 @@
 // Converts 'YYYY-MM-DDTHH:mm' to 'YYYY-MM-DD hh:mm A'
 const formatLocalDateTimeToApi = (local: string): string => {
-  console.log('local', local);
-
   if (!local) return '';
   // local is like '2025-11-18T09:30'
   const [date, time] = local.split('T');
@@ -188,18 +186,9 @@ export const parseAPIDateTime = (dateTimeString: string): Date | null => {
   if (!dateTimeString) return null;
 
   try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Parsing dateTimeString:', dateTimeString);
-    }
-
     const cleanInput = dateTimeString.trim().replace(/\s+/g, ' ');
 
     const parts = cleanInput.split(' ');
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Cleaned input:', cleanInput);
-      console.log('Split parts:', parts);
-    }
 
     if (parts.length === 1) {
       const datePart = parts[0];
@@ -218,10 +207,6 @@ export const parseAPIDateTime = (dateTimeString: string): Date | null => {
     const datePart = parts[0];
     const timePart = parts[1];
     const period = parts[parts.length - 1];
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Extracted parts:', { datePart, timePart, period });
-    }
 
     if (!datePart || !datePart.match(/^\d{4}-\d{2}-\d{2}$/)) {
       console.error('Invalid date part:', datePart);
@@ -262,10 +247,6 @@ export const parseAPIDateTime = (dateTimeString: string): Date | null => {
     const time24 = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     const dateTimeISO = `${datePart}T${time24}:00`;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Final ISO string:', dateTimeISO);
-    }
-
     const result = new Date(dateTimeISO);
     if (isNaN(result.getTime())) {
       console.error('Invalid date created from ISO string:', dateTimeISO);
@@ -281,10 +262,6 @@ export const parseAPIDateTime = (dateTimeString: string): Date | null => {
 
 const tryAlternativeParsing = (dateTimeString: string): Date | null => {
   try {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Trying alternative parsing for:', dateTimeString);
-    }
-
     const directDate = new Date(dateTimeString);
     if (!isNaN(directDate.getTime())) {
       if (process.env.NODE_ENV === 'development') {
@@ -316,19 +293,8 @@ export const getEventDateConstraints = (eventData: EventData | null) => {
     return { minDate: null, maxDate: null, startDateTime: null, endDateTime: null };
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Event schedule data:', eventData.schedule);
-    console.log('Start DateTime string:', eventData.schedule.startDateTime);
-    console.log('End DateTime string:', eventData.schedule.endDateTime);
-  }
-
   const startDate = parseAPIDateTime(eventData.schedule.startDateTime);
   const endDate = parseAPIDateTime(eventData.schedule.endDateTime);
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Parsed start date:', startDate);
-    console.log('Parsed end date:', endDate);
-  }
 
   if (!startDate || !endDate) {
     console.warn('Failed to parse event dates:', {
@@ -382,10 +348,6 @@ export const isDateWithinEventSchedule = (selectedDate: string, eventData: Event
 
 export const transformApiDataToForm = (apiData: any): Partial<FormData> => {
   if (!apiData) return {};
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔄 Transforming API data to form format:', apiData);
-  }
 
   let publishType: 'instant' | 'scheduled' | 'manual' = 'instant';
   if (apiData.status === 'scheduled') {
@@ -473,10 +435,6 @@ export const transformApiDataToForm = (apiData: any): Partial<FormData> => {
       transferFee: apiData.transferFee?.toString() || '',
     },
   };
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Transformed form data:', transformedData);
-  }
 
   return transformedData;
 };

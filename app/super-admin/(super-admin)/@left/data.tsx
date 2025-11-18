@@ -24,6 +24,7 @@ import {
   SquareMenu,
   Tags,
   Ticket,
+  TicketSlash,
   TriangleDashed,
   User,
   UsersRound,
@@ -234,6 +235,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'QR Codes',
     key: paths.superAdmin.qrCodes,
     icon: QrCode,
+  },
+  {
+    label: 'Promo Codes',
+    key: paths.superAdmin.promoCodes,
+    icon: TicketSlash,
   },
   {
     label: 'Notifications',

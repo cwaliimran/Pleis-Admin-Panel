@@ -156,7 +156,6 @@ const schema = Yup.object().shape({
 });
 
 const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization }) => {
-  console.log('selectedData', selectedData);
   const [addTicketing, { isLoading: addTicketingLoading }] = useAddTicketingMutation();
   const [updateTicketing, { isLoading: updateTicketingLoading }] = useUpdateTicketingMutation();
 
@@ -205,9 +204,43 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   const [showTimeSlotModal, setShowTimeSlotModal] = React.useState(false);
   const [timeSlotConfig, setTimeSlotConfig] = React.useState<any>(null);
 
+  // const handleTimeSlotSave = (config: any) => {
+  //   setTimeSlotConfig(config);
+  //   setValue('features.timeSlotConfig', config, { shouldDirty: true });
+  // };
+
   const handleTimeSlotSave = (config: any) => {
-    setTimeSlotConfig(config);
-    setValue('features.timeSlotConfig', config, { shouldDirty: true });
+    // Convert the 12-hour format back to 24-hour format for internal state
+    const configWith24HourFormat = config.map((dateSlot: any) => ({
+      date: dateSlot.date,
+      timeSlots: dateSlot.timeSlots.map((slot: any) => {
+        // Convert 12-hour format back to 24-hour format
+        const convert12To24Hour = (time12h: string): string => {
+          const [time, period] = time12h.split(' ');
+          const [hoursStr, minutesStr] = time.split(':');
+          let hours = Number(hoursStr);
+          const minutes = Number(minutesStr);
+
+          if (period === 'PM' && hours !== 12) {
+            hours += 12;
+          } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+          }
+
+          return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        };
+
+        return {
+          id: slot.id || `slot-${Date.now()}-${Math.random()}`,
+          startTime: convert12To24Hour(slot.startTime),
+          endTime: convert12To24Hour(slot.endTime),
+          quantity: parseInt(slot.quantity) || 0,
+        };
+      }),
+    }));
+
+    setTimeSlotConfig(configWith24HourFormat);
+    setValue('features.timeSlotConfig', config, { shouldDirty: true }); // Save API format to form
   };
 
   const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
@@ -230,13 +263,10 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   }, [selectedEventId, eventData]);
 
   const onSubmit = handleSubmit(async (formData) => {
-    console.log("formData", formData);
     try {
       setIsLoading(true);
 
       const payload = transformTicketPayload(formData as FormData, editMode, selectedData?._id, selectedData);
-
-      console.log('payload', payload);
 
       const response = editMode && selectedData ? await updateTicketing(payload).unwrap() : await addTicketing(payload).unwrap();
 
