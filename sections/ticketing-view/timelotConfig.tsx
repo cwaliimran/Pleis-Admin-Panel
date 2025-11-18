@@ -6,6 +6,7 @@ import { Calendar, Plus, Trash2, X } from 'lucide-react';
 import * as React from 'react';
 import { EventData, getEventDateConstraints, isDateWithinEventSchedule } from './ticket-helpers';
 import { testDateParsing } from './debug-date-parsing';
+import { fDate, formatStr } from '@/utils/format-time';
 
 interface TimeSlot {
   id: string;
@@ -94,7 +95,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
       ...dateTimeSlots,
       {
         date: selectedDate,
-        timeSlots: [{ id: Date.now().toString(), startTime: '09:00', endTime: '11:00', quantity: 0 }],
+        timeSlots: [{ id: Date.now().toString(), startTime: '09:00', endTime: '10:00', quantity: 0 }],
       },
     ]);
     setSelectedDate('');
@@ -112,7 +113,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
           const newStartTime = lastSlot ? lastSlot.endTime : '09:00';
 
           const [hours, minutes] = newStartTime.split(':').map(Number);
-          const totalMinutes = hours * 60 + minutes + 120;
+          const totalMinutes = hours * 60 + minutes + 60; // 1 hour
           const newEndHours = Math.floor(totalMinutes / 60) % 24;
           const newEndMinutes = totalMinutes % 60;
           const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`;
@@ -137,15 +138,15 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
   const removeTimeSlot = (date: string, slotId: string) => {
     setDateTimeSlots(
-      dateTimeSlots.map((dts) => {
-        if (dts.date === date) {
-          return {
-            ...dts,
-            timeSlots: dts.timeSlots.filter((slot) => slot.id !== slotId),
-          };
-        }
-        return dts;
-      })
+      dateTimeSlots
+        .map((dts) => {
+          if (dts.date === date) {
+            const newSlots = dts.timeSlots.filter((slot) => slot.id !== slotId);
+            return { ...dts, timeSlots: newSlots };
+          }
+          return dts;
+        })
+        .filter((dts) => dts.timeSlots.length > 0) // Remove date if no slots left
     );
   };
 
@@ -165,7 +166,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
   const getTotalAllocated = () => {
     return dateTimeSlots.reduce((total, dts) => {
-      return total + dts.timeSlots.reduce((sum, slot) => sum + (slot.quantity || 0), 0);
+      return total + dts.timeSlots.reduce((sum, slot) => sum + (typeof slot.quantity === 'number' ? slot.quantity : 0), 0);
     }, 0);
   };
 
@@ -194,7 +195,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
     const apiFormat: ApiDateTimeSlot[] = dateTimeSlots.map((dts) => ({
       date: dts.date,
       timeSlots: dts.timeSlots.map((slot) => ({
-        quantity: String(slot.quantity),
+        quantity: String(typeof slot.quantity === 'string' ? (slot.quantity === '' ? 0 : parseInt(slot.quantity, 10)) : slot.quantity),
         startTime: convertTo12Hour(slot.startTime),
         endTime: convertTo12Hour(slot.endTime),
       })),
@@ -243,12 +244,14 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                   Add Date
                 </Button>
               </div>
+
               {eventConstraints.minDate && eventConstraints.maxDate && (
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  Available dates: {new Date(eventConstraints.minDate).toLocaleDateString()} -{' '}
-                  {new Date(eventConstraints.maxDate).toLocaleDateString()}
+                  Available dates: {fDate(eventConstraints.minDate, formatStr.paramCase.date)} -{' '}
+                  {fDate(eventConstraints.maxDate, formatStr.paramCase.date)}
                 </p>
               )}
+
               {eventData && (!eventConstraints.minDate || !eventConstraints.maxDate) && (
                 <p className="mt-2 text-sm text-yellow-600 dark:text-yellow-400">
                   ⚠️ Event date constraints could not be parsed. Please check the event schedule format.
@@ -321,9 +324,9 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                               const newStartTime = e.target.value;
                               updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', newStartTime);
 
-                              // Auto-update end time if start time changes (add 2 hours by default)
+                              // Auto-update end time if start time changes (add 1 hour by default)
                               const [hours, minutes] = newStartTime.split(':').map(Number);
-                              const totalMinutes = hours * 60 + minutes + 120; // 2 hours
+                              const totalMinutes = hours * 60 + minutes + 60; // 1 hour
                               const newEndHours = Math.floor(totalMinutes / 60) % 24;
                               const newEndMinutes = totalMinutes % 60;
                               const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`;
@@ -362,8 +365,12 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                             type="number"
                             min="0"
                             max={totalQuantity || 999}
-                            value={slot.quantity || 0}
-                            onChange={(e) => updateTimeSlot(dateTimeSlot.date, slot.id, 'quantity', parseInt(e.target.value) || 0)}
+                            value={slot.quantity === 0 ? '' : slot.quantity}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              // Allow empty string for user-friendly editing
+                              updateTimeSlot(dateTimeSlot.date, slot.id, 'quantity', val === '' ? '' : Math.max(0, parseInt(val)));
+                            }}
                             placeholder="Qty"
                             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           />
@@ -374,7 +381,6 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                           type="button"
                           onClick={() => removeTimeSlot(dateTimeSlot.date, slot.id)}
                           className="cursor-pointer text-red-500 hover:text-red-600"
-                          disabled={dateTimeSlot.timeSlots.length === 1}
                         >
                           <Trash2 size={20} />
                         </button>

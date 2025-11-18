@@ -230,6 +230,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   }, [selectedEventId, eventData]);
 
   const onSubmit = handleSubmit(async (formData) => {
+    console.log("formData", formData);
     try {
       setIsLoading(true);
 

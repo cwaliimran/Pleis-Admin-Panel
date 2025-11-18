@@ -11,16 +11,18 @@ import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
-import { StreakData } from './data';
 import StreaksTableRow from './streaks-table-row';
+import { SamplePageProps } from './types';
+import { useTableSort } from '@/hooks/useTableSort';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'username', label: 'Username', align: 'left' },
+  { id: 'username', label: 'Username', align: 'left', sortable: true, sortKey: 'user.username' },
   { id: 'streak', label: 'Streak', align: 'left' },
   { id: 'longestStreak', label: 'Longest Streak', align: 'left' },
   { id: 'pointsEarned', label: 'Point Earned', align: 'left' },
+  { id: 'visits', label: 'Visits', align: 'left' },
+  { id: 'lastVisitAt', label: 'Last Visit At', align: 'left' },
 ];
 
 const StreaksTable: FC<SamplePageProps> = ({
@@ -34,10 +36,10 @@ const StreaksTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
-  date,
-  onDateChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
+  // date,
+  // onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -45,6 +47,10 @@ const StreaksTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -73,40 +79,16 @@ const StreaksTable: FC<SamplePageProps> = ({
                 </SheetHeader>
                 <FormProvider {...methods}>
                   <form className="flex flex-col gap-6 px-4 py-2">
-                    {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
-                          Select Date
-                        </label>
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateFilter={{
-                              id: 'organization-date',
-                              placeholder: 'Select date',
-                              value: date,
-                              onChange: onDateChange,
-                            }}
                             searchFilter={{
-                              placeholder: 'Search Streaks...',
+                              placeholder: 'Search username...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -124,10 +106,10 @@ const StreaksTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
-                {StreakData?.map((item, idx) => (
+                {sortedData?.map((item, idx) => (
                   <StreaksTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>

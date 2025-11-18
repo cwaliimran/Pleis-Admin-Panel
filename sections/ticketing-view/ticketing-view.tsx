@@ -221,6 +221,3 @@ const TicketingView = () => {
 };
 
 export default TicketingView;
-
-
-

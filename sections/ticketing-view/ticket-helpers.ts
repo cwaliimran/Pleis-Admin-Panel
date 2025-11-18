@@ -1,3 +1,18 @@
+// Converts 'YYYY-MM-DDTHH:mm' to 'YYYY-MM-DD hh:mm A'
+const formatLocalDateTimeToApi = (local: string): string => {
+  console.log('local', local);
+
+  if (!local) return '';
+  // local is like '2025-11-18T09:30'
+  const [date, time] = local.split('T');
+  if (!date || !time) return local;
+  const [hour, minute] = time.split(':');
+  const hoursNum = parseInt(hour, 10);
+  const period = hoursNum >= 12 ? 'PM' : 'AM';
+  let hours12 = hoursNum % 12;
+  if (hours12 === 0) hours12 = 12;
+  return `${date} ${String(hours12).padStart(2, '0')}:${minute} ${period}`;
+};
 import { fDate, convertTimeFormat } from '@/utils/format-time';
 import dayjs from 'dayjs';
 
@@ -427,10 +442,24 @@ export const transformApiDataToForm = (apiData: any): Partial<FormData> => {
       repeatable: apiData.repeatable?.isRepeatable || false,
       repeatableVisits: apiData.repeatable?.visits?.toString() || '',
       resale: resaleMap[apiData.resaleProtection] || 'none',
-      earlyBirdEnabled: !!apiData.timeSensitivePricing?.earlyBird,
+      earlyBirdEnabled: !!(
+        apiData.timeSensitivePricing?.earlyBird &&
+        apiData.timeSensitivePricing.earlyBird.endDate &&
+        apiData.timeSensitivePricing.earlyBird.discountedPrice &&
+        apiData.timeSensitivePricing.earlyBird.endDate !== null &&
+        apiData.timeSensitivePricing.earlyBird.endDate !== '' &&
+        Number(apiData.timeSensitivePricing.earlyBird.discountedPrice) > 0
+      ),
       earlyBirdDate: apiData.timeSensitivePricing?.earlyBird?.endDate ? formatDateOnlyToLocal(apiData.timeSensitivePricing.earlyBird.endDate) : '',
       earlyBirdPrice: apiData.timeSensitivePricing?.earlyBird?.discountedPrice?.toString() || '',
-      lastMinuteEnabled: !!apiData.timeSensitivePricing?.lastMinute,
+      lastMinuteEnabled: !!(
+        apiData.timeSensitivePricing?.lastMinute &&
+        apiData.timeSensitivePricing.lastMinute.startDate &&
+        apiData.timeSensitivePricing.lastMinute.discountedPrice &&
+        apiData.timeSensitivePricing.lastMinute.startDate !== null &&
+        apiData.timeSensitivePricing.lastMinute.startDate !== '' &&
+        Number(apiData.timeSensitivePricing.lastMinute.discountedPrice) > 0
+      ),
       lastMinuteDate: apiData.timeSensitivePricing?.lastMinute?.startDate
         ? formatDateOnlyToLocal(apiData.timeSensitivePricing.lastMinute.startDate)
         : '',
@@ -565,14 +594,14 @@ export const getUpdatedFields = (formData: FormData, originalData: any): Partial
 
     if (formData.features.earlyBirdEnabled) {
       timeSensitivePricing.earlyBird = {
-        endDate: formatDateForAPI(formData.features.earlyBirdDate),
+        endDate: formatLocalDateTimeToApi(formData.features.earlyBirdDate),
         discountedPrice: parseFloat(formData.features.earlyBirdPrice),
       };
     }
 
     if (formData.features.lastMinuteEnabled) {
       timeSensitivePricing.lastMinute = {
-        startDate: formatDateForAPI(formData.features.lastMinuteDate),
+        startDate: formatLocalDateTimeToApi(formData.features.lastMinuteDate),
         discountedPrice: parseFloat(formData.features.lastMinutePrice),
       };
     }
@@ -697,13 +726,13 @@ export const transformTicketPayload = (formData: FormData, editMode: boolean = f
   const timeSensitivePricing: any = {};
   if (formData.features.earlyBirdEnabled) {
     timeSensitivePricing.earlyBird = {
-      endDate: formatDateForAPI(formData.features.earlyBirdDate),
+      endDate: formatLocalDateTimeToApi(formData.features.earlyBirdDate),
       discountedPrice: parseFloat(formData.features.earlyBirdPrice),
     };
   }
   if (formData.features.lastMinuteEnabled) {
     timeSensitivePricing.lastMinute = {
-      startDate: formatDateForAPI(formData.features.lastMinuteDate),
+      startDate: formatLocalDateTimeToApi(formData.features.lastMinuteDate),
       discountedPrice: parseFloat(formData.features.lastMinutePrice),
     };
   }

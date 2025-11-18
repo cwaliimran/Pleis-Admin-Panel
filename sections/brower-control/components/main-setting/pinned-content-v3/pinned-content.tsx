@@ -107,7 +107,7 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
           Array.from({ length: 5 }).map((_, i) => <DraggablePromoItemSkeleton key={i} />)
         ) : categories.length === 0 ? (
           <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
-            <p className="text-gray-500 dark:text-gray-400">No categories available. Create your first category!</p>
+            <p className="text-gray-500 dark:text-gray-400">No pinned content available.</p>
           </div>
         ) : (
           categories.map((category: any) => (

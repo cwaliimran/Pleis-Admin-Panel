@@ -35,8 +35,6 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCo
     defaultValues,
   });
 
-  console.log('selectedData', selectedData);
-
   const { reset, formState } = methods;
   const isDirty = formState?.isDirty;
 

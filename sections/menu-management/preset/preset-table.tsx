@@ -31,6 +31,7 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'description',
   },
+  { id: 'category', label: 'Category', align: 'left' },
   { id: 'basePrice', label: 'Price (EUR)', align: 'left' },
   {
     id: 'createdAt',

@@ -52,6 +52,8 @@ const PresetTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =
         )}
       </TableCell>
 
+      <TableCell className="text-left capitalize">{item?.category?.title || '-'}</TableCell>
+
       <TableCell className="text-left">{item?.basePrice}</TableCell>
 
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>

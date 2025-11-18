@@ -104,6 +104,7 @@ export const API_ROUTES = {
 
   ADMIN_MENU_ITEMS: `/admin/menu/items`,
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
+  ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
 
   TIERS: `/admin/tiers`,
   TIERS_BY_ID: (id: string) => `/admin/tiers/${id}`,
@@ -140,6 +141,10 @@ export const API_ROUTES = {
 
   USER_ACCESS: `/admin/features`,
   USER_ACCESS_BY_ID: (id: string) => `/admin/features/${id}`,
+
+  STREAKS: `/admin/loyalty/streaks`,
+  STREAKS_BY_ID: (id: string) => `/admin/loyalty/streaks/${id}`,
+  USER_STREAKS: `/admin/loyalty/users-streaks`,
 
   ADMIN_USER_LIST: `/admin/users`,
   ADMIN_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,

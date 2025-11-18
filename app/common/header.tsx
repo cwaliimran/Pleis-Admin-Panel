@@ -99,6 +99,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/super-admin/menu-list',
     '/super-admin/menuItems',
     '/super-admin/ticketing',
+    '/super-admin/streaks',
   ];
 
   const shouldShowDropdown = superAdminUrls.some((url) => pathname?.startsWith(url));

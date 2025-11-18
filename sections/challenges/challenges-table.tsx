@@ -22,6 +22,7 @@ import ChallengesTableRow from './challenges-table-row';
 import { useTableSort } from '@/hooks/useTableSort';
 
 const HEAD_LABEL = [
+  { id: 'image', label: 'Image', align: 'left' },
   {
     id: 'name',
     label: 'Name',
@@ -30,8 +31,13 @@ const HEAD_LABEL = [
     sortKey: 'title',
   },
   {
+    id: 'rewardType',
+    label: 'Reward Type',
+    sortable: true,
+    sortKey: 'reward.rewardType',
+  },{
     id: 'reward',
-    label: 'Rewards',
+    label: 'Reward',
     sortable: true,
     sortKey: 'reward.rewardType',
   },
