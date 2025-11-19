@@ -5,8 +5,13 @@ import QueryDialog from '@/components/comfirm-dialog/query-dialog';
 import CustomBadge from '@/components/ui/custom-badge';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useState } from 'react';
+import ReservationSkelton from './reservation-skelton';
 
-const ReservationBody = () => {
+type ReservationBodyProps = {
+  isLoading: boolean;
+};
+
+const ReservationBody = ({ isLoading }: ReservationBodyProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const deleteModal = useBoolean();
   const confirmModal = useBoolean();
@@ -50,55 +55,59 @@ const ReservationBody = () => {
   return (
     <>
       <div className="dark:bg-secondary mt-5 flex flex-col rounded-xl border bg-white p-6 shadow">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="mb-2 text-2xl font-bold">Lounge</h2>
-            <div className="flex gap-12">
-              <div>
-                <div className="text-gray-500">Available</div>
-                <div className="text-lg font-semibold">3 tables</div>
-              </div>
-              <div>
-                <div className="text-gray-500">Max Capacity</div>
-                <div className="text-lg font-semibold">6 people</div>
-              </div>
-              <div>
-                <div className="text-gray-500">Condition</div>
-                <div className="text-lg font-semibold">Prepay: €80</div>
-              </div>
-              <div>
-                <div className="text-gray-500">Tax</div>
-                <div className="text-lg font-semibold">13%</div>
-              </div>
-              <div>
-                <div className="text-gray-500">Total Price</div>
-                <div className="text-lg font-semibold text-green-600">€90.40</div>
-              </div>
-              <div>
-                <div className="text-gray-500">Status</div>
-                <CustomBadge variant="success">Active</CustomBadge>
+        {isLoading ? (
+          <ReservationSkelton />
+        ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="mb-2 text-2xl font-bold">Lounge</h2>
+              <div className="flex gap-12">
+                <div>
+                  <div className="text-gray-500">Available</div>
+                  <div className="text-lg font-semibold">3 tables</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Max Capacity</div>
+                  <div className="text-lg font-semibold">6 people</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Condition</div>
+                  <div className="text-lg font-semibold">Prepay: €80</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Tax</div>
+                  <div className="text-lg font-semibold">13%</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Total Price</div>
+                  <div className="text-lg font-semibold text-green-600">€90.40</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Status</div>
+                  <CustomBadge variant="success">Active</CustomBadge>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <button
-              title="Edit Reservation"
-              type="button"
-              className={`cursor-pointer text-black transition-transform duration-300 dark:text-white ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  fillRule="evenodd"
-                  d="M4.43 8.512a.75.75 0 0 1 1.058-.081L12 14.012l6.512-5.581a.75.75 0 0 1 .976 1.138l-7 6a.75.75 0 0 1-.976 0l-7-6a.75.75 0 0 1-.081-1.057"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                title="Edit Reservation"
+                type="button"
+                className={`cursor-pointer text-black transition-transform duration-300 dark:text-white ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
+                  <path
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    d="M4.43 8.512a.75.75 0 0 1 1.058-.081L12 14.012l6.512-5.581a.75.75 0 0 1 .976 1.138l-7 6a.75.75 0 0 1-.976 0l-7-6a.75.75 0 0 1-.081-1.057"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div
           className="overflow-hidden transition-all duration-500 ease-in-out"

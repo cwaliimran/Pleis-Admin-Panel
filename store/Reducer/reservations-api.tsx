@@ -9,14 +9,14 @@ export const reservationsApi = createApi({
 
   endpoints: (builder) => ({
     getReservations: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ page, range, date, limit, companyOrganizer }) => {
         const params: any = {
-          keyword: search,
-          status,
           page: page + 1,
           limit,
         };
         if (date) (params as any).date = date;
+        if (range) (params as any).range = range;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
           url: API_ROUTES.ADMIN_RESERVATION,
           method: 'GET',
