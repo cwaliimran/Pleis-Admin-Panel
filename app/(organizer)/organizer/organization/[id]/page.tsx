@@ -1,4 +1,4 @@
-import Header from '../../../../common/header';
+import Header from '../../../../common/header/header';
 import OrganizationDetailPage from '@/sections/users/organizationDetailPage';
 import { Metadata } from 'next';
 

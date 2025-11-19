@@ -1,15 +1,10 @@
 import React from 'react';
-import Header from '../../../common/header';
+import Header from '../../../common/header/header';
 
 const Page = () => {
   return (
     <div>
-      <Header
-        links={[
-          { name: 'Dashboard', href: '/organizer' },
-          { name: 'Notification' },
-        ]}
-      />
+      <Header links={[{ name: 'Dashboard', href: '/organizer' }, { name: 'Notification' }]} />
       Comming Soon
     </div>
   );

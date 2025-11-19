@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import ReferralsDetailsView from '@/sections/referrals/referral-detail/referrals-details-view';
 import { Metadata } from 'next';
 

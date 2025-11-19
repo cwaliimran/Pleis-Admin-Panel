@@ -98,6 +98,9 @@ export const API_ROUTES = {
   ADMIN_MENU_CATEGORIES: `/admin/menu/categories`,
   ADMIN_MENU_CATEGORIES_BY_ID: (id: string) => `/admin/menu/categories/${id}`,
 
+  ADMIN_RESERVATION: `/admin/reservations`,
+  ADMIN_RESERVATION_BY_ID: (id: string) => `/admin/reservations/${id}`,
+
   PROMO_CODES: `/admin/promo-codes`,
   PROMO_CODES_BY_ID: (id: string) => `/admin/promo-codes/${id}`,
 

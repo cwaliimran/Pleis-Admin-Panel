@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 // import MenuManagementView from '@/sections/menu-management/menu-management-view';
 import { Metadata } from 'next';
 

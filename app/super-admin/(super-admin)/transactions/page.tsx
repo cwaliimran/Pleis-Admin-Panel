@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import TransactionsView from '@/sections/reservation/reservation-transactions/transactions-view';
 import { Metadata } from 'next';
 

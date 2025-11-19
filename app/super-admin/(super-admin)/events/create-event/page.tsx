@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import { CreateEventView } from '@/sections/event/eventV2';
 import { Metadata } from 'next';
 

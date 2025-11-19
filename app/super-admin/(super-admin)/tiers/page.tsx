@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import TiersView from '@/sections/tiers/tiers-view';
 import { Metadata } from 'next';
 

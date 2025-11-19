@@ -72,9 +72,7 @@ const ReservationBody = () => {
               </div>
               <div>
                 <div className="text-gray-500">Total Price</div>
-                <div className="text-lg font-semibold text-green-600">
-                  €90.40
-                </div>
+                <div className="text-lg font-semibold text-green-600">€90.40</div>
               </div>
               <div>
                 <div className="text-gray-500">Status</div>
@@ -90,12 +88,7 @@ const ReservationBody = () => {
               className={`cursor-pointer text-black transition-transform duration-300 dark:text-white ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
               onClick={() => setIsExpanded(!isExpanded)}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
                   fillRule="evenodd"
@@ -115,9 +108,7 @@ const ReservationBody = () => {
           }}
         >
           <div className="mt-6 border-t pt-6">
-            <h3 className="mb-4 text-2xl font-bold">
-              Pending Confirmation Requests
-            </h3>
+            <h3 className="mb-4 text-2xl font-bold">Pending Confirmation Requests</h3>
 
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
               {pendingRequests.map((request, index) => (
@@ -125,55 +116,35 @@ const ReservationBody = () => {
                   key={request.id}
                   className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-5 shadow-sm dark:border-[#3c3a3aae] dark:bg-[#222121]"
                   style={{
-                    animation: isExpanded
-                      ? `slideIn 0.4s ease-out ${index * 0.1}s backwards`
-                      : 'none',
+                    animation: isExpanded ? `slideIn 0.4s ease-out ${index * 0.1}s backwards` : 'none',
                   }}
                 >
                   <div className="mb-4 flex items-center justify-between">
                     {/* User details */}
                     <div className="flex items-center justify-start gap-2">
                       <h4 className="text-xl font-bold">{request.name}</h4>
-                      <p
-                        className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${request.memberColor}`}
-                      >
-                        {request.memberType}
-                      </p>
+                      <p className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${request.memberColor}`}>{request.memberType}</p>
                     </div>
 
                     {/* Date and Time */}
                     <div className="text-right">
                       <div className="text-gray-600">{request.date}</div>
-                      <div className="text-lg font-semibold">
-                        {request.time}
-                      </div>
+                      <div className="text-lg font-semibold">{request.time}</div>
                     </div>
                   </div>
 
                   <div className="mb-4 grid grid-cols-3 gap-3">
                     <div>
-                      <div className="mb-1 text-sm text-gray-500">
-                        Reservation Type
-                      </div>
-                      <div className="text-md font-bold">
-                        {request.reservationType}
-                      </div>
+                      <div className="mb-1 text-sm text-gray-500">Reservation Type</div>
+                      <div className="text-md font-bold">{request.reservationType}</div>
                     </div>
                     <div>
-                      <div className="mb-1 text-sm text-gray-500">
-                        Number of People
-                      </div>
-                      <div className="text-md font-bold">
-                        {request.numberOfPeople}
-                      </div>
+                      <div className="mb-1 text-sm text-gray-500">Number of People</div>
+                      <div className="text-md font-bold">{request.numberOfPeople}</div>
                     </div>
                     <div>
-                      <div className="mb-1 text-sm text-gray-500">
-                        Linked Ticket
-                      </div>
-                      <div className="text-md font-bold">
-                        {request.linkedTicket}
-                      </div>
+                      <div className="mb-1 text-sm text-gray-500">Linked Ticket</div>
+                      <div className="text-md font-bold">{request.linkedTicket}</div>
                     </div>
                   </div>
 

@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import OrganizationView from '@/sections/organization-view/organization-view';
 import { Metadata } from 'next';
 

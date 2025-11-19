@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
 import TicketingView from '@/sections/ticketing-view/ticketing-view';
 import { Metadata } from 'next';
@@ -17,9 +17,9 @@ const Page = () => {
         ]}
       />
 
-    <CompanyGuard>
-      <TicketingView />
-    </CompanyGuard>
+      <CompanyGuard>
+        <TicketingView />
+      </CompanyGuard>
     </div>
   );
 };

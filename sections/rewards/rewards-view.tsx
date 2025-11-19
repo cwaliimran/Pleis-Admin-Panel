@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from 'react';
 import RewardsCalculator from './rewards-calculator';
 import RewardFormModal from './rewards-modal';
 import RewardsTable from './rewards-table';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 type RewardsViewProps = {
   global: boolean;
@@ -32,17 +33,23 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  // const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
+  const { companyId } = useCompanySelectionState();
 
   const [deleteReward, { isLoading: deleteLoading }] = useDeleteRewardMutation();
 
-  const { data: apiData, isLoading } = useGetRewardsQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetRewardsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: companyId || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -88,16 +95,6 @@ const RewardsView = ({ global }: RewardsViewProps) => {
       showError('Reward not found');
     }
   };
-
-  // const handleDelete = (id: string) => {
-  //   if (!id) {
-  //     showError('No ... selected');
-  //     return;
-  //   }
-
-  //   setSelectedId(id);
-  //   deleteModal.onTrue();
-  // };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -148,7 +145,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
       <RewardsTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -182,7 +179,14 @@ const RewardsView = ({ global }: RewardsViewProps) => {
       />
 
       {openModal.value && (
-        <RewardFormModal global={global} open={openModal.value} onClose={closeModal} isEdit={editModal.value} selectedData={selectedRecord} />
+        <RewardFormModal
+          global={global}
+          open={openModal.value}
+          onClose={closeModal}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          selectedCompany={companyId || null}
+        />
       )}
 
       <ConfirmDialog

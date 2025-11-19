@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import PendingUserView from '@/sections/pending-user/pending-user-view';
 import { Metadata } from 'next';
 

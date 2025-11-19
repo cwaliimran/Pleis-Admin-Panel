@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import ChallengesView from '@/sections/challenges/challenges-view';
 import { Metadata } from 'next';
 

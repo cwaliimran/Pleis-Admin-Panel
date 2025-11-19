@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import { CategoryManagement } from '@/sections/brower-control/components/main-setting/category/category';
 // import { ViewAllCategoryManagement } from '@/sections/brower-control/components/main-setting/view-all-custom-categories/view-all-custom-categories';
 import { Metadata } from 'next';
@@ -19,7 +19,7 @@ const Page = () => {
       />
 
       {/* <ViewAllCategoryManagement /> */}
-      <CategoryManagement heading="All Promos" viewAll={false} fixLength={false}/>
+      <CategoryManagement heading="All Promos" viewAll={false} fixLength={false} />
     </div>
   );
 };

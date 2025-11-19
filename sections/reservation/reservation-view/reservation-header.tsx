@@ -26,22 +26,14 @@ export default function ReservationHeader() {
         <div className="mb-0 flex items-center justify-between">
           <div className="space-y-1">
             <h2 className="text-2xl font-semibold">Reservation Management</h2>
-            <p className="text-sm font-normal">
-              Create and manage venue reservations by timeslot
-            </p>
+            <p className="text-sm font-normal">Create and manage venue reservations by timeslot</p>
           </div>
           <div className="flex">
             <div className="flex items-center gap-3">
-              <FormProvider
-                methods={methods}
-                onSubmit={methods.handleSubmit(onSubmit)}
-              >
+              <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                 <div className="flex items-center justify-center gap-3">
                   <div className="flex w-full items-center justify-center gap-x-2 rounded-md bg-white md:w-[200px] lg:w-[200px] dark:bg-[#171717]">
-                    <RHFDate
-                      name="recurringEndDate"
-                      className="w-full cursor-pointer rounded-md border-gray-200 focus:border-blue-600"
-                    />
+                    <RHFDate name="recurringEndDate" className="w-full cursor-pointer rounded-md border-gray-200 focus:border-blue-600" />
                   </div>
 
                   <div className="flex w-full items-center justify-center gap-x-2 rounded-md bg-white md:w-[200px] lg:w-[200px] dark:bg-[#171717]">
@@ -51,8 +43,8 @@ export default function ReservationHeader() {
                       className="w-[200px] flex-1"
                       options={[
                         { value: 'today', label: 'Today' },
-                        { value: 'this_week', label: 'This Week' },
-                        { value: 'this_month', label: 'This Month' },
+                        { value: 'weekly', label: 'This Week' },
+                        { value: 'monthly', label: 'This Month' },
                       ]}
                     />
                   </div>

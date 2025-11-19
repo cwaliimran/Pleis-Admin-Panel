@@ -8,16 +8,17 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import StreaksTableRow from './streaks-table-row';
 import { SamplePageProps } from './types';
-import { useTableSort } from '@/hooks/useTableSort';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
   { id: 'username', label: 'Username', align: 'left', sortable: true, sortKey: 'user.username' },
+  { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'user.fistName' },
   { id: 'streak', label: 'Streak', align: 'left' },
   { id: 'longestStreak', label: 'Longest Streak', align: 'left' },
   { id: 'pointsEarned', label: 'Point Earned', align: 'left' },

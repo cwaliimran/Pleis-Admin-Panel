@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
 import StreaksView from '@/sections/streaks/streaks-view';
 import { Metadata } from 'next';

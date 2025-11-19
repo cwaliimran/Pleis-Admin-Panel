@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 // import QrCodesView from '@/sections/qr-codes/qr-codes-view';
 import { Metadata } from 'next';
 

@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import PromoCodeView from '@/sections/promo-code/promo-code-view';
 import { Metadata } from 'next';
 

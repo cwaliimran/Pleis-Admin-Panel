@@ -1,5 +1,5 @@
 'use client';
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { UserTable } from '@/sections/users';
@@ -97,12 +97,7 @@ const Page = () => {
         onConfirm={onPending}
       />
 
-      <UserTable
-        handleDelete={handleDelete}
-        handleEdit={handleEdit}
-        pendingUser={true}
-        handlePending={handlePending}
-      />
+      <UserTable handleDelete={handleDelete} handleEdit={handleEdit} pendingUser={true} handlePending={handlePending} />
     </div>
   );
 };

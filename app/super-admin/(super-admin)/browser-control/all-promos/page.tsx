@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import PromoManager from '@/sections/brower-control/components/main-setting/promo-manager/promo-manager';
 import { Metadata } from 'next';
 

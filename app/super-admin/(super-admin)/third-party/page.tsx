@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import ThirdPartyView from '@/sections/third-party-view/third-party-view';
 import { Metadata } from 'next';
 

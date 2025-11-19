@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import UserListView from '@/sections/users/userListView';
 import { Metadata } from 'next';
 
@@ -17,7 +17,7 @@ const Page = () => {
       />
 
       {/* <MembersView /> */}
-      <UserListView usertype="organizer" memberPage={true}  />
+      <UserListView usertype="organizer" memberPage={true} />
     </div>
   );
 };

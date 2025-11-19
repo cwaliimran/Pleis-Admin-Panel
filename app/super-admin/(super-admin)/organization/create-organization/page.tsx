@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import CreateOrganizationPage from '@/sections/organization-section/create-organization';
 import { Metadata } from 'next';
 

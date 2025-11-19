@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import LoyaltyView from '@/sections/loyalty/loyalty-view/loyalty-view';
 import { Metadata } from 'next';
 

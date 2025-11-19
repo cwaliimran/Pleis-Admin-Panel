@@ -13,6 +13,8 @@ import StreaksModal from './streaks-modal';
 import StreaksTable from './streaks-table';
 import { useGetStreaksQuery, useGetUserStreaksQuery } from '@/store/Reducer/streaks-api';
 import StreakSkelton from './streak-skelton';
+import NoStreak from './no-streak';
+import StreakRuleCard from './streak-rule-card';
 
 interface StreaksViewProps {
   global?: boolean;
@@ -154,26 +156,14 @@ const StreaksView = ({ global }: StreaksViewProps) => {
       <div className="mt-5 grid grid-cols-1 gap-4 rounded-md md:grid-cols-2">
         {streakRuleLoading ? (
           <StreakSkelton />
-        ) : (
+        ) : streakRuleData?.data && streakRuleData.data.length > 0 ? (
           <>
-            {streakRuleData?.data?.map((data: any, idx: number) => (
-              <div key={idx} className="card dark:bg-secondary rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-none">
-                <div className="card-body">
-                  <div className="flex items-center justify-start gap-4">
-                    <h5 className="flex size-10 items-center justify-center rounded-md bg-gray-800 text-lg font-semibold text-white dark:bg-gray-300 dark:text-black">
-                      {data?.visits || 'N/A'}
-                    </h5>
-
-                    <div>
-                      <h5 className="card-title text-lg font-semibold">Every {data?.visits || 'N/A'} Visits</h5>
-                      <p className="text-md font-medium">{data?.points || 'N/A'} Points</p>
-                      {global && <span className="text-sm text-gray-500">48 hours expiry</span>}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {streakRuleData?.data.map((data: any, idx: number) => (
+              <StreakRuleCard key={idx} visits={data?.visits} points={data?.points} global={global} />
             ))}
           </>
+        ) : (
+          <NoStreak handleCreateNew={handleCreateNew} />
         )}
       </div>
 

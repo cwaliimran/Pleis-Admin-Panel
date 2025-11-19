@@ -8,7 +8,7 @@ import { FC } from 'react';
 import { TableRowProps } from './types';
 
 const StreaksTableRow: FC<TableRowProps> = ({ item }) => {
-  const username = item?.user?.username.toLowerCase() || 'N/A';
+  const username = item?.user?.username.toLowerCase() || `N/A`;
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
@@ -22,6 +22,9 @@ const StreaksTableRow: FC<TableRowProps> = ({ item }) => {
         </Avatar>
       </TableCell>
       <TableCell className="text-left">{username}</TableCell>
+      <TableCell className="text-left">
+        {item?.user?.firstName} {item?.user?.lastName}
+      </TableCell>
       <TableCell className="text-left">{item?.streak || 'N/A'}</TableCell>
       <TableCell className="text-left">{item?.longestStreak || 'N/A'}</TableCell>
       <TableCell className="text-left">{item?.points || 'N/A'}</TableCell>

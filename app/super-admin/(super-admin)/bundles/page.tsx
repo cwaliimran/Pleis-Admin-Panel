@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import BundlesView from '@/sections/bundles/bundles-view';
 import { Metadata } from 'next';
 
