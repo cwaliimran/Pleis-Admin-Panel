@@ -100,8 +100,9 @@ export const API_ROUTES = {
 
   ADMIN_RESERVATION: `/admin/reservations`,
   ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
-  ADMIN_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/admin/reservations/updateStatus/${id}/${status}`,
   ADMIN_RESERVATION_BY_ID: (id: string) => `/admin/reservations/${id}`,
+  ADMIN_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/admin/reservations/updateStatus/${id}/${status}`,
+  ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
 
   PROMO_CODES: `/admin/promo-codes`,
   PROMO_CODES_BY_ID: (id: string) => `/admin/promo-codes/${id}`,

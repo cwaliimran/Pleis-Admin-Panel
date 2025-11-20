@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetReservationsQuery } from '@/store/Reducer/reservations-api';
+import { ReservationsApiResponse } from './reservation-types';
 import { formatDate } from '@/utils/format-time';
 import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
@@ -14,22 +15,29 @@ const ReservationView = () => {
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [range, setRange] = useState('');
+  const [range, setRange] = useState('today');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [openModal, setOpenModal] = useState(false);
 
   const { companyId, organizationId } = useCompanySelectionState();
 
-  const { data: apiData, isLoading } = useGetReservationsQuery({
+  const companyOrganizer = companyId || organizationId || undefined;
+
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetReservationsQuery({
     page: page - 1,
     limit,
     range,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: companyId || undefined,
+    companyOrganizer,
   });
 
-  // console.log('Reservation Data', apiData);
+  const reservationsData: ReservationsApiResponse['data'] | undefined = apiData?.data;
+  const meta: ReservationsApiResponse['meta'] | undefined = apiData?.meta;
 
   const handleCreateNew = () => {
     setOpenModal(true);
@@ -37,6 +45,20 @@ const ReservationView = () => {
 
   const handleClose = () => {
     setOpenModal(false);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleRangeChange = (newRange: string) => {
+    setRange(newRange);
+    setPage(1);
+  };
+
+  const handleDateChange = (newDate: Date | undefined) => {
+    setDate(newDate);
+    setPage(1);
   };
 
   return (
@@ -48,8 +70,18 @@ const ReservationView = () => {
         </Button>
       </div>
 
-      <ReservationHeader />
-      <ReservationBody isLoading={isLoading} />
+      <ReservationHeader date={date} onDateChange={handleDateChange} range={range} onRangeChange={handleRangeChange} />
+      <ReservationBody
+        isLoading={isLoading || isFetching}
+        data={reservationsData}
+        meta={meta}
+        onPageChange={handlePageChange}
+        limit={limit}
+        companyOrganizer={companyOrganizer}
+        onLimitChange={(l) => {
+          setLimit(l);
+        }}
+      />
 
       {openModal && <ReservationModal open={openModal} onClose={handleClose} isEdit={false} selectedData={null} organizationId={organizationId} />}
     </>

@@ -6,7 +6,7 @@ import { useBoolean } from '@/hooks/useBoolean';
 import { Check, Clock, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { Booking, PendingRequestsProps } from './types';
-import ChangeRequestModal from './change-request-modal';
+import UpdateReservationModal from './change-request-modal';
 
 const PendingRequests: React.FC<PendingRequestsProps> = ({
   bookings,
@@ -83,7 +83,7 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({
         ))}
       </div>
 
-      {openModal.value && <ChangeRequestModal open={openModal.value} onClose={openModal.onFalse} selectedData={selectedBooking} />}
+      {openModal.value && <UpdateReservationModal open={openModal.value} onClose={openModal.onFalse} selectedData={selectedBooking} />}
 
       <QueryDialog
         open={confirmModal.value}

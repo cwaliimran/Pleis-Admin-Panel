@@ -13,7 +13,7 @@ export type ReservationFormValues = {
   availableReservations: number;
   maxCapacityPerReservation: number;
   conditionType: string;
-  amount: number | null;
+  amount: string | null;
   customText: string;
   ticketType: string;
   taxPercentage: string;
@@ -28,7 +28,7 @@ export type ReservationModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
-  organizationId: string;
+  organizationId: string | null;
 };
 
 export type EventSchedule = {
