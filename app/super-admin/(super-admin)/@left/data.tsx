@@ -24,6 +24,7 @@ import {
   SquareMenu,
   Tags,
   Ticket,
+  TicketSlash,
   TriangleDashed,
   User,
   UsersRound,
@@ -44,8 +45,6 @@ type MenuGroup = {
   icon: any;
   items?: MenuItem[];
 };
-
-const isDev = process.env.NEXT_PUBLIC_NODE_ENV === 'development';
 
 export const menuGroups: MenuGroup[] = [
   {
@@ -238,6 +237,11 @@ export const menuGroups: MenuGroup[] = [
     icon: QrCode,
   },
   {
+    label: 'Promo Codes',
+    key: paths.superAdmin.promoCodes,
+    icon: TicketSlash,
+  },
+  {
     label: 'Notifications',
     key: paths.superAdmin.notification.default,
     icon: BellRing,
@@ -262,15 +266,11 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.menuList,
     icon: List,
   },
-  ...(isDev
-    ? [
-        {
-          label: 'Items Category',
-          key: paths.superAdmin.itemsCategory,
-          icon: Grid2x2Check,
-        },
-      ]
-    : []),
+  {
+    label: 'Items Category',
+    key: paths.superAdmin.itemsCategory,
+    icon: Grid2x2Check,
+  },
   {
     label: 'Menu Items',
     key: paths.superAdmin.menuItems,

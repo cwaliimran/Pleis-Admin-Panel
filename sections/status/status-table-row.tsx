@@ -1,96 +1,45 @@
 'use client';
 
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
+import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
 import { Pencil, Trash2 } from 'lucide-react';
-import { FC, useState } from 'react';
+import { FC } from 'react';
+import ImageWithModal from './image-with-modal';
 import { TableRowProps } from './types';
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import Image from 'next/image';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 
-const StatusTableRow: FC<TableRowProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
-  const [openModal, setOpenModal] = useState(true);
+const StatusTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
-        <Avatar className="h-8 w-8">
-          <AvatarImage
-            src="https://github.com/shadcn.png"
-            alt={item.photo}
-            className="object-cover"
-          />
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.image && item?.image !== noImageUrl && item?.image !== noImageUrlDev ? (
+            <AvatarImage src={item?.image} alt="Status Image" className="h-full w-full cursor-pointer object-cover" />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
+          )}
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left capitalize">
-        {item?.name || '-'}
-      </TableCell>
-
-      {/* <TableCell>
-        <Image
-          src="https://cdn.shopify.com/s/files/1/0704/6378/2946/files/Group_1686555430.webp?v=1755673955"
-          alt="background image"
-          className="w-16 rounded-md object-cover"
-          width={32}
-          height={32}
-        />
-      </TableCell> */}
+      <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
       <TableCell className="text-left capitalize">
-        {openModal && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Image
-                src="https://pbs.twimg.com/media/Dz2jEEhX4AANpQH?format=jpg&name=4096x4096"
-                alt="background image"
-                className="w-16 cursor-pointer rounded-md object-cover"
-                width={250}
-                height={250}
-                onClick={() => setOpenModal(true)}
-              />
-            </DialogTrigger>
-            <DialogContent
-              aria-describedby={undefined}
-              className="dark:bg-secondary max-w-md"
-            >
-              <DialogHeader>
-                <DialogTitle>Background</DialogTitle>
-              </DialogHeader>
-              <div className="item-center mt-2 flex justify-center">
-                <Image
-                  src="https://pbs.twimg.com/media/Dz2jEEhX4AANpQH?format=jpg&name=4096x4096"
-                  alt="background image"
-                  className="w-full rounded-md object-cover"
-                  width={250}
-                  height={250}
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+        <ImageWithModal src={item?.backgroundImage} title="Background" width={250} height={250} className="h-11 w-20" />
       </TableCell>
 
-      <TableCell className="text-left">{item?.entryPoint || '100'}</TableCell>
+      {/* <TableCell className="text-left">{item?.order || 'N/A'}</TableCell> */}
 
-      <TableCell className="text-left">{item?.retainPoint || '80'}</TableCell>
+      <TableCell className="text-left">{item?.entryPoints || 'N/A'}</TableCell>
 
-      <TableCell className="text-left">{item?.createdAt || '-'}</TableCell>
+      <TableCell className="text-left">{item?.retainPoints || 'N/A'}</TableCell>
+
+      <TableCell className="text-left">{fDate(item?.updatedAt, formatStr.paramCase.date)}</TableCell>
+
       <TableCell className="text-left">
-        <CustomBadge variant={getStatusVariant(item?.status)}>
-          {item?.status}
-        </CustomBadge>
+        <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

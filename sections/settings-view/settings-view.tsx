@@ -9,8 +9,8 @@ import { Slider } from '@/components/ui/slider';
 import { useGetCompanyListQuery, useUpdateUserMutation } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
-import React, { useEffect, useState } from 'react';
-import LinkedClubsView from './linked-clubs/linked-clubs-view';
+import { useEffect, useState } from 'react';
+import LinkedClubs from './linked-clubs/linked-clubs';
 
 const SettingsView = () => {
   const [clubTitle, setClubTitle] = useState('');
@@ -28,12 +28,6 @@ const SettingsView = () => {
   const [updateUser] = useUpdateUserMutation();
 
   const { data: companyList } = useGetCompanyListQuery({});
-
-  // useEffect(() => {
-  //   if (companyList && companyList.length > 0) {
-  //     console.log('📋 First company structure:', companyList[0]);
-  //   }
-  // }, [companyList]);
 
   useEffect(() => {
     const handleCompanyChange = () => {
@@ -244,7 +238,7 @@ const SettingsView = () => {
               placeholder="Enter club title"
               value={clubTitle}
               onChange={(e) => setClubTitle(e.target.value)}
-              className="h-12"
+              className="h-12 w-full border border-gray-300 bg-white text-lg text-gray-900 placeholder:text-gray-500 dark:border-gray-700 dark:bg-[#171717] dark:text-gray-100 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -297,7 +291,14 @@ const SettingsView = () => {
       <div>
         <h2 className="mb-4 text-xl font-semibold">Set Point Value Percentage</h2>
         <div className="flex max-w-md items-center gap-4">
-          <Input type="number" min={1} max={20} value={pointValue} onChange={(e) => setPointValue(Number(e.target.value))} className="w-24" />
+          <Input
+            type="number"
+            min={1}
+            max={20}
+            value={pointValue}
+            onChange={(e) => setPointValue(Number(e.target.value))}
+            className="w-24 border border-gray-400 bg-white text-gray-900 placeholder:text-gray-500 dark:border-gray-700 dark:bg-[#171717] dark:text-gray-100 dark:placeholder:text-gray-500"
+          />
           <span className="font-medium">%</span>
         </div>
         <div className="mt-4 max-w-md">
@@ -319,27 +320,7 @@ const SettingsView = () => {
       </div>
 
       {/* Step 3 */}
-      <div>
-        <h2 className="mb-4 text-xl font-semibold">Link Loyalty clubs</h2>
-
-        {/* Search Bar */}
-        <div className="mb-6 max-w-full">
-          <Label htmlFor="searchClub" className="mb-2 block">
-            Search Loyalty Clubs
-          </Label>
-          <div className="flex gap-2">
-            <Input
-              id="searchClub"
-              type="text"
-              placeholder="Enter club name..."
-              className="mt-2 h-12 flex-1 bg-[##171717] placeholder:text-slate-400 dark:bg-[#171717]"
-            />
-          </div>
-        </div>
-
-        <LinkedClubsView tableName="Currently Linked Clubs" />
-        <LinkedClubsView tableName="Incoming Requests" />
-      </div>
+      <LinkedClubs selectedCompanyId={selectedCompanyId} />
     </div>
   );
 };

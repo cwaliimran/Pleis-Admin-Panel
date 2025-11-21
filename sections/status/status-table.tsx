@@ -5,28 +5,41 @@ import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { ChallengesData } from './data';
 import StatusTableRow from './status-table-row';
 import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
+  {
+    id: 'title',
+    label: 'Title',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
   { id: 'bg', label: 'Background', align: 'left' },
-  { id: 'entryPoint', label: 'Entry Point', align: 'left' },
-  { id: 'retainPoint', label: 'Retain Point', align: 'left' },
+  // { id: 'order', label: 'Order', align: 'left' },
+  {
+    id: 'entryPoint',
+    label: 'Entry Point',
+    align: 'left',
+    sortable: true,
+    sortKey: 'entryPoints',
+  },
+  {
+    id: 'retainPoint',
+    label: 'Retain Point',
+    align: 'left',
+    sortable: true,
+    sortKey: 'retainPoints',
+  },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
@@ -55,6 +68,10 @@ const StatusTable: FC<SamplePageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
+
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
@@ -76,11 +93,7 @@ const StatusTable: FC<SamplePageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent
-                aria-describedby={undefined}
-                side="right"
-                className="dark:bg-secondary p-0"
-              >
+              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -89,10 +102,7 @@ const StatusTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label
-                          htmlFor="sheet-event-start-date"
-                          className="px-1 text-sm font-medium"
-                        >
+                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
                           Select Date
                         </label>
                         <div className="w-full">
@@ -140,21 +150,11 @@ const StatusTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper
-                loading={loading}
-                colSpan={HEAD_LABEL.length}
-                dataLength={data?.length || 0}
-              >
-                {/* {data?.map((item, idx) => ( */}
-                {ChallengesData?.map((item, idx) => (
-                  <StatusTableRow
-                    key={item?._id || idx}
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                  />
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
+                {sortedData?.map((item, idx) => (
+                  <StatusTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>

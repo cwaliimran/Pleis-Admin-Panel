@@ -3,17 +3,18 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
+import { useDeleteVenueMutation } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import StreaksTable from './streaks-table';
 import StreaksModal from './streaks-modal';
+import StreaksTable from './streaks-table';
+import { useGetStreaksQuery, useGetUserStreaksQuery } from '@/store/Reducer/streaks-api';
+import StreakSkelton from './streak-skelton';
+import NoStreak from './no-streak';
+import StreakRuleCard from './streak-rule-card';
 
 interface StreaksViewProps {
   global?: boolean;
@@ -34,15 +35,28 @@ const StreaksView = ({ global }: StreaksViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
+  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
   const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetUserStreaksQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: selectedCompany?.value || undefined,
   });
+
+  const { data: streakRuleData, isLoading: streakRuleLoading } = useGetStreaksQuery({
+    page: page - 1,
+    search,
+    limit,
+    status: status === 'all' ? '' : status,
+    companyOrganizer: selectedCompany?.value || undefined,
+  });
+
+  console.log('streakRuleData', streakRuleData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -132,10 +146,7 @@ const StreaksView = ({ global }: StreaksViewProps) => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Streaks
           </Button>
@@ -143,32 +154,17 @@ const StreaksView = ({ global }: StreaksViewProps) => {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 rounded-md md:grid-cols-2">
-        {[1, 2, 3, 4].map((data, idx) => (
-          <div
-            key={idx}
-            className="card dark:bg-secondary rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-none"
-          >
-            <div className="card-body">
-              <div className="flex items-center justify-start gap-4">
-                <h5 className="flex size-10 items-center justify-center rounded-md bg-gray-800 text-lg font-semibold text-white dark:bg-gray-300 dark:text-black">
-                  5
-                </h5>
-
-                <div>
-                  <h5 className="card-title text-lg font-semibold">
-                    Every 5 Visits
-                  </h5>
-                  <p className="text-md font-medium">150 Points</p>
-                  {global && (
-                    <span className="text-sm text-gray-500">
-                      48 hours expiry
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+        {streakRuleLoading ? (
+          <StreakSkelton />
+        ) : streakRuleData?.data && streakRuleData.data.length > 0 ? (
+          <>
+            {streakRuleData?.data.map((data: any, idx: number) => (
+              <StreakRuleCard key={idx} visits={data?.visits} points={data?.points} global={global} />
+            ))}
+          </>
+        ) : (
+          <NoStreak handleCreateNew={handleCreateNew} />
+        )}
       </div>
 
       <StreaksTable
@@ -207,17 +203,20 @@ const StreaksView = ({ global }: StreaksViewProps) => {
         }}
       />
 
-      <StreaksModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-      />
+      {openModal.value && (
+        <StreaksModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          selectedCompany={selectedCompany}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Promotion"
-        content="Are you sure you want to delete this promotion?"
+        title="Delete Streak"
+        content="Are you sure you want to delete this streak?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

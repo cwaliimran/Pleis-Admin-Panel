@@ -56,7 +56,7 @@ type MenuItemModalProps = {
 };
 
 const defaultValues: MenuItemFormValues = {
-  image: null,
+  image: '',
   title: '',
   type: '',
   category: '',
@@ -150,7 +150,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
         image: (() => {
           const img = selectedData?.imageInfo?.url;
           if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
-            return null;
+            return '';
           }
           return img;
         })(),
@@ -160,7 +160,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
         menu: selectedData.menu?._id || '',
         taxPercent: selectedData.taxPercent?.toString() || '',
         basePrice: selectedData.basePrice?.toString() || '',
-        discountPrice: selectedData.discountPrice?.toString() || null,
+        discountPrice: selectedData.discountPrice?.toString() || '',
         description: selectedData.description || '',
         preset: selectedData.preset?._id || '',
         startTime: parse12HourTo24Hour(selectedData.startTime) || '',
@@ -179,6 +179,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
         setValue('title', selectedPresetData.title || '');
         setValue('basePrice', selectedPresetData.basePrice || '');
         setValue('description', selectedPresetData.description || '');
+        setValue('category', selectedPresetData.category?._id || '');
       }
     }
   }, [selectedPreset, presetData, setValue]);
@@ -270,7 +271,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[600px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[650px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Menu Item' : 'Create Menu Item'}</DialogTitle>

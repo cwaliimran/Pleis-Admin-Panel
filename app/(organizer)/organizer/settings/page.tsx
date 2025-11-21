@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import SettingsView from '@/sections/settings-view/settings-view';
 import { Metadata } from 'next';
 

@@ -1,5 +1,5 @@
-import Header from "@/app/common/header";
-import SuppliersView from "@/sections/suppliers/suppliers-view";
+import Header from '@/app/common/header/header';
+import SuppliersView from '@/sections/suppliers/suppliers-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -11,8 +11,8 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Suppliers", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Suppliers', href: '' },
         ]}
       />
 

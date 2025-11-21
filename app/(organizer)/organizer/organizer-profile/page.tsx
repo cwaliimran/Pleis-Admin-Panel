@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import OrganizerProfileSection from '@/sections/proflie/organizer-profile-section';
 import { Metadata } from 'next';
 

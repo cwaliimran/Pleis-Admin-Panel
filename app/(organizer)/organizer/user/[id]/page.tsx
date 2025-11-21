@@ -1,5 +1,5 @@
 import UserDetailPage from '@/sections/users/userDetailPage';
-import Header from '../../../../common/header';
+import Header from '../../../../common/header/header';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -10,11 +10,7 @@ const Page = () => {
   return (
     <div>
       <Header
-        links={[
-          { name: 'Dashboard', href: '/organizer' },
-          { name: 'Users List', href: '/organizer/user/user-list' },
-          { name: 'User Details' },
-        ]}
+        links={[{ name: 'Dashboard', href: '/organizer' }, { name: 'Users List', href: '/organizer/user/user-list' }, { name: 'User Details' }]}
       />
       <UserDetailPage userDashboardType="organizer" />
     </div>

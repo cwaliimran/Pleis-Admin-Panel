@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import StatusView from '@/sections/status/status-view';
 import { Metadata } from 'next';
 

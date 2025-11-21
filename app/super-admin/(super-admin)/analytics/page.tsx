@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import ReservationAnalyticsView from '@/sections/loyalty/loyalty-view/reservation-analytics-view';
 import { Metadata } from 'next';
 

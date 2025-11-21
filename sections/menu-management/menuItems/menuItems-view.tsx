@@ -40,8 +40,6 @@ const MenuItemView = () => {
     companyOrganizer: selectedCompany?.value || undefined,
   });
 
-  console.log('apiData', apiData?.data);
-
   const [localData, setLocalData] = useState<any[]>([]);
 
   const [meta, setMeta] = useState<any>({

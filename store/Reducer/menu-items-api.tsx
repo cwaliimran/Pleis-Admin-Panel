@@ -31,6 +31,20 @@ export const menuItemsApi = createApi({
       providesTags: ['menu-item'],
     }),
 
+    getMenuItemByMenuId: builder.query({
+      query: ({ menuId }) => {
+        return {
+          url: API_ROUTES.ADMIN_MENU_ITEMS_BY_MENU_ID(menuId),
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      // providesTags: ['menu-item'],
+    }),
+
     addMenuItem: builder.mutation({
       query: (newMenuItem) => ({
         url: API_ROUTES.ADMIN_MENU_ITEMS,
@@ -59,4 +73,5 @@ export const menuItemsApi = createApi({
   }),
 });
 
-export const { useGetMenuItemsQuery, useAddMenuItemMutation, useUpdateMenuItemMutation, useDeleteMenuItemMutation } = menuItemsApi;
+export const { useGetMenuItemsQuery, useGetMenuItemByMenuIdQuery, useAddMenuItemMutation, useUpdateMenuItemMutation, useDeleteMenuItemMutation } =
+  menuItemsApi;

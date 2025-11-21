@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import ItemsCategoryView from '@/sections/menu-management/items-category/items-category-view';
 import { Metadata } from 'next';
 

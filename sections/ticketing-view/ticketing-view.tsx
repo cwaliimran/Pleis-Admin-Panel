@@ -3,10 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteItemsCategoryMutation,
-  useGetItemsCategoryQuery,
-} from '@/store/Reducer/items-category-api';
+import { useDeleteTicketingMutation, useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -38,20 +35,29 @@ const TicketingView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const [deleteItemsCategory, { isLoading: deleteItemsCategoryLoading }] =
-    useDeleteItemsCategoryMutation();
+  const selectedOrganization = JSON.parse(localStorage.getItem('selectedOrganization') || 'null');
+
+  const [deleteTicketing, { isLoading: deleteTicketingLoading }] = useDeleteTicketingMutation();
 
   const {
     data: apiData,
     isLoading,
     refetch,
-  } = useGetItemsCategoryQuery({
-    page: page - 1,
-    search,
-    limit,
-    status: status === 'all' ? undefined : status,
-    date: date ? formatDate(date) : undefined,
-  });
+  } = useGetTicketingQuery(
+    {
+      page: page - 1,
+      search,
+      limit,
+      status: status === 'all' ? undefined : status,
+      date: date ? formatDate(date) : undefined,
+      organization: selectedOrganization?.value,
+    },
+    {
+      skip: !selectedOrganization?.value,
+    }
+  );
+
+  // console.log('apiData', apiData?.data || []);
 
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({
@@ -96,22 +102,16 @@ const TicketingView = () => {
   };
 
   const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
+    const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
+    if (venueTypeToEdit) {
+      setSelectedVenueType(venueTypeToEdit);
+      setSelectedId(id);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Ticket not found');
+    }
   };
-
-  // const handleEdit = (id: string) => {
-  //   const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
-  //   if (venueTypeToEdit) {
-  //     setSelectedVenueType(venueTypeToEdit);
-  //     setSelectedId(id);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Tag not found');
-  //   }
-  // };
 
   const handleDelete = (id: string) => {
     setSelectedId(id);
@@ -121,7 +121,7 @@ const TicketingView = () => {
   // DELETE API CALL
   const onDelete = async () => {
     try {
-      const response = await deleteItemsCategory(selectedId).unwrap();
+      const response = await deleteTicketing(selectedId).unwrap();
 
       if (response.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -152,10 +152,7 @@ const TicketingView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Ticket
           </Button>
@@ -198,12 +195,15 @@ const TicketingView = () => {
         }}
       />
 
-      <TicketingModal
-        open={openModal.value}
-        onClose={CloseModal}
-        editMode={editModal.value}
-        selectedVenueType={selectedVenueType}
-      />
+      {openModal.value && (
+        <TicketingModal
+          open={openModal.value}
+          onClose={CloseModal}
+          editMode={editModal.value}
+          selectedData={selectedVenueType}
+          selectedOrganization={selectedOrganization}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
@@ -214,7 +214,7 @@ const TicketingView = () => {
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteItemsCategoryLoading}
+        isLoading={deleteTicketingLoading}
       />
     </div>
   );

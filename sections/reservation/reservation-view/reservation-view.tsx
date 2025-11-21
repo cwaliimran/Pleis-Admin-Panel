@@ -1,23 +1,62 @@
 'use client';
 
-import React, { useState } from 'react';
-import ReservationHeader from './reservation-header';
-import ReservationBody from './reservation-body';
-import ReservationModal from './reservation-modal';
 import { Button } from '@/components/ui/button';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useGetReservationsQuery } from '@/store/Reducer/reservations-api';
+import { formatDate } from '@/utils/format-time';
 import { Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import ReservationBody from './reservation-body';
+import ReservationHeader from './reservation-header';
+import ReservationModal from './reservation-modal';
+import { ReservationsApiResponse } from './reservation-types';
 
 const ReservationView = () => {
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedTimeslot, setSelectedTimeslot] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
-  const handleCreateNew = () => {
-    setOpenModal(true);
+  const [range, setRange] = useState('today');
+  const [date, setDate] = useState<Date | undefined>(undefined);
+
+  const [openModal, setOpenModal] = useState(false);
+
+  const { companyId, organizationId } = useCompanySelectionState();
+  const companyOrganizer = companyId || organizationId || undefined;
+
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetReservationsQuery({
+    page: page - 1,
+    limit,
+    range: date ? undefined : range,
+    date: date ? formatDate(date) : undefined,
+    companyOrganizer,
+  });
+
+  const reservationsData: ReservationsApiResponse['data'] | undefined = apiData?.data;
+  const meta: ReservationsApiResponse['meta'] | undefined = apiData?.meta;
+
+  const handleCreateNew = () => setOpenModal(true);
+  const handleClose = () => setOpenModal(false);
+  const handlePageChange = (newPage: number) => setPage(newPage);
+
+  // Fix: When range changes, clear date
+  const handleRangeChange = (newRange: string) => {
+    setRange(newRange);
+    if (newRange) {
+      setDate(undefined);
+    }
+    setPage(1);
   };
 
-  const handleClose = () => {
-    setOpenModal(false);
-    setSelectedTimeslot(null);
+  const handleDateChange = (newDate: Date | undefined) => {
+    setDate(newDate);
+    if (newDate) {
+      setRange('');
+    }
+    setPage(1);
   };
 
   return (
@@ -28,11 +67,20 @@ const ReservationView = () => {
           Create Reservation
         </Button>
       </div>
-      <ReservationHeader />
-      <ReservationBody />
 
-      {/* Reservation Modal */}
-      <ReservationModal open={openModal} onClose={handleClose} timeslot={selectedTimeslot} isEdit={false} selectedData={null} />
+      <ReservationHeader date={date} onDateChange={handleDateChange} range={range} onRangeChange={handleRangeChange} />
+
+      <ReservationBody
+        isLoading={isLoading || isFetching}
+        data={reservationsData}
+        meta={meta}
+        onPageChange={handlePageChange}
+        limit={limit}
+        companyOrganizer={companyOrganizer}
+        onLimitChange={(l) => setLimit(l)}
+      />
+
+      {openModal && <ReservationModal open={openModal} onClose={handleClose} isEdit={false} selectedData={null} organizationId={organizationId} />}
     </>
   );
 };

@@ -1,5 +1,5 @@
 import UserDetailPage from '@/sections/users/userDetailPage';
-import Header from '../../../../common/header';
+import Header from '../../../../common/header/header';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

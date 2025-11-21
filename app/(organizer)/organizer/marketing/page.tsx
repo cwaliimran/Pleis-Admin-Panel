@@ -1,5 +1,5 @@
 'use client';
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import { MarketingRequestTable } from '@/sections/marketingrequest';
 
 const Page = () => {

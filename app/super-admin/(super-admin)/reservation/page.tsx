@@ -1,4 +1,5 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import ReservationView from '@/sections/reservation/reservation-view/reservation-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <ReservationView />
+      <CompanyGuard>
+        <ReservationView />
+      </CompanyGuard>
     </div>
   );
 };

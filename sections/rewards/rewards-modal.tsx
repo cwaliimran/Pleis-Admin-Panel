@@ -7,11 +7,10 @@ import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGeteventsQuery } from '@/store/Reducer/events';
-import { useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
 import { useAddRewardMutation, useUpdateRewardMutation } from '@/store/Reducer/rewards-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
@@ -22,6 +21,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import RewardCalculatorFields from './reward-calculation-fields';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 
 type RewardFormValues = {
   image: null;
@@ -33,6 +34,7 @@ type RewardFormValues = {
   description: string;
   rewardType: string;
   percentOff: string;
+  menu: string;
   menuItem: string;
   event: string;
   status: string;
@@ -50,6 +52,7 @@ type RewardFormModalProps = {
   global?: boolean;
   isEdit: boolean;
   selectedData?: any;
+  selectedCompany?: any;
 };
 
 const schema = yup.object({
@@ -74,6 +77,7 @@ const schema = yup.object({
     const num = Number(value);
     return num >= 0 && num <= 100;
   }),
+  menu: yup.string(),
   menuItem: yup.string().when('rewardType', {
     is: 'buyMenuItemReward',
     then: (schema) => schema.required('Menu item is required'),
@@ -101,7 +105,7 @@ const schema = yup.object({
   }),
 });
 
-const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }: RewardFormModalProps) => {
+const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, selectedCompany }: RewardFormModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
 
@@ -111,6 +115,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
   const defaultValues: RewardFormValues = {
     image: null,
     rewardType: `${global ? 'customReward' : 'buyMenuItemReward'}`,
+    menu: '',
     menuItem: '',
     title: '',
     sortingType: '',
@@ -135,6 +140,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
   });
 
   const { watch, reset, formState } = methods;
+
   // const isDirty = formState?.isDirty;
   const errors = formState?.errors;
   console.log('errors', errors);
@@ -142,20 +148,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
   // const image = watch('image');
   const rewardType = watch('rewardType');
   const percentOff = watch('percentOff');
-
-  const { data: presetData, isLoading: presetLoading } = useGetPresetMenuQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-    date: undefined,
-  });
-
-  const presetOptions =
-    presetData?.data?.map((preset: any) => ({
-      label: preset?.title,
-      value: preset?._id,
-    })) || [];
+  const selectedMenuId = watch('menu');
 
   const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery({
     page: 0,
@@ -172,6 +165,20 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
     status: '',
   });
 
+  const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+    companyOrganizer: selectedCompany || undefined,
+  });
+
+  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemByMenuIdQuery(
+    { menuId: selectedMenuId },
+    { skip: !selectedMenuId || rewardType !== 'buyMenuItemReward' }
+  );
+
   const tiersOptions =
     tiersData?.data?.map((preset: any) => ({
       label: preset?.title,
@@ -184,28 +191,17 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
       value: preset?._id,
     })) || [];
 
-  // const imagePreviewUrl = useMemo(() => {
-  //   return image instanceof File ? URL.createObjectURL(image) : null;
-  // }, [image]);
+  const menuOptions =
+    menuData?.data?.map((menu: any) => ({
+      label: menu?.title,
+      value: menu?._id,
+    })) || [];
 
-  // useEffect(() => {
-  //   return () => {
-  //     if (imagePreviewUrl) {
-  //       URL.revokeObjectURL(imagePreviewUrl);
-  //     }
-  //   };
-  // }, [imagePreviewUrl]);
-
-  // useEffect(() => {
-  //   if (methods.formState.isSubmitted) {
-  //     methods.trigger();
-  //   }
-  // }, [rewardType, methods]);
-
-  // Update context when rewardType changes for validation
-  // useEffect(() => {
-  //   methods.trigger();
-  // }, [rewardType, methods]);
+  const menuItemOptions =
+    menuItemsData?.data?.map((menuItem: any) => ({
+      label: menuItem?.title,
+      value: menuItem?._id,
+    })) || [];
 
   // Populate form when editing
   useEffect(() => {
@@ -216,7 +212,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
         sortingType: selectedData.sortingType || '',
         minPointsRequiredToClaim: selectedData.minPointsRequiredToClaim?.toString() || '',
         claimLimit: selectedData.claimLimit?.toString() || '',
-        tierLimit: selectedData.tierLimit || 'none',
+        tierLimit: selectedData.tierLimit?._id || 'none',
         percentOff: selectedData.percentOff?.toString() || '',
         description: selectedData.description || '',
         rewardType: selectedData.rewardType || defaultValues.rewardType,
@@ -236,8 +232,6 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
   const handleSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
     let customRewardPhotoKey: string | null = null;
-
-    const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
 
     if (!selectedCompany) {
       showError('Please select a company first before submitting the form');
@@ -271,7 +265,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
         // companyOrganizer: formData.companyOrganizer || '',
-        companyOrganizer: selectedCompany?.value || '',
+        companyOrganizer: selectedCompany || '',
       };
 
       // Add main image if uploaded
@@ -283,6 +277,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
 
       // Add conditional fields based on rewardType
       if (formData.rewardType === 'buyMenuItemReward') {
+        payload.menu = formData.menu;
         payload.menuItem = formData.menuItem;
       }
 
@@ -362,7 +357,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[700px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[700px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Reward' : 'Create Reward'}</DialogTitle>
@@ -427,46 +422,42 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
                 )}
 
                 {rewardType === 'buyMenuItemReward' && (
-                  <div className="grid w-full grid-cols-1 gap-4">
-                    {presetLoading ? (
-                      <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                        <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      </div>
-                    ) : (
-                      <RHFCustomDropdown
-                        name="menuItem"
-                        placeholder="Preset Menu Items"
-                        options={presetOptions}
-                        isLoading={presetLoading}
-                        showNone={false}
-                      />
-                    )}
-                  </div>
+                  <>
+                    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                      {menuLoading ? (
+                        <FieldSkeleton />
+                      ) : (
+                        <RHFCustomDropdown
+                          name="menu"
+                          label="Select Menu"
+                          placeholder="Select Menu"
+                          options={menuOptions}
+                          isLoading={menuLoading}
+                          showNone={false}
+                        />
+                      )}
+
+                      {menuItemsLoading ? (
+                        <FieldSkeleton />
+                      ) : (
+                        <RHFCustomDropdown
+                          label="Select Menu Item"
+                          name="menuItem"
+                          placeholder="Select Menu Item"
+                          options={menuItemOptions}
+                          isLoading={menuItemsLoading}
+                          showNone={false}
+                          disabled={!selectedMenuId}
+                        />
+                      )}
+                    </div>
+                  </>
                 )}
 
                 {rewardType === 'ticketReward' && (
                   <div className="grid w-full grid-cols-1 gap-4">
-                    {/* <RHFSelectField
-                      name="event"
-                      label="Select Event"
-                      placeholder="Choose event for ticket reward"
-                      className="w-full"
-                      options={[
-                        { label: 'Summer Music Festival', value: 'event-1' },
-                        { label: 'Food & Wine Expo', value: 'event-2' },
-                        {
-                          label: 'Business Networking Night',
-                          value: 'event-3',
-                        },
-                      ]}
-                    /> */}
-
                     {isLoadingEvents ? (
-                      <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                        <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      </div>
+                      <FieldSkeleton />
                     ) : (
                       <RHFCustomDropdown
                         name="event"
@@ -492,10 +483,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
                   <RHFTextField name="claimLimit" label="Limit (Optional)" placeholder="Max times claimable" type="number" />
 
                   {tiersLoading ? (
-                    <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                      <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                    </div>
+                    <FieldSkeleton />
                   ) : (
                     <RHFCustomDropdown
                       name="tierLimit"
@@ -531,7 +519,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
 
                 {rewardType === 'customReward' && (
                   <div className="col-span-2 flex flex-col gap-2 gap-y-3">
-                    <div className="mb-2 flex max-w-[10rem] items-center justify-start">
+                    <div className="mb-2 flex max-w-40 items-center justify-start">
                       <RHFUploadButton name="customReward.image" label="Upload Photo" initialImage={null} />
                     </div>
 

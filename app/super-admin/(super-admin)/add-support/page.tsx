@@ -1,34 +1,26 @@
-"use client";
-import Header from "@/app/common/header";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import React from "react";
-import FormProvider, { RHFTextField } from "@/components/rhf";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useBoolean } from "@/hooks/useBoolean";
+'use client';
+import Header from '@/app/common/header/header';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import React from 'react';
+import FormProvider, { RHFTextField } from '@/components/rhf';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useBoolean } from '@/hooks/useBoolean';
 
 const defaultValues = {
-  email: "",
-  phone: "",
+  email: '',
+  phone: '',
 };
 
 const Page = () => {
   const openModal = useBoolean();
 
   const schema = Yup.object().shape({
-    email: Yup.string()
-      .email("Email is required")
-      .required("Email is required"),
-    phone: Yup.string().required("Phone is required"),
+    email: Yup.string().email('Email is required').required('Email is required'),
+    phone: Yup.string().required('Phone is required'),
   });
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -47,62 +39,42 @@ const Page = () => {
     <div>
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Add Support Info", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Add Support Info', href: '' },
         ]}
       />
       <div>
-        <div className=" w-full flex items-center justify-end">
-          <Button
-            className="rounded-4xl py-2 bg-primary cursor-pointer text-white "
-            onClick={openModal.onTrue}
-          >
+        <div className="flex w-full items-center justify-end">
+          <Button className="bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={openModal.onTrue}>
             <Plus className="" />
             Create Support Info
           </Button>
         </div>
       </div>
       <Dialog open={openModal.value} onOpenChange={CloseModal}>
-        <DialogOverlay className="fixed inset-0 bg-white bg-opacity-30 flex items-center justify-center md:w-lg w-full">
-          <DialogContent className=" bg-secondary">
+        <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center bg-white md:w-lg">
+          <DialogContent className="bg-secondary">
             <DialogHeader>
-              <DialogTitle>
-                {" "}
-                {openModal.value
-                  ? "Create Support Info"
-                  : "Edit Support Info"}{" "}
-              </DialogTitle>
+              <DialogTitle> {openModal.value ? 'Create Support Info' : 'Edit Support Info'} </DialogTitle>
             </DialogHeader>
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(onSubmit)}
-            >
-              <div className="flex flex-col gap-4 mt-4">
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
+              <div className="mt-4 flex flex-col gap-4">
                 <RHFTextField
                   type="email"
                   name="email"
                   label="Email"
                   placeholder="Enter Support Email"
-                  className={` ${
-                    methods.formState.errors.email ? "border-red-400" : ""
-                  }`}
+                  className={` ${methods.formState.errors.email ? 'border-red-400' : ''}`}
                 />
                 <RHFTextField
                   name="phone"
                   label="Phone"
                   placeholder="Enter Support Phone"
-                  className={` ${
-                    methods.formState.errors.phone ? "border-red-400" : ""
-                  }`}
+                  className={` ${methods.formState.errors.phone ? 'border-red-400' : ''}`}
                 />
                 <div className="flex justify-end gap-2">
-                  <Button
-                    type="submit"
-                    className="bg-primary text-white hover:bg-primary cursor-pointer"
-                  >
-                    {openModal.value
-                      ? "Add Support Info"
-                      : "Update Support Info"}
+                  <Button type="submit" className="bg-primary hover:bg-primary cursor-pointer text-white">
+                    {openModal.value ? 'Add Support Info' : 'Update Support Info'}
                   </Button>
                 </div>
               </div>

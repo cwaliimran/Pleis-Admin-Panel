@@ -169,7 +169,14 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
       />
 
       {openModal.value && (
-        <ChallengeModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} global={global} />
+        <ChallengeModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedCompany={selectedCompany}
+          selectedData={selectedRecord}
+          global={global}
+        />
       )}
 
       <ConfirmDialog

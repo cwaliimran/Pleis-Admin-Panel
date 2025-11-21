@@ -2,11 +2,14 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomCreatableDropdown from '@/components/rhf/rhf-custom-create-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
 import { useAddPresetMenuMutation, useUpdatePresetMenuMutation } from '@/store/Reducer/preset-menu-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
@@ -19,6 +22,7 @@ import * as Yup from 'yup';
 type PresetFormValues = {
   image?: any;
   title: string;
+  category?: string;
   description: string;
   basePrice: number;
   status: string;
@@ -27,6 +31,7 @@ type PresetFormValues = {
 const defaultValues: PresetFormValues = {
   image: null,
   title: '',
+  category: '',
   description: '',
   basePrice: 0,
   status: 'active',
@@ -35,6 +40,7 @@ const defaultValues: PresetFormValues = {
 const schema = Yup.object().shape({
   image: Yup.mixed().nullable(),
   title: Yup.string().required('Title is required'),
+  category: Yup.string().required('Category is required'),
   description: Yup.string().required('Description is required'),
   status: Yup.string().required('Status is required'),
   basePrice: Yup.number().required('Base Price is required').typeError('Base Price must be a number'),
@@ -62,6 +68,22 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
   const { reset, formState } = methods;
   const isDirty = formState?.isDirty;
 
+  const { data: itemCategoryData, isLoading: itemCategoryLoading } = useGetItemsCategoryQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
+
+  console.log('itemCategoryData', itemCategoryData?.data);
+
+  const itemCategoryOptions =
+    itemCategoryData?.data?.map((category: any) => ({
+      label: category?.title,
+      value: category?._id,
+    })) || [];
+
   const prepareFormData = (data: any): PresetFormValues => ({
     image: (() => {
       const img = data?.image || null;
@@ -71,6 +93,7 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
       return img;
     })(),
     title: data?.title || '',
+    category: data?.category?._id || '',
     description: data?.description || '',
     basePrice: data?.basePrice || 0,
     status: data?.status || 'active',
@@ -98,6 +121,7 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
       const payload: any = {
         title: formData.title,
         description: formData.description,
+        category: formData.category,
         basePrice: formData.basePrice,
       };
 
@@ -181,6 +205,21 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
                   <RHFTextField name="title" label="Item Name" placeholder="Enter Item Name" />
 
                   <RHFTextField name="basePrice" label="Base Price" placeholder="Enter Base Price" type="number" />
+
+                  <div className="col-span-1 sm:col-span-2">
+                    {itemCategoryLoading ? (
+                      <FieldSkeleton />
+                    ) : (
+                      <RHFCustomCreatableDropdown
+                        name="category"
+                        label="Item Category"
+                        placeholder="Select Item Category"
+                        options={itemCategoryOptions}
+                        isLoading={itemCategoryLoading}
+                        showNone={false}
+                      />
+                    )}
+                  </div>
                 </div>
 
                 {isEdit && (

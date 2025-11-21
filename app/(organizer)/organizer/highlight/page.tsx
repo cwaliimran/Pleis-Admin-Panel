@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 // import HighlightView from '@/sections/highlight/highlight-view';
 import HighlightsView from '@/sections/highlight-view/highlight-view';
 import { Metadata } from 'next';

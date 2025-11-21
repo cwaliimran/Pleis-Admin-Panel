@@ -5,19 +5,25 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
+import { useAddTicketingMutation, useUpdateTicketingMutation } from '@/store/Reducer/ticketing-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Calendar } from 'lucide-react';
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
+import { FormData, transformApiDataToForm, transformTicketPayload } from './ticket-helpers';
 import TimeSlotConfigModal from './timelotConfig';
+import ToggleSwitch from './toogle';
 
 interface TicketingModalProps {
   open: boolean;
   onClose: () => void;
   editMode?: boolean;
-  selectedVenueType?: any;
+  selectedData?: any;
+  selectedOrganization?: any;
 }
 
 const FeatureSection: React.FC<{
@@ -42,41 +48,23 @@ const SectionHeader: React.FC<{ title: string; icon?: React.ReactNode }> = ({ ti
   </h3>
 );
 
-const ToggleSwitch: React.FC<{
-  value: boolean;
-  onChange: (value: boolean) => void;
-  label: string;
-  disabled?: boolean;
-}> = ({ value, onChange, label, disabled = false }) => (
-  <div className="dark:bg-secondary flex items-center justify-between rounded-lg bg-gray-50 p-3">
-    <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
-    <button
-      title="Toggle Switch"
-      type="button"
-      onClick={() => onChange(!value)}
-      disabled={disabled}
-      className={`relative h-6 w-12 cursor-pointer rounded-full transition-colors ${
-        value ? 'bg-blue-600' : 'bg-gray-300'
-      } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
-    >
-      <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${value ? 'translate-x-6 transform' : ''}`} />
-    </button>
-  </div>
-);
-
 const defaultValues = {
-  title: '',
   type: '',
   quantity: 0,
   price: 0,
   tax: '',
   event: '',
-  status: 'active',
+  status: 'active' as const,
+  publishSettings: {
+    publishType: 'instant' as 'instant' | 'scheduled' | 'manual',
+    scheduledDate: '',
+  },
   features: {
     timeslot: false,
     timeSlotConfig: null,
     repeatable: false,
-    resale: 'none',
+    repeatableVisits: '',
+    resale: 'none' as 'none' | 'name' | 'full',
     earlyBirdEnabled: false,
     earlyBirdDate: '',
     earlyBirdPrice: '',
@@ -89,17 +77,20 @@ const defaultValues = {
     reservation: false,
     reservationType: '',
     transfer: false,
+    transferFee: '',
   },
 };
 
 const schema = Yup.object().shape({
-  title: Yup.string().required('Title is required'),
   type: Yup.string().required('Ticket type is required'),
   quantity: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : Number(originalValue)))
     .typeError('Quantity must be a number')
-    .required('Quantity is required')
-    .min(1, 'Quantity must be at least 1'),
+    .when('features.timeslot', {
+      is: false,
+      then: (s) => s.required('Quantity is required').min(1, 'Quantity must be at least 1'),
+      otherwise: (s) => s,
+    }),
   price: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : Number(originalValue)))
     .typeError('Price must be a number')
@@ -109,10 +100,29 @@ const schema = Yup.object().shape({
   tax: Yup.string().required('Tax percentage is required'),
   event: Yup.string().required('Event selection is required'),
   status: Yup.string().oneOf(['active', 'inactive']),
+  publishSettings: Yup.object().shape({
+    publishType: Yup.string().oneOf(['instant', 'scheduled', 'manual']).required('Publish type is required'),
+    scheduledDate: Yup.string().when('publishType', {
+      is: 'scheduled',
+      then: (s) => s.required('Scheduled date is required for scheduled publish'),
+    }),
+  }),
   features: Yup.object().shape({
     timeslot: Yup.boolean(),
-    timeSlotConfig: Yup.mixed().nullable(),
+    timeSlotConfig: Yup.mixed()
+      .nullable()
+      .when('timeslot', {
+        is: true,
+        then: (s) =>
+          s.required('Time slot configuration is required').test('is-array', 'Time slot configuration must have at least one date', (value) => {
+            return Array.isArray(value) && value.length > 0;
+          }),
+      }),
     repeatable: Yup.boolean(),
+    repeatableVisits: Yup.string().when('repeatable', {
+      is: true,
+      then: (s) => s.required('Number of visits is required'),
+    }),
     resale: Yup.string().oneOf(['none', 'name', 'full']),
     earlyBirdEnabled: Yup.boolean(),
     earlyBirdDate: Yup.string().when('earlyBirdEnabled', {
@@ -138,22 +148,45 @@ const schema = Yup.object().shape({
     reservation: Yup.boolean(),
     reservationType: Yup.string(),
     transfer: Yup.boolean(),
+    transferFee: Yup.string().when('transfer', {
+      is: true,
+      then: (s) => s.required('Transfer fee is required'),
+    }),
   }),
 });
 
-const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode }) => {
-  const handleClose = () => {
-    onClose();
-  };
+const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization }) => {
+  const [addTicketing, { isLoading: addTicketingLoading }] = useAddTicketingMutation();
+  const [updateTicketing, { isLoading: updateTicketingLoading }] = useUpdateTicketingMutation();
 
   const [isLoading, setIsLoading] = React.useState(false);
+
+  const handleClose = () => {
+    reset(defaultValues);
+    setTimeSlotConfig(null);
+    onClose();
+  };
 
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues,
   });
 
-  const { handleSubmit, formState, watch, setValue } = methods;
+  const { handleSubmit, formState, watch, setValue, reset } = methods;
+
+  React.useEffect(() => {
+    if (editMode && selectedData) {
+      const formData = transformApiDataToForm(selectedData);
+      reset({ ...defaultValues, ...formData });
+
+      if (formData.features?.timeSlotConfig) {
+        setTimeSlotConfig(formData.features.timeSlotConfig);
+      }
+    } else {
+      reset(defaultValues);
+      setTimeSlotConfig(null);
+    }
+  }, [editMode, selectedData, reset]);
   const isDirty = formState.isDirty;
 
   const timeslotEnabled = watch('features.timeslot');
@@ -165,30 +198,99 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   const reservationEnabled = watch('features.reservation');
   const transferEnabled = watch('features.transfer');
   const baseQuantity = watch('quantity');
+  const publishType = watch('publishSettings.publishType');
+  const selectedEventId = watch('event');
 
   const [showTimeSlotModal, setShowTimeSlotModal] = React.useState(false);
   const [timeSlotConfig, setTimeSlotConfig] = React.useState<any>(null);
 
+  // const handleTimeSlotSave = (config: any) => {
+  //   setTimeSlotConfig(config);
+  //   setValue('features.timeSlotConfig', config, { shouldDirty: true });
+  // };
+
   const handleTimeSlotSave = (config: any) => {
-    setTimeSlotConfig(config);
-    setValue('features.timeSlotConfig', config, { shouldDirty: true });
+    // Convert the 12-hour format back to 24-hour format for internal state
+    const configWith24HourFormat = config.map((dateSlot: any) => ({
+      date: dateSlot.date,
+      timeSlots: dateSlot.timeSlots.map((slot: any) => {
+        // Convert 12-hour format back to 24-hour format
+        const convert12To24Hour = (time12h: string): string => {
+          const [time, period] = time12h.split(' ');
+          const [hoursStr, minutesStr] = time.split(':');
+          let hours = Number(hoursStr);
+          const minutes = Number(minutesStr);
+
+          if (period === 'PM' && hours !== 12) {
+            hours += 12;
+          } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+          }
+
+          return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        };
+
+        return {
+          id: slot.id || `slot-${Date.now()}-${Math.random()}`,
+          startTime: convert12To24Hour(slot.startTime),
+          endTime: convert12To24Hour(slot.endTime),
+          quantity: parseInt(slot.quantity) || 0,
+        };
+      }),
+    }));
+
+    setTimeSlotConfig(configWith24HourFormat);
+    setValue('features.timeSlotConfig', config, { shouldDirty: true }); // Save API format to form
   };
 
-  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-  });
+  const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
+    {
+      organization: selectedOrganization?.value,
+    },
+    {
+      skip: !selectedOrganization?.value,
+    }
+  );
 
-  const eventOptions = (eventData?.data || []).map((v: any) => ({
+  const eventOptions = (eventData || []).map((v: any) => ({
     value: v?._id.toString(),
     label: v?.basicInfo?.title || 'No Title',
   }));
 
-  const onSubmit = handleSubmit((formData) => {
-    console.log('✅ Final Submitted Ticket Data:', formData);
-    setIsLoading(false);
+  const selectedEvent = React.useMemo(() => {
+    if (!selectedEventId || !eventData) return null;
+    return eventData.find((event: any) => event._id === selectedEventId) || null;
+  }, [selectedEventId, eventData]);
+
+  const onSubmit = handleSubmit(async (formData) => {
+    try {
+      setIsLoading(true);
+
+      const payload = transformTicketPayload(formData as FormData, editMode, selectedData?._id, selectedData);
+
+      const response = editMode && selectedData ? await updateTicketing(payload).unwrap() : await addTicketing(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || (editMode ? 'Ticket updated successfully' : 'Ticket created successfully'));
+
+      reset(defaultValues);
+      setTimeSlotConfig(null);
+      onClose();
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   });
 
   return (
@@ -197,7 +299,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
         <DialogOverlay className="fixed inset-0 z-50 flex w-full items-center justify-center bg-black/50">
           <DialogContent
             aria-describedby={undefined}
-            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:!max-w-[700px]"
+            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[700px]"
           >
             <DialogHeader className="flex flex-row items-center justify-between">
               <DialogTitle className="text-xl font-bold">{editMode ? 'Edit Ticket' : 'Create New Ticket'}</DialogTitle>
@@ -206,7 +308,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
             <div className="w-full">
               <FormProvider methods={methods} onSubmit={onSubmit}>
                 <div className="mt-4 flex flex-col gap-6">
-                  {/* Required Fields Section */}
                   <div className="dark:bg-secondary mb-3">
                     <SectionHeader title="Required Fields" icon={<AlertCircle className="text-blue-600" size={20} />} />
                     <div className="grid gap-4 md:grid-cols-2">
@@ -222,10 +323,10 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                         name="quantity"
                         label="Quantity"
                         type="number"
-                        placeholder="Enter quantity"
+                        placeholder={timeslotEnabled ? 'Managed by time slots' : 'Enter quantity'}
                         min="1"
                         className={`${formState.errors.quantity ? 'border-red-400 focus:border-red-400' : ''}`}
-                        disabled={isLoading}
+                        disabled={isLoading || timeslotEnabled}
                       />
 
                       <RHFTextField
@@ -265,38 +366,99 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                     </div>
                   </div>
 
-                  {/* Optional Features */}
+                  <div>
+                    <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-gray-200">Publishing Options</h3>
+
+                    <FeatureSection>
+                      <div className="dark:bg-secondary bg-gray-50 p-3">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">Publish Settings</span>
+                      </div>
+                      <div className="dark:bg-secondary border-t bg-white p-4">
+                        <div className="space-y-3">
+                          <label className="flex cursor-pointer items-start gap-3">
+                            <input
+                              type="radio"
+                              value="instant"
+                              checked={publishType === 'instant'}
+                              onChange={(e) =>
+                                setValue('publishSettings.publishType', e.target.value as 'instant', {
+                                  shouldDirty: true,
+                                })
+                              }
+                              disabled={isLoading}
+                              className="mt-1 h-4 w-4 text-blue-600"
+                            />
+                            <div className="flex-1">
+                              <span className="text-sm font-medium">Instant Publish</span>
+                              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                Becomes immediately visible and available to users in the app once created and saved.
+                              </p>
+                            </div>
+                          </label>
+
+                          <div>
+                            <label className="flex cursor-pointer items-start gap-3">
+                              <input
+                                type="radio"
+                                value="scheduled"
+                                checked={publishType === 'scheduled'}
+                                onChange={(e) =>
+                                  setValue('publishSettings.publishType', e.target.value as 'scheduled', {
+                                    shouldDirty: true,
+                                  })
+                                }
+                                disabled={isLoading}
+                                className="mt-1 h-4 w-4 text-blue-600"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium">Scheduled Publish</span>
+                                <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                  Set a specific date and time when the ticket should automatically go live. The system will automatically update its
+                                  status at the scheduled moment.
+                                </p>
+                              </div>
+                            </label>
+
+                            {publishType === 'scheduled' && (
+                              <div className="mt-3 ml-7">
+                                <RHFTextField
+                                  name="publishSettings.scheduledDate"
+                                  label="Schedule Date & Time"
+                                  type="datetime-local"
+                                  disabled={isLoading}
+                                  required={publishType === 'scheduled'}
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          <label className="flex cursor-pointer items-start gap-3">
+                            <input
+                              type="radio"
+                              value="manual"
+                              checked={publishType === 'manual'}
+                              onChange={(e) =>
+                                setValue('publishSettings.publishType', e.target.value as 'manual', {
+                                  shouldDirty: true,
+                                })
+                              }
+                              disabled={isLoading}
+                              className="mt-1 h-4 w-4 text-blue-600"
+                            />
+                            <div className="flex-1">
+                              <span className="text-sm font-medium">Manual Publish</span>
+                              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                                Tickets remain hidden until you explicitly switch their status to Published using the admin panel.
+                              </p>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    </FeatureSection>
+                  </div>
+
                   <div>
                     <SectionHeader title="Optional Features" />
-
-                    {/* Timeslot Feature */}
-                    {/* <FeatureSection>
-                    <ToggleSwitch
-                      value={timeslotEnabled}
-                      onChange={(val) =>
-                        setValue('features.timeslot', val, {
-                          shouldDirty: true,
-                        })
-                      }
-                      label="Time Slot Ticketing"
-                      disabled={isLoading}
-                    />
-                    {timeslotEnabled && (
-                      <FeatureSectionContent>
-                        <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-                          <Calendar className="mr-1 inline" size={14} />
-                          Divide event into bookable time windows. Manage via
-                          calendar view.
-                        </p>
-                        <button
-                          type="button"
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          Configure Time Slots →
-                        </button>
-                      </FeatureSectionContent>
-                    )}
-                  </FeatureSection> */}
 
                     <FeatureSection>
                       <ToggleSwitch
@@ -322,10 +484,11 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                           >
                             Configure Time Slots →
                           </button>
-                          {timeSlotConfig && (
+                          {timeSlotConfig && Array.isArray(timeSlotConfig) && timeSlotConfig.length > 0 && (
                             <div className="mt-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                               <p className="text-sm text-green-700 dark:text-green-300">
-                                ✓ Time slots configured: {timeSlotConfig.timeSlots.length} slots on {timeSlotConfig.operatingDays.length} days
+                                ✓ Time slots configured: {timeSlotConfig.reduce((total, dts) => total + dts.timeSlots.length, 0)} slots across{' '}
+                                {timeSlotConfig.length} date{timeSlotConfig.length > 1 ? 's' : ''}
                               </p>
                             </div>
                           )}
@@ -333,7 +496,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       )}
                     </FeatureSection>
 
-                    {/* Repeatable Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!repeatableEnabled}
@@ -348,7 +510,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       {repeatableEnabled && (
                         <FeatureSectionContent>
                           <RHFTextField
-                            name="number"
+                            name="features.repeatableVisits"
                             label="Number of visits per ticket"
                             type="number"
                             min="1"
@@ -364,7 +526,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       )}
                     </FeatureSection>
 
-                    {/* Resale Protection Feature */}
                     <FeatureSection>
                       <FeatureSectionHeader title="Resale Protection" />
                       <FeatureSectionContent>
@@ -397,7 +558,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       </FeatureSectionContent>
                     </FeatureSection>
 
-                    {/* Transfer Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!transferEnabled}
@@ -411,17 +571,23 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       />
                       {transferEnabled && (
                         <FeatureSectionContent>
-                          <RHFTextField name="price" type="number" placeholder="Enter Transfer Fee" step="0.01" min="0" disabled={isLoading} />
+                          <RHFTextField
+                            name="features.transferFee"
+                            label="Transfer Fee (€)"
+                            type="number"
+                            placeholder="Enter Transfer Fee"
+                            step="0.01"
+                            min="0"
+                            disabled={isLoading}
+                          />
                         </FeatureSectionContent>
                       )}
                     </FeatureSection>
 
-                    {/* Time Sensitive Pricing Feature */}
                     <FeatureSection>
                       <FeatureSectionHeader title="Time Sensitive Pricing" />
                       <FeatureSectionContent>
                         <div className="space-y-3">
-                          {/* Early Bird Option */}
                           <div>
                             <label className="flex cursor-pointer items-center gap-2">
                               <input
@@ -470,7 +636,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                             )}
                           </div>
 
-                          {/* Last Minute Option */}
                           <div>
                             <label className="flex cursor-pointer items-center gap-2">
                               <input
@@ -522,7 +687,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       </FeatureSectionContent>
                     </FeatureSection>
 
-                    {/* Fast Track Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!fasttrackEnabled}
@@ -560,7 +724,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                       )}
                     </FeatureSection>
 
-                    {/* Reservation Feature */}
                     <FeatureSection>
                       <ToggleSwitch
                         value={!!reservationEnabled}
@@ -589,30 +752,14 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                         </FeatureSectionContent>
                       )}
                     </FeatureSection>
-
-                    <div>
-                      {editMode && (
-                        <RHFSelectField
-                          name="status"
-                          placeholder="Select Status"
-                          label="Status"
-                          options={[
-                            { label: 'Active', value: 'active' },
-                            { label: 'Inactive', value: 'inactive' },
-                          ]}
-                          disabled={isLoading}
-                        />
-                      )}
-                    </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="flex justify-center gap-2">
-                    <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="px-4 py-2">
+                    <Button type="button" variant="outline" onClick={handleClose} className="px-4 py-2">
                       Cancel
                     </Button>
 
-                    {isLoading ? (
+                    {addTicketingLoading || updateTicketingLoading ? (
                       <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                         <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
                       </Button>
@@ -633,8 +780,14 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
         </DialogOverlay>
       </Dialog>
 
-      {/* Time Slot Configuration Modal */}
-      <TimeSlotConfigModal open={showTimeSlotModal} onClose={() => setShowTimeSlotModal(false)} onSave={handleTimeSlotSave} />
+      <TimeSlotConfigModal
+        open={showTimeSlotModal}
+        onClose={() => setShowTimeSlotModal(false)}
+        onSave={handleTimeSlotSave}
+        totalQuantity={baseQuantity}
+        eventData={selectedEvent}
+        initialConfig={timeSlotConfig}
+      />
     </>
   );
 };

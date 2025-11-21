@@ -31,6 +31,13 @@ import { promoSectionApi } from './Reducer/promo-section-api';
 import { bannerControlApi } from './Reducer/banner-control-api';
 import { customCategoriesApi } from './Reducer/custom-categories-api';
 import { pinnedContentApi } from './Reducer/pinned-content-api';
+import { ticketingApi } from './Reducer/ticketing-api';
+import { statusApi } from './Reducer/status-api';
+import { streaksApi } from './Reducer/streaks-api';
+import { promoCodesApi } from './Reducer/promo-codes-api';
+import { loyaltyClubApi } from './Reducer/loyalty-club-api';
+import { reservationsApi } from './Reducer/reservations-api';
+import { loyaltyTransactionsApi } from './Reducer/loyalty-transactions-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -61,6 +68,13 @@ const appReducer = combineReducers({
   [bannerControlApi.reducerPath]: bannerControlApi.reducer,
   [customCategoriesApi.reducerPath]: customCategoriesApi.reducer,
   [pinnedContentApi.reducerPath]: pinnedContentApi.reducer,
+  [ticketingApi.reducerPath]: ticketingApi.reducer,
+  [statusApi.reducerPath]: statusApi.reducer,
+  [streaksApi.reducerPath]: streaksApi.reducer,
+  [promoCodesApi.reducerPath]: promoCodesApi.reducer,
+  [loyaltyClubApi.reducerPath]: loyaltyClubApi.reducer,
+  [reservationsApi.reducerPath]: reservationsApi.reducer,
+  [loyaltyTransactionsApi.reducerPath]: loyaltyTransactionsApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -98,6 +112,13 @@ export const store = configureStore({
       bannerControlApi.middleware,
       customCategoriesApi.middleware,
       pinnedContentApi.middleware,
+      ticketingApi.middleware,
+      statusApi.middleware,
+      streaksApi.middleware,
+      promoCodesApi.middleware,
+      loyaltyClubApi.middleware,
+      reservationsApi.middleware,
+      loyaltyTransactionsApi.middleware,
       menuListApi.middleware
     ),
 });

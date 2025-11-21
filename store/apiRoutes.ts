@@ -66,6 +66,7 @@ export const API_ROUTES = {
 
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
+  ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
 
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_ID: (id: string) => `/admin/venues/${id}`,
@@ -80,6 +81,7 @@ export const API_ROUTES = {
   CATEGORIES_BY_ID: (id: string) => `/admin/categories/${id}`,
 
   LOYALTY_LISTINGS: `/admin/loyalty/listings`,
+  ADMIN_REQUEST_LOYALTY_CLUBS: `/admin/loyalty/club-collaborations`,
 
   ADMIN_LOYALTY_REWARDS: `/admin/loyalty/rewards`,
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string) => `/admin/loyalty/rewards/${id}`,
@@ -96,6 +98,17 @@ export const API_ROUTES = {
   ADMIN_MENU_CATEGORIES: `/admin/menu/categories`,
   ADMIN_MENU_CATEGORIES_BY_ID: (id: string) => `/admin/menu/categories/${id}`,
 
+  ADMIN_RESERVATION: `/admin/reservations`,
+  ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
+  ADMIN_RESERVATION_BY_ID: (id: string) => `/admin/reservations/${id}`,
+  ADMIN_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/admin/reservations/updateStatus/${id}/${status}`,
+  ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
+
+  ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,
+
+  PROMO_CODES: `/admin/promo-codes`,
+  PROMO_CODES_BY_ID: (id: string) => `/admin/promo-codes/${id}`,
+
   ADMIN_MENU: `/admin/menu`,
   ADMIN_MENU_BY_ID: (id: string) => `/admin/menu/${id}`,
   ADMIN_MENU_DUPLICATE_BY_ID: (id: string) => `/admin/menu/duplicate/${id}`,
@@ -103,6 +116,7 @@ export const API_ROUTES = {
 
   ADMIN_MENU_ITEMS: `/admin/menu/items`,
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
+  ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
 
   TIERS: `/admin/tiers`,
   TIERS_BY_ID: (id: string) => `/admin/tiers/${id}`,
@@ -126,11 +140,23 @@ export const API_ROUTES = {
   SUPPLIERS: `/admin/suppliers`,
   SUPPLIERS_BY_ID: (id: string) => `/admin/suppliers/${id}`,
 
+  TICKETING: `/admin/ticketing`,
+  TICKETING_BY_ID: (id: string) => `/admin/ticketing/${id}`,
+  TICKETING_BY_ORGANIZATION: (id: string) => `/admin/ticketing/organization/${id}`,
+
   TAGS: `/admin/tags`,
   TAGS_BY_ID: (id: string) => `/admin/tags/${id}`,
 
+  STATUS_BADGE: `/admin/status-badges`,
+  STATUS_BADGE_REORDER: `/admin/status-badges/reorder`,
+  STATUS_BADGE_BY_ID: (id: string) => `/admin/status-badges/${id}`,
+
   USER_ACCESS: `/admin/features`,
   USER_ACCESS_BY_ID: (id: string) => `/admin/features/${id}`,
+
+  STREAKS: `/admin/loyalty/streaks`,
+  STREAKS_BY_ID: (id: string) => `/admin/loyalty/streaks/${id}`,
+  USER_STREAKS: `/admin/loyalty/users-streaks`,
 
   ADMIN_USER_LIST: `/admin/users`,
   ADMIN_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,

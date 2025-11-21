@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 // import OrderAnalyticsView from '@/sections/order-analytics/order-analytics-view';
 import { Metadata } from 'next';
 

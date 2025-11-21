@@ -97,7 +97,12 @@ export const RHFCustomCombobox = ({
                 <CommandEmpty className="py-6 text-center text-sm text-gray-500">No results found.</CommandEmpty>
                 <CommandGroup>
                   {options.map((option) => (
-                    <CommandItem key={option.value} value={option.label} onSelect={() => handleSelect(option.value)} className="cursor-pointer capitalize">
+                    <CommandItem
+                      key={option.value}
+                      value={option.label}
+                      onSelect={() => handleSelect(option.value)}
+                      className="cursor-pointer capitalize"
+                    >
                       <Check className={cn('mr-2 h-4 w-4', selectedValues.includes(option.value) ? 'opacity-100' : 'opacity-0')} />
                       {option.label}
                     </CommandItem>
@@ -125,10 +130,10 @@ export const RHFCustomCombobox = ({
       </div>
 
       <div className={`flex flex-wrap gap-2 ${selectedValues.length > 0 ? 'mt-2' : 'mt-0'}`}>
-        {selectedValues.map((value: string) => {
+        {selectedValues.map((value: string, idx: any) => {
           const option = options.find((opt) => opt.value === value);
           return (
-            <CustomBadge key={value} variant="info" className="flex items-center gap-1">
+            <CustomBadge key={idx} variant="info" className="flex items-center gap-1">
               {option?.label || value}
               <X className="h-3 w-3 cursor-pointer" onClick={() => handleRemove(value)} />
             </CustomBadge>

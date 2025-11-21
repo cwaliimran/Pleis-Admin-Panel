@@ -3,12 +3,7 @@ import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
   Pagination,
@@ -19,14 +14,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
@@ -34,7 +22,7 @@ import { organizerData, UserTableRow } from '@/sections/users';
 import { organizerTabs } from '@/sections/users/data';
 import { Plus, Settings2 } from 'lucide-react';
 import { useState } from 'react';
-import Header from '../../../common/header';
+import Header from '../../../common/header/header';
 
 const headLabel = [
   { id: 'user', label: 'User', align: 'left' },
@@ -52,12 +40,7 @@ const Page = () => {
 
   return (
     <div className="">
-      <Header
-        links={[
-          { name: 'Dashboard', href: '/organizer' },
-          { name: 'Organizers' },
-        ]}
-      />
+      <Header links={[{ name: 'Dashboard', href: '/organizer' }, { name: 'Organizers' }]} />
       <div className="mt-10 flex justify-between">
         <div></div>
         <div>
@@ -73,9 +56,7 @@ const Page = () => {
       <div className="grid grid-cols-12">
         <Card className="col-span-12 mt-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Organizer List
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Organizer List</h3>
             <div>
               <Tabs value={active} onValueChange={setActive} className="w-full">
                 <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
@@ -85,9 +66,7 @@ const Page = () => {
                         key={index}
                         value={tab.value}
                         className={`text-md relative rounded-full px-4 py-2 font-semibold transition-colors ${
-                          active === tab.value
-                            ? 'text-primary'
-                            : 'text-muted-foreground'
+                          active === tab.value ? 'text-primary' : 'text-muted-foreground'
                         }`}
                       >
                         <span className="flex items-center gap-1">
@@ -103,9 +82,7 @@ const Page = () => {
             <div className="flex flex-col items-end md:items-center">
               <Badge className="text-md flex w-fit items-center gap-2 rounded-2xl bg-white px-3 py-1 text-black shadow-md">
                 <Settings2 className="h-10 w-10" />
-                <span className="cursor-pointer whitespace-nowrap">
-                  By Profile
-                </span>
+                <span className="cursor-pointer whitespace-nowrap">By Profile</span>
               </Badge>
             </div>
           </div>
@@ -171,33 +148,13 @@ const Page = () => {
           <DialogContent>
             <DialogTitle>Update User Information </DialogTitle>
             <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="Organizer Name"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="text"
-                placeholder="Address"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
+              <input type="text" placeholder="Organizer Name" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="email" placeholder="Email" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="tel" placeholder="Phone Number" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="text" placeholder="Address" className="z-10 rounded-md p-2 shadow-md" />
             </div>
             <div className="mt-4 flex justify-end">
-              <Button
-                onClick={openModal.onFalse}
-                variant={'outline'}
-                className="mr-2 cursor-pointer"
-              >
+              <Button onClick={openModal.onFalse} variant={'outline'} className="mr-2 cursor-pointer">
                 Cancel
               </Button>
               <Button onClick={openModal.onFalse} className="cursor-pointer">

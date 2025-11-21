@@ -1,5 +1,5 @@
-import Header from '@/app/common/header';
-import TransactionsView from '@/sections/reservation/reservation-transactions/transactions-view';
+import Header from '@/app/common/header/header';
+import LoyaltyTransactionView from '@/sections/loyalty-transaction/loyalty-transaction-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <TransactionsView />
+      <LoyaltyTransactionView />
     </div>
   );
 };

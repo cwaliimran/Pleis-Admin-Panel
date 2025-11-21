@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeletePresetMenuMutation, useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -10,7 +11,6 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import PresetModal from './preset-modal';
 import { default as PresetTable } from './preset-table';
-import { useDeletePresetMenuMutation, useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
 
 const PresetView = () => {
   const openModal = useBoolean();
@@ -66,13 +66,6 @@ const PresetView = () => {
     editModal.onFalse();
     openModal.onTrue();
   };
-
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  // const handleEdit = (id: string) => {
-  //   console.log('id', id);
-  //   openModal.onTrue();
-  //   editModal.onTrue();
-  // };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
   const handleEdit = (id: string) => {

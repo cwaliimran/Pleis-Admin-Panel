@@ -46,9 +46,7 @@ export function fDateTime(date: ConfigType, format?: string): string | null {
 
   const isValid = dayjs(date).isValid();
 
-  return isValid
-    ? dayjs(date).format(format ?? formatStr.dateTime)
-    : 'Invalid time value';
+  return isValid ? dayjs(date).format(format ?? formatStr.dateTime) : 'Invalid time value';
 }
 
 // ----------------------------------------------------------------------
@@ -62,9 +60,7 @@ export function fDate(date: ConfigType, format?: string): string | null {
 
   const isValid = dayjs(date).isValid();
 
-  return isValid
-    ? dayjs(date).format(format ?? formatStr.date)
-    : 'Invalid time value';
+  return isValid ? dayjs(date).format(format ?? formatStr.date) : 'Invalid time value';
 }
 
 // fDate(row.date, formatStr.paramCase.date)
@@ -80,9 +76,7 @@ export function fTime(date: ConfigType, format?: string): string | null {
 
   const isValid = dayjs(date).isValid();
 
-  return isValid
-    ? dayjs(date).format(format ?? formatStr.time)
-    : 'Invalid time value';
+  return isValid ? dayjs(date).format(format ?? formatStr.time) : 'Invalid time value';
 }
 
 // ----------------------------------------------------------------------
@@ -117,11 +111,7 @@ export function fToNow(date: ConfigType): string | null {
 
 /** output: boolean
  */
-export function fIsBetween(
-  inputDate: ConfigType,
-  startDate: ConfigType,
-  endDate: ConfigType
-): boolean {
+export function fIsBetween(inputDate: ConfigType, startDate: ConfigType, endDate: ConfigType): boolean {
   if (!inputDate || !startDate || !endDate) {
     return false;
   }
@@ -130,15 +120,8 @@ export function fIsBetween(
   const formattedStartDate = fTimestamp(startDate);
   const formattedEndDate = fTimestamp(endDate);
 
-  if (
-    typeof formattedInputDate === 'number' &&
-    typeof formattedStartDate === 'number' &&
-    typeof formattedEndDate === 'number'
-  ) {
-    return (
-      formattedInputDate >= formattedStartDate &&
-      formattedInputDate <= formattedEndDate
-    );
+  if (typeof formattedInputDate === 'number' && typeof formattedStartDate === 'number' && typeof formattedEndDate === 'number') {
+    return formattedInputDate >= formattedStartDate && formattedInputDate <= formattedEndDate;
   }
 
   return false;
@@ -156,11 +139,7 @@ export function fIsAfter(startDate: ConfigType, endDate: ConfigType): boolean {
 
 /** output: boolean
  */
-export function fIsSame(
-  startDate: ConfigType,
-  endDate: ConfigType,
-  units?: OpUnitType
-): boolean | string {
+export function fIsSame(startDate: ConfigType, endDate: ConfigType, units?: OpUnitType): boolean | string {
   if (!startDate || !endDate) {
     return false;
   }
@@ -181,11 +160,7 @@ export function fIsSame(
  * Same month: 25 - 26 Apr 2024
  * Same year: 25 Apr - 26 May 2024
  */
-export function fDateRangeShortLabel(
-  startDate: ConfigType,
-  endDate: ConfigType,
-  initial?: boolean
-): string {
+export function fDateRangeShortLabel(startDate: ConfigType, endDate: ConfigType, initial?: boolean): string {
   const isValid = dayjs(startDate).isValid() && dayjs(endDate).isValid();
   const isAfter = fIsAfter(startDate, endDate);
 
@@ -313,17 +288,12 @@ export const formatDate = (date?: Date): string | undefined => {
 //     }
 // }
 
-export function convertTimeFormat(
-  time: string,
-  to24Hour: boolean = false
-): string {
+export function convertTimeFormat(time: string, to24Hour: boolean = false): string {
   if (to24Hour) {
     // Convert 12-hour format (e.g., "6:15 PM") to 24-hour format (e.g., "18:15")
     const parts = time.split(' ');
     if (parts.length !== 2) {
-      throw new Error(
-        "Invalid 12-hour time format. Expected format: 'H:MM AM/PM'"
-      );
+      throw new Error("Invalid 12-hour time format. Expected format: 'H:MM AM/PM'");
     }
     const [timePart, period] = parts;
     if (!period || !['AM', 'PM'].includes(period)) {

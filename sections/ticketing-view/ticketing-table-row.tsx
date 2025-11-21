@@ -12,48 +12,38 @@ interface PageProps {
   handleEdit?: (id: string) => void;
 }
 
-const TicketingTableRow: FC<PageProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
+const TicketingTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell className="text-left font-medium capitalize">
-        {item?.title || '-'}
-      </TableCell>
+      <TableCell className="text-left font-medium capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left font-medium capitalize">
-        {item?.event || '-'}
-      </TableCell>
+      <TableCell className="text-left font-medium capitalize">{item?.event?.basicInfo?.title || '-'}</TableCell>
 
-      <TableCell className="text-left font-medium">
-        {item?.quantity || '-'}
-      </TableCell>
+      <TableCell className="text-left font-medium">{item?.quantity || 'N/A'}</TableCell>
 
-      <TableCell className="text-left font-medium">
-        {item?.tax || '-'}%
-      </TableCell>
+      <TableCell className="text-left font-medium">{item?.taxPercentage || '-'}%</TableCell>
 
-      <TableCell className="text-left font-medium">
-        {item?.price || '-'}
-      </TableCell>
+      <TableCell className="text-left font-medium">{item?.price || '-'}</TableCell>
 
-      <TableCell className="text-left text-sm">
-        {fDate(item?.createdAt, formatStr.paramCase.date)}
+      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+
+      <TableCell className="text-muted-foreground text-left text-sm">
+        <CustomBadge variant={item?.timingSlots?.enabled ? 'success' : 'error'}>{item?.timingSlots?.enabled ? 'Enabled' : 'Disabled'}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge
           variant={
-            item?.status === 'active'
-              ? 'success'
-              : item?.status === 'inactive'
-                ? 'error'
-                : 'default'
+            item?.status === 'active' ? 'success' : item?.status === 'inactive' ? 'error' : item?.status === 'scheduled' ? 'warning' : 'default'
           }
         >
-          {item?.status}
+          {item?.status === 'scheduled'
+            ? 'Scheduled'
+            : item?.status === 'active'
+              ? 'Published'
+              : item?.status === 'inactive'
+                ? 'Inactive'
+                : item?.status}
         </CustomBadge>
       </TableCell>
 

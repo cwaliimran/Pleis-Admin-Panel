@@ -174,7 +174,7 @@ const TiersModal = ({ open, onClose, isEdit = false, selectedData }: TierModalPr
       <DialogOverlay className="bg-opacity-30 fixed inset-0" />
       <DialogContent
         aria-describedby={undefined}
-        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:!max-w-[650px]"
+        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[650px]!"
       >
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Tier' : 'Create Tier'}</DialogTitle>

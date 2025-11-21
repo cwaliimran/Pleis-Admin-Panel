@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import VenueView from '@/sections/venue/venue-view';
 import { Metadata } from 'next';
 

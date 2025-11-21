@@ -120,6 +120,7 @@ export const paths = {
     orderSettings: '/super-admin/app-ordering/order-settings',
 
     qrCodes: '/super-admin/qr-codes',
+    promoCodes: '/super-admin/promo-code',
 
     streak: '/super-admin/streaks',
     globalStreak: '/super-admin/global-streaks',

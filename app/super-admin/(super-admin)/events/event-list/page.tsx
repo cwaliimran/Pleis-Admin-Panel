@@ -1,5 +1,5 @@
-import Header from "@/app/common/header";
-import EventList from "@/sections/event/event-list";
+import Header from '@/app/common/header/header';
+import EventList from '@/sections/event/event-list';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -11,8 +11,8 @@ const Page = () => {
     <div className="min-h-screen pb-6">
       <Header
         links={[
-          { name: "Dashboard", href: "/super-admin" },
-          { name: "Events List", href: "" },
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Events List', href: '' },
         ]}
       />
 

@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import TermsAndConditionsPage from '@/sections/terms/terms-view';
 import { Metadata } from 'next';
 

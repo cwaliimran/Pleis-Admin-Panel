@@ -1,5 +1,5 @@
-import Header from '@/app/common/header';
-import OrderManagementView from '@/sections/app-ordering/order-management/order-management-view';
+import Header from '@/app/common/header/header';
+import { OrderManagementView } from '@/sections/app-ordering/order-management/order-management-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import TagsView from '@/sections/tags/tags-view';
 import { Metadata } from 'next';
 

@@ -1,4 +1,4 @@
-import Header from '@/app/common/header';
+import Header from '@/app/common/header/header';
 import RewardsView from '@/sections/rewards/rewards-view';
 import { Metadata } from 'next';
 
