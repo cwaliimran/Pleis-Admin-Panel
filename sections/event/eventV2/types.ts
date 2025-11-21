@@ -94,7 +94,7 @@ export interface StepOneProps {
   setFile: (file: File | null) => void;
   showPartnerOrganizer: boolean;
   setShowPartnerOrganizer: React.Dispatch<React.SetStateAction<boolean>>;
-  removePartnerOrganizer: (val: string) => void;
+  // removePartnerOrganizer: (val: string) => void;
   setVenueModal: (show: boolean) => void;
   router: any;
   setStep: (step: number) => void;
