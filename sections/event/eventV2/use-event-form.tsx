@@ -19,7 +19,7 @@ import { defaultValues } from './constants';
 import type { EventFormValues } from './types';
 import { eventValidationSchema } from './validation';
 
-export const useEventForm = () => {
+export const useEventForm = ({ userType }: { userType: string }) => {
   const { id } = useParams();
   const router = useRouter();
   const isEditMode = Boolean(id);
@@ -421,7 +421,7 @@ export const useEventForm = () => {
 
       if (response?.data) {
         showSuccess(response?.message || (id ? 'Event updated successfully' : 'Event created successfully'));
-        // router.push(`/${userType}/events`);
+        router.push(`/${userType}/events`);
       }
     } catch (error) {
       if (imageFileString) {
