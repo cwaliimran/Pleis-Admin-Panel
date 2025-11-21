@@ -255,8 +255,8 @@ const StepOne = ({
           </div>
         )}
         {partnerOrganization && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Badge className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black">
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge className="bg-secondary flex items-center gap-1 text-xs py-1 text-white dark:bg-white dark:text-black">
               {organizations?.find((org: any) => org._id === partnerOrganization)?.basicInfo?.name || partnerOrganization}
               <button
                 title="Remove Organizer"

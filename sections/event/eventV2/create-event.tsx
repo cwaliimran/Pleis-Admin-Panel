@@ -35,7 +35,7 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
     tagsLoading,
     isAddingEvent,
     isUpdatingEvent,
-    removePartnerOrganizer,
+    // removePartnerOrganizer,
     toggleRecurringDay,
     isStepValid,
     onSubmit,
@@ -44,7 +44,7 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
     recurring,
     recurringDays,
     recurringEnd,
-  } = useEventForm(userType);
+  } = useEventForm({ userType });
 
   const maxSteps = isEditMode ? 2 : 3;
 
@@ -77,7 +77,7 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
                     setFile={setFile}
                     showPartnerOrganizer={showPartnerOrganizer}
                     setShowPartnerOrganizer={setShowPartnerOrganizer}
-                    removePartnerOrganizer={removePartnerOrganizer}
+                    // removePartnerOrganizer={removePartnerOrganizer}
                     setVenueModal={setVenueModal}
                     router={router}
                     setStep={setStep}
