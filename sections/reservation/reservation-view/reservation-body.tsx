@@ -72,7 +72,7 @@ const ReservationBody = ({ data, isLoading, meta, onPageChange, limit }: Reserva
                     <div className="text-gray-500">Max Capacity</div>
                     <div className="text-lg font-semibold">{reservation.maxCapacityPerReservation} people</div>
                   </div>
-                  <div className='min-w-32'>
+                  <div className="min-w-32">
                     <div className="text-gray-500">Condition</div>
                     <div className="text-lg font-semibold">{conditionType(reservation.conditionType)}</div>
                   </div>

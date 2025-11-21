@@ -231,14 +231,14 @@ const StepOne = ({
           onClick={() => setShowPartnerOrganizer((v) => !v)}
         >
           <Plus className="h-4 w-4" />
-          Add Partner Organizer
+          Add Partner Organization
         </button>
 
         {showPartnerOrganizer && (
           <div className="mt-2 flex w-[70%] gap-2">
             <RHFCustomDropdown
               name="partnerOrganization"
-              placeholder="Search for partner organizer"
+              placeholder="Search for partner organization"
               className="sm:max-w-[120px] lg:max-w-[440px]"
               triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
               contentClassName="rounded-xl shadow-md"

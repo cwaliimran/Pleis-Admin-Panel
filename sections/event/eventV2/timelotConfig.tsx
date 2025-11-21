@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, Plus, X } from 'lucide-react';
+import { showError } from '@/utils/toast';
+import { Calendar, Plus, Trash2, X } from 'lucide-react';
 import * as React from 'react';
 import { EventData, getEventDateConstraints, isDateWithinEventSchedule } from './event-ticketing-helpers';
 
@@ -38,11 +39,13 @@ interface TimeSlotConfigModalProps {
   initialConfig?: DateTimeSlot[] | null;
 }
 
+// Convert 24-hour time to 12-hour format with padded hours
 const convertTo12Hour = (time24: string): string => {
   const [hours, minutes] = time24.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
   const hours12 = hours % 12 || 12;
-  return `${hours12}:${String(minutes).padStart(2, '0')} ${period}`;
+  // Pad hours with leading zero
+  return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
 };
 
 const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose, onSave, totalQuantity = 0, eventData, initialConfig }) => {
@@ -66,30 +69,147 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
     }
   }, [eventData]);
 
+  // Get event time boundaries in minutes for comparison
+  const getEventTimeBoundaries = () => {
+    if (!eventData?.schedule?.startDateTime || !eventData?.schedule?.endDateTime) {
+      return { startMinutes: 0, endMinutes: 1440 }; // Full day if no event data
+    }
+
+    try {
+      const startParts = eventData.schedule.startDateTime.split(' ');
+      const endParts = eventData.schedule.endDateTime.split(' ');
+
+      const parseTime = (timeParts: string[]) => {
+        if (timeParts.length < 3) return null;
+        const [time, period] = [timeParts[1], timeParts[2]];
+        const [hoursStr, minutesStr] = time.split(':');
+        let hours = parseInt(hoursStr, 10);
+        const minutes = parseInt(minutesStr, 10);
+
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+
+        return hours * 60 + minutes;
+      };
+
+      const startMinutes = parseTime(startParts);
+      const endMinutes = parseTime(endParts);
+
+      if (startMinutes === null || endMinutes === null) {
+        console.warn('Failed to parse event times');
+        return { startMinutes: 0, endMinutes: 1440 };
+      }
+
+      return { startMinutes, endMinutes };
+    } catch (error) {
+      console.error('Error parsing event times:', error);
+      return { startMinutes: 0, endMinutes: 1440 };
+    }
+  };
+
+  const { startMinutes: eventStartMinutes, endMinutes: eventEndMinutes } = getEventTimeBoundaries();
+
+  // Convert time string to minutes
+  const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // Convert minutes to time string
+  const minutesToTime = (mins: number): string => {
+    const hours = Math.floor(mins / 60);
+    const minutes = mins % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  };
+
+  // Check if time is within event boundaries
+  const isTimeWithinEvent = (time: string): boolean => {
+    const minutes = timeToMinutes(time);
+    return minutes >= eventStartMinutes && minutes <= eventEndMinutes;
+  };
+
+  // Format date with time for display
+  const formatDateTimeDisplay = (dateStr: string | null, timeStr: string | null): string => {
+    if (!dateStr) return '';
+
+    try {
+      const date = new Date(dateStr);
+      const dateFormatted = date.toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+      });
+
+      if (timeStr) {
+        return `${dateFormatted} at ${timeStr}`;
+      }
+
+      return dateFormatted;
+    } catch (error) {
+      console.log('error', error);
+      return dateStr;
+    }
+  };
+
+  // Extract time from datetime string
+  const extractTime = (dateTimeStr: string | null): string => {
+    if (!dateTimeStr) return '';
+
+    try {
+      // Handle format like "2025-11-13 02:00 PM"
+      const parts = dateTimeStr.split(' ');
+      if (parts.length >= 3) {
+        return `${parts[1]} ${parts[2]}`; // "02:00 PM"
+      }
+
+      // Handle ISO format
+      const date = new Date(dateTimeStr);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const hours12 = hours % 12 || 12;
+      return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+    } catch (error) {
+      console.log('error', error);
+      return '';
+    }
+  };
+
   const addDate = () => {
     if (!selectedDate) {
-      alert('Please select a date first');
+      showError('Please select a date first');
       return;
     }
 
     if (dateTimeSlots.some((dts) => dts.date === selectedDate)) {
-      alert('This date already exists. Please select a different date.');
+      showError('This date already exists. Please select a different date.');
       return;
     }
 
     if (eventData && eventConstraints.minDate && eventConstraints.maxDate) {
       const validation = isDateWithinEventSchedule(selectedDate, eventData ?? null);
       if (!validation.isValid) {
-        alert(validation.message || 'Selected date is outside event schedule');
+        showError(validation.message || 'Selected date is outside event schedule');
         return;
       }
     }
+
+    // Calculate default start and end times based on event boundaries
+    const defaultStartMinutes = eventStartMinutes;
+    const defaultEndMinutes = Math.min(defaultStartMinutes + 120, eventEndMinutes); // 2 hours later or event end
 
     setDateTimeSlots([
       ...dateTimeSlots,
       {
         date: selectedDate,
-        timeSlots: [{ id: Date.now().toString(), startTime: '09:00', endTime: '11:00', quantity: 0 }],
+        timeSlots: [
+          {
+            id: Date.now().toString(),
+            startTime: minutesToTime(defaultStartMinutes),
+            endTime: minutesToTime(defaultEndMinutes),
+            quantity: 0,
+          },
+        ],
       },
     ]);
     setSelectedDate('');
@@ -104,13 +224,17 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
       dateTimeSlots.map((dts) => {
         if (dts.date === date) {
           const lastSlot = dts.timeSlots[dts.timeSlots.length - 1];
-          const newStartTime = lastSlot ? lastSlot.endTime : '09:00';
+          let newStartMinutes = lastSlot ? timeToMinutes(lastSlot.endTime) : eventStartMinutes;
 
-          const [hours, minutes] = newStartTime.split(':').map(Number);
-          const totalMinutes = hours * 60 + minutes + 120;
-          const newEndHours = Math.floor(totalMinutes / 60) % 24;
-          const newEndMinutes = totalMinutes % 60;
-          const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`;
+          // Ensure start time is within event boundaries
+          if (newStartMinutes < eventStartMinutes) {
+            newStartMinutes = eventStartMinutes;
+          }
+          if (newStartMinutes > eventEndMinutes) {
+            newStartMinutes = eventStartMinutes;
+          }
+
+          const newEndMinutes = Math.min(newStartMinutes + 120, eventEndMinutes); // 2 hours or event end
 
           return {
             ...dts,
@@ -118,8 +242,8 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
               ...dts.timeSlots,
               {
                 id: Date.now().toString(),
-                startTime: newStartTime,
-                endTime: newEndTime,
+                startTime: minutesToTime(newStartMinutes),
+                endTime: minutesToTime(newEndMinutes),
                 quantity: 0,
               },
             ],
@@ -130,13 +254,59 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
     );
   };
 
+  const removeTimeSlot = (date: string, slotId: string) => {
+    setDateTimeSlots(
+      dateTimeSlots
+        .map((dts) => {
+          if (dts.date === date) {
+            const newSlots = dts.timeSlots.filter((slot) => slot.id !== slotId);
+            return { ...dts, timeSlots: newSlots };
+          }
+          return dts;
+        })
+        .filter((dts) => dts.timeSlots.length > 0)
+    );
+  };
+
   const updateTimeSlot = (date: string, slotId: string, field: 'startTime' | 'endTime' | 'quantity', value: string | number) => {
     setDateTimeSlots(
       dateTimeSlots.map((dts) => {
         if (dts.date === date) {
           return {
             ...dts,
-            timeSlots: dts.timeSlots.map((slot) => (slot.id === slotId ? { ...slot, [field]: value } : slot)),
+            timeSlots: dts.timeSlots.map((slot) => {
+              if (slot.id === slotId) {
+                // Validate time changes
+                if (field === 'startTime' && typeof value === 'string') {
+                  if (!isTimeWithinEvent(value)) {
+                    showError(
+                      `Start time must be between ${extractTime(eventData?.schedule?.startDateTime || '')} and ${extractTime(eventData?.schedule?.endDateTime || '')}`
+                    );
+                    return slot;
+                  }
+                  // If start time is changed, validate or clear end time if it's now invalid
+                  if (slot.endTime && timeToMinutes(slot.endTime) <= timeToMinutes(value)) {
+                    return { ...slot, [field]: value, endTime: '' };
+                  }
+                }
+
+                if (field === 'endTime' && typeof value === 'string') {
+                  if (!isTimeWithinEvent(value)) {
+                    showError(
+                      `End time must be between ${extractTime(eventData?.schedule?.startDateTime || '')} and ${extractTime(eventData?.schedule?.endDateTime || '')}`
+                    );
+                    return slot;
+                  }
+                  if (timeToMinutes(value) <= timeToMinutes(slot.startTime)) {
+                    showError('End time must be after start time');
+                    return slot;
+                  }
+                }
+
+                return { ...slot, [field]: value };
+              }
+              return slot;
+            }),
           };
         }
         return dts;
@@ -152,26 +322,56 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
   const handleSave = () => {
     if (dateTimeSlots.length === 0) {
-      alert('Please add at least one date with time slots');
+      showError('Please add at least one date with time slots');
       return;
     }
 
     // Validate all dates have at least one time slot
     const invalidDates = dateTimeSlots.filter((dts) => dts.timeSlots.length === 0);
     if (invalidDates.length > 0) {
-      alert('Each date must have at least one time slot');
+      showError('Each date must have at least one time slot');
       return;
+    }
+
+    // Validate all slots have both start and end times
+    for (const dts of dateTimeSlots) {
+      for (const slot of dts.timeSlots) {
+        if (!slot.startTime || !slot.endTime) {
+          showError('All time slots must have both start and end times');
+          return;
+        }
+
+        // Validate times are within event boundaries
+        if (!isTimeWithinEvent(slot.startTime)) {
+          showError(
+            `All start times must be between ${extractTime(eventData?.schedule?.startDateTime || '')} and ${extractTime(eventData?.schedule?.endDateTime || '')}`
+          );
+          return;
+        }
+
+        if (!isTimeWithinEvent(slot.endTime)) {
+          showError(
+            `All end times must be between ${extractTime(eventData?.schedule?.startDateTime || '')} and ${extractTime(eventData?.schedule?.endDateTime || '')}`
+          );
+          return;
+        }
+
+        if (timeToMinutes(slot.endTime) <= timeToMinutes(slot.startTime)) {
+          showError('End time must be after start time for all slots');
+          return;
+        }
+      }
     }
 
     if (totalQuantity > 0) {
       const totalAllocated = getTotalAllocated();
       if (totalAllocated > totalQuantity) {
-        alert(`Total allocated quantity (${totalAllocated}) exceeds available quantity (${totalQuantity})`);
+        showError(`Total allocated quantity (${totalAllocated}) exceeds available quantity (${totalQuantity})`);
         return;
       }
     }
 
-    // Transform to API format: convert times to 12-hour format and quantity to string
+    // Transform to API format with padded hours
     const apiFormat: ApiDateTimeSlot[] = dateTimeSlots.map((dts) => ({
       date: dts.date,
       timeSlots: dts.timeSlots.map((slot) => ({
@@ -220,8 +420,13 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
               </div>
               {eventConstraints.minDate && eventConstraints.maxDate && (
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                  Available dates: {new Date(eventConstraints.minDate).toLocaleDateString()} -{' '}
-                  {new Date(eventConstraints.maxDate).toLocaleDateString()}
+                  Available dates: {formatDateTimeDisplay(eventConstraints.minDate, extractTime(eventConstraints.startDateTime))} -{' '}
+                  {formatDateTimeDisplay(eventConstraints.maxDate, extractTime(eventConstraints.endDateTime))}
+                </p>
+              )}
+              {eventData && eventConstraints.startDateTime && eventConstraints.endDateTime && (
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                  Event time: {extractTime(eventConstraints.startDateTime)} - {extractTime(eventConstraints.endDateTime)}
                 </p>
               )}
               {eventData && (!eventConstraints.minDate || !eventConstraints.maxDate) && (
@@ -292,21 +497,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                             title="start time"
                             type="time"
                             value={slot.startTime}
-                            onChange={(e) => {
-                              const newStartTime = e.target.value;
-                              updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', newStartTime);
-
-                              // Auto-update end time if start time changes (add 2 hours by default)
-                              const [hours, minutes] = newStartTime.split(':').map(Number);
-                              const totalMinutes = hours * 60 + minutes + 120; // 2 hours
-                              const newEndHours = Math.floor(totalMinutes / 60) % 24;
-                              const newEndMinutes = totalMinutes % 60;
-                              const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`;
-
-                              if (newEndTime > newStartTime) {
-                                updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', newEndTime);
-                              }
-                            }}
+                            onChange={(e) => updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', e.target.value)}
                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           />
                         </div>
@@ -318,15 +509,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                             title="end time"
                             type="time"
                             value={slot.endTime}
-                            min={slot.startTime}
-                            onChange={(e) => {
-                              const newEndTime = e.target.value;
-                              if (newEndTime > slot.startTime) {
-                                updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', newEndTime);
-                              } else {
-                                alert('End time must be after start time');
-                              }
-                            }}
+                            onChange={(e) => updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', e.target.value)}
                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           />
                         </div>
@@ -337,12 +520,31 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                             type="number"
                             min="0"
                             max={totalQuantity || 999}
-                            value={slot.quantity || 0}
-                            onChange={(e) => updateTimeSlot(dateTimeSlot.date, slot.id, 'quantity', parseInt(e.target.value) || 0)}
+                            value={slot.quantity === 0 ? '' : slot.quantity}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '') {
+                                updateTimeSlot(dateTimeSlot.date, slot.id, 'quantity', 0);
+                              } else {
+                                const numVal = parseInt(val, 10);
+                                if (!isNaN(numVal) && numVal >= 0) {
+                                  updateTimeSlot(dateTimeSlot.date, slot.id, 'quantity', numVal);
+                                }
+                              }
+                            }}
                             placeholder="Qty"
                             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           />
                         </div>
+
+                        <button
+                          title="remove slot"
+                          type="button"
+                          onClick={() => removeTimeSlot(dateTimeSlot.date, slot.id)}
+                          className="cursor-pointer text-red-500 hover:text-red-600"
+                        >
+                          <Trash2 size={20} />
+                        </button>
                       </div>
                     ))}
                   </div>

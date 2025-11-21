@@ -91,14 +91,14 @@ export const convertTo12Hour = (time24: string): string => {
  */
 export const convertTo24Hour = (time12: string): string => {
   const [time, period] = time12.split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
-
+  let hours;
+  const [h, minutes] = time.split(':').map(Number);
+  hours = h;
   if (period === 'PM' && hours !== 12) {
     hours += 12;
   } else if (period === 'AM' && hours === 12) {
     hours = 0;
   }
-
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 };
 

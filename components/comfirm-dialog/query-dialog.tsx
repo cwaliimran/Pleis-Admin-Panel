@@ -29,7 +29,7 @@ const QueryDialog: FC<ConfirmDialogProps> = ({ open, title, content, onClose, on
               </Button>
 
               {isLoading ? (
-                <Button type="button" className="cursor-not-allowed" onClick={onConfirm}>
+                <Button type="button" className={`cursor-not-allowed ${btnClassName}`} onClick={onConfirm}>
                   <ButtonLoading />
                 </Button>
               ) : (
