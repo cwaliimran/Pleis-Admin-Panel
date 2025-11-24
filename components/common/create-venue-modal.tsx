@@ -19,10 +19,12 @@ import * as Yup from 'yup';
 import { useAddVenueMutation } from '@/store/Reducer/venue';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
 import RHFCustomDropdown from '../rhf/rhf-custom-dropdown';
+import FieldSkeleton from '../ui/field-skeleton';
 
 interface VenueTypeModalProps {
   open: boolean;
   onClose: () => void;
+  organizationsList: any[];
 }
 
 const defaultValues = {
@@ -43,7 +45,7 @@ const defaultValues = {
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries = ['places'] as any;
 
-const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
+const VenueTypeModal = ({ open, onClose, organizationsList }: VenueTypeModalProps) => {
   // Form schema
   const schema = Yup.object().shape({
     title: Yup.string().required('Venue name is required'),
@@ -106,14 +108,22 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
     label: v.title,
   }));
 
-  const organizationOptions = React.useMemo(
-    () =>
-      orgData?.data?.map((org: any) => ({
-        value: org._id,
-        label: org?.basicInfo?.name,
-      })) || [],
-    [orgData]
-  );
+  // const organizationOptions = React.useMemo(
+  //   () =>
+  //     orgData?.data?.map((org: any) => ({
+  //       value: org._id,
+  //       label: org?.basicInfo?.name,
+  //     })) || [],
+  //   [orgData]
+  // );
+
+  const organizationOptions = React.useMemo(() => {
+    const source = organizationsList && organizationsList.length > 0 ? organizationsList : orgData?.data || [];
+    return source.map((org: any) => ({
+      value: org._id,
+      label: org?.basicInfo?.name,
+    }));
+  }, [organizationsList, orgData]);
 
   // Handle Google Maps place selection
   const handleOnPlacesChanged = async () => {
@@ -244,25 +254,33 @@ const VenueTypeModal = ({ open, onClose }: VenueTypeModalProps) => {
                 options={organizationOptions}
               /> */}
 
-              <RHFCustomDropdown
-                name="venueType"
-                label="Venue Type"
-                placeholder="Select Venue Type"
-                options={venueTypeOptions}
-                isLoading={venueLoading}
-                showNone={false}
-              />
+              {venueLoading ? (
+                <FieldSkeleton />
+              ) : (
+                <RHFCustomDropdown
+                  name="venueType"
+                  label="Venue Type"
+                  placeholder="Select Venue Type"
+                  options={venueTypeOptions}
+                  isLoading={venueLoading}
+                  showNone={false}
+                />
+              )}
 
-              <RHFCustomDropdown
-                name="organization"
-                label="Organization"
-                placeholder="Select Organization"
-                options={organizationOptions}
-                isLoading={orgLoading}
-                showNone={false}
-              />
+              {orgLoading ? (
+                <FieldSkeleton />
+              ) : (
+                <RHFCustomDropdown
+                  name="organization"
+                  label="Organization"
+                  placeholder="Select Organization"
+                  options={organizationOptions}
+                  isLoading={orgLoading}
+                  showNone={false}
+                />
+              )}
 
-              <div className="flex max-w-[10rem] items-center justify-start">
+              <div className="flex max-w-40 items-center justify-start">
                 <RHFUploadButton name="floorPlan" label="Upload Floor Plan" />
               </div>
 

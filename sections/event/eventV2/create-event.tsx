@@ -123,7 +123,7 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
         </div>
       </div>
 
-      <VenueTypeModal open={venueModal} onClose={() => setVenueModal(false)} />
+      {venueModal && organizations && <VenueTypeModal open={venueModal} onClose={() => setVenueModal(false)} organizationsList={organizations} />}
     </div>
   );
 };
