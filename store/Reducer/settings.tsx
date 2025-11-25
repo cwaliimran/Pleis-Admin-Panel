@@ -32,5 +32,4 @@ export const settingsApi = createApi({
   }),
 });
 
-export const { useGetTermsAndConditionQuery, useUpdateTermMutation } =
-  settingsApi;
+export const { useGetTermsAndConditionQuery, useUpdateTermMutation } = settingsApi;

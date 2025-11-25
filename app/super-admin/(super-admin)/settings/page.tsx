@@ -16,6 +16,7 @@ const Page = () => {
           { name: 'Settings', href: '' },
         ]}
       />
+      
       <CompanyGuard>
         <SettingsView />
       </CompanyGuard>

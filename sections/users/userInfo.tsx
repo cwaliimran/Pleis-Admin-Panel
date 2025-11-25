@@ -69,7 +69,7 @@ const UserInfo = ({ newOrganization }: UserInfoProps) => {
                   <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
                   <Button
                     variant="default"
-                    disabled
+                    // disabled
                     className="cursor-pointer rounded-full"
                   >
                     Add Venue

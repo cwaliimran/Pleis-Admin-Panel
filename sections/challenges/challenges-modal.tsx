@@ -458,7 +458,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                     className="w-full flex-1"
                     options={[
                       { label: 'Visit X Times', value: 'visit' },
-                      { label: 'Earn X Points', value: 'earnPoints' },
+                      { label: 'Spend X Points', value: 'earnPoints' },
                       ...(!global ? [{ label: 'Buy Specific Menu Item X Times', value: 'buyMenuItem' }] : []),
                       { label: 'Refer X Users', value: 'referUsers' },
                     ]}

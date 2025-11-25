@@ -1,9 +1,10 @@
 export type Props = {
-  selectedCompanyId: string | undefined;
+  selectedCompanyId: string | null;
 };
 
 export interface CompanyResult {
   _id: string;
+  collaborationStatus?: string;
   profileIcon: string;
   firstName: string;
   lastName: string;

@@ -5,15 +5,16 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useEffect, useState } from 'react';
-import LinkedClubsView from './linked-clubs-table/linked-clubs-view';
 import SearchedResultsCard from './searched-results-card';
 import { Props } from './types';
+import ClubsView from '../clubs/clubs-view';
 
 const LinkedClubs = ({ selectedCompanyId }: Props) => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [debouncedKeyword, setDebouncedKeyword] = useState('');
 
-  const [linkLoyaltyClub] = useLinkLoyaltyClubMutation();
+  const [linkLoyaltyClub, { isLoading: isLinking }] = useLinkLoyaltyClubMutation();
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,6 +27,7 @@ const LinkedClubs = ({ selectedCompanyId }: Props) => {
   }, [searchKeyword]);
 
   const shouldFetch = !!debouncedKeyword;
+
   const {
     data: companyList,
     isLoading,
@@ -36,6 +38,7 @@ const LinkedClubs = ({ selectedCompanyId }: Props) => {
           search: debouncedKeyword,
           page: 0,
           limit: 10000,
+          companyOrganizer: selectedCompanyId || undefined,
         }
       : skipToken
   );
@@ -111,14 +114,15 @@ const LinkedClubs = ({ selectedCompanyId }: Props) => {
               results={companyList || []}
               isLoading={isLoading}
               isFetching={isFetching}
+              isLinking={isLinking}
               selectedCompanyId={selectedCompanyId ?? null}
               onSendRequest={handleSendRequest}
             />
           </div>
         )}
 
-        <LinkedClubsView tableName="Currently Linked Clubs" />
-        <LinkedClubsView tableName="Incoming Requests" />
+        <ClubsView title="Currently Linked Clubs" type="accepted" />
+        <ClubsView title="Incoming Requests" type="pending" />
       </div>
     </>
   );

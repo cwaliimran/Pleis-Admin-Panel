@@ -47,6 +47,7 @@ const schema = Yup.object().shape({
 const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [imageChanged, setImageChanged] = useState(false);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const isInitialLoad = useRef(true);
 
@@ -60,13 +61,13 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
   const { watch, reset, formState, setValue } = methods;
   const isDirty = formState?.isDirty;
   const linkType = watch('linkType');
-  const selectedObject = watch('selectedObject');
-  const urlValue = watch('url');
+  // const selectedObject = watch('selectedObject');
+  // const urlValue = watch('url');
 
   // Debug logs
-  useEffect(() => {
-    console.log('Current form values:', { linkType, selectedObject, urlValue });
-  }, [linkType, selectedObject, urlValue]);
+  // useEffect(() => {
+  //   console.log('Current form values:', { linkType, selectedObject, urlValue });
+  // }, [linkType, selectedObject, urlValue]);
 
   // Fetch Events
   const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
@@ -112,6 +113,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      setImageChanged(true);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -153,11 +155,9 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
     };
 
     if (data?.type === 'Other') {
-      // For "Other" type, the object field contains the URL
       formData.url = data?.object || '';
       formData.selectedObject = '';
     } else {
-      // For Event, Organizer, LoyaltyProgram - object contains the ID string
       formData.selectedObject = data?.object || '';
       formData.url = '';
     }
@@ -172,21 +172,22 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
     if (open && isEdit && selectedData) {
       const formData = prepareFormData(selectedData);
       reset(formData);
-      isInitialLoad.current = true; // Set flag when loading edit data
+      isInitialLoad.current = true;
 
       // Set image preview if exists
       if (selectedData?.image) {
         setImagePreview(selectedData.image);
       }
+      setImageChanged(false);
     } else if (open && !isEdit) {
       reset(defaultValues);
       setImageFile(null);
       setImagePreview('');
-      isInitialLoad.current = true; // Set flag when opening create modal
+      setImageChanged(false);
+      isInitialLoad.current = true;
     }
   }, [open, isEdit, selectedData, reset]);
 
-  // Reset selectedObject when linkType changes (but not during initial load)
   useEffect(() => {
     if (linkType && !isInitialLoad.current) {
       setValue('selectedObject', '', { shouldDirty: true });
@@ -203,15 +204,18 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
 
     try {
       if (imageFile && imageFile instanceof File) {
-        // const file = imageFile[0];
         uploadedFileKey = await uploadImage(imageFile);
       }
 
       const payload: any = {
         title: formData.title,
-        image: uploadedFileKey,
         type: formData.linkType,
       };
+
+      // Only include image in payload if:
+      if (!isEdit || imageChanged) {
+        payload.image = uploadedFileKey;
+      }
 
       // Add object or url based on type
       if (formData.linkType === 'Other') {
@@ -254,10 +258,10 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
     reset(defaultValues);
     setImageFile(null);
     setImagePreview('');
+    setImageChanged(false);
     onClose();
   };
 
-  // Get options based on link type
   const getDynamicOptions = () => {
     switch (linkType) {
       case 'Organizer':
@@ -400,7 +404,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
                     <Button
                       type="submit"
                       className="bg-primary hover:bg-primary-dark cursor-pointer px-6 py-2 text-white"
-                      disabled={isEdit ? !isDirty : false}
+                      disabled={isEdit ? !(isDirty || imageChanged) : false}
                     >
                       {isEdit ? 'Update Banner' : 'Create Banner'}
                     </Button>

@@ -26,7 +26,6 @@ const StepOne = ({
   setFile,
   showPartnerOrganizer,
   setShowPartnerOrganizer,
-  // removePartnerOrganizer,
   setVenueModal,
   router,
   setStep,
@@ -36,7 +35,10 @@ const StepOne = ({
   const mediaType = watch('mediaType');
   const organization = watch('organization');
   const partnerOrganization = watch('partnerOrganization');
-  // const partnerOrganizers = watch('partnerOrganizers');
+  const venue = watch('venue');
+
+  // Show skeleton only if loading AND we don't have venues yet AND we don't have a selected venue
+  const showVenueSkeleton = venuesLoading && venues?.length === 0 && !venue;
 
   return (
     <div className="space-y-8">
@@ -146,7 +148,7 @@ const StepOne = ({
       <div>
         <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">VENUE</label>
 
-        {venuesLoading ? (
+        {showVenueSkeleton ? (
           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
             <Skeleton className="h-[35px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
           </div>
@@ -158,16 +160,17 @@ const StepOne = ({
               className="sm:max-w-[120px] lg:max-w-[440px]"
               triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
               contentClassName="rounded-xl shadow-md"
-              disabled={!organization || venues?.length === 0}
+              disabled={!organization}
               options={venues?.map((val: any) => ({
                 value: val?._id,
                 label: val?.title,
               }))}
-              isLoading={venuesLoading}
+              isLoading={venuesLoading && venues?.length === 0}
               showNone={false}
             />
 
             <Button
+              type="button"
               className={`bg-primary hover:bg-primary mt-2 rounded-4xl py-2 text-white ${!organization ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               disabled={!organization}
               onClick={() => setVenueModal(true)}
@@ -256,13 +259,13 @@ const StepOne = ({
         )}
         {partnerOrganization && (
           <div className="mt-3 flex flex-wrap gap-2">
-            <Badge className="bg-secondary flex items-center gap-1 text-xs py-1 text-white dark:bg-white dark:text-black">
+            <Badge className="bg-secondary flex items-center gap-1 py-1 text-xs text-white dark:bg-white dark:text-black">
               {organizations?.find((org: any) => org._id === partnerOrganization)?.basicInfo?.name || partnerOrganization}
               <button
                 title="Remove Organizer"
                 type="button"
                 onClick={() => setValue('partnerOrganization', '')}
-                className="ml-1 rounded-full p-0.5 hover:bg-gray-200"
+                className="ml-1 rounded-full p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600"
               >
                 <X className="h-3 w-3 cursor-pointer" />
               </button>
