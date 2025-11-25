@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import LoyaltyMembersView from '@/sections/loyalty-modules/members/members-view';
 import UserListView from '@/sections/users/userListView';
 import { Metadata } from 'next';
 
@@ -17,6 +18,7 @@ const Page = () => {
       />
 
       {/* <MembersView /> */}
+      <LoyaltyMembersView usertype="super-admin" global={false} />
       <UserListView usertype="super-admin" memberPage={true} />
     </div>
   );

@@ -38,6 +38,7 @@ import { promoCodesApi } from './Reducer/promo-codes-api';
 import { loyaltyClubApi } from './Reducer/loyalty-club-api';
 import { reservationsApi } from './Reducer/reservations-api';
 import { loyaltyTransactionsApi } from './Reducer/loyalty-transactions-api';
+import { membersApi } from './Reducer/members-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -75,6 +76,7 @@ const appReducer = combineReducers({
   [loyaltyClubApi.reducerPath]: loyaltyClubApi.reducer,
   [reservationsApi.reducerPath]: reservationsApi.reducer,
   [loyaltyTransactionsApi.reducerPath]: loyaltyTransactionsApi.reducer,
+  [membersApi.reducerPath]: membersApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -119,6 +121,7 @@ export const store = configureStore({
       loyaltyClubApi.middleware,
       reservationsApi.middleware,
       loyaltyTransactionsApi.middleware,
+      membersApi.middleware,
       menuListApi.middleware
     ),
 });

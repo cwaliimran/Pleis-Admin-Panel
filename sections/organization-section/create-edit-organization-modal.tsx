@@ -58,8 +58,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
     image: Yup.mixed().nullable().optional(),
     name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
     ...(userType !== 'organizer' && {
-      user: Yup.string().required('User is required').trim().min(2, 'User must be at least 2 characters'),
-      // user: Yup.string().optional(),
+      // user: Yup.string().required('User is required').trim().min(2, 'User must be at least 2 characters'),
+      user: Yup.string().optional(),
     }),
     website: Yup.string().nullable().optional().matches(urlRegex, {
       message: 'Website link must be a valid URL',
@@ -83,8 +83,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       message: 'YouTube link must be a valid URL',
       excludeEmptyString: true,
     }),
-    linkedin: Yup.string().nullable().optional().matches(urlRegex, {
-      message: 'LinkedIn link must be a valid URL',
+    tiktok: Yup.string().nullable().optional().matches(urlRegex, {
+      message: 'Tiktok link must be a valid URL',
       excludeEmptyString: true,
     }),
   });
@@ -104,7 +104,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       instagram: organization?.basicInfo?.socialLinks?.instagram || '',
       facebook: organization?.basicInfo?.socialLinks?.facebook || '',
       youtube: organization?.basicInfo?.socialLinks?.youtube || '',
-      linkedin: organization?.basicInfo?.socialLinks?.linkedin || '',
+      tiktok: organization?.basicInfo?.socialLinks?.tiktok || '',
     }),
     [organization, userType]
   );
@@ -181,8 +181,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       if (formData.instagram !== (organization?.basicInfo?.socialLinks?.instagram || '')) {
         socialLinks.instagram = formData.instagram || '';
       }
-      if (formData.linkedin !== (organization?.basicInfo?.socialLinks?.linkedin || '')) {
-        socialLinks.linkedin = formData.linkedin || '';
+      if (formData.tiktok !== (organization?.basicInfo?.socialLinks?.tiktok || '')) {
+        socialLinks.tiktok = formData.tiktok || '';
       }
       if (Object.keys(socialLinks).length > 0) {
         payload.basicInfo.socialLinks = socialLinks;
@@ -218,7 +218,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
             youtube: formData.youtube || '',
             facebook: formData.facebook || '',
             instagram: formData.instagram || '',
-            linkedin: formData.linkedin || '',
+            tiktok: formData.tiktok || '',
           },
         };
 
@@ -260,7 +260,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:max-w-[630px]!"
         >
           <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="text-lg font-semibold">{isEdit ? 'Edit Organization' : 'Create Organization'}</DialogTitle>
@@ -349,7 +349,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
 
                     <RHFTextField name="youtube" label="YouTube Link" placeholder="Enter YouTube Link" />
 
-                    <RHFTextField name="linkedin" label="LinkedIn Link" placeholder="Enter LinkedIn Link" />
+                    <RHFTextField name="tiktok" label="Tiktok Link" placeholder="Enter Tiktok Link" />
                   </div>
                 </div>
 

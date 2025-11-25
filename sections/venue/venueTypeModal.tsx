@@ -2,52 +2,58 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { noImageUrl, noImageUrlDev } from '@/constant/constant';
+import FieldSkeleton from '@/components/ui/field-skeleton';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useAddVenueMutation, useUpdateVenueMutation } from '@/store/Reducer/venue';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
+import { getErrorMessage } from '@/utils/api';
+import { uploadFileToAzure } from '@/utils/fileUpload';
 import { extractAddress } from '@/utils/format-google-address';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
-interface CreateVenueModalProps {
+interface VenueTypeModalProps {
   open: boolean;
   onClose: () => void;
-  editMode?: boolean;
-  isLoading?: boolean;
-  methods: any;
-  onSubmit: (data: any) => void;
-  selectedVenueType?: any;
-  buttonType?: 'button' | 'submit';
+  isEditMode?: boolean;
+  selectedVenueData?: any;
+  selectedId?: string | null;
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries: 'places'[] = ['places'];
-console.log('GOOGLE_MAPS_API_KEY', GOOGLE_MAPS_API_KEY);
 
-const VenueTypeModal = ({
-  open,
-  onClose,
-  editMode,
-  methods: defaultMethods,
-  onSubmit,
-  isLoading,
-  selectedVenueType,
-  buttonType = 'submit',
-}: CreateVenueModalProps) => {
-  const handleClose = () => {
-    if (!isLoading) {
-      onClose();
-    }
-  };
+const defaultValues = {
+  title: '',
+  venueType: [] as string[],
+  organization: '',
+  floorPlan: undefined,
+  status: 'active',
+  location: {
+    fullAddress: '',
+    state: '',
+    city: '',
+    postalCode: '',
+    country: '',
+    coordinates: [] as number[],
+  },
+};
 
+const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData, selectedId }: VenueTypeModalProps) => {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [imageUploading, setImageUploading] = React.useState(false);
+
+  const [addVenue, { isLoading: addVenueLoading }] = useAddVenueMutation();
+  const [updateVenue, { isLoading: updateVenueLoading }] = useUpdateVenueMutation();
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -57,7 +63,7 @@ const VenueTypeModal = ({
 
   const schema = Yup.object().shape({
     title: Yup.string().required('Venue name is required'),
-    venueType: Yup.string().required('Venue Type is required'),
+    venueType: Yup.array().of(Yup.string()).min(1, 'At least one venue type is required').required('Venue Type is required'),
     organization: Yup.string().required('Organization is required'),
     status: Yup.string().oneOf(['active', 'inactive']),
     floorPlan: Yup.mixed().nullable(),
@@ -71,27 +77,56 @@ const VenueTypeModal = ({
     }),
   });
 
-  const defaultValues = {
-    title: '',
-    venueType: '',
-    organization: '',
-    floorPlan: undefined,
-    status: 'active',
-    location: {
-      fullAddress: '',
-      state: '',
-      city: '',
-      postalCode: '',
-      country: '',
-      coordinates: [],
-    },
-  };
-
-  const internalMethods = useForm({
+  const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: defaultValues,
+    mode: 'onChange',
   });
-  const methods = defaultMethods || internalMethods;
+
+  const { handleSubmit, reset, setValue, watch } = methods;
+
+  // Reset form when modal opens/closes or edit data changes
+  useEffect(() => {
+    if (open && isEditMode && selectedVenueData) {
+      console.log('Selected Venue Data', selectedVenueData);
+
+      // Extract venue type IDs as array
+      let venueTypeIds: string[] = [];
+      if (Array.isArray(selectedVenueData.venueType)) {
+        venueTypeIds = selectedVenueData.venueType.map((vt: any) => (typeof vt === 'string' ? vt : vt?._id?.toString() || ''));
+      } else if (typeof selectedVenueData.venueType === 'string') {
+        venueTypeIds = [selectedVenueData.venueType];
+      } else if (selectedVenueData.venueType?._id) {
+        venueTypeIds = [selectedVenueData.venueType._id.toString()];
+      }
+
+      reset({
+        title: selectedVenueData.title || '',
+        venueType: venueTypeIds,
+        organization:
+          typeof selectedVenueData.organization === 'string' ? selectedVenueData.organization : selectedVenueData.organization?._id?.toString() || '',
+        location: {
+          fullAddress: selectedVenueData.location?.fullAddress || '',
+          state: selectedVenueData.location?.state || '',
+          city: selectedVenueData.location?.city || '',
+          postalCode: selectedVenueData.location?.postalCode || '',
+          country: selectedVenueData.location?.country || '',
+          coordinates: selectedVenueData.location?.coordinates || [],
+        },
+        floorPlan: selectedVenueData.floorPlanInfo?.url || selectedVenueData.imageInfo?.url || undefined,
+        status: selectedVenueData.status || 'active',
+      });
+    } else if (open && !isEditMode) {
+      reset(defaultValues);
+    }
+  }, [open, isEditMode, selectedVenueData, reset]);
+
+  const handleClose = () => {
+    if (!addVenueLoading && !updateVenueLoading && !imageUploading) {
+      reset(defaultValues);
+      onClose();
+    }
+  };
 
   const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
     autocompleteRef.current = autocomplete;
@@ -110,7 +145,7 @@ const VenueTypeModal = ({
         coordinates: [address.longitude || 0, address.latitude || 0],
       };
       console.log('Setting location payload:', locationPayload);
-      methods.setValue('location', locationPayload, { shouldValidate: true });
+      setValue('location', locationPayload, { shouldValidate: true });
     }
   };
 
@@ -128,10 +163,14 @@ const VenueTypeModal = ({
     status: '',
   });
 
-  const venueTypeOptions = (apiData?.data || []).map((v: any) => ({
-    value: v._id.toString(),
-    label: v.title,
-  }));
+  const venueTypeOptions = React.useMemo(
+    () =>
+      (apiData?.data || []).map((v: any) => ({
+        value: v._id.toString(),
+        label: v.title,
+      })),
+    [apiData]
+  );
 
   const organizationOptions = React.useMemo(
     () =>
@@ -142,10 +181,77 @@ const VenueTypeModal = ({
     [orgData]
   );
 
+  // CREATE/UPDATE VENUE
+  const onSubmit = handleSubmit(async (formData) => {
+    try {
+      let imageFileString = undefined;
+
+      if (formData.floorPlan && (formData.floorPlan instanceof FileList || Array.isArray(formData.floorPlan))) {
+        const file = formData.floorPlan[0];
+        if (file) {
+          setImageUploading(true);
+          try {
+            imageFileString = await uploadFileToAzure(file);
+          } finally {
+            setImageUploading(false);
+          }
+        }
+      }
+
+      const payload: any = {
+        title: formData.title,
+        venueType: formData.venueType,
+        organization: formData.organization,
+        location: formData.location,
+      };
+
+      if (imageFileString) {
+        payload.floorPlan = imageFileString;
+      } else if (isEditMode && typeof formData.floorPlan === 'string') {
+        payload.floorPlan = formData.floorPlan;
+      }
+
+      if (isEditMode && selectedId) {
+        payload.status = formData.status;
+        payload.id = selectedId;
+      }
+
+      let response;
+      if (isEditMode && selectedId) {
+        response = await updateVenue(payload).unwrap();
+      } else {
+        response = await addVenue(payload).unwrap();
+      }
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      if (response?.message) {
+        showSuccess(response?.message || (isEditMode ? 'Venue updated successfully' : 'Venue created successfully'));
+      }
+
+      handleClose();
+    } catch (error) {
+      setImageUploading(false);
+      const errorMessage = getErrorMessage(error);
+      console.log('Failed to save venue:', errorMessage);
+      showError(errorMessage);
+    }
+  });
+
+  const isLoading = addVenueLoading || updateVenueLoading || imageUploading;
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center md:w-lg">
-        {/* <DialogContent className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]"> */}
         <DialogContent
           aria-describedby={undefined}
           className="mx-auto max-h-[90vh] min-h-[60vh] overflow-y-auto dark:bg-[#171717]"
@@ -157,9 +263,9 @@ const VenueTypeModal = ({
           }}
         >
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">{editMode ? 'Edit Venue' : 'Create Venue'}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{isEditMode ? 'Edit Venue' : 'Create Venue'}</DialogTitle>
             <DialogDescription className="sr-only">
-              {!editMode ? 'Fill in the details below to create a new venue.' : 'Update the venue information below.'}
+              {!isEditMode ? 'Fill in the details below to create a new venue.' : 'Update the venue information below.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -172,25 +278,34 @@ const VenueTypeModal = ({
                 className={methods.formState.errors.title ? 'border-red-400' : ''}
               />
 
-              <RHFCustomDropdown
-                name="venueType"
-                label="Venue Type"
-                placeholder="Select Venue Type"
-                options={venueTypeOptions}
-                isLoading={venueLoading}
-                showNone={false}
-              />
+              {venueLoading ? (
+                <FieldSkeleton />
+              ) : (
+                <RHFCustomCombobox
+                  name="venueType"
+                  label="Venue Type"
+                  placeholder="Select Venue Type"
+                  className="w-full flex-1"
+                  multiple={true}
+                  allowCustom={false}
+                  options={venueTypeOptions}
+                />
+              )}
 
-              <RHFCustomDropdown
-                name="organization"
-                label="Organization"
-                placeholder="Select Organization"
-                options={organizationOptions}
-                isLoading={orgLoading}
-                showNone={false}
-              />
+              {orgLoading ? (
+                <FieldSkeleton />
+              ) : (
+                <RHFCustomDropdown
+                  name="organization"
+                  label="Organization"
+                  placeholder="Select Organization"
+                  options={organizationOptions}
+                  isLoading={orgLoading}
+                  showNone={false}
+                />
+              )}
 
-              {editMode && (
+              {isEditMode && (
                 <RHFSelectField
                   name="status"
                   placeholder="Select Status"
@@ -205,19 +320,20 @@ const VenueTypeModal = ({
               )}
 
               {/* FLOOR IMAGE UPLOAD */}
-              <div className="flex max-w-[10rem] items-center justify-start">
+              <div className="flex max-w-40 items-center justify-start">
                 <RHFUploadButton
                   name="floorPlan"
                   label="Upload Floor Plan"
-                  initialImage={
-                    editMode
-                      ? selectedVenueType?.floorPlanInfo?.url &&
-                        selectedVenueType.floorPlanInfo.url !== noImageUrl &&
-                        selectedVenueType.floorPlanInfo.url !== noImageUrlDev
-                        ? selectedVenueType.floorPlanInfo.url
-                        : null
-                      : null
-                  }
+                  initialImage={isEditMode && selectedVenueData?.floorPlan ? selectedVenueData.floorPlan : null}
+                  // initialImage={
+                  //   isEditMode
+                  //     ? selectedVenueData?.floorPlanInfo?.url &&
+                  //       selectedVenueData.floorPlanInfo.url !== noImageUrl &&
+                  //       selectedVenueData.floorPlanInfo.url !== noImageUrlDev
+                  //       ? selectedVenueData.floorPlanInfo.url
+                  //       : null
+                  //     : null
+                  // }
                 />
               </div>
 
@@ -236,7 +352,7 @@ const VenueTypeModal = ({
                           type="text"
                           placeholder="Enter Location"
                           defaultValue={field.value?.fullAddress || ''}
-                          className="mt-2 h-[40px] w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
+                          className="mt-2 h-10 w-full rounded-md border bg-white px-2 py-1 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 dark:bg-[#212121] dark:placeholder:text-slate-400"
                           onChange={(e) =>
                             field.onChange({
                               ...field.value,
@@ -254,10 +370,10 @@ const VenueTypeModal = ({
               <div className="w-full">
                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Map Preview</label>
                 <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
-                  {methods.watch('location.coordinates')?.length === 2 ? (
+                  {watch('location.coordinates')?.length === 2 ? (
                     <iframe
                       title="Venue Location Map"
-                      src={`https://www.google.com/maps?q=${methods.watch('location.coordinates')[0]},${methods.watch('location.coordinates')[1]}&hl=es;z=14&output=embed`}
+                      src={`https://www.google.com/maps?q=${watch('location.coordinates')[1]},${watch('location.coordinates')[0]}&hl=es;z=14&output=embed`}
                       className="h-full w-full border-0"
                       referrerPolicy="no-referrer-when-downgrade"
                     ></iframe>
@@ -274,16 +390,11 @@ const VenueTypeModal = ({
 
                 {isLoading ? (
                   <Button type="button" disabled className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800">
-                    <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
+                    <ButtonLoading title={isEditMode ? 'Updating' : 'Creating'} />
                   </Button>
                 ) : (
-                  <Button
-                    type={buttonType}
-                    onClick={buttonType === 'button' ? methods.handleSubmit(onSubmit) : undefined}
-                    className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800"
-                    disabled={isLoading || !methods.formState.isValid}
-                  >
-                    {editMode ? 'Update Venue' : 'Add Venue'}
+                  <Button type="submit" className="cursor-pointer bg-blue-700 text-white hover:bg-blue-800" disabled={isLoading}>
+                    {isEditMode ? 'Update Venue' : 'Add Venue'}
                   </Button>
                 )}
               </div>
@@ -295,4 +406,4 @@ const VenueTypeModal = ({
   );
 };
 
-export default VenueTypeModal;
+export default VenueTypeModalV2;

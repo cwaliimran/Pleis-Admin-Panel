@@ -6,7 +6,7 @@ export type LinkType = 'loyalty' | 'event' | 'organizer';
 export interface Banner {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   position: BannerPosition;
   status: BannerStatus;
   clicks?: number;
@@ -20,5 +20,5 @@ export interface Banner {
   order: number;
   type: string;
   objectModel?: string;
-  object?: any; // can be refined later
+  object?: any;
 }

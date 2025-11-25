@@ -1,4 +1,3 @@
-import VenueTypeModal from '@/components/common/create-venue-modal';
 import OrgGallery from '@/components/common/organization-img';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Ellipsis, MapPin, Pencil, Shirt, UserPlus, UsersRound } from 'lucide-re
 import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import AddOtherDetailsModal from '../organization-section/add-other-details-modal';
+import VenueTypeModalV2 from '../venue/venueTypeModal';
 
 const OrgInfo = ({ organizationData }: any) => {
   const totalDays = 30;
@@ -52,11 +52,11 @@ const OrgInfo = ({ organizationData }: any) => {
                 </Badge>
 
                 <Badge className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
-                  <Shirt className="mr-2 !h-5 !w-5" />-
+                  <Shirt className="mr-2 h-5! w-5!" />-
                 </Badge>
 
                 <Badge className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
-                  <UserPlus className="mr-2 !h-5 !w-5" />0
+                  <UserPlus className="mr-2 h-5! w-5!" />0
                 </Badge>
               </div>
             </CardHeader>
@@ -65,7 +65,6 @@ const OrgInfo = ({ organizationData }: any) => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h1 className="font-semibold text-slate-500">VENUE</h1>
-                {/* <h1 className="font-semibold text-slate-500">VENUE TYPE</h1> */}
                 <Button variant="default" className="cursor-pointer rounded-full" onClick={openVenueModal.onTrue}>
                   Add Venue
                 </Button>
@@ -135,14 +134,14 @@ const OrgInfo = ({ organizationData }: any) => {
               <div className="flex">
                 <div className="flex">
                   <UsersRound className="h-5 w-5 text-slate-500" />
-                  <p className="ml-2 font-[400] text-slate-500">
-                    Max Points <span className="font-[700]">-</span>
+                  <p className="ml-2 font-normal text-slate-500">
+                    Max Points <span className="font-bold">-</span>
                   </p>
                 </div>
                 <div className="ml-3 flex md:ml-7">
                   <UsersRound className="h-5 w-5 text-slate-500" />
-                  <p className="ml-2 font-[400] text-slate-500">
-                    Max Points <span className="font-[700]">-</span>
+                  <p className="ml-2 font-normal text-slate-500">
+                    Max Points <span className="font-bold">-</span>
                   </p>
                 </div>
               </div>
@@ -159,6 +158,7 @@ const OrgInfo = ({ organizationData }: any) => {
               </div>
             </CardContent>
           </Card>
+
           <div className="mt-5 grid grid-cols-12 gap-4">
             <div className="col-span-12 w-full rounded-full border-2 border-gray-300 bg-white text-center shadow-lg hover:bg-gray-100 md:col-span-6 dark:bg-black">
               <Badge className="text-md cursor-pointer bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-200">New Promotion</Badge>
@@ -187,7 +187,7 @@ const OrgInfo = ({ organizationData }: any) => {
                   {organizationData?.location?.coordinates?.length === 2 ? (
                     <iframe
                       title="Venue Location Map"
-                      src={`https://www.google.com/maps?q=${organizationData?.location?.coordinates[0]},${organizationData?.location?.coordinates[1]}&hl=es;z=14&output=embed`}
+                      src={`https://www.google.com/maps?q=${organizationData?.location?.coordinates[1]},${organizationData?.location?.coordinates[0]}&hl=es;z=14&output=embed`}
                       className="h-full w-full border-0"
                       referrerPolicy="no-referrer-when-downgrade"
                     ></iframe>
@@ -208,7 +208,9 @@ const OrgInfo = ({ organizationData }: any) => {
         </div>
       </div>
 
-      {openVenueModal.value && <VenueTypeModal open={openVenueModal.value} onClose={CloseVenueModal} />}
+      {openVenueModal.value && (
+        <VenueTypeModalV2 open={openVenueModal.value} onClose={CloseVenueModal} isEditMode={false} selectedVenueData={null} selectedId={null} />
+      )}
 
       <AddOtherDetailsModal open={openModal.value} onClose={CloseModal} newOrganization={organizationData} />
     </>
@@ -216,13 +218,3 @@ const OrgInfo = ({ organizationData }: any) => {
 };
 
 export default OrgInfo;
-
-{
-  /* <Image
-  src={img.url}
-  alt="Gallery image"
-  className="h-32 w-full rounded object-cover"
-  height={100}
-  width={100}
-/> */
-}

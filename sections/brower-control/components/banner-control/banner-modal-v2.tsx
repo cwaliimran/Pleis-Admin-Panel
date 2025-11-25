@@ -22,6 +22,7 @@ import * as Yup from 'yup';
 
 const defaultValues = {
   title: '',
+  description: '',
   linkType: '',
   selectedObject: '',
   url: '',
@@ -30,6 +31,7 @@ const defaultValues = {
 
 const schema = Yup.object().shape({
   title: Yup.string().required('Title is required'),
+  description: Yup.string().required('Description is required'),
   linkType: Yup.string().required('Link type is required'),
   selectedObject: Yup.string().when('linkType', {
     is: (val: string) => val && val !== 'Other',
@@ -47,10 +49,9 @@ const schema = Yup.object().shape({
 const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [imageChanged, setImageChanged] = useState(false);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const isInitialLoad = useRef(true);
-
-  console.log('selectedData', selectedData);
 
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -60,13 +61,14 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
   const { watch, reset, formState, setValue } = methods;
   const isDirty = formState?.isDirty;
   const linkType = watch('linkType');
-  const selectedObject = watch('selectedObject');
-  const urlValue = watch('url');
+
+  // const selectedObject = watch('selectedObject');
+  // const urlValue = watch('url');
 
   // Debug logs
-  useEffect(() => {
-    console.log('Current form values:', { linkType, selectedObject, urlValue });
-  }, [linkType, selectedObject, urlValue]);
+  // useEffect(() => {
+  //   console.log('Current form values:', { linkType, selectedObject, urlValue });
+  // }, [linkType, selectedObject, urlValue]);
 
   // Fetch Events
   const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
@@ -112,6 +114,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      setImageChanged(true);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -148,23 +151,18 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
   const prepareFormData = (data: any) => {
     const formData: any = {
       title: data?.title || '',
+      description: data?.description || '',
       linkType: data?.type || '',
       status: data?.status || 'active',
     };
 
     if (data?.type === 'Other') {
-      // For "Other" type, the object field contains the URL
       formData.url = data?.object || '';
       formData.selectedObject = '';
     } else {
-      // For Event, Organizer, LoyaltyProgram - object contains the ID string
       formData.selectedObject = data?.object || '';
       formData.url = '';
     }
-
-    console.log('Preparing banner form data:', formData);
-    console.log('Original banner data:', data);
-
     return formData;
   };
 
@@ -172,21 +170,22 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
     if (open && isEdit && selectedData) {
       const formData = prepareFormData(selectedData);
       reset(formData);
-      isInitialLoad.current = true; // Set flag when loading edit data
+      isInitialLoad.current = true;
 
       // Set image preview if exists
       if (selectedData?.image) {
         setImagePreview(selectedData.image);
       }
+      setImageChanged(false);
     } else if (open && !isEdit) {
       reset(defaultValues);
       setImageFile(null);
       setImagePreview('');
-      isInitialLoad.current = true; // Set flag when opening create modal
+      setImageChanged(false);
+      isInitialLoad.current = true;
     }
   }, [open, isEdit, selectedData, reset]);
 
-  // Reset selectedObject when linkType changes (but not during initial load)
   useEffect(() => {
     if (linkType && !isInitialLoad.current) {
       setValue('selectedObject', '', { shouldDirty: true });
@@ -203,15 +202,19 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
 
     try {
       if (imageFile && imageFile instanceof File) {
-        // const file = imageFile[0];
         uploadedFileKey = await uploadImage(imageFile);
       }
 
       const payload: any = {
         title: formData.title,
-        image: uploadedFileKey,
+        description: formData.description,
         type: formData.linkType,
       };
+
+      // Only include image in payload if:
+      if (!isEdit || imageChanged) {
+        payload.image = uploadedFileKey;
+      }
 
       // Add object or url based on type
       if (formData.linkType === 'Other') {
@@ -254,10 +257,10 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
     reset(defaultValues);
     setImageFile(null);
     setImagePreview('');
+    setImageChanged(false);
     onClose();
   };
 
-  // Get options based on link type
   const getDynamicOptions = () => {
     switch (linkType) {
       case 'Organizer':
@@ -302,7 +305,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Banner' : 'Create New Banner'}</DialogTitle>
@@ -314,6 +317,11 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
                   {/* Banner Name */}
                   <div className="col-span-2">
                     <RHFTextField name="title" label="Banner Name" placeholder="Enter Banner Name" />
+                  </div>
+
+                  {/* Description */}
+                  <div className="col-span-2">
+                    <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline />
                   </div>
 
                   {/* Image Upload */}
@@ -400,7 +408,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
                     <Button
                       type="submit"
                       className="bg-primary hover:bg-primary-dark cursor-pointer px-6 py-2 text-white"
-                      disabled={isEdit ? !isDirty : false}
+                      disabled={isEdit ? !(isDirty || imageChanged) : false}
                     >
                       {isEdit ? 'Update Banner' : 'Create Banner'}
                     </Button>

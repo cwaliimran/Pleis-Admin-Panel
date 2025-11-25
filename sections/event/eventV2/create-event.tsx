@@ -1,6 +1,5 @@
 'use client';
 
-import VenueTypeModal from '@/components/common/create-venue-modal';
 import FormProvider from '@/components/rhf';
 import { Card, CardContent } from '@/components/ui/card';
 import ProgressHeader from './progress-header';
@@ -9,6 +8,7 @@ import StepThree from './step-three';
 import StepTwo from './step-two';
 import type { CreateEventViewProps } from './types';
 import { useEventForm } from './use-event-form';
+import VenueTypeModalV2 from '@/sections/venue/venueTypeModal';
 
 const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) => {
   const {
@@ -123,7 +123,10 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
         </div>
       </div>
 
-      {venueModal && organizations && <VenueTypeModal open={venueModal} onClose={() => setVenueModal(false)} organizationsList={organizations} />}
+      {/* {venueModal && organizations && <VenueTypeModal open={venueModal} onClose={() => setVenueModal(false)} organizationsList={organizations} />} */}
+      {venueModal && (
+        <VenueTypeModalV2 open={venueModal} onClose={() => setVenueModal(false)} isEditMode={false} selectedVenueData={null} selectedId={null} />
+      )}
     </div>
   );
 };
