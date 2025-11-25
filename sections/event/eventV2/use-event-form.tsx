@@ -74,7 +74,6 @@ export const useEventForm = ({ userType }: { userType: string }) => {
     // formState,
   } = methods;
 
-
   const { mediaUrl, mediaType, venue, categories, recurring, recurringDays, recurringEnd, organization } = watch();
 
   // Get venues when organization changes
@@ -149,7 +148,18 @@ export const useEventForm = ({ userType }: { userType: string }) => {
 
   const isStepValid = (step: number): boolean => {
     if (step === 1) {
-      return [
+      // return [
+      //   mediaUrl,
+      //   mediaType,
+      //   watch('name'),
+      //   watch('description'),
+      //   venue,
+      //   categories && categories.length > 0,
+      //   watch('tags').length > 0,
+      //   watch('organization'),
+      // ].every(Boolean);
+
+      const allRequiredFieldsFilled = [
         mediaUrl,
         mediaType,
         watch('name'),
@@ -159,6 +169,17 @@ export const useEventForm = ({ userType }: { userType: string }) => {
         watch('tags').length > 0,
         watch('organization'),
       ].every(Boolean);
+
+      // Check if form is dirty (has changes)
+      const isDirty = methods.formState.isDirty;
+
+      // In edit mode, allow proceeding if either form is dirty or all fields are valid
+      if (isEditMode) {
+        return isDirty || allRequiredFieldsFilled;
+      }
+
+      // In create mode, require all fields to be filled
+      return allRequiredFieldsFilled;
     }
     if (step === 2) {
       const hasBasicFields = [watch('fromDate'), watch('endDate'), watch('fromTime'), watch('endTime')].every(Boolean);
@@ -177,6 +198,13 @@ export const useEventForm = ({ userType }: { userType: string }) => {
         if (endType === 'onDate') return hasBasicFields && !!freq && !!interval && !!endType && !!endDate;
         if (endType === 'afterOccurrences') return hasBasicFields && !!freq && !!interval && !!endType && !!occurrences;
         return false;
+      }
+
+      // return hasBasicFields;
+
+      // In edit mode for step 2, check if dirty or has basic fields
+      if (isEditMode) {
+        return methods.formState.isDirty || hasBasicFields;
       }
 
       return hasBasicFields;

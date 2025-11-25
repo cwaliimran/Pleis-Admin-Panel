@@ -8,6 +8,7 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useDeleteBannerControlMutation, useGetBannerControlQuery } from '@/store/Reducer/banner-control-api';
 import { getErrorMessage } from '@/utils/api';
+import { capitalizeFirstLetter } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Edit, ExternalLink, Plus, Trash2, Upload } from 'lucide-react';
 import Image from 'next/image';
@@ -19,7 +20,6 @@ import { Banner } from './types';
 
 const BannerControl = () => {
   const { data: apiResponse, isLoading } = useGetBannerControlQuery({});
-  console.log('apiResponse', apiResponse?.data);
 
   const [banners, setBanners] = useState<Banner[]>([]);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
@@ -30,7 +30,7 @@ const BannerControl = () => {
       const mapped: Banner[] = apiResponse.data.map((item: any) => ({
         id: item._id,
         title: item.title,
-        description: item.object?.basicInfo?.description || '',
+        description: item?.description || '',
         position: 'top',
         status: item.status,
         backgroundColor: '#6366f1',
@@ -165,7 +165,13 @@ const BannerControl = () => {
                         </CustomBadge>
                       </div>
 
-                      <h4 className="font-semibold text-gray-900 dark:text-white">{banner?.title}</h4>
+                      <h4 className="font-semibold text-gray-900 capitalize dark:text-white">{banner?.title}</h4>
+
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-200">
+                        {banner?.description.length <= 50
+                          ? capitalizeFirstLetter(banner?.description)
+                          : capitalizeFirstLetter(banner?.description?.slice(0, 40) + '...')}
+                      </p>
 
                       {banner?.type === 'Other' && banner?.object && (
                         <div onClick={() => handleNavigate(banner.object)} className="flex cursor-pointer items-center space-x-2 text-sm">

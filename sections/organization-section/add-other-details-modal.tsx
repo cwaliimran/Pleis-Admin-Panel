@@ -1,4 +1,3 @@
-import GoogleLocationInput from '@/components/common/location-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
@@ -167,7 +166,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
   const tagOptions =
     tagData?.data?.map((tag: any) => ({
       label: tag?.title,
-      value: tag?._id,
+      value: tag?.id,
     })) || [];
 
   const venueOptions =
@@ -244,6 +243,45 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
 
   const { handleSubmit, reset, setValue } = methods;
   const watchGalleryImages = useWatch({ control: methods.control, name: 'galleryImages' }) || [];
+
+  // Add near the top with other useWatch hooks
+  const watchVenue = useWatch({ control: methods.control, name: 'venue' });
+
+  // Add this useEffect after your other hooks
+  // useEffect(() => {
+  //   if (watchVenue && venueData?.data) {
+  //     const selectedVenue = venueData.data.find((v: any) => v._id === watchVenue);
+  //     if (selectedVenue?.location) {
+  //       setValue('location', {
+  //         address: selectedVenue.location.fullAddress || '',
+  //         city: selectedVenue.location.city || '',
+  //         postalCode: selectedVenue.location.postalCode || '',
+  //         country: selectedVenue.location.country || '',
+  //         coordinates: selectedVenue.location.coordinates || [0, 0],
+  //       });
+  //     }
+  //   }
+  // }, [watchVenue, venueData, setValue]);
+
+  useEffect(() => {
+    console.log('watchVenue:', watchVenue);
+    console.log('venueData:', venueData);
+
+    if (watchVenue && venueData?.data) {
+      const selectedVenue = venueData.data.find((v: any) => v._id === watchVenue);
+      console.log('selectedVenue:', selectedVenue);
+
+      if (selectedVenue?.location) {
+        console.log('Setting location:', selectedVenue.location.fullAddress);
+
+        setValue('location.address', selectedVenue.location.fullAddress || '', { shouldValidate: true, shouldDirty: true });
+        setValue('location.city', selectedVenue.location.city || '', { shouldValidate: true, shouldDirty: true });
+        setValue('location.postalCode', selectedVenue.location.postalCode || '', { shouldValidate: true, shouldDirty: true });
+        setValue('location.country', selectedVenue.location.country || '', { shouldValidate: true, shouldDirty: true });
+        setValue('location.coordinates', selectedVenue.location.coordinates || [0, 0], { shouldValidate: true, shouldDirty: true });
+      }
+    }
+  }, [watchVenue, venueData, setValue]);
 
   const handleImageUpload = async (files: File[]): Promise<string[]> => {
     const uploadPromises = files.map(async (file) => {
@@ -473,7 +511,16 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
                 </div>
               </div>
 
-              <GoogleLocationInput name="location" label="Location" />
+              {/* <GoogleLocationInput name="location" label="Location" /> */}
+
+              <RHFTextField
+                name="location.address"
+                label="Location (from selected venue)"
+                placeholder="Select a venue to see location"
+                disabled={true}
+                multiline
+                rows={2}
+              />
 
               <RHFSelectField
                 name="status"
@@ -499,6 +546,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
           </FormProvider>
         </div>
       </DialogContent>
+
       <GalleryModal
         open={galleryOpen}
         onClose={() => setGalleryOpen(false)}

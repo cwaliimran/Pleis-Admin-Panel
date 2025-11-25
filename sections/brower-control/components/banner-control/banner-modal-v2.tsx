@@ -22,6 +22,7 @@ import * as Yup from 'yup';
 
 const defaultValues = {
   title: '',
+  description: '',
   linkType: '',
   selectedObject: '',
   url: '',
@@ -30,6 +31,7 @@ const defaultValues = {
 
 const schema = Yup.object().shape({
   title: Yup.string().required('Title is required'),
+  description: Yup.string().required('Description is required'),
   linkType: Yup.string().required('Link type is required'),
   selectedObject: Yup.string().when('linkType', {
     is: (val: string) => val && val !== 'Other',
@@ -51,8 +53,6 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const isInitialLoad = useRef(true);
 
-  console.log('selectedData', selectedData);
-
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues,
@@ -61,6 +61,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
   const { watch, reset, formState, setValue } = methods;
   const isDirty = formState?.isDirty;
   const linkType = watch('linkType');
+
   // const selectedObject = watch('selectedObject');
   // const urlValue = watch('url');
 
@@ -150,6 +151,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
   const prepareFormData = (data: any) => {
     const formData: any = {
       title: data?.title || '',
+      description: data?.description || '',
       linkType: data?.type || '',
       status: data?.status || 'active',
     };
@@ -161,10 +163,6 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
       formData.selectedObject = data?.object || '';
       formData.url = '';
     }
-
-    console.log('Preparing banner form data:', formData);
-    console.log('Original banner data:', data);
-
     return formData;
   };
 
@@ -209,6 +207,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
 
       const payload: any = {
         title: formData.title,
+        description: formData.description,
         type: formData.linkType,
       };
 
@@ -306,7 +305,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Banner' : 'Create New Banner'}</DialogTitle>
@@ -318,6 +317,11 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
                   {/* Banner Name */}
                   <div className="col-span-2">
                     <RHFTextField name="title" label="Banner Name" placeholder="Enter Banner Name" />
+                  </div>
+
+                  {/* Description */}
+                  <div className="col-span-2">
+                    <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline />
                   </div>
 
                   {/* Image Upload */}

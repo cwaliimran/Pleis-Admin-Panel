@@ -10,7 +10,9 @@ export interface SamplePageProps {
   data: any[];
   meta: SampleMeta;
   usertype?: string;
+  global?: boolean;
   loading?: boolean;
+  handleGiftModal: (id: string) => void;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
@@ -27,7 +29,9 @@ export interface SamplePageProps {
 
 export interface TableRowProps {
   item: any;
-  usertype?: string;
+  global?: boolean;
+  userType?: string;
+  handleGiftModal: (id: string) => void;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }

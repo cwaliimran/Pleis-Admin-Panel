@@ -25,13 +25,13 @@ export const membersApi = createApi({
         };
       },
       transformResponse: (res) => ({
-        data: res.data,
+        data: res.data.members,
         meta: res.meta,
       }),
       providesTags: ['member'],
     }),
 
-    addMember: builder.mutation({
+    sendGiftToMember: builder.mutation({
       query: (newMember) => ({
         url: API_ROUTES.ADMIN_LOYALTY_MEMBERS_GIFT,
         method: 'POST',
@@ -42,4 +42,4 @@ export const membersApi = createApi({
   }),
 });
 
-export const { useGetMembersQuery, useAddMemberMutation } = membersApi;
+export const { useGetMembersQuery, useSendGiftToMemberMutation } = membersApi;

@@ -2,10 +2,7 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
+import { useDeleteVenueMutation, useGetVenuesQuery } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';

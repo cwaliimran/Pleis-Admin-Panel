@@ -6,7 +6,6 @@ import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
-
 import { extractAddress } from '@/utils/format-google-address';
 import { getErrorMessage } from '@/utils/api';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -317,7 +316,7 @@ const VenueTypeModal = ({ open, onClose, organizationsList }: VenueTypeModalProp
                   {watch('location.coordinates')?.length === 2 ? (
                     <iframe
                       title="Venue Location Map"
-                      src={`https://www.google.com/maps?q=${watch('location.coordinates')[0]},${watch('location.coordinates')[1]}&hl=es;z=14&output=embed`}
+                      src={`https://www.google.com/maps?q=${watch('location.coordinates')[1]},${watch('location.coordinates')[0]}&hl=es;z=14&output=embed`}
                       className="h-full w-full border-0"
                       referrerPolicy="no-referrer-when-downgrade"
                     ></iframe>

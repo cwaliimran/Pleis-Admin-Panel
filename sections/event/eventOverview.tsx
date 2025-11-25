@@ -246,7 +246,7 @@ const EventOverView = ({ event }: { event: any }) => {
                 {event?.basicInfo?.venue?.location?.coordinates?.length ? (
                   <iframe
                     title="Venue Location Map"
-                    src={`https://www.google.com/maps?q=${event?.basicInfo?.venue?.location?.coordinates[0]},${event?.basicInfo?.venue?.location?.coordinates[1]}&hl=es;z=14&output=embed`}
+                    src={`https://www.google.com/maps?q=${event?.basicInfo?.venue?.location?.coordinates[1]},${event?.basicInfo?.venue?.location?.coordinates[0]}&hl=es;z=14&output=embed`}
                     className="h-full w-full border-0"
                     referrerPolicy="no-referrer-when-downgrade"
                   ></iframe>

@@ -15,52 +15,13 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
 import LoyaltyMembersTableRow from './members-table-row';
 
-const HEAD_LABEL = [
-  // { id: 'photo', label: 'Photo', align: 'left' },
-  // {
-  //   id: 'title',
-  //   label: 'Title',
-  //   align: 'left',
-  //   sortable: true,
-  //   sortKey: 'title',
-  // },
-  // {
-  //   id: 'description',
-  //   label: 'Description',
-  //   align: 'left',
-  //   sortable: true,
-  //   sortKey: 'description',
-  // },
-  // {
-  //   id: 'type',
-  //   label: 'Promotion Type',
-  //   align: 'left',
-  //   sortable: true,
-  //   sortKey: 'promotionType',
-  // },
-  // { id: 'startTime', label: 'Start Date', align: 'left' },
-  // { id: 'endTime', label: 'End Date', align: 'left' },
-  // { id: 'tierLimit', label: 'Tier limit', align: 'left' },
-  // { id: 'repeatSettings', label: 'Repeat Settings', align: 'left' },
-
-  // { id: 'actions', label: 'Action', align: 'left' },
-
-
-  { id: 'image', label: 'Image', align: 'left' },
-  { id: 'username', label: 'Username', align: 'left' },
-  { id: 'globalStatus', label: 'Global Status', align: 'left' },
-  { id: 'totalPoints', label: 'Points Earned', align: 'left' },
-  { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'region', label: 'Region', align: 'left' },
-  { id: 'action', label: 'Action', align: 'center' },
-];
-
 const LoyaltyMembersTable: FC<SamplePageProps> = ({
   data = [],
   meta,
+  global,
   usertype,
   loading,
+  handleGiftModal,
   handleDelete,
   handleEdit,
   onPageChange,
@@ -79,6 +40,17 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const HEAD_LABEL = [
+    { id: 'image', label: 'Image', align: 'left' },
+    { id: 'username', label: 'Username', align: 'left' },
+    ...(global ? [{ id: 'globalStatus', label: 'Global Status', align: 'left' }] : []),
+    { id: 'totalPoints', label: 'Points Earned', align: 'left' },
+    { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
+    { id: 'status', label: 'Status', align: 'left' },
+    { id: 'region', label: 'Region', align: 'left' },
+    { id: 'action', label: 'Action', align: 'center' },
+  ];
 
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
@@ -169,8 +141,10 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
                   <LoyaltyMembersTableRow
                     key={item?._id || idx}
                     item={item}
-                    usertype={usertype}
+                    global={global}
+                    userType={usertype}
                     handleDelete={handleDelete}
+                    handleGiftModal={handleGiftModal}
                     handleEdit={handleEdit}
                   />
                 ))}
