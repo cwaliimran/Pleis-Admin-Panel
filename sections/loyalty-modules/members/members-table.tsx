@@ -12,66 +12,22 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import LoyaltyMembersTableRow from './members-table-row';
-
-const HEAD_LABEL = [
-  // { id: 'photo', label: 'Photo', align: 'left' },
-  // {
-  //   id: 'title',
-  //   label: 'Title',
-  //   align: 'left',
-  //   sortable: true,
-  //   sortKey: 'title',
-  // },
-  // {
-  //   id: 'description',
-  //   label: 'Description',
-  //   align: 'left',
-  //   sortable: true,
-  //   sortKey: 'description',
-  // },
-  // {
-  //   id: 'type',
-  //   label: 'Promotion Type',
-  //   align: 'left',
-  //   sortable: true,
-  //   sortKey: 'promotionType',
-  // },
-  // { id: 'startTime', label: 'Start Date', align: 'left' },
-  // { id: 'endTime', label: 'End Date', align: 'left' },
-  // { id: 'tierLimit', label: 'Tier limit', align: 'left' },
-  // { id: 'repeatSettings', label: 'Repeat Settings', align: 'left' },
-
-  // { id: 'actions', label: 'Action', align: 'left' },
-
-
-  { id: 'image', label: 'Image', align: 'left' },
-  { id: 'username', label: 'Username', align: 'left' },
-  { id: 'globalStatus', label: 'Global Status', align: 'left' },
-  { id: 'totalPoints', label: 'Points Earned', align: 'left' },
-  { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'region', label: 'Region', align: 'left' },
-  { id: 'action', label: 'Action', align: 'center' },
-];
+import { SamplePageProps } from './types';
 
 const LoyaltyMembersTable: FC<SamplePageProps> = ({
   data = [],
   meta,
+  global,
   usertype,
   loading,
+  handleGiftModal,
   handleDelete,
   handleEdit,
   onPageChange,
   limit = 10,
-  // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
-  date,
-  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -79,6 +35,17 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const HEAD_LABEL = [
+    { id: 'image', label: 'Image', align: 'left' },
+    { id: 'username', label: 'Username', align: 'left' },
+    ...(global ? [{ id: 'globalStatus', label: 'Global Status', align: 'left' }] : []),
+    { id: 'totalPoints', label: 'Points Earned', align: 'left' },
+    { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
+    { id: 'status', label: 'Status', align: 'left' },
+    { id: 'region', label: 'Region', align: 'left' },
+    { id: 'action', label: 'Action', align: 'center' },
+  ];
 
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
@@ -114,37 +81,14 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
-                          Select Date
-                        </label>
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateFilter={{
-                              id: 'organization-date',
-                              placeholder: 'Select date',
-                              value: date,
-                              onChange: onDateChange,
-                            }}
                             searchFilter={{
-                              placeholder: 'Search Promotions',
+                              placeholder: 'Search members...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -169,8 +113,10 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
                   <LoyaltyMembersTableRow
                     key={item?._id || idx}
                     item={item}
-                    usertype={usertype}
+                    global={global}
+                    userType={usertype}
                     handleDelete={handleDelete}
+                    handleGiftModal={handleGiftModal}
                     handleEdit={handleEdit}
                   />
                 ))}

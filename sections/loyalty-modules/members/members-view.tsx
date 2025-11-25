@@ -1,14 +1,11 @@
 'use client';
 
-import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetMembersQuery } from '@/store/Reducer/members-api';
-import { useDeletePromotionMutation } from '@/store/Reducer/promotion-api';
-import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showError, showSuccess } from '@/utils/toast';
-import { useCallback, useEffect, useState } from 'react';
-import PromotionsModal from './members-modal';
+import { useEffect, useState } from 'react';
+import GiftPointsModal from './gift-points-modal';
 import LoyaltyMembersTable from './members-table';
 
 interface PromotionsViewProps {
@@ -17,9 +14,7 @@ interface PromotionsViewProps {
 }
 
 const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
-  const openModal = useBoolean();
-  const editModal = useBoolean();
-  const deleteModal = useBoolean();
+  const openGiftModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -29,11 +24,8 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
-
-  const [deletePromotion, { isLoading: deleteLoading }] = useDeletePromotionMutation();
+  const { companyId } = useCompanySelectionState();
 
   const { data: apiData, isLoading } = useGetMembersQuery({
     page: page - 1,
@@ -41,10 +33,8 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: companyId || undefined,
   });
-
-  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -69,51 +59,9 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
     }
   }, [apiData, page, limit]);
 
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (id: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
-
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Reward not found');
-    }
-  };
-
-  const handleDelete = useCallback(
-    (id: string) => {
-      if (!id) {
-        showError('No promotion selected');
-        return;
-      }
-
-      setSelectedId(id);
-      deleteModal.onTrue();
-    },
-    [deleteModal]
-  );
-
-  // DELETE CALL
-  const onDelete = async () => {
-    try {
-      const response = await deletePromotion(selectedId).unwrap();
-
-      if (response?.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      showSuccess(response?.message || 'Deleted successfully');
-
-      setSelectedId(null);
-      deleteModal.onFalse();
-    } catch (error) {
-      showError(getErrorMessage(error));
-    }
+  const handleGiftModal = (id: string) => {
+    setSelectedId(id);
+    openGiftModal.onTrue();
   };
 
   return (
@@ -121,10 +69,10 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
       <LoyaltyMembersTable
         data={localData}
         meta={meta}
+        global={global}
         usertype={usertype}
         loading={isLoading}
-        handleDelete={handleDelete}
-        handleEdit={handleEdit}
+        handleGiftModal={handleGiftModal}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -155,28 +103,9 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
         }}
       />
 
-      {openModal.value && (
-        <PromotionsModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          selectedCompany={selectedCompany}
-          global={global}
-        />
+      {openGiftModal.value && (
+        <GiftPointsModal open={openGiftModal.value} onClose={openGiftModal.onFalse} companyOrganizer={companyId || ''} userId={selectedId || ''} />
       )}
-
-      <ConfirmDialog
-        open={deleteModal.value}
-        title="Delete Promotion"
-        content="Are you sure you want to delete this promotion?"
-        onClose={() => {
-          deleteModal.onFalse();
-          setSelectedId(null);
-        }}
-        onConfirm={onDelete}
-        isLoading={deleteLoading}
-      />
     </div>
   );
 };
