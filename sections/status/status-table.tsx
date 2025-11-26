@@ -83,7 +83,7 @@ const StatusTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Status List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Status Badges List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>

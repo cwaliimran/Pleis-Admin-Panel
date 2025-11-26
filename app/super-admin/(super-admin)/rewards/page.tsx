@@ -1,6 +1,6 @@
 import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
-import RewardsView from '@/sections/rewards/rewards-view';
+import RewardsView from '@/sections/loyalty-modules/rewards/rewards-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

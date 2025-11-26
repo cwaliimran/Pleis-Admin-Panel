@@ -3,16 +3,16 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeleteLevelStatusMutation, useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import StatusModal from './level-status-modal';
-import LevelStatusTable from './level-status-table';
+import RewardCategoryTable from './reward-category-table';
+import { useDeleteRewardCategoryMutation, useGetRewardCategoryQuery } from '@/store/Reducer/reward-category-api';
+import RewardCategoryModal from './reward-category-modal';
 
-const LevelStatusView = () => {
+const RewardCategoryView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -27,9 +27,9 @@ const LevelStatusView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteStatus, { isLoading: deleteLoading }] = useDeleteLevelStatusMutation();
+  const [deleteRewardCategory, { isLoading: deleteLoading }] = useDeleteRewardCategoryMutation();
 
-  const { data: apiData, isLoading } = useGetLevelStatusQuery({
+  const { data: apiData, isLoading } = useGetRewardCategoryQuery({
     page: page - 1,
     search,
     limit,
@@ -69,13 +69,6 @@ const LevelStatusView = () => {
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  // const handleEdit = (id: string) => {
-  //   console.log('id', id);
-  //   openModal.onTrue();
-  //   editModal.onTrue();
-  // };
-
   // ------------ EDIT FUNCTION FOR API VERSION ------------
   const handleEdit = (id: string) => {
     const selectedData = localData?.find((item: any) => item?._id === id);
@@ -106,7 +99,7 @@ const LevelStatusView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteStatus(selectedId).unwrap();
+      const response = await deleteRewardCategory(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -129,12 +122,12 @@ const LevelStatusView = () => {
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
-            Create Level Status
+            Create Reward Category
           </Button>
         </div>
       </div>
 
-      <LevelStatusTable
+      <RewardCategoryTable
         data={localData}
         meta={meta}
         loading={isLoading}
@@ -170,12 +163,14 @@ const LevelStatusView = () => {
         }}
       />
 
-      {openModal.value && <StatusModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
+      {openModal.value && (
+        <RewardCategoryModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Level Status"
-        content="Are you sure you want to delete this level status?"
+        title="Delete Reward Category"
+        content="Are you sure you want to delete this reward category?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -187,4 +182,4 @@ const LevelStatusView = () => {
   );
 };
 
-export default LevelStatusView;
+export default RewardCategoryView;

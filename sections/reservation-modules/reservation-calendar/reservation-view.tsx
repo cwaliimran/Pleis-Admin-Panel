@@ -3,7 +3,7 @@
 import { showSuccess } from '@/utils/toast';
 import { Copy } from 'lucide-react';
 import React, { useState } from 'react';
-import ReservationGrid from '../reservation-view/new-reservation-chart';
+import ReservationGrid from '../../reservation-modules/reservation-view/new-reservation-chart';
 import { ActiveBookings } from './components/active-bookings';
 import { ActiveBooking, Booking } from './components/types';
 import PendingRequests from './components/pending-request';

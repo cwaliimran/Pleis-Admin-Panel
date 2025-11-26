@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import LevelStatusView from '@/sections/level-status/level-status-view';
+import LevelStatusView from '@/sections/global-loyalty-modules/level-status/level-status-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

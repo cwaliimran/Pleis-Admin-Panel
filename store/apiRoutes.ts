@@ -74,6 +74,9 @@ export const API_ROUTES = {
   ADMIN_BUNDLES: `/admin/bundles`,
   ADMIN_BUNDLES_BY_ID: (id: string) => `/admin/bundles/${id}`,
 
+  ADMIN_GLOBAL_REWARD_CATEGORIES: `/admin/global-reward-categories`,
+  ADMIN_GLOBAL_REWARD_CATEGORIES_BY_ID: (id: string) => `/admin/global-reward-categories/${id}`,
+
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL: `/admin/global-loyalty/status-levels`,
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL_BY_ID: (id: string) => `/admin/global-loyalty/status-levels/${id}`,
 

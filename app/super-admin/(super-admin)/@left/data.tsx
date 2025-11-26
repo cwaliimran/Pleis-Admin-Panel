@@ -129,6 +129,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.levelStatus,
         icon: ArrowBigUp,
       },
+      {
+        title: 'Reward Category',
+        url: paths.superAdmin.rewardCategory,
+        icon: ArrowBigUp,
+      },
     ],
   },
   {

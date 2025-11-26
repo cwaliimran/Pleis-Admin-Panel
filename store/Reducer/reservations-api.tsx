@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { ReservationsApiResponse, UserReservationsApiResponse } from '../../sections/reservation/reservation-view/reservation-types';
+import { ReservationsApiResponse, UserReservationsApiResponse } from '../../sections/reservation-modules/reservation-view/reservation-types';
 import API_ROUTES from '../apiRoutes';
 import { customFetchBaseQuery } from '../customFetchBaseQuery';
 

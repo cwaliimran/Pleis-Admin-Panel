@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import PresetView from '@/sections/menu-management/preset/preset-view';
+import PresetView from '@/sections/menu-management-modules/preset/preset-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

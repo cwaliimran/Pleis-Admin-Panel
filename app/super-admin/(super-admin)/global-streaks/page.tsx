@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import StreaksView from '@/sections/streaks/streaks-view';
+import StreaksView from '@/sections/loyalty-modules/streaks/streaks-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -3,16 +3,16 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteLevelStatusMutation, useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import TiersTable from './tiers-table';
-import TiersModal from './tiers-modal';
-import { useDeleteTierMutation, useGetTiersQuery } from '@/store/Reducer/tiers-api';
+import LevelStatusTable from './level-status-table';
+import StatusModal from './level-status-modal';
 
-const TiersView = () => {
+const LevelStatusView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -27,9 +27,9 @@ const TiersView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteTier, { isLoading: deleteLoading }] = useDeleteTierMutation();
+  const [deleteStatus, { isLoading: deleteLoading }] = useDeleteLevelStatusMutation();
 
-  const { data: apiData, isLoading } = useGetTiersQuery({
+  const { data: apiData, isLoading } = useGetLevelStatusQuery({
     page: page - 1,
     search,
     limit,
@@ -70,30 +70,30 @@ const TiersView = () => {
   };
 
   // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
+  // const handleEdit = (id: string) => {
+  //   console.log('id', id);
+  //   openModal.onTrue();
+  //   editModal.onTrue();
+  // };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Status not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No tier selected');
+        showError('No status selected');
         return;
       }
 
@@ -106,7 +106,7 @@ const TiersView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteTier(selectedId).unwrap();
+      const response = await deleteStatus(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -129,12 +129,12 @@ const TiersView = () => {
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
-            Create Tiers
+            Create Level Status
           </Button>
         </div>
       </div>
 
-      <TiersTable
+      <LevelStatusTable
         data={localData}
         meta={meta}
         loading={isLoading}
@@ -170,12 +170,12 @@ const TiersView = () => {
         }}
       />
 
-      <TiersModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
+      {openModal.value && <StatusModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Tiers"
-        content="Are you sure you want to delete this tiers?"
+        title="Delete Level Status"
+        content="Are you sure you want to delete this level status?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -187,4 +187,4 @@ const TiersView = () => {
   );
 };
 
-export default TiersView;
+export default LevelStatusView;

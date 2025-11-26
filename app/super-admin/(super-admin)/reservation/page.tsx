@@ -1,6 +1,6 @@
 import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
-import ReservationView from '@/sections/reservation/reservation-view/reservation-view';
+import ReservationView from '@/sections/reservation-modules/reservation-view/reservation-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

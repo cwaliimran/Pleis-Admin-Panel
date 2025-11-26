@@ -29,3 +29,16 @@ export interface TableRowProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
+
+export type StatusFormValues = {
+  image: FileList | string | null;
+  title: string;
+  status: 'active' | 'inactive';
+};
+
+export type StatusModalProps = {
+  open: boolean;
+  onClose: () => void;
+  isEdit?: boolean;
+  selectedData?: any;
+};

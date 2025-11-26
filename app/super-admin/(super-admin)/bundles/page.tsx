@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import BundlesView from '@/sections/bundles/bundles-view';
+import BundlesView from '@/sections/reservation-modules/bundles/bundles-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

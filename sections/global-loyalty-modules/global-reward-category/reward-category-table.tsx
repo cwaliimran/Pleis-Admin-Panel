@@ -8,39 +8,28 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { TransactionData } from './data';
-import TransactionsTableRow from './transactions-table-row';
+import RewardCategoryTableRow from './reward-category-table-row';
 import { SamplePageProps } from './types';
 
-// const HEAD_LABEL = [
-//   { id: 'organization', label: 'Organization', align: 'left' },
-//   { id: 'user', label: 'User', align: 'left' },
-//   { id: 'transactionType', label: 'Transaction Type', align: 'left' },
-//   { id: 'challengeCompletions', label: 'Challenge completions', align: 'left' },
-//   { id: 'timeStamp', label: 'TimeStamp', align: 'left' },
-//   { id: 'points', label: 'Points', align: 'left' },
-//   { id: 'manualPointGifts', label: 'Manual point gifts', align: 'left' },
-//   { id: 'pointExpirations', label: 'Point expirations', align: 'left' },
-//   { id: 'referrals', label: 'Referrals', align: 'left' },
-//   { id: 'actions', label: 'View', align: 'left' },
-// ];
-
 const HEAD_LABEL = [
-  { id: 'organization', label: 'Organizer', align: 'left' },
-  { id: 'user', label: 'User', align: 'left' },
-  { id: 'transactionId', label: 'Transaction ID', align: 'left' },
-  { id: 'transactionType', label: 'Transaction Type', align: 'left' },
-  { id: 'points', label: 'Points', align: 'left' },
-  { id: 'reference', label: 'Reference', align: 'left' },
-  { id: 'timestamp', label: 'Timestamp', align: 'left' },
+  { id: 'photo', label: 'Photo', align: 'left' },
+  {
+    id: 'title',
+    label: 'Title',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  { id: 'createdAt', label: 'Created At', align: 'left', sortable: true, sortKey: 'createdAt' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
-const TransactionsTable: FC<SamplePageProps> = ({
+const RewardCategoryTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
@@ -53,19 +42,19 @@ const TransactionsTable: FC<SamplePageProps> = ({
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
+  date,
+  onDateChange = () => {},
   onResetFilters = () => {},
-  startDate,
-  endDate,
-  onStartDateChange,
-  onEndDateChange,
-  transactionType,
-  onTransactionTypeChange,
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -78,7 +67,7 @@ const TransactionsTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Loyalty Transaction List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Reward Category List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -103,22 +92,14 @@ const TransactionsTable: FC<SamplePageProps> = ({
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateRangeFilter={{
-                              startDate: {
-                                id: 'start-date',
-                                placeholder: 'Select start date',
-                                value: startDate,
-                                onChange: onStartDateChange,
-                              },
-                              endDate: {
-                                id: 'end-date',
-                                placeholder: 'Select end date',
-                                value: endDate,
-                                onChange: onEndDateChange,
-                              },
+                            dateFilter={{
+                              id: 'organization-date',
+                              placeholder: 'Select date',
+                              value: date,
+                              onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search by User, Organization, Venue, Reference ...',
+                              placeholder: 'Search reward category...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -133,17 +114,6 @@ const TransactionsTable: FC<SamplePageProps> = ({
                                   { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                              {
-                                id: 'sheet-transaction-type',
-                                label: 'Transaction Type',
-                                placeholder: 'Select by Transaction Type',
-                                value: transactionType,
-                                onChange: onTransactionTypeChange,
-                                options: [
-                                  { value: 'type1', label: 'Type 1' },
-                                  { value: 'type2', label: 'Type 2' },
                                 ],
                               },
                             ]}
@@ -164,12 +134,11 @@ const TransactionsTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
-                {/* {data?.map((item, idx) => ( */}
-                {TransactionData?.map((item, idx) => (
-                  <TransactionsTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                {sortedData?.map((item, idx) => (
+                  <RewardCategoryTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -188,4 +157,4 @@ const TransactionsTable: FC<SamplePageProps> = ({
   );
 };
 
-export default TransactionsTable;
+export default RewardCategoryTable;

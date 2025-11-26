@@ -7,9 +7,9 @@ import { useGetUserReservationsQuery, useUpdateReservationStatusMutation } from 
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import React, { useState } from 'react';
-import UpdateReservationModal from '../reservation-calendar/components/change-request-modal';
 import { UserReservation } from './reservation-types';
 import UserReservationCardSkelton from './user-reservation-card-skelton';
+import UpdateReservationModal from '../reservation-calendar/components/change-request-modal';
 
 interface UserReservationsListProps {
   reservationId: string;
