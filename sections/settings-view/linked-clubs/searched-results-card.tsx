@@ -1,26 +1,27 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import SearchResultSkelton from './search-result-skelton';
+// import SearchResultSkelton from './search-result-skelton';
 import { CompanyResult } from './types';
 
 type Props = {
   results: CompanyResult[];
   isLinking: boolean;
   isLoading: boolean;
+  linkingId: string | null;
   isFetching: boolean;
   selectedCompanyId: string | null;
   onSendRequest: (companyId: string) => void;
 };
 
-const SearchedResultsCard = ({ results, isLoading, isFetching, isLinking, selectedCompanyId, onSendRequest }: Props) => {
-  if (isLoading || isFetching) {
-    return (
-      <div className="mt-2">
-        <SearchResultSkelton />
-      </div>
-    );
-  }
+const SearchedResultsCard = ({ results, linkingId, selectedCompanyId, onSendRequest }: Props) => {
+  // if (isLoading || isFetching) {
+  //   return (
+  //     <div className="mt-2">
+  //       <SearchResultSkelton />
+  //     </div>
+  //   );
+  // }
 
   if (!results || results.length === 0) {
     return (
@@ -62,10 +63,11 @@ const SearchedResultsCard = ({ results, isLoading, isFetching, isLinking, select
           ) : (
             <Button
               size="sm"
-              onClick={() => onSendRequest(company?._id)}
+              disabled={linkingId === company._id}
+              onClick={() => onSendRequest(company._id)}
               className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700 dark:text-white"
             >
-              {isLinking ? 'Linking...' : 'Send Request'}
+              {linkingId === company._id ? 'Linking...' : 'Send Request'}
             </Button>
           )}
         </div>

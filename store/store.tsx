@@ -39,6 +39,8 @@ import { loyaltyClubApi } from './Reducer/loyalty-club-api';
 import { reservationsApi } from './Reducer/reservations-api';
 import { loyaltyTransactionsApi } from './Reducer/loyalty-transactions-api';
 import { membersApi } from './Reducer/members-api';
+import { levelStatusApi } from './Reducer/level-status-api';
+import { bundlesApi } from './Reducer/bundles-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -77,6 +79,8 @@ const appReducer = combineReducers({
   [reservationsApi.reducerPath]: reservationsApi.reducer,
   [loyaltyTransactionsApi.reducerPath]: loyaltyTransactionsApi.reducer,
   [membersApi.reducerPath]: membersApi.reducer,
+  [levelStatusApi.reducerPath]: levelStatusApi.reducer,
+  [bundlesApi.reducerPath]: bundlesApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -122,6 +126,8 @@ export const store = configureStore({
       reservationsApi.middleware,
       loyaltyTransactionsApi.middleware,
       membersApi.middleware,
+      levelStatusApi.middleware,
+      bundlesApi.middleware,
       menuListApi.middleware
     ),
 });

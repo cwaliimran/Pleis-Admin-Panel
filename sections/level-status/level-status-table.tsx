@@ -8,66 +8,44 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
-// import { useTableSort } from '@/hooks/useTableSort';
-import BundleTableRow from './bundles-table-row';
+import LevelStatusTableRow from './level-status-table-row';
 
 const HEAD_LABEL = [
-  { id: 'bundleName', label: 'Bundle Name', align: 'left' },
-  { id: 'description', label: 'Description', align: 'left' },
-  { id: 'itemsIncluded', label: 'Items Included', align: 'left' },
-  { id: 'originalPrice', label: 'Price', align: 'left' },
-  { id: 'discountedPrice', label: 'Disc Price', align: 'left' },
-  { id: 'discountPercentage', label: 'Disc %', align: 'left' },
+  { id: 'photo', label: 'Photo', align: 'left' },
+  {
+    id: 'title',
+    label: 'Title',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  { id: 'bonusPointsPerEuro', label: 'Bonus / €', align: 'left' },
+  { id: 'type', label: 'Type', align: 'left' },
+  {
+    id: 'entryPoint',
+    label: 'Entry Point',
+    align: 'left',
+    sortable: true,
+    sortKey: 'entryPoints',
+  },
+  {
+    id: 'retainPoint',
+    label: 'Retain Point',
+    align: 'left',
+    sortable: true,
+    sortKey: 'retainPoints',
+  },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'action', label: 'Action', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
-// Sample data
-// const bundles = [
-//   {
-//     _id: 1,
-//     name: 'Standard Party Package',
-//     description: 'Perfect for small groups looking for a great night out',
-//     price: 450,
-//     originalPrice: 520,
-//     discount: 300,
-//     items: { tickets: 4, reservations: 1, preorders: 0 },
-//     status: 'active',
-//     createdAt: '10-02-2025',
-//     sold: 45,
-//   },
-//   {
-//     _id: 2,
-//     name: 'VIP Experience Bundle',
-//     description: 'Premium package with exclusive table and bottle service',
-//     price: 850,
-//     originalPrice: 950,
-//     discount: 650,
-//     items: { tickets: 1, reservations: 1, preorders: 1 },
-//     status: 'active',
-//     createdAt: '10-02-2025',
-//     sold: 28,
-//   },
-//   {
-//     _id: 3,
-//     name: 'Group Early Bird Special',
-//     description: 'Best value for large groups booking in advance',
-//     price: 620,
-//     originalPrice: 700,
-//     discount: 540,
-//     items: { tickets: 6, reservations: 2, preorders: 0 },
-//     status: 'inactive',
-//     createdAt: '09-01-2025',
-//     sold: 12,
-//   },
-// ];
-
-const BundleTable: FC<SamplePageProps> = ({
+const LevelStatusTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
@@ -90,11 +68,9 @@ const BundleTable: FC<SamplePageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  // const { sortedData, sortConfig, handleSort } = useTableSort({
-  //   data: data || [],
-  // });
-
-  console.log('data', data);
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -107,7 +83,7 @@ const BundleTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Bundles List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Level Status List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -139,7 +115,7 @@ const BundleTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search by Bundle Name',
+                              placeholder: 'Search level status...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -174,15 +150,11 @@ const BundleTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom
-                headLabel={HEAD_LABEL}
-                // onSort={handleSort}
-                // sortConfig={sortConfig}
-              />
+              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
-                {data?.map((item, idx) => (
-                  <BundleTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                {sortedData?.map((item, idx) => (
+                  <LevelStatusTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -201,4 +173,4 @@ const BundleTable: FC<SamplePageProps> = ({
   );
 };
 
-export default BundleTable;
+export default LevelStatusTable;

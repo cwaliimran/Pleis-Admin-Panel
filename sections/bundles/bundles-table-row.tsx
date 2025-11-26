@@ -1,47 +1,33 @@
 'use client';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 import CustomBadge from '@/components/ui/custom-badge';
 import { getStatusVariant } from '@/utils/short-utils';
+import { fDate, formatStr } from '@/utils/format-time';
 
-const ChallengesTableRow: FC<TableRowProps> = ({
-  item,
-  handleDelete,
-  handleEdit,
-}) => {
+const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left">{item?.name || '-'}</TableCell>
 
-      <TableCell className="text-left capitalize">
+      <TableCell className="text-left">
         {item?.description?.length > 22 ? (
           <Dialog>
             <DialogTrigger asChild>
-              <span
-                className="cursor-pointer hover:text-blue-600"
-                title="Click to view full description"
-              >
+              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
                 {item?.description?.slice(0, 22) + '...'}
               </span>
             </DialogTrigger>
-            <DialogContent className="dark:bg-secondary max-w-md">
+            <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
               <DialogHeader>
                 <DialogTitle>Description</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-                  {item.description}
-                </p>
+                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{item.description}</p>
               </div>
             </DialogContent>
           </Dialog>
@@ -52,38 +38,42 @@ const ChallengesTableRow: FC<TableRowProps> = ({
 
       <TableCell className="text-left">
         <div className="space-y-1 text-sm capitalize">
-          {item?.items?.tickets > 0 && (
+          {/* Ticketings */}
+          {Array.isArray(item?.bundleDetails?.ticketings) && item.bundleDetails.ticketings.length > 0 && (
             <div>
-              🎫 {item.items.tickets} ticket
-              {item.items.tickets > 1 ? 's' : ''}
+              🎫 {item.bundleDetails.ticketings.length} ticket
+              {item.bundleDetails.ticketings.length > 1 ? 's' : ''}
             </div>
           )}
 
-          {item?.items?.reservations > 0 && (
+          {/* Reservations */}
+          {Array.isArray(item?.bundleDetails?.reservations) && item.bundleDetails.reservations.length > 0 && (
             <div>
-              🪑 {item.items.reservations} reservation
-              {item.items.reservations > 1 ? 's' : ''}
+              🪑 {item.bundleDetails.reservations.length} reservation
+              {item.bundleDetails.reservations.length > 1 ? 's' : ''}
             </div>
           )}
 
-          {item?.items?.preorders > 0 && (
+          {/* Preorders */}
+          {Array.isArray(item?.bundleDetails?.preOrderItems) && item.bundleDetails.preOrderItems.length > 0 && (
             <div>
-              🍽️ {item.items.preorders} preorder
-              {item.items.preorders > 1 ? 's' : ''}
+              🍽️ {item.bundleDetails.preOrderItems.length} preorder
+              {item.bundleDetails.preOrderItems.length > 1 ? 's' : ''}
             </div>
           )}
         </div>
       </TableCell>
 
-      <TableCell className="text-left">€{item?.price || '-'}</TableCell>
-      <TableCell className="text-left">€{item?.discount || '-'}</TableCell>
-      <TableCell className="text-left">{item?.createdAt || '-'}</TableCell>
-      <TableCell className="text-left">
-        <CustomBadge variant={getStatusVariant(item?.status)}>
-          {item?.status}
-        </CustomBadge>
+      <TableCell className="text-left">€{item?.originalPrice || '-'}</TableCell>
 
-        {/* {item?.status || '-'} */}
+      <TableCell className="text-left">€{item?.discountedPrice || '-'}</TableCell>
+
+      <TableCell className="text-left">{item?.discountPercentage || '-'}%</TableCell>
+
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+
+      <TableCell className="text-left">
+        <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

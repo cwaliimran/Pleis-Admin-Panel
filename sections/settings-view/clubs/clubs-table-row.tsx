@@ -7,14 +7,16 @@ import { Check, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const ClubsTableRow: FC<TableRowProps> = ({ item, type, handleRejectRequest, handleAcceptRequest, handleUnLinkClub }) => {
+const ClubsTableRow: FC<TableRowProps> = ({ item, type, handleAcceptRequest, handleUnLinkClub }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left capitalize">{item?.selectedUserData?.user?.clubName || '-'}</TableCell>
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item?.selectedUserData?.status === 'pending' ? 'warning' : item?.selectedUserData?.status === 'accepted' ? 'success' : 'info'}>
+        <CustomBadge
+          variant={item?.selectedUserData?.status === 'pending' ? 'warning' : item?.selectedUserData?.status === 'accepted' ? 'success' : 'info'}
+        >
           {item?.selectedUserData?.status ? item?.selectedUserData?.status : 'N/A'}
         </CustomBadge>
       </TableCell>
@@ -40,7 +42,8 @@ const ClubsTableRow: FC<TableRowProps> = ({ item, type, handleRejectRequest, han
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleRejectRequest?.(item?._id);
+                  // handleRejectRequest?.(item?._id);
+                  handleUnLinkClub?.(item?._id);
                 }}
                 className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
               >

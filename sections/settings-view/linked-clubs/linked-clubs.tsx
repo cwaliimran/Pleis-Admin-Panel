@@ -12,9 +12,9 @@ import ClubsView from '../clubs/clubs-view';
 const LinkedClubs = ({ selectedCompanyId }: Props) => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [debouncedKeyword, setDebouncedKeyword] = useState('');
+  const [linkingId, setLinkingId] = useState<string | null>(null);
 
   const [linkLoyaltyClub, { isLoading: isLinking }] = useLinkLoyaltyClubMutation();
-
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,13 +57,13 @@ const LinkedClubs = ({ selectedCompanyId }: Props) => {
       return;
     }
 
+    setLinkingId(companyId);
+
     try {
       const payload = {
         sender: selectedCompanyId,
         receiver: companyId,
       };
-
-      console.log('Final payload', payload);
 
       const response = await linkLoyaltyClub(payload).unwrap();
 
@@ -81,6 +81,8 @@ const LinkedClubs = ({ selectedCompanyId }: Props) => {
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       showError(errorMessage);
+    } finally {
+      setLinkingId(null); // reset loading
     }
   };
 
@@ -115,6 +117,7 @@ const LinkedClubs = ({ selectedCompanyId }: Props) => {
               isLoading={isLoading}
               isFetching={isFetching}
               isLinking={isLinking}
+              linkingId={linkingId}
               selectedCompanyId={selectedCompanyId ?? null}
               onSendRequest={handleSendRequest}
             />

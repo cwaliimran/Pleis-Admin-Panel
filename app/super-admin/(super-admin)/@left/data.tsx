@@ -1,4 +1,5 @@
 import {
+  ArrowBigUp,
   BellRing,
   Box,
   Building,
@@ -122,6 +123,11 @@ export const menuGroups: MenuGroup[] = [
         title: 'Referrals',
         url: paths.superAdmin.globalReferrals,
         icon: Tags,
+      },
+      {
+        title: 'Level Status',
+        url: paths.superAdmin.levelStatus,
+        icon: ArrowBigUp,
       },
     ],
   },
