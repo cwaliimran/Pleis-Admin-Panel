@@ -37,7 +37,7 @@ export const membersApi = createApi({
         method: 'POST',
         body: newMember,
       }),
-      invalidatesTags: ['member'],
+      // invalidatesTags: ['member'],
     }),
   }),
 });

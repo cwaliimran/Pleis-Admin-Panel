@@ -5,7 +5,7 @@ import { customFetchBaseQuery } from '../customFetchBaseQuery';
 export const loyaltyClubApi = createApi({
   reducerPath: 'loyaltyClubApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['loyalty-club'],
+  tagTypes: ['loyalty-club', 'loyalty-listings'],
 
   endpoints: (builder) => ({
     getLoyaltyClubsList: builder.query({
@@ -23,6 +23,7 @@ export const loyaltyClubApi = createApi({
         };
       },
       transformResponse: (res) => res.data,
+      providesTags: ['loyalty-listings'],
     }),
 
     linkLoyaltyClub: builder.mutation({
@@ -31,6 +32,7 @@ export const loyaltyClubApi = createApi({
         method: 'POST',
         body: data,
       }),
+      invalidatesTags: ['loyalty-listings'],
     }),
 
     getAllClubsList: builder.query({
@@ -69,4 +71,5 @@ export const loyaltyClubApi = createApi({
   }),
 });
 
-export const { useGetLoyaltyClubsListQuery, useLinkLoyaltyClubMutation, useGetAllClubsListQuery, useUpdateRequestMutation, useDeleteClubMutation } = loyaltyClubApi;
+export const { useGetLoyaltyClubsListQuery, useLinkLoyaltyClubMutation, useGetAllClubsListQuery, useUpdateRequestMutation, useDeleteClubMutation } =
+  loyaltyClubApi;

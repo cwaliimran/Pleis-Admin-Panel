@@ -71,6 +71,15 @@ export const API_ROUTES = {
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_ID: (id: string) => `/admin/venues/${id}`,
 
+  ADMIN_BUNDLES: `/admin/bundles`,
+  ADMIN_BUNDLES_BY_ID: (id: string) => `/admin/bundles/${id}`,
+
+  ADMIN_GLOBAL_REWARD_CATEGORIES: `/admin/global-reward-categories`,
+  ADMIN_GLOBAL_REWARD_CATEGORIES_BY_ID: (id: string) => `/admin/global-reward-categories/${id}`,
+
+  ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL: `/admin/global-loyalty/status-levels`,
+  ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL_BY_ID: (id: string) => `/admin/global-loyalty/status-levels/${id}`,
+
   VENUES_TYPES: `/admin/venue-types`,
   VENUES_TYPE_By_ID: (id: string) => `/admin/venue-types/${id}`,
 

@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import SettingsView from '@/sections/settings-view/settings-view';
+import SettingsView from '@/sections/loyalty-modules/loyalty-settings/settings-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

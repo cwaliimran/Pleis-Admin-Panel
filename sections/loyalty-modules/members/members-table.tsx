@@ -12,8 +12,8 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import LoyaltyMembersTableRow from './members-table-row';
+import { SamplePageProps } from './types';
 
 const LoyaltyMembersTable: FC<SamplePageProps> = ({
   data = [],
@@ -26,13 +26,8 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
   handleEdit,
   onPageChange,
   limit = 10,
-  // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
-  date,
-  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -86,37 +81,14 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
-                          Select Date
-                        </label>
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateFilter={{
-                              id: 'organization-date',
-                              placeholder: 'Select date',
-                              value: date,
-                              onChange: onDateChange,
-                            }}
                             searchFilter={{
-                              placeholder: 'Search Promotions',
+                              placeholder: 'Search members...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,

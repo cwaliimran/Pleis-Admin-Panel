@@ -1,5 +1,6 @@
 import Header from '@/app/common/header/header';
-import ReservationCalendar from '@/sections/reservation/reservation-calendar/reservation-view';
+import ReservationCalendar from '@/sections/reservation-modules/reservation-calendar/reservation-view';
+// import ReservationCalendar from '@/sections/reservation/reservation-calendar/reservation-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

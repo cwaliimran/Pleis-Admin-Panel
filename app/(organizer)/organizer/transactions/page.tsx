@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import TransactionsView from '@/sections/reservation/reservation-transactions/transactions-view';
+// import TransactionsView from '@/sections/reservation-modules/reservation-transactions/transactions-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <TransactionsView />
+      {/* <TransactionsView /> */}
     </div>
   );
 };

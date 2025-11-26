@@ -14,7 +14,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { showSuccess, showError } from '@/utils/toast';
 import { getErrorMessage } from '@/utils/api';
 import { useAddItemsCategoryMutation } from '@/store/Reducer/items-category-api';
-import TagsTypeModal from '@/sections/menu-management/items-category/items-category-modal';
+import TagsTypeModal from '@/sections/menu-management-modules/items-category/items-category-modal';
+// import TagsTypeModal from '@/sections/menu-management/items-category/items-category-modal';
 
 interface DropdownOption {
   value: string;

@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import ThirdPartyView from '@/sections/third-party-view/third-party-view';
+import ThirdPartyView from '@/sections/global-loyalty-modules/third-party-view/third-party-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

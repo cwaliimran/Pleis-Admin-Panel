@@ -51,7 +51,7 @@ const LoyaltyMembersTableRow: FC<TableRowProps> = ({ item, global, userType, han
         <TableCell className="text-left capitalize">{item?.user?.timezone || 'N/A'}</TableCell>
 
         <TableCell className="text-end">
-          <div className="flex gap-2">
+          <div className="flex items-center justify-center gap-2">
             <button
               type="button"
               title="Gift Points"

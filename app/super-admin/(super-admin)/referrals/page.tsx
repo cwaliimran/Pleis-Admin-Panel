@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import ReferralsView from '@/sections/referrals/referrals-view';
+import ReferralsView from '@/sections/loyalty-modules/referrals/referrals-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

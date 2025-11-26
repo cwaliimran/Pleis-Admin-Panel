@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import SampleView from '@/sections/sample-table/sample-view';
+// import SampleView from '@/sections/sample-table/sample-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <SampleView />
+      {/* <SampleView /> */}
     </div>
   );
 };
