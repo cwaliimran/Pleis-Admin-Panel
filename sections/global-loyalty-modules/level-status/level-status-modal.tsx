@@ -1,4 +1,5 @@
 'use client';
+
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
@@ -15,9 +16,11 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { StatusFormValues, StatusModalProps } from './types';
+import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 
 const schema = Yup.object().shape({
   image: Yup.mixed().nullable().default(null),
+  background: Yup.mixed().nullable().default(null),
   title: Yup.string().required('Status name is required').default(''),
   type: Yup.string().required('Type is required').default(''),
   bonusPointsPerEuro: Yup.number()
@@ -56,6 +59,7 @@ const schema = Yup.object().shape({
 
 const defaultValues: StatusFormValues = {
   image: null,
+  background: null,
   title: '',
   type: '',
   bonusPointsPerEuro: '' as any,
@@ -103,6 +107,13 @@ const StatusModal = ({ open, onClose, isEdit = false, selectedData }: StatusModa
           }
           return img;
         })(),
+        background: (() => {
+          const bg = selectedData?.backgroundImageInfo?.url || selectedData?.backgroundImage;
+          if (!bg || bg === noImageUrl || bg === noImageUrlDev || bg.toLowerCase().includes('noimage.png')) {
+            return null;
+          }
+          return bg;
+        })(),
         title: selectedData?.title || '',
         type: selectedData?.type || '',
         bonusPointsPerEuro: selectedData?.bonusPointsPerEuro ?? ('' as any),
@@ -148,10 +159,18 @@ const StatusModal = ({ open, onClose, isEdit = false, selectedData }: StatusModa
     }
 
     let uploadedImageKey: string | null = null;
+    let uploadedBackgroundKey: string | null = null;
+
     try {
       if (formData.image instanceof FileList && formData.image.length > 0) {
         const file = formData.image[0];
         uploadedImageKey = await uploadImage(file);
+      }
+
+      // Upload background image if new file selected
+      if (formData.background instanceof FileList && formData.background.length > 0) {
+        const file = formData.background[0];
+        uploadedBackgroundKey = await uploadImage(file);
       }
 
       const payload: any = {
@@ -164,6 +183,10 @@ const StatusModal = ({ open, onClose, isEdit = false, selectedData }: StatusModa
 
       if (uploadedImageKey) {
         payload.image = uploadedImageKey;
+      }
+
+      if (uploadedBackgroundKey) {
+        payload.backgroundImage = uploadedBackgroundKey;
       }
 
       if (isEdit && selectedData) {
@@ -234,6 +257,23 @@ const StatusModal = ({ open, onClose, isEdit = false, selectedData }: StatusModa
                     return img;
                   })()}
                 />
+
+                {/* Background Upload */}
+                <div className="flex max-w-48 items-center justify-start">
+                  <RHFUploadButton
+                    name="background"
+                    label="Upload Background"
+                    initialImage={(() => {
+                      if (!isEdit || !selectedData) return null;
+                      const bg = selectedData?.backgroundImageInfo?.url || selectedData?.backgroundImage;
+                      if (!bg || bg === noImageUrl || bg === noImageUrlDev || bg.toLowerCase().includes('noimage.png')) {
+                        return null;
+                      }
+                      return bg;
+                    })()}
+                  />
+                </div>
+
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="col-span-2">
                     <RHFTextField name="title" label="Status Name" placeholder="Enter status name (e.g., Black)" />

@@ -6,7 +6,6 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAddChallengeMutation, useUpdateChallengeMutation } from '@/store/Reducer/challenges-api';
 import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
@@ -21,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import RewardCalculatorFields from '../../loyalty-modules/rewards/reward-calculation-fields';
+import FieldSkeleton from '@/components/ui/field-skeleton';
 
 const defaultValues: ChallengesFormValues = {
   title: '',
@@ -352,7 +352,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[630px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Challenge' : 'Create Challenge'}</DialogTitle>
@@ -397,10 +397,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 {taskType === 'buyMenuItem' && (
                   <>
                     {menuItemsLoading ? (
-                      <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                        <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                      </div>
+                      <FieldSkeleton />
                     ) : (
                       <RHFCustomDropdown
                         name="taskMenuItem"
@@ -430,10 +427,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 /> */}
 
                 {tiersLoading ? (
-                  <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                    <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                    <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                  </div>
+                  <FieldSkeleton />
                 ) : (
                   <RHFCustomDropdown
                     name="tierLimit"
@@ -475,10 +469,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                       /> */}
 
                       {menuLoading ? (
-                        <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                          <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                          <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        </div>
+                        <FieldSkeleton />
                       ) : (
                         <RHFCustomDropdown
                           name="rewardMenu"
@@ -491,10 +482,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                       )}
 
                       {menuItemsLoading ? (
-                        <div className="mt-2 w-full space-y-2 md:w-[100%]">
-                          <Skeleton className="ml-1 h-[12px] w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                          <Skeleton className="h-[32px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        </div>
+                        <FieldSkeleton />
                       ) : (
                         <RHFCustomDropdown
                           name="rewardMenuItem"
@@ -517,7 +505,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 {/* Custom Reward */}
                 {rewardType === 'customReward' && (
                   <div className="flex flex-col gap-4">
-                    <div className="mb-2 flex max-w-[10rem] items-center justify-start">
+                    <div className="mb-2 flex max-w-40 items-center justify-start">
                       <RHFUploadButton name="customRewardImage" label="Upload Photo" initialImage={null} />
                     </div>
 

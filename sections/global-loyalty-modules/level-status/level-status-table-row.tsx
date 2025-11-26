@@ -4,6 +4,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
+import ImageWithModal from '@/sections/status/image-with-modal';
 import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -24,6 +25,10 @@ const LevelStatusTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit
       </TableCell>
 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
+
+      <TableCell className="text-left capitalize">
+        <ImageWithModal src={item?.backgroundImage || ''} title="Background" width={250} height={250} className="h-11 w-20" />
+      </TableCell>
 
       <TableCell className="text-left">{item?.bonusPointsPerEuro || 'N/A'}</TableCell>
 

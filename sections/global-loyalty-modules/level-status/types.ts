@@ -32,6 +32,7 @@ export interface TableRowProps {
 
 export type StatusFormValues = {
   image: FileList | string | null;
+  background: FileList | string | null;
   title: string;
   type: string;
   bonusPointsPerEuro: number;
