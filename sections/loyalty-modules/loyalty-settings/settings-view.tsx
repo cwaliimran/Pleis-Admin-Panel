@@ -318,7 +318,7 @@ const SettingsView = () => {
             <div className="mt-5 flex items-center justify-between">
               <p className="text-muted-foreground text-sm">
                 This means each euro spent returns between <span className="font-medium">{pointValue}%</span> -{' '}
-                <span className="font-medium">{pointValue + 5}%</span> of its value back in loyalty points (depending on the user&apos;s status and
+                <span className="font-medium">{pointValue * 2}%</span> of its value back in loyalty points (depending on the user&apos;s status and
                 tier).
               </p>
 
