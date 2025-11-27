@@ -22,16 +22,19 @@ const TiersTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =>
 
       <TableCell className="text-left">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left">{item?.bonusPointsPerEuro || '-'}</TableCell>
+      <TableCell className="text-left">{item?.bonusPointsPerEuro}</TableCell>
 
-      <TableCell className="text-left">{item?.essential?.entryPoints || '-'}</TableCell>
-      <TableCell className="text-left">{item?.essential?.retainPoints || '-'}</TableCell>
+      {/* ESSENTIAL */}
+      <TableCell className="text-left">{item?.essential?.entryPoints}</TableCell>
+      <TableCell className="text-left">{item?.essential?.retainPoints}</TableCell>
 
-      <TableCell className="text-left">{item?.preferred?.entryPoints || '-'}</TableCell>
-      <TableCell className="text-left">{item?.preferred?.retainPoints || '-'}</TableCell>
+      {/* PREFERRED */}
+      <TableCell className="text-left">{item?.preferred?.entryPoints}</TableCell>
+      <TableCell className="text-left">{item?.preferred?.retainPoints}</TableCell>
 
-      <TableCell className="text-left">{item?.premier?.entryPoints || '-'}</TableCell>
-      <TableCell className="text-left">{item?.premier?.retainPoints || '-'}</TableCell>
+      {/* PREMIER */}
+      <TableCell className="text-left">{item?.premier?.entryPoints}</TableCell>
+      <TableCell className="text-left">{item?.premier?.retainPoints}</TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

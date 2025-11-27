@@ -24,6 +24,7 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'title',
   },
+  { id: 'bg', label: 'Background', align: 'left' },
   { id: 'bonusPointsPerEuro', label: 'Bonus / €', align: 'left' },
   { id: 'type', label: 'Type', align: 'left' },
   {

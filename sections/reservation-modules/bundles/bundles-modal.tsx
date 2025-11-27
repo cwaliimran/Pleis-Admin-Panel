@@ -3,44 +3,24 @@
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 // import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { useGeteventsQuery } from '@/store/Reducer/events';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Calendar,
-  ChevronDown,
-  Package,
-  Plus,
-  Ticket,
-  Trash2,
-} from 'lucide-react';
+import { Calendar, ChevronDown, Package, Plus, Ticket, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 // Professional Dropdown Component
-const ProfessionalDropdown = ({
-  options,
-  onSelect,
-  placeholder,
-  icon: Icon,
-}: any) => {
+const ProfessionalDropdown = ({ options, onSelect, placeholder, icon: Icon }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredOptions = options.filter((option: any) =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOptions = options.filter((option: any) => option.label.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleSelect = (value: any) => {
     onSelect(value);
@@ -59,18 +39,12 @@ const ProfessionalDropdown = ({
           {Icon && <Icon size={18} />}
           {placeholder}
         </span>
-        <ChevronDown
-          size={20}
-          className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
+        <ChevronDown size={20} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div className="absolute z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
             <div className="p-2">
               <input
@@ -84,9 +58,7 @@ const ProfessionalDropdown = ({
             </div>
             <div className="max-h-60 overflow-y-auto">
               {filteredOptions.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
-                  No items found
-                </div>
+                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No items found</div>
               ) : (
                 filteredOptions.map((option: any) => (
                   <button
@@ -126,16 +98,12 @@ const schema = Yup.object().shape({
   event: Yup.string().optional(),
   startDate: Yup.string().required('Start date is required'),
   endDate: Yup.string().required('End date is required'),
-  price: Yup.number()
-    .required('Bundle price is required')
-    .min(0, 'Price must be at least 0'),
+  price: Yup.number().required('Bundle price is required').min(0, 'Price must be at least 0'),
   tickets: Yup.array()
     .of(
       Yup.object().shape({
         ticketId: Yup.string().required('Ticket is required'),
-        quantity: Yup.number()
-          .required('Quantity is required')
-          .min(1, 'Quantity must be at least 1'),
+        quantity: Yup.number().required('Quantity is required').min(1, 'Quantity must be at least 1'),
       })
     )
     .default([]),
@@ -143,9 +111,7 @@ const schema = Yup.object().shape({
     .of(
       Yup.object().shape({
         reservationId: Yup.string().required('Reservation is required'),
-        quantity: Yup.number()
-          .required('Quantity is required')
-          .min(1, 'Quantity must be at least 1'),
+        quantity: Yup.number().required('Quantity is required').min(1, 'Quantity must be at least 1'),
       })
     )
     .default([]),
@@ -153,9 +119,7 @@ const schema = Yup.object().shape({
     .of(
       Yup.object().shape({
         menuItemId: Yup.string().required('Menu item is required'),
-        quantity: Yup.number()
-          .required('Quantity is required')
-          .min(1, 'Quantity must be at least 1'),
+        quantity: Yup.number().required('Quantity is required').min(1, 'Quantity must be at least 1'),
       })
     )
     .default([]),
@@ -215,16 +179,8 @@ const staticMenuItemsData: MenuItemData[] = [
   { _id: '4', title: 'Chicken Wings', price: 350 },
 ];
 
-const BundleModal = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-  companyOrganizer,
-}: BundleModalProps) => {
-  const [activeTab, setActiveTab] = useState<
-    'tickets' | 'reservations' | 'preorders'
-  >('tickets');
+const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrganizer }: BundleModalProps) => {
+  const [activeTab, setActiveTab] = useState<'tickets' | 'reservations' | 'preorders'>('tickets');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Using static data for tickets and reservations
@@ -315,9 +271,7 @@ const BundleModal = ({
     }, 0);
 
     const reservationTotal = reservations.reduce((sum: number, item: any) => {
-      const reservation = reservationsData.find(
-        (r) => r._id === item.reservationId
-      );
+      const reservation = reservationsData.find((r) => r._id === item.reservationId);
       return sum + (reservation?.price || 0) * item.quantity;
     }, 0);
 
@@ -330,10 +284,7 @@ const BundleModal = ({
   };
 
   const originalPrice = calculateOriginalPrice();
-  const discount =
-    originalPrice && bundlePrice
-      ? Math.round(((originalPrice - bundlePrice) / originalPrice) * 100)
-      : 0;
+  const discount = originalPrice && bundlePrice ? Math.round(((originalPrice - bundlePrice) / originalPrice) * 100) : 0;
   const totalItems = tickets.length + reservations.length + preorders.length;
 
   const addTicket = (ticketId: string) => {
@@ -359,20 +310,14 @@ const BundleModal = ({
   const addReservation = (reservationId: string) => {
     const reservation = reservationsData.find((r) => r._id === reservationId);
     if (reservation) {
-      setValue(
-        'reservations',
-        [...reservations, { reservationId, quantity: 1 }],
-        {
-          shouldDirty: true,
-        }
-      );
+      setValue('reservations', [...reservations, { reservationId, quantity: 1 }], {
+        shouldDirty: true,
+      });
     }
   };
 
   const removeReservation = (index: number) => {
-    const newReservations = reservations.filter(
-      (_: any, i: number) => i !== index
-    );
+    const newReservations = reservations.filter((_: any, i: number) => i !== index);
     setValue('reservations', newReservations, { shouldDirty: true });
   };
 
@@ -451,9 +396,7 @@ const BundleModal = ({
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      showSuccess(
-        isEdit ? 'Bundle updated successfully' : 'Bundle created successfully'
-      );
+      showSuccess(isEdit ? 'Bundle updated successfully' : 'Bundle created successfully');
 
       methods.reset(defaultValues);
       onClose();
@@ -470,10 +413,7 @@ const BundleModal = ({
     onClose();
   };
 
-  const getItemName = (
-    id: string,
-    type: 'ticket' | 'reservation' | 'preorder'
-  ) => {
+  const getItemName = (id: string, type: 'ticket' | 'reservation' | 'preorder') => {
     if (type === 'ticket') {
       return ticketsData.find((t) => t._id === id)?.name || '';
     } else if (type === 'reservation') {
@@ -483,10 +423,7 @@ const BundleModal = ({
     }
   };
 
-  const getItemPrice = (
-    id: string,
-    type: 'ticket' | 'reservation' | 'preorder'
-  ) => {
+  const getItemPrice = (id: string, type: 'ticket' | 'reservation' | 'preorder') => {
     if (type === 'ticket') {
       return ticketsData.find((t) => t._id === id)?.price || 0;
     } else if (type === 'reservation') {
@@ -507,28 +444,20 @@ const BundleModal = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-opacity-20 rounded-lg bg-gray-800 p-2 dark:bg-gray-200">
-                  <Package
-                    className="text-white dark:text-gray-900"
-                    size={24}
-                  />
+                  <Package className="text-white dark:text-gray-900" size={24} />
                 </div>
                 <div>
                   <DialogTitle className="text-2xl font-bold text-gray-800 dark:text-white">
                     {isEdit ? 'Edit Bundle' : 'Create New Bundle'}
                   </DialogTitle>
-                  <p className="mt-1 text-sm text-gray-800 dark:text-white">
-                    Package multiple items into an attractive offer
-                  </p>
+                  <p className="mt-1 text-sm text-gray-800 dark:text-white">Package multiple items into an attractive offer</p>
                 </div>
               </div>
             </div>
           </DialogHeader>
 
           <div className="mt-4 w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="flex w-full flex-col gap-6">
                 {/* Basic Information */}
                 <div className="dark:bg-secondary">
@@ -536,17 +465,11 @@ const BundleModal = ({
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-sm font-bold text-blue-600 dark:bg-gray-200 dark:text-black">
                       1
                     </div>
-                    <span className="dark:text-gray-100">
-                      Basic Information
-                    </span>
+                    <span className="dark:text-gray-100">Basic Information</span>
                   </h3>
 
                   <div className="space-y-4">
-                    <RHFTextField
-                      name="name"
-                      label="Bundle Name"
-                      placeholder="e.g., VIP Experience Package, Weekend Special"
-                    />
+                    <RHFTextField name="name" label="Bundle Name" placeholder="e.g., VIP Experience Package, Weekend Special" />
 
                     <RHFTextField
                       name="description"
@@ -567,19 +490,9 @@ const BundleModal = ({
                       />
                     </div>
 
-                    <RHFDate
-                      label="Start Date"
-                      name="startDate"
-                      minDate={new Date()}
-                      placeholder="Select Start Date"
-                    />
+                    <RHFDate label="Start Date" name="startDate" minDate={new Date()} placeholder="Select Start Date" />
 
-                    <RHFDate
-                      label="End Date"
-                      name="endDate"
-                      minDate={new Date()}
-                      placeholder="Select End Date"
-                    />
+                    <RHFDate label="End Date" name="endDate" minDate={new Date()} placeholder="Select End Date" />
                   </div>
                 </div>
 
@@ -590,9 +503,7 @@ const BundleModal = ({
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-sm font-bold text-blue-600 dark:bg-gray-200 dark:text-black">
                         2
                       </div>
-                      <span className="dark:text-gray-100">
-                        Build Your Bundle
-                      </span>
+                      <span className="dark:text-gray-100">Build Your Bundle</span>
                     </h3>
                     {totalItems > 0 && (
                       <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300">
@@ -619,9 +530,7 @@ const BundleModal = ({
                       {tickets?.length > 0 && (
                         <span
                           className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
-                            activeTab === 'tickets'
-                              ? 'bg-opacity-20 bg-white text-black'
-                              : 'bg-gray-200 dark:bg-gray-700'
+                            activeTab === 'tickets' ? 'bg-opacity-20 bg-white text-black' : 'bg-gray-200 dark:bg-gray-700'
                           }`}
                         >
                           {tickets?.length}
@@ -644,9 +553,7 @@ const BundleModal = ({
                       {reservations.length > 0 && (
                         <span
                           className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
-                            activeTab === 'reservations'
-                              ? 'bg-opacity-20 bg-white text-black'
-                              : 'bg-gray-200 dark:bg-gray-700'
+                            activeTab === 'reservations' ? 'bg-opacity-20 bg-white text-black' : 'bg-gray-200 dark:bg-gray-700'
                           }`}
                         >
                           {reservations.length}
@@ -669,9 +576,7 @@ const BundleModal = ({
                       {preorders.length > 0 && (
                         <span
                           className={`ml-1 rounded-full px-2 py-0.5 text-xs ${
-                            activeTab === 'preorders'
-                              ? 'bg-opacity-20 bg-white text-black'
-                              : 'bg-gray-200 dark:bg-gray-700'
+                            activeTab === 'preorders' ? 'bg-opacity-20 bg-white text-black' : 'bg-gray-200 dark:bg-gray-700'
                           }`}
                         >
                           {preorders.length}
@@ -685,12 +590,7 @@ const BundleModal = ({
                     {activeTab === 'tickets' && (
                       <div>
                         {event && (
-                          <ProfessionalDropdown
-                            options={ticketOptions}
-                            onSelect={addTicket}
-                            placeholder="+ Select a ticket to add"
-                            icon={Ticket}
-                          />
+                          <ProfessionalDropdown options={ticketOptions} onSelect={addTicket} placeholder="+ Select a ticket to add" icon={Ticket} />
                         )}
                         {/* {ticketsLoading ? (
                           <Skeleton className="h-12 w-full rounded-lg" />
@@ -730,24 +630,13 @@ const BundleModal = ({
 
                         {!event ? (
                           <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <Ticket
-                              size={48}
-                              className="mx-auto mb-3 opacity-50"
-                            />
-                            <p className="text-sm">
-                              Please select an event before choosing a ticket.
-                            </p>
+                            <Ticket size={48} className="mx-auto mb-3 opacity-50" />
+                            <p className="text-sm">Please select an event before choosing a ticket.</p>
                           </div>
                         ) : tickets.length === 0 ? (
                           <div className="py-12 text-center text-gray-400">
-                            <Ticket
-                              size={48}
-                              className="mx-auto mb-3 opacity-30"
-                            />
-                            <p className="text-sm">
-                              No tickets added yet. Select from the dropdown
-                              above.
-                            </p>
+                            <Ticket size={48} className="mx-auto mb-3 opacity-30" />
+                            <p className="text-sm">No tickets added yet. Select from the dropdown above.</p>
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -758,44 +647,28 @@ const BundleModal = ({
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
-                                    <div className="font-semibold text-gray-900 dark:text-gray-100">
-                                      {getItemName(ticket.ticketId, 'ticket')}
-                                    </div>
+                                    <div className="font-semibold text-gray-900 dark:text-gray-100">{getItemName(ticket.ticketId, 'ticket')}</div>
                                     <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                      €{getItemPrice(ticket.ticketId, 'ticket')}{' '}
-                                      per ticket
+                                      €{getItemPrice(ticket.ticketId, 'ticket')} per ticket
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2">
-                                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                        Qty:
-                                      </label>
+                                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Qty:</label>
                                       <input
                                         type="number"
                                         min="1"
                                         value={ticket.quantity}
-                                        onChange={(e) =>
-                                          updateTicketQuantity(
-                                            index,
-                                            parseInt(e.target.value) || 1
-                                          )
-                                        }
+                                        onChange={(e) => updateTicketQuantity(index, parseInt(e.target.value) || 1)}
                                         className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-center font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                         title="Ticket quantity"
                                         aria-label="Ticket quantity"
                                       />
                                     </div>
                                     <div className="min-w-[80px] text-right">
-                                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                                        Subtotal
-                                      </div>
+                                      <div className="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
                                       <div className="font-bold text-gray-900 dark:text-gray-100">
-                                        €
-                                        {getItemPrice(
-                                          ticket.ticketId,
-                                          'ticket'
-                                        ) * ticket.quantity}
+                                        €{getItemPrice(ticket.ticketId, 'ticket') * ticket.quantity}
                                       </div>
                                     </div>
                                     <button
@@ -852,95 +725,61 @@ const BundleModal = ({
 
                         {reservations.length === 0 ? (
                           <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <Calendar
-                              size={48}
-                              className="mx-auto mb-3 opacity-50"
-                            />
-                            <p className="text-sm">
-                              No reservations added yet. Select from the
-                              dropdown above.
-                            </p>
+                            <Calendar size={48} className="mx-auto mb-3 opacity-50" />
+                            <p className="text-sm">No reservations added yet. Select from the dropdown above.</p>
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            {reservations.map(
-                              (reservation: any, index: number) => {
-                                const resData = reservationsData.find(
-                                  (r) => r._id === reservation.reservationId
-                                );
-                                return (
-                                  <div
-                                    key={index}
-                                    className="rounded-lg border-2 border-gray-200 bg-white p-4 transition hover:border-blue-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-600"
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex-1">
-                                        <div className="font-semibold text-gray-900 dark:text-gray-100">
-                                          {getItemName(
-                                            reservation.reservationId,
-                                            'reservation'
-                                          )}
-                                        </div>
-                                        <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                          €
-                                          {getItemPrice(
-                                            reservation.reservationId,
-                                            'reservation'
-                                          )}{' '}
-                                          per reservation
-                                          {resData?.capacity &&
-                                            ` • Max ${resData.capacity} guests`}
-                                        </div>
+                            {reservations.map((reservation: any, index: number) => {
+                              const resData = reservationsData.find((r) => r._id === reservation.reservationId);
+                              return (
+                                <div
+                                  key={index}
+                                  className="rounded-lg border-2 border-gray-200 bg-white p-4 transition hover:border-blue-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-600"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="font-semibold text-gray-900 dark:text-gray-100">
+                                        {getItemName(reservation.reservationId, 'reservation')}
                                       </div>
-                                      <div className="flex items-center gap-4">
-                                        <div className="flex items-center gap-2">
-                                          <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                            Qty:
-                                          </label>
-                                          <input
-                                            type="number"
-                                            min="1"
-                                            value={reservation.quantity}
-                                            onChange={(e) =>
-                                              updateReservationQuantity(
-                                                index,
-                                                parseInt(e.target.value) || 1
-                                              )
-                                            }
-                                            className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-center font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                            title="Reservation quantity"
-                                            aria-label="Reservation quantity"
-                                          />
-                                        </div>
-                                        <div className="min-w-[80px] text-right">
-                                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                                            Subtotal
-                                          </div>
-                                          <div className="font-bold text-gray-900 dark:text-gray-100">
-                                            €
-                                            {getItemPrice(
-                                              reservation.reservationId,
-                                              'reservation'
-                                            ) * reservation.quantity}
-                                          </div>
-                                        </div>
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            removeReservation(index)
-                                          }
-                                          className="cursor-pointer rounded-lg p-2 text-red-500 transition hover:bg-red-50 dark:hover:bg-red-900/20"
-                                          aria-label="Remove reservation"
-                                          title="Remove reservation"
-                                        >
-                                          <Trash2 size={20} />
-                                        </button>
+                                      <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        €{getItemPrice(reservation.reservationId, 'reservation')} per reservation
+                                        {resData?.capacity && ` • Max ${resData.capacity} guests`}
                                       </div>
                                     </div>
+                                    <div className="flex items-center gap-4">
+                                      <div className="flex items-center gap-2">
+                                        <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Qty:</label>
+                                        <input
+                                          type="number"
+                                          min="1"
+                                          value={reservation.quantity}
+                                          onChange={(e) => updateReservationQuantity(index, parseInt(e.target.value) || 1)}
+                                          className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-center font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                          title="Reservation quantity"
+                                          aria-label="Reservation quantity"
+                                        />
+                                      </div>
+                                      <div className="min-w-[80px] text-right">
+                                        <div className="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
+                                        <div className="font-bold text-gray-900 dark:text-gray-100">
+                                          €{getItemPrice(reservation.reservationId, 'reservation') * reservation.quantity}
+                                        </div>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => removeReservation(index)}
+                                        className="cursor-pointer rounded-lg p-2 text-red-500 transition hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        aria-label="Remove reservation"
+                                        title="Remove reservation"
+                                      >
+                                        <Trash2 size={20} />
+                                      </button>
+                                    </div>
                                   </div>
-                                );
-                              }
-                            )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -982,14 +821,8 @@ const BundleModal = ({
 
                         {preorders.length === 0 ? (
                           <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                            <Package
-                              size={48}
-                              className="mx-auto mb-3 opacity-50"
-                            />
-                            <p className="text-sm">
-                              No pre-order items added yet. Select from the
-                              dropdown above.
-                            </p>
+                            <Package size={48} className="mx-auto mb-3 opacity-50" />
+                            <p className="text-sm">No pre-order items added yet. Select from the dropdown above.</p>
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -1001,50 +834,29 @@ const BundleModal = ({
                                 <div className="flex items-center justify-between">
                                   <div className="flex-1">
                                     <div className="font-semibold text-gray-900 dark:text-gray-100">
-                                      {getItemName(
-                                        preorder.menuItemId,
-                                        'preorder'
-                                      )}
+                                      {getItemName(preorder.menuItemId, 'preorder')}
                                     </div>
                                     <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                      €
-                                      {getItemPrice(
-                                        preorder.menuItemId,
-                                        'preorder'
-                                      )}{' '}
-                                      per item
+                                      €{getItemPrice(preorder.menuItemId, 'preorder')} per item
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2">
-                                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                        Qty:
-                                      </label>
+                                      <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Qty:</label>
                                       <input
                                         type="number"
                                         min="1"
                                         value={preorder.quantity}
-                                        onChange={(e) =>
-                                          updatePreorderQuantity(
-                                            index,
-                                            parseInt(e.target.value) || 1
-                                          )
-                                        }
+                                        onChange={(e) => updatePreorderQuantity(index, parseInt(e.target.value) || 1)}
                                         className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-center font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                         title="Pre-order quantity"
                                         aria-label="Pre-order quantity"
                                       />
                                     </div>
                                     <div className="min-w-[80px] text-right">
-                                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                                        Subtotal
-                                      </div>
+                                      <div className="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
                                       <div className="font-bold text-gray-900 dark:text-gray-100">
-                                        €
-                                        {getItemPrice(
-                                          preorder.menuItemId,
-                                          'preorder'
-                                        ) * preorder.quantity}
+                                        €{getItemPrice(preorder.menuItemId, 'preorder') * preorder.quantity}
                                       </div>
                                     </div>
                                     <button
@@ -1078,15 +890,9 @@ const BundleModal = ({
 
                   <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div className="rounded-lg border border-blue-200 bg-white p-4 dark:border-blue-800 dark:bg-gray-900">
-                      <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">
-                        Original Price
-                      </div>
-                      <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-                        €{originalPrice}
-                      </div>
-                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        Sum of all items
-                      </div>
+                      <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">Original Price</div>
+                      <div className="text-3xl font-bold text-gray-800 dark:text-gray-100">€{originalPrice}</div>
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">Sum of all items</div>
                     </div>
 
                     <div>
@@ -1118,9 +924,7 @@ const BundleModal = ({
                                   : 'text-amber-800 dark:text-amber-300'
                               }`}
                             >
-                              {parseFloat(String(bundlePrice)) < originalPrice
-                                ? 'Great Deal!'
-                                : 'Price Warning'}
+                              {parseFloat(String(bundlePrice)) < originalPrice ? 'Great Deal!' : 'Price Warning'}
                             </div>
                             <div
                               className={`text-sm ${
@@ -1130,22 +934,15 @@ const BundleModal = ({
                               }`}
                             >
                               {parseFloat(String(bundlePrice)) < originalPrice
-                                ? `Customers save €${(
-                                    originalPrice -
-                                    parseFloat(String(bundlePrice))
-                                  ).toFixed(2)} (${discount}% discount)`
+                                ? `Customers save €${(originalPrice - parseFloat(String(bundlePrice))).toFixed(2)} (${discount}% discount)`
                                 : 'Bundle price is higher than original price. Consider adjusting.'}
                             </div>
                           </div>
                         </div>
                         {parseFloat(String(bundlePrice)) < originalPrice && (
                           <div className="text-right">
-                            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                              {discount}%
-                            </div>
-                            <div className="text-xs text-green-700 dark:text-green-500">
-                              OFF
-                            </div>
+                            <div className="text-3xl font-bold text-green-600 dark:text-green-400">{discount}%</div>
+                            <div className="text-xs text-green-700 dark:text-green-500">OFF</div>
                           </div>
                         )}
                       </div>
@@ -1157,25 +954,14 @@ const BundleModal = ({
               {/* Action Buttons */}
               <div className="mt-5 flex items-center justify-end gap-3 border-t pt-5 dark:border-gray-700">
                 <div className="mr-auto text-sm text-gray-600 dark:text-gray-400">
-                  {totalItems === 0
-                    ? 'Add items to create your bundle'
-                    : `${totalItems} items • Total value: €${originalPrice}`}
+                  {totalItems === 0 ? 'Add items to create your bundle' : `${totalItems} items • Total value: €${originalPrice}`}
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                  className="cursor-pointer px-7"
-                >
+                <Button type="button" variant="outline" onClick={handleClose} className="cursor-pointer px-7">
                   Cancel
                 </Button>
 
                 {isSubmitting ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                  >
+                  <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                     <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                   </Button>
                 ) : (

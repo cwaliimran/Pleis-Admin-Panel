@@ -7,7 +7,7 @@ import {
   CalendarDays,
   ChartBar,
   ChartColumnBig,
-  ChartNoAxesColumnIncreasing,
+  // ChartNoAxesColumnIncreasing,
   ClipboardPenLine,
   Earth,
   Grid2x2Check,
@@ -117,6 +117,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Promotions',
         url: paths.superAdmin.globalPromotions,
+        icon: Tags,
+      },
+      {
+        title: 'Members',
+        url: paths.superAdmin.members,
         icon: Tags,
       },
       {
@@ -292,11 +297,11 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.tiers,
     icon: TriangleDashed,
   },
-  {
-    label: 'Status',
-    key: paths.superAdmin.status,
-    icon: ChartNoAxesColumnIncreasing,
-  },
+  // {
+  //   label: 'Status',
+  //   key: paths.superAdmin.status,
+  //   icon: ChartNoAxesColumnIncreasing,
+  // },
   {
     label: 'Browser Control',
     key: paths.superAdmin.browserControl.default,
