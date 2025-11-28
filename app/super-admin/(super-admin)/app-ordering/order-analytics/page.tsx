@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-// import OrderAnalyticsView from '@/sections/order-analytics/order-analytics-view';
+import OrderAnalyticsView from '@/sections/loyalty/loyalty-view/order-analytics-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      {/* <OrderAnalyticsView /> */}
+      <OrderAnalyticsView global={false} userType="super-admin" />
     </div>
   );
 };

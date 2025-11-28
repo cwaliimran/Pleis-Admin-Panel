@@ -162,6 +162,47 @@ export const reservationCardHeaderData = [
   },
 ];
 
+export const orderAnalyticsData = [
+  {
+    title: 'Total Orders',
+    amount: 1542,
+    raise: '+12%', // Example trend data
+  },
+  {
+    title: 'Total Revenue',
+    amount: '€24,500',
+    raise: '+8%',
+  },
+  {
+    title: 'Revenue after Commission',
+    amount: '€22,050',
+    // note: calculated as Total - Commission
+  },
+  {
+    title: 'Average Order Value (AOV)',
+    amount: '€15.90',
+  },
+  {
+    title: 'Orders Frequency',
+    amount: '45 / hr',
+    // menu: true, // Enabled logic to toggle between Hour/Day in UI
+  },
+  {
+    title: 'Most Ordered Category',
+    amount: 'Drinks',
+    // String value instead of number
+  },
+  {
+    title: 'Total Items Sold',
+    amount: 4320,
+  },
+  {
+    title: 'Limited-Time Items Sold',
+    amount: 320,
+    // raise: 'New',
+  },
+];
+
 export const loyaltyCardHeaderData: LoyaltyCardData[] = [
   {
     title: 'Total Members',

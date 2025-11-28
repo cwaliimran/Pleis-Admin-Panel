@@ -110,7 +110,7 @@ export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, o
           </div>
 
           <div className="space-y-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">⏰ Sale Period</div>
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Sale Period</div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="startDate" className="text-sm font-semibold">

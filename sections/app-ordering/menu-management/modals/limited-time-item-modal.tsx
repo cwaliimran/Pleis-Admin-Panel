@@ -140,7 +140,7 @@ export const LimitedTimeItemModal: React.FC<LimitedTimeItemModalProps> = ({ isOp
           <div className="space-y-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
             {' '}
             {/* Changed p-5 to p-4 */}
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">⏰ Availability Period</div> {/* Standardized font-size */}
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Availability Period</div> {/* Standardized font-size */}
             {/* Start Date and Time - PATTERN: Two-column grid with gap-4 */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -205,7 +205,7 @@ export const LimitedTimeItemModal: React.FC<LimitedTimeItemModalProps> = ({ isOp
           <div className="space-y-4 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
             {' '}
             {/* Changed p-5 to p-4 */}
-            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">📱 Availability Type</div> {/* Standardized font-size */}
+            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Availability Type</div> {/* Standardized font-size */}
             <RadioGroup
               value={formData.availabilityType}
               onValueChange={(value: AvailabilityType) => setFormData({ ...formData, availabilityType: value })}

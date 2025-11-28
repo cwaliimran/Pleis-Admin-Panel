@@ -87,7 +87,7 @@ export const QRCodeGeneratorView: React.FC = () => {
           <div className="px-6 py-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📱 QR Code Generator</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">QR Code Generator</h1>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">Create and download QR codes for your venue, events, and services</p>
               </div>
             </div>
@@ -100,7 +100,7 @@ export const QRCodeGeneratorView: React.FC = () => {
           <div className="mb-8 flex items-center gap-5 rounded-xl bg-linear-to-br from-[#2A7B9B] to-[#1300FF] p-6 text-white">
             <div className="text-5xl">💡</div>
             <div className="flex-1">
-              <h2 className="mb-2 text-lg font-bold">Streamline Your Venue Operations</h2>
+              <h2 className="mb-2 text-lg font-bold">Streamline Your Operations</h2>
               <p className="text-sm leading-relaxed opacity-90">
                 Generate QR codes for check-in, ordering, loyalty programs, and more. Print them for your venue or share them digitally. Users can
                 scan to instantly access your services without manual data entry.

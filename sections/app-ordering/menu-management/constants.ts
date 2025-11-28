@@ -24,17 +24,17 @@ export const SORT_OPTIONS = [
 export const AVAILABILITY_OPTIONS = [
   {
     value: 'preorder-only',
-    label: '🎟️ Preorders Only',
+    label: 'Preorders Only',
     description: 'Available exclusively for users placing orders before the event starts.',
   },
   {
     value: 'preorder-and-event',
-    label: '🎉 Preorders + Event',
+    label: 'Preorders + Event',
     description: 'Available during both the preorder period and throughout the event itself.',
   },
   {
     value: 'preorder-unlock',
-    label: '🔒 Preorder-Exclusive Unlock',
+    label: 'Preorder-Exclusive Unlock',
     description: 'Only users who preordered can purchase again at the venue. Special advance purchase incentive.',
   },
 ] as const;
