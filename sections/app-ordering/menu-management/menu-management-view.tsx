@@ -193,7 +193,7 @@ export const MenuManagementViewV1: React.FC = () => {
       <div className="sticky top-0 z-30 rounded-t-2xl bg-white shadow-sm dark:bg-[#222121]">
         <div className="mx-auto max-w-full px-6 py-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🍽️ Menu Management</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Menu Management</h1>
 
             <div className="flex flex-wrap gap-3">
               <Button variant="outline" onClick={() => setIsBulkSaleModalOpen(true)} className="h-11 gap-2 font-semibold">

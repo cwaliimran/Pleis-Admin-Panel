@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-// import OrderSettingsView from '@/sections/order-settings/order-settings-view';
+import { OrderingSettingsView } from '@/sections/app-ordering/app-ordering-settings';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      {/* <OrderSettingsView /> */}
+      <OrderingSettingsView />
     </div>
   );
 };
