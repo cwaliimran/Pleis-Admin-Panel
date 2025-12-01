@@ -27,7 +27,7 @@ import { capitalizeFirst } from '@/utils/short-utils';
 import { Calendar, Copy, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 
 const EventDetailsPage = () => {
   const { id } = useParams();
@@ -39,6 +39,10 @@ const EventDetailsPage = () => {
   const [active, setActive] = React.useState('overview');
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+
+  const [expanded, setExpanded] = useState(false);
+
+  const toggle = () => setExpanded(!expanded);
 
   const [updateEvent] = useUpdateeventMutation();
   const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
@@ -191,9 +195,21 @@ const EventDetailsPage = () => {
                         </h2>
 
                         {/* Description */}
-                        <p className="-mt-2 text-sm leading-relaxed text-gray-700 capitalize dark:text-gray-300">
+                        <p className={`-mt-2 text-sm leading-relaxed text-gray-700 dark:text-gray-300 ${expanded ? '' : 'line-clamp-3'} `}>
                           {capitalizeFirst(event?.basicInfo?.description) || 'No description available.'}
                         </p>
+
+                        <div className="flex">
+                          {event?.basicInfo?.description?.length > 290 && (
+                            <button
+                              type="button"
+                              onClick={toggle}
+                              className="-mt-2 cursor-pointer text-sm font-medium text-blue-600 underline underline-offset-2"
+                            >
+                              {expanded ? 'See less' : 'See more'}
+                            </button>
+                          )}
+                        </div>
 
                         {/* Organizer */}
                         <div className="mt-2">
@@ -287,9 +303,9 @@ const EventDetailsPage = () => {
                               <TabsTrigger
                                 key={tab.value}
                                 value={tab.value}
-                                className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold !shadow-none transition-all dark:!bg-transparent ${
+                                className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
                                   active === tab.value
-                                    ? 'after:absolute after:bottom-0 after:left-1/2 after:h-[4px] after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
+                                    ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
                                     : 'text-muted-foreground'
                                 }`}
                               >

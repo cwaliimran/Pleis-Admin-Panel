@@ -119,11 +119,7 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.globalPromotions,
         icon: Tags,
       },
-      {
-        title: 'Members',
-        url: paths.superAdmin.members,
-        icon: Tags,
-      },
+
       {
         title: 'Referrals',
         url: paths.superAdmin.globalReferrals,
@@ -138,6 +134,11 @@ export const menuGroups: MenuGroup[] = [
         title: 'Reward Category',
         url: paths.superAdmin.rewardCategory,
         icon: ArrowBigUp,
+      },
+      {
+        title: 'Transactions',
+        url: paths.superAdmin.transactions.default,
+        icon: Tags,
       },
     ],
   },
@@ -169,6 +170,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Promotions',
         url: paths.superAdmin.promotions,
+        icon: Tags,
+      },
+      {
+        title: 'Members',
+        url: paths.superAdmin.members,
         icon: Tags,
       },
       {

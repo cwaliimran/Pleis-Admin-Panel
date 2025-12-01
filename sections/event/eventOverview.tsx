@@ -1,14 +1,18 @@
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Calendar, Dot, Ellipsis, MapPin, UsersRound } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import ImageWithFallback from '@/components/common/img-with-fallback';
-import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { capitalizeFirst, formatDateTime } from '@/utils/short-utils';
+import { Calendar, Dot, Ellipsis, MapPin, UsersRound } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 const EventOverView = ({ event }: { event: any }) => {
   const router = useRouter();
+  const [expanded, setExpanded] = useState(false);
+
+  const toggle = () => setExpanded(!expanded);
 
   const tickets = [
     {
@@ -80,7 +84,21 @@ const EventOverView = ({ event }: { event: any }) => {
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">DESCRIPTION</h1>
-              <p className="mt-2">{capitalizeFirst(event?.basicInfo?.description) || 'No description available.'}</p>
+              <p className={`mt-2 text-sm ${expanded ? '' : 'line-clamp-3'}`}>
+                {capitalizeFirst(event?.basicInfo?.description) || 'No description available.'}
+              </p>
+
+              <div className="flex">
+                {event?.basicInfo?.description?.length > 290 && (
+                  <button
+                    type="button"
+                    onClick={toggle}
+                    className="mt-0 cursor-pointer text-sm font-medium text-blue-600 underline underline-offset-2"
+                  >
+                    {expanded ? 'See less' : 'See more'}
+                  </button>
+                )}
+              </div>
             </CardHeader>
           </Card>
 
