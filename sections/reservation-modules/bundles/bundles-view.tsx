@@ -11,6 +11,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import BundleModal from './bundles-modal';
 import BundleTable from './bundles-table';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 const BundlesView = () => {
   const openModal = useBoolean();
@@ -26,6 +27,8 @@ const BundlesView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+
+  const { companyId, organizationId } = useCompanySelectionState();
 
   const [deleteBundle, { isLoading: deleteLoading }] = useDeleteBundleMutation();
 
@@ -161,7 +164,16 @@ const BundlesView = () => {
         }}
       />
 
-      {openModal.value && <BundleModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
+      {openModal.value && (
+        <BundleModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          companyId={companyId}
+          organizationId={organizationId}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

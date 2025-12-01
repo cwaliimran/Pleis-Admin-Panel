@@ -2,82 +2,18 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-// import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
-import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Calendar, ChevronDown, Package, Plus, Ticket, Trash2 } from 'lucide-react';
+import { Calendar, Package, Plus, Ticket, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-
-// Professional Dropdown Component
-const ProfessionalDropdown = ({ options, onSelect, placeholder, icon: Icon }: any) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredOptions = options.filter((option: any) => option.label.toLowerCase().includes(searchTerm.toLowerCase()));
-
-  const handleSelect = (value: any) => {
-    onSelect(value);
-    setIsOpen(false);
-    setSearchTerm('');
-  };
-
-  return (
-    <div className="relative mb-4">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full cursor-pointer items-center justify-between rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-3 transition hover:border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-      >
-        <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-          {Icon && <Icon size={18} />}
-          {placeholder}
-        </span>
-        <ChevronDown size={20} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute z-20 mt-2 w-full rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900">
-            <div className="p-2">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-            <div className="max-h-60 overflow-y-auto">
-              {filteredOptions.length === 0 ? (
-                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">No items found</div>
-              ) : (
-                filteredOptions.map((option: any) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleSelect(option.value)}
-                    className="w-full cursor-pointer px-4 py-3 text-left text-sm transition hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
-                  >
-                    {option.label}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
+import { ProfessionalDropdown } from './custom-dropdown';
 
 const defaultValues: BundleFormValues = {
   name: '',
@@ -152,7 +88,8 @@ type BundleModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
-  companyOrganizer?: string;
+  companyId: any;
+  organizationId: any;
 };
 
 // Static data for tickets
@@ -179,9 +116,11 @@ const staticMenuItemsData: MenuItemData[] = [
   { _id: '4', title: 'Chicken Wings', price: 350 },
 ];
 
-const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrganizer }: BundleModalProps) => {
+const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, organizationId }: BundleModalProps) => {
   const [activeTab, setActiveTab] = useState<'tickets' | 'reservations' | 'preorders'>('tickets');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  console.log('companyId', companyId);
 
   // Using static data for tickets and reservations
   const ticketsData = staticTicketsData;
@@ -199,6 +138,27 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
   // });
 
   // const menuItemsData: MenuItemData[] = menuItemsResponse?.data || staticMenuItemsData;
+
+  // EVENTS BY ORGANIZATION -------------------------------
+  const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
+    {
+      organization: organizationId,
+    },
+    {
+      skip: !organizationId,
+    }
+  );
+
+  const eventOptions = (eventData || []).map((v: any) => ({
+    value: v?._id.toString(),
+    label: v?.basicInfo?.title || 'No Title',
+  }));
+
+  // TICKETS BY EVENTS -------------------------------
+
+  // RESERVATIONS BY ORGANIZATION -------------------------------
+
+  // MENU BY ORGANIZATION -------------------------------
 
   const ticketOptions = ticketsData.map((ticket) => ({
     label: `${ticket.name} - €${ticket.price}`,
@@ -219,17 +179,17 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
     price: menuItem.price,
   }));
 
-  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-  });
+  // const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
+  //   page: 0,
+  //   search: '',
+  //   limit: '10000',
+  //   status: '',
+  // });
 
-  const eventOptions = (eventData?.data || []).map((v: any) => ({
-    value: v?._id.toString(),
-    label: v?.basicInfo?.title || 'No Title',
-  }));
+  // const eventOptions = (eventData?.data || []).map((v: any) => ({
+  //   value: v?._id.toString(),
+  //   label: v?.basicInfo?.title || 'No Title',
+  // }));
 
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -349,7 +309,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
 
   const transformToPayload = (data: BundleFormValues) => {
     const payload: any = {
-      companyOrganizer: companyOrganizer || '68da7aa1e6f099d42e32da71',
+      companyOrganizer: companyId,
       name: data.name,
       description: data.description,
       price: data.price,
@@ -438,7 +398,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[800px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[800px]!"
         >
           <DialogHeader className="w-full">
             <div className="flex items-center justify-between">
@@ -665,7 +625,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
                                         aria-label="Ticket quantity"
                                       />
                                     </div>
-                                    <div className="min-w-[80px] text-right">
+                                    <div className="min-w-20 text-right">
                                       <div className="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
                                       <div className="font-bold text-gray-900 dark:text-gray-100">
                                         €{getItemPrice(ticket.ticketId, 'ticket') * ticket.quantity}
@@ -760,7 +720,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
                                           aria-label="Reservation quantity"
                                         />
                                       </div>
-                                      <div className="min-w-[80px] text-right">
+                                      <div className="min-w-20 text-right">
                                         <div className="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
                                         <div className="font-bold text-gray-900 dark:text-gray-100">
                                           €{getItemPrice(reservation.reservationId, 'reservation') * reservation.quantity}
@@ -853,7 +813,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
                                         aria-label="Pre-order quantity"
                                       />
                                     </div>
-                                    <div className="min-w-[80px] text-right">
+                                    <div className="min-w-20 text-right">
                                       <div className="text-sm text-gray-500 dark:text-gray-400">Subtotal</div>
                                       <div className="font-bold text-gray-900 dark:text-gray-100">
                                         €{getItemPrice(preorder.menuItemId, 'preorder') * preorder.quantity}
@@ -880,7 +840,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyOrgan
                 </div>
 
                 {/* Pricing Section */}
-                <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div className="rounded-xl border-2 border-blue-200 bg-linear-to-br from-blue-50 to-indigo-50 p-6 dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
                   <h3 className="mb-5 flex items-center gap-2 text-lg font-semibold">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-sm font-bold text-blue-600 dark:bg-gray-200 dark:text-black">
                       3

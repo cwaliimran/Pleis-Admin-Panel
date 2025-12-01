@@ -310,7 +310,6 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
                   </div>
 
                   <RHFTextField name="title" label="Name" placeholder="Enter Name" />
-                  <RHFTextField name="type" label="Type" placeholder="Enter Type" />
 
                   {itemCategoryLoading ? (
                     <FieldSkeleton />
@@ -324,6 +323,8 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
                       showNone={false}
                     />
                   )}
+
+                  <RHFTextField name="type" label="Type" placeholder="Enter Type" />
 
                   <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" />
 

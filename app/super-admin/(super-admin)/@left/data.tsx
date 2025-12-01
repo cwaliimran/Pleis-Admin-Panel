@@ -1,35 +1,22 @@
 import {
   ArrowBigUp,
-  BellRing,
   Box,
   Building,
-  Calendar,
   CalendarDays,
   ChartBar,
   ChartColumnBig,
-  // ChartNoAxesColumnIncreasing,
-  ClipboardPenLine,
+  ChartNoAxesGantt,
   Earth,
-  Grid2x2Check,
   Handshake,
-  Hash,
-  Highlighter,
-  Layers,
   List,
   ListOrdered,
-  Package,
-  QrCode,
-  Settings,
   ShoppingBasket,
-  SlidersHorizontal,
-  SquareMenu,
   Tags,
   Ticket,
-  TicketSlash,
-  TriangleDashed,
-  User,
+  TicketSlash, User,
   UsersRound,
-  VenetianMask,
+  FileClock,
+  SlidersVertical
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -54,35 +41,120 @@ export const menuGroups: MenuGroup[] = [
     icon: ChartColumnBig,
   },
   {
-    label: 'Organizations',
+    label: 'Org Management',
     key: paths.superAdmin.organizations.list,
     icon: Building,
+    items: [
+      {
+        title: 'Organizations',
+        url: paths.superAdmin.organizations.list,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Venues',
+        url: paths.superAdmin.venue.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Events',
+        url: paths.superAdmin.events.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Highlights',
+        url: paths.superAdmin.hightLight.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Notification center',
+        url: paths.superAdmin.events.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'QR codes',
+        url: paths.superAdmin.qrCodes,
+        icon: CalendarDays,
+      },
+    ],
   },
   {
-    label: 'Events',
-    key: paths.superAdmin.events.default,
-    icon: Calendar,
-  },
-  {
-    label: 'Venue',
-    key: paths.superAdmin.venue.default,
-    icon: VenetianMask,
-  },
-  {
-    label: 'Venue Type',
-    key: paths.superAdmin.venueType.default,
-    icon: Layers,
-  },
-  {
-    label: 'Highlights',
-    key: paths.superAdmin.hightLight.default,
-    icon: Highlighter,
-  },
-
-  {
-    label: 'Categories',
-    key: paths.superAdmin.category.default,
+    label: 'Menu',
+    key: paths.superAdmin.menuList,
     icon: List,
+    items: [
+      {
+        title: 'Menu List',
+        url: paths.superAdmin.menuList,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Menu Items',
+        url: paths.superAdmin.menuItems,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Preset',
+        url: paths.superAdmin.preset.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Preset categories',
+        url: paths.superAdmin.itemsCategory,
+        icon: CalendarDays,
+      },
+    ],
+  },
+  {
+    label: 'Loyalty',
+    key: paths.superAdmin.loyalty.default,
+    icon: Handshake,
+    items: [
+      {
+        title: 'Dashboard',
+        url: paths.superAdmin.loyalty.default,
+        icon: Tags,
+      },
+      {
+        title: 'Rewards',
+        url: paths.superAdmin.rewards,
+        icon: Tags,
+      },
+      {
+        title: 'Streaks',
+        url: paths.superAdmin.streak,
+        icon: ListOrdered,
+      },
+      {
+        title: 'Members',
+        url: paths.superAdmin.members,
+        icon: Tags,
+      },
+      {
+        title: 'Challenges',
+        url: paths.superAdmin.challenges,
+        icon: Tags,
+      },
+      {
+        title: 'Promotions',
+        url: paths.superAdmin.promotions,
+        icon: Tags,
+      },
+      {
+        title: 'Referrals',
+        url: paths.superAdmin.referrals,
+        icon: Tags,
+      },
+      {
+        title: 'Transactions',
+        url: paths.superAdmin.transactions.default,
+        icon: Tags,
+      },
+      {
+        title: 'Settings',
+        url: paths.superAdmin.settings,
+        icon: Tags,
+      },
+    ],
   },
   {
     label: 'Global Loyalty',
@@ -90,7 +162,7 @@ export const menuGroups: MenuGroup[] = [
     icon: Earth,
     items: [
       {
-        title: 'Global Loyalty',
+        title: 'Dashboard',
         url: paths.superAdmin.globalLoyalty.default,
         icon: Tags,
       },
@@ -119,19 +191,13 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.globalPromotions,
         icon: Tags,
       },
-
       {
         title: 'Referrals',
         url: paths.superAdmin.globalReferrals,
         icon: Tags,
       },
       {
-        title: 'Level Status',
-        url: paths.superAdmin.levelStatus,
-        icon: ArrowBigUp,
-      },
-      {
-        title: 'Reward Category',
+        title: 'Reward category',
         url: paths.superAdmin.rewardCategory,
         icon: ArrowBigUp,
       },
@@ -143,69 +209,34 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: 'Loyalty',
-    key: paths.superAdmin.loyalty.default,
-    icon: Handshake,
+    label: 'Ticketing',
+    key: paths.superAdmin.ticketing,
+    icon: Ticket,
     items: [
       {
-        title: 'Loyalty Dashboard',
-        url: paths.superAdmin.loyalty.default,
-        icon: Tags,
-      },
-      {
-        title: 'Rewards',
-        url: paths.superAdmin.rewards,
-        icon: Tags,
-      },
-      {
-        title: 'Streaks',
-        url: paths.superAdmin.streak,
-        icon: ListOrdered,
-      },
-      {
-        title: 'Challenges',
-        url: paths.superAdmin.challenges,
-        icon: Tags,
-      },
-      {
-        title: 'Promotions',
-        url: paths.superAdmin.promotions,
-        icon: Tags,
-      },
-      {
-        title: 'Members',
-        url: paths.superAdmin.members,
-        icon: Tags,
-      },
-      {
-        title: 'Settings',
-        url: paths.superAdmin.settings,
-        icon: Tags,
-      },
-      {
-        title: 'Referrals',
-        url: paths.superAdmin.referrals,
-        icon: Tags,
+        title: 'Ticket List',
+        url: paths.superAdmin.ticketing,
+        icon: CalendarDays,
       },
       {
         title: 'Transactions',
-        url: paths.superAdmin.transactions.default,
-        icon: Tags,
+        url: paths.superAdmin.reservationTransactions,
+        icon: ChartBar,
       },
     ],
   },
   {
-    label: 'Reservation',
+    label: 'Reservations',
     key: paths.superAdmin.reservation,
     icon: CalendarDays,
     items: [
       {
-        title: 'Reservation',
+        title: 'Reservations',
         url: paths.superAdmin.reservation,
         icon: CalendarDays,
       },
       {
-        title: 'Calendar',
+        title: 'Calendar view',
         url: paths.superAdmin.calendar,
         icon: CalendarDays,
       },
@@ -222,7 +253,56 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: 'App Ordering',
+    label: 'Pleis Management',
+    key: paths.superAdmin.category.default,
+    icon: ChartNoAxesGantt,
+    items: [
+      {
+        title: 'Categories',
+        url: paths.superAdmin.category.default,
+        icon: ChartNoAxesGantt,
+      },
+      {
+        title: 'Tags',
+        url: paths.superAdmin.tags.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Venue types',
+        url: paths.superAdmin.venueType.default,
+        icon: ChartBar,
+      },
+      {
+        title: 'Browser control',
+        url: paths.superAdmin.browserControl.default,
+        icon: ChartBar,
+      },
+      {
+        title: 'Suppliers',
+        url: paths.superAdmin.suppliers.default,
+        icon: ChartBar,
+      },
+    ],
+  },
+  {
+    label: 'Loyalty Settings',
+    key: paths.superAdmin.tiers,
+    icon: SlidersVertical,
+    items: [
+      {
+        title: 'Tiers',
+        url: paths.superAdmin.tiers,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Status',
+        url: paths.superAdmin.levelStatus,
+        icon: ArrowBigUp,
+      },
+    ],
+  },
+  {
+    label: 'In App Ordering',
     key: paths.superAdmin.orderManagement,
     icon: ShoppingBasket,
     items: [
@@ -242,6 +322,11 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
+        title: 'Transactions',
+        url: paths.superAdmin.reservationTransactions,
+        icon: ChartBar,
+      },
+      {
         title: 'Settings',
         url: paths.superAdmin.orderSettings,
         icon: CalendarDays,
@@ -249,24 +334,37 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
-    label: 'QR Codes',
-    key: paths.superAdmin.qrCodes,
-    icon: QrCode,
+    label: 'User Management',
+    key: paths.superAdmin.users.list,
+    icon: User,
+    items: [
+      {
+        title: 'Users list',
+        url: paths.superAdmin.users.list,
+        icon: UsersRound,
+      },
+      {
+        title: 'Pending user list',
+        url: paths.superAdmin.users.pendingList,
+        icon: UsersRound,
+      },
+      {
+        // title: 'Subscription management',
+        title: 'Subscriptions',
+        url: paths.superAdmin.terms.default,
+        icon: UsersRound,
+      },
+      {
+        title: 'Terms of service',
+        url: paths.superAdmin.terms.default,
+        icon: UsersRound,
+      },
+    ],
   },
   {
-    label: 'Promo Codes',
-    key: paths.superAdmin.promoCodes,
-    icon: TicketSlash,
-  },
-  {
-    label: 'Notifications',
-    key: paths.superAdmin.notification.default,
-    icon: BellRing,
-  },
-  {
-    label: 'Ticketing',
-    key: paths.superAdmin.ticketing,
-    icon: Ticket,
+    label: 'Transaction history',
+    key: paths.superAdmin.reservationTransactions,
+    icon: FileClock,
   },
   {
     label: 'Bundles',
@@ -274,72 +372,109 @@ export const menuGroups: MenuGroup[] = [
     icon: Box,
   },
   {
-    label: 'Preset',
-    key: paths.superAdmin.preset.default,
-    icon: SlidersHorizontal,
+    label: 'Promo codes',
+    key: paths.superAdmin.promoCodes,
+    icon: TicketSlash,
   },
-  {
-    label: 'Menu List',
-    key: paths.superAdmin.menuList,
-    icon: List,
-  },
-  {
-    label: 'Items Category',
-    key: paths.superAdmin.itemsCategory,
-    icon: Grid2x2Check,
-  },
-  {
-    label: 'Menu Items',
-    key: paths.superAdmin.menuItems,
-    icon: SquareMenu,
-  },
-  {
-    label: 'Tiers',
-    key: paths.superAdmin.tiers,
-    icon: TriangleDashed,
-  },
+  // {
+  //   label: 'Notifications',
+  //   key: paths.superAdmin.notification.default,
+  //   icon: BellRing,
+  // },
+  // {
+  //   label: 'Organizations',
+  //   key: paths.superAdmin.organizations.list,
+  //   icon: Building,
+  // },
+  // {
+  //   label: 'Events',
+  //   key: paths.superAdmin.events.default,
+  //   icon: Calendar,
+  // },
+  // {
+  //   label: 'Venue',
+  //   key: paths.superAdmin.venue.default,
+  //   icon: VenetianMask,
+  // },
+  // {
+  //   label: 'Venue Type',
+  //   key: paths.superAdmin.venueType.default,
+  //   icon: Layers,
+  // },
+  // {
+  //   label: 'Highlights',
+  //   key: paths.superAdmin.hightLight.default,
+  //   icon: Highlighter,
+  // },
+  // {
+  //   label: 'Categories',
+  //   key: paths.superAdmin.category.default,
+  //   icon: List,
+  // },
+
+  // {
+  //   label: 'QR Codes',
+  //   key: paths.superAdmin.qrCodes,
+  //   icon: QrCode,
+  // },
+
+  // {
+  //   label: 'Ticketing',
+  //   key: paths.superAdmin.ticketing,
+  //   icon: Ticket,
+  // },
+
+  // {
+  //   label: 'Preset',
+  //   key: paths.superAdmin.preset.default,
+  //   icon: SlidersHorizontal,
+  // },
+  // {
+  //   label: 'Menu List',
+  //   key: paths.superAdmin.menuList,
+  //   icon: List,
+  // },
+  // {
+  //   label: 'Items Category',
+  //   key: paths.superAdmin.itemsCategory,
+  //   icon: Grid2x2Check,
+  // },
+  // {
+  //   label: 'Menu Items',
+  //   key: paths.superAdmin.menuItems,
+  //   icon: SquareMenu,
+  // },
+  // {
+  //   label: 'Tiers',
+  //   key: paths.superAdmin.tiers,
+  //   icon: TriangleDashed,
+  // },
   // {
   //   label: 'Status',
   //   key: paths.superAdmin.status,
   //   icon: ChartNoAxesColumnIncreasing,
   // },
-  {
-    label: 'Browser Control',
-    key: paths.superAdmin.browserControl.default,
-    icon: Settings,
-  },
-  {
-    label: 'Tags',
-    key: paths.superAdmin.tags.default,
-    icon: Hash,
-  },
-  {
-    label: 'User List',
-    key: paths.superAdmin.users.list,
-    icon: User,
-    items: [
-      {
-        title: 'User List',
-        url: paths.superAdmin.users.list,
-        icon: UsersRound,
-      },
-      {
-        title: 'Pending User List',
-        url: paths.superAdmin.users.pendingList,
-        icon: UsersRound,
-      },
-    ],
-  },
-  {
-    label: 'Supplier',
-    key: paths.superAdmin.suppliers.default,
-    icon: Package,
-  },
-  {
-    label: 'Terms & Conditions',
-    key: paths.superAdmin.terms.default,
-    icon: ClipboardPenLine,
-  },
+  // {
+  //   label: 'Browser Control',
+  //   key: paths.superAdmin.browserControl.default,
+  //   icon: Settings,
+  // },
+  // {
+  //   label: 'Tags',
+  //   key: paths.superAdmin.tags.default,
+  //   icon: Hash,
+  // },
+
+  // {
+  //   label: 'Supplier',
+  //   key: paths.superAdmin.suppliers.default,
+  //   icon: Package,
+  // },
+  // {
+  //   label: 'Terms & Conditions',
+  //   key: paths.superAdmin.terms.default,
+  //   icon: ClipboardPenLine,
+  // },
   // {
   //   label: "Marketing Requests",
   //   key: paths.superAdmin.marketing.detault,

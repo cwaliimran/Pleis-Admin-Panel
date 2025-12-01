@@ -228,7 +228,7 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
         <h1
           className={cn(
             !isCollapsed ? "text-4xl" : "text-xl",
-            "font-bold text-center z-10 transition-all duration-200",
+            "font-bold text-center z-10 pt-3 pb-1 transition-all duration-200",
             isCollapsed ? "px-0" : "px-4"
           )}
         >
