@@ -30,7 +30,11 @@ const ClubsView = ({ title, type }: ClubsViewProps) => {
   const [updateRequest, { isLoading: updateLoading }] = useUpdateRequestMutation();
   const [deleteClub, { isLoading: deleteLoading }] = useDeleteClubMutation();
 
-  const { data: apiData, isLoading } = useGetAllClubsListQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetAllClubsListQuery({
     page: page - 1,
     limit: 10000,
     status: type ? type : undefined,
@@ -141,7 +145,7 @@ const ClubsView = ({ title, type }: ClubsViewProps) => {
         title={title}
         type={type}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleAcceptRequest={handleAcceptRequest}
         handleRejectRequest={handleRejectRequest}
         handleUnLinkClub={handleUnLinkClub}

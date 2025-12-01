@@ -220,7 +220,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     limit: '10000',
     status: '',
     date: undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
   const { data: rewardData, isLoading: rewardsLoading } = useGetRewardsQuery({
@@ -229,7 +229,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     limit: '10000',
     status: '',
     date: undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
   const menuItemOptions =
@@ -310,19 +310,14 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     reset(mapped as PromotionsFormValues);
   }, [isEdit, selectedData, reset]);
 
-  /* ---------------------------------------------------------------------- */
-  /*                           PAYLOAD TRANSFORMER                          */
-  /* ---------------------------------------------------------------------- */
   const transformToPayload = (data: PromotionsFormValues) => {
-    // const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
-
-    if (!selectedCompany?.value) {
+    if (!selectedCompany) {
       showError('Please select a company first');
       return null;
     }
 
     const base: any = {
-      companyOrganizer: selectedCompany.value,
+      companyOrganizer: selectedCompany,
       title: data.title,
       description: data.description,
       startDate: fDate(data.startDate, formatStr.paramCase.db),

@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteTicketingMutation, useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -35,13 +36,14 @@ const TicketingView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const selectedOrganization = JSON.parse(localStorage.getItem('selectedOrganization') || 'null');
+  const { companyId: selectedOrganization, organizationId } = useCompanySelectionState();
 
   const [deleteTicketing, { isLoading: deleteTicketingLoading }] = useDeleteTicketingMutation();
 
   const {
     data: apiData,
     isLoading,
+    isFetching,
     refetch,
   } = useGetTicketingQuery(
     {
@@ -50,14 +52,12 @@ const TicketingView = () => {
       limit,
       status: status === 'all' ? undefined : status,
       date: date ? formatDate(date) : undefined,
-      organization: selectedOrganization?.value,
+      organization: organizationId || undefined,
     },
     {
-      skip: !selectedOrganization?.value,
+      skip: !selectedOrganization || !organizationId,
     }
   );
-
-  // console.log('apiData', apiData?.data || []);
 
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({
@@ -69,15 +69,6 @@ const TicketingView = () => {
 
   useEffect(() => {
     if (apiData?.data) {
-      // setVenueTypes(apiData.data);
-      // setMeta(
-      //   apiData.meta || {
-      //     currentPage: page,
-      //     totalPages: 1,
-      //     totalRecords: 0,
-      //     limit,
-      //   }
-      // );
       setVenueTypes([...apiData.data]);
       setMeta({ ...apiData.meta });
     }
@@ -162,7 +153,7 @@ const TicketingView = () => {
       <TicketingTable
         data={venueTypes}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}

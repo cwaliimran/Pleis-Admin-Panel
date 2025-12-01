@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteRewardMutation, useGetRewardsQuery } from '@/store/Reducer/rewards-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -12,7 +13,6 @@ import { useCallback, useEffect, useState } from 'react';
 import RewardsCalculator from './rewards-calculator';
 import RewardFormModal from './rewards-modal';
 import RewardsTable from './rewards-table';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 type RewardsViewProps = {
   global: boolean;
@@ -32,8 +32,6 @@ const RewardsView = ({ global }: RewardsViewProps) => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
-
-  // const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
 
   const { companyId } = useCompanySelectionState();
 

@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeletePromotionMutation, useGetPromotionQuery } from '@/store/Reducer/promotion-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -31,26 +32,22 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  const { companyId: selectedCompany } = useCompanySelectionState();
 
   const [deletePromotion, { isLoading: deleteLoading }] = useDeletePromotionMutation();
 
   const {
     data: apiData,
     isLoading,
-    // refetch,
+    isFetching,
   } = useGetPromotionQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
-
-  // useEffect(() => {
-  //   refetch();
-  // }, [selectedCompany, refetch]);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -141,7 +138,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
       <PromotionsTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}

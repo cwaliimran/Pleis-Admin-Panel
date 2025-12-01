@@ -27,7 +27,11 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
 
   const { companyId } = useCompanySelectionState();
 
-  const { data: apiData, isLoading } = useGetMembersQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetMembersQuery({
     page: page - 1,
     search,
     limit,
@@ -71,7 +75,7 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
         meta={meta}
         global={global}
         usertype={usertype}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleGiftModal={handleGiftModal}
         onPageChange={setPage}
         onLimitChange={(l) => {

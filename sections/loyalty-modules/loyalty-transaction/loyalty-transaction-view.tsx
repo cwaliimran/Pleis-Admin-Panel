@@ -6,6 +6,7 @@ import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import LoyaltyTransactionTable from './loyalty-transaction-table';
 import TransactionModal from './transactions-modal';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 const LoyaltyTransactionView = () => {
   const openModal = useBoolean();
@@ -19,15 +20,19 @@ const LoyaltyTransactionView = () => {
 
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  const { companyId: selectedCompany } = useCompanySelectionState();
 
-  const { data: apiData, isLoading } = useGetLoyaltyTransactionsQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetLoyaltyTransactionsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -63,7 +68,7 @@ const LoyaltyTransactionView = () => {
       <LoyaltyTransactionTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleEdit={handleEdit}
         onPageChange={setPage}
         onLimitChange={(l) => {
