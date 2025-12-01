@@ -5,9 +5,9 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useEffect, useState } from 'react';
+import ClubsView from '../clubs/clubs-view';
 import SearchedResultsCard from './searched-results-card';
 import { Props } from './types';
-import ClubsView from '../clubs/clubs-view';
 
 const LinkedClubs = ({ selectedCompanyId }: Props) => {
   const [searchKeyword, setSearchKeyword] = useState('');

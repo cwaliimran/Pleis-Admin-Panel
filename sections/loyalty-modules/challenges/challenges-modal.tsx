@@ -179,14 +179,15 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     limit: '10000',
     status: '',
     date: undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
   // 🔥 Dynamic menu items query based on selected menu
-  const { data: rewardMenuItemsData, isLoading: rewardMenuItemsLoading } = useGetMenuItemByMenuIdQuery(
-    { menuId: selectedMenuId },
-    { skip: !selectedMenuId || rewardType !== 'menuItem' }
-  );
+  const {
+    data: rewardMenuItemsData,
+    isLoading: rewardMenuItemsLoading,
+    isFetching: rewardMenuItemsFetching,
+  } = useGetMenuItemByMenuIdQuery({ menuId: selectedMenuId }, { skip: !selectedMenuId || rewardType !== 'menuItem' });
 
   // 🔥 Dynamic menu items for task (buyMenuItem)
   const { data: taskMenuItemsData, isLoading: taskMenuItemsLoading } = useGetMenuItemByMenuIdQuery(
@@ -290,15 +291,13 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   // TRANSFORM TO API PAYLOAD
   // ============================================
   const transformToPayload = (data: ChallengesFormValues) => {
-    const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
-
     if (!selectedCompany) {
       showError('Please select a company first before submitting the form');
       return null;
     }
 
     const basePayload: any = {
-      companyOrganizer: selectedCompany.value || '',
+      companyOrganizer: selectedCompany || '',
       title: data.title,
       taskType: data.taskType,
       taskValue: Number(data.taskValue),
@@ -555,7 +554,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                     {/* 🔥 Show menu items ONLY when menu is selected */}
                     {selectedMenuId && (
                       <>
-                        {rewardMenuItemsLoading ? (
+                        {rewardMenuItemsLoading || rewardMenuItemsFetching ? (
                           <div className="space-y-2">
                             <Skeleton className="ml-1 h-3 w-20" />
                             <Skeleton className="h-8" />

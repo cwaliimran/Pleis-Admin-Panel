@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteMenuItemMutation, useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -29,15 +30,19 @@ const MenuItemView = () => {
 
   const [deleteMenuItem, { isLoading: deleteLoading }] = useDeleteMenuItemMutation();
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  const { companyId: selectedCompany } = useCompanySelectionState();
 
-  const { data: apiData, isLoading } = useGetMenuItemsQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetMenuItemsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -138,7 +143,7 @@ const MenuItemView = () => {
       <MenuItemTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}

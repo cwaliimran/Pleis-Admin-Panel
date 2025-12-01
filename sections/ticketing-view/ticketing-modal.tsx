@@ -245,10 +245,10 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
 
   const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
     {
-      organization: selectedOrganization?.value,
+      organization: selectedOrganization,
     },
     {
-      skip: !selectedOrganization?.value,
+      skip: !selectedOrganization,
     }
   );
 

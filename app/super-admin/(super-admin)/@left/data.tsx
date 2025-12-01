@@ -172,11 +172,6 @@ export const menuGroups: MenuGroup[] = [
         icon: Tags,
       },
       {
-        title: 'Members',
-        url: paths.superAdmin.members,
-        icon: Tags,
-      },
-      {
         title: 'Settings',
         url: paths.superAdmin.settings,
         icon: Tags,

@@ -3,18 +3,19 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useGetStreaksQuery, useGetUserStreaksQuery } from '@/store/Reducer/streaks-api';
 import { useDeleteVenueMutation } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import StreaksModal from './streaks-modal';
-import StreaksTable from './streaks-table';
-import { useGetStreaksQuery, useGetUserStreaksQuery } from '@/store/Reducer/streaks-api';
-import StreakSkelton from './streak-skelton';
 import NoStreak from './no-streak';
 import StreakRuleCard from './streak-rule-card';
+import StreakSkelton from './streak-skelton';
+import StreaksModal from './streaks-modal';
+import StreaksTable from './streaks-table';
 
 interface StreaksViewProps {
   global?: boolean;
@@ -35,28 +36,34 @@ const StreaksView = ({ global }: StreaksViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  const { companyId: selectedCompany } = useCompanySelectionState();
 
   const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
 
-  const { data: apiData, isLoading } = useGetUserStreaksQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetUserStreaksQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
-  const { data: streakRuleData, isLoading: streakRuleLoading } = useGetStreaksQuery({
+  const {
+    data: streakRuleData,
+    isLoading: streakRuleLoading,
+    isFetching: streakRuleFetching,
+  } = useGetStreaksQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
-
-  console.log('streakRuleData', streakRuleData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -154,7 +161,7 @@ const StreaksView = ({ global }: StreaksViewProps) => {
       </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 rounded-md md:grid-cols-2">
-        {streakRuleLoading ? (
+        {streakRuleLoading || streakRuleFetching ? (
           <StreakSkelton />
         ) : streakRuleData?.data && streakRuleData.data.length > 0 ? (
           <>
@@ -170,7 +177,7 @@ const StreaksView = ({ global }: StreaksViewProps) => {
       <StreaksTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}

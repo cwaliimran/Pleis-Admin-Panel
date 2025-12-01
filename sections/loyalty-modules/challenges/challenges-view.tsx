@@ -3,14 +3,15 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteChallengeMutation, useGetChallengesQuery } from '@/store/Reducer/challenges-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import ChallengesTable from './challenges-table';
 import ChallengeModal from './challenges-modal';
-import { useDeleteChallengeMutation, useGetChallengesQuery } from '@/store/Reducer/challenges-api';
+import ChallengesTable from './challenges-table';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 interface ChallengesViewProps {
   global?: boolean;
@@ -31,17 +32,22 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  // const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  const { companyId: selectedCompany } = useCompanySelectionState();
 
   const [deleteChallenge, { isLoading: deleteLoading }] = useDeleteChallengeMutation();
 
-  const { data: apiData, isLoading } = useGetChallengesQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetChallengesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -135,7 +141,7 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
       <ChallengesTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}

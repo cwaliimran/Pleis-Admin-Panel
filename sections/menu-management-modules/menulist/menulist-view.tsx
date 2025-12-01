@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from 'react';
 import DuplicateMenuModal from './duplicate-menu-modal';
 import MenuItemModal from './menulist-modal';
 import MenuItemTable from './menulist-table';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 const MenuListView = () => {
   const openModal = useBoolean();
@@ -30,15 +31,19 @@ const MenuListView = () => {
 
   const [deleteMenuList, { isLoading: deleteLoading }] = useDeleteMenuListMutation();
 
-  const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+  const { companyId: selectedCompany } = useCompanySelectionState();
 
-  const { data: apiData, isLoading } = useGetMenuListQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetMenuListQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany?.value || undefined,
+    companyOrganizer: selectedCompany || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -137,7 +142,7 @@ const MenuListView = () => {
       <MenuItemTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         handleDuplicate={handleDuplicate}
