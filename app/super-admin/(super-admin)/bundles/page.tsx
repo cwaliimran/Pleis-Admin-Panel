@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import BundlesView from '@/sections/reservation-modules/bundles/bundles-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <BundlesView />
+      <CompanyGuard>
+        <BundlesView />
+      </CompanyGuard>
     </div>
   );
 };

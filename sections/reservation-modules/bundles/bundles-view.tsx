@@ -3,13 +3,14 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteBundleMutation, useGetBundlesQuery } from '@/store/Reducer/bundles-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import BundleModal from './bundles-modal';
+import BundleModal from './bundle-modal/bundles-modal';
 import BundleTable from './bundles-table';
 
 const BundlesView = () => {
@@ -26,6 +27,8 @@ const BundlesView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+
+  const { companyId, organizationId } = useCompanySelectionState();
 
   const [deleteBundle, { isLoading: deleteLoading }] = useDeleteBundleMutation();
 
@@ -161,7 +164,16 @@ const BundlesView = () => {
         }}
       />
 
-      {openModal.value && <BundleModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
+      {openModal.value && (
+        <BundleModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          companyId={companyId}
+          organizationId={organizationId}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

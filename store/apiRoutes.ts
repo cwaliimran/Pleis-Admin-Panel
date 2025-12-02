@@ -129,6 +129,7 @@ export const API_ROUTES = {
   ADMIN_MENU_BY_COMPANY_ORGANIZER: (id: string) => `/admin/menu/names/by-company-organizer/${id}`,
 
   ADMIN_MENU_ITEMS: `/admin/menu/items`,
+  ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
   ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
 
@@ -157,6 +158,7 @@ export const API_ROUTES = {
   TICKETING: `/admin/ticketing`,
   TICKETING_BY_ID: (id: string) => `/admin/ticketing/${id}`,
   TICKETING_BY_ORGANIZATION: (id: string) => `/admin/ticketing/organization/${id}`,
+  TICKETING_BY_EVENT: (id: string) => `/admin/events/${id}/ticketings`,
 
   TAGS: `/admin/tags`,
   TAGS_BY_ID: (id: string) => `/admin/tags/${id}`,
