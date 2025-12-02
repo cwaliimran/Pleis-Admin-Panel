@@ -31,6 +31,29 @@ export const menuItemsApi = createApi({
       providesTags: ['menu-item'],
     }),
 
+    getMenuMinifyData: builder.query({
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+        const params: any = {
+          keyword: search,
+          status,
+          page: page + 1,
+          limit,
+        };
+        if (date) (params as any).date = date;
+        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        return {
+          url: API_ROUTES.ADMIN_MENU_ITEMS_MINIFY_DATA,
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      // providesTags: ['menu-item'],
+    }),
+
     getMenuItemByMenuId: builder.query({
       query: ({ menuId }) => {
         return {
@@ -73,5 +96,11 @@ export const menuItemsApi = createApi({
   }),
 });
 
-export const { useGetMenuItemsQuery, useGetMenuItemByMenuIdQuery, useAddMenuItemMutation, useUpdateMenuItemMutation, useDeleteMenuItemMutation } =
-  menuItemsApi;
+export const {
+  useGetMenuItemsQuery,
+  useGetMenuMinifyDataQuery,
+  useGetMenuItemByMenuIdQuery,
+  useAddMenuItemMutation,
+  useUpdateMenuItemMutation,
+  useDeleteMenuItemMutation,
+} = menuItemsApi;

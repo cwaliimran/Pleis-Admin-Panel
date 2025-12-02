@@ -194,3 +194,15 @@ export const DEFAULT_BUNDLE_VALUES: BundleFormValues = {
   reservations: [],
   preorders: [],
 };
+
+export interface TicketType {
+  _id: string;
+  title: string;
+  amount: number;
+}
+
+export interface TicketOption {
+  label: string;
+  value: string;
+  price: number;
+}

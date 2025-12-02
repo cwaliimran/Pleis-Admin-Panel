@@ -6,7 +6,7 @@ export const ProfessionalDropdown = ({ options, onSelect, placeholder, icon: Ico
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredOptions = options.filter((option: any) => option.label.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredOptions = options?.filter((option: any) => option?.label?.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const handleSelect = (value: any) => {
     onSelect(value);
@@ -51,7 +51,7 @@ export const ProfessionalDropdown = ({ options, onSelect, placeholder, icon: Ico
                     key={option.value}
                     type="button"
                     onClick={() => handleSelect(option.value)}
-                    className="w-full cursor-pointer px-4 py-3 text-left text-sm transition hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
+                    className="w-full cursor-pointer px-4 py-3 text-left text-sm capitalize transition hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-800"
                   >
                     {option.label}
                   </button>

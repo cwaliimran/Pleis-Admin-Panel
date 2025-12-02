@@ -3,15 +3,15 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteBundleMutation, useGetBundlesQuery } from '@/store/Reducer/bundles-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import BundleModal from './bundles-modal';
+import BundleModal from './bundle-modal/bundles-modal';
 import BundleTable from './bundles-table';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 const BundlesView = () => {
   const openModal = useBoolean();

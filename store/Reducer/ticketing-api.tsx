@@ -31,6 +31,19 @@ export const ticketingApi = createApi({
       providesTags: ['ticketing'],
     }),
 
+    getTicketingByEvent: builder.query({
+      query: ({ eventId }) => {
+        return {
+          url: API_ROUTES.TICKETING_BY_EVENT(eventId),
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+      }),
+      // providesTags: ['ticketing'],
+    }),
+
     addTicketing: builder.mutation({
       query: (newTicketing) => ({
         url: API_ROUTES.TICKETING,
@@ -59,4 +72,5 @@ export const ticketingApi = createApi({
   }),
 });
 
-export const { useGetTicketingQuery, useAddTicketingMutation, useUpdateTicketingMutation, useDeleteTicketingMutation } = ticketingApi;
+export const { useGetTicketingQuery, useGetTicketingByEventQuery, useAddTicketingMutation, useUpdateTicketingMutation, useDeleteTicketingMutation } =
+  ticketingApi;
