@@ -93,7 +93,7 @@ const RewardsTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search...',
+                              placeholder: 'Search rewards...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -101,7 +101,7 @@ const RewardsTable: FC<SamplePageProps> = ({
                               {
                                 id: 'sheet-revenue',
                                 label: 'Status',
-                                placeholder: 'Select by Status',
+                                placeholder: 'Select by status',
                                 value: status,
                                 onChange: onStatusChange,
                                 options: [

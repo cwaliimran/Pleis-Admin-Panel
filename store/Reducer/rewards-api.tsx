@@ -5,11 +5,11 @@ import { customFetchBaseQuery } from '../customFetchBaseQuery';
 export const rewardsApi = createApi({
   reducerPath: 'rewardsApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['reward'],
+  tagTypes: ['reward', 'globalReward'],
 
   endpoints: (builder) => ({
     getRewards: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, isGlobal = false }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,9 +17,11 @@ export const rewardsApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
-        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        // if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.ADMIN_LOYALTY_REWARDS,
+          // url: API_ROUTES.ADMIN_LOYALTY_REWARDS,
+          url: API_ROUTES.ADMIN_LOYALTY_REWARDS(isGlobal),
           method: 'GET',
           params,
         };
@@ -28,33 +30,38 @@ export const rewardsApi = createApi({
         data: res.data,
         meta: res.meta,
       }),
-      providesTags: ['reward'],
+      // providesTags: ['reward'],
+      providesTags: (result, error, arg) => (arg.isGlobal ? ['globalReward'] : ['reward']),
     }),
 
     addReward: builder.mutation({
-      query: (newReward) => ({
-        url: API_ROUTES.ADMIN_LOYALTY_REWARDS,
+      query: ({ isGlobal = false, ...newReward }) => ({
+        url: API_ROUTES.ADMIN_LOYALTY_REWARDS(isGlobal),
         method: 'POST',
         body: newReward,
       }),
-      invalidatesTags: ['reward'],
+      // invalidatesTags: ['reward'],
+      invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalReward'] : ['reward']),
     }),
 
     updateReward: builder.mutation({
-      query: ({ id, ...updatedReward }) => ({
-        url: API_ROUTES.ADMIN_LOYALTY_REWARDS_BY_ID(id),
+      query: ({ id, isGlobal = false, ...updatedReward }) => ({
+        url: API_ROUTES.ADMIN_LOYALTY_REWARDS_BY_ID(id, isGlobal),
         method: 'PUT',
         body: updatedReward,
       }),
-      invalidatesTags: ['reward'],
+      // invalidatesTags: ['reward'],
+      invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalReward'] : ['reward']),
     }),
 
     deleteReward: builder.mutation({
-      query: (id) => ({
-        url: API_ROUTES.ADMIN_LOYALTY_REWARDS_BY_ID(id),
+      query: ({ id, isGlobal = false }) => ({
+        // url: API_ROUTES.ADMIN_LOYALTY_REWARDS_BY_ID(id),
+        url: API_ROUTES.ADMIN_LOYALTY_REWARDS_BY_ID(id, isGlobal),
         method: 'DELETE',
       }),
-      invalidatesTags: ['reward'],
+      // invalidatesTags: ['reward'],
+      invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalReward'] : ['reward']),
     }),
   }),
 });

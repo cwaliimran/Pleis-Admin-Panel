@@ -264,9 +264,16 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
         claimLimit: formData.claimLimit ? Number(formData.claimLimit) : undefined,
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
-        // companyOrganizer: formData.companyOrganizer || '',
-        companyOrganizer: selectedCompany || '',
       };
+
+      // Only add companyOrganizer if not global
+      if (!global) {
+        payload.companyOrganizer = selectedCompany || '';
+      }
+
+      if (global) {
+        payload.isGlobal = true;
+      }
 
       // Add main image if uploaded
       if (uploadedFileKey) {

@@ -48,6 +48,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: companyId || undefined,
+    isGlobal: global,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -105,7 +106,12 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteReward(selectedId).unwrap();
+      // const response = await deleteReward(selectedId).unwrap();
+
+      const response = await deleteReward({
+        id: selectedId,
+        isGlobal: global,
+      }).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -189,8 +195,8 @@ const RewardsView = ({ global }: RewardsViewProps) => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Reward"
-        content="Are you sure you want to delete this reward?"
+        title={`Delete ${global ? 'Global ' : ''}Reward`}
+        content={`Are you sure you want to delete this ${global ? 'global ' : ''}reward?`}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
