@@ -11,6 +11,8 @@ import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useAddRewardMutation, useUpdateRewardMutation } from '@/store/Reducer/rewards-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
@@ -21,8 +23,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import RewardCalculatorFields from './reward-calculation-fields';
-import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
-import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 
 type RewardFormValues = {
   image: null;
@@ -108,6 +108,8 @@ const schema = yup.object({
 const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, selectedCompany }: RewardFormModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
+
+  console.log('selectedData', selectedData);
 
   const [addReward, { isLoading: addRewardLoading }] = useAddRewardMutation();
   const [updateReward, { isLoading: updateRewardLoading }] = useUpdateRewardMutation();
@@ -207,7 +209,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
   useEffect(() => {
     if (isEdit && selectedData && open) {
       reset({
-        image: selectedData?.media || '',
+        image: selectedData?.image || '',
         title: selectedData.title || '',
         sortingType: selectedData.sortingType || '',
         minPointsRequiredToClaim: selectedData.minPointsRequiredToClaim?.toString() || '',
@@ -233,7 +235,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     let uploadedFileKey: string | null = null;
     let customRewardPhotoKey: string | null = null;
 
-    if (!selectedCompany) {
+    if (!selectedCompany && !global) {
       showError('Please select a company first before submitting the form');
       return;
     }
@@ -278,7 +280,8 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
       // Add main image if uploaded
       if (uploadedFileKey) {
         payload.image = uploadedFileKey;
-      } else if (isEdit && selectedData?.image) {
+      } else if (!isEdit && selectedData?.image) {
+        // Only send image in non-edit mode if it exists
         payload.image = selectedData.image;
       }
 
@@ -353,7 +356,6 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     }
   };
 
-  // Handle modal close without submitting
   const handleClose = () => {
     reset(defaultValues);
     onClose();
@@ -367,7 +369,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
           className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[700px]!"
         >
           <DialogHeader>
-            <DialogTitle>{isEdit ? 'Edit Reward' : 'Create Reward'}</DialogTitle>
+            <DialogTitle>{isEdit ? `Edit ${global ? 'Global' : ''} Reward` : `Create ${global ? 'Global' : ''} Reward`}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
@@ -389,6 +391,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                   name="rewardType"
                   label="Creation Method"
                   placeholder="Select creation method"
+                  disabled={isEdit}
                   className="w-full"
                   options={[
                     ...(!global

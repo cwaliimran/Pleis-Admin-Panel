@@ -1,23 +1,17 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
-import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useDeletePromotionMutation, useGetPromotionQuery } from '@/store/Reducer/promotion-api';
+import { useGetPromotionQuery } from '@/store/Reducer/promotion-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
-import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import PromotionsModal from './promotions-modal';
-import PromotionsTable from './promotions-table';
+import SubscriptionTable from './subscription-table';
+import { EditSubscriptionModal } from '../edit-subscription-modal';
 
-interface PromotionsViewProps {
-  global?: boolean;
-}
-
-const PromotionsView = ({ global }: PromotionsViewProps) => {
+const SubscriptionTableView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -27,14 +21,13 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [billing, setBilling] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
   const { companyId: selectedCompany } = useCompanySelectionState();
-
-  const [deletePromotion, { isLoading: deleteLoading }] = useDeletePromotionMutation();
 
   const {
     data: apiData,
@@ -47,7 +40,6 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
-    isGlobal: global,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -73,31 +65,22 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
     }
   }, [apiData, page, limit]);
 
-  const handleCreateNew = () => {
-    setSelectedRecord(null);
-    setSelectedId(null);
-    editModal.onFalse();
-    openModal.onTrue();
-  };
-
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (id: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
-
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Reward not found');
+  const handleEdit = (selectedRecord: any) => {
+    if (!selectedRecord) {
+      showError('No subscription selected');
+      return;
     }
+
+    setSelectedRecord(selectedRecord);
+    editModal.onTrue();
+    openModal.onTrue();
   };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No promotion selected');
+        showError('No subscription selected');
         return;
       }
 
@@ -110,38 +93,38 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      // const response = await deletePromotion(selectedId).unwrap();
-
-      const response = await deletePromotion({
-        id: selectedId,
-        isGlobal: global,
-      }).unwrap();
-
-      if (response?.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      showSuccess(response?.message || 'Deleted successfully');
-
+      showSuccess('Subscription canceled successfully');
       setSelectedId(null);
       deleteModal.onFalse();
+
+      console.log('selectedId', selectedId);
+      console.log('selectedRecord', selectedRecord);
+
+      // const response = await deletePromotion({
+      //   id: selectedId,
+      //   isGlobal: global,
+      // }).unwrap();
+
+      // if (response?.error) {
+      //   const errorMessage = getErrorMessage(response.error);
+      //   showError(errorMessage);
+      //   return;
+      // }
+
+      // showSuccess(response?.message || 'Deleted successfully');
+
+      // setSelectedId(null);
+      // deleteModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
     }
   };
-
+  const handleSaveSubscription = (data: any) => {
+    console.log('data', data);
+  };
   return (
     <div>
-      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-        <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-          <Plus />
-          Create Promotion
-        </Button>
-      </div>
-
-      <PromotionsTable
+      <SubscriptionTable
         data={localData}
         meta={meta}
         loading={isLoading || isFetching}
@@ -164,6 +147,11 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
           setStatus(val);
           setPage(1);
         }}
+        billing={billing}
+        onBillingChange={(val) => {
+          setBilling(val);
+          setPage(1);
+        }}
         date={date}
         onDateChange={(val) => {
           setDate(val);
@@ -177,30 +165,29 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
         }}
       />
 
-      {openModal.value && (
-        <PromotionsModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          selectedCompany={selectedCompany}
-          global={global}
-        />
-      )}
+      <EditSubscriptionModal
+        isOpen={editModal.value}
+        onClose={() => {
+          editModal.onFalse();
+          setSelectedRecord(null);
+        }}
+        subscription={selectedRecord}
+        onSave={handleSaveSubscription}
+      />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title={`Delete ${global ? 'Global ' : ''}Promotion`}
-        content={`Are you sure you want to delete this ${global ? 'global ' : ''}promotion?`}
+        title="Cancel subscriptions"
+        content="Are you sure you want to delete this subscription?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteLoading}
+        isLoading={false}
       />
     </div>
   );
 };
 
-export default PromotionsView;
+export default SubscriptionTableView;

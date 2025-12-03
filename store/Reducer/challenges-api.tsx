@@ -5,11 +5,11 @@ import { customFetchBaseQuery } from '../customFetchBaseQuery';
 export const challengesApi = createApi({
   reducerPath: 'challengesApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['challenge'],
+  tagTypes: ['challenge', 'globalChallenge'],
 
   endpoints: (builder) => ({
     getChallenges: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, isGlobal = false }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,9 +17,11 @@ export const challengesApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
-        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        // if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE,
+          // url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE,
+          url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE(isGlobal),
           method: 'GET',
           params,
         };
@@ -28,33 +30,40 @@ export const challengesApi = createApi({
         data: res.data,
         meta: res.meta,
       }),
-      providesTags: ['challenge'],
+      // providesTags: ['challenge'],
+      providesTags: (result, error, arg) => (arg.isGlobal ? ['globalChallenge'] : ['challenge']),
     }),
 
     addChallenge: builder.mutation({
-      query: (newChallenge) => ({
-        url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE,
+      query: ({ isGlobal = false, ...newChallenge }) => ({
+        // url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE,
+        url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE(isGlobal),
         method: 'POST',
         body: newChallenge,
       }),
-      invalidatesTags: ['challenge'],
+      // invalidatesTags: ['challenge'],
+      invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalChallenge'] : ['challenge']),
     }),
 
     updateChallenge: builder.mutation({
-      query: ({ id, ...updatedChallenge }) => ({
-        url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE_BY_ID(id),
+      query: ({ id, isGlobal = false, ...updatedChallenge }) => ({
+        // url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE_BY_ID(id),
+        url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE_BY_ID(id, isGlobal),
         method: 'PUT',
         body: updatedChallenge,
       }),
-      invalidatesTags: ['challenge'],
+      // invalidatesTags: ['challenge'],
+      invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalChallenge'] : ['challenge']),
     }),
 
     deleteChallenge: builder.mutation({
-      query: (id) => ({
-        url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE_BY_ID(id),
+      query: ({ id, isGlobal = false }) => ({
+        // url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE_BY_ID(id),
+        url: API_ROUTES.ADMIN_LOYALTY_CHALLENGE_BY_ID(id, isGlobal),
         method: 'DELETE',
       }),
-      invalidatesTags: ['challenge'],
+      // invalidatesTags: ['challenge'],
+      invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalChallenge'] : ['challenge']),
     }),
   }),
 });

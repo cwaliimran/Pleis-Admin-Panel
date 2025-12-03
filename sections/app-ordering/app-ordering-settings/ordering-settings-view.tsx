@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { showError, showSuccess } from '@/utils/toast';
-import { RotateCcw, Save } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import React, { useState } from 'react';
 import { DEFAULT_SETTINGS, DELIVERY_METHODS, ORDER_FLOW_WITH_ACCEPTANCE, ORDER_FLOW_WITHOUT_ACCEPTANCE, PAYMENT_TIMING_OPTIONS } from './constants';
 import { DeliveryMethodCard } from './delivery-method-card';
@@ -122,11 +122,12 @@ export const OrderingSettingsView: React.FC = () => {
                       <div className="flex-1 pr-5">
                         <h4 className="mb-1.5 text-base font-bold text-gray-900 dark:text-gray-100">Enable Order Acceptance</h4>
                         <p className="text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
-                          Staff must accept orders before preparation begins. Enables "Sent" → "Accepted" workflow.
+                          Staff must accept orders before preparation begins. Enables &quot;Sent&quot; → &quot;Accepted&quot; workflow.
                         </p>
                       </div>
-                      <label className="relative inline-block h-8 w-14 flex-shrink-0">
+                      <label className="relative inline-block h-8 w-14 shrink-0">
                         <input
+                          title="title"
                           type="checkbox"
                           checked={settings.acceptance.enabled}
                           onChange={(e) => handleAcceptanceEnabledChange(e.target.checked)}

@@ -3,6 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteChallengeMutation, useGetChallengesQuery } from '@/store/Reducer/challenges-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -11,7 +12,6 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import ChallengeModal from './challenges-modal';
 import ChallengesTable from './challenges-table';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 interface ChallengesViewProps {
   global?: boolean;
@@ -32,7 +32,6 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  // const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
   const { companyId: selectedCompany } = useCompanySelectionState();
 
   const [deleteChallenge, { isLoading: deleteLoading }] = useDeleteChallengeMutation();
@@ -48,6 +47,7 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
+    isGlobal: global,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -110,7 +110,12 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteChallenge(selectedId).unwrap();
+      // const response = await deleteChallenge(selectedId).unwrap();
+
+      const response = await deleteChallenge({
+        id: selectedId,
+        isGlobal: global,
+      }).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -187,8 +192,8 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Challenges"
-        content="Are you sure you want to delete this challenges?"
+        title={`Delete ${global ? 'Global ' : ''}Challenge`}
+        content={`Are you sure you want to delete this ${global ? 'global ' : ''}challenge?`}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
