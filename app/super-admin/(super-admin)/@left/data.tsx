@@ -295,7 +295,7 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
-        title: 'Status',
+        title: 'Level Status',
         url: paths.superAdmin.levelStatus,
         icon: ArrowBigUp,
       },
@@ -351,7 +351,7 @@ export const menuGroups: MenuGroup[] = [
       {
         // title: 'Subscription management',
         title: 'Subscriptions',
-        url: paths.superAdmin.terms.default,
+        url: paths.superAdmin.subscription,
         icon: UsersRound,
       },
       {

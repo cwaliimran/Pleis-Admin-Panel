@@ -50,6 +50,6 @@ export type BundleModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
-  companyId: string;
-  organizationId: string;
+  companyId?: string | null;
+  organizationId?: string | null;
 };

@@ -47,6 +47,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
+    isGlobal: global,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -109,7 +110,12 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deletePromotion(selectedId).unwrap();
+      // const response = await deletePromotion(selectedId).unwrap();
+
+      const response = await deletePromotion({
+        id: selectedId,
+        isGlobal: global,
+      }).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -184,8 +190,8 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Promotion"
-        content="Are you sure you want to delete this promotion?"
+        title={`Delete ${global ? 'Global ' : ''}Promotion`}
+        content={`Are you sure you want to delete this ${global ? 'global ' : ''}promotion?`}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

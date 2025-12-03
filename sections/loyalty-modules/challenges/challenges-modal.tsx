@@ -23,9 +23,6 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import RewardCalculatorFields from '../rewards/reward-calculation-fields';
 
-// ============================================
-// SCHEMA & TYPES
-// ============================================
 const defaultValues: any = {
   photo: null,
   title: '',
@@ -134,7 +131,6 @@ type ChallengeModalProps = {
 
 const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = false, selectedCompany }: ChallengeModalProps) => {
   const [deleting, setDeleting] = useState(false);
-  // 🔥 Add ref to track if we're initializing edit data
   const isInitializingEdit = useRef(false);
 
   const { uploadImage, uploading: imageUploading } = useImageUpload();
@@ -154,17 +150,12 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     formState: { isDirty },
   } = methods;
 
-  // ============================================
-  // WATCH FIELDS FOR CONDITIONAL RENDERING
-  // ============================================
   const rewardType = watch('rewardType');
   const taskType = watch('taskType');
   const selectedMenuId = watch('rewardMenu');
   const selectedTaskMenuId = watch('taskMenuItem');
 
-  // ============================================
   // API QUERIES
-  // ============================================
   const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery({
     page: 0,
     search: '',
@@ -182,7 +173,6 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     companyOrganizer: selectedCompany || undefined,
   });
 
-  // 🔥 Dynamic menu items query based on selected menu
   const {
     data: rewardMenuItemsData,
     isLoading: rewardMenuItemsLoading,
@@ -195,9 +185,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     { skip: !selectedTaskMenuId || taskType !== 'buyMenuItem' }
   );
 
-  // ============================================
   // OPTIONS MAPPING
-  // ============================================
   const menuOptions =
     menuData?.data?.map((menu: any) => ({
       label: menu?.title,
@@ -222,12 +210,9 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
       value: tier?._id,
     })) || [];
 
-  // ============================================
   // EDIT MODE DATA POPULATION
-  // ============================================
   useEffect(() => {
     if (isEdit && selectedData) {
-      // 🔥 Set flag to indicate we're initializing
       isInitializingEdit.current = true;
 
       const { reward = {}, ...rest } = selectedData;
@@ -270,34 +255,28 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     }
   }, [isEdit, selectedData, reset]);
 
-  // ============================================
   // CLEAR MENU ITEM WHEN MENU CHANGES
-  // ============================================
   useEffect(() => {
-    // 🔥 Only clear if not initializing edit data
     if (rewardType === 'menuItem' && !isInitializingEdit.current) {
       setValue('rewardMenuItem', '');
     }
   }, [selectedMenuId, setValue, rewardType]);
 
   useEffect(() => {
-    // 🔥 Only clear if not initializing edit data
     if (taskType === 'buyMenuItem' && !isInitializingEdit.current) {
       setValue('taskMenuItem', '');
     }
   }, [selectedTaskMenuId, setValue, taskType]);
 
-  // ============================================
   // TRANSFORM TO API PAYLOAD
-  // ============================================
   const transformToPayload = (data: ChallengesFormValues) => {
-    if (!selectedCompany) {
+    if (!selectedCompany && !global) {
       showError('Please select a company first before submitting the form');
       return null;
     }
 
     const basePayload: any = {
-      companyOrganizer: selectedCompany || '',
+      // companyOrganizer: selectedCompany || '',
       title: data.title,
       taskType: data.taskType,
       taskValue: Number(data.taskValue),
@@ -305,6 +284,14 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
       tierLimit: data.tierLimit,
       status: data.status || 'active',
     };
+
+    if (!global) {
+      basePayload.companyOrganizer = selectedCompany || '';
+    }
+
+    if (global) {
+      basePayload.isGlobal = true;
+    }
 
     if (data.description && data.description.trim() !== '') {
       basePayload.description = data.description;
@@ -356,9 +343,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     return basePayload;
   };
 
-  // ============================================
   // SUBMIT HANDLER
-  // ============================================
   const handleSubmit = async (formData: ChallengesFormValues) => {
     let uploadedFileKey: string | null = null;
     let challengeImageFile: string | null = null;
@@ -515,7 +500,15 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                     placeholder="Select Reward Type"
                     options={[
                       { label: 'Point Reward', value: 'points' },
-                      { label: 'Menu Item Reward', value: 'menuItem' },
+                      // { label: 'Menu Item Reward', value: 'menuItem' },
+                      ...(!global
+                        ? [
+                            {
+                              label: 'Menu Item Reward',
+                              value: 'menuItem',
+                            },
+                          ]
+                        : []),
                       { label: 'Custom Reward', value: 'customReward' },
                       { label: 'Special Ticket', value: 'specialTicket' },
                     ]}

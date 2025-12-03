@@ -134,7 +134,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search by Name, Reward, Task Type',
+                              placeholder: 'Search challenges...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -142,7 +142,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
                               {
                                 id: 'sheet-revenue',
                                 label: 'Status',
-                                placeholder: 'Select by Status',
+                                placeholder: 'Select by status',
                                 value: status,
                                 onChange: onStatusChange,
                                 options: [

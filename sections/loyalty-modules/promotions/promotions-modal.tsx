@@ -22,9 +22,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
-/* -------------------------------------------------------------------------- */
-/*                                 FORM VALUES                                */
-/* -------------------------------------------------------------------------- */
 type PromotionsFormValues = {
   photo: any;
   title: string;
@@ -54,9 +51,6 @@ type PromotionsFormValues = {
   claimPoints: number;
 };
 
-/* -------------------------------------------------------------------------- */
-/*                               DEFAULT VALUES                               */
-/* -------------------------------------------------------------------------- */
 const defaultValues: PromotionsFormValues = {
   photo: null,
   title: '',
@@ -80,9 +74,6 @@ const defaultValues: PromotionsFormValues = {
   claimPoints: 0,
 };
 
-/* -------------------------------------------------------------------------- */
-/*                                 YUP SCHEMA                                 */
-/* -------------------------------------------------------------------------- */
 const schema = Yup.object().shape({
   photo: Yup.mixed().nullable().required('Promotion image is required'),
   title: Yup.string().required('Title is required'),
@@ -175,9 +166,6 @@ const schema = Yup.object().shape({
     }),
 });
 
-/* -------------------------------------------------------------------------- */
-/*                                 COMPONENT                                  */
-/* -------------------------------------------------------------------------- */
 type PromotionModalProps = {
   open: boolean;
   onClose: () => void;
@@ -214,14 +202,19 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     date: undefined,
   });
 
-  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemsQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-    date: undefined,
-    companyOrganizer: selectedCompany || undefined,
-  });
+  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemsQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+      companyOrganizer: selectedCompany || undefined,
+    },
+    {
+      skip: global,
+    }
+  );
 
   const { data: rewardData, isLoading: rewardsLoading } = useGetRewardsQuery({
     page: 0,
@@ -230,6 +223,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     status: '',
     date: undefined,
     companyOrganizer: selectedCompany || undefined,
+    isGlobal: global || false,
   });
 
   const menuItemOptions =
@@ -248,9 +242,6 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
   const recurringEnabled = watch('recurringEnabled') === 'true';
   const frequency = watch('frequency');
 
-  /* ---------------------------------------------------------------------- */
-  /*                              EDIT PRE-FILL                             */
-  /* ---------------------------------------------------------------------- */
   useEffect(() => {
     if (!isEdit || !selectedData) return;
 
@@ -310,14 +301,31 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     reset(mapped as PromotionsFormValues);
   }, [isEdit, selectedData, reset]);
 
+  function formatDateWithTime(dateInput: Date | string, time: string): string {
+    // Returns 'YYYY-MM-DD hh:mm A' format
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const date = new Date(dateInput);
+    if (time) {
+      const [h, m] = time.split(':').map(Number);
+      date.setHours(h, m, 0, 0);
+    }
+    let hours = date.getHours();
+    const minutes = pad(date.getMinutes());
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const timeStr = pad(hours) + ':' + minutes + ' ' + ampm;
+    return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + timeStr;
+  }
+
   const transformToPayload = (data: PromotionsFormValues) => {
-    if (!selectedCompany) {
+    if (!selectedCompany && !global) {
       showError('Please select a company first');
       return null;
     }
 
     const base: any = {
-      companyOrganizer: selectedCompany,
+      // companyOrganizer: selectedCompany,
       title: data.title,
       description: data.description,
       startDate: fDate(data.startDate, formatStr.paramCase.db),
@@ -325,6 +333,14 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       tierLimit: data.tierLimit,
       promotionType: data.promotionType,
     };
+
+    if (!global) {
+      base.companyOrganizer = selectedCompany;
+    }
+
+    if (global) {
+      base.isGlobal = true;
+    }
 
     // Recurring: only if enabled
     if (data.recurringEnabled === 'true') {
@@ -340,22 +356,20 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
 
     // Type-specific
     switch (data.promotionType) {
-      case 'happyHour':
-        base.startDate = fDate(data.startDate, formatStr.paramCase.dateTimeRev);
-        base.endDate = fDate(data.endDate, formatStr.paramCase.dateTimeRev);
+      case 'happyHour': {
+        base.startDate = formatDateWithTime(data.startDate, data.timeStart);
+        base.endDate = formatDateWithTime(data.endDate, data.timeEnd);
         base.pointsMultiplier = parseFloat(data.pointsMultiplier);
         break;
-
+      }
       case 'buyMenuItemPromotion':
         base.menuItem = data.menuItem;
         base.extraPoints = data.extraPoints;
         break;
-
       case 'productSale':
         base.menuItem = data.saleMenuItem;
         base.discountedPrice = data.discountedPrice;
         break;
-
       case 'claimPromotion':
         base.reward = data.claimReward;
         base.claimPoints = data.claimPoints;
@@ -365,9 +379,6 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     return base;
   };
 
-  /* ---------------------------------------------------------------------- */
-  /*                               SUBMIT HANDLER                           */
-  /* ---------------------------------------------------------------------- */
   const handleSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
 
@@ -384,6 +395,23 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
         }
       }
 
+      // Check happyHour time logic
+      if (formData.promotionType === 'happyHour') {
+        const start = formData.timeStart;
+        const end = formData.timeEnd;
+        if (start && end) {
+          // Compare as HH:mm
+          const [startH, startM] = start.split(':').map(Number);
+          const [endH, endM] = end.split(':').map(Number);
+          const startMinutes = startH * 60 + startM;
+          const endMinutes = endH * 60 + endM;
+          if (endMinutes <= startMinutes) {
+            showError('End time must be after start time');
+            return;
+          }
+        }
+      }
+
       if (formData.photo instanceof FileList && formData.photo.length > 0) {
         uploadedFileKey = await uploadImage(formData.photo[0]);
       }
@@ -391,7 +419,12 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       const payload = transformToPayload(formData);
       if (!payload) return;
 
-      if (uploadedFileKey) payload.image = uploadedFileKey;
+      if (uploadedFileKey) {
+        payload.image = uploadedFileKey;
+      } else if (!isEdit && selectedData?.image) {
+        // Only send image in non-edit mode if it exists
+        payload.image = selectedData.image;
+      }
 
       if (isEdit && selectedData?._id) {
         payload.id = selectedData._id;
@@ -422,9 +455,6 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     onClose();
   };
 
-  /* ---------------------------------------------------------------------- */
-  /*                                 RENDER                                 */
-  /* ---------------------------------------------------------------------- */
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
@@ -448,7 +478,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                     name="promotionType"
                     label="Promotion Type"
                     placeholder="Select Type"
-                    disabled={false} // Allow editing in both create and edit mode
+                    disabled={isEdit}
                     options={[
                       { label: 'Happy Hour', value: 'happyHour' },
                       { label: 'Claim Promotion', value: 'claimPromotion' },

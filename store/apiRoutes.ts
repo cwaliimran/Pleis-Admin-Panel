@@ -103,11 +103,18 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_MEMBERS: `/admin/loyalty/club-members`,
   ADMIN_LOYALTY_MEMBERS_GIFT: `/admin/loyalty/club-members/gift-points`,
 
-  ADMIN_LOYALTY_PROMOTION: `/admin/loyalty/promotions`,
-  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
+  // ADMIN_LOYALTY_PROMOTION: `/admin/loyalty/promotions`,
+  // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
 
-  ADMIN_LOYALTY_CHALLENGE: `/admin/loyalty/challenges`,
-  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,
+  ADMIN_LOYALTY_PROMOTION: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/promotions' : '/admin/loyalty/promotions'),
+  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/promotions/${id}` : `/admin/loyalty/promotions/${id}`),
+
+  // ADMIN_LOYALTY_CHALLENGE: `/admin/loyalty/challenges`,
+  // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,
+
+  ADMIN_LOYALTY_CHALLENGE: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/challanges' : '/admin/loyalty/challenges'),
+  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) =>
+    isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
 
   ADMIN_PRESET: `/admin/menu/presets`,
   ADMIN_PRESET_BY_ID: (id: string) => `/admin/menu/presets/${id}`,
