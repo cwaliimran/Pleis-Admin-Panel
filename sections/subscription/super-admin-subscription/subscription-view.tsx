@@ -1,87 +1,19 @@
 'use client';
 
-import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
-import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import React, { useState } from 'react';
 import { DEFAULT_PRICING, MOCK_SUBSCRIPTIONS } from './constants';
-import { EditSubscriptionModal } from './edit-subscription-modal';
 import { PricingSection } from './pricing-section';
-// import { SubscriptionTableV2 } from './subscription-table';
-import { SubscriptionTabs } from './subscription-tabs';
-import { PricingConfig, Subscription, SubscriptionFormData, TabType } from './types';
 import SubscriptionTableView from './subscription-table/subscription-table-view';
+import { SubscriptionTabs } from './subscription-tabs';
+import { PricingConfig, Subscription, TabType } from './types';
 
 export const SubscriptionManagementView: React.FC = () => {
   // State
   const [activeTab, setActiveTab] = useState<TabType>('subscriptions');
   const [subscriptions, setSubscriptions] = useState<Subscription[]>(MOCK_SUBSCRIPTIONS);
   const [pricing, setPricing] = useState<PricingConfig>(DEFAULT_PRICING);
-  const [selectedSubscription, setSelectedSubscription] = useState<Subscription | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  // Modals
-  const editModal = useBoolean();
-  const deleteModal = useBoolean();
-
-  // Handlers
-  //   const handleEditSubscription = (subscription: Subscription) => {
-  //     setSelectedSubscription(subscription);
-  //     editModal.onTrue();
-  //   };
-
-  //   const handleDeleteClick = (id: string) => {
-  //     setSelectedId(id);
-  //     deleteModal.onTrue();
-  //   };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedId) return;
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setSubscriptions((prev) => prev.filter((s) => s.id !== selectedId));
-      showSuccess('Subscription canceled successfully');
-      setSelectedId(null);
-      deleteModal.onFalse();
-    } catch (error) {
-      showError(getErrorMessage(error));
-    }
-  };
-
-  const handleSaveSubscription = async (data: SubscriptionFormData) => {
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      if (selectedSubscription) {
-        setSubscriptions((prev) =>
-          prev.map((s) =>
-            s.id === selectedSubscription.id
-              ? {
-                  ...s,
-                  modules: data.modules,
-                  organizations: data.organizations,
-                  startDate: data.startDate,
-                  endDate: data.endDate,
-                  billing: data.billing,
-                  commissions: data.commissions,
-                }
-              : s
-          )
-        );
-        showSuccess('Subscription updated successfully');
-      }
-
-      editModal.onFalse();
-      setSelectedSubscription(null);
-    } catch (error) {
-      showError(getErrorMessage(error));
-    }
-  };
 
   const handleSavePricing = async () => {
     try {
@@ -90,6 +22,7 @@ export const SubscriptionManagementView: React.FC = () => {
 
       console.log('Saving pricing configuration:', pricing);
       showSuccess('Pricing configuration saved successfully!');
+      setSubscriptions((prev) => [...prev]);
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -128,7 +61,6 @@ export const SubscriptionManagementView: React.FC = () => {
               ) : (
                 <>
                   <SubscriptionTableView />
-                  {/* <SubscriptionTableV2 subscriptions={subscriptions} onEdit={handleEditSubscription} onDelete={handleDeleteClick} /> */}
                 </>
               )}
             </div>
@@ -137,30 +69,6 @@ export const SubscriptionManagementView: React.FC = () => {
           {activeTab === 'pricing' && <PricingSection pricing={pricing} onPricingChange={setPricing} onSave={handleSavePricing} />}
         </div>
       </section>
-
-      {/* Edit Subscription Modal */}
-      <EditSubscriptionModal
-        isOpen={editModal.value}
-        onClose={() => {
-          editModal.onFalse();
-          setSelectedSubscription(null);
-        }}
-        subscription={selectedSubscription}
-        onSave={handleSaveSubscription}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        open={deleteModal.value}
-        title="Cancel Subscription"
-        content="Are you sure you want to cancel this subscription?"
-        onClose={() => {
-          deleteModal.onFalse();
-          setSelectedId(null);
-        }}
-        onConfirm={handleDeleteConfirm}
-        isLoading={false}
-      />
     </>
   );
 };

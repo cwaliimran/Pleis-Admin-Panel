@@ -9,7 +9,7 @@ import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
 import SubscriptionTable from './subscription-table';
-import { EditSubscriptionModal } from '../edit-subscription-modal';
+import SubscriptionModal from '../edit-subscription-modal';
 
 const SubscriptionTableView = () => {
   const openModal = useBoolean();
@@ -119,9 +119,7 @@ const SubscriptionTableView = () => {
       showError(getErrorMessage(error));
     }
   };
-  const handleSaveSubscription = (data: any) => {
-    console.log('data', data);
-  };
+  
   return (
     <div>
       <SubscriptionTable
@@ -165,14 +163,13 @@ const SubscriptionTableView = () => {
         }}
       />
 
-      <EditSubscriptionModal
-        isOpen={editModal.value}
+      <SubscriptionModal
+        open={editModal.value}
         onClose={() => {
           editModal.onFalse();
           setSelectedRecord(null);
         }}
-        subscription={selectedRecord}
-        onSave={handleSaveSubscription}
+        selectedData={selectedRecord}
       />
 
       <ConfirmDialog

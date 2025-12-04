@@ -67,7 +67,7 @@ const SubscriptionTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdi
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleEdit?.(item?.id);
+              handleEdit?.(item);
             }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
