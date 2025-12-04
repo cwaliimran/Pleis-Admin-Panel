@@ -123,8 +123,10 @@ export const paths = {
     levelStatus: '/super-admin/level-status',
     promoCodes: '/super-admin/promo-code',
     rewardCategory: '/super-admin/reward-category',
+    reviews: '/super-admin/reviews',
 
     streak: '/super-admin/streaks',
+    marketingRequests: '/super-admin/marketing-requests',
     globalStreak: '/super-admin/global-streaks',
     itemsCategory: '/super-admin/items-category',
     status: '/super-admin/status',

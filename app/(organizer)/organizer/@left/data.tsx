@@ -11,7 +11,9 @@ import {
   Podcast,
   SquareMenu,
   Tags,
+  ThumbsUp,
   VenetianMask,
+  Volume1,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -128,6 +130,16 @@ export const menuGroups: MenuGroup[] = [
     label: 'User List',
     key: paths.organizer.users.list,
     icon: Calendar,
+  },
+  {
+    label: 'Marketing Requests',
+    key: paths.organizer.marketingRequests,
+    icon: Volume1,
+  },
+  {
+    label: 'Reviews',
+    key: paths.organizer.reviews,
+    icon: ThumbsUp,
   },
   // ...(isDev
   //   ? [

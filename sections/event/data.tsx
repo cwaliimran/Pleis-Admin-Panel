@@ -1,7 +1,3 @@
-
-
-
-
 export const eventData = [
   {
     id: '1',
@@ -13,7 +9,7 @@ export const eventData = [
     endDate: '2025-08-03',
     totalRevenue: '$5000',
     totalViews: '1500',
-    region: 'North America'
+    region: 'North America',
   },
   {
     id: '2',
@@ -25,7 +21,7 @@ export const eventData = [
     endDate: '2025-09-14',
     totalRevenue: '$8000',
     totalViews: '2000',
-    region: 'South America'
+    region: 'South America',
   },
   {
     id: '3',
@@ -37,7 +33,7 @@ export const eventData = [
     endDate: '2025-07-21',
     totalRevenue: '$3000',
     totalViews: '1200',
-    region: 'Europe'
+    region: 'Europe',
   },
   {
     id: '4',
@@ -49,7 +45,7 @@ export const eventData = [
     endDate: '2025-08-19',
     totalRevenue: '$6000',
     totalViews: '1800',
-    region: 'Asia'
+    region: 'Asia',
   },
   {
     id: '5',
@@ -61,7 +57,7 @@ export const eventData = [
     endDate: '2025-10-10',
     totalRevenue: '$2000',
     totalViews: '1000',
-    region: 'Africa'
+    region: 'Africa',
   },
   {
     id: '6',
@@ -73,7 +69,7 @@ export const eventData = [
     endDate: '2025-11-01',
     totalRevenue: '$4000',
     totalViews: '1300',
-    region: 'Middle East'
+    region: 'Middle East',
   },
   {
     id: '7',
@@ -85,7 +81,7 @@ export const eventData = [
     endDate: '2025-08-25',
     totalRevenue: '$3500',
     totalViews: '1100',
-    region: 'Oceania'
+    region: 'Oceania',
   },
   {
     id: '8',
@@ -97,7 +93,7 @@ export const eventData = [
     endDate: '2025-09-18',
     totalRevenue: '$4500',
     totalViews: '1400',
-    region: 'Central America'
+    region: 'Central America',
   },
   {
     id: '9',
@@ -109,7 +105,7 @@ export const eventData = [
     endDate: '2025-12-02',
     totalRevenue: '$7000',
     totalViews: '1600',
-    region: 'Caribbean'
+    region: 'Caribbean',
   },
   {
     id: '10',
@@ -121,112 +117,117 @@ export const eventData = [
     endDate: '2025-10-16',
     totalRevenue: '$5500',
     totalViews: '1700',
-    region: 'Global'
-  }
+    region: 'Global',
+  },
 ];
 
 export const eventCardData = [
   {
     _id: 1,
-    title: "Total Revenue",
+    title: 'Total Revenue',
     value: 1000,
-    status: "up",
+    status: 'up',
   },
   {
     _id: 3,
-    title: "Total Tickets Sold",
+    title: 'Total Tickets Sold',
     value: 200,
-    status: "down",
+    status: 'down',
     total: 10000,
   },
 
   {
     _id: 2,
-    title: "Views",
+    title: 'Views',
     value: 5000,
-    status: "up",
+    status: 'up',
   },
 ];
 
 export const tabsData = [
   {
-    label: "Overview",
-    value: "overview"
+    label: 'Overview',
+    value: 'overview',
   },
   {
-    label: "Analytics",
-    value: "analytics"
+    label: 'Analytics',
+    value: 'analytics',
   },
   {
-    label: "Tickets",
-    value: "tickets"
-  }, {
-    label: "Reservations",
-    value: "reservations"
-  }, {
-    label: "Notifications",
-    value: "notifications"
-  }
+    label: 'Tickets',
+    value: 'tickets',
+  },
+  {
+    label: 'Reservations',
+    value: 'reservations',
+  },
+  {
+    label: 'Notifications',
+    value: 'notifications',
+  },
+  {
+    label: 'Feedback',
+    value: 'feedback',
+  },
 ];
 
 export const eventTabForAnalytics = [
   {
-    label: "From Sales",
-    value: "fromSales"
+    label: 'From Sales',
+    value: 'fromSales',
   },
   {
-    label: "From Updates",
-    value: "fromUpdates"
+    label: 'From Updates',
+    value: 'fromUpdates',
   },
   {
-    label: "From Challenges",
-    value: "fromChallenges"
-  }
+    label: 'From Challenges',
+    value: 'fromChallenges',
+  },
 ];
 
 export const lastTransactionData = [
   {
-    name: "John Doe",
-    transaction: "+$39.00"
+    name: 'John Doe',
+    transaction: '+$39.00',
   },
   {
-    name: "Jane Smith",
-    transaction: "+$25.00"
+    name: 'Jane Smith',
+    transaction: '+$25.00',
   },
   {
-    name: "Alice Johnson",
-    transaction: "+$50.00"
+    name: 'Alice Johnson',
+    transaction: '+$50.00',
   },
   {
-    name: "Bob Brown",
-    transaction: "+$15.00"
+    name: 'Bob Brown',
+    transaction: '+$15.00',
   },
   {
-    name: "Charlie Davis",
-    transaction: "+$30.00"
+    name: 'Charlie Davis',
+    transaction: '+$30.00',
   },
   {
-    name: "Diana Prince",
-    transaction: "+$45.00"
+    name: 'Diana Prince',
+    transaction: '+$45.00',
   },
   {
-    name: "Ethan Hunt",
-    transaction: "+$60.00"
+    name: 'Ethan Hunt',
+    transaction: '+$60.00',
   },
-  
-]
+];
 
- export const updates = [
-    {
-      title: 'Early Bird Tickets',
-      description:
-        'Ends Mon 13, 2025 at 7:00PM',
-    },
-    {
-      title: 'Early Bird Tickets',
-      description: 'Ends Mon 13, 2025 at 7:00PM',
-    }, {
-      title: 'Early Bird Tickets',
-      description: 'Tellus congue tortor non morbi eros risus aenean.',
-    }
-  ];
+export const updates = [
+  {
+    title: 'Early Bird Tickets',
+    description: 'Ends Mon 13, 2025 at 7:00PM',
+  },
+  {
+    title: 'Early Bird Tickets',
+    description: 'Ends Mon 13, 2025 at 7:00PM',
+  },
+  {
+    title: 'Early Bird Tickets',
+    description: 'Tellus congue tortor non morbi eros risus aenean.',
+  },
+];

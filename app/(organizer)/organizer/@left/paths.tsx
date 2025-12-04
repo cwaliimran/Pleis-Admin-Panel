@@ -66,6 +66,8 @@ export const paths = {
       list: '/organizer/user/user-list',
       pendingList: '/organizer/user/pending-list',
     },
+    marketingRequests: '/organizer/marketing-requests',
+    reviews: '/organizer/reviews',
     logout: '/organizer/logout',
   },
 };
