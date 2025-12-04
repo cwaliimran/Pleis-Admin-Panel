@@ -1,17 +1,23 @@
 import Header from '@/app/common/header/header';
-import React from 'react';
+import { SubscriptionManagementView } from '@/sections/subscription/super-admin-subscription/subscription-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Subscription Management - Pleis',
+};
 
 const Page = () => {
   return (
-    <>
+    <div className="min-h-screen pb-12">
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Subscription', href: '' },
+          { name: 'Admin Subscription', href: '' },
         ]}
       />
-      Coming Soon
-    </>
+
+      <SubscriptionManagementView />
+    </div>
   );
 };
 

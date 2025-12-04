@@ -8,6 +8,7 @@ import {
   Highlighter,
   List,
   ListOrdered,
+  Podcast,
   SquareMenu,
   Tags,
   VenetianMask,
@@ -117,6 +118,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Menu Items',
     key: paths.organizer.menuItems,
     icon: SquareMenu,
+  },
+  {
+    label: 'Subscription',
+    key: paths.organizer.subscription,
+    icon: Podcast,
   },
   {
     label: 'User List',
