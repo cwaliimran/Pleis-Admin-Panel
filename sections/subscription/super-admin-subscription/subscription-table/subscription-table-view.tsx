@@ -3,13 +3,14 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetPromotionQuery } from '@/store/Reducer/promotion-api';
+// import { useGetPromotionQuery } from '@/store/Reducer/promotion-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
 import SubscriptionTable from './subscription-table';
 import SubscriptionModal from '../edit-subscription-modal';
+import { useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
 
 const SubscriptionTableView = () => {
   const openModal = useBoolean();
@@ -33,14 +34,27 @@ const SubscriptionTableView = () => {
     data: apiData,
     isLoading,
     isFetching,
-  } = useGetPromotionQuery({
+  } = useGetPromoCodesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
+    isGlobal: true,
   });
+
+  // const {
+  //   data: apiData,
+  //   isLoading,
+  //   // refetch,
+  // } = useGetPromoCodesQuery({
+  //   page: page - 1,
+  //   search,
+  //   limit,
+  //   status: status === 'all' ? '' : status,
+  //   date: date ? formatDate(date) : undefined,
+  // });
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -119,7 +133,7 @@ const SubscriptionTableView = () => {
       showError(getErrorMessage(error));
     }
   };
-  
+
   return (
     <div>
       <SubscriptionTable

@@ -52,7 +52,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ pricing, onPrici
           {(Object.entries(pricing.modules) as [ModuleType, number][]).map(([module, price]) => (
             <div key={module}>
               <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {MODULE_NAMES[module]}
+                {module === 'ticketing' ? `Loyalty` : MODULE_NAMES[module]}
                 {module === 'analytics' && <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">(Fixed price, no discounts)</span>}
               </label>
               <div className="relative">
