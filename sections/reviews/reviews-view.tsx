@@ -1,60 +1,51 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-// import { useGetPromotionQuery } from '@/store/Reducer/promotion-api';
+import { useDeletePromoCodeMutation, useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
-import SubscriptionTable from './subscription-table';
-import SubscriptionModal from '../edit-subscription-modal';
-import { useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
+import ReviewEditModal from './edit-review-modal';
+import ReviewsTable from './reviews-table';
 
-const SubscriptionTableView = () => {
+const ReviewsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const { user } = useAuth();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
-  const [billing, setBilling] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const { companyId: selectedCompany } = useCompanySelectionState();
+  const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
 
   const {
     data: apiData,
     isLoading,
-    isFetching,
+    // refetch,
   } = useGetPromoCodesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany || undefined,
-    isGlobal: true,
   });
 
-  // const {
-  //   data: apiData,
-  //   isLoading,
-  //   // refetch,
-  // } = useGetPromoCodesQuery({
-  //   page: page - 1,
-  //   search,
-  //   limit,
-  //   status: status === 'all' ? '' : status,
-  //   date: date ? formatDate(date) : undefined,
-  // });
+  console.log('apiData', apiData);
+
+  // useEffect(() => {
+  //   refetch();
+  // }, [selectedCompany, refetch]);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -80,21 +71,22 @@ const SubscriptionTableView = () => {
   }, [apiData, page, limit]);
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (selectedRecord: any) => {
-    if (!selectedRecord) {
-      showError('No subscription selected');
-      return;
-    }
-
-    setSelectedRecord(selectedRecord);
+  const handleEdit = (id: string, review: string) => {
+    setSelectedId(id);
+    setSelectedRecord(review);
     editModal.onTrue();
     openModal.onTrue();
+  };
+
+  const handleUpdate = async (updatedReview: string) => {
+    console.log('updatedReview', updatedReview);
+    editModal.onFalse();
   };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No subscription selected');
+        showError('No promo code selected');
         return;
       }
 
@@ -107,28 +99,18 @@ const SubscriptionTableView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      showSuccess('Subscription canceled successfully');
+      const response = await deletePromoCode(selectedId).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Deleted successfully');
+
       setSelectedId(null);
       deleteModal.onFalse();
-
-      console.log('selectedId', selectedId);
-      console.log('selectedRecord', selectedRecord);
-
-      // const response = await deletePromotion({
-      //   id: selectedId,
-      //   isGlobal: global,
-      // }).unwrap();
-
-      // if (response?.error) {
-      //   const errorMessage = getErrorMessage(response.error);
-      //   showError(errorMessage);
-      //   return;
-      // }
-
-      // showSuccess(response?.message || 'Deleted successfully');
-
-      // setSelectedId(null);
-      // deleteModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -136,10 +118,11 @@ const SubscriptionTableView = () => {
 
   return (
     <div>
-      <SubscriptionTable
+      <ReviewsTable
         data={localData}
         meta={meta}
-        loading={isLoading || isFetching}
+        user={user}
+        loading={isLoading}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -159,11 +142,6 @@ const SubscriptionTableView = () => {
           setStatus(val);
           setPage(1);
         }}
-        billing={billing}
-        onBillingChange={(val) => {
-          setBilling(val);
-          setPage(1);
-        }}
         date={date}
         onDateChange={(val) => {
           setDate(val);
@@ -177,28 +155,23 @@ const SubscriptionTableView = () => {
         }}
       />
 
-      <SubscriptionModal
-        open={editModal.value}
-        onClose={() => {
-          editModal.onFalse();
-          setSelectedRecord(null);
-        }}
-        selectedData={selectedRecord}
-      />
+      {editModal.value && (
+        <ReviewEditModal open={editModal.value} onClose={editModal.onFalse} defaultReview={selectedRecord} onUpdate={handleUpdate} />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Cancel subscriptions"
-        content="Are you sure you want to delete this subscription?"
+        title="Delete Review"
+        content="Are you sure you want to delete this review?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={false}
+        isLoading={deleteLoading}
       />
     </div>
   );
 };
 
-export default SubscriptionTableView;
+export default ReviewsView;

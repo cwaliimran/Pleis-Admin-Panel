@@ -2,59 +2,54 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-// import { useGetPromotionQuery } from '@/store/Reducer/promotion-api';
+import { useDeletePromoCodeMutation, useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
-import SubscriptionTable from './subscription-table';
-import SubscriptionModal from '../edit-subscription-modal';
-import { useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
+import MarketingRequestTable from './marketing-request-table';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import MarketingRequestModal from './marketing-request-modal';
+import { useAuth } from '@/hooks/useAuth';
 
-const SubscriptionTableView = () => {
+const MarketingRequestView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const { user } = useAuth();
+
+  console.log('User:', user?.accountState?.userType);
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
-  const [billing, setBilling] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const { companyId: selectedCompany } = useCompanySelectionState();
+  const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
 
   const {
     data: apiData,
     isLoading,
-    isFetching,
+    // refetch,
   } = useGetPromoCodesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany || undefined,
-    isGlobal: true,
   });
 
-  // const {
-  //   data: apiData,
-  //   isLoading,
-  //   // refetch,
-  // } = useGetPromoCodesQuery({
-  //   page: page - 1,
-  //   search,
-  //   limit,
-  //   status: status === 'all' ? '' : status,
-  //   date: date ? formatDate(date) : undefined,
-  // });
+  console.log('apiData', apiData);
+
+  // useEffect(() => {
+  //   refetch();
+  // }, [selectedCompany, refetch]);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -79,22 +74,31 @@ const SubscriptionTableView = () => {
     }
   }, [apiData, page, limit]);
 
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (selectedRecord: any) => {
-    if (!selectedRecord) {
-      showError('No subscription selected');
-      return;
-    }
-
-    setSelectedRecord(selectedRecord);
-    editModal.onTrue();
+  const handleCreateNew = () => {
+    setSelectedRecord(null);
+    setSelectedId(null);
+    editModal.onFalse();
     openModal.onTrue();
+  };
+
+  // ------------ EDIT FUNCTION FOR API VERSION ------------
+  const handleEdit = (id: string, value: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
+    console.log('value', value);
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Promo code not found');
+    }
   };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No subscription selected');
+        showError('No promo code selected');
         return;
       }
 
@@ -107,28 +111,18 @@ const SubscriptionTableView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      showSuccess('Subscription canceled successfully');
+      const response = await deletePromoCode(selectedId).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Deleted successfully');
+
       setSelectedId(null);
       deleteModal.onFalse();
-
-      console.log('selectedId', selectedId);
-      console.log('selectedRecord', selectedRecord);
-
-      // const response = await deletePromotion({
-      //   id: selectedId,
-      //   isGlobal: global,
-      // }).unwrap();
-
-      // if (response?.error) {
-      //   const errorMessage = getErrorMessage(response.error);
-      //   showError(errorMessage);
-      //   return;
-      // }
-
-      // showSuccess(response?.message || 'Deleted successfully');
-
-      // setSelectedId(null);
-      // deleteModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -136,10 +130,20 @@ const SubscriptionTableView = () => {
 
   return (
     <div>
-      <SubscriptionTable
+      {user?.accountState?.userType !== 'admin' && (
+        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+            <Plus />
+            Create Request
+          </Button>
+        </div>
+      )}
+
+      <MarketingRequestTable
         data={localData}
         meta={meta}
-        loading={isLoading || isFetching}
+        user={user}
+        loading={isLoading}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -159,11 +163,6 @@ const SubscriptionTableView = () => {
           setStatus(val);
           setPage(1);
         }}
-        billing={billing}
-        onBillingChange={(val) => {
-          setBilling(val);
-          setPage(1);
-        }}
         date={date}
         onDateChange={(val) => {
           setDate(val);
@@ -177,28 +176,23 @@ const SubscriptionTableView = () => {
         }}
       />
 
-      <SubscriptionModal
-        open={editModal.value}
-        onClose={() => {
-          editModal.onFalse();
-          setSelectedRecord(null);
-        }}
-        selectedData={selectedRecord}
-      />
+      {openModal.value && (
+        <MarketingRequestModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Cancel subscriptions"
-        content="Are you sure you want to delete this subscription?"
+        title="Delete Promo Code"
+        content="Are you sure you want to delete this promo code?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={false}
+        isLoading={deleteLoading}
       />
     </div>
   );
 };
 
-export default SubscriptionTableView;
+export default MarketingRequestView;

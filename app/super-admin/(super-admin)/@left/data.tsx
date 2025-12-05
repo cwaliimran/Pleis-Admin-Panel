@@ -13,10 +13,13 @@ import {
   ShoppingBasket,
   Tags,
   Ticket,
-  TicketSlash, User,
+  TicketSlash,
+  User,
   UsersRound,
   FileClock,
-  SlidersVertical
+  SlidersVertical,
+  Volume1,
+  ThumbsUp,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -375,6 +378,16 @@ export const menuGroups: MenuGroup[] = [
     label: 'Promo codes',
     key: paths.superAdmin.promoCodes,
     icon: TicketSlash,
+  },
+  {
+    label: 'Marketing Requests',
+    key: paths.superAdmin.marketingRequests,
+    icon: Volume1,
+  },
+  {
+    label: 'Reviews',
+    key: paths.superAdmin.reviews,
+    icon: ThumbsUp,
   },
   // {
   //   label: 'Notifications',

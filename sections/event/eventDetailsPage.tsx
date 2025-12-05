@@ -28,6 +28,7 @@ import { Calendar, Copy, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import EventFeedbackView from '../event-feedback/event-feedback-view';
 
 const EventDetailsPage = () => {
   const { id } = useParams();
@@ -329,6 +330,8 @@ const EventDetailsPage = () => {
                   {active === 'reservations' && <EventReservation />}
 
                   {active === 'notifications' && <EventNotification />}
+
+                  {active === 'feedback' && <EventFeedbackView />}
                 </div>
               </div>
 
