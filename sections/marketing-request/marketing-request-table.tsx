@@ -23,7 +23,7 @@ export const marketingRequestDummyData = [
     email: 'client1@example.com',
     phone: '+1 555-123-4567',
     budget: '2,000',
-    status: 'accept',
+    status: 'pending',
     createdAt: '2025-01-15T10:30:00Z',
   },
   {
@@ -109,6 +109,13 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
   console.log('sortedData', sortedData);
 
   const HEAD_LABEL = [
+    {
+      id: 'user',
+      label: 'User',
+      align: 'left',
+      sortable: true,
+      sortKey: 'user',
+    },
     {
       id: 'title',
       label: 'Title',

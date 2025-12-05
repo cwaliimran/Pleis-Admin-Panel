@@ -21,14 +21,21 @@ const StreaksTableRow: FC<TableRowProps> = ({ item }) => {
           )}
         </Avatar>
       </TableCell>
+
       <TableCell className="text-left">{username}</TableCell>
-      <TableCell className="text-left">
+
+      <TableCell className="text-left capitalize">
         {item?.user?.firstName} {item?.user?.lastName}
       </TableCell>
+
       <TableCell className="text-left">{item?.streak || 'N/A'}</TableCell>
+
       <TableCell className="text-left">{item?.longestStreak || 'N/A'}</TableCell>
+
       <TableCell className="text-left">{item?.points || 'N/A'}</TableCell>
+
       <TableCell className="text-left">{item?.visits || 'N/A'}</TableCell>
+
       <TableCell className="text-left">{fDate(item?.lastVisitAt, formatStr.paramCase.dateTime)}</TableCell>
     </TableRow>
   );
