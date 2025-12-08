@@ -32,7 +32,7 @@ export const streaksApi = createApi({
     }),
 
     getUserStreaks: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, isGlobal = false }) => {
         const params: any = {
           keyword: search,
           status,
@@ -40,9 +40,10 @@ export const streaksApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
-        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        // if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.USER_STREAKS,
+          url: API_ROUTES.ADMIN_USER_STREAKS(isGlobal),
           method: 'GET',
           params,
         };

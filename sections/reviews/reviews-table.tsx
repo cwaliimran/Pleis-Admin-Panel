@@ -25,6 +25,7 @@ export const reviewDummyData = [
     review: 'The food ordering experience was smooth and fast. Loved the UI!',
     createdAt: '2025-01-22T10:15:00Z',
     status: 'approved',
+    rating: 5,
   },
   {
     _id: 'rev_002',
@@ -35,6 +36,7 @@ export const reviewDummyData = [
     review: 'Ticket booking was easy but the confirmation email came late.',
     createdAt: '2025-01-23T14:40:00Z',
     status: 'pending',
+    rating: 4,
   },
   {
     _id: 'rev_003',
@@ -45,6 +47,7 @@ export const reviewDummyData = [
     review: 'Restaurant reservation worked perfectly. No issues at all.',
     createdAt: '2025-01-20T08:10:00Z',
     status: 'approved',
+    rating: 5,
   },
   {
     _id: 'rev_004',
@@ -55,6 +58,7 @@ export const reviewDummyData = [
     review: 'The ticket page kept loading slowly. Needs some improvements.',
     createdAt: '2025-01-18T12:55:00Z',
     status: 'rejected',
+    rating: 2,
   },
   {
     _id: 'rev_005',
@@ -65,6 +69,7 @@ export const reviewDummyData = [
     review: 'Excellent service! Delivery was on time and everything was smooth.',
     createdAt: '2025-01-25T17:20:00Z',
     status: 'approved',
+    rating: 1,
   },
   {
     _id: 'rev_006',
@@ -75,6 +80,7 @@ export const reviewDummyData = [
     review: 'It took too long to confirm the reservation. Please improve speed.',
     createdAt: '2025-01-19T09:00:00Z',
     status: 'pending',
+    rating: 3,
   },
 ];
 
@@ -118,7 +124,7 @@ const ReviewsTable: FC<SamplePageProps> = ({
       sortKey: 'name',
     },
     { id: 'organization', label: 'Organization', align: 'left' },
-    { id: 'serviceType', label: 'Service Type', align: 'left' },
+    { id: 'rating', label: 'Rating', align: 'left' },
     { id: 'review', label: 'Review', align: 'left' },
     { id: 'createdAt', label: 'Created At', align: 'left' },
     ...(user?.accountState?.userType === 'admin' ? [{ id: 'actions', label: 'Action', align: 'left' }] : []),

@@ -26,11 +26,7 @@ const ReviewsTableRow: FC<TableRowProps> = ({ user, item, handleEdit, handleDele
 
       <TableCell className="text-left">{item?.organization || 'N/A'}</TableCell>
 
-      <TableCell className="text-left">
-        <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          {item?.serviceType || 'N/A'}
-        </span>
-      </TableCell>
+      <TableCell className="text-left">{item?.rating || 'N/A'}</TableCell>
 
       <TableCell className="text-left">
         {item?.review?.length > 22 ? (

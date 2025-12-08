@@ -11,6 +11,8 @@ import { TableRowProps } from './types';
 const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
+      <TableCell className="text-left capitalize">{item?.user?.name || '-'}</TableCell>
+
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
       <TableCell className="text-left">
@@ -44,7 +46,11 @@ const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit })
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === 'accept' ? 'success' : item.status === 'reject' ? 'error' : 'info'}>{item.status}</CustomBadge>
+        <CustomBadge
+          variant={item.status === 'accept' ? 'success' : item.status === 'reject' ? 'error' : item.status === 'pending' ? 'warning' : 'info'}
+        >
+          {item?.status}
+        </CustomBadge>
       </TableCell>
 
       {user?.accountState?.userType === 'admin' && (
@@ -58,6 +64,7 @@ const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit })
               <SelectItem value="accept">Accept</SelectItem>
               <SelectItem value="reject">Reject</SelectItem>
               <SelectItem value="done">Done</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
             </SelectContent>
           </Select>
         </TableCell>

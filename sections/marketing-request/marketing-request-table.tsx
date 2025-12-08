@@ -23,8 +23,13 @@ export const marketingRequestDummyData = [
     email: 'client1@example.com',
     phone: '+1 555-123-4567',
     budget: '2,000',
-    status: 'accept',
+    status: 'pending',
     createdAt: '2025-01-15T10:30:00Z',
+    user: {
+      id: 'u_101',
+      name: 'Ayesha Khan',
+      image: 'https://randomuser.me/api/portraits/women/45.jpg',
+    },
   },
   {
     _id: '2',
@@ -35,6 +40,11 @@ export const marketingRequestDummyData = [
     budget: '1,200',
     status: 'reject',
     createdAt: '2025-01-16T14:10:00Z',
+    user: {
+      id: 'u_102',
+      name: 'Bilal Ahmed',
+      image: 'https://randomuser.me/api/portraits/men/12.jpg',
+    },
   },
   {
     _id: '3',
@@ -45,6 +55,11 @@ export const marketingRequestDummyData = [
     budget: '1,500',
     status: 'done',
     createdAt: '2025-01-17T09:00:00Z',
+    user: {
+      id: 'u_103',
+      name: 'Zainab Fatima',
+      image: 'https://randomuser.me/api/portraits/women/33.jpg',
+    },
   },
   {
     _id: '4',
@@ -55,6 +70,11 @@ export const marketingRequestDummyData = [
     budget: '3,000',
     status: 'accept',
     createdAt: '2025-01-18T11:45:00Z',
+    user: {
+      id: 'u_104',
+      name: 'Hamza Ali',
+      image: 'https://randomuser.me/api/portraits/men/67.jpg',
+    },
   },
   {
     _id: '5',
@@ -65,6 +85,11 @@ export const marketingRequestDummyData = [
     budget: '900',
     status: 'done',
     createdAt: '2025-01-19T08:20:00Z',
+    user: {
+      id: 'u_105',
+      name: 'Maria Shah',
+      image: 'https://randomuser.me/api/portraits/women/88.jpg',
+    },
   },
   {
     _id: '6',
@@ -75,6 +100,11 @@ export const marketingRequestDummyData = [
     budget: '800',
     status: 'reject',
     createdAt: '2025-01-20T16:55:00Z',
+    user: {
+      id: 'u_106',
+      name: 'Usman Tariq',
+      image: 'https://randomuser.me/api/portraits/men/91.jpg',
+    },
   },
 ];
 
@@ -109,6 +139,13 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
   console.log('sortedData', sortedData);
 
   const HEAD_LABEL = [
+    {
+      id: 'user',
+      label: 'User',
+      align: 'left',
+      sortable: true,
+      sortKey: 'user',
+    },
     {
       id: 'title',
       label: 'Title',

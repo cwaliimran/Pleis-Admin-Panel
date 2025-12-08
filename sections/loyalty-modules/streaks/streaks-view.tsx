@@ -40,6 +40,25 @@ const StreaksView = ({ global }: StreaksViewProps) => {
 
   const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
 
+  // FETCH STREAK RULES --------------------------
+  const {
+    data: streakRuleData,
+    isLoading: streakRuleLoading,
+    isFetching: streakRuleFetching,
+  } = useGetStreaksQuery(
+    {
+      page: page - 1,
+      search,
+      limit,
+      status: status === 'all' ? '' : status,
+      companyOrganizer: selectedCompany || undefined,
+    },
+    {
+      skip: global === true,
+    }
+  );
+
+  // FETCH USER STREAKS --------------------------
   const {
     data: apiData,
     isLoading,
@@ -51,18 +70,7 @@ const StreaksView = ({ global }: StreaksViewProps) => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
-  });
-
-  const {
-    data: streakRuleData,
-    isLoading: streakRuleLoading,
-    isFetching: streakRuleFetching,
-  } = useGetStreaksQuery({
-    page: page - 1,
-    search,
-    limit,
-    status: status === 'all' ? '' : status,
-    companyOrganizer: selectedCompany || undefined,
+    isGlobal: global,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -151,32 +159,37 @@ const StreaksView = ({ global }: StreaksViewProps) => {
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-            <Plus />
-            Create Streaks
-          </Button>
-        </div>
-      </div>
+      {!global && (
+        <>
+          <div>
+            <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+              <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+                <Plus />
+                Create Streaks
+              </Button>
+            </div>
+          </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-4 rounded-md md:grid-cols-2">
-        {streakRuleLoading || streakRuleFetching ? (
-          <StreakSkelton />
-        ) : streakRuleData?.data && streakRuleData.data.length > 0 ? (
-          <>
-            {streakRuleData?.data.map((data: any, idx: number) => (
-              <StreakRuleCard key={idx} visits={data?.visits} points={data?.points} global={global} />
-            ))}
-          </>
-        ) : (
-          <NoStreak handleCreateNew={handleCreateNew} />
-        )}
-      </div>
+          <div className="mt-5 grid grid-cols-1 gap-4 rounded-md md:grid-cols-2">
+            {streakRuleLoading || streakRuleFetching ? (
+              <StreakSkelton />
+            ) : streakRuleData?.data && streakRuleData.data.length > 0 ? (
+              <>
+                {streakRuleData?.data.map((data: any, idx: number) => (
+                  <StreakRuleCard key={idx} visits={data?.visits} points={data?.points} global={global} />
+                ))}
+              </>
+            ) : (
+              <NoStreak handleCreateNew={handleCreateNew} />
+            )}
+          </div>
+        </>
+      )}
 
       <StreaksTable
         data={localData}
         meta={meta}
+        global={global}
         loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}

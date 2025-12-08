@@ -107,7 +107,8 @@ export const API_ROUTES = {
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
 
   ADMIN_LOYALTY_PROMOTION: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/promotions' : '/admin/loyalty/promotions'),
-  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/promotions/${id}` : `/admin/loyalty/promotions/${id}`),
+  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean) =>
+    isGlobal ? `/admin/global-loyalty/promotions/${id}` : `/admin/loyalty/promotions/${id}`,
 
   // ADMIN_LOYALTY_CHALLENGE: `/admin/loyalty/challenges`,
   // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,
@@ -182,7 +183,9 @@ export const API_ROUTES = {
 
   STREAKS: `/admin/loyalty/streaks`,
   STREAKS_BY_ID: (id: string) => `/admin/loyalty/streaks/${id}`,
-  USER_STREAKS: `/admin/loyalty/users-streaks`,
+
+  // USER_STREAKS: `/admin/loyalty/users-streaks`,
+  ADMIN_USER_STREAKS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/users-streaks' : '/admin/loyalty/users-streaks'),
 
   ADMIN_USER_LIST: `/admin/users`,
   ADMIN_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,
