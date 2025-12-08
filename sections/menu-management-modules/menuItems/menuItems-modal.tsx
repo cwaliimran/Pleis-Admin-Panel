@@ -53,6 +53,7 @@ type MenuItemModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
+  menuManagementView?: boolean;
 };
 
 const defaultValues: MenuItemFormValues = {
@@ -87,7 +88,7 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   status: Yup.string(),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItemModalProps) => {
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManagementView }: MenuItemModalProps) => {
   const [deleting, setDeleting] = useState(false);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
@@ -274,7 +275,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
           className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[650px]!"
         >
           <DialogHeader>
-            <DialogTitle>{isEdit ? 'Edit Menu Item' : 'Create Menu Item'}</DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Menu Item' : menuManagementView ? 'Add Menu Item' : 'Create Menu Item'}</DialogTitle>
           </DialogHeader>
           <div className="w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
@@ -395,7 +396,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData }: MenuItem
                       className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
                       disabled={isEdit ? !isDirty : false}
                     >
-                      {isEdit ? 'Update Menu Item' : 'Create Menu Item'}
+                      {isEdit ? 'Update Menu Item' : menuManagementView ? 'Add Menu Item' : 'Create Menu Item'}
                     </Button>
                   )}
                 </div>
