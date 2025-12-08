@@ -1,6 +1,6 @@
 'use client';
 
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -31,15 +31,18 @@ type ReferralModalProps = {
   isEdit?: boolean;
   selectedData?: ReferralFormValues;
   onResetCount?: () => void;
+  referralSettingData?: any;
 };
 
-const ReferralModal = ({ open, onClose, isEdit = false, selectedData, onResetCount }: ReferralModalProps) => {
+const ReferralModal = ({ open, onClose, isEdit = false, selectedData, onResetCount, referralSettingData }: ReferralModalProps) => {
   const methods = useForm<ReferralFormValues>({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
 
   const { reset } = methods;
+
+  console.log("referralSettingData", referralSettingData);
 
   const handleSubmit = (data: ReferralFormValues) => {
     console.log('Referral data:', data);
@@ -55,14 +58,14 @@ const ReferralModal = ({ open, onClose, isEdit = false, selectedData, onResetCou
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[450px]!">
+        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[650px]!">
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Referral Settings' : 'Referral Settings'}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
-              <div className="mt-6 flex w-full flex-col gap-4">
+              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Referral Limit */}
                 <RHFTextField name="refLimit" label="Referral Limit" type="number" placeholder="Enter referral limit" />
 
@@ -71,6 +74,16 @@ const ReferralModal = ({ open, onClose, isEdit = false, selectedData, onResetCou
 
                 {/* Referrer Points */}
                 <RHFTextField name="refPoints" label="Referrer Points" type="number" placeholder="Enter referrer points" />
+
+                {/* Minimum Purchase */}
+                <RHFTextField name="minPurchase" label="Minimum Purchase" type="number" placeholder="Enter minimum purchase" />
+
+                {/* Purchase Threshold */}
+                <RHFTextField name="purchaseThreshold" label="Purchase Threshold" type="number" placeholder="Enter purchase threshold" />
+
+                {/* Expiry Date */}
+                {/* <RHFTextField name="expiryDate" label="Expiry Date" type="date" placeholder="Enter expiry date" /> */}
+                <RHFDate name="expiryDate" label="Expiry Date" className="h-10 w-full cursor-pointer border-gray-200 focus:border-blue-600" />
               </div>
 
               <div className="mt-6 flex w-full items-center justify-between gap-2">

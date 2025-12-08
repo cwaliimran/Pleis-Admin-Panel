@@ -100,6 +100,9 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_REWARDS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/reward' : '/admin/loyalty/rewards'),
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/reward/${id}` : `/admin/loyalty/rewards/${id}`),
 
+  ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referrals/user'),
+  ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
+
   ADMIN_LOYALTY_MEMBERS: `/admin/loyalty/club-members`,
   ADMIN_LOYALTY_MEMBERS_GIFT: `/admin/loyalty/club-members/gift-points`,
 

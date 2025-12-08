@@ -170,7 +170,7 @@ const ReviewsTable: FC<SamplePageProps> = ({
                             //   onChange: onDateChange,
                             // }}
                             searchFilter={{
-                              placeholder: 'Search Reviews...',
+                              placeholder: 'Search by review, organizer, organization...',
                               value: search,
                               onChange: onSearch,
                             }}

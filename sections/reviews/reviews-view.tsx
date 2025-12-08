@@ -10,6 +10,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
 import ReviewEditModal from './edit-review-modal';
 import ReviewsTable from './reviews-table';
+import RatingsSummary from '@/components/common/rating-summary';
 
 const ReviewsView = () => {
   const openModal = useBoolean();
@@ -118,6 +119,19 @@ const ReviewsView = () => {
 
   return (
     <div>
+      <RatingsSummary
+        title="Customer Reviews"
+        averageRating={4.5}
+        totalRatings={24000}
+        distribution={[
+          { stars: 5, count: 20000, percentage: 83 },
+          { stars: 4, count: 2000, percentage: 8 },
+          { stars: 3, count: 1000, percentage: 4 },
+          { stars: 2, count: 500, percentage: 2 },
+          { stars: 1, count: 500, percentage: 3 },
+        ]}
+      />
+
       <ReviewsTable
         data={localData}
         meta={meta}

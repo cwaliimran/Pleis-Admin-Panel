@@ -40,6 +40,7 @@ const EventDetailsPage = () => {
   const [active, setActive] = React.useState('overview');
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const [expanded, setExpanded] = useState(false);
 
@@ -80,6 +81,10 @@ const EventDetailsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRequestFeedback = async () => {
+    setShowFeedback(true);
   };
 
   const handleCloneEvent = async () => {
@@ -252,6 +257,23 @@ const EventDetailsPage = () => {
 
                       {/* Clone Button */}
                       <div className="w-full sm:w-auto">
+                        {showFeedback ? (
+                          <span className="flex w-full items-center justify-center gap-2 rounded-3xl px-4 py-2 font-semibold text-green-600 sm:w-auto">
+                            Feedback Requested
+                          </span>
+                        ) : (
+                          <Button
+                            variant="default"
+                            onClick={handleRequestFeedback}
+                            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-3xl px-4 py-2 sm:w-auto"
+                          >
+                            Request Feedback
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Clone Button */}
+                      <div className="w-full sm:w-auto">
                         <Button
                           variant="default"
                           onClick={handleCloneEvent}
@@ -331,7 +353,7 @@ const EventDetailsPage = () => {
 
                   {active === 'notifications' && <EventNotification />}
 
-                  {active === 'feedback' && <EventFeedbackView />}
+                  {active === 'feedback' && showFeedback && <EventFeedbackView />}
                 </div>
               </div>
 
