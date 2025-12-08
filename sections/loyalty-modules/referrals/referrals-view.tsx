@@ -1,12 +1,13 @@
 'use client';
 
 import { useBoolean } from '@/hooks/useBoolean';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { formatDate } from '@/utils/format-time';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import RefferralModal from './referrals-modal';
 import ReferralsTable from './referrals-table';
+import { useGetReferralSettingQuery, useGetReferralsQuery } from '@/store/Reducer/referrals-api';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 interface ReferralsViewProps {
   userType: 'super-admin' | 'organizer';
@@ -23,13 +24,24 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { companyId } = useCompanySelectionState();
+
+  const { data: apiData, isLoading } = useGetReferralsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    isGlobal: global,
   });
+
+  const { data: referralSettingData, isLoading: isSettingLoading } = useGetReferralSettingQuery({
+    companyOrganizer: companyId || undefined,
+    isGlobal: global,
+  });
+
+  console.log('referralSettingData', referralSettingData?.data);
+  console.log('isSettingLoading', isSettingLoading);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -62,10 +74,7 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleSettingModal}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleSettingModal}>
             Referral Setting
           </Button>
         </div>
@@ -107,7 +116,7 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
         }}
       />
 
-      <RefferralModal open={openModal.value} onClose={openModal.onFalse} />
+      <RefferralModal open={openModal.value} onClose={openModal.onFalse} referralSettingData={referralSettingData?.data} />
     </div>
   );
 };

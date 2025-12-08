@@ -23,9 +23,9 @@ export const reviewDummyData = [
     organization: 'FoodDeck',
     serviceType: 'Ordering',
     review: 'The food ordering experience was smooth and fast. Loved the UI!',
-    rating: 5,
     createdAt: '2025-01-22T10:15:00Z',
     status: 'approved',
+    rating: 5,
   },
   {
     _id: 'rev_002',
@@ -34,9 +34,9 @@ export const reviewDummyData = [
     organization: 'Eventify',
     serviceType: 'Ticketing',
     review: 'Ticket booking was easy but the confirmation email came late.',
-    rating: 3,
     createdAt: '2025-01-23T14:40:00Z',
     status: 'pending',
+    rating: 4,
   },
   {
     _id: 'rev_003',
@@ -45,9 +45,9 @@ export const reviewDummyData = [
     organization: 'DineMate',
     serviceType: 'Reservation',
     review: 'Restaurant reservation worked perfectly. No issues at all.',
-    rating: 5,
     createdAt: '2025-01-20T08:10:00Z',
     status: 'approved',
+    rating: 5,
   },
   {
     _id: 'rev_004',
@@ -56,9 +56,9 @@ export const reviewDummyData = [
     organization: 'Eventify',
     serviceType: 'Ticketing',
     review: 'The ticket page kept loading slowly. Needs some improvements.',
-    rating: 2,
     createdAt: '2025-01-18T12:55:00Z',
     status: 'rejected',
+    rating: 2,
   },
   {
     _id: 'rev_005',
@@ -67,9 +67,9 @@ export const reviewDummyData = [
     organization: 'FoodDeck',
     serviceType: 'Ordering',
     review: 'Excellent service! Delivery was on time and everything was smooth.',
-    rating: 5,
     createdAt: '2025-01-25T17:20:00Z',
     status: 'approved',
+    rating: 1,
   },
   {
     _id: 'rev_006',
@@ -78,12 +78,11 @@ export const reviewDummyData = [
     organization: 'DineMate',
     serviceType: 'Reservation',
     review: 'It took too long to confirm the reservation. Please improve speed.',
-    rating: 3,
     createdAt: '2025-01-19T09:00:00Z',
     status: 'pending',
+    rating: 3,
   },
 ];
-
 
 const ReviewsTable: FC<SamplePageProps> = ({
   data = [],
@@ -171,7 +170,7 @@ const ReviewsTable: FC<SamplePageProps> = ({
                             //   onChange: onDateChange,
                             // }}
                             searchFilter={{
-                              placeholder: 'Search Reviews...',
+                              placeholder: 'Search by review, organizer, organization...',
                               value: search,
                               onChange: onSearch,
                             }}

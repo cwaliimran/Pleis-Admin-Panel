@@ -27,7 +27,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
         <div className="relative flex h-44 shrink-0 items-center justify-center bg-linear-to-br from-[#2a599b] to-[#1300FF] text-6xl">
           {categoryIcon}
 
-          {/* Badges (omitted for brevity) */}
+          {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
             {item.isLimitedTime && (
               <span className="rounded-md bg-orange-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase">Limited Time</span>
@@ -45,7 +45,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
         {/* Content */}
         <div className="flex grow flex-col p-5">
           <div className="flex grow flex-col">
-            {/* Header (omitted for brevity) */}
+            {/* Header */}
             <div className="mb-3 flex items-start justify-between">
               <div className="flex-1">
                 <div className="mb-1 text-lg font-bold text-gray-900 dark:text-gray-100">{item.name}</div>
@@ -57,7 +57,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
               <div className="text-xl font-bold text-blue-600 dark:text-blue-400">€{item.price.toFixed(2)}</div>
             </div>
 
-            {/* 3. Updated Description Handling */}
+            {/* Description Handling */}
             {item.description && (
               <div className="mb-4 flex flex-col">
                 <p className={cn('text-sm leading-relaxed text-gray-600 dark:text-gray-400', shouldTruncate && 'line-clamp-2 overflow-hidden')}>
@@ -76,7 +76,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
               </div>
             )}
 
-            {/* Meta Info (omitted for brevity) */}
+            {/* Meta Info */}
             <div className="mb-4 flex gap-4 text-sm text-gray-500 dark:text-gray-500">
               <div className="flex items-center gap-1.5">
                 <span>{item.isInStock ? '📦' : '❌'}</span>
@@ -98,7 +98,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
               )}
             </div>
 
-            {/* Special Status for Preorder Unlock (omitted for brevity) */}
+            {/* Special Status for Preorder Unlock */}
             {item.availabilityType === 'preorder-unlock' && (
               <div className="mb-4 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-500">
                 <span>🔒</span>
@@ -107,7 +107,30 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
             )}
           </div>
 
-          {/* Actions (omitted for brevity) */}
+          {/* Out of Stock Toggle */}
+          <div className="mb-0 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Out of Stock</span>
+            <button
+              title="Out of stock"
+              type="button"
+              // role="switch"
+              // aria-checked={!item.isInStock}
+              onClick={() => onToggleStock(item)}
+              className={cn(
+                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none',
+                !item.isInStock ? 'bg-red-500' : 'bg-gray-300 dark:bg-gray-600'
+              )}
+            >
+              <span
+                className={cn(
+                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                  !item.isInStock ? 'translate-x-5' : 'translate-x-0'
+                )}
+              />
+            </button>
+          </div>
+
+          {/* Actions */}
           <div className="mt-auto grid grid-cols-2 gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
             <Button variant="default" onClick={() => onEdit(item)} className="h-10 gap-1.5 font-semibold">
               Edit
@@ -126,7 +149,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
         </div>
       </div>
 
-      {/* 4. Modal component */}
+      {/* Modal component */}
       <DescModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={item.name}>
         {item.description}
       </DescModal>

@@ -4,6 +4,7 @@ import { useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
 import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import EventFeedbackTable from './event-feedback-table';
+import RatingsSummary from '@/components/common/rating-summary';
 
 const EventFeedbackView = () => {
   // Pagination and filter state
@@ -46,6 +47,19 @@ const EventFeedbackView = () => {
 
   return (
     <div>
+      <RatingsSummary
+        title="Feedback Summary"
+        averageRating={4.5}
+        totalRatings={24000}
+        distribution={[
+          { stars: 5, count: 20000, percentage: 83 },
+          { stars: 4, count: 2000, percentage: 8 },
+          { stars: 3, count: 1000, percentage: 4 },
+          { stars: 2, count: 500, percentage: 2 },
+          { stars: 1, count: 500, percentage: 3 },
+        ]}
+      />
+
       <EventFeedbackTable
         data={localData}
         meta={meta}

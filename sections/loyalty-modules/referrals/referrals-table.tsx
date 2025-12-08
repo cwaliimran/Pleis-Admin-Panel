@@ -17,7 +17,6 @@ import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { ReferralData } from './data';
 import ReferralsTableRow from './referrals-table-row';
 import { SamplePageProps } from './types';
 
@@ -47,8 +46,8 @@ const ReferralsTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -115,20 +114,20 @@ const ReferralsTable: FC<SamplePageProps> = ({
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
+                            // selectFilters={[
+                            //   {
+                            //     id: 'sheet-revenue',
+                            //     label: 'Status',
+                            //     placeholder: 'Select by Status',
+                            //     value: status,
+                            //     onChange: onStatusChange,
+                            //     options: [
+                            //       { value: 'all', label: 'All' },
+                            //       { value: 'active', label: 'Active' },
+                            //       { value: 'inactive', label: 'Inactive' },
+                            //     ],
+                            //   },
+                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -153,8 +152,8 @@ const ReferralsTable: FC<SamplePageProps> = ({
                 colSpan={HEAD_LABEL.length}
                 dataLength={data?.length || 0}
               >
-                {/* {data?.map((item, idx) => ( */}
-                {ReferralData?.map((item, idx) => (
+                {data?.map((item, idx) => (
+                // {ReferralData?.map((item, idx) => (
                   <ReferralsTableRow
                     key={item?._id || idx}
                     userType={userType}

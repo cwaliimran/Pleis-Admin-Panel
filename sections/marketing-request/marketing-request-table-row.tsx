@@ -11,7 +11,7 @@ import { TableRowProps } from './types';
 const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell className="text-left capitalize">{item?.user || 'N/A'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.user?.name || '-'}</TableCell>
 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
@@ -47,11 +47,9 @@ const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit })
 
       <TableCell className="text-left">
         <CustomBadge
-          variant={
-            item.status === 'accept' ? 'success' : item.status === 'reject' ? 'error' : item.status === 'done' ? 'info' : 'warning' // pending
-          }
+          variant={item.status === 'accept' ? 'success' : item.status === 'reject' ? 'error' : item.status === 'pending' ? 'warning' : 'info'}
         >
-          {item.status}
+          {item?.status}
         </CustomBadge>
       </TableCell>
 

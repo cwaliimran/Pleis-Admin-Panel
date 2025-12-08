@@ -8,6 +8,7 @@ export interface SampleMeta {
 export interface SamplePageProps {
   page: any;
   data: any[];
+  global?: boolean;
   meta: SampleMeta;
   loading?: boolean;
   handleDelete?: (id: string) => void;
