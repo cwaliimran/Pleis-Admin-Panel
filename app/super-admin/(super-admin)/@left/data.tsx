@@ -18,8 +18,7 @@ import {
   UsersRound,
   FileClock,
   SlidersVertical,
-  Volume1,
-  ThumbsUp,
+  Volume1
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -71,6 +70,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Notification center',
         url: paths.superAdmin.events.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Reviews',
+        url: paths.superAdmin.reviews,
         icon: CalendarDays,
       },
       {
@@ -148,6 +152,11 @@ export const menuGroups: MenuGroup[] = [
         icon: Tags,
       },
       {
+        title: 'Referral Analytics',
+        url: paths.superAdmin.referralsAnalytics,
+        icon: Tags,
+      },
+      {
         title: 'Transactions',
         url: paths.superAdmin.transactions.default,
         icon: Tags,
@@ -197,6 +206,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Referrals',
         url: paths.superAdmin.globalReferrals,
+        icon: Tags,
+      },
+      {
+        title: 'Referral Analytics',
+        url: paths.superAdmin.globalReferralsAnalytics,
         icon: Tags,
       },
       {
@@ -384,11 +398,21 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.marketingRequests,
     icon: Volume1,
   },
-  {
-    label: 'Reviews',
-    key: paths.superAdmin.reviews,
-    icon: ThumbsUp,
-  },
+  // {
+  //   label: 'Updates',
+  //   key: paths.superAdmin.updates,
+  //   icon: Megaphone,
+  // },
+  // {
+  //   label: 'Giveaways',
+  //   key: paths.superAdmin.giveaways,
+  //   icon: Megaphone,
+  // },
+  // {
+  //   label: 'Reviews',
+  //   key: paths.superAdmin.reviews,
+  //   icon: ThumbsUp,
+  // },
   // {
   //   label: 'Notifications',
   //   key: paths.superAdmin.notification.default,
