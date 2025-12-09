@@ -3,11 +3,13 @@ import {
   Building,
   Calendar,
   ChartColumnBig,
+  Gift,
   // Grid2x2Check,
   Handshake,
   Highlighter,
   List,
   ListOrdered,
+  Megaphone,
   Podcast,
   SquareMenu,
   Tags,
@@ -140,6 +142,16 @@ export const menuGroups: MenuGroup[] = [
     label: 'Reviews',
     key: paths.organizer.reviews,
     icon: ThumbsUp,
+  },
+   {
+    label: 'Updates',
+    key: paths.organizer.updates,
+    icon: Megaphone,
+  },
+  {
+    label: 'Giveaways',
+    key: paths.organizer.giveaways,
+    icon: Gift,
   },
   // ...(isDev
   //   ? [
