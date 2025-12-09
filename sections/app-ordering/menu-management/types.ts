@@ -1,6 +1,6 @@
 export type MenuCategory = 'drinks' | 'food' | 'desserts' | 'merchandise';
 
-export type MenuTab = 'all' | 'limited' | 'upsells' | 'out-of-stock';
+export type MenuTab = 'all' | 'limited' | 'upsells' | 'out-of-stock' | 'schedule-sale';
 
 export type AvailabilityType = 'preorder-only' | 'preorder-and-event' | 'preorder-unlock';
 
@@ -20,6 +20,13 @@ export interface MenuItem {
   soldCount: number;
   limitedTimeEnd?: Date;
   availabilityType?: AvailabilityType;
+  // Sale-related fields
+  isOnSale?: boolean;
+  salePrice?: number;
+  saleStartDate?: Date;
+  saleEndDate?: Date;
+  discountType?: DiscountType;
+  discountValue?: number;
 }
 
 export interface MenuStats {
@@ -28,6 +35,7 @@ export interface MenuStats {
   outOfStock: number;
   limitedTimeItems: number;
   upsellItems: number;
+  saleItems: number;
 }
 
 export interface LimitedTimeFormData {

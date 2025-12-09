@@ -15,7 +15,8 @@ import { StatsCard } from './stats-card';
 import { BulkSaleFormData, LimitedTimeFormData, MenuCategory, MenuItem, MenuStats, MenuTab } from './types';
 import MenuItemModal from '@/sections/menu-management-modules/menuItems/menuItems-modal';
 import PresetImportScreen from './preset-import';
-import { Package } from 'lucide-react';
+import { Package, Tag } from 'lucide-react';
+import { AddSaleFormData, AddSaleModal } from './modals/add-sale-mdoal';
 
 export const MenuManagementViewV1: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MenuTab>('all');
@@ -29,6 +30,7 @@ export const MenuManagementViewV1: React.FC = () => {
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
   const [isLimitedTimeModalOpen, setIsLimitedTimeModalOpen] = useState(false);
   const [isBulkSaleModalOpen, setIsBulkSaleModalOpen] = useState(false);
+  const [isAddSaleModalOpen, setIsAddSaleModalOpen] = useState(false);
   const [isPresetImportModalOpen, setIsPresetImportModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
@@ -41,6 +43,8 @@ export const MenuManagementViewV1: React.FC = () => {
         return menuItems.filter((item) => item.isUpsell);
       case 'out-of-stock':
         return menuItems.filter((item) => !item.isInStock);
+      case 'schedule-sale':
+        return menuItems.filter((item) => item.isOnSale);
       default:
         return menuItems;
     }
@@ -94,6 +98,7 @@ export const MenuManagementViewV1: React.FC = () => {
       limited: menuItems.filter((item) => item.isLimitedTime).length,
       upsells: menuItems.filter((item) => item.isUpsell).length,
       'out-of-stock': menuItems.filter((item) => !item.isInStock).length,
+      'schedule-sale': menuItems.filter((item) => item.isOnSale).length,
     }),
     [menuItems]
   );
@@ -105,6 +110,7 @@ export const MenuManagementViewV1: React.FC = () => {
       outOfStock: menuItems.filter((item) => !item.isInStock).length,
       limitedTimeItems: menuItems.filter((item) => item.isLimitedTime).length,
       upsellItems: menuItems.filter((item) => item.isUpsell).length,
+      saleItems: menuItems.filter((item) => item.isOnSale).length,
     }),
     [menuItems]
   );
@@ -161,6 +167,13 @@ export const MenuManagementViewV1: React.FC = () => {
     console.log('Bulk sale data:', data);
   };
 
+  const handleSubmitAddSale = (data: AddSaleFormData) => {
+    showSuccess('Sale created successfully!');
+    console.log('Add sale data:', data);
+    // Here you would typically update the menu item with sale information
+    // or create a separate sale record in your database
+  };
+
   const handlePresetImportComplete = () => {
     // Refresh menu items after import
     // You can add your refresh logic here or call an API to refetch menu items
@@ -176,20 +189,17 @@ export const MenuManagementViewV1: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Menu Management</h1>
 
             <div className="flex flex-wrap gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsPresetImportModalOpen(true)} 
-                className="h-11 gap-2 font-semibold"
-              >
+              <Button variant="outline" onClick={() => setIsAddSaleModalOpen(true)} className="h-11 gap-2 font-semibold">
+                <Tag className="h-4 w-4" />
+                Add Sale
+              </Button>
+
+              <Button variant="outline" onClick={() => setIsPresetImportModalOpen(true)} className="h-11 gap-2 font-semibold">
                 <Package className="h-4 w-4" />
                 Import Presets
               </Button>
 
-              <Button 
-                variant="outline" 
-                onClick={() => setIsBulkSaleModalOpen(true)} 
-                className="h-11 gap-2 font-semibold"
-              >
+              <Button variant="outline" onClick={() => setIsBulkSaleModalOpen(true)} className="h-11 gap-2 font-semibold">
                 🏷️ Create Bulk Sale
               </Button>
 
@@ -276,19 +286,15 @@ export const MenuManagementViewV1: React.FC = () => {
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-500">
               {searchQuery ? 'Try adjusting your search or filters' : 'Add your first menu item to get started'}
             </p>
-            <div className="flex justify-center gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsPresetImportModalOpen(true)} 
-                className="font-semibold"
-              >
+            {/* <div className="flex justify-center gap-3">
+              <Button variant="outline" onClick={() => setIsPresetImportModalOpen(true)} className="font-semibold">
                 <Package className="mr-2 h-4 w-4" />
                 Import from Presets
               </Button>
               <Button onClick={handleAddItem} className="font-semibold">
                 + Add Menu Item
               </Button>
-            </div>
+            </div> */}
           </div>
         ) : (
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -301,24 +307,22 @@ export const MenuManagementViewV1: React.FC = () => {
 
       {/* Modals */}
       {isAddEditModalOpen && (
-        <MenuItemModal
-          open={isAddEditModalOpen}
-          onClose={() => setIsAddEditModalOpen(false)}
-          menuManagementView={true}
-          selectedData={editingItem}
-        />
+        <MenuItemModal open={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} menuManagementView={true} selectedData={editingItem} />
       )}
 
-      <LimitedTimeItemModal 
-        isOpen={isLimitedTimeModalOpen} 
-        onClose={() => setIsLimitedTimeModalOpen(false)} 
-        onSubmit={handleSubmitLimitedTime} 
-      />
+      <LimitedTimeItemModal isOpen={isLimitedTimeModalOpen} onClose={() => setIsLimitedTimeModalOpen(false)} onSubmit={handleSubmitLimitedTime} />
 
       <BulkSaleModal
         isOpen={isBulkSaleModalOpen}
         onClose={() => setIsBulkSaleModalOpen(false)}
         onSubmit={handleSubmitBulkSale}
+        availableItems={menuItems.filter((item) => item.isInStock)}
+      />
+
+      <AddSaleModal
+        isOpen={isAddSaleModalOpen}
+        onClose={() => setIsAddSaleModalOpen(false)}
+        onSubmit={handleSubmitAddSale}
         availableItems={menuItems.filter((item) => item.isInStock)}
       />
 
@@ -347,6 +351,8 @@ export const MenuManagementViewV1: React.FC = () => {
 // import { StatsCard } from './stats-card';
 // import { BulkSaleFormData, LimitedTimeFormData, MenuCategory, MenuItem, MenuStats, MenuTab } from './types';
 // import MenuItemModal from '@/sections/menu-management-modules/menuItems/menuItems-modal';
+// import PresetImportScreen from './preset-import';
+// import { Package } from 'lucide-react';
 
 // export const MenuManagementViewV1: React.FC = () => {
 //   const [activeTab, setActiveTab] = useState<MenuTab>('all');
@@ -360,6 +366,7 @@ export const MenuManagementViewV1: React.FC = () => {
 //   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
 //   const [isLimitedTimeModalOpen, setIsLimitedTimeModalOpen] = useState(false);
 //   const [isBulkSaleModalOpen, setIsBulkSaleModalOpen] = useState(false);
+//   const [isPresetImportModalOpen, setIsPresetImportModalOpen] = useState(false);
 //   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
 //   // Filter items based on active tab
@@ -465,35 +472,6 @@ export const MenuManagementViewV1: React.FC = () => {
 //     showSuccess(item.isInStock ? 'Item marked as out of stock' : 'Item restocked and available for ordering');
 //   };
 
-//   // const handleSubmitItem = (data: MenuItemFormData) => {
-//   //   if (editingItem) {
-//   //     // Update existing item
-//   //     setMenuItems((prev) =>
-//   //       prev.map((item) =>
-//   //         item.id === editingItem.id
-//   //           ? {
-//   //               ...item,
-//   //               ...data,
-//   //             }
-//   //           : item
-//   //       )
-//   //     );
-//   //     showSuccess('Menu item updated successfully!');
-//   //   } else {
-//   //     // Add new item
-//   //     const newItem: MenuItem = {
-//   //       id: Date.now().toString(),
-//   //       ...data,
-//   //       isInStock: true,
-//   //       isLimitedTime: false,
-//   //       isPreorder: false,
-//   //       soldCount: 0,
-//   //     };
-//   //     setMenuItems((prev) => [...prev, newItem]);
-//   //     showSuccess('Menu item saved successfully!');
-//   //   }
-//   // };
-
 //   const handleSubmitLimitedTime = (data: LimitedTimeFormData) => {
 //     const newItem: MenuItem = {
 //       id: Date.now().toString(),
@@ -520,6 +498,12 @@ export const MenuManagementViewV1: React.FC = () => {
 //     console.log('Bulk sale data:', data);
 //   };
 
+//   const handlePresetImportComplete = () => {
+//     // Refresh menu items after import
+//     // You can add your refresh logic here or call an API to refetch menu items
+//     showSuccess('Preset items imported successfully!');
+//   };
+
 //   return (
 //     <section>
 //       {/* Header */}
@@ -529,6 +513,11 @@ export const MenuManagementViewV1: React.FC = () => {
 //             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Menu Management</h1>
 
 //             <div className="flex flex-wrap gap-3">
+//               <Button variant="outline" onClick={() => setIsPresetImportModalOpen(true)} className="h-11 gap-2 font-semibold">
+//                 <Package className="h-4 w-4" />
+//                 Import Presets
+//               </Button>
+
 //               <Button variant="outline" onClick={() => setIsBulkSaleModalOpen(true)} className="h-11 gap-2 font-semibold">
 //                 🏷️ Create Bulk Sale
 //               </Button>
@@ -616,9 +605,15 @@ export const MenuManagementViewV1: React.FC = () => {
 //             <p className="mb-6 text-sm text-gray-500 dark:text-gray-500">
 //               {searchQuery ? 'Try adjusting your search or filters' : 'Add your first menu item to get started'}
 //             </p>
-//             <Button onClick={handleAddItem} className="font-semibold">
-//               + Add Menu Item
-//             </Button>
+//             <div className="flex justify-center gap-3">
+//               <Button variant="outline" onClick={() => setIsPresetImportModalOpen(true)} className="font-semibold">
+//                 <Package className="mr-2 h-4 w-4" />
+//                 Import from Presets
+//               </Button>
+//               <Button onClick={handleAddItem} className="font-semibold">
+//                 + Add Menu Item
+//               </Button>
+//             </div>
 //           </div>
 //         ) : (
 //           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -629,18 +624,10 @@ export const MenuManagementViewV1: React.FC = () => {
 //         )}
 //       </div>
 
-//       {isAddEditModalOpen && (
-//         <MenuItemModal
-//           open={isAddEditModalOpen}
-//           onClose={() => setIsAddEditModalOpen(false)}
-//           menuManagementView={true}
-//           // isEdit={editModal.value}
-//           selectedData={editingItem}
-//         />
-//       )}
-
 //       {/* Modals */}
-//       {/* <AddEditItemModal isOpen={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} onSubmit={handleSubmitItem} item={editingItem} /> */}
+//       {isAddEditModalOpen && (
+//         <MenuItemModal open={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} menuManagementView={true} selectedData={editingItem} />
+//       )}
 
 //       <LimitedTimeItemModal isOpen={isLimitedTimeModalOpen} onClose={() => setIsLimitedTimeModalOpen(false)} onSubmit={handleSubmitLimitedTime} />
 
@@ -649,6 +636,12 @@ export const MenuManagementViewV1: React.FC = () => {
 //         onClose={() => setIsBulkSaleModalOpen(false)}
 //         onSubmit={handleSubmitBulkSale}
 //         availableItems={menuItems.filter((item) => item.isInStock)}
+//       />
+
+//       <PresetImportScreen
+//         open={isPresetImportModalOpen}
+//         onClose={() => setIsPresetImportModalOpen(false)}
+//         onImportComplete={handlePresetImportComplete}
 //       />
 //     </section>
 //   );

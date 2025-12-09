@@ -12,6 +12,12 @@ export const MOCK_MENU_ITEMS: MenuItem[] = [
     isLimitedTime: false,
     isPreorder: false,
     soldCount: 847,
+    isOnSale: true,
+    salePrice: 9.0,
+    discountType: 'percentage',
+    discountValue: 25,
+    saleStartDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // Started 2 days ago
+    saleEndDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // Ends in 5 days
   },
   {
     id: '2',
@@ -50,6 +56,12 @@ export const MOCK_MENU_ITEMS: MenuItem[] = [
     isLimitedTime: false,
     isPreorder: false,
     soldCount: 412,
+    isOnSale: true,
+    salePrice: 14.0,
+    discountType: 'fixed',
+    discountValue: 4,
+    saleStartDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Started 1 day ago
+    saleEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Ends in 7 days
   },
   {
     id: '5',
@@ -86,4 +98,5 @@ export const MOCK_STATS: MenuStats = {
   outOfStock: 4,
   limitedTimeItems: 7,
   upsellItems: 12,
+  saleItems: 2,
 };

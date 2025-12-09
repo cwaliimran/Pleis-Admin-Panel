@@ -13,6 +13,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const daysUntilEnd = item.limitedTimeEnd ? Math.ceil((item.limitedTimeEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+  const daysUntilSaleEnd = item.saleEndDate ? Math.ceil((item.saleEndDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
   const categoryIcon = CATEGORY_ICONS[item.category] || '🍽️';
   const shouldTruncate = item.description && item.description.length > DESCRIPTION_MAX_LENGTH;
 
@@ -29,6 +30,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+            {item.isOnSale && <span className="rounded-md bg-pink-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase">Sale</span>}
             {item.isLimitedTime && (
               <span className="rounded-md bg-orange-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase">Limited Time</span>
             )}
@@ -52,9 +54,19 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
                 <div className="text-sm font-semibold text-gray-500 capitalize dark:text-gray-500">
                   {item.category}
                   {item.isLimitedTime && ' • Promotional'}
+                  {item.isOnSale && ' • On Sale'}
                 </div>
               </div>
-              <div className="text-xl font-bold text-blue-600 dark:text-blue-400">€{item.price.toFixed(2)}</div>
+              <div className="text-right">
+                {item.isOnSale && item.salePrice ? (
+                  <>
+                    <div className="text-xl font-bold text-pink-600 dark:text-pink-400">€{item.salePrice.toFixed(2)}</div>
+                    <div className="text-sm text-gray-400 line-through">€{item.price.toFixed(2)}</div>
+                  </>
+                ) : (
+                  <div className="text-xl font-bold text-blue-600 dark:text-blue-400">€{item.price.toFixed(2)}</div>
+                )}
+              </div>
             </div>
 
             {/* Description Handling */}
@@ -77,11 +89,18 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
             )}
 
             {/* Meta Info */}
-            <div className="mb-4 flex gap-4 text-sm text-gray-500 dark:text-gray-500">
+            <div className="mb-4 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-500">
               <div className="flex items-center gap-1.5">
                 <span>{item.isInStock ? '📦' : '❌'}</span>
                 <span>{item.isInStock ? 'In Stock' : 'Currently Unavailable'}</span>
               </div>
+
+              {item.isOnSale && item.saleEndDate && (
+                <div className="flex items-center gap-1.5 text-pink-600 dark:text-pink-400">
+                  <span>🏷️</span>
+                  <span>Sale ends in {daysUntilSaleEnd} days</span>
+                </div>
+              )}
 
               {item.isLimitedTime && item.limitedTimeEnd && (
                 <div className="flex items-center gap-1.5">
@@ -90,7 +109,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
                 </div>
               )}
 
-              {!item.isLimitedTime && (
+              {!item.isLimitedTime && !item.isOnSale && (
                 <div className="flex items-center gap-1.5">
                   <span>📊</span>
                   <span>{item.soldCount} sold</span>
