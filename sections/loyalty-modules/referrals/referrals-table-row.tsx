@@ -4,7 +4,6 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { useAppNavigator } from '@/hooks/useAppNavigator';
 import { fDate, formatStr } from '@/utils/format-time';
-import { Eye } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
@@ -42,7 +41,7 @@ const ReferralsTableRow: FC<TableRowProps> = ({ item, userType, global }) => {
 
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
-      <TableCell className="text-center">
+      {/* <TableCell className="text-center">
         <div className="flex justify-center gap-2">
           <button
             title="View Venue"
@@ -52,7 +51,7 @@ const ReferralsTableRow: FC<TableRowProps> = ({ item, userType, global }) => {
             <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
           </button>
         </div>
-      </TableCell>
+      </TableCell> */}
     </TableRow>
   );
 };

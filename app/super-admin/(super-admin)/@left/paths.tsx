@@ -98,6 +98,7 @@ export const paths = {
     globalChallenges: '/super-admin/global-challenges',
     globalPromotions: '/super-admin/global-promotions',
     globalReferrals: '/super-admin/global-referrals',
+    globalReferralsAnalytics: '/super-admin/global-referrals/analytics',
 
     loyalty: {
       default: '/super-admin/loyalty',
@@ -125,6 +126,8 @@ export const paths = {
     rewardCategory: '/super-admin/reward-category',
     reviews: '/super-admin/reviews',
 
+    // updates: '/super-admin/updates',
+    // giveaways: '/super-admin/giveaways',
     streak: '/super-admin/streaks',
     marketingRequests: '/super-admin/marketing-requests',
     globalStreak: '/super-admin/global-streaks',
@@ -136,6 +139,7 @@ export const paths = {
     members: '/super-admin/members',
     settings: '/super-admin/settings',
     referrals: '/super-admin/referrals',
+    referralsAnalytics: '/super-admin/referrals/analytics',
     tiers: '/super-admin/tiers',
     thirdParty: '/super-admin/third-party',
     subscription: '/super-admin/subscription',

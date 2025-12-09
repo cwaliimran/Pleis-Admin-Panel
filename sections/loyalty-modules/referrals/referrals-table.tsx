@@ -30,7 +30,7 @@ const HEAD_LABEL = [
   { id: 'refPoints', label: 'Referrer Points', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   // { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Actions', align: 'center' },
+  // { id: 'actions', label: 'Actions', align: 'center' },
 ];
 
 const ReferralsTable: FC<SamplePageProps> = ({

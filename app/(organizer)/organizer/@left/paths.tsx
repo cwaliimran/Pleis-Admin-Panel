@@ -68,6 +68,11 @@ export const paths = {
     },
     marketingRequests: '/organizer/marketing-requests',
     reviews: '/organizer/reviews',
+
+    updates: '/organizer/updates',
+    giveaways: '/organizer/giveaways',
+
+
     logout: '/organizer/logout',
   },
 };

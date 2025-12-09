@@ -41,31 +41,13 @@ const ReferralsDetailsView = () => {
       {/* --------- REFERRALS HEADER --------- */}
       <Card className="dark:bg-secondary mt-5 shadow-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            Referrals Analytics
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">Referrals Analytics</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Total Referrals Completed"
-            value={dummyReferralAnalytics.totalCompleted}
-          />
-          <StatCard
-            title="Total Points Given"
-            value={dummyReferralAnalytics.totalPointsGiven}
-          />
-          <StatCard
-            title="Points Per Referral"
-            value={dummyReferralAnalytics.referralSettings.pointsPerReferral}
-          />
-          <StatCard
-            title="Program Status"
-            value={
-              dummyReferralAnalytics.referralSettings.isActive
-                ? 'Active'
-                : 'Inactive'
-            }
-          />
+          <StatCard title="Total Referrals Completed" value={dummyReferralAnalytics.totalCompleted} />
+          <StatCard title="Total Points Given" value={dummyReferralAnalytics.totalPointsGiven} />
+          <StatCard title="Points Per Referral" value={dummyReferralAnalytics.referralSettings.pointsPerReferral} />
+          <StatCard title="Program Status" value={dummyReferralAnalytics.referralSettings.isActive ? 'Active' : 'Inactive'} />
         </CardContent>
       </Card>
 
@@ -92,17 +74,14 @@ const ReferralsDetailsView = () => {
 
         {/* Top Referrers */}
         <div className="col-span-12 md:col-span-6">
-          <Card className="dark:bg-secondary min-h-[20rem] shadow-md">
+          <Card className="dark:bg-secondary min-h-full shadow-md">
             <CardHeader>
               <h3 className="text-lg font-semibold">Top Referrers</h3>
             </CardHeader>
             <CardContent>
               <ul className="space-y-4">
                 {dummyReferralAnalytics.topReferrers.map((user, i) => (
-                  <li
-                    key={i}
-                    className="flex justify-between border-b pb-1 text-sm"
-                  >
+                  <li key={i} className="flex justify-between border-b pb-1 text-sm">
                     <span>{user.username}</span>
                     <span className="font-semibold">{user.count}</span>
                   </li>
@@ -125,18 +104,13 @@ const ReferralsDetailsView = () => {
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            <strong>Points Per Referral:</strong>{' '}
-            {dummyReferralAnalytics.referralSettings.pointsPerReferral}
+            <strong>Points Per Referral:</strong> {dummyReferralAnalytics.referralSettings.pointsPerReferral}
           </p>
           <p>
-            <strong>Max Referrals Per User:</strong>{' '}
-            {dummyReferralAnalytics.referralSettings.maxReferralsPerUser}
+            <strong>Max Referrals Per User:</strong> {dummyReferralAnalytics.referralSettings.maxReferralsPerUser}
           </p>
           <p>
-            <strong>Status:</strong>{' '}
-            {dummyReferralAnalytics.referralSettings.isActive
-              ? 'Active'
-              : 'Inactive'}
+            <strong>Status:</strong> {dummyReferralAnalytics.referralSettings.isActive ? 'Active' : 'Inactive'}
           </p>
         </CardContent>
       </Card>
@@ -148,9 +122,7 @@ const StatCard = ({ title, value }: StatCardProps) => {
   return (
     <Card className="dark:bg-secondary gap-2 shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base font-medium dark:text-gray-400">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-base font-medium dark:text-gray-400">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-xl font-semibold">{value}</p>
