@@ -16,7 +16,7 @@ interface InvoiceCardProps {
 }
 const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
   return (
-    <Card className="dark:bg-secondary rounded-[8px]">
+    <Card className="dark:bg-secondary rounded-xl">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

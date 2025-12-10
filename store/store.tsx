@@ -43,6 +43,7 @@ import { levelStatusApi } from './Reducer/level-status-api';
 import { bundlesApi } from './Reducer/bundles-api';
 import { rewardCategoryApi } from './Reducer/reward-category-api';
 import { referralsApi } from './Reducer/referrals-api';
+import { thirdPartyApi } from './Reducer/third-party-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -85,6 +86,7 @@ const appReducer = combineReducers({
   [bundlesApi.reducerPath]: bundlesApi.reducer,
   [rewardCategoryApi.reducerPath]: rewardCategoryApi.reducer,
   [referralsApi.reducerPath]: referralsApi.reducer,
+  [thirdPartyApi.reducerPath]: thirdPartyApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -134,6 +136,7 @@ export const store = configureStore({
       bundlesApi.middleware,
       rewardCategoryApi.middleware,
       menuListApi.middleware,
+      thirdPartyApi.middleware,
       referralsApi.middleware
     ),
 });

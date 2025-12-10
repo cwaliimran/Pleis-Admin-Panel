@@ -5,19 +5,12 @@ import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { ThirdPartyRewardsData } from './data';
 import ThirdPartyTableRow from './third-party-table-row';
 import { SamplePageProps } from './types';
 
@@ -29,7 +22,8 @@ const HEAD_LABEL = [
   { id: 'claimLimits', label: 'Claim Limits', align: 'left' },
   { id: 'rewardSourceLink', label: 'Reward Source Link', align: 'left' },
   { id: 'publicKeyForPartner', label: 'Public Key For Partner', align: 'left' },
-  { id: 'statusLimits', label: 'Status Limits', align: 'left' },
+  { id: 'statusLevel', label: 'Status Level', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -67,9 +61,7 @@ const ThirdPartyTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">
-              Third Party Integrations
-            </h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Third Party Integrations</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -79,11 +71,7 @@ const ThirdPartyTable: FC<SamplePageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent
-                aria-describedby={undefined}
-                side="right"
-                className="dark:bg-secondary p-0"
-              >
+              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -92,10 +80,7 @@ const ThirdPartyTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label
-                          htmlFor="sheet-event-start-date"
-                          className="px-1 text-sm font-medium"
-                        >
+                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
                           Select Date
                         </label>
                         <div className="w-full">
@@ -108,7 +93,7 @@ const ThirdPartyTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Challenges',
+                              placeholder: 'Search by title, link, public key...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -145,19 +130,10 @@ const ThirdPartyTable: FC<SamplePageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} />
 
-              <TableBodyWrapper
-                loading={loading}
-                colSpan={HEAD_LABEL.length}
-                dataLength={data?.length || 0}
-              >
-                {/* {data?.map((item, idx) => ( */}
-                {ThirdPartyRewardsData?.map((item, idx) => (
-                  <ThirdPartyTableRow
-                    key={item?._id || idx}
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                  />
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
+                {data?.map((item, idx) => (
+                  // {ThirdPartyRewardsData?.map((item, idx) => (
+                  <ThirdPartyTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
