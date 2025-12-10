@@ -3,10 +3,6 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useDeleteVenueMutation,
-  useGetVenuesQuery,
-} from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -14,6 +10,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import ThirdPartyTable from './third-party-table';
 import ThirdPartyRewardModal from './third-party-modal';
+import { useDeleteThirdPartyMutation, useGetThirdPartyQuery } from '@/store/Reducer/third-party-api';
 
 const ThirdPartyView = () => {
   const openModal = useBoolean();
@@ -30,15 +27,17 @@ const ThirdPartyView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deleteThirdParty, { isLoading: deleteLoading }] = useDeleteThirdPartyMutation();
 
-  const { data: apiData, isLoading } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetThirdPartyQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
+
+  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -71,25 +70,25 @@ const ThirdPartyView = () => {
   };
 
   // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
+  // const handleEdit = (id: string) => {
+  //   console.log('id', id);
+  //   openModal.onTrue();
+  //   editModal.onTrue();
+  // };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -107,7 +106,7 @@ const ThirdPartyView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deleteThirdParty(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -128,10 +127,7 @@ const ThirdPartyView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create
           </Button>
@@ -174,12 +170,7 @@ const ThirdPartyView = () => {
         }}
       />
 
-      <ThirdPartyRewardModal
-        open={openModal.value}
-        onClose={openModal.onFalse}
-        isEdit={editModal.value}
-        selectedData={selectedRecord}
-      />
+      <ThirdPartyRewardModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
 
       <ConfirmDialog
         open={deleteModal.value}

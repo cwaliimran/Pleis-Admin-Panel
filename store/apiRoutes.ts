@@ -126,6 +126,9 @@ export const API_ROUTES = {
   ADMIN_MENU_CATEGORIES: `/admin/menu/categories`,
   ADMIN_MENU_CATEGORIES_BY_ID: (id: string) => `/admin/menu/categories/${id}`,
 
+  ADMIN_THIRD_PARTY: `/admin/third-party`,
+  ADMIN_THIRD_PARTY_BY_ID: (id: string) => `/admin/third-party/${id}`,
+
   ADMIN_RESERVATION: `/admin/reservations`,
   ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
   ADMIN_RESERVATION_BY_ID: (id: string) => `/admin/reservations/${id}`,
