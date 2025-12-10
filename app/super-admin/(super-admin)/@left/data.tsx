@@ -18,7 +18,7 @@ import {
   UsersRound,
   FileClock,
   SlidersVertical,
-  Volume1
+  Volume1,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -69,7 +69,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Notification center',
-        url: paths.superAdmin.events.default,
+        url: paths.superAdmin.globalNotification,
         icon: CalendarDays,
       },
       {
