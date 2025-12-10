@@ -73,6 +73,11 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
+        title: 'Notification analytics',
+        url: paths.superAdmin.globalNotificationAnalytics,
+        icon: CalendarDays,
+      },
+      {
         title: 'Reviews',
         url: paths.superAdmin.reviews,
         icon: CalendarDays,

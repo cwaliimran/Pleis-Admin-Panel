@@ -4,6 +4,7 @@ import React from 'react';
 import { Image as ImageIcon, Link2, MapPin, Check, Users, Eye, Trash2 } from 'lucide-react';
 import { Notification } from './types';
 import { NOTIFICATION_STATUS_COLORS } from './constants';
+import Image from 'next/image';
 
 interface NotificationCardProps {
   notification: Notification;
@@ -34,7 +35,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
     <div className="rounded-lg border border-gray-200 bg-white p-6 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-[#222121]">
       <div className="flex items-start gap-4">
         {notification.image ? (
-          <img src={notification.image} alt={notification.title} className="h-24 w-24 rounded-lg object-cover" />
+          <Image src={notification.image} alt={notification.title} width={300} height={300} className="h-24 w-24 rounded-lg object-cover" />
         ) : (
           <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
             <ImageIcon className="h-8 w-8 text-gray-400 dark:text-gray-600" />

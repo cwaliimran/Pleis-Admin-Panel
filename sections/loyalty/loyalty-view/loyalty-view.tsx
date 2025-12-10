@@ -3,30 +3,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
 import { cn } from '@/lib/utils';
-import {
-  GenderDonutChart,
-  InvoiceCard,
-  MostViewedEvent,
-  ViewsOverTime,
-  VisitorAge,
-  VisitorRegion,
-} from '@/sections/invoices';
+import { GenderDonutChart, InvoiceCard, MostViewedEvent, ViewsOverTime, VisitorAge, VisitorRegion } from '@/sections/invoices';
 import { LoyaltyCard, MostEngagedMembers } from '@/sections/loyalty';
 import {
   loyaltPointsDashboard,
@@ -44,13 +26,7 @@ import { Settings2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
-const LoyaltyView = ({
-  global,
-  userType,
-}: {
-  global: boolean;
-  userType: string;
-}) => {
+const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }) => {
   const openModal = useBoolean();
   const router = useRouter();
 
@@ -113,10 +89,7 @@ const LoyaltyView = ({
       <div className="mt-5 w-full">
         {/* Show select on small screens */}
         <div className="block sm:hidden">
-          <Select
-            value={activeDurationTab}
-            onValueChange={setActiveDurationTab}
-          >
+          <Select value={activeDurationTab} onValueChange={setActiveDurationTab}>
             <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
               <SelectValue placeholder="Select tab" />
             </SelectTrigger>
@@ -139,12 +112,7 @@ const LoyaltyView = ({
 
         {/* Show tabs on medium and larger screens */}
         <div className="hidden sm:block">
-          <Tabs
-            value={activeDurationTab}
-            onValueChange={setActiveDurationTab}
-            defaultValue="all"
-            className="w-full"
-          >
+          <Tabs value={activeDurationTab} onValueChange={setActiveDurationTab} defaultValue="all" className="w-full">
             <TabsList className="flex h-[2.6rem] items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
               <TabsTrigger
                 value="monthly"
@@ -244,10 +212,7 @@ const LoyaltyView = ({
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="bg-primary h-full transition-all duration-500"
-                      style={{ width: `${activePercent}%` }}
-                    ></div>
+                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${activePercent}%` }}></div>
                   </div>
                   <h4 className="text-md mb-2 font-medium">6000</h4>
                 </div>
@@ -255,16 +220,11 @@ const LoyaltyView = ({
                 {/* Inactive Members */}
                 <div className="mx-4 mt-2 flex items-start justify-between">
                   <h4 className="text-md mb-2 font-medium">Inactive Members</h4>
-                  <h4 className="text-md mb-2 font-medium">
-                    {inactivePercent}%
-                  </h4>
+                  <h4 className="text-md mb-2 font-medium">{inactivePercent}%</h4>
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div
-                      className="bg-primary h-full transition-all duration-500"
-                      style={{ width: `${inactivePercent}%` }}
-                    ></div>
+                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${inactivePercent}%` }}></div>
                   </div>
                   <h4 className="text-md mb-2 font-medium">2000</h4>
                 </div>
@@ -300,8 +260,7 @@ const LoyaltyView = ({
               />
               <div className="mx-4 mt-4">
                 <p className="text-muted-foreground text-sm font-medium">
-                  <span className="text-xl font-bold text-black">66%</span>{' '}
-                  visitors are 45-55 years old
+                  <span className="text-xl font-bold text-black">66%</span> visitors are 45-55 years old
                 </p>
               </div>
             </div>
@@ -360,8 +319,7 @@ const LoyaltyView = ({
                   <div className="flex items-center">
                     <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
                     <h1 className="text-[13px]">
-                      Females{' '}
-                      <span className="font-semibold">(20% / 2000)</span>
+                      Females <span className="font-semibold">(20% / 2000)</span>
                     </h1>
                   </div>
                   <div className="flex items-center">
@@ -407,9 +365,7 @@ const LoyaltyView = ({
         <div className="col-span-12 md:col-span-12">
           <Card className="dark:bg-secondary col-span-12 shadow-md md:col-span-6">
             <CardHeader>
-              <h3 className="text-md mb-3 font-medium">
-                Points activity over time
-              </h3>
+              <h3 className="text-md mb-3 font-medium">Points activity over time</h3>
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold">+10%</h3>
                 <h3 className="text-md font-[400] text-gray-400">
@@ -439,9 +395,7 @@ const LoyaltyView = ({
 
         {/* --------------- Tier analytics --------------- */}
         {!global && (
-          <div
-            className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
-          >
+          <div className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}>
             <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
               <CardHeader>
                 <div className="mb-4 flex items-start justify-between">
@@ -451,15 +405,13 @@ const LoyaltyView = ({
                     <div className="flex items-center">
                       <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
                       <h1 className="text-[13px]">
-                        Guest{' '}
-                        <span className="font-semibold">(20% / 2000)</span>
+                        Guest <span className="font-semibold">(20% / 2000)</span>
                       </h1>
                     </div>
                     <div className="flex items-center">
                       <div className="mr-2 h-3 w-3 rounded-full bg-[#202C88] leading-10" />
                       <h1 className="text-[13px] text-[#7DAEF4]">
-                        Members{' '}
-                        <span className="font-semibold">(20% / 2000)</span>
+                        Members <span className="font-semibold">(20% / 2000)</span>
                       </h1>
                     </div>
                     <div className="flex items-center">
@@ -484,14 +436,10 @@ const LoyaltyView = ({
         )}
 
         {/* --------------- Points activity over time --------------- */}
-        <div
-          className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
-        >
+        <div className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}>
           <Card className="dark:bg-secondary col-span-12 gap-0 shadow-md md:col-span-6">
             <CardHeader>
-              <h3 className="text-md font-medium">
-                Points distribution by activity type
-              </h3>
+              <h3 className="text-md font-medium">Points distribution by activity type</h3>
             </CardHeader>
 
             <VisitorAge
@@ -511,9 +459,7 @@ const LoyaltyView = ({
         </div>
 
         {/* --------------- Status analytics --------------- */}
-        <div
-          className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}
-        >
+        <div className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}>
           <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
             <CardHeader>
               <div className="mb-4 flex items-start justify-between">
@@ -535,8 +481,7 @@ const LoyaltyView = ({
                   <div className="flex items-center">
                     <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4] leading-10" />
                     <h1 className="text-[13px] text-[#7DAEF4]">
-                      Platinum{' '}
-                      <span className="font-semibold">(10% / 1000)</span>
+                      Platinum <span className="font-semibold">(10% / 1000)</span>
                     </h1>
                   </div>
                 </div>
@@ -558,9 +503,7 @@ const LoyaltyView = ({
       <div className="my-5 mt-8 grid grid-cols-12 gap-4">
         <div className="col-span-12 flex flex-col">
           <h1 className="text-3xl font-bold">Rewards</h1>
-          <h1 className="text-md mt-2 text-gray-400">
-            Redeem points for exclusive rewards
-          </h1>
+          <h1 className="text-md mt-2 text-gray-400">Redeem points for exclusive rewards</h1>
         </div>
       </div>
 
@@ -607,9 +550,7 @@ const LoyaltyView = ({
           <Card className="dark:bg-secondary col-span-12 gap-0 shadow-lg md:col-span-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold sm:text-xl">
-                  Most Engaged Members
-                </h3>
+                <h3 className="text-lg font-semibold sm:text-xl">Most Engaged Members</h3>
               </div>
             </CardHeader>
             <MostEngagedMembers />
@@ -621,9 +562,7 @@ const LoyaltyView = ({
           <Card className="dark:bg-secondary col-span-12 gap-0 shadow-lg md:col-span-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold sm:text-xl">
-                  Members with the Highest Points
-                </h3>
+                <h3 className="text-lg font-semibold sm:text-xl">Members with the Highest Points</h3>
               </div>
             </CardHeader>
             <MostEngagedMembers />
@@ -634,9 +573,7 @@ const LoyaltyView = ({
         <div>
           <Card className="dark:bg-secondary col-span-12 shadow-md md:col-span-6">
             <CardHeader>
-              <h3 className="text-xl font-semibold">
-                Total Spending by Members
-              </h3>
+              <h3 className="text-xl font-semibold">Total Spending by Members</h3>
             </CardHeader>
             <ViewsOverTime
               data={[
@@ -661,9 +598,7 @@ const LoyaltyView = ({
         <div>
           <Card className="dark:bg-secondary shadow-md">
             <CardHeader>
-              <h3 className="text-xl font-semibold">
-                Most popular products or services
-              </h3>
+              <h3 className="text-xl font-semibold">Most popular products or services</h3>
             </CardHeader>
             <VisitorAge
               data={[
@@ -684,9 +619,7 @@ const LoyaltyView = ({
           <Card className="dark:bg-secondary shadow-md">
             <CardHeader>
               <div className="flex items-start justify-between">
-                <h3 className="text-lg font-semibold">
-                  Spending patterns over time
-                </h3>
+                <h3 className="text-lg font-semibold">Spending patterns over time</h3>
 
                 <div className="flex flex-col items-center">
                   <div className="flex items-center">
@@ -722,9 +655,7 @@ const LoyaltyView = ({
           <Card className="dark:bg-secondary shadow-md">
             <CardHeader>
               <div className="flex items-start justify-between">
-                <h3 className="text-lg font-semibold">
-                  Spending breakdown by product type
-                </h3>
+                <h3 className="text-lg font-semibold">Spending breakdown by product type</h3>
               </div>
             </CardHeader>
             <MostViewedEvent
@@ -753,10 +684,7 @@ const LoyaltyView = ({
               <div className="w-full pl-4">
                 {/* Show select on small screens */}
                 <div className="block sm:hidden">
-                  <Select
-                    value={activeTransactionTab}
-                    onValueChange={setActiveTransactionTab}
-                  >
+                  <Select value={activeTransactionTab} onValueChange={setActiveTransactionTab}>
                     <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
                       <SelectValue placeholder="Select tab" />
                     </SelectTrigger>
@@ -776,12 +704,7 @@ const LoyaltyView = ({
 
                 {/* Show tabs on medium and larger screens */}
                 <div className="hidden sm:block">
-                  <Tabs
-                    value={activeTransactionTab}
-                    onValueChange={setActiveTransactionTab}
-                    defaultValue="all"
-                    className="w-full"
-                  >
+                  <Tabs value={activeTransactionTab} onValueChange={setActiveTransactionTab} defaultValue="all" className="w-full">
                     <TabsList className="flex h-[2.8rem] items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
                       <TabsTrigger
                         value="all"
@@ -833,33 +756,13 @@ const LoyaltyView = ({
           <DialogContent>
             <DialogTitle>Create Program </DialogTitle>
             <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="Organizer Name"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
-              <input
-                type="text"
-                placeholder="Address"
-                className="z-10 rounded-md p-2 shadow-md"
-              />
+              <input type="text" placeholder="Organizer Name" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="email" placeholder="Email" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="tel" placeholder="Phone Number" className="z-10 rounded-md p-2 shadow-md" />
+              <input type="text" placeholder="Address" className="z-10 rounded-md p-2 shadow-md" />
             </div>
             <div className="mt-4 flex justify-end">
-              <Button
-                onClick={openModal.onFalse}
-                variant={'outline'}
-                className="mr-2 cursor-pointer"
-              >
+              <Button onClick={openModal.onFalse} variant={'outline'} className="mr-2 cursor-pointer">
                 Cancel
               </Button>
               <Button onClick={openModal.onFalse} className="cursor-pointer">
