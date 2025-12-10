@@ -126,9 +126,9 @@ export const paths = {
     rewardCategory: '/super-admin/reward-category',
     reviews: '/super-admin/reviews',
 
-    // updates: '/super-admin/updates',
-    // giveaways: '/super-admin/giveaways',
     streak: '/super-admin/streaks',
+    globalNotification: '/super-admin/global-notification',
+    globalNotificationAnalytics: '/super-admin/notification-analytics',
     marketingRequests: '/super-admin/marketing-requests',
     globalStreak: '/super-admin/global-streaks',
     itemsCategory: '/super-admin/items-category',

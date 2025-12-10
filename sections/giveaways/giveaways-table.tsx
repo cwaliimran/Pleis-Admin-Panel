@@ -26,6 +26,7 @@ export const giveawaysDummyData = [
     createdAt: '2025-01-10T18:30:00Z',
     endedAt: '2025-01-10T23:30:00Z',
     status: 'inactive',
+    giveawayStatus: 'completed',
   },
   {
     _id: 'gw_002',
@@ -37,6 +38,7 @@ export const giveawaysDummyData = [
     createdAt: '2025-02-01T12:00:00Z',
     endedAt: '2025-02-01T17:00:00Z',
     status: 'active',
+    giveawayStatus: 'live',
   },
   {
     _id: 'gw_003',
@@ -48,6 +50,7 @@ export const giveawaysDummyData = [
     createdAt: '2025-01-25T15:45:00Z',
     endedAt: '2025-01-25T20:45:00Z',
     status: 'inactive',
+    giveawayStatus: 'ended',
   },
   {
     _id: 'gw_004',
@@ -59,6 +62,7 @@ export const giveawaysDummyData = [
     createdAt: '2025-02-05T10:20:00Z',
     endedAt: '2025-02-05T15:20:00Z',
     status: 'inactive',
+    giveawayStatus: 'completed',
   },
   {
     _id: 'gw_005',
@@ -70,6 +74,7 @@ export const giveawaysDummyData = [
     createdAt: '2025-01-30T09:10:00Z',
     endedAt: '2025-01-30T14:10:00Z',
     status: 'inactive',
+    giveawayStatus: 'completed',
   },
   {
     _id: 'gw_006',
@@ -81,9 +86,9 @@ export const giveawaysDummyData = [
     createdAt: '2025-02-07T22:00:00Z',
     endedAt: '2025-02-08T03:00:00Z',
     status: 'active',
+    giveawayStatus: 'upcoming',
   },
 ];
-
 
 const HEAD_LABEL = [
   {
@@ -100,6 +105,7 @@ const HEAD_LABEL = [
   { id: 'created', label: 'Created At', align: 'left' },
   { id: 'ended', label: 'Ended At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
+  { id: 'giveawayStatus', label: 'Giveaway Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
@@ -109,6 +115,7 @@ const GiveawaysTable: FC<SamplePageProps> = ({
   loading,
   handleDelete,
   handleEdit,
+  handleOpenWinners,
   onPageChange,
   limit = 10,
   // filters states bellow
@@ -215,7 +222,7 @@ const GiveawaysTable: FC<SamplePageProps> = ({
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={giveawaysDummyData?.length || 0}>
                 {/* {sortedData?.map((item, idx) => ( */}
                 {giveawaysDummyData?.map((item, idx) => (
-                  <GiveawaysTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <GiveawaysTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} handleOpenWinners={handleOpenWinners} />
                 ))}
               </TableBodyWrapper>
             </Table>

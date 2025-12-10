@@ -11,11 +11,13 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import UpdatesModal from './giveaways-modal';
 import GiveawaysTable from './giveaways-table';
+import WinnersModal from './winner-modal';
 
 const GiveawaysView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const winnerModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -29,10 +31,7 @@ const GiveawaysView = () => {
 
   const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
 
-  const {
-    data: apiData,
-    isLoading,
-  } = useGetPromoCodesQuery({
+  const { data: apiData, isLoading } = useGetPromoCodesQuery({
     page: page - 1,
     search,
     limit,
@@ -74,6 +73,11 @@ const GiveawaysView = () => {
     console.log('id', id);
     openModal.onTrue();
     editModal.onTrue();
+  };
+
+  const handleOpenWinners = (id: string) => {
+    setSelectedId(id);
+    winnerModal.onTrue();
   };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
@@ -137,6 +141,7 @@ const GiveawaysView = () => {
         meta={meta}
         loading={isLoading}
         handleDelete={handleDelete}
+        handleOpenWinners={handleOpenWinners}
         handleEdit={handleEdit}
         onPageChange={setPage}
         onLimitChange={(l) => {
@@ -168,14 +173,9 @@ const GiveawaysView = () => {
         }}
       />
 
-      {openModal.value && (
-        <UpdatesModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-        />
-      )}
+      {openModal.value && <UpdatesModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
+
+      {winnerModal.value && <WinnersModal open={winnerModal.value} onClose={winnerModal.onFalse} giveawayId={selectedId} />}
 
       <ConfirmDialog
         open={deleteModal.value}

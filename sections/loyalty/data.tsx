@@ -203,6 +203,33 @@ export const orderAnalyticsData = [
   },
 ];
 
+export const globalNotificationData = [
+  {
+    title: 'Total Notifications Sent',
+    amount: 10000,
+    raise: '15%',
+  },
+  {
+    title: 'Users Reached',
+    amount: 3230,
+  },
+  {
+    title: 'Total Unique Users Clicked',
+    amount: 5432,
+    raise: '8%',
+  },
+  {
+    title: 'User Clicked %',
+    amount: 5802,
+    raise: '12%',
+  },
+  {
+    title: 'Recipients Clicked %',
+    amount: 5432,
+    percent: true,
+  },
+];
+
 export const loyaltyCardHeaderData: LoyaltyCardData[] = [
   {
     title: 'Total Members',
