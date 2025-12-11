@@ -3,13 +3,7 @@
 import { AppLoading } from '@/components/atoms/app-loading';
 import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
 import { cn } from '@/lib/utils';
@@ -116,10 +110,8 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                         {/* Profile Image */}
                         <div className="w-full lg:w-1/3">
                           {apiData?.basicInfo?.profileIcon &&
-                          apiData?.basicInfo?.profileIcon !==
-                            'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' &&
-                          apiData?.basicInfo?.profileIcon !==
-                            'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
+                          apiData?.basicInfo?.profileIcon !== 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' &&
+                          apiData?.basicInfo?.profileIcon !== 'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
                             <Image
                               src={apiData?.basicInfo?.profileIcon || '-'}
                               alt={user?.fullName}
@@ -130,8 +122,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                             />
                           ) : (
                             <div className="flex h-56 items-center justify-center rounded-md border text-center text-4xl font-semibold text-gray-500 dark:text-gray-300">
-                              {apiData?.basicInfo?.firstName?.[0]?.toUpperCase() ||
-                                ''}
+                              {apiData?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}
                             </div>
                           )}
                         </div>
@@ -144,74 +135,54 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                               <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800 capitalize">
                                 {apiData?.accountState?.userType || '-'}
                               </span>
-                              <span>
-                                Joined:{' '}
-                                {fDate(
-                                  apiData?.metadata?.createdAt,
-                                  formatStr.paramCase.date
-                                )}
-                              </span>
+                              <span>Joined: {fDate(apiData?.metadata?.createdAt, formatStr.paramCase.date)}</span>
                             </div>
                             <div className="flex gap-3">
                               <Pencil
                                 className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition"
-                                onClick={() =>
-                                  handleEdit(apiData?.basicInfo?._id)
-                                }
+                                onClick={() => handleEdit(apiData?.basicInfo?._id)}
                               />
                             </div>
                           </div>
 
                           {/* User Name */}
                           <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
-                            {apiData?.basicInfo?.firstName || '-'}{' '}
-                            {apiData?.basicInfo?.lastName || '-'}
+                            {apiData?.basicInfo?.firstName || '-'} {apiData?.basicInfo?.lastName || '-'}
                           </h2>
                           {/* {userType === 'staff' && (
                           <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
                             {user.surname}
                           </h2>
                         )} */}
-                          {userType === 'staff' && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Linked Organization: -
-                            </p>
-                          )}
+                          {userType === 'staff' && <p className="text-sm text-gray-500 dark:text-gray-400">Linked Organization: -</p>}
 
                           {/* More Info */}
                           <div className="mt-4">
-                            <h4 className="text-xs font-bold tracking-wide text-gray-500 dark:text-gray-400">
-                              USER INFO
-                            </h4>
+                            <h4 className="text-xs font-bold tracking-wide text-gray-500 dark:text-gray-400">USER INFO</h4>
                             <div className="mt-2 grid grid-cols-1 gap-x-6 gap-y-2 text-sm text-gray-800 lg:grid-cols-2 dark:text-white">
                               <p>
-                                <span className="font-medium">Email:</span>{' '}
-                                {apiData?.basicInfo?.email || '-'}
+                                <span className="font-medium">Email:</span> {apiData?.basicInfo?.email || '-'}
                               </p>
                               <p>
-                                <span className="font-medium">Phone:</span>{' '}
-                                {apiData?.basicInfo?.phoneNumber?.code || ''}
+                                <span className="font-medium">Phone:</span> {apiData?.basicInfo?.phoneNumber?.code || ''}
                                 {apiData?.basicInfo?.phoneNumber?.number || ''}
                               </p>
                               {userType === 'user' && (
                                 <>
                                   <p>
-                                    <span className="font-medium">Gender:</span>{' '}
-                                    -
+                                    <span className="font-medium">Gender:</span> -
                                   </p>
                                   <p>
                                     <span className="font-medium">DOB:</span> -
                                   </p>
                                   <p>
-                                    <span className="font-medium">Region:</span>{' '}
-                                    -
+                                    <span className="font-medium">Region:</span> -
                                   </p>
                                 </>
                               )}
                               {userType === 'staff' && (
                                 <p>
-                                  <span className="font-medium">Surname:</span>{' '}
-                                  -
+                                  <span className="font-medium">Surname:</span> -
                                 </p>
                               )}
                             </div>
@@ -222,10 +193,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                       <div className="mt-3 w-full px-2 md:px-0">
                         {/* Small screen dropdown */}
                         <div className="mb-4 block sm:hidden">
-                          <Select
-                            value={activeTransactionTab}
-                            onValueChange={setActive}
-                          >
+                          <Select value={activeTransactionTab} onValueChange={setActive}>
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select tab" />
                             </SelectTrigger>
@@ -240,11 +208,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                         </div>
 
                         {/* Tabs for larger screens */}
-                        <Tabs
-                          value={active}
-                          onValueChange={setActive}
-                          className="hidden w-full sm:block"
-                        >
+                        <Tabs value={active} onValueChange={setActive} className="hidden w-full sm:block">
                           <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
                             <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
                               {tabData.map((tab: any) => (
@@ -270,75 +234,49 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
 
                 <div className="rounded-lg">
                   {/* ---------------- OVERVIEW ---------------- */}
-                  {active === 'overview' && (
-                    <UserOverView
-                      userType={userType}
-                      user={user}
-                      apiData={apiData}
-                    />
-                  )}
+                  {active === 'overview' && <UserOverView userType={userType} user={user} apiData={apiData} />}
 
                   {/* ---------------- TRANSACTION ---------------- */}
                   {active === 'transactions' && (
                     <Card className="dark:bg-secondary mt-4 shadow-lg">
                       <CardHeader>
                         <div className="flex flex-col gap-4 md:justify-between lg:flex-row lg:items-center">
-                          <h3 className="text-xl font-semibold">
-                            Transaction History
-                          </h3>
+                          <h3 className="text-xl font-semibold">Transaction History</h3>
                           <div>
                             <div className="w-full">
                               {/* Show select on small screens */}
                               <div className="block sm:hidden">
-                                <Select
-                                  value={activeTransactionTab}
-                                  onValueChange={setActiveTransactionTab}
-                                >
+                                <Select value={activeTransactionTab} onValueChange={setActiveTransactionTab}>
                                   <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
                                     <SelectValue placeholder="Select tab" />
                                   </SelectTrigger>
                                   <SelectContent className="dark:bg-secondary">
                                     <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="transactions">
-                                      Transactions
-                                    </SelectItem>
-                                    <SelectItem value="refunds">
-                                      Refunds
-                                    </SelectItem>
+                                    <SelectItem value="transactions">Transactions</SelectItem>
+                                    <SelectItem value="refunds">Refunds</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
 
                               {/* Show tabs on medium and larger screens */}
                               <div className="hidden sm:block">
-                                <Tabs
-                                  value={activeTransactionTab}
-                                  onValueChange={setActiveTransactionTab}
-                                  defaultValue="all"
-                                  className="w-full"
-                                >
+                                <Tabs value={activeTransactionTab} onValueChange={setActiveTransactionTab} defaultValue="all" className="w-full">
                                   <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
                                     <TabsTrigger
                                       value="all"
-                                      className={cn(
-                                        'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                                      )}
+                                      className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
                                     >
                                       All
                                     </TabsTrigger>
                                     <TabsTrigger
                                       value="transactions"
-                                      className={cn(
-                                        'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                                      )}
+                                      className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
                                     >
                                       Transactions
                                     </TabsTrigger>
                                     <TabsTrigger
                                       value="refunds"
-                                      className={cn(
-                                        'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                                      )}
+                                      className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
                                     >
                                       Refunds
                                     </TabsTrigger>
@@ -424,26 +362,18 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                       <div className="flex min-w-[140px] flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">
-                            START DATE
-                          </p>
+                          <p className="text-xs font-semibold text-gray-600 dark:text-white">START DATE</p>
                         </div>
-                        <p className="text-sm font-medium text-black dark:text-white">
-                          -
-                        </p>
+                        <p className="text-sm font-medium text-black dark:text-white">-</p>
                       </div>
 
                       {/* END DATE */}
                       <div className="mt-4 flex min-w-[140px] flex-col gap-1 md:mt-0">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">
-                            Last Activity
-                          </p>
+                          <p className="text-xs font-semibold text-gray-600 dark:text-white">Last Activity</p>
                         </div>
-                        <p className="text-sm font-medium text-black dark:text-white">
-                          -
-                        </p>
+                        <p className="text-sm font-medium text-black dark:text-white">-</p>
                       </div>
                     </div>
                   </CardContent>
