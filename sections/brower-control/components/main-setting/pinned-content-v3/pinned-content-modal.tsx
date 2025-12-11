@@ -5,26 +5,11 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGetCategoriesQuery } from '@/store/Reducer/categories';
-import {
-  useAddPinnedContentMutation,
-  useUpdatePinnedContentMutation,
-} from '@/store/Reducer/pinned-content-api';
+import { useAddPinnedContentMutation, useUpdatePinnedContentMutation } from '@/store/Reducer/pinned-content-api';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
@@ -54,12 +39,7 @@ interface BannerModalV2Props {
   selectedData?: any; // keep any if shape varies; replace with strong type if available
 }
 
-const BannerModalV2: React.FC<BannerModalV2Props> = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-}) => {
+const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = false, selectedData }) => {
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues,
@@ -70,11 +50,10 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
   const isDirty = formState?.isDirty;
   const linkType = watch('linkType');
 
-  const { data: categoriesData, isLoading: categoriesLoading } =
-    useGetCategoriesQuery({
-      page: 0,
-      limit: 10000,
-    });
+  const { data: categoriesData, isLoading: categoriesLoading } = useGetCategoriesQuery({
+    page: 0,
+    limit: 10000,
+  });
 
   const { data: tagsData, isLoading: tagsLoading } = useGetTagsQuery({
     page: 0,
@@ -116,11 +95,9 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
     [venueData]
   );
 
-  const [addCategory, { isLoading: addCategoryLoading }] =
-    useAddPinnedContentMutation();
+  const [addCategory, { isLoading: addCategoryLoading }] = useAddPinnedContentMutation();
 
-  const [updateCategory, { isLoading: updateCategoryLoading }] =
-    useUpdatePinnedContentMutation();
+  const [updateCategory, { isLoading: updateCategoryLoading }] = useUpdatePinnedContentMutation();
 
   // handle user-driven link type change
   const handleLinkTypeChange = (value: string) => {
@@ -140,10 +117,7 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
     };
 
     // object may be nested; support string id or object._id
-    const objectId =
-      typeof data?.object === 'string'
-        ? data.object
-        : (data?.object?._id?.toString?.() ?? '');
+    const objectId = typeof data?.object === 'string' ? data.object : (data?.object?._id?.toString?.() ?? '');
 
     formData.selectedObject = objectId;
     return formData;
@@ -179,22 +153,14 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
         payload.id = selectedData._id;
       }
 
-      const response =
-        isEdit && selectedData
-          ? await updateCategory(payload).unwrap()
-          : await addCategory(payload).unwrap();
+      const response = isEdit && selectedData ? await updateCategory(payload).unwrap() : await addCategory(payload).unwrap();
 
       if (response?.error) {
         showError(getErrorMessage(response.error));
         return;
       }
 
-      showSuccess(
-        response?.message ||
-          (isEdit
-            ? 'Pinned content updated successfully'
-            : 'Pinned content created successfully')
-      );
+      showSuccess(response?.message || (isEdit ? 'Pinned content updated successfully' : 'Pinned content created successfully'));
 
       reset(defaultValues);
       onClose();
@@ -257,15 +223,10 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
           className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]"
         >
           <DialogHeader>
-            <DialogTitle>
-              {isEdit ? 'Edit Pinned Content' : 'Create Pinned Content'}
-            </DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Pinned Content' : 'Create Pinned Content'}</DialogTitle>
           </DialogHeader>
           <div className="mt-4 w-full">
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(handleSubmit)}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="grid w-full grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
                   {/* Link Type */}
@@ -273,10 +234,7 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
                     <Label htmlFor="linkType">
                       Select Type <span className="text-red-500">*</span>
                     </Label>
-                    <Select
-                      value={linkType}
-                      onValueChange={handleLinkTypeChange}
-                    >
+                    <Select value={linkType} onValueChange={handleLinkTypeChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select link type" />
                       </SelectTrigger>
@@ -286,11 +244,7 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
                         <SelectItem value="Venues">Venues</SelectItem>
                       </SelectContent>
                     </Select>
-                    {formState.errors.linkType && (
-                      <p className="text-sm text-red-500">
-                        {formState.errors.linkType.message as string}
-                      </p>
-                    )}
+                    {formState.errors.linkType && <p className="text-sm text-red-500">{formState.errors.linkType.message as string}</p>}
                   </div>
 
                   {/* Dynamic Dropdown */}
@@ -328,20 +282,11 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({
               {/* Action Buttons */}
               <div className="mt-6 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleClose}
-                    className="px-6 py-2"
-                  >
+                  <Button type="button" variant="outline" onClick={handleClose} className="px-6 py-2">
                     Cancel
                   </Button>
                   {addCategoryLoading || updateCategoryLoading ? (
-                    <Button
-                      type="button"
-                      disabled
-                      className="bg-primary hover:bg-primary cursor-not-allowed px-6 py-2 text-white"
-                    >
+                    <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-6 py-2 text-white">
                       <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                     </Button>
                   ) : (

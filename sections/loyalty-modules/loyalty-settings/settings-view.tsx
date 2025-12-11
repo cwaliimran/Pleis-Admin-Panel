@@ -1,319 +1,159 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Slider } from '@/components/ui/slider';
+import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetCompanyListQuery, useUpdateUserMutation } from '@/store/Reducer/user-list';
-import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
-import { useEffect, useState } from 'react';
+import { useGetUserByIdQuery } from '@/store/Reducer/user-list';
+import { Edit } from 'lucide-react';
+import Image from 'next/image';
+import { useMemo } from 'react';
 import LinkedClubs from './linked-clubs/linked-clubs';
-import { ClubTitleSkeleton, LoyaltyModelSkeleton } from './skelton';
+import SettingsModal from './setting-modal';
+import { SettingsDisplaySkeleton } from './skelton';
+import { useAuth } from '@/hooks/useAuth';
 
 const SettingsView = () => {
-  const [clubTitle, setClubTitle] = useState('');
-  const [selectedModel, setSelectedModel] = useState('');
-  const [pointValue, setPointValue] = useState(0);
-
-  // Individual loading states for each section
-  const [isSavingTitle, setIsSavingTitle] = useState(false);
-  const [isSavingModel, setIsSavingModel] = useState(false);
-  const [isSavingPointValue, setIsSavingPointValue] = useState(false);
-
-  const [selectedCompany, setSelectedCompany] = useState<any>(null);
-
-  const [updateUser] = useUpdateUserMutation();
-
-  const { data: companyList, isLoading, isFetching } = useGetCompanyListQuery({});
-
+  const settingsModal = useBoolean();
   const { companyId: selectedCompanyId } = useCompanySelectionState();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (!companyList || !selectedCompanyId) {
-      setSelectedCompany(null);
-      return;
-    }
+  const { data: apiData, isLoading, isFetching, refetch } = useGetUserByIdQuery({ id: selectedCompanyId || '' }, { skip: !selectedCompanyId });
 
-    const company = companyList.find((c: any) => c._id === selectedCompanyId);
-    setSelectedCompany(company || null);
-  }, [companyList, selectedCompanyId]);
+  const companyDetails = useMemo(() => {
+    if (!apiData?.basicInfo?.companyDetails) return null;
+    return apiData.basicInfo.companyDetails;
+  }, [apiData]);
 
-  // Prefill form fields when selected company changes
-  useEffect(() => {
-    if (!selectedCompany) {
-      setClubTitle('');
-      setSelectedModel('');
-      setPointValue(0);
-      return;
-    }
+  const loyaltySettings = companyDetails?.loyaltySettings;
 
-    const loyaltySettings = selectedCompany?.companyDetails?.loyaltySettings;
+  // Safe fallback values
+  const coverImage = companyDetails?.coverImage || '';
+  const logo = companyDetails?.logo || '';
+  const title = loyaltySettings?.title || 'Club Name';
+  const description = companyDetails?.description || 'No description available';
+  const category = companyDetails?.category?.title || '';
+  const model = loyaltySettings?.model || '';
+  const pointValue = loyaltySettings?.pointValuePercentage || 0;
 
-    if (loyaltySettings) {
-      setClubTitle(loyaltySettings.title || '');
-      setSelectedModel(loyaltySettings.model || '');
-      setPointValue(loyaltySettings.pointValuePercentage || 0);
-    } else {
-      setClubTitle('');
-      setSelectedModel('');
-      setPointValue(0);
-    }
-  }, [selectedCompany]);
-
-  const loyaltyModels = [
-    {
-      value: 'essential',
-      title: 'Essential',
-      desc: 'Ideal for smaller venues like bars or casual spots. Lower entry requirements and more frequent rewards.',
-    },
-    {
-      value: 'preferred',
-      title: 'Preferred',
-      desc: 'Suitable for mid-range venues like restaurants or small clubs. Balanced tier requirements and reward frequency.',
-    },
-    {
-      value: 'premier',
-      title: 'Premier',
-      desc: 'Designed for premium venues such as high-end clubs or restaurants. Higher thresholds and slower progression.',
-    },
-  ];
-
-  // Save club title
-  const handleSaveTitle = async () => {
-    if (!selectedCompanyId) {
-      showError('No company selected. Please select a company from the header dropdown.');
-      return;
-    }
-
-    if (!clubTitle?.trim()) {
-      showError('Please enter a club title.');
-      return;
-    }
-
-    setIsSavingTitle(true);
-    try {
-      const body = {
-        companyDetails: {
-          loyaltySettings: {
-            title: clubTitle,
-          },
-        },
-      };
-
-      const response = await updateUser({ id: selectedCompanyId, body }).unwrap();
-      console.log('response', response);
-
-      if (response.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      if (response?.message) {
-        showSuccess(response?.message || 'Otp sent successfully');
-      }
-    } catch (error) {
-      console.error('Error saving title:', error);
-    } finally {
-      setIsSavingTitle(false);
-    }
+  const modelLabels: Record<string, string> = {
+    essential: 'Essential',
+    preferred: 'Preferred',
+    premier: 'Premier',
   };
 
-  // Save loyalty model
-  const handleSaveModel = async () => {
-    if (!selectedCompanyId) {
-      showError('No company selected. Please select a company from the header dropdown.');
-      return;
-    }
+  // Check if cover image is valid
+  const hasValidCoverImage = coverImage && !coverImage.toLowerCase().includes('noimage');
+  const hasValidLogo = logo && !logo.toLowerCase().includes('noimage');
 
-    if (!selectedModel) {
-      showError('Please select a loyalty model.');
-      return;
-    }
-
-    setIsSavingModel(true);
-    try {
-      const body = {
-        companyDetails: {
-          loyaltySettings: {
-            model: selectedModel,
-          },
-        },
-      };
-
-      const response = await updateUser({ id: selectedCompanyId, body }).unwrap();
-      console.log('response', response);
-
-      if (response.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      if (response?.message) {
-        showSuccess(response?.message || 'Loyalty model updated successfully');
-      }
-    } catch (error) {
-      console.error('Error saving model:', error);
-      showError(getErrorMessage(error) || 'Failed to save loyalty model');
-    } finally {
-      setIsSavingModel(false);
-    }
-  };
-
-  // Save point value percentage
-  const handleSavePointValue = async () => {
-    if (!selectedCompanyId) {
-      showError('No company selected. Please select a company from the header dropdown.');
-      return;
-    }
-
-    if (!pointValue || pointValue <= 0) {
-      showError('Please set a valid point value percentage.');
-      return;
-    }
-
-    setIsSavingPointValue(true);
-    try {
-      const body = {
-        companyDetails: {
-          loyaltySettings: {
-            pointValuePercentage: pointValue,
-          },
-        },
-      };
-
-      const response = await updateUser({ id: selectedCompanyId, body }).unwrap();
-      console.log('response', response);
-
-      if (response.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      if (response?.message) {
-        showSuccess(response?.message || 'Point value percentage updated successfully');
-      }
-    } catch (error) {
-      console.error('Error saving point value:', error);
-      showError(getErrorMessage(error) || 'Failed to save point value percentage');
-    } finally {
-      setIsSavingPointValue(false);
-    }
+  const handleSuccess = () => {
+    refetch();
   };
 
   return (
     <>
       <div className="space-y-7 p-6 sm:space-y-12">
-        {/* Club Title Field */}
+        {/* Club Information Card */}
         {isLoading || isFetching ? (
-          <ClubTitleSkeleton />
-        ) : (
-          <div>
-            <h2 className="mb-4 text-xl font-semibold">Club Information</h2>
-            <div className="flex w-full items-center justify-between gap-4">
-              <div className="max-w-sm flex-1">
-                <Input
-                  id="clubTitle"
-                  type="text"
-                  placeholder="Enter club title"
-                  value={clubTitle}
-                  onChange={(e) => setClubTitle(e.target.value)}
-                  className="h-12 w-full border border-gray-300 bg-white text-lg text-gray-900 placeholder:text-gray-500 dark:border-gray-700 dark:bg-[#171717] dark:text-gray-100 dark:placeholder:text-gray-500"
-                />
-              </div>
-
-              <Button className="px-7" onClick={handleSaveTitle} disabled={isSavingTitle}>
-                {isSavingTitle ? 'Saving...' : 'Save'}
-              </Button>
+          <SettingsDisplaySkeleton />
+        ) : !selectedCompanyId ? (
+          user?.accountState?.userType === 'admin' && (
+            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-[#171717]">
+              <p className="text-gray-500 dark:text-gray-400">Please select a company from the header dropdown to view settings.</p>
             </div>
-          </div>
-        )}
-
-        {/* Loyalty Tier Model Selection */}
-        {isLoading || isFetching ? (
-          <LoyaltyModelSkeleton />
+          )
         ) : (
-          <div>
-            <h2 className="mb-4 text-xl font-semibold">Loyalty Tier Model Selection</h2>
+          <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-[#171717]">
+            {/* Cover Image */}
+            <div className="relative h-48 w-full overflow-hidden bg-linear-to-r from-blue-500 to-purple-600 sm:h-64">
+              {hasValidCoverImage ? (
+                <Image width={600} height={600} priority src={coverImage} alt="Cover" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <p className="text-lg text-white/60">No cover image</p>
+                </div>
+              )}
 
-            <RadioGroup value={selectedModel} onValueChange={setSelectedModel} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {loyaltyModels.map((model) => (
-                <Card
-                  key={model.value}
-                  onClick={() => setSelectedModel(model.value)}
-                  className={`dark:bg-secondary cursor-pointer border transition ${
-                    selectedModel === model.value ? 'border-primary shadow-lg dark:border-gray-300' : 'border-muted'
-                  }`}
+              {/* Edit and Delete Buttons */}
+              <div className="absolute top-4 right-4 flex gap-2">
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-10 w-10 rounded-full bg-white/90 hover:bg-white dark:bg-gray-800/90 dark:hover:bg-gray-800"
+                  onClick={settingsModal.onTrue}
+                  title="Edit Settings"
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <RadioGroupItem value={model.value} id={model.value} className="mt-0.5" />
-                      <Label htmlFor={model.value} className="cursor-pointer text-2xl">
-                        {model.title}
-                      </Label>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">{model.desc}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </RadioGroup>
-
-            <div className="mt-5 flex items-center justify-between">
-              <p className="text-muted-foreground text-sm">To switch your business model, please reach out to the admin team for support.</p>
-
-              <div className="flex justify-end">
-                <Button className="px-7" onClick={handleSaveModel} disabled={isSavingModel}>
-                  {isSavingModel ? 'Saving...' : 'Save'}
+                  <Edit className="h-4 w-4" />
                 </Button>
               </div>
             </div>
+
+            {/* Content Section */}
+            <div className="relative px-6 pb-6">
+              {/* Logo */}
+              <div className="relative -mt-16 mb-4">
+                <div className="inline-block rounded-full border-4 border-white bg-white dark:border-gray-800 dark:bg-gray-800">
+                  {hasValidLogo ? (
+                    <Image width={300} height={300} src={logo} alt="Logo" className="h-32 w-32 rounded-full object-cover" />
+                  ) : (
+                    <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gray-200 text-sm dark:bg-gray-700">
+                      <span className="text-gray-400 dark:text-gray-500">No Logo</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Club Title & Category */}
+              <div className="mb-4">
+                <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
+                {category && (
+                  <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 capitalize dark:bg-blue-900/30 dark:text-blue-300">
+                    {category}
+                  </span>
+                )}
+              </div>
+
+              {/* Description */}
+              <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">{description}</p>
+
+              {/* Stats/Info Pills */}
+              <div className="flex flex-wrap gap-3">
+                <div className="rounded-full bg-gray-100 px-4 py-2 text-sm dark:bg-gray-800">
+                  <span className="font-medium text-gray-900 dark:text-white">Model:</span>{' '}
+                  <span className="text-gray-600 dark:text-gray-400">{modelLabels[model] || 'Not Set'}</span>
+                </div>
+                <div className="rounded-full bg-gray-100 px-4 py-2 text-sm dark:bg-gray-800">
+                  <span className="font-medium text-gray-900 dark:text-white">Point Value:</span>{' '}
+                  <span className="text-gray-600 dark:text-gray-400">{pointValue}%</span>
+                </div>
+                <div className="rounded-full bg-gray-100 px-4 py-2 text-sm dark:bg-gray-800">
+                  <span className="font-medium text-gray-900 dark:text-white">0</span> Subscriptions
+                </div>
+                <div className="rounded-full bg-gray-100 px-4 py-2 text-sm dark:bg-gray-800">
+                  <span className="font-medium text-gray-900 dark:text-white">0%</span> Commission
+                </div>
+                <div className="rounded-full bg-gray-100 px-4 py-2 text-sm dark:bg-gray-800">
+                  <span className="font-medium text-gray-900 dark:text-white">0</span> Boost
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Set Point Value Percentage */}
-        <div>
-          <h2 className="mb-4 text-xl font-semibold">Set Point Value Percentage</h2>
-          <div className="flex max-w-md items-center gap-4">
-            <Input
-              type="number"
-              min={1}
-              max={20}
-              value={pointValue}
-              onChange={(e) => setPointValue(Number(e.target.value))}
-              className="w-24 border border-gray-400 bg-white text-gray-900 placeholder:text-gray-500 dark:border-gray-700 dark:bg-[#171717] dark:text-gray-100 dark:placeholder:text-gray-500"
-            />
-            <span className="font-medium">%</span>
-          </div>
-          <div className="mt-4 max-w-md">
-            <Slider min={1} max={20} step={1} value={[pointValue]} onValueChange={(val) => setPointValue(val[0])} />
-          </div>
-
-          <div className="mt-5 flex items-center justify-between">
-            <p className="text-muted-foreground text-sm">
-              This means each euro spent returns between <span className="font-medium">{pointValue}%</span> -{' '}
-              <span className="font-medium">{pointValue * 2}%</span> of its value back in loyalty points (depending on the user&apos;s status and
-              tier).
-            </p>
-
-            <div className="flex justify-end">
-              <Button className="px-7" onClick={handleSavePointValue} disabled={isSavingPointValue}>
-                {isSavingPointValue ? 'Saving...' : 'Save'}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Step 3 */}
-        <LinkedClubs selectedCompanyId={selectedCompanyId} />
+        {/* Linked Clubs Section */}
+        {selectedCompanyId && <LinkedClubs selectedCompanyId={selectedCompanyId} />}
       </div>
+
+      {/* Settings Modal */}
+      {settingsModal.value && selectedCompanyId && (
+        <SettingsModal
+          open={settingsModal.value}
+          onClose={settingsModal.onFalse}
+          user={user}
+          selectedCompanyId={selectedCompanyId}
+          companyDetails={companyDetails}
+          handleSuccess={handleSuccess}
+        />
+      )}
     </>
   );
 };
