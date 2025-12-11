@@ -1,25 +1,24 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeletePromoCodeMutation, useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
+import { useDeletePromoCodeMutation } from '@/store/Reducer/promo-codes-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
-import { useCallback, useEffect, useState } from 'react';
-import MarketingRequestTable from './marketing-request-table';
-import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import MarketingRequestModal from './marketing-request-modal';
-import { useAuth } from '@/hooks/useAuth';
+import MarketingRequestTable from './marketing-request-table';
+import { useGetMarketingRequestQuery, useUpdateMarketingRequestMutation } from '@/store/Reducer/marketing-request-api';
 
 const MarketingRequestView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
   const { user } = useAuth();
-
-  console.log('User:', user?.accountState?.userType);
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -31,13 +30,10 @@ const MarketingRequestView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
+  const [updateMarketingRequest] = useUpdateMarketingRequestMutation();
   const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
 
-  const {
-    data: apiData,
-    isLoading,
-    // refetch,
-  } = useGetPromoCodesQuery({
+  const { data: apiData, isLoading } = useGetMarketingRequestQuery({
     page: page - 1,
     search,
     limit,
@@ -46,10 +42,6 @@ const MarketingRequestView = () => {
   });
 
   console.log('apiData', apiData);
-
-  // useEffect(() => {
-  //   refetch();
-  // }, [selectedCompany, refetch]);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -82,16 +74,20 @@ const MarketingRequestView = () => {
   };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (id: string, value: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
-    console.log('value', value);
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Promo code not found');
+  const handleEdit = async (id: string, status: string) => {
+    try {
+      const response = await updateMarketingRequest({ id, status }).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Updated successfully');
+      setSelectedId(null);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 

@@ -1,10 +1,10 @@
 import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
-import LoyaltyTransactionView from '@/sections/loyalty-modules/loyalty-transaction/loyalty-transaction-view';
+import GiveawaysView from '@/sections/giveaways/giveaways-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Transactions - Pleis',
+  title: 'Giveaways - Pleis',
 };
 
 const Page = () => {
@@ -13,12 +13,12 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Transactions', href: '' },
+          { name: 'Giveaways', href: '' },
         ]}
       />
 
       <CompanyGuard>
-        <LoyaltyTransactionView global={false} />
+        <GiveawaysView />
       </CompanyGuard>
     </div>
   );

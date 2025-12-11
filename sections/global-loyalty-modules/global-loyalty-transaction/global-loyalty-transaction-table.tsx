@@ -12,14 +12,25 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import MarketingRequestTableRow from './marketing-request-table-row';
+import LoyaltyTransactionTableRow from './global-loyalty-transaction-table-row';
 import { SamplePageProps } from './types';
 
-const MarketingRequestTable: FC<SamplePageProps> = ({
+const HEAD_LABEL = [
+  { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.firstName' },
+  { id: 'description', label: 'Description', align: 'left' },
+  { id: 'publicId', label: 'Public ID', align: 'left' },
+  { id: 'transactionId', label: 'Transaction ID', align: 'left' },
+  { id: 'transactionType', label: 'Type', align: 'left' },
+  { id: 'objectType', label: 'Object Type', align: 'left' },
+  { id: 'points', label: 'Points', align: 'left' },
+  { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
+  // { id: 'status', label: 'Status', align: 'left' },
+];
+
+const LoyaltyTransactionTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
-  user,
   handleDelete,
   handleEdit,
   onPageChange,
@@ -27,8 +38,8 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -43,31 +54,7 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
     data: data || [],
   });
 
-  console.log('sortedData', sortedData);
-
-  const HEAD_LABEL = [
-    {
-      id: 'user',
-      label: 'User',
-      align: 'left',
-      sortable: true,
-      sortKey: 'user',
-    },
-    {
-      id: 'title',
-      label: 'Title',
-      align: 'left',
-      sortable: true,
-      sortKey: 'title',
-    },
-    { id: 'description', label: 'Description', align: 'left' },
-    { id: 'email', label: 'Email', align: 'left' },
-    { id: 'phone', label: 'Phone', align: 'left' },
-    { id: 'budget', label: 'Budget', align: 'left' },
-    { id: 'createdAt', label: 'Created At', align: 'left' },
-    { id: 'status', label: 'Status', align: 'left' },
-    ...(user?.accountState?.userType === 'admin' ? [{ id: 'actions', label: 'Action', align: 'left' }] : []),
-  ];
+  console.log('data', data);
 
   const methods = useForm({
     defaultValues: {
@@ -80,7 +67,7 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Marketing Request List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Global Loyalty Transaction List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -99,6 +86,9 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
+                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
+                          Select Date
+                        </label>
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
@@ -109,26 +99,25 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search by title, email, phone, budget...',
+                              placeholder: 'Search Transactions...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'pending', label: 'Pending' },
-                                  { value: 'rejected', label: 'Rejected' },
-                                  { value: 'completed', label: 'Completed' },
-                                ],
-                              },
-                            ]}
+                            // selectFilters={[
+                            //   {
+                            //     id: 'sheet-revenue',
+                            //     label: 'Status',
+                            //     placeholder: 'Select by Status',
+                            //     value: status,
+                            //     onChange: onStatusChange,
+                            //     options: [
+                            //       { value: 'all', label: 'All' },
+                            //       { value: 'confirmed', label: 'Confirmed' },
+                            //       { value: 'cancelled', label: 'Cancelled' },
+                            //       { value: 'pending', label: 'Pending' },
+                            //     ],
+                            //   },
+                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -150,7 +139,7 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <MarketingRequestTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} user={user} handleEdit={handleEdit} />
+                  <LoyaltyTransactionTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -169,4 +158,4 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
   );
 };
 
-export default MarketingRequestTable;
+export default LoyaltyTransactionTable;

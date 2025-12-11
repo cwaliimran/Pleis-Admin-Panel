@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -16,13 +17,14 @@ import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'image', label: 'Image', align: 'left' },
-  { id: 'title', label: 'Title', align: 'left' },
+  { id: 'title', label: 'Title', align: 'left', sortable: true, sortKey: 'title' },
   { id: 'description', label: 'Description', align: 'left' },
-  { id: 'pointCost', label: 'Point Cost', align: 'left' },
-  { id: 'claimLimits', label: 'Claim Limits', align: 'left' },
+  { id: 'pointCost', label: 'Point Cost', align: 'left', sortable: true, sortKey: 'pointCost' },
+  { id: 'claimLimits', label: 'Claim Limits', align: 'left', sortable: true, sortKey: 'claimLimit' },
   { id: 'rewardSourceLink', label: 'Reward Source Link', align: 'left' },
   { id: 'publicKeyForPartner', label: 'Public Key For Partner', align: 'left' },
-  { id: 'statusLevel', label: 'Status Level', align: 'left' },
+  { id: 'statusLevel', label: 'Status Level', align: 'left', sortable: true, sortKey: 'statusLevel.title' },
+  { id: 'createdAt', label: 'Created At', align: 'left', sortable: true, sortKey: 'createdAt' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
@@ -49,6 +51,10 @@ const ThirdPartyTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const { sortedData, sortConfig, handleSort } = useTableSort({
+    data: data || [],
+  });
 
   const methods = useForm({
     defaultValues: {
@@ -128,11 +134,10 @@ const ThirdPartyTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
-                {data?.map((item, idx) => (
-                  // {ThirdPartyRewardsData?.map((item, idx) => (
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
+                {sortedData?.map((item, idx) => (
                   <ThirdPartyTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>

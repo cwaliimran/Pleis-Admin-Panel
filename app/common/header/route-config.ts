@@ -26,6 +26,8 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/bundles',
   '/super-admin/reservation',
   '/super-admin/streaks',
+  '/super-admin/updates',
+  '/super-admin/giveaways',
 ] as const;
 
 /**

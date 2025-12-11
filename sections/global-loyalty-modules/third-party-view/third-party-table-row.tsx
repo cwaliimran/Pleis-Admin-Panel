@@ -8,6 +8,7 @@ import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { fDate, formatStr } from '@/utils/format-time';
 
 const ThirdPartyTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
@@ -41,6 +42,8 @@ const ThirdPartyTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
       </TableCell>
 
       <TableCell className="text-left capitalize">{item?.statusLevel?.title || '-'}</TableCell>
+
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>

@@ -74,8 +74,12 @@ export const API_ROUTES = {
   ADMIN_BUNDLES: `/admin/bundles`,
   ADMIN_BUNDLES_BY_ID: (id: string) => `/admin/bundles/${id}`,
 
-  ADMIN_GLOBAL_REWARD_CATEGORIES: `/admin/global-reward-categories`,
-  ADMIN_GLOBAL_REWARD_CATEGORIES_BY_ID: (id: string) => `/admin/global-reward-categories/${id}`,
+  MARKETING_REQUEST: `/admin/marketing`,
+  MARKETING_REQUEST_BY_ID: (id: string) => `/admin/marketing/${id}`,
+  MARKETING_REQUEST_BY_ID_UPDATE: (id: string, status: string) => `/admin/marketing/${id}?status=${status || ''}`,
+
+  ADMIN_GLOBAL_REWARD_CATEGORIES: `/admin/global-loyalty/reward-categories`,
+  ADMIN_GLOBAL_REWARD_CATEGORIES_BY_ID: (id: string) => `/admin/global-loyalty/reward-categories/${id}`,
 
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL: `/admin/global-loyalty/status-levels`,
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL_BY_ID: (id: string) => `/admin/global-loyalty/status-levels/${id}`,
@@ -135,7 +139,8 @@ export const API_ROUTES = {
   ADMIN_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/admin/reservations/updateStatus/${id}/${status}`,
   ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
 
-  ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,
+  // ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,
+  ADMIN_LOYALTY_TRANSACTIONS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/transactions' : '/admin/transactions'),
 
   PROMO_CODES: `/admin/promo-codes`,
   PROMO_CODES_BY_ID: (id: string) => `/admin/promo-codes/${id}`,

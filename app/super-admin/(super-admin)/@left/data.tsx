@@ -19,6 +19,8 @@ import {
   FileClock,
   SlidersVertical,
   Volume1,
+  Megaphone,
+  Gift,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -225,7 +227,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Transactions',
-        url: paths.superAdmin.transactions.default,
+        url: paths.superAdmin.globalTransactions.default,
         icon: Tags,
       },
     ],
@@ -403,16 +405,16 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.marketingRequests,
     icon: Volume1,
   },
-  // {
-  //   label: 'Updates',
-  //   key: paths.superAdmin.updates,
-  //   icon: Megaphone,
-  // },
-  // {
-  //   label: 'Giveaways',
-  //   key: paths.superAdmin.giveaways,
-  //   icon: Megaphone,
-  // },
+  {
+    label: 'Updates',
+    key: paths.superAdmin.updates,
+    icon: Megaphone,
+  },
+  {
+    label: 'Giveaways',
+    key: paths.superAdmin.giveaways,
+    icon: Gift,
+  },
   // {
   //   label: 'Reviews',
   //   key: paths.superAdmin.reviews,
