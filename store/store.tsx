@@ -44,6 +44,7 @@ import { bundlesApi } from './Reducer/bundles-api';
 import { rewardCategoryApi } from './Reducer/reward-category-api';
 import { referralsApi } from './Reducer/referrals-api';
 import { thirdPartyApi } from './Reducer/third-party-api';
+import { marketingRequestApi } from './Reducer/marketing-request-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -87,6 +88,7 @@ const appReducer = combineReducers({
   [rewardCategoryApi.reducerPath]: rewardCategoryApi.reducer,
   [referralsApi.reducerPath]: referralsApi.reducer,
   [thirdPartyApi.reducerPath]: thirdPartyApi.reducer,
+  [marketingRequestApi.reducerPath]: marketingRequestApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -137,6 +139,7 @@ export const store = configureStore({
       rewardCategoryApi.middleware,
       menuListApi.middleware,
       thirdPartyApi.middleware,
+      marketingRequestApi.middleware,
       referralsApi.middleware
     ),
 });

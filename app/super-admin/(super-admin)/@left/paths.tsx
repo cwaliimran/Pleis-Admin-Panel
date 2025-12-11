@@ -72,6 +72,9 @@ export const paths = {
     transactions: {
       default: '/super-admin/transactions',
     },
+    globalTransactions: {
+      default: '/super-admin/global-transactions',
+    },
     terms: {
       default: '/super-admin/terms',
     },
@@ -127,6 +130,8 @@ export const paths = {
     reviews: '/super-admin/reviews',
 
     streak: '/super-admin/streaks',
+    updates: '/super-admin/updates',
+    giveaways: '/super-admin/giveaways',
     globalNotification: '/super-admin/global-notification',
     globalNotificationAnalytics: '/super-admin/notification-analytics',
     marketingRequests: '/super-admin/marketing-requests',

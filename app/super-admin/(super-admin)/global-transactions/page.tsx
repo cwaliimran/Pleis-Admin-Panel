@@ -1,6 +1,5 @@
 import Header from '@/app/common/header/header';
-import CompanyGuard from '@/components/guards/CompanyGuard';
-import LoyaltyTransactionView from '@/sections/loyalty-modules/loyalty-transaction/loyalty-transaction-view';
+import GlobalLoyaltyTransactionView from '@/sections/global-loyalty-modules/global-loyalty-transaction/global-loyalty-transaction-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -17,9 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <CompanyGuard>
-        <LoyaltyTransactionView global={false} />
-      </CompanyGuard>
+      <GlobalLoyaltyTransactionView global={true} />
     </div>
   );
 };
