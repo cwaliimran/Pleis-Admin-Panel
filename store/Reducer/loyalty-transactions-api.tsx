@@ -9,24 +9,26 @@ export const loyaltyTransactionsApi = createApi({
 
   endpoints: (builder) => ({
     getLoyaltyTransactions: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer, isGlobal = false }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, isGlobal = false, walletType }) => {
         const params: any = {
-          keyword: search,
-          status,
           page: page + 1,
           limit,
         };
+        if (search) (params as any).keyword = search;
+        if (status) (params as any).status = status;
         if (date) (params as any).date = date;
+        (params as any).walletType = walletType;
+        
         // if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;
         return {
-          url: API_ROUTES.ADMIN_LOYALTY_TRANSACTIONS(isGlobal),
+          url: API_ROUTES.ADMIN_LOYALTY_TRANSACTIONS,
           method: 'GET',
           params,
         };
       },
-      transformResponse: (res, meta, arg) => ({
-        data: arg.isGlobal ? res.data : res.data.transactions,
+      transformResponse: (res) => ({
+        data: res.data,
         meta: res.meta,
       }),
       // providesTags: ['loyalty-transaction'],

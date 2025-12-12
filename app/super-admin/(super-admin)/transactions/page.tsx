@@ -1,6 +1,6 @@
 import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
-import LoyaltyTransactionView from '@/sections/loyalty-modules/loyalty-transaction/loyalty-transaction-view';
+import LoyaltyTransactionView from '@/sections/transactions/loyalty-transaction/loyalty-transaction-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

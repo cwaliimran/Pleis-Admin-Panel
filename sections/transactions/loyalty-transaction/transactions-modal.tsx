@@ -1,7 +1,9 @@
 'use client';
 
+import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { fDate, formatStr } from '@/utils/format-time';
+import { getBadgeLabel, getBadgeVariant } from '../helpers';
 
 type ChallengeModalProps = {
   open: boolean;
@@ -10,23 +12,23 @@ type ChallengeModalProps = {
 };
 
 const TransactionModal = ({ open, onClose, selectedData: item }: ChallengeModalProps) => {
-  const getLabel = (type: string) => {
-    switch (type) {
-      case 'eventTicketPurchase':
-        return 'Event Ticket Purchase';
-      case 'reservations':
-        return 'Reservations';
-      default:
-        return '-';
-    }
-  };
+  // const getLabel = (type: string) => {
+  //   switch (type) {
+  //     case 'eventTicketPurchase':
+  //       return 'Event Ticket Purchase';
+  //     case 'reservations':
+  //       return 'Reservations';
+  //     default:
+  //       return '-';
+  //   }
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col overflow-y-auto rounded-2xl p-6 md:!max-w-[750px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col overflow-y-auto rounded-2xl p-6 md:max-w-[750px]!"
         >
           <DialogHeader>
             <DialogTitle>Transaction Details</DialogTitle>
@@ -35,7 +37,7 @@ const TransactionModal = ({ open, onClose, selectedData: item }: ChallengeModalP
           <div className="mt-4 grid w-full grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
             <div>
               <h4 className="text-muted-foreground text-sm font-medium">Transaction ID</h4>
-              <p className="text-base font-semibold">{item?.paymentDetails?.paymentId || 'N/A'}</p>
+              <p className="text-base font-semibold">{item?.publicId || 'N/A'}</p>
             </div>
 
             <div>
@@ -45,18 +47,19 @@ const TransactionModal = ({ open, onClose, selectedData: item }: ChallengeModalP
 
             <div>
               <h4 className="text-muted-foreground text-sm font-medium">Transaction Type</h4>
-              <p className="text-base font-semibold">{getLabel(item?.purpose)}</p>
+              <p className="text-base font-semibold">{item?.domainType || 'N/A'}</p>
             </div>
 
             <div>
               <h4 className="text-muted-foreground text-sm font-medium">Points</h4>
-              {item?.pointsRedeemed && item.pointsRedeemed !== 0 ? (
+              {item?.points?.total || 'N/A'}
+              {/* {item?.pointsRedeemed && item.pointsRedeemed !== 0 ? (
                 <span className="text-red-600">-{item.pointsRedeemed}</span>
               ) : item?.pointsEarned && item.pointsEarned !== 0 ? (
                 <span className="text-green-600">+{item.pointsEarned}</span>
               ) : (
                 'N/A'
-              )}
+              )} */}
             </div>
 
             <div>
@@ -121,15 +124,7 @@ const TransactionModal = ({ open, onClose, selectedData: item }: ChallengeModalP
 
             <div>
               <h4 className="text-muted-foreground text-sm font-medium">Status</h4>
-              <p className="inline-flex rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700 capitalize">
-                {item?.status === 'confirmed'
-                  ? 'gaining'
-                  : item?.status === 'pending'
-                    ? 'pending'
-                    : item?.status === 'cancelled'
-                      ? 'cancelled'
-                      : 'spending'}
-              </p>
+              <CustomBadge variant={getBadgeVariant(item?.type)}>{getBadgeLabel(item?.type)}</CustomBadge>
             </div>
           </div>
         </DialogContent>

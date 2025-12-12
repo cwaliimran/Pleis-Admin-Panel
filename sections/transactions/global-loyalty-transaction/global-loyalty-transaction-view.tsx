@@ -1,19 +1,19 @@
 'use client';
 
-import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+// import { useBoolean } from '@/hooks/useBoolean';
 import { useGetLoyaltyTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
-import LoyaltyTransactionTable from './loyalty-transaction-table';
-import TransactionModal from './transactions-modal';
+import LoyaltyTransactionTable from './global-loyalty-transaction-table';
+// import TransactionModal from './transactions-modal';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 interface LoyaltyTransactionViewProps {
   global?: boolean;
 }
 
-const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
-  const openModal = useBoolean();
+const GlobalLoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
+  // const openModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -22,7 +22,7 @@ const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  // const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
   const { companyId: selectedCompany } = useCompanySelectionState();
 
@@ -38,6 +38,7 @@ const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
     isGlobal: global || false,
+    walletType: 'globalWallet',
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -63,10 +64,10 @@ const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
     }
   }, [apiData, page, limit]);
 
-  const handleEdit = (data: string) => {
-    setSelectedRecord(data);
-    openModal.onTrue();
-  };
+  // const handleEdit = (data: string) => {
+  //   setSelectedRecord(data);
+  //   openModal.onTrue();
+  // };
 
   return (
     <div>
@@ -74,7 +75,7 @@ const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
         data={localData}
         meta={meta}
         loading={isLoading || isFetching}
-        handleEdit={handleEdit}
+        // handleEdit={handleEdit}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -104,10 +105,8 @@ const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
           setPage(1);
         }}
       />
-
-      <TransactionModal open={openModal.value} onClose={openModal.onFalse} selectedData={selectedRecord} />
     </div>
   );
 };
 
-export default LoyaltyTransactionView;
+export default GlobalLoyaltyTransactionView;

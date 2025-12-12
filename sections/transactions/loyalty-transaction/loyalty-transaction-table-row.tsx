@@ -7,18 +7,19 @@ import { fDate, formatStr } from '@/utils/format-time';
 import { Eye } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { getBadgeLabel, getBadgeVariant } from '../helpers';
 
 const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => {
-  const getLabel = (type: string) => {
-    switch (type) {
-      case 'eventTicketPurchase':
-        return 'Event Ticket Purchase';
-      case 'reservations':
-        return 'Reservations';
-      default:
-        return '-';
-    }
-  };
+  // const getLabel = (type: string) => {
+  //   switch (type) {
+  //     case 'eventTicketPurchase':
+  //       return 'Event Ticket Purchase';
+  //     case 'reservations':
+  //       return 'Reservations';
+  //     default:
+  //       return '-';
+  //   }
+  // };
 
   return (
     <>
@@ -29,10 +30,11 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
           {item?.user?.firstName || ''} {item?.user?.lastName || ''}
         </TableCell>
 
-        <TableCell className="text-left capitalize">{item?.paymentDetails?.paymentId || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.publicId || 'N/A'}</TableCell>
 
-        <TableCell className="text-left capitalize">{getLabel(item?.purpose)}</TableCell>
-
+        {/* <TableCell className="text-left capitalize">{getLabel(item?.domainType)}</TableCell> */}
+        <TableCell className="text-left capitalize">{item?.domainType || 'N/A'}</TableCell>
+        {/* 
         <TableCell className="text-left capitalize">
           {item?.pointsRedeemed && item.pointsRedeemed !== 0 ? (
             <span className="text-red-600">-{item.pointsRedeemed}</span>
@@ -41,11 +43,13 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
           ) : (
             'N/A'
           )}
-        </TableCell>
+        </TableCell> */}
+
+        <TableCell className="text-left capitalize">{item?.points?.total || 'N/A'}</TableCell>
 
         <TableCell className="text-left capitalize">
           {(() => {
-            const titles = item?.tickets?.map((t: any) => t?.ticket?.snapshot?.title)?.filter(Boolean) as string[] | undefined;
+            const titles = item?.ticketingBookings?.map((t: any) => t?.ticket?.snapshot?.title)?.filter(Boolean) as string[] | undefined;
 
             const titlesString = titles?.length ? titles.join(', ') : 'N/A';
 
@@ -79,19 +83,7 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
         <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
 
         <TableCell className="text-center">
-          <CustomBadge
-            variant={
-              item?.status === 'confirmed' ? 'success' : item?.status === 'pending' ? 'warning' : item?.status === 'cancelled' ? 'error' : 'default'
-            }
-          >
-            {item?.status === 'confirmed'
-              ? 'gaining'
-              : item?.status === 'pending'
-                ? 'pending'
-                : item?.status === 'cancelled'
-                  ? 'cancelled'
-                  : 'spending'}
-          </CustomBadge>
+          <CustomBadge variant={getBadgeVariant(item?.type)}>{getBadgeLabel(item?.type)}</CustomBadge>
         </TableCell>
 
         <TableCell>

@@ -9,7 +9,7 @@ export const marketingRequestApi = createApi({
 
   endpoints: (builder) => ({
     getMarketingRequest: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, userType }) => {
         const params: any = {
           keyword: search,
           status,
@@ -18,7 +18,7 @@ export const marketingRequestApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.MARKETING_REQUEST,
+          url: API_ROUTES.MARKETING_REQUEST(userType),
           method: 'GET',
           params,
         };
