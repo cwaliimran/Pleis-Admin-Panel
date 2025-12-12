@@ -170,7 +170,9 @@ const ThirdPartyView = () => {
         }}
       />
 
-      <ThirdPartyRewardModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
+      {openModal.value && (
+        <ThirdPartyRewardModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

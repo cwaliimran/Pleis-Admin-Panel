@@ -14,7 +14,11 @@ import MarketingRequestModal from './marketing-request-modal';
 import MarketingRequestTable from './marketing-request-table';
 import { useGetMarketingRequestQuery, useUpdateMarketingRequestMutation } from '@/store/Reducer/marketing-request-api';
 
-const MarketingRequestView = () => {
+type MarketingRequestViewProps = {
+  userType: 'super-admin' | 'organizer';
+};
+
+const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -39,6 +43,7 @@ const MarketingRequestView = () => {
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    userType,
   });
 
   console.log('apiData', apiData);

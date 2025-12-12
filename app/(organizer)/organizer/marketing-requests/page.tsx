@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <MarketingRequestView />
+      <MarketingRequestView userType="organizer" />
     </div>
   );
 };

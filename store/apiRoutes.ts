@@ -74,7 +74,9 @@ export const API_ROUTES = {
   ADMIN_BUNDLES: `/admin/bundles`,
   ADMIN_BUNDLES_BY_ID: (id: string) => `/admin/bundles/${id}`,
 
-  MARKETING_REQUEST: `/admin/marketing`,
+  // MARKETING_REQUEST: `/admin/marketing`,
+  MARKETING_REQUEST: (userType: string) => (userType === 'super-admin' ? '/admin/marketing' : '/organizer/marketing'),
+
   MARKETING_REQUEST_BY_ID: (id: string) => `/admin/marketing/${id}`,
   MARKETING_REQUEST_BY_ID_UPDATE: (id: string, status: string) => `/admin/marketing/${id}?status=${status || ''}`,
 
