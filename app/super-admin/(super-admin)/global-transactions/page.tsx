@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import GlobalLoyaltyTransactionView from '@/sections/global-loyalty-modules/global-loyalty-transaction/global-loyalty-transaction-view';
+import GlobalLoyaltyTransactionView from '@/sections/transactions/global-loyalty-transaction/global-loyalty-transaction-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -29,20 +29,20 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item }) => {
         </TableCell>
 
         <TableCell className="text-left">
-          <TruncatedTextWithModal text={item?.description} title="Description" />
+          <TruncatedTextWithModal text={item?.description || 'N/A'} title="Description" />
         </TableCell>
 
         <TableCell className="text-left capitalize">
           <TruncatedTextWithModal text={item?.publicId} title="Public ID" />
         </TableCell>
 
-        <TableCell className="text-left capitalize">{item?.paymentDetails?.paymentId || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.batchId || 'N/A'}</TableCell>
 
         <TableCell className="text-left capitalize">{getLabel(item?.type)}</TableCell>
 
-        <TableCell className="text-left capitalize">{item?.objectType || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.domainType || 'N/A'}</TableCell>
 
-        <TableCell className="text-left capitalize">{item?.points || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.points.total || 'N/A'}</TableCell>
 
         <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
 
