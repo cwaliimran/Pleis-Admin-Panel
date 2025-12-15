@@ -11,6 +11,7 @@ export interface SamplePageProps {
   user?: any;
   meta: SampleMeta;
   loading?: boolean;
+  updatingId?: string | null;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string, value: string) => void;
   onPageChange?: (page: number) => void;
@@ -28,6 +29,7 @@ export interface SamplePageProps {
 export interface TableRowProps {
   item: any;
   user?: any;
+  updatingId?: string | null;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string, value: string) => void;
 }

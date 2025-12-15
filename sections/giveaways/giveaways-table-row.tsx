@@ -31,6 +31,8 @@ const GiveawaysTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, 
 
       <TableCell className="w-40 text-center capitalize">{item?.ticketsPerWinner}</TableCell>
 
+      <TableCell className="text-left capitalize">{item?.event?.name}</TableCell>
+
       <TableCell className="text-left capitalize">{item?.ticketType}</TableCell>
 
       <TableCell className="text-left capitalize">{item?.entries}</TableCell>

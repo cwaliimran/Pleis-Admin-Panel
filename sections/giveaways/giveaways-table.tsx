@@ -19,6 +19,11 @@ export const giveawaysDummyData = [
   {
     _id: 'gw_001',
     title: 'New Year Mega Giveaway',
+    event: {
+      id: 'ev_001',
+      name: 'New Year Celebration 2025',
+      location: 'Dubai Arena',
+    },
     winners: 5,
     ticketsPerWinner: 2,
     ticketType: 'VIP',
@@ -31,6 +36,11 @@ export const giveawaysDummyData = [
   {
     _id: 'gw_002',
     title: 'Food Festival Free Pass Draw',
+    event: {
+      id: 'ev_002',
+      name: 'Global Food Festival',
+      location: 'City Expo Center',
+    },
     winners: 10,
     ticketsPerWinner: 1,
     ticketType: 'Standard',
@@ -43,6 +53,11 @@ export const giveawaysDummyData = [
   {
     _id: 'gw_003',
     title: 'Backstage Meet & Greet Contest',
+    event: {
+      id: 'ev_003',
+      name: 'Live Concert Night',
+      location: 'National Stadium',
+    },
     winners: 3,
     ticketsPerWinner: 1,
     ticketType: 'Backstage',
@@ -55,6 +70,11 @@ export const giveawaysDummyData = [
   {
     _id: 'gw_004',
     title: 'Family Event Ticket Giveaway',
+    event: {
+      id: 'ev_004',
+      name: 'Family Fun Carnival',
+      location: 'Central Park',
+    },
     winners: 8,
     ticketsPerWinner: 4,
     ticketType: 'Family Pass',
@@ -67,6 +87,11 @@ export const giveawaysDummyData = [
   {
     _id: 'gw_005',
     title: 'Tech Summit Free Entry',
+    event: {
+      id: 'ev_005',
+      name: 'Tech Summit 2025',
+      location: 'Innovation Hub',
+    },
     winners: 15,
     ticketsPerWinner: 1,
     ticketType: 'General',
@@ -79,6 +104,11 @@ export const giveawaysDummyData = [
   {
     _id: 'gw_006',
     title: 'Music Night Golden Pass Giveaway',
+    event: {
+      id: 'ev_006',
+      name: 'Live Music Night',
+      location: 'Open Air Theatre',
+    },
     winners: 2,
     ticketsPerWinner: 2,
     ticketType: 'Golden',
@@ -100,6 +130,7 @@ const HEAD_LABEL = [
   },
   { id: 'winners', label: 'Winners', align: 'center' },
   { id: 'ticketsPerWinner', label: 'Tickets / Winner', align: 'center' },
+  { id: 'event', label: 'Events', align: 'left' },
   { id: 'ticketType', label: 'Ticket Type', align: 'left' },
   { id: 'entries', label: 'Entries', align: 'left' },
   { id: 'created', label: 'Created At', align: 'left' },
@@ -222,7 +253,13 @@ const GiveawaysTable: FC<SamplePageProps> = ({
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={giveawaysDummyData?.length || 0}>
                 {/* {sortedData?.map((item, idx) => ( */}
                 {giveawaysDummyData?.map((item, idx) => (
-                  <GiveawaysTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} handleOpenWinners={handleOpenWinners} />
+                  <GiveawaysTableRow
+                    key={item?._id || idx}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    handleOpenWinners={handleOpenWinners}
+                  />
                 ))}
               </TableBodyWrapper>
             </Table>
