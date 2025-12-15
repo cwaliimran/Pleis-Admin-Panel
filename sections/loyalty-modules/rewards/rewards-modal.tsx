@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
@@ -17,6 +17,7 @@ import { useAddRewardMutation, useUpdateRewardMutation } from '@/store/Reducer/r
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { fDate, formatStr } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -37,6 +38,7 @@ type RewardFormValues = {
   menu: string;
   menuItem: string;
   event: string;
+  endDate: string | Date;
   status: string;
   companyOrganizer: string;
   customReward: {
@@ -88,6 +90,7 @@ const schema = yup.object({
     then: (schema) => schema.required('Event is required'),
     otherwise: (schema) => schema,
   }),
+  endDate: yup.mixed<string | Date>().required('End date is required'),
   status: yup.string(),
   companyOrganizer: yup.string(),
   customReward: yup.object().shape({
@@ -109,8 +112,6 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
 
-  console.log('selectedData', selectedData);
-
   const [addReward, { isLoading: addRewardLoading }] = useAddRewardMutation();
   const [updateReward, { isLoading: updateRewardLoading }] = useUpdateRewardMutation();
 
@@ -127,6 +128,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     percentOff: '',
     description: '',
     event: '',
+    endDate: '',
     status: '',
     companyOrganizer: '',
     customReward: {
@@ -208,6 +210,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
   // Populate form when editing
   useEffect(() => {
     if (isEdit && selectedData && open) {
+      const initialRewardType = global ? 'customReward' : 'buyMenuItemReward';
       reset({
         image: selectedData?.image || '',
         title: selectedData.title || '',
@@ -217,9 +220,10 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
         tierLimit: selectedData.tierLimit?._id || 'none',
         percentOff: selectedData.percentOff?.toString() || '',
         description: selectedData.description || '',
-        rewardType: selectedData.rewardType || defaultValues.rewardType,
+        rewardType: selectedData.rewardType || initialRewardType,
         menuItem: selectedData.menuItem || '',
         event: selectedData.event || '',
+        endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
         customReward: selectedData.customReward || {
@@ -229,7 +233,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
         },
       });
     }
-  }, [isEdit, selectedData, open, reset]);
+  }, [isEdit, selectedData, open, reset, global]);
 
   const handleSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
@@ -266,6 +270,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
         claimLimit: formData.claimLimit ? Number(formData.claimLimit) : undefined,
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
+        endDate: fDate(formData.endDate, formatStr.paramCase.db),
       };
 
       // Only add companyOrganizer if not global
@@ -513,6 +518,8 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                     min="0"
                     max="100"
                   />
+
+                  <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
                 </div>
 
                 {percentOff && Number(percentOff) > 0 && (
@@ -538,7 +545,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                   </div>
                 )}
 
-                <RewardCalculatorFields />
+                {!global && <RewardCalculatorFields />}
               </div>
 
               <div className="mt-4 flex items-center justify-end gap-2">

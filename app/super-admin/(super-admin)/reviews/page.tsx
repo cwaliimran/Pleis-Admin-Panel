@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import ReviewsView from '@/sections/reviews/reviews-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <ReviewsView />
+      <CompanyGuard>
+        <ReviewsView />
+      </CompanyGuard>
     </div>
   );
 };

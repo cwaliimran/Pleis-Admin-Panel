@@ -132,7 +132,7 @@ const GiveawaysView = () => {
       <div className="mt-3 flex w-full items-center justify-end md:mt-0">
         <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
           <Plus />
-          Create Updates
+          Create Giveaway
         </Button>
       </div>
 

@@ -144,7 +144,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
         </div>
       </div>
 
-      <RewardsCalculator />
+      {!global && <RewardsCalculator />}
 
       <RewardsTable
         data={localData}

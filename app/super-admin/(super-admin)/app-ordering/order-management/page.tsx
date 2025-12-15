@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import { OrderManagementView } from '@/sections/app-ordering/order-management/order-management-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <OrderManagementView />
+      <CompanyGuard>
+        <OrderManagementView />
+      </CompanyGuard>
     </div>
   );
 };

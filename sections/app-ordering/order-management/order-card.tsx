@@ -93,8 +93,86 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, isExpanded, onToggl
               </div>
             )}
 
-            {/* Payment Type */}
-            {order.paymentType && (
+            {/* Payment Information */}
+            {order.paymentInfo && (
+              <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                <div className="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-500">Payment Information</div>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Payment Method */}
+                  <div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Method</div>
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <span className="capitalize">{order.paymentInfo.method.replace('-', ' ')}</span>
+                      {order.paymentInfo.cardLast4 && <span className="text-gray-500">•••• {order.paymentInfo.cardLast4}</span>}
+                    </div>
+                    {order.paymentInfo.cardBrand && (
+                      <div className="mt-0.5 text-xs text-gray-500 capitalize dark:text-gray-400">{order.paymentInfo.cardBrand}</div>
+                    )}
+                  </div>
+
+                  {/* Payment Status */}
+                  <div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Status</div>
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold',
+                          order.paymentInfo.status === 'completed' && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                          order.paymentInfo.status === 'pending' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                          order.paymentInfo.status === 'processing' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                          order.paymentInfo.status === 'failed' && 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                          order.paymentInfo.status === 'refunded' && 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        )}
+                      >
+                        {order.paymentInfo.status === 'completed' && '✓'}
+                        {order.paymentInfo.status === 'pending' && '⏳'}
+                        {order.paymentInfo.status === 'processing' && '⟳'}
+                        {order.paymentInfo.status === 'failed' && '✗'}
+                        {order.paymentInfo.status === 'refunded' && '↩'}
+                        <span className="capitalize">{order.paymentInfo.status}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Transaction ID */}
+                  {order.paymentInfo.transactionId && (
+                    <div className="col-span-2">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Transaction ID</div>
+                      <div className="font-mono text-sm text-gray-900 dark:text-gray-100">{order.paymentInfo.transactionId}</div>
+                    </div>
+                  )}
+
+                  {/* Paid At */}
+                  {order.paymentInfo.paidAt && (
+                    <div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Paid At</div>
+                      <div className="text-sm text-gray-900 dark:text-gray-100">{order.paymentInfo.paidAt}</div>
+                    </div>
+                  )}
+
+                  {/* Refund Info */}
+                  {order.paymentInfo.status === 'refunded' && (
+                    <>
+                      {order.paymentInfo.refundedAt && (
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Refunded At</div>
+                          <div className="text-sm text-gray-900 dark:text-gray-100">{order.paymentInfo.refundedAt}</div>
+                        </div>
+                      )}
+                      {order.paymentInfo.refundAmount !== undefined && (
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Refund Amount</div>
+                          <div className="text-sm font-medium text-purple-600 dark:text-purple-400">${order.paymentInfo.refundAmount.toFixed(2)}</div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Legacy Payment Type (for backward compatibility) */}
+            {order.paymentType && !order.paymentInfo && (
               <div>
                 <div className="mb-1.5 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-500">Payment Type</div>
                 <div className="text-sm text-gray-900 dark:text-gray-100">💳 Pay Later</div>

@@ -1,32 +1,41 @@
 'use client';
 
-import { Avatar, AvatarImage } from '@/components/ui/avatar';
+// import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { useAppNavigator } from '@/hooks/useAppNavigator';
+// import { useAppNavigator } from '@/hooks/useAppNavigator';
 import { fDate, formatStr } from '@/utils/format-time';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+// import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 
-const ReferralsTableRow: FC<TableRowProps> = ({ item, userType, global }) => {
-  const { navigate } = useAppNavigator();
+const ReferralsTableRow: FC<TableRowProps> = ({ item }) => {
+  // const { navigate } = useAppNavigator();
 
-  const handleNavigate = () => {
-    if (global) {
-      navigate(`/${userType}/global-referrals/${item?._id}`);
-    } else {
-      navigate(`/${userType}/referrals/${item?._id}`);
-    }
-  };
+  // const handleNavigate = () => {
+  //   if (global) {
+  //     navigate(`/${userType}/global-referrals/${item?._id}`);
+  //   } else {
+  //     navigate(`/${userType}/referrals/${item?._id}`);
+  //   }
+  // };
 
   return (
-    <TableRow onClick={handleNavigate} className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
+    <TableRow
+      // onClick={handleNavigate}
+      className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
+    >
+      {/* <TableCell>
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.profileIcon && item?.profileIcon !== noImageUrl && item?.profileIcon !== noImageUrlDev ? (
+            <AvatarImage src={item?.profileIcon} alt="Menu Item" className="h-full w-full cursor-pointer object-cover" />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.firstName?.[0]?.toUpperCase() || ''}</span>
+          )}
+        </Avatar>
+      </TableCell> */}
+
       <TableCell className="text-left">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="https://github.com/shadcn.png" alt={item.photo || 'User'} className="object-cover" />
-          </Avatar>
-          {item?.userName || '-'}
-        </div>
+        {item?.firstName || '-'} {item?.lastName || '-'}
       </TableCell>
 
       <TableCell className="text-left">{item?.referrerUserName || '-'}</TableCell>

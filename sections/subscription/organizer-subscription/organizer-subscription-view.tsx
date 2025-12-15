@@ -153,7 +153,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
             description="You have an active subscription. Changes will take effect on your next renewal date. Cancellations will keep your access until the end of the current billing period."
           />
         )}
-
         {/* Free Tier */}
         <div className="rounded-xl border-2 border-green-300 bg-linear-to-br from-green-50 to-emerald-50 p-6 shadow-lg dark:border-green-800 dark:from-green-950/40 dark:to-emerald-950/40">
           <div className="flex items-start justify-between">
@@ -178,7 +177,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
             </div>
           </div>
         </div>
-
         {/* Module Selection */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#222121]">
           <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Premium Modules</h2>
@@ -198,11 +196,13 @@ export const OrganizerSubscriptionView: React.FC = () => {
         </div>
 
         {/* Advanced Analytics Add-on */}
-        <div className="rounded-xl border-2 border-indigo-200 bg-linear-to-br from-indigo-50 to-purple-50 p-6 shadow-sm dark:border-indigo-900/50 dark:from-indigo-950/40 dark:to-purple-950/40">
-          <div className="flex items-start gap-4">
+        <div
+          onClick={() => setIncludeAnalytics(!includeAnalytics)}
+          className="rounded-xl border-2 border-indigo-200 bg-linear-to-br from-indigo-50 to-purple-50 p-6 shadow-sm dark:border-indigo-900/50 dark:from-indigo-950/40 dark:to-purple-950/40"
+        >
+          <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="mb-3 flex items-center gap-2">
-                {/* <span className="text-2xl">📊</span> */}
                 <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">Advanced Analytics</h3>
                 <Sparkles className="h-5 w-5 text-yellow-500" />
               </div>
@@ -218,18 +218,32 @@ export const OrganizerSubscriptionView: React.FC = () => {
                 ))}
               </ul>
             </div>
-            <div className="text-right">
-              <div className="mb-2 text-3xl font-bold text-indigo-600 dark:text-indigo-500">€{PRICING_CONFIG.analytics}</div>
-              <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">/month</div>
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={includeAnalytics}
-                  onChange={(e) => setIncludeAnalytics(e.target.checked)}
-                  className="h-5 w-5 rounded text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-                />
-                <span className="font-semibold text-gray-900 dark:text-gray-100">Add to plan</span>
-              </label>
+
+            {/* Checkbox - Right Side */}
+            <div className="flex flex-col items-end">
+              <div
+                // onClick={() => setIncludeAnalytics(!includeAnalytics)}
+                className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border-2 transition-all ${
+                  includeAnalytics
+                    ? 'border-blue-600 bg-blue-600 dark:border-blue-500 dark:bg-blue-500'
+                    : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800'
+                }`}
+              >
+                {includeAnalytics && <Check className="h-4 w-4 text-white" />}
+              </div>
+              <span className="mt-2 text-xs font-semibold text-gray-700 dark:text-gray-300">{includeAnalytics ? 'Selected' : 'Select'}</span>
+            </div>
+          </div>
+
+          {/* Price Section - Full Width at Bottom */}
+          <div className="mt-4 rounded-lg border border-indigo-200 bg-white/50 p-3 dark:border-indigo-800 dark:bg-indigo-900/20">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Monthly price:</span>
+              <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">€{PRICING_CONFIG.analytics}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-600 dark:text-gray-400">Flat rate:</span>
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">No commission</span>
             </div>
           </div>
         </div>
@@ -242,6 +256,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
           <div className="grid grid-cols-6 gap-3">
             {ORGANIZATION_COUNTS.map((count) => (
               <button
+                type="button"
                 key={count}
                 onClick={() => handleOrganizationCountChange(count)}
                 className={`rounded-lg px-4 py-3 font-semibold transition-all ${
@@ -287,7 +302,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
             </div>
           )}
         </div>
-
         {/* Price Summary */}
         <PriceSummary
           selectedModules={selectedModules}
@@ -299,7 +313,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
           onBillingCycleChange={setBillingCycle}
           onSubscribe={handleSubscribe}
         />
-
         {/* Subscription Management Actions */}
         {hasActiveSubscription && (
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#222121]">
@@ -332,7 +345,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
             </p>
           </div>
         )}
-
         {/* Free Tier Reminder */}
         {selectedModules.length === 0 && !includeAnalytics && (
           <div className="py-8 text-center">
