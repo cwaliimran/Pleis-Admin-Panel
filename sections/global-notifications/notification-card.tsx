@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
-import { Image as ImageIcon, Link2, MapPin, Check, Users, Eye, Trash2 } from 'lucide-react';
-import { Notification } from './types';
-import { NOTIFICATION_STATUS_COLORS } from './constants';
+import { Check, Eye, Image as ImageIcon, Link2, MapPin, Trash2, Users } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import React from 'react';
+import { NOTIFICATION_STATUS_COLORS } from './constants';
+import { Notification } from './types';
 
 interface NotificationCardProps {
   notification: Notification;
@@ -12,7 +13,13 @@ interface NotificationCardProps {
   onDelete: (id: string) => void;
 }
 
-export const NotificationCard: React.FC<NotificationCardProps> = ({ notification, onPreview, onDelete }) => {
+export const NotificationCard: React.FC<NotificationCardProps> = ({ notification, onDelete }) => {
+  const router = useRouter();
+
+  const handleNavigate = () => {
+    router.push(`/super-admin/notification-analytics/${notification?._id}`);
+  };
+
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -104,7 +111,8 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
               <button
                 title="button"
                 type="button"
-                onClick={() => onPreview(notification)}
+                onClick={handleNavigate}
+                // onClick={() => onPreview(notification)}
                 className="cursor-pointer rounded p-2 text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30"
               >
                 <Eye className="h-4 w-4" />

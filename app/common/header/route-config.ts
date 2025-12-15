@@ -28,6 +28,8 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/streaks',
   '/super-admin/updates',
   '/super-admin/giveaways',
+  '/super-admin/reviews',
+  '/super-admin/app-ordering/order-management',
 ] as const;
 
 /**

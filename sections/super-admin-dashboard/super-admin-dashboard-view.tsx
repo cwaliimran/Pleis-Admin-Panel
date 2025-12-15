@@ -109,7 +109,8 @@ const SuperAdminDashboardView = () => {
             <InvoiceCard key={item?._id} item={item} />
           ))}
         </div>
-        <Card className="dark:bg-secondary mt-5 shadow-lg lg:mt-10">
+
+        <Card className="dark:bg-secondary mt-5 shadow-lg lg:mt-5">
           <CardHeader>
             <div className="items-center justify-between md:flex">
               <h3 className="text-xl font-semibold">
@@ -147,7 +148,7 @@ const SuperAdminDashboardView = () => {
           />
         </Card>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2 md:gap-x-7 md:gap-y-4 lg:mt-10 lg:grid-cols-3">
+        <div className="mt-5 grid gap-4 md:grid-cols-2 md:gap-x-7 md:gap-y-4 lg:mt-5 lg:grid-cols-3">
           <div>
             <Card className="dark:bg-secondary max-h-full w-full shadow-md md:h-[450px]">
               <CardHeader>

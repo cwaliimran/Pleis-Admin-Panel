@@ -32,7 +32,7 @@ export const marketingRequestApi = createApi({
 
     addMarketingRequest: builder.mutation({
       query: (newMarketingRequest) => ({
-        url: API_ROUTES.MARKETING_REQUEST,
+        url: API_ROUTES.CREATE_MARKETING_REQUEST,
         method: 'POST',
         body: newMarketingRequest,
       }),

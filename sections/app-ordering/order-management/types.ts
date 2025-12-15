@@ -11,6 +11,23 @@ export interface MenuItem {
   price: number;
 }
 
+export type PaymentMethod = 'credit-card' | 'debit-card' | 'apple-pay' | 'google-pay' | 'cash' | 'paypal';
+
+export type PaymentStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
+
+export interface PaymentInfo {
+  method: PaymentMethod;
+  status: PaymentStatus;
+  transactionId?: string;
+  cardLast4?: string;
+  cardBrand?: 'visa' | 'mastercard' | 'amex' | 'discover';
+  paidAt?: string;
+  refundedAt?: string;
+  refundAmount?: number;
+  processingFee?: number;
+  tip?: number;
+}
+
 export interface Order {
   id: string;
   deliveryType: DeliveryType;
@@ -25,6 +42,7 @@ export interface Order {
   isVIP?: boolean;
   isPreorder?: boolean;
   paymentType?: 'pay-now' | 'pay-later';
+  paymentInfo?: PaymentInfo;
   completedAt?: string;
   createdAt: string;
 }

@@ -18,9 +18,7 @@ import {
   UsersRound,
   FileClock,
   SlidersVertical,
-  Volume1,
-  Megaphone,
-  Gift,
+  Volume1
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -70,16 +68,6 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
-        title: 'Notification center',
-        url: paths.superAdmin.globalNotification,
-        icon: CalendarDays,
-      },
-      {
-        title: 'Notification analytics',
-        url: paths.superAdmin.globalNotificationAnalytics,
-        icon: CalendarDays,
-      },
-      {
         title: 'Reviews',
         url: paths.superAdmin.reviews,
         icon: CalendarDays,
@@ -87,6 +75,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'QR codes',
         url: paths.superAdmin.qrCodes,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Updates',
+        url: paths.superAdmin.updates,
         icon: CalendarDays,
       },
     ],
@@ -243,6 +236,11 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
+        title: 'Giveaways',
+        url: paths.superAdmin.giveaways,
+        icon: CalendarDays,
+      },
+      {
         title: 'Transactions',
         url: paths.superAdmin.reservationTransactions,
         icon: ChartBar,
@@ -306,6 +304,16 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.suppliers.default,
         icon: ChartBar,
       },
+      {
+        title: 'Notification center',
+        url: paths.superAdmin.globalNotification,
+        icon: CalendarDays,
+      },
+      // {
+      //   title: 'Notification analytics',
+      //   url: paths.superAdmin.globalNotificationAnalytics,
+      //   icon: CalendarDays,
+      // },
     ],
   },
   {
@@ -405,16 +413,11 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.marketingRequests,
     icon: Volume1,
   },
-  {
-    label: 'Updates',
-    key: paths.superAdmin.updates,
-    icon: Megaphone,
-  },
-  {
-    label: 'Giveaways',
-    key: paths.superAdmin.giveaways,
-    icon: Gift,
-  },
+  // {
+  //   label: 'Giveaways',
+  //   key: paths.superAdmin.giveaways,
+  //   icon: Gift,
+  // },
   // {
   //   label: 'Reviews',
   //   key: paths.superAdmin.reviews,

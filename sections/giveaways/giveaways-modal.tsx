@@ -253,6 +253,8 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
             <div className="w-full">
               <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
                 <div className="mt-7 flex w-full flex-col gap-4">
+                  <RHFTextField name="title" label="Title" placeholder="Enter giveaway title" />
+
                   {/* Event Selection */}
                   {isLoadingEvents ? (
                     <div className="w-full space-y-2">
@@ -308,8 +310,8 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                         <div className="flex-1">
                           <div className="mb-1 font-medium">Use Existing Ticket Type</div>
                           <div className="mb-2 text-sm text-gray-600 dark:text-gray-400">Select from your event&apos;s existing ticket types</div>
-                          {ticketTypeOption === 'existing' && selectedEventId && (
-                            <>
+                          {/* {ticketTypeOption === 'existing' && selectedEventId && ( */}
+                            <div>
                               {isTicketsLoading || isTicketsFetching ? (
                                 <div className="mt-2 space-y-2">
                                   <Skeleton className="h-10 w-full" />
@@ -324,8 +326,8 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                                   showNone={false}
                                 />
                               )}
-                            </>
-                          )}
+                            </div>
+                          {/* )} */}
                         </div>
                       </label>
 

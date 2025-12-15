@@ -4,6 +4,7 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useGetMarketingRequestQuery, useUpdateMarketingRequestMutation } from '@/store/Reducer/marketing-request-api';
 import { useDeletePromoCodeMutation } from '@/store/Reducer/promo-codes-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -12,7 +13,6 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import MarketingRequestModal from './marketing-request-modal';
 import MarketingRequestTable from './marketing-request-table';
-import { useGetMarketingRequestQuery, useUpdateMarketingRequestMutation } from '@/store/Reducer/marketing-request-api';
 
 type MarketingRequestViewProps = {
   userType: 'super-admin' | 'organizer';
@@ -32,7 +32,7 @@ const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const [updateMarketingRequest] = useUpdateMarketingRequestMutation();
   const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
@@ -45,8 +45,6 @@ const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
     date: date ? formatDate(date) : undefined,
     userType,
   });
-
-  console.log('apiData', apiData);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -72,7 +70,6 @@ const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
   }, [apiData, page, limit]);
 
   const handleCreateNew = () => {
-    setSelectedRecord(null);
     setSelectedId(null);
     editModal.onFalse();
     openModal.onTrue();
@@ -80,6 +77,7 @@ const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
   const handleEdit = async (id: string, status: string) => {
+    setUpdatingId(id);
     try {
       const response = await updateMarketingRequest({ id, status }).unwrap();
 
@@ -93,6 +91,8 @@ const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
       setSelectedId(null);
     } catch (error) {
       showError(getErrorMessage(error));
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -145,6 +145,7 @@ const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
         meta={meta}
         user={user}
         loading={isLoading}
+        updatingId={updatingId}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -177,14 +178,12 @@ const MarketingRequestView = ({ userType }: MarketingRequestViewProps) => {
         }}
       />
 
-      {openModal.value && (
-        <MarketingRequestModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
-      )}
+      {openModal.value && <MarketingRequestModal open={openModal.value} onClose={openModal.onFalse} />}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Promo Code"
-        content="Are you sure you want to delete this promo code?"
+        title="Delete Marketing Request"
+        content="Are you sure you want to delete this marketing request?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

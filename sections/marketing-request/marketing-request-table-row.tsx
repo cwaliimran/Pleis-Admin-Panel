@@ -5,10 +5,12 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
+import { Loader2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit }) => {
+const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, updatingId, handleEdit }) => {
+  const isUpdating = updatingId === item?._id;
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left capitalize">
@@ -40,10 +42,16 @@ const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit })
       </TableCell>
 
       {user?.accountState?.userType === 'admin' && (
-        <TableCell className="text-left">
-          <Select defaultValue={item.status} onValueChange={(value) => handleEdit?.(item?._id, value)}>
+        <TableCell className="text-center">
+          <Select defaultValue={item.status} onValueChange={(value) => handleEdit?.(item?._id, value)} disabled={isUpdating}>
             <SelectTrigger className="w-[140px] rounded-md border text-left">
-              <SelectValue placeholder="Select status" />
+              {isUpdating ? (
+                <div className="flex w-full items-center justify-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              ) : (
+                <SelectValue placeholder="Select status" />
+              )}
             </SelectTrigger>
 
             <SelectContent className="dark:bg-secondary">
@@ -53,6 +61,18 @@ const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, handleEdit })
               <SelectItem value="completed">Completed</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* <button
+          title="Delete Request"
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete?.(item?._id);
+            }}
+            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+            >
+            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+            </button> */}
         </TableCell>
       )}
     </TableRow>

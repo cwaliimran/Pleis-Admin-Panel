@@ -19,6 +19,7 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
+  updatingId,
   user,
   handleDelete,
   handleEdit,
@@ -66,6 +67,7 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
     { id: 'budget', label: 'Budget', align: 'left' },
     { id: 'createdAt', label: 'Created At', align: 'left' },
     { id: 'status', label: 'Status', align: 'left' },
+    // { id: 'action', label: 'Action', align: 'left' },
     ...(user?.accountState?.userType === 'admin' ? [{ id: 'actions', label: 'Action', align: 'left' }] : []),
   ];
 
@@ -150,7 +152,14 @@ const MarketingRequestTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <MarketingRequestTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} user={user} handleEdit={handleEdit} />
+                  <MarketingRequestTableRow
+                    key={item?._id || idx}
+                    item={item}
+                    handleDelete={handleDelete}
+                    user={user}
+                    handleEdit={handleEdit}
+                    updatingId={updatingId}
+                  />
                 ))}
               </TableBodyWrapper>
             </Table>

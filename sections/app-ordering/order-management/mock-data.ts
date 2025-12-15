@@ -13,6 +13,16 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     isVIP: true,
     notes: 'No croutons on one salad. Extra dressing on the side.',
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'credit-card',
+      status: 'completed',
+      transactionId: 'TXN-001-2024-ABC123',
+      cardLast4: '4242',
+      cardBrand: 'visa',
+      paidAt: 'Dec 15, 2024, 11:30 AM',
+      processingFee: 1.28,
+      tip: 8.5,
+    },
     items: [
       { id: '1-1', name: 'Caesar Salad', quantity: 2, price: 24.0 },
       { id: '1-2', name: 'Grilled Chicken', quantity: 1, price: 18.5 },
@@ -28,6 +38,13 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     status: 'sent',
     totalCost: 28.0,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'apple-pay',
+      status: 'completed',
+      transactionId: 'TXN-002-2024-DEF456',
+      paidAt: 'Dec 15, 2024, 12:15 PM',
+      processingFee: 0.84,
+    },
     items: [
       { id: '2-1', name: 'Margherita Pizza', quantity: 1, price: 16.0 },
       { id: '2-2', name: 'Tiramisu', quantity: 1, price: 12.0 },
@@ -44,6 +61,10 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     totalCost: 87.25,
     paymentType: 'pay-later',
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'cash',
+      status: 'pending',
+    },
     items: [
       { id: '3-1', name: 'Ribeye Steak', quantity: 2, price: 64.0 },
       { id: '3-2', name: 'House Wine', quantity: 2, price: 18.0 },
@@ -61,6 +82,16 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     totalCost: 56.75,
     isPreorder: true,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'debit-card',
+      status: 'completed',
+      transactionId: 'TXN-004-2024-GHI789',
+      cardLast4: '1234',
+      cardBrand: 'mastercard',
+      paidAt: 'Dec 15, 2024, 10:00 AM',
+      processingFee: 1.7,
+      tip: 10.0,
+    },
     items: [
       { id: '4-1', name: 'Fish & Chips', quantity: 2, price: 32.0 },
       { id: '4-2', name: 'Cola', quantity: 2, price: 8.0 },
@@ -77,6 +108,13 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     status: 'preparing',
     totalCost: 15.5,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'google-pay',
+      status: 'completed',
+      transactionId: 'TXN-005-2024-JKL012',
+      paidAt: 'Dec 15, 2024, 12:45 PM',
+      processingFee: 0.47,
+    },
     items: [{ id: '5-1', name: 'Club Sandwich', quantity: 1, price: 15.5 }],
   },
   {
@@ -89,6 +127,14 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     status: 'preparing',
     totalCost: 34.0,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'paypal',
+      status: 'completed',
+      transactionId: 'TXN-006-2024-MNO345',
+      paidAt: 'Dec 15, 2024, 1:00 PM',
+      processingFee: 1.02,
+      tip: 5.0,
+    },
     items: [
       { id: '6-1', name: 'Spaghetti Carbonara', quantity: 1, price: 22.0 },
       { id: '6-2', name: 'Garlic Bread', quantity: 1, price: 12.0 },
@@ -105,6 +151,16 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     totalCost: 45.25,
     isVIP: true,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'credit-card',
+      status: 'completed',
+      transactionId: 'TXN-007-2024-PQR678',
+      cardLast4: '8888',
+      cardBrand: 'amex',
+      paidAt: 'Dec 15, 2024, 1:15 PM',
+      processingFee: 1.36,
+      tip: 9.0,
+    },
     items: [
       { id: '7-1', name: 'Sushi Roll', quantity: 2, price: 28.0 },
       { id: '7-2', name: 'Miso Soup', quantity: 1, price: 8.0 },
@@ -122,6 +178,12 @@ export const MOCK_ACTIVE_ORDERS: Order[] = [
     totalCost: 68.5,
     notes: 'Extra BBQ sauce. No onions in coleslaw.',
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'credit-card',
+      status: 'processing',
+      cardLast4: '5555',
+      cardBrand: 'discover',
+    },
     items: [
       { id: '8-1', name: 'BBQ Ribs', quantity: 2, price: 46.0 },
       { id: '8-2', name: 'Coleslaw', quantity: 2, price: 12.0 },
@@ -143,6 +205,16 @@ export const MOCK_PREORDERS: Order[] = [
     isVIP: true,
     isPreorder: true,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'credit-card',
+      status: 'completed',
+      transactionId: 'TXN-P01-2024-STU901',
+      cardLast4: '9999',
+      cardBrand: 'visa',
+      paidAt: 'Dec 14, 2024, 8:00 PM',
+      processingFee: 1.14,
+      tip: 7.6,
+    },
     items: [
       { id: 'p1-1', name: 'Seafood Paella', quantity: 1, price: 28.0 },
       { id: 'p1-2', name: 'Sangria', quantity: 1, price: 10.0 },
@@ -159,6 +231,13 @@ export const MOCK_PREORDERS: Order[] = [
     totalCost: 52.75,
     isPreorder: true,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'apple-pay',
+      status: 'completed',
+      transactionId: 'TXN-P02-2024-VWX234',
+      paidAt: 'Dec 14, 2024, 9:30 PM',
+      processingFee: 1.58,
+    },
     items: [
       { id: 'p2-1', name: 'Lobster Tail', quantity: 2, price: 42.0 },
       { id: 'p2-2', name: 'Champagne', quantity: 1, price: 10.75 },
@@ -176,6 +255,16 @@ export const MOCK_PREORDERS: Order[] = [
     isVIP: true,
     isPreorder: true,
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'debit-card',
+      status: 'completed',
+      transactionId: 'TXN-P03-2024-YZA567',
+      cardLast4: '7777',
+      cardBrand: 'mastercard',
+      paidAt: 'Dec 14, 2024, 10:00 PM',
+      processingFee: 1.92,
+      tip: 12.8,
+    },
     items: [
       { id: 'p3-1', name: 'Filet Mignon', quantity: 2, price: 52.0 },
       { id: 'p3-2', name: 'Red Wine', quantity: 2, price: 12.0 },
@@ -195,6 +284,16 @@ export const MOCK_PAST_ORDERS: Order[] = [
     totalCost: 31.5,
     completedAt: 'Today, 2:45 PM',
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'credit-card',
+      status: 'completed',
+      transactionId: 'TXN-PST1-2024-BCD890',
+      cardLast4: '1111',
+      cardBrand: 'visa',
+      paidAt: 'Today, 2:45 PM',
+      processingFee: 0.95,
+      tip: 6.3,
+    },
     items: [
       { id: 'past1-1', name: 'Burger & Fries', quantity: 1, price: 18.5 },
       { id: 'past1-2', name: 'Milkshake', quantity: 1, price: 13.0 },
@@ -211,6 +310,15 @@ export const MOCK_PAST_ORDERS: Order[] = [
     totalCost: 12.0,
     completedAt: 'Today, 1:30 PM',
     createdAt: new Date().toISOString(),
+    paymentInfo: {
+      method: 'google-pay',
+      status: 'refunded',
+      transactionId: 'TXN-PST2-2024-EFG123',
+      paidAt: 'Today, 1:00 PM',
+      refundedAt: 'Today, 1:30 PM',
+      refundAmount: 12.0,
+      processingFee: 0.36,
+    },
     items: [{ id: 'past2-1', name: 'Greek Salad', quantity: 1, price: 12.0 }],
   },
 ];

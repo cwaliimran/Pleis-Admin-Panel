@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import RewardCalculatorFields from '../rewards/reward-calculation-fields';
+// import { useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 
 const defaultValues: any = {
   photo: null,
@@ -164,14 +165,36 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     date: undefined,
   });
 
-  const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-    date: undefined,
-    companyOrganizer: selectedCompany || undefined,
-  });
+  const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+      companyOrganizer: selectedCompany || undefined,
+    },
+    {
+      skip: global,
+    }
+  );
+
+  // const {
+  //   data: ticketData,
+  //   isLoading: isTicketsLoading,
+  //   isFetching: isTicketsFetching,
+  // } = useGetTicketingQuery(
+  //   {
+  //     page: 0,
+  //     search: '',
+  //     limit: '10000',
+  //     date: undefined,
+  //     companyOrganizer: undefined,
+  //   }
+  // {
+  //   skip: !event || !organizationId,
+  // }
+  // );
 
   const {
     data: rewardMenuItemsData,
@@ -579,7 +602,8 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 )}
               </div>
 
-              <RewardCalculatorFields />
+              {!global && <RewardCalculatorFields />}
+              {/* <RewardCalculatorFields /> */}
 
               <div className="mt-5 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center gap-3">

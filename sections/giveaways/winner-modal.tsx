@@ -14,9 +14,9 @@ const WinnersModal: FC<WinnersModalProps> = ({ open, onClose, giveawayId }) => {
   console.log('giveawayId', giveawayId);
 
   const dummyWinners = [
-    { id: 'w1', name: 'John Doe', email: 'john@example.com', ticketNumber: 'A-1023' },
-    { id: 'w2', name: 'Sarah Khan', email: 'sarah@example.com', ticketNumber: 'B-5542' },
-    { id: 'w3', name: 'Ahmed Raza', email: 'ahmed@example.com', ticketNumber: 'C-8891' },
+    { id: 'w1', name: 'John Doe', username: 'johndoe', email: 'john@example.com', ticketNumber: 'A-1023' },
+    { id: 'w2', name: 'Sarah Khan', username: 'sarahk', email: 'sarah@example.com', ticketNumber: 'B-5542' },
+    { id: 'w3', name: 'Ahmed Raza', username: 'ahmedr', email: 'ahmed@example.com', ticketNumber: 'C-8891' },
   ];
 
   return (
@@ -31,7 +31,9 @@ const WinnersModal: FC<WinnersModalProps> = ({ open, onClose, giveawayId }) => {
             {dummyWinners.length > 0 ? (
               dummyWinners.map((winner) => (
                 <div key={winner.id} className="rounded-md border bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-800">
-                  <p className="text-sm font-medium">{winner.name}</p>
+                  <p className="text-sm font-medium">
+                    {winner.name} - {winner.username}
+                  </p>
                   <p className="text-xs text-gray-600 dark:text-gray-400">{winner.email}</p>
                 </div>
               ))
