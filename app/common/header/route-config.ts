@@ -35,7 +35,7 @@ const COMPANY_REQUIRED_ROUTES = [
 /**
  * Routes that require both company AND organization selection
  */
-const ORGANIZATION_REQUIRED_ROUTES = ['/super-admin/ticketing', '/super-admin/reservation', '/super-admin/bundles'] as const;
+const ORGANIZATION_REQUIRED_ROUTES = ['/super-admin/ticketing', '/super-admin/reservation', '/super-admin/bundles', '/super-admin/updates'] as const;
 
 export class RouteConfig {
   /**

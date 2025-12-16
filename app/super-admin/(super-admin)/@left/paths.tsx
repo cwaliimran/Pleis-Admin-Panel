@@ -119,6 +119,7 @@ export const paths = {
 
     // App Ordering Paths
     orderManagement: '/super-admin/app-ordering/order-management',
+    orderManagementV2: '/super-admin/app-ordering/order-management-v2',
     menuManagement: '/super-admin/app-ordering/menu-management',
     orderAnalytics: '/super-admin/app-ordering/order-analytics',
     orderSettings: '/super-admin/app-ordering/order-settings',

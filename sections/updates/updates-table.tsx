@@ -198,8 +198,8 @@ const UpdatesTable: FC<SamplePageProps> = ({
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={eventHighlightDummyData?.length || 0}>
-                {/* {sortedData?.map((item, idx) => ( */}
-                {eventHighlightDummyData?.map((item, idx) => (
+                {sortedData?.map((item, idx) => (
+                // {eventHighlightDummyData?.map((item, idx) => (
                   <UpdatesTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
