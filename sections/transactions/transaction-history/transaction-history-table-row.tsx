@@ -4,12 +4,12 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
-import { Eye } from 'lucide-react';
+// import { Eye } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 import { getBadgeLabel, getBadgeVariant, getDomainType } from '../helpers';
 
-const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => {
+const TransactionHistoryTableRow: FC<TableRowProps> = ({ item }) => {
   // const getLabel = (type: string) => {
   //   switch (type) {
   //     case 'eventTicketPurchase':
@@ -69,13 +69,14 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
           })()}
         </TableCell>
 
+        <TableCell className="text-left">{item?.closingBalance ? `€${item.closingBalance}` : 'N/A'}</TableCell>
         <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
 
         <TableCell className="text-center">
           <CustomBadge variant={getBadgeVariant(item?.type)}>{getBadgeLabel(item?.type)}</CustomBadge>
         </TableCell>
 
-        <TableCell>
+        {/* <TableCell>
           <div className="flex justify-center gap-2">
             <button
               title="View"
@@ -89,9 +90,9 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
               <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
             </button>
           </div>
-        </TableCell>
+        </TableCell> */}
       </TableRow>
     </>
   );
 };
-export default LoyaltyTransactionTableRow;
+export default TransactionHistoryTableRow;

@@ -401,7 +401,7 @@ export const menuGroups: MenuGroup[] = [
   },
   {
     label: 'Transaction history',
-    key: paths.superAdmin.reservationTransactions,
+    key: paths.superAdmin.transactionsHistory,
     icon: FileClock,
   },
   {

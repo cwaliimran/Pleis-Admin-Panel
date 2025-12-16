@@ -23,3 +23,18 @@ export const getBadgeLabel = (type: string): string => {
       return 'N/A';
   }
 };
+
+export const getDomainType = (type: string): string => {
+  switch (type) {
+    case 'menuorders':
+      return 'Menu Orders';
+    case 'ticketingorders':
+      return 'Ticketing Orders';
+    case 'loyaltyrewardsorders':
+      return 'Loyalty Rewards Orders';
+    case 'loyaltychallengesorders':
+      return 'Loyalty Challenges Orders';
+    default:
+      return 'N/A';
+  }
+};

@@ -1,3 +1,6 @@
+// ------------- EURO SIGN -------------
+€
+
 // ------------- DESCRIPTION -------------
 <TableCell className="text-left">
     <TruncatedTextWithModal text={item?.description} title="Description" />
@@ -6,5 +9,4 @@
 
 // ------------- DATE FORMATTER -------------
 <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
-
 
