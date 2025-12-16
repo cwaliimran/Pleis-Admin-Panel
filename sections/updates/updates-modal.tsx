@@ -6,7 +6,12 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useAuth } from '@/hooks/useAuth';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
+import { useAddUpdateMutation, useUpdateUpdateMutation } from '@/store/Reducer/updates-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -16,7 +21,7 @@ type UpdateFormValues = {
   image: any;
   title: string;
   description: string;
-  linkedEvent: string;
+  event: string;
   status: 'active' | 'inactive';
 };
 
@@ -26,6 +31,7 @@ type UpdatesModalProps = {
   isEdit?: boolean;
   selectedData?: any;
   organizationId?: string | null;
+  companyId?: string | null;
 };
 
 // VALIDATION SCHEMA
@@ -33,7 +39,7 @@ const schema = Yup.object().shape({
   image: Yup.mixed().nullable().required('Image is required'),
   title: Yup.string().required('Title is required'),
   description: Yup.string().required('Description is required'),
-  linkedEvent: Yup.string().required('Linked event is required'),
+  event: Yup.string().required('Linked event is required'),
   status: Yup.string()
     .oneOf(['active', 'inactive'] as const)
     .default('active'),
@@ -44,12 +50,19 @@ const defaultValues: UpdateFormValues = {
   image: null,
   title: '',
   description: '',
-  linkedEvent: '',
+  event: '',
   status: 'active',
 };
 
 // MODAL COMPONENT
-const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, organizationId }: UpdatesModalProps) => {
+const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, companyId, organizationId }: UpdatesModalProps) => {
+  const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const [addUpdate, { isLoading: addLoading }] = useAddUpdateMutation();
+  const [updateUpdate, { isLoading: updateLoading }] = useUpdateUpdateMutation();
+
+  const { user } = useAuth();
+  console.log('user', user);
+
   const methods = useForm<UpdateFormValues>({
     resolver: yupResolver(schema),
     defaultValues,
@@ -66,7 +79,7 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, organizatio
         image: selectedData?.image || null,
         title: selectedData?.title || '',
         description: selectedData?.description || '',
-        linkedEvent: selectedData?.linkedEvent || '',
+        event: selectedData?.eventId || '',
         status: selectedData?.status || 'active',
       };
       reset(mapped);
@@ -96,14 +109,50 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, organizatio
 
   // SUBMIT HANDLER
   const handleSubmit = async (formData: UpdateFormValues) => {
-    try {
-      console.log('FORM SUBMITTED →', formData);
+    let uploadedFileKey: string | null = null;
 
-      reset(defaultValues);
+    try {
+      if (formData?.image instanceof FileList && formData?.image.length > 0) {
+        const file = formData.image[0];
+        uploadedFileKey = await uploadImage(file);
+      }
+
+      const payload: any = {
+        title: formData.title,
+        description: formData.description,
+        event: formData.event,
+        companyOrganizer: user?.accountState?.userType === 'admin' ? companyId : undefined,
+      };
+
+      if (uploadedFileKey) {
+        payload.image = uploadedFileKey;
+      }
+
+      // Add fields for edit mode
+      if (isEdit && selectedData) {
+        payload.status = formData.status;
+        payload.id = selectedData._id;
+      }
+
+      const response = isEdit ? await updateUpdate(payload).unwrap() : await addUpdate(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || (isEdit ? 'Update updated successfully' : 'Update created successfully'));
+
+      methods.reset(defaultValues);
       onClose();
     } catch (error) {
-      // showError(getErrorMessage(error));
-      console.log('ERROR →', error);
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
     }
   };
 
@@ -112,8 +161,7 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, organizatio
     onClose();
   };
 
-  // const isLoading = addLoading || updateLoading;
-  const isLoading = false; // remove later when API added
+  const isLoading = addLoading || updateLoading || imageUploading;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -140,7 +188,7 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, organizatio
 
                 {/* LINKED EVENT */}
                 <RHFCustomDropdown
-                  name="linkedEvent"
+                  name="event"
                   label="Select linked event"
                   placeholder="Select linked event"
                   options={eventOptions}

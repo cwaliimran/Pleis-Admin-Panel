@@ -1,8 +1,9 @@
 import React from 'react';
 import { Order } from './types';
-import { STATUS_CONFIG, DELIVERY_TYPE_CONFIG } from './constants';
+import { STATUS_CONFIG } from './constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ChevronDown } from 'lucide-react';
 
 interface OrderCardProps {
   order: Order;
@@ -15,7 +16,6 @@ interface OrderCardProps {
 }
 
 export const OrderCard: React.FC<OrderCardProps> = ({ order, isExpanded, onToggle, onAccept, onDeliver, onMarkPaid, onCancel }) => {
-  const deliveryConfig = DELIVERY_TYPE_CONFIG[order.deliveryType];
   const statusConfig = STATUS_CONFIG[order.status];
 
   const handleAction = (e: React.MouseEvent, action: () => void) => {
@@ -34,28 +34,58 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, isExpanded, onToggl
       {/* Header */}
       <div className="mb-3 flex items-start justify-between">
         <div className="flex-1">
-          <div className="mb-1 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-gray-100">
-            <span className="text-xl">{deliveryConfig.icon}</span>
-            <span>{order.location}</span>
+          <div className="mb-1 flex items-center gap-2">
+            <span className="text-lg font-bold text-gray-900 dark:text-gray-100">#{order.id}</span>
+            {order.isVIP && <span className="text-lg">🥇</span>}
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{order.userName}</span>
           </div>
-          <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">{order.userName}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-500">
-            {order.items.length} items • ${order.totalCost.toFixed(2)}
+          {order.tierName && <div className="mb-1.5 text-xs text-gray-500 dark:text-gray-500">{order.tierName}</div>}
+          <div className="mb-1 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-gray-100">
+            <span>{order.location}</span>
+            {order.partySize && (
+              <span className="flex items-center gap-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+                <span>👥</span>
+                <span>
+                  {order.partySize} {order.partySize === 1 ? 'guest' : 'guests'}
+                </span>
+              </span>
+            )}
           </div>
         </div>
 
         <div className="flex flex-col items-end gap-1.5">
-          <span className={cn('rounded-lg px-3 py-1.5 text-xs font-bold tracking-wide uppercase', statusConfig.className)}>{statusConfig.label}</span>
-          {order.isVIP && (
-            <span className="rounded-md bg-linear-to-br from-yellow-400 to-yellow-500 px-2.5 py-1 text-xs font-bold tracking-wide text-gray-900 uppercase shadow-sm">
-              ⭐ VIP
+          <span className="text-lg font-bold text-gray-900 dark:text-gray-100">${order.totalCost.toFixed(2)}</span>
+          {order.isPreorder && (
+            <span className="rounded-md bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              New Order
             </span>
           )}
-          {order.isPreorder && (
-            <span className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-bold tracking-wide text-white uppercase dark:bg-blue-500">Preorder</span>
+          {!order.isPreorder && order.status === 'sent' && (
+            <span className="rounded-md bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+              New Order
+            </span>
           )}
+          {order.status === 'preparing' && (
+            <span className={cn('rounded-lg px-3 py-1.5 text-xs font-bold tracking-wide uppercase', statusConfig.className)}>
+              {statusConfig.label}
+            </span>
+          )}
+          {order.status === 'waiting-payment' && (
+            <span className={cn('rounded-lg px-3 py-1.5 text-xs font-bold tracking-wide uppercase', statusConfig.className)}>
+              {statusConfig.label}
+            </span>
+          )}
+          {(order.status === 'paid' || order.status === 'canceled') && (
+            <span className={cn('rounded-lg px-3 py-1.5 text-xs font-bold tracking-wide uppercase', statusConfig.className)}>
+              {statusConfig.label}
+            </span>
+          )}
+          <ChevronDown className={cn('h-5 w-5 text-gray-400 transition-transform duration-200', isExpanded && 'rotate-180')} />
         </div>
       </div>
+
+      {/* Divider line */}
+      {/* <div className="border-t border-gray-100 dark:border-gray-800" /> */}
 
       {/* Expanded Details - Using absolute positioning when expanded to prevent affecting grid */}
       {isExpanded && (
@@ -243,20 +273,12 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, isExpanded, onToggl
                 )}
 
                 {order.status === 'waiting-payment' && (
-                  <>
-                    <Button
-                      onClick={(e) => handleAction(e, () => onDeliver(order))}
-                      className="h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
-                    >
-                      ✓ Mark as Delivered
-                    </Button>
-                    <Button
-                      onClick={(e) => handleAction(e, () => onMarkPaid(order))}
-                      className="h-12 bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-500 dark:hover:bg-green-600"
-                    >
-                      ✓ Mark as Paid
-                    </Button>
-                  </>
+                  <Button
+                    onClick={(e) => handleAction(e, () => onMarkPaid(order))}
+                    className="col-span-2 h-12 bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-500 dark:hover:bg-green-600"
+                  >
+                    ✓ Mark as Paid
+                  </Button>
                 )}
               </div>
             )}

@@ -4,7 +4,7 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useDeletePromoCodeMutation, useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
+import { useDeleteUpdateMutation, useGetUpdatesQuery } from '@/store/Reducer/updates-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -28,19 +28,17 @@ const UpdatesView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const { organizationId } = useCompanySelectionState();
+  const { companyId, organizationId } = useCompanySelectionState();
 
-  const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
+  const [deleteUpdate, { isLoading: deleteLoading }] = useDeleteUpdateMutation();
 
-  const {
-    data: apiData,
-    isLoading,
-  } = useGetPromoCodesQuery({
+  const { data: apiData, isLoading } = useGetUpdatesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: companyId || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -72,26 +70,20 @@ const UpdatesView = () => {
     editModal.onFalse();
     openModal.onTrue();
   };
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Update not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Update not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -109,7 +101,7 @@ const UpdatesView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deletePromoCode(selectedId).unwrap();
+      const response = await deleteUpdate(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -177,6 +169,7 @@ const UpdatesView = () => {
           onClose={openModal.onFalse}
           isEdit={editModal.value}
           selectedData={selectedRecord}
+          companyId={companyId}
           organizationId={organizationId}
         />
       )}

@@ -6,6 +6,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { getDomainType } from '../helpers';
 
 const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item }) => {
   const getLabel = (type: string) => {
@@ -40,7 +41,8 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item }) => {
 
         <TableCell className="text-left capitalize">{getLabel(item?.type)}</TableCell>
 
-        <TableCell className="text-left capitalize">{item?.domainType || 'N/A'}</TableCell>
+        {/* <TableCell className="text-left capitalize">{item?.domainType || 'N/A'}</TableCell> */}
+        <TableCell className="text-left capitalize">{getDomainType(item?.domainType)}</TableCell>
 
         <TableCell className="text-left capitalize">{item?.points.total || 'N/A'}</TableCell>
 

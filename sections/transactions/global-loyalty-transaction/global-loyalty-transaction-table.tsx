@@ -54,8 +54,6 @@ const LoyaltyTransactionTable: FC<SamplePageProps> = ({
     data: data || [],
   });
 
-  console.log('data', data);
-
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,

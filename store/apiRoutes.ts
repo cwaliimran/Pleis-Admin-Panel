@@ -26,6 +26,9 @@ export const API_ROUTES = {
   ORGANIZATION: `/organizer/organizations`,
   ORGANIZATION_BY_ID: (id: string) => `/organizer/organizations/${id}`,
 
+  UPDATES: `/organizer/updates`,
+  UPDATES_BY_ID: (id: string) => `/organizer/updates/${id}`,
+
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
   PENDING_USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -63,6 +66,9 @@ export const API_ROUTES = {
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
+
+  ADMIN_UPDATES: `/admin/updates`,
+  ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
 
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,

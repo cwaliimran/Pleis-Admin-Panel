@@ -217,7 +217,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
                   placeholder="Select Company"
                   options={companyOptions}
                   isLoading={isLoadingCompanies || isFetching}
-                  showNone={false}
+                  showNone={pathname === '/super-admin/transactions-history'}
                 />
               </div>
             )}

@@ -1,16 +1,13 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
-// import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-// import { Filter } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { FilterPanel } from './filter-panel';
-import { MOCK_ACTIVE_ORDERS, MOCK_PAST_ORDERS, MOCK_PREORDERS } from './mock-data';
+import { MOCK_NEW_ORDERS, MOCK_IN_PROGRESS_ORDERS, MOCK_COMPLETED_ORDERS } from './mock-data';
 import { OrderCard } from './order-card';
 import { OrderTabs } from './order-tabs';
 import { SearchBar } from './search-bar';
-import { ActiveOrderSubTab, DeliveryFilterType, FilterOptions, ModalAction, Order, OrderTab } from './types';
+import { ModalAction, Order, OrderTab, SubFilter } from './types';
 
 const ToggleSwitch: React.FC<{
   value: boolean;
@@ -30,30 +27,20 @@ const ToggleSwitch: React.FC<{
   </div>
 );
 
-export const OrderManagementView: React.FC = () => {
+export const OrderManagementViewV2: React.FC = () => {
   // State
-  const [activeTab, setActiveTab] = useState<OrderTab>('active');
-  const [activeOrderSubTab, setActiveOrderSubTab] = useState<ActiveOrderSubTab>('new-order');
-  const [deliveryFilter, setDeliveryFilter] = useState<DeliveryFilterType>('all');
+  const [activeTab, setActiveTab] = useState<OrderTab>('new-orders');
+  const [activeSubFilter, setActiveSubFilter] = useState<SubFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [orderingEnabled, setOrderingEnabled] = useState(true);
 
   // Orders state (in production, this would come from API/state management)
-  const [activeOrders, setActiveOrders] = useState<Order[]>(MOCK_ACTIVE_ORDERS);
-  const [preorders, setPreorders] = useState<Order[]>(MOCK_PREORDERS);
-  const [pastOrders, setPastOrders] = useState<Order[]>(MOCK_PAST_ORDERS);
-
-  // Filters state
-  const [filters, setFilters] = useState<FilterOptions>({
-    statuses: ['sent', 'preparing', 'delivered', 'waiting-payment'],
-    deliveryTypes: ['table', 'pickup', 'togo'],
-    preorderOnly: false,
-    vipOnly: false,
-  });
+  const [newOrders, setNewOrders] = useState<Order[]>(MOCK_NEW_ORDERS);
+  const [inProgressOrders, setInProgressOrders] = useState<Order[]>(MOCK_IN_PROGRESS_ORDERS);
+  const [completedOrders, setCompletedOrders] = useState<Order[]>(MOCK_COMPLETED_ORDERS);
 
   // Modal states
-  const filterPanel = useBoolean();
   const confirmModal = useBoolean();
   const [modalAction, setModalAction] = useState<ModalAction | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
@@ -61,58 +48,20 @@ export const OrderManagementView: React.FC = () => {
   // Get current orders based on active tab
   const currentOrders = useMemo(() => {
     switch (activeTab) {
-      case 'active':
-        return activeOrders;
-      case 'preorders':
-        return preorders;
-      case 'past':
-        return pastOrders;
+      case 'new-orders':
+        return newOrders;
+      case 'in-progress':
+        return inProgressOrders;
+      case 'completed':
+        return completedOrders;
       default:
         return [];
     }
-  }, [activeTab, activeOrders, preorders, pastOrders]);
-
-  // Filter orders by active order sub-tab
-  const filteredBySubTab = useMemo(() => {
-    if (activeTab !== 'active') return currentOrders;
-
-    return currentOrders.filter((order) => {
-      switch (activeOrderSubTab) {
-        case 'new-order':
-          return order.status === 'sent' || order.status === 'pending';
-        case 'in-progress':
-          return order.status === 'preparing';
-        case 'completed':
-          return order.status === 'delivered' || order.status === 'waiting-payment';
-        default:
-          return true;
-      }
-    });
-  }, [activeTab, activeOrderSubTab, currentOrders]);
-
-  // Filter by delivery type (only for new-order sub-tab)
-  const filteredByDelivery = useMemo(() => {
-    if (activeTab !== 'active' || activeOrderSubTab !== 'new-order') return filteredBySubTab;
-
-    return filteredBySubTab.filter((order) => {
-      switch (deliveryFilter) {
-        case 'all':
-          return true;
-        case 'table':
-          return order.deliveryType === 'table';
-        case 'togo':
-          return order.deliveryType === 'togo' || order.deliveryType === 'pickup';
-        case 'preorders':
-          return order.isPreorder;
-        default:
-          return true;
-      }
-    });
-  }, [activeTab, activeOrderSubTab, deliveryFilter, filteredBySubTab]);
+  }, [activeTab, newOrders, inProgressOrders, completedOrders]);
 
   // Filter and search orders
   const filteredOrders = useMemo(() => {
-    return filteredByDelivery.filter((order) => {
+    return currentOrders.filter((order) => {
       // Search filter
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
@@ -124,45 +73,32 @@ export const OrderManagementView: React.FC = () => {
 
       if (!matchesSearch) return false;
 
-      // Delivery type filter (from filter panel)
-      const matchesDeliveryType = filters.deliveryTypes.includes(order.deliveryType);
-      if (!matchesDeliveryType) return false;
-
-      // Preorder filter
-      if (filters.preorderOnly && !order.isPreorder) return false;
-
-      // VIP filter
-      if (filters.vipOnly && !order.isVIP) return false;
+      // Sub-filter for new orders tab
+      if (activeTab === 'new-orders' && activeSubFilter !== 'all') {
+        if (activeSubFilter === 'table' && order.deliveryType !== 'table') return false;
+        if (activeSubFilter === 'togo' && order.deliveryType !== 'togo') return false;
+        if (activeSubFilter === 'preorders' && !order.isPreorder) return false;
+      }
 
       return true;
     });
-  }, [filteredByDelivery, searchQuery, filters]);
+  }, [currentOrders, searchQuery, activeTab, activeSubFilter]);
 
   // Order counts for tabs
   const orderCounts = useMemo(
     () => ({
-      active: activeOrders.length,
-      preorders: preorders.length,
-      past: pastOrders.length,
+      'new-orders': newOrders.length,
+      'in-progress': inProgressOrders.length,
+      completed: completedOrders.length,
     }),
-    [activeOrders, preorders, pastOrders]
-  );
-
-  // Sub-tab counts for Active Orders
-  const subTabCounts = useMemo(
-    () => ({
-      'new-order': activeOrders.filter((o) => o.status === 'sent' || o.status === 'pending').length,
-      'in-progress': activeOrders.filter((o) => o.status === 'preparing').length,
-      completed: activeOrders.filter((o) => o.status === 'delivered' || o.status === 'waiting-payment').length,
-    }),
-    [activeOrders]
+    [newOrders, inProgressOrders, completedOrders]
   );
 
   // Modal handlers
   const openConfirmModal = (action: ModalAction) => {
     setModalAction(action);
     confirmModal.onTrue();
-    setPreorders((prev) => [...prev]);
+    setNewOrders((prev) => [...prev]);
   };
 
   const handleConfirmAction = async () => {
@@ -211,11 +147,14 @@ export const OrderManagementView: React.FC = () => {
 
   // Order action handlers
   const handleAcceptOrder = (order: Order) => {
-    setActiveOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status: 'preparing' } : o)));
+    // Move order from new orders to in-progress with 'preparing' status
+    const updatedOrder = { ...order, status: 'preparing' as const };
+    setNewOrders((prev) => prev.filter((o) => o.id !== order.id));
+    setInProgressOrders((prev) => [updatedOrder, ...prev]);
   };
 
   const handleDeliverOrder = (order: Order) => {
-    setActiveOrders((prev) =>
+    setInProgressOrders((prev) =>
       prev.map((o) => (o.id === order.id ? { ...o, status: order.paymentType === 'pay-later' ? 'waiting-payment' : 'delivered' } : o))
     );
   };
@@ -233,8 +172,8 @@ export const OrderManagementView: React.FC = () => {
       }),
     };
 
-    setActiveOrders((prev) => prev.filter((o) => o.id !== order.id));
-    setPastOrders((prev) => [updatedOrder, ...prev]);
+    setInProgressOrders((prev) => prev.filter((o) => o.id !== order.id));
+    setCompletedOrders((prev) => [updatedOrder, ...prev]);
   };
 
   const handleCancelOrder = (order: Order) => {
@@ -250,28 +189,11 @@ export const OrderManagementView: React.FC = () => {
       }),
     };
 
-    setActiveOrders((prev) => prev.filter((o) => o.id !== order.id));
-    setPastOrders((prev) => [updatedOrder, ...prev]);
+    // Remove from current tab and move to completed
+    setNewOrders((prev) => prev.filter((o) => o.id !== order.id));
+    setInProgressOrders((prev) => prev.filter((o) => o.id !== order.id));
+    setCompletedOrders((prev) => [updatedOrder, ...prev]);
   };
-
-  // Filter handlers
-  const handleApplyFilters = () => {
-    filterPanel.onFalse();
-  };
-
-  const handleClearFilters = () => {
-    setFilters({
-      statuses: ['sent', 'preparing', 'delivered', 'waiting-payment'],
-      deliveryTypes: ['table', 'pickup', 'togo'],
-      preorderOnly: false,
-      vipOnly: false,
-    });
-  };
-
-  // Menu editor handler
-  // const handleOpenMenuEditor = () => {
-  //   console.log('Open menu editor');
-  // };
 
   // Ordering toggle handler
   const handleOrderingToggle = (value: boolean) => {
@@ -346,23 +268,16 @@ export const OrderManagementView: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <div className="dark:bg-secondary sticky top-0 z-30 rounded-2xl bg-white shadow-sm">
+      <div className="dark:bg-secondary sticky top-0 z-30 rounded-t-2xl bg-white shadow-sm">
         <div className="px-5 py-4">
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Orders</h1>
-            <div className="flex items-center gap-3">
-              {/* <Button variant="outline" onClick={filterPanel.onTrue} className="h-11 gap-2 px-5! font-semibold">
+            {/* <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={filterPanel.onTrue} className="h-11 gap-2 px-5! font-semibold">
                 <Filter className="h-4 w-4" />
                 Filter
-              </Button> */}
-
-              {/* <Button
-                onClick={handleOpenMenuEditor}
-                className="bg-primary dark:bg-primary dark:hover:bg-primary/80 h-11 gap-2 px-6 font-semibold hover:bg-blue-700"
-              >
-                📝 Menu
-              </Button> */}
-            </div>
+              </Button>
+            </div> */}
           </div>
 
           {/* Ordering Toggle */}
@@ -379,11 +294,8 @@ export const OrderManagementView: React.FC = () => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           orderCounts={orderCounts}
-          activeOrderSubTab={activeOrderSubTab}
-          onSubTabChange={setActiveOrderSubTab}
-          subTabCounts={subTabCounts}
-          deliveryFilter={deliveryFilter}
-          onDeliveryFilterChange={setDeliveryFilter}
+          activeSubFilter={activeSubFilter}
+          onSubFilterChange={setActiveSubFilter}
         />
       </div>
 
@@ -415,15 +327,15 @@ export const OrderManagementView: React.FC = () => {
         )}
       </div>
 
-      {/* Filter Panel */}
-      <FilterPanel
+      {/* Filter Panel - Commented out for now */}
+      {/* <FilterPanel
         isOpen={filterPanel.value}
         onClose={filterPanel.onFalse}
         filters={filters}
         onFiltersChange={setFilters}
         onApply={handleApplyFilters}
         onClear={handleClearFilters}
-      />
+      /> */}
 
       {/* Confirm Dialog */}
       <ConfirmDialog

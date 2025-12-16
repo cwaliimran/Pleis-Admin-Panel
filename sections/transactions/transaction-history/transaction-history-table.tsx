@@ -12,26 +12,23 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import TransactionHistoryTableRow from './transaction-history-table-row';
 import { SamplePageProps } from './types';
-import UpdatesTableRow from './updates-table-row';
 
 const HEAD_LABEL = [
-  { id: 'image', label: 'Image', align: 'left' },
-  {
-    id: 'title',
-    label: 'Title',
-    align: 'left',
-    sortable: true,
-    sortKey: 'title',
-  },
-  { id: 'description', label: 'Description', align: 'left' },
-  { id: 'linkedEvent', label: 'Linked Event', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization.basicInfo.name' },
+  { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.firstName' },
+  { id: 'transactionId', label: 'Transaction ID', align: 'left' },
+  { id: 'transactionType', label: 'Transaction Type', align: 'left' },
+  { id: 'points', label: 'Points', align: 'left' },
+  { id: 'reference', label: 'Reference', align: 'left' },
+  { id: 'closingBalance', label: 'Closing Balance', align: 'left' },
+  { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  // { id: 'actions', label: 'Action', align: 'left' },
 ];
 
-const UpdatesTable: FC<SamplePageProps> = ({
+const TransactionHistoryTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
@@ -44,8 +41,9 @@ const UpdatesTable: FC<SamplePageProps> = ({
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
-  // date,
-  // onDateChange = () => {},
+  startDate,
+  endDate,
+  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -58,8 +56,6 @@ const UpdatesTable: FC<SamplePageProps> = ({
     data: data || [],
   });
 
-  console.log('sortedData', sortedData);
-
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
@@ -71,7 +67,7 @@ const UpdatesTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Updates List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Transaction History List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -96,14 +92,22 @@ const UpdatesTable: FC<SamplePageProps> = ({
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            // dateFilter={{
-                            //   id: 'organization-date',
-                            //   placeholder: 'Select date',
-                            //   value: date,
-                            //   onChange: onDateChange,
-                            // }}
+                            dateRangeFilter={{
+                              startDate: {
+                                id: 'start-date',
+                                placeholder: 'Select start date',
+                                value: startDate,
+                                onChange: (newStartDate) => onDateChange(newStartDate, endDate),
+                              },
+                              endDate: {
+                                id: 'end-date',
+                                placeholder: 'Select end date',
+                                value: endDate,
+                                onChange: (newEndDate) => onDateChange(startDate, newEndDate),
+                              },
+                            }}
                             searchFilter={{
-                              placeholder: 'Search by title, events...',
+                              placeholder: 'Search Transactions...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -116,8 +120,9 @@ const UpdatesTable: FC<SamplePageProps> = ({
                                 onChange: onStatusChange,
                                 options: [
                                   { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
+                                  { value: 'earn', label: 'Earn' },
+                                  { value: 'redeem', label: 'Redeem' },
+                                  { value: 'adjustment', label: 'Adjustment' },
                                 ],
                               },
                             ]}
@@ -142,8 +147,7 @@ const UpdatesTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                // {eventHighlightDummyData?.map((item, idx) => (
-                  <UpdatesTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <TransactionHistoryTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -162,4 +166,4 @@ const UpdatesTable: FC<SamplePageProps> = ({
   );
 };
 
-export default UpdatesTable;
+export default TransactionHistoryTable;

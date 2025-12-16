@@ -115,10 +115,12 @@ export const paths = {
     analytics: '/super-admin/analytics',
     calendar: '/super-admin/calendar',
     reservationTransactions: '/super-admin/reservation-transactions',
+    transactionsHistory: '/super-admin/transactions-history',
     bundles: '/super-admin/bundles',
 
     // App Ordering Paths
     orderManagement: '/super-admin/app-ordering/order-management',
+    orderManagementV2: '/super-admin/app-ordering/order-management-v2',
     menuManagement: '/super-admin/app-ordering/menu-management',
     orderAnalytics: '/super-admin/app-ordering/order-analytics',
     orderSettings: '/super-admin/app-ordering/order-settings',

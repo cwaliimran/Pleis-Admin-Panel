@@ -13,13 +13,13 @@ export interface RouteRequirement {
 const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/loyalty',
   '/super-admin/rewards',
-
   '/super-admin/challenges',
   '/super-admin/promotions',
   '/super-admin/members',
   '/super-admin/settings',
   '/super-admin/referrals',
   '/super-admin/transactions',
+  '/super-admin/transactions-history',
   '/super-admin/menu-list',
   '/super-admin/menuItems',
   '/super-admin/ticketing',
@@ -35,7 +35,7 @@ const COMPANY_REQUIRED_ROUTES = [
 /**
  * Routes that require both company AND organization selection
  */
-const ORGANIZATION_REQUIRED_ROUTES = ['/super-admin/ticketing', '/super-admin/reservation', '/super-admin/bundles'] as const;
+const ORGANIZATION_REQUIRED_ROUTES = ['/super-admin/ticketing', '/super-admin/reservation', '/super-admin/bundles', '/super-admin/updates'] as const;
 
 export class RouteConfig {
   /**

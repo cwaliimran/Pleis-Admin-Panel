@@ -2,13 +2,13 @@
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { capitalizeFirstLetter, fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { TruncatedTextWithModal } from '@/components/common/long-text-modal';
 
 const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
@@ -26,28 +26,10 @@ const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
       <TableCell className="text-left">
-        {item.description.length > 22 ? (
-          <Dialog>
-            <DialogTrigger asChild>
-              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
-                {capitalizeFirstLetter(item?.description?.slice(0, 22) + '...')}
-              </span>
-            </DialogTrigger>
-            <DialogContent className="dark:bg-secondary max-w-md">
-              <DialogHeader>
-                <DialogTitle>Description</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{capitalizeFirstLetter(item?.description || '-')}</p>
-              </div>
-            </DialogContent>
-          </Dialog>
-        ) : (
-          capitalizeFirstLetter(item?.description || '-')
-        )}
+        <TruncatedTextWithModal text={capitalizeFirstLetter(item?.description)} title="Description" />
       </TableCell>
 
-      <TableCell className="text-left capitalize">{item?.linkedEvent}</TableCell>
+      <TableCell className="text-left capitalize">{item?.eventTitle}</TableCell>
 
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
 
@@ -58,7 +40,7 @@ const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
       <TableCell className="text-end">
         <div className="flex gap-2">
           <button
-            title="Edit Promo Code"
+            title="Edit Update"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -70,7 +52,7 @@ const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
           </button>
 
           <button
-            title="Delete Promo Code"
+            title="Delete Update"
             type="button"
             onClick={(e) => {
               e.stopPropagation();

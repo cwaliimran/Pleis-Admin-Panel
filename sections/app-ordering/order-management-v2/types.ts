@@ -2,11 +2,9 @@ export type OrderStatus = 'pending' | 'sent' | 'preparing' | 'delivered' | 'wait
 
 export type DeliveryType = 'table' | 'pickup' | 'togo';
 
-export type OrderTab = 'active' | 'preorders' | 'past';
+export type OrderTab = 'new-orders' | 'in-progress' | 'completed';
 
-export type ActiveOrderSubTab = 'new-order' | 'in-progress' | 'completed';
-
-export type DeliveryFilterType = 'all' | 'table' | 'togo' | 'preorders';
+export type SubFilter = 'all' | 'table' | 'togo' | 'preorders';
 
 export interface MenuItem {
   id: string;
@@ -44,7 +42,9 @@ export interface Order {
   totalCost: number;
   notes?: string;
   isVIP?: boolean;
+  tierName?: string;
   isPreorder?: boolean;
+  partySize?: number;
   paymentType?: 'pay-now' | 'pay-later';
   paymentInfo?: PaymentInfo;
   completedAt?: string;
