@@ -1,13 +1,15 @@
-import { StoredCompany, StoredOrganization } from './types';
+import { OrganizerOrganization, StoredCompany, StoredOrganization } from './types';
 
 const STORAGE_KEYS = {
   COMPANY: 'selectedCompany',
   ORGANIZATION: 'selectedOrganization',
+  ORGANIZER_ORGANIZATIONS: 'selectedOrganizerOrganizations',
 } as const;
 
 const EVENTS = {
   COMPANY_CHANGED: 'companyChanged',
   ORGANIZATION_CHANGED: 'organizationChanged',
+  ORGANIZER_ORGANIZATIONS_CHANGED: 'organizerOrganizationsChanged',
   SELECTION_CHANGED: 'selectionChanged',
 } as const;
 
@@ -127,6 +129,7 @@ export class CompanySelectionStorage {
   static clearAll(): void {
     this.setSelectedCompany(null);
     this.setSelectedOrganization(null);
+    this.setOrganizerOrganizations(null);
   }
 
   /**
@@ -146,6 +149,47 @@ export class CompanySelectionStorage {
   }
 
   /**
+   * Get selected organizer organizations (for multi-select)
+   */
+  static getOrganizerOrganizations(): OrganizerOrganization[] {
+    if (!isClient()) return [];
+
+    const stored = localStorage.getItem(STORAGE_KEYS.ORGANIZER_ORGANIZATIONS);
+    const parsed = safeParse<OrganizerOrganization[]>(stored);
+
+    // Validate structure - must be an array
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item) => item && typeof item === 'object' && 'value' in item && 'label' in item);
+    }
+
+    return [];
+  }
+
+  /**
+   * Set selected organizer organizations (for multi-select)
+   */
+  static setOrganizerOrganizations(organizations: OrganizerOrganization[] | null): void {
+    if (!isClient()) return;
+
+    if (!organizations || organizations.length === 0) {
+      localStorage.removeItem(STORAGE_KEYS.ORGANIZER_ORGANIZATIONS);
+    } else {
+      localStorage.setItem(STORAGE_KEYS.ORGANIZER_ORGANIZATIONS, JSON.stringify(organizations));
+    }
+
+    this.dispatchOrganizerOrganizationsChangeEvent();
+    this.dispatchSelectionChangeEvent();
+  }
+
+  /**
+   * Get organizer organization IDs as string array
+   */
+  static getOrganizerOrganizationIds(): string[] {
+    const organizations = this.getOrganizerOrganizations();
+    return organizations.map((org) => org.value);
+  }
+
+  /**
    * Dispatch company change event
    */
   private static dispatchCompanyChangeEvent(): void {
@@ -162,6 +206,14 @@ export class CompanySelectionStorage {
   }
 
   /**
+   * Dispatch organizer organizations change event
+   */
+  private static dispatchOrganizerOrganizationsChangeEvent(): void {
+    if (!isClient()) return;
+    window.dispatchEvent(new Event(EVENTS.ORGANIZER_ORGANIZATIONS_CHANGED));
+  }
+
+  /**
    * Dispatch unified selection change event with current state
    */
   private static dispatchSelectionChangeEvent(): void {
@@ -171,6 +223,7 @@ export class CompanySelectionStorage {
       detail: {
         companyId: this.getCompanyId(),
         organizationId: this.getOrganizationId(),
+        organizerOrganizationIds: this.getOrganizerOrganizationIds(),
       },
     });
 
@@ -200,12 +253,24 @@ export class CompanySelectionStorage {
   /**
    * Subscribe to any selection changes (company or organization)
    */
-  static onSelectionChange(callback: (event: CustomEvent<{ companyId: string | null; organizationId: string | null }>) => void): () => void {
+  static onSelectionChange(
+    callback: (event: CustomEvent<{ companyId: string | null; organizationId: string | null; organizerOrganizationIds: string[] }>) => void
+  ): () => void {
     if (!isClient()) return () => {};
 
     const handler = (e: Event) => callback(e as CustomEvent);
     window.addEventListener(EVENTS.SELECTION_CHANGED, handler);
     return () => window.removeEventListener(EVENTS.SELECTION_CHANGED, handler);
+  }
+
+  /**
+   * Subscribe to organizer organizations changes
+   */
+  static onOrganizerOrganizationsChange(callback: () => void): () => void {
+    if (!isClient()) return () => {};
+
+    window.addEventListener(EVENTS.ORGANIZER_ORGANIZATIONS_CHANGED, callback);
+    return () => window.removeEventListener(EVENTS.ORGANIZER_ORGANIZATIONS_CHANGED, callback);
   }
 }
 
@@ -219,6 +284,8 @@ export function useCompanySelection() {
       organization: null,
       companyId: null,
       organizationId: null,
+      organizerOrganizations: [],
+      organizerOrganizationIds: [],
     };
   }
 
@@ -227,5 +294,7 @@ export function useCompanySelection() {
     organization: CompanySelectionStorage.getSelectedOrganization(),
     companyId: CompanySelectionStorage.getCompanyId(),
     organizationId: CompanySelectionStorage.getOrganizationId(),
+    organizerOrganizations: CompanySelectionStorage.getOrganizerOrganizations(),
+    organizerOrganizationIds: CompanySelectionStorage.getOrganizerOrganizationIds(),
   };
 }

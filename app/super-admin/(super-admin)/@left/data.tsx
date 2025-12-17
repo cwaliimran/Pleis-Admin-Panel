@@ -343,12 +343,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.orderManagement,
         icon: CalendarDays,
       },
-      {
-        title: 'Order Management V2',
-        url: paths.superAdmin.orderManagementV2,
-        icon: CalendarDays,
-      },
-
+      // {
+      //   title: 'Order Management V2',
+      //   url: paths.superAdmin.orderManagementV2,
+      //   icon: CalendarDays,
+      // },
       {
         title: 'Menu Management',
         url: paths.superAdmin.menuManagement,

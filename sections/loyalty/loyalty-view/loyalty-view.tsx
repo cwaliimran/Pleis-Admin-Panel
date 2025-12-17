@@ -30,8 +30,6 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
   const openModal = useBoolean();
   const router = useRouter();
 
-  console.log('userType', userType);
-
   const [mainActive, setMainActive] = React.useState('overview');
   const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
   const [activeDurationTab, setActiveDurationTab] = React.useState('monthly');

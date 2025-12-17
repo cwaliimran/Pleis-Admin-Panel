@@ -15,63 +15,6 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
 import UpdatesTableRow from './updates-table-row';
 
-const eventHighlightDummyData = [
-  {
-    _id: 'eh_001',
-    image: 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png',
-    title: 'Concert Opening Ceremony',
-    description: 'A spectacular opening ceremony featuring live performances.',
-    linkedEvent: 'Music Fest 2025',
-    status: 'active',
-    createdAt: '2025-02-01T10:15:00Z',
-  },
-  {
-    _id: 'eh_002',
-    image: 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png',
-    title: 'Food Carnival Special',
-    description: 'Showcasing the best food stalls and audience moments.',
-    linkedEvent: 'Food Fiesta 2025',
-    status: 'inactive',
-    createdAt: '2025-02-03T12:00:00Z',
-  },
-  {
-    _id: 'eh_003',
-    image: 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png',
-    title: 'Guest Speaker Session',
-    description: 'Highlights from the keynote session with industry experts.',
-    linkedEvent: 'Tech Summit 2025',
-    status: 'active',
-    createdAt: '2025-02-05T09:30:00Z',
-  },
-  {
-    _id: 'eh_004',
-    image: 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png',
-    title: 'Kids Fun Activities',
-    description: 'Fun-filled activities for children during the festival.',
-    linkedEvent: 'Family Gala 2025',
-    status: 'inactive',
-    createdAt: '2025-02-06T14:10:00Z',
-  },
-  {
-    _id: 'eh_005',
-    image: 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png',
-    title: 'Award Distribution Night',
-    description: 'Moments from the award ceremony honoring top performers.',
-    linkedEvent: 'Annual Awards 2025',
-    status: 'active',
-    createdAt: '2025-02-07T16:25:00Z',
-  },
-  {
-    _id: 'eh_006',
-    image: 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noimage.png',
-    title: 'Closing Fireworks Show',
-    description: 'A beautiful fireworks show marking the end of the event.',
-    linkedEvent: 'Music Fest 2025',
-    status: 'inactive',
-    createdAt: '2025-02-08T20:45:00Z',
-  },
-];
-
 const HEAD_LABEL = [
   { id: 'image', label: 'Image', align: 'left' },
   {
@@ -114,8 +57,6 @@ const UpdatesTable: FC<SamplePageProps> = ({
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
   });
-
-  console.log('sortedData', sortedData);
 
   const methods = useForm({
     defaultValues: {
@@ -197,7 +138,7 @@ const UpdatesTable: FC<SamplePageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={eventHighlightDummyData?.length || 0}>
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
                 // {eventHighlightDummyData?.map((item, idx) => (
                   <UpdatesTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />

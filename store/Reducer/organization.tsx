@@ -55,6 +55,23 @@ export const organizationApi = createApi({
       providesTags: ['organization'],
     }),
 
+    getOrganizationsOnOrganizerSide: builder.query({
+      query: ({}) => {
+        return {
+          url: API_ROUTES.ORGANIZATION_ALL,
+          method: 'GET',
+          roleBasedRouting: {
+            adminOnly: false, // Only organizer can access this endpoint
+          },
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['organization'],
+    }),
+
     addOrganization: builder.mutation({
       query: (newOrganization) => ({
         url: '',
@@ -113,6 +130,7 @@ export const organizationApi = createApi({
 export const {
   useGetOrganizationQuery,
   useGetOrganizationByCompanyQuery,
+  useGetOrganizationsOnOrganizerSideQuery,
   useAddOrganizationMutation,
   useGetOrganizationByIdQuery,
   useUpdateOrganizationMutation,

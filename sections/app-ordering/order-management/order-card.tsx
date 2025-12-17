@@ -10,11 +10,23 @@ interface OrderCardProps {
   onToggle: () => void;
   onAccept: (order: Order) => void;
   onDeliver: (order: Order) => void;
+  onDeliverAll: (order: Order) => void;
+  onDeliverSelected: (order: Order) => void;
   onMarkPaid: (order: Order) => void;
   onCancel: (order: Order) => void;
 }
 
-export const OrderCard: React.FC<OrderCardProps> = ({ order, isExpanded, onToggle, onAccept, onDeliver, onMarkPaid, onCancel }) => {
+export const OrderCard: React.FC<OrderCardProps> = ({
+  order,
+  isExpanded,
+  onToggle,
+  onAccept,
+  onDeliver,
+  onDeliverAll,
+  onDeliverSelected,
+  onMarkPaid,
+  onCancel,
+}) => {
   const deliveryConfig = DELIVERY_TYPE_CONFIG[order.deliveryType];
   const statusConfig = STATUS_CONFIG[order.status];
 
@@ -76,10 +88,28 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, isExpanded, onToggl
                 {order.items.map((item) => (
                   <li key={item.id} className="flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-gray-800">
                     <span className="text-sm">
-                      <span className="mr-2 font-bold text-blue-600 dark:text-blue-400">{item.quantity}×</span>
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">{item.name}</span>
+                      <span
+                        className={cn('mr-2 font-bold', item.isDelivered ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400')}
+                      >
+                        {item.quantity}×
+                      </span>
+                      <span
+                        className={cn(
+                          'font-semibold',
+                          item.isDelivered ? 'text-gray-500 line-through dark:text-gray-500' : 'text-gray-900 dark:text-gray-100'
+                        )}
+                      >
+                        {item.name}
+                      </span>
                     </span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">${item.price.toFixed(2)}</span>
+                    <div className="flex items-center gap-2">
+                      {item.isDelivered && (
+                        <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          Delivered
+                        </span>
+                      )}
+                      <span className="text-sm text-gray-600 dark:text-gray-400">${item.price.toFixed(2)}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -243,12 +273,26 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order, isExpanded, onToggl
                 )}
 
                 {order.status === 'waiting-payment' && (
-                  <Button
-                    onClick={(e) => handleAction(e, () => onMarkPaid(order))}
-                    className="col-span-2 h-12 bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-500 dark:hover:bg-green-600"
-                  >
-                    ✓ Mark as Paid
-                  </Button>
+                  <>
+                    <Button
+                      onClick={(e) => handleAction(e, () => onDeliverSelected(order))}
+                      className="h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
+                    >
+                      ✓ Mark as Delivered
+                    </Button>
+                    <Button
+                      onClick={(e) => handleAction(e, () => onDeliverAll(order))}
+                      className="h-12 bg-orange-600 font-bold text-white transition-transform hover:bg-orange-700 active:scale-95 dark:bg-orange-500 dark:hover:bg-orange-600"
+                    >
+                      ✓ Mark All Delivered
+                    </Button>
+                    <Button
+                      onClick={(e) => handleAction(e, () => onMarkPaid(order))}
+                      className="col-span-2 h-12 bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-500 dark:hover:bg-green-600"
+                    >
+                      ✓ Mark as Paid
+                    </Button>
+                  </>
                 )}
               </div>
             )}

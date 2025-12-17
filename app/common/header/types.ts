@@ -20,6 +20,11 @@ export interface StoredOrganization {
   companyId: string;
 }
 
+export interface OrganizerOrganization {
+  label: string;
+  value: string;
+}
+
 export type CompanySelectionEvent = CustomEvent<{
   companyId: string | null;
   organizationId: string | null;

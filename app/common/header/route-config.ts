@@ -13,7 +13,6 @@ export interface RouteRequirement {
 const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/loyalty',
   '/super-admin/rewards',
-
   '/super-admin/challenges',
   '/super-admin/promotions',
   '/super-admin/members',

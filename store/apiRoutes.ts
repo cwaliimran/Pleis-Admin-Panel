@@ -26,6 +26,8 @@ export const API_ROUTES = {
   ORGANIZATION: `/organizer/organizations`,
   ORGANIZATION_BY_ID: (id: string) => `/organizer/organizations/${id}`,
 
+  ORGANIZATION_ALL: `/organizer/organizations/all`,
+
   UPDATES: `/organizer/updates`,
   UPDATES_BY_ID: (id: string) => `/organizer/updates/${id}`,
 

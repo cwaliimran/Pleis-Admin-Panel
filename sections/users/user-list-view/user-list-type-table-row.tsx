@@ -76,7 +76,7 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
     <>
       <TableRow onClick={handleNavigate} className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
         <TableCell>
-          <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
             {item?.basicInfo?.profileIcon &&
             item?.basicInfo?.profileIcon !== noImageUrl &&
             item?.basicInfo?.profileIcon !== noImageUrlDev &&

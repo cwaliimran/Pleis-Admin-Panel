@@ -4,11 +4,16 @@ export type DeliveryType = 'table' | 'pickup' | 'togo';
 
 export type OrderTab = 'active' | 'preorders' | 'past';
 
+export type ActiveOrderSubTab = 'new-order' | 'in-progress' | 'completed';
+
+export type DeliveryFilterType = 'all' | 'table' | 'togo' | 'preorders';
+
 export interface MenuItem {
   id: string;
   name: string;
   quantity: number;
   price: number;
+  isDelivered?: boolean;
 }
 
 export type PaymentMethod = 'credit-card' | 'debit-card' | 'apple-pay' | 'google-pay' | 'cash' | 'paypal';
@@ -55,9 +60,10 @@ export interface FilterOptions {
 }
 
 export interface ModalAction {
-  type: 'accept' | 'deliver' | 'paid' | 'cancel' | 'toggle-ordering';
+  type: 'accept' | 'deliver' | 'paid' | 'cancel' | 'toggle-ordering' | 'deliver-all' | 'deliver-selected';
   order?: Order;
   customerName?: string;
   location?: string;
   newState?: boolean;
+  selectedItemIds?: string[];
 }

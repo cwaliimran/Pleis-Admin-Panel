@@ -3,13 +3,13 @@
 import { ModeToggle } from '@/components/atoms/mode-toggle';
 import FormProvider from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
-import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import { RHFMultiSelectCount } from '@/components/rhf/rhf-multiselect-count';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Input } from '@/components/ui/input';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
-import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
+import { useGetOrganizationByCompanyQuery, useGetOrganizationsOnOrganizerSideQuery } from '@/store/Reducer/organization';
 import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ import * as yup from 'yup';
 import Profile from '../profile';
 import { CompanySelectionStorage } from './company-selection-storage';
 import { RouteConfig } from './route-config';
-import { CompanyOption, OrganizationOption, StoredCompany, StoredOrganization } from './types';
+import { CompanyOption, OrganizerOrganization, OrganizationOption, StoredCompany, StoredOrganization } from './types';
 
 interface HeaderProps {
   links?: {
@@ -32,11 +32,13 @@ interface HeaderProps {
 interface FormValues {
   companyId: string | null;
   organizationId: string | null;
+  organizerOrganizations: string[];
 }
 
 const schema: yup.ObjectSchema<FormValues> = yup.object({
   companyId: yup.string().nullable().defined(),
   organizationId: yup.string().nullable().defined(),
+  organizerOrganizations: yup.array().of(yup.string().required()).defined().default([]),
 });
 
 const Header: FC<HeaderProps> = ({ links }) => {
@@ -54,12 +56,14 @@ const Header: FC<HeaderProps> = ({ links }) => {
     defaultValues: {
       companyId: CompanySelectionStorage.getCompanyId(),
       organizationId: CompanySelectionStorage.getOrganizationId(),
+      organizerOrganizations: CompanySelectionStorage.getOrganizerOrganizationIds(),
     },
   });
 
   const { watch, setValue } = methods;
   const companyId = watch('companyId');
   const organizationId = watch('organizationId');
+  const selectedOrganizerOrganizations = watch('organizerOrganizations');
 
   // Determine if dropdowns should be shown
   const isAdmin = user?.accountState?.userType === 'admin';
@@ -93,6 +97,14 @@ const Header: FC<HeaderProps> = ({ links }) => {
     }
   );
 
+  // Fetch organizer organizations
+  const { data: organizerOrganizationsResponse } = useGetOrganizationsOnOrganizerSideQuery(
+    {},
+    {
+      skip: !isOrganizer,
+    }
+  );
+
   // Transform company data to dropdown options
   const companyOptions = useMemo<CompanyOption[]>(
     () =>
@@ -112,6 +124,16 @@ const Header: FC<HeaderProps> = ({ links }) => {
         companyId: companyId || '',
       })) || [],
     [organizationResponse, companyId]
+  );
+
+  // Transform organizer organizations data to dropdown options
+  const organizerOrganizationOptions = useMemo(
+    () =>
+      organizerOrganizationsResponse?.data?.map((organization: any) => ({
+        label: organization?.title || organization?.basicInfo?.name || 'Unknown Organization',
+        value: organization?._id,
+      })) || [],
+    [organizerOrganizationsResponse]
   );
 
   // Handle company changes
@@ -189,6 +211,21 @@ const Header: FC<HeaderProps> = ({ links }) => {
     }
   }, [companyId, organizationId, routeRequirements.requiresOrganization, setValue]);
 
+  // Handle organizer organizations changes
+  useEffect(() => {
+    if (!isOrganizer) return;
+    if (selectedOrganizerOrganizations === undefined) return;
+
+    const organizationsToSave: OrganizerOrganization[] = selectedOrganizerOrganizations
+      .map((id) => {
+        const option = organizerOrganizationOptions.find((opt: { value: string; label: string }) => opt.value === id);
+        return option || { value: id, label: 'Unknown Organization' };
+      })
+      .filter(Boolean);
+
+    CompanySelectionStorage.setOrganizerOrganizations(organizationsToSave.length > 0 ? organizationsToSave : null);
+  }, [selectedOrganizerOrganizations, organizerOrganizationOptions, isOrganizer]);
+
   return (
     <div className="mt-4 flex flex-col-reverse justify-between gap-4 px-3 sm:px-5 md:my-8 md:items-center md:gap-6 lg:flex-row">
       <div className={`${open ? '' : 'md:ml-10'} w-full overflow-x-auto`}>
@@ -245,15 +282,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
 
           {isOrganizer && (
             <div className="w-full rounded-md bg-white md:w-60 dark:bg-[#171717]">
-              <RHFMultiSelect
-                name="organizations"
-                placeholder="Select Organizations"
-                options={[
-                  { value: 'org1', label: 'Org 1' },
-                  { value: 'org2', label: 'Org 2' },
-                  { value: 'org3', label: 'Org 3' },
-                ]}
-              />
+              <RHFMultiSelectCount name="organizerOrganizations" placeholder="Select Organizations" options={organizerOrganizationOptions} />
             </div>
           )}
         </FormProvider>

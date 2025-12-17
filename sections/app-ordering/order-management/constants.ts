@@ -22,6 +22,19 @@ export const TAB_CONFIG = [
   { id: 'past' as const, label: 'Past Orders' },
 ];
 
+export const ACTIVE_ORDER_SUB_TABS = [
+  { id: 'new-order' as const, label: 'New Order' },
+  { id: 'in-progress' as const, label: 'In Progress' },
+  { id: 'completed' as const, label: 'Completed' },
+];
+
+export const DELIVERY_FILTER_BUTTONS = [
+  { id: 'all' as const, label: 'All' },
+  { id: 'table' as const, label: 'Table' },
+  { id: 'togo' as const, label: 'To go' },
+  { id: 'preorders' as const, label: 'Preorders' },
+];
+
 export const FILTER_STATUS_OPTIONS: { id: OrderStatus; label: string }[] = [
   { id: 'sent', label: 'Sent' },
   { id: 'preparing', label: 'Preparing' },
