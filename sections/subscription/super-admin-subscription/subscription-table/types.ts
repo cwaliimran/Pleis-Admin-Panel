@@ -23,6 +23,10 @@ export interface SamplePageProps {
   onBillingChange?: (billing: string) => void;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
+  subType?: string;
+  onSubTypeChange?: (subType: string) => void;
+  orgRange?: string;
+  onOrgRangeChange?: (orgRange: string) => void;
   onResetFilters?: () => void;
 }
 

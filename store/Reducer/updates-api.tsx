@@ -9,7 +9,7 @@ export const updatesApi = createApi({
 
   endpoints: (builder) => ({
     getUpdates: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, organizations }) => {
         const params: any = {
           keyword: search,
           status,
@@ -19,6 +19,7 @@ export const updatesApi = createApi({
 
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+        if (organizations) params.organizations = organizations;
 
         return {
           url: '',

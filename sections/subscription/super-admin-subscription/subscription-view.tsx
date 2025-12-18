@@ -59,9 +59,7 @@ export const SubscriptionManagementView: React.FC = () => {
                   <p className="text-sm text-gray-500 dark:text-gray-500">Create your first subscription to get started</p>
                 </div>
               ) : (
-                <>
-                  <SubscriptionTableView />
-                </>
+                <SubscriptionTableView />
               )}
             </div>
           )}

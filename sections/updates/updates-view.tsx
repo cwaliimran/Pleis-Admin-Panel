@@ -1,5 +1,6 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
@@ -30,15 +31,25 @@ const UpdatesView = () => {
 
   const { companyId, organizationId } = useCompanySelectionState();
 
+  const { organizerOrganizations, organizerOrganizationIds } = useCompanySelection();
+
+  console.log('Organization', organizerOrganizations);
+  console.log('Organization Ids', organizerOrganizationIds);
+
   const [deleteUpdate, { isLoading: deleteLoading }] = useDeleteUpdateMutation();
 
-  const { data: apiData, isLoading } = useGetUpdatesQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetUpdatesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: companyId || undefined,
+    organizations: organizerOrganizationIds.length > 0 ? organizerOrganizationIds : undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -130,7 +141,7 @@ const UpdatesView = () => {
       <UpdatesTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}

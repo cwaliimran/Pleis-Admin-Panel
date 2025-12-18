@@ -332,6 +332,7 @@ const SubscriptionModal = ({ open, onClose, selectedData }: SubscriptionModalPro
                         <SelectContent aria-describedby={undefined}>
                           <SelectItem value="active">Active</SelectItem>
                           <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
                     )}

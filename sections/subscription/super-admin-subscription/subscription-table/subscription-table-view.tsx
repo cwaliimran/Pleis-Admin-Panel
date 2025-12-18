@@ -3,14 +3,13 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-// import { useGetPromotionQuery } from '@/store/Reducer/promotion-api';
+import { useDeleteSubscriptionMutation, useGetSubscriptionsQuery } from '@/store/Reducer/subscriptions-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
-import SubscriptionTable from './subscription-table';
 import SubscriptionModal from '../edit-subscription-modal';
-import { useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
+import SubscriptionTable from './subscription-table';
 
 const SubscriptionTableView = () => {
   const openModal = useBoolean();
@@ -24,37 +23,32 @@ const SubscriptionTableView = () => {
   const [status, setStatus] = useState<string>('');
   const [billing, setBilling] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [subType, setSubType] = useState<string>('');
+  const [orgRange, setOrgRange] = useState<string>('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
   const { companyId: selectedCompany } = useCompanySelectionState();
 
+  const [deleteSubscription, { isLoading: deleteLoading }] = useDeleteSubscriptionMutation();
+
   const {
     data: apiData,
     isLoading,
     isFetching,
-  } = useGetPromoCodesQuery({
+  } = useGetSubscriptionsQuery({
     page: page - 1,
     search,
     limit,
-    status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
     isGlobal: true,
+    status: status === 'all' ? '' : status,
+    billing: billing === 'all' ? '' : billing,
+    subscriptionTypes: subType === 'all' ? '' : subType,
+    selectedRange: orgRange === 'all' ? '' : orgRange,
   });
-
-  // const {
-  //   data: apiData,
-  //   isLoading,
-  //   // refetch,
-  // } = useGetPromoCodesQuery({
-  //   page: page - 1,
-  //   search,
-  //   limit,
-  //   status: status === 'all' ? '' : status,
-  //   date: date ? formatDate(date) : undefined,
-  // });
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -107,28 +101,18 @@ const SubscriptionTableView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      showSuccess('Subscription canceled successfully');
+      const response = await deleteSubscription(selectedId).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Deleted successfully');
+
       setSelectedId(null);
       deleteModal.onFalse();
-
-      console.log('selectedId', selectedId);
-      console.log('selectedRecord', selectedRecord);
-
-      // const response = await deletePromotion({
-      //   id: selectedId,
-      //   isGlobal: global,
-      // }).unwrap();
-
-      // if (response?.error) {
-      //   const errorMessage = getErrorMessage(response.error);
-      //   showError(errorMessage);
-      //   return;
-      // }
-
-      // showSuccess(response?.message || 'Deleted successfully');
-
-      // setSelectedId(null);
-      // deleteModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -169,10 +153,23 @@ const SubscriptionTableView = () => {
           setDate(val);
           setPage(1);
         }}
+        subType={subType}
+        onSubTypeChange={(val) => {
+          setSubType(val);
+          setPage(1);
+        }}
+        orgRange={orgRange}
+        onOrgRangeChange={(val) => {
+          setOrgRange(val);
+          setPage(1);
+        }}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setBilling('');
+          setSubType('');
+          setOrgRange('');
           setPage(1);
         }}
       />
@@ -188,14 +185,14 @@ const SubscriptionTableView = () => {
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Cancel subscriptions"
+        title="Cancel Subscriptions"
         content="Are you sure you want to delete this subscription?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={false}
+        isLoading={deleteLoading}
       />
     </div>
   );

@@ -9,10 +9,12 @@ import { uploadFileToAzure } from '@/utils/fileUpload';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import UserListTypeTable from './user-list-view/user-list-type-table';
 import EditUserModal from './user-modal/custom-edit-user-modal';
 import CustomUserModal from './user-modal/custom-user-modal';
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { useDeletePromoCodeMutation } from '@/store/Reducer/promo-codes-api';
 
 interface UserListViewProps {
   usertype: string;
@@ -22,6 +24,7 @@ interface UserListViewProps {
 const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const createModal = useBoolean();
   const editModal = useBoolean();
+  const deleteModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -35,6 +38,9 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const [imageUploading, setimageUploading] = useState<boolean>(false);
 
   const [addUser, { isLoading: addUserLoading }] = useAddUserMutation();
+
+  const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
+
   const [addUserSuperAdminAndGuest, { isLoading: addUserSuperAdminAndGuestLoading }] = useAddUserSuperAdminAndGuestMutation();
 
   const { data: apiData, isLoading } = useGetUserListQuery({
@@ -127,6 +133,39 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
     }
   };
 
+  const handleDelete = useCallback(
+    (id: string) => {
+      if (!id) {
+        showError('No user selected');
+        return;
+      }
+
+      setSelectedId(id);
+      deleteModal.onTrue();
+    },
+    [deleteModal]
+  );
+
+  // DELETE CALL
+  const onDelete = async () => {
+    try {
+      const response = await deletePromoCode(selectedId).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Deleted successfully');
+
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
   const CloseCreateModal = () => {
     createModal.onFalse();
   };
@@ -159,6 +198,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
         meta={meta}
         loading={isLoading}
         handleEdit={handleEdit}
+        handleDelete={handleDelete}
         onPageChange={setPage}
         userType={usertype}
         memberPage={memberPage}
@@ -224,6 +264,18 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
           userType={usertype}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteModal.value}
+        title="Delete User"
+        content="Are you sure you want to delete this user?"
+        onClose={() => {
+          deleteModal.onFalse();
+          setSelectedId(null);
+        }}
+        onConfirm={onDelete}
+        isLoading={deleteLoading}
+      />
     </div>
   );
 };

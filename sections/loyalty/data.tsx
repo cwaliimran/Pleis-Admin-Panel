@@ -230,6 +230,29 @@ export const globalNotificationData = [
   },
 ];
 
+export const transactionHistoryData: LoyaltyCardData[] = [
+  {
+    title: 'Total Transactions',
+    amount: 10000,
+    raise: '15%',
+  },
+  {
+    title: 'Organizer Payouts',
+    amount: 210000,
+    raise: '12%',
+  },
+  {
+    title: 'PLEIS Commission',
+    amount: 8000,
+    raise: '11%',
+  },
+  {
+    title: 'Service Fees',
+    amount: 5000,
+    // raise: '15%',
+  },
+];
+
 export const loyaltyCardHeaderData: LoyaltyCardData[] = [
   {
     title: 'Total Members',

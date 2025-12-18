@@ -58,8 +58,6 @@ const UpdatesTable: FC<SamplePageProps> = ({
     data: data || [],
   });
 
-  console.log('sortedData', sortedData);
-
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,

@@ -5,6 +5,7 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 // import { Filter } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+import { DeliveryItemsModal } from './delivery-items-modal';
 import { FilterPanel } from './filter-panel';
 import { MOCK_ACTIVE_ORDERS, MOCK_PAST_ORDERS, MOCK_PREORDERS } from './mock-data';
 import { OrderCard } from './order-card';
@@ -55,7 +56,9 @@ export const OrderManagementView: React.FC = () => {
   // Modal states
   const filterPanel = useBoolean();
   const confirmModal = useBoolean();
+  const deliveryModal = useBoolean();
   const [modalAction, setModalAction] = useState<ModalAction | null>(null);
+  const [selectedOrderForDelivery, setSelectedOrderForDelivery] = useState<Order | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Get current orders based on active tab
@@ -185,6 +188,16 @@ export const OrderManagementView: React.FC = () => {
             handleDeliverOrder(modalAction.order);
           }
           break;
+        case 'deliver-all':
+          if (modalAction.order) {
+            handleDeliverAllItems(modalAction.order);
+          }
+          break;
+        case 'deliver-selected':
+          if (modalAction.order && modalAction.selectedItemIds) {
+            handleDeliverSelectedItems(modalAction.order, modalAction.selectedItemIds);
+          }
+          break;
         case 'paid':
           if (modalAction.order) {
             handleMarkAsPaid(modalAction.order);
@@ -218,6 +231,58 @@ export const OrderManagementView: React.FC = () => {
     setActiveOrders((prev) =>
       prev.map((o) => (o.id === order.id ? { ...o, status: order.paymentType === 'pay-later' ? 'waiting-payment' : 'delivered' } : o))
     );
+  };
+
+  // Handle marking all items as delivered
+  const handleDeliverAllItems = (order: Order) => {
+    setActiveOrders((prev) =>
+      prev.map((o) =>
+        o.id === order.id
+          ? {
+              ...o,
+              items: o.items.map((item) => ({ ...item, isDelivered: true })),
+            }
+          : o
+      )
+    );
+  };
+
+  // Handle marking selected items as delivered
+  const handleDeliverSelectedItems = (order: Order, selectedItemIds: string[]) => {
+    setActiveOrders((prev) =>
+      prev.map((o) =>
+        o.id === order.id
+          ? {
+              ...o,
+              items: o.items.map((item) => (selectedItemIds.includes(item.id) ? { ...item, isDelivered: true } : item)),
+            }
+          : o
+      )
+    );
+  };
+
+  // Open delivery items modal
+  const handleOpenDeliveryModal = (order: Order) => {
+    setSelectedOrderForDelivery(order);
+    deliveryModal.onTrue();
+  };
+
+  // Handle confirm delivery of selected items from modal
+  const handleConfirmDeliveryItems = async (selectedItemIds: string[]) => {
+    if (!selectedOrderForDelivery) return;
+
+    setIsActionLoading(true);
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    try {
+      handleDeliverSelectedItems(selectedOrderForDelivery, selectedItemIds);
+      deliveryModal.onFalse();
+      setSelectedOrderForDelivery(null);
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   const handleMarkAsPaid = (order: Order) => {
@@ -306,6 +371,13 @@ export const OrderManagementView: React.FC = () => {
           content: `Confirm delivery to ${modalAction.order?.userName} at ${modalAction.order?.location}?`,
           confirmVariant: 'success' as const,
           confirmText: 'Delivered',
+        };
+      case 'deliver-all':
+        return {
+          title: 'Mark All Items as Delivered?',
+          content: `Mark all items in the order from ${modalAction.order?.userName} as delivered?`,
+          confirmVariant: 'success' as const,
+          confirmText: 'Mark All Delivered',
         };
       case 'paid':
         return {
@@ -407,6 +479,8 @@ export const OrderManagementView: React.FC = () => {
                 onToggle={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                 onAccept={(order) => openConfirmModal({ type: 'accept', order })}
                 onDeliver={(order) => openConfirmModal({ type: 'deliver', order })}
+                onDeliverAll={(order) => openConfirmModal({ type: 'deliver-all', order })}
+                onDeliverSelected={(order) => handleOpenDeliveryModal(order)}
                 onMarkPaid={(order) => openConfirmModal({ type: 'paid', order })}
                 onCancel={(order) => openConfirmModal({ type: 'cancel', order })}
               />
@@ -437,6 +511,18 @@ export const OrderManagementView: React.FC = () => {
         onConfirm={handleConfirmAction}
         isLoading={isActionLoading}
         // buttonClass="bg-blue-400 hover:bg-blue-400/80"
+      />
+
+      {/* Delivery Items Modal */}
+      <DeliveryItemsModal
+        open={deliveryModal.value}
+        isLoading={isActionLoading}
+        items={selectedOrderForDelivery?.items || []}
+        onClose={() => {
+          deliveryModal.onFalse();
+          setSelectedOrderForDelivery(null);
+        }}
+        onConfirm={handleConfirmDeliveryItems}
       />
     </div>
   );
