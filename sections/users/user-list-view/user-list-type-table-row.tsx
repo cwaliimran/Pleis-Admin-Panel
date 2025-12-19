@@ -6,7 +6,7 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { RootState } from '@/store/store';
 import { getStatusVariant } from '@/utils/short-utils';
-import { Eye, Gift, Pencil } from 'lucide-react';
+import { Eye, Gift, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FC, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -21,7 +21,7 @@ interface PageProps {
   handleEdit?: (id: string) => void;
 }
 
-const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handleEdit }) => {
+const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handleEdit, handleDelete }) => {
   const router = useRouter();
   const { user } = useSelector((state: RootState) => state.userSlice);
 
@@ -157,6 +157,18 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
                 </button>
               </>
             )}
+
+            <button
+              title="Delete Promo Code"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete?.(item?.basicInfo?._id);
+              }}
+              className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+            >
+              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+            </button>
           </div>
         </TableCell>
       </TableRow>

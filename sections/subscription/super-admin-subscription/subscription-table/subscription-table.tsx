@@ -12,7 +12,6 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { MOCK_SUBSCRIPTIONS } from '../constants';
 import SubscriptionTableRow from './subscription-table-row';
 import { SamplePageProps } from './types';
 
@@ -20,11 +19,12 @@ const HEAD_LABEL = [
   { id: 'organizer', label: 'Organizer', align: 'left' },
   { id: 'modules', label: 'Modules', align: 'left' },
   { id: 'organizations', label: 'Organizations', align: 'left' },
+  { id: 'type', label: 'Sub. Type', align: 'left' },
   { id: 'billing', label: 'Billing', align: 'left' },
   { id: 'period', label: 'Period', align: 'left' },
   { id: 'price', label: 'Price', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Actions', align: 'left' },
+  { id: 'actions', label: 'Actions', align: 'center' },
 ];
 
 const SubscriptionTable: FC<SamplePageProps> = ({
@@ -42,6 +42,10 @@ const SubscriptionTable: FC<SamplePageProps> = ({
   onStatusChange = () => {},
   billing = '',
   onBillingChange = () => {},
+  subType = '',
+  onSubTypeChange = () => {},
+  orgRange = '',
+  onOrgRangeChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -84,10 +88,6 @@ const SubscriptionTable: FC<SamplePageProps> = ({
                 </SheetHeader>
                 <FormProvider {...methods}>
                   <form className="flex flex-col gap-6 px-4 py-2">
-                    {/* Date Range Filters full width */}
-
-                    {/* Billing year / month */}
-
                     <div className="flex w-full flex-col gap-3">
                       <div className="w-full">
                         <TableFilters
@@ -121,6 +121,34 @@ const SubscriptionTable: FC<SamplePageProps> = ({
                                 { value: 'yearly', label: 'Yearly' },
                               ],
                             },
+                            {
+                              id: 'sheet-sub-type',
+                              label: 'Sub. Type',
+                              placeholder: 'Select by Sub. Type',
+                              value: subType,
+                              onChange: onSubTypeChange,
+                              options: [
+                                { value: 'all', label: 'All' },
+                                { value: 'paid', label: 'Paid' },
+                                { value: 'free', label: 'Free' },
+                              ],
+                            },
+                            {
+                              id: 'sheet-org-range',
+                              label: 'Organizations',
+                              placeholder: 'Select Organization Range',
+                              value: orgRange,
+                              onChange: onOrgRangeChange,
+                              options: [
+                                { value: 'all', label: 'All' },
+                                { value: '1-10', label: '1 - 10' },
+                                { value: '11-20', label: '11 - 20' },
+                                { value: '21-30', label: '21 - 30' },
+                                { value: '31-40', label: '31 - 40' },
+                                { value: '41-50', label: '41 - 50' },
+                                { value: '50', label: '50+' },
+                              ],
+                            },
                           ]}
                           resetFilter={{
                             onReset: onResetFilters,
@@ -141,7 +169,7 @@ const SubscriptionTable: FC<SamplePageProps> = ({
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
-                {MOCK_SUBSCRIPTIONS?.map((item, idx) => (
+                {sortedData?.map((item, idx) => (
                   <SubscriptionTableRow key={item?.id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
