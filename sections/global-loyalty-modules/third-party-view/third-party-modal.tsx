@@ -87,8 +87,6 @@ const ThirdPartyModal = ({ open, onClose, isEdit = false, selectedData }: ThirdP
     date: undefined,
   });
 
-  console.log('levelStatus', levelStatus?.data);
-
   const levelStatusOptions =
     levelStatus?.data?.map((status: any) => ({
       label: status?.title,

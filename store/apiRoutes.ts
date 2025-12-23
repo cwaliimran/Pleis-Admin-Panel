@@ -175,6 +175,14 @@ export const API_ROUTES = {
   TIERS: `/admin/tiers`,
   TIERS_BY_ID: (id: string) => `/admin/tiers/${id}`,
 
+  POPULAR_EVENTS: `/admin/popular-events`,
+  POPULAR_EVENTS_REORDER: `/admin/popular-events/reorder`,
+  POPULAR_EVENTS_BY_ID: (id: string) => `/admin/popular-events/${id}`,
+
+  TOP_PICKS: `/admin/top-picks`,
+  TOP_PICKS_REORDER: `/admin/top-picks/reorder`,
+  TOP_PICKS_BY_ID: (id: string) => `/admin/top-picks/${id}`,
+
   PROMO_SECTION: `/admin/top-promos`,
   PROMO_SECTION_REORDER: `/admin/top-promos/reorder`,
   PROMO_SECTION_BY_ID: (id: string) => `/admin/top-promos/${id}`,

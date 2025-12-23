@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import RewardsCalculator from './rewards-calculator';
 import RewardFormModal from './rewards-modal';
 import RewardsTable from './rewards-table';
+import GlobalRewardFormModal from './global-rewards-modal';
 
 type RewardsViewProps = {
   global: boolean;
@@ -149,6 +150,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
       <RewardsTable
         data={localData}
         meta={meta}
+        global={global}
         loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
@@ -182,8 +184,19 @@ const RewardsView = ({ global }: RewardsViewProps) => {
         }}
       />
 
-      {openModal.value && (
+      {openModal.value && !global && (
         <RewardFormModal
+          global={global}
+          open={openModal.value}
+          onClose={closeModal}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          selectedCompany={companyId || null}
+        />
+      )}
+
+      {openModal.value && global && (
+        <GlobalRewardFormModal
           global={global}
           open={openModal.value}
           onClose={closeModal}

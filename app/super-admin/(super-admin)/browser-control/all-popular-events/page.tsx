@@ -13,7 +13,7 @@ const Page = () => {
         links={[
           { name: 'Dashboard', href: '/super-admin' },
           { name: 'Browser Control', href: '/super-admin/browser-control' },
-          { name: 'All Promos', href: '' },
+          { name: 'All Popular Events', href: '' },
         ]}
       />
 

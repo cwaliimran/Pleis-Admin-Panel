@@ -1,15 +1,14 @@
 'use client';
 
+import { TruncatedTextWithModal } from '@/components/common/long-text-modal';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
-import { capitalizeFirstLetter } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const RewardsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
+const RewardsTableRow: FC<TableRowProps> = ({ item, global, handleDelete, handleEdit }) => {
   const formatCreationMethod = (method: string) => {
     switch (method) {
       case 'buyMenuItemReward':
@@ -18,6 +17,10 @@ const RewardsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
         return 'Custom Reward';
       case 'ticketReward':
         return 'Ticket Reward';
+      case 'globalCustomReward':
+        return 'Global Custom Reward';
+      case 'globalTicketReward':
+        return 'Global Ticket Reward';
       default:
         return method;
     }
@@ -42,28 +45,14 @@ const RewardsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
       <TableCell className="text-left">
-        {item?.description && item?.description?.length > 22 ? (
-          <Dialog>
-            <DialogTrigger asChild>
-              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
-                {capitalizeFirstLetter(item?.description?.slice(0, 22) + '...')}
-              </span>
-            </DialogTrigger>
-            <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
-              <DialogHeader>
-                <DialogTitle>Description</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{capitalizeFirstLetter(item?.description || '-')}</p>
-              </div>
-            </DialogContent>
-          </Dialog>
-        ) : (
-          capitalizeFirstLetter(item?.description || '-')
-        )}
+        <TruncatedTextWithModal text={item?.description} title="Description" />
       </TableCell>
 
-      <TableCell className="text-left capitalize">{item?.sortingType}</TableCell>
+      {global ? (
+        <TableCell className="text-left capitalize">{item?.category?.title || '-'}</TableCell>
+      ) : (
+        <TableCell className="text-left capitalize">{item?.sortingType}</TableCell>
+      )}
 
       <TableCell className="text-left">
         <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">

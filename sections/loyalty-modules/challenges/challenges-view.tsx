@@ -12,6 +12,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import ChallengeModal from './challenges-modal';
 import ChallengesTable from './challenges-table';
+import GlobalChallengeModal from './global-challenges-modal';
 
 interface ChallengesViewProps {
   global?: boolean;
@@ -179,8 +180,19 @@ const ChallengesView = ({ global }: ChallengesViewProps) => {
         }}
       />
 
-      {openModal.value && (
+      {openModal.value && !global && (
         <ChallengeModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedCompany={selectedCompany}
+          selectedData={selectedRecord}
+          global={global}
+        />
+      )}
+
+      {openModal.value && global && (
+        <GlobalChallengeModal
           open={openModal.value}
           onClose={openModal.onFalse}
           isEdit={editModal.value}
