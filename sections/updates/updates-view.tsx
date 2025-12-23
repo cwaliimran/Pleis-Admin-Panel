@@ -29,12 +29,9 @@ const UpdatesView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const { companyId, organizationId } = useCompanySelectionState();
+  const { companyId } = useCompanySelectionState();
 
-  const { organizerOrganizations, organizerOrganizationIds } = useCompanySelection();
-
-  console.log('Organization', organizerOrganizations);
-  console.log('Organization Ids', organizerOrganizationIds);
+  const { organizerOrganizationIds } = useCompanySelection();
 
   const [deleteUpdate, { isLoading: deleteLoading }] = useDeleteUpdateMutation();
 
@@ -181,7 +178,7 @@ const UpdatesView = () => {
           isEdit={editModal.value}
           selectedData={selectedRecord}
           companyId={companyId}
-          organizationId={organizationId}
+          organizationId={organizerOrganizationIds}
         />
       )}
 

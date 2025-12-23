@@ -423,6 +423,11 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.marketingRequests,
     icon: Volume1,
   },
+  {
+    label: 'Help & Support',
+    key: paths.superAdmin.helpSupport,
+    icon: Volume1,
+  },
   // {
   //   label: 'Giveaways',
   //   key: paths.superAdmin.giveaways,

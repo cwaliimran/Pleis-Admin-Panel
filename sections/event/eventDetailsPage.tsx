@@ -184,6 +184,16 @@ const EventDetailsPage = () => {
                           </div>
 
                           <div className="flex items-center">
+                            {/* Static Preorder Toggle Button */}
+                            <label className="mr-2 flex cursor-pointer items-center select-none">
+                              <input type="checkbox" checked={false} readOnly className="sr-only" />
+                              <span className={`relative inline-block h-5 w-10 rounded-full bg-gray-300 transition`}>
+                                <span
+                                  className={`absolute top-0 left-0 h-5 w-5 transform rounded-full border border-gray-300 bg-white shadow transition-transform`}
+                                />
+                              </span>
+                              <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">Preorder</span>
+                            </label>
                             <Pencil
                               className="h-4 w-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700 md:h-5 md:w-5"
                               onClick={() => router.push(`/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`)}

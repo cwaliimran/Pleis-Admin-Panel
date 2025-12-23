@@ -7,6 +7,7 @@ import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import CustomBadge from '@/components/ui/custom-badge';
 
 const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   const getChallengesTypeLabel = (type: string) => {
@@ -78,6 +79,10 @@ const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
       <TableCell className="text-left">{item?.claimLimit || '-'}</TableCell>
       <TableCell className="text-left">{item?.endDate || '-'}</TableCell>
       <TableCell className="text-left capitalize">{item?.tierLimit?.title || '-'}</TableCell>
+
+      <TableCell className="text-left">
+        <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>
+      </TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

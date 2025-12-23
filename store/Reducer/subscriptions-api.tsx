@@ -44,8 +44,8 @@ export const subscriptionsApi = createApi({
     }),
 
     updateSubscription: builder.mutation({
-      query: ({ id, ...updatedSubscription }) => ({
-        url: API_ROUTES.ADMIN_UPDATE_USERS_SUBSCRIPTION_BY_ID(id),
+      query: ({ userId, ...updatedSubscription }) => ({
+        url: API_ROUTES.ADMIN_UPDATE_USERS_SUBSCRIPTION_BY_ID(userId),
         method: 'PUT',
         body: updatedSubscription,
       }),

@@ -12,6 +12,10 @@ export const SubscriptionManagementView: React.FC = () => {
 
   const { data: apiData, isLoading, isFetching } = useGetSubscriptionsPricingQuery({});
 
+  const pricingData = apiData?.data[0] || [];
+
+  console.log('pricingData Org', pricingData);
+
   return (
     <>
       <section className="min-h-screen">
@@ -34,7 +38,7 @@ export const SubscriptionManagementView: React.FC = () => {
 
         {/* Content */}
         <div className="rounded-b-2xl px-0 py-6">
-          {activeTab === 'subscriptions' && <SubscriptionTableView pricingData={apiData?.data} />}
+          {activeTab === 'subscriptions' && <SubscriptionTableView pricingData={pricingData} />}
 
           {activeTab === 'pricing' && <PricingSection apiData={apiData} isLoading={isLoading} isFetching={isFetching} />}
         </div>
