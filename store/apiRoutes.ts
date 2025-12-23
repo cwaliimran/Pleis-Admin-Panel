@@ -30,6 +30,7 @@ export const API_ROUTES = {
 
   UPDATES: `/organizer/updates`,
   UPDATES_BY_ID: (id: string) => `/organizer/updates/${id}`,
+  GET_EVENT_BY_MULTIPLE_ORGANIZATION: `/organizer/updates/events`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -74,7 +75,7 @@ export const API_ROUTES = {
 
   ADMIN_USERS_SUBSCRIPTION: `/admin/subscriptions/users`,
   ADMIN_DELETE_USERS_SUBSCRIPTION_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
-  ADMIN_UPDATE_USERS_SUBSCRIPTION_BY_ID: (id: string) => `/admin/subscriptions/users/${id}`,
+  ADMIN_UPDATE_USERS_SUBSCRIPTION_BY_ID: (userId: string) => `/admin/subscriptions/users/${userId}`,
 
   ADMIN_SUBSCRIPTION_PRICING: `/admin/subscriptions`,
   ADMIN_UPDATE_SUBSCRIPTION_PRICING_BY_ID: (id: string) => `/admin/subscriptions/${id}`,

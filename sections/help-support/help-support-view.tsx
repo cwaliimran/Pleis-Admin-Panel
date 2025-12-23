@@ -2,22 +2,15 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useDeleteSubscriptionMutation, useGetSubscriptionsQuery } from '@/store/Reducer/subscriptions-api';
+import { useDeleteLevelStatusMutation, useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
-import SubscriptionModal from '../edit-subscription-modal';
-import SubscriptionTable from './subscription-table';
+import HelpSupportTable from './help-support-table';
+import ReplySupportModal from './reply-support-modal';
 
-type Props = {
-  pricingData: any;
-};
-
-const SubscriptionTableView = ({ pricingData }: Props) => {
-  const openModal = useBoolean();
-  const editModal = useBoolean();
+const HelpSupportView = () => {
   const deleteModal = useBoolean();
 
   // Pagination and filter state
@@ -25,34 +18,29 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
-  const [billing, setBilling] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [subType, setSubType] = useState<string>('');
-  const [orgRange, setOrgRange] = useState<string>('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const { companyId: selectedCompany } = useCompanySelectionState();
+  const [deleteStatus, { isLoading: deleteLoading }] = useDeleteLevelStatusMutation();
 
-  const [deleteSubscription, { isLoading: deleteLoading }] = useDeleteSubscriptionMutation();
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [replyOpen, setReplyOpen] = useState(false);
 
-  const {
-    data: apiData,
-    isLoading,
-    isFetching,
-  } = useGetSubscriptionsQuery({
+  const handleReply = (ticket: any) => {
+    setSelectedTicket(ticket);
+    setReplyOpen(true);
+  };
+
+  const { data: apiData, isLoading } = useGetLevelStatusQuery({
     page: page - 1,
     search,
     limit,
-    date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany || undefined,
-    isGlobal: true,
     status: status === 'all' ? '' : status,
-    billing: billing === 'all' ? '' : billing,
-    subscriptionTypes: subType === 'all' ? '' : subType,
-    selectedRange: orgRange === 'all' ? '' : orgRange,
+    date: date ? formatDate(date) : undefined,
   });
+
+  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -77,22 +65,38 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
     }
   }, [apiData, page, limit]);
 
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (selectedRecord: any) => {
-    if (!selectedRecord) {
-      showError('No subscription selected');
-      return;
-    }
+  // const handleCreateNew = () => {
+  //   setSelectedRecord(null);
+  //   setSelectedId(null);
+  //   editModal.onFalse();
+  //   openModal.onTrue();
+  // };
 
-    setSelectedRecord(selectedRecord);
-    editModal.onTrue();
-    openModal.onTrue();
-  };
+  // ------------ EDIT FUNCTION FOR STATIC ------------
+  // const handleEdit = (id: string) => {
+  //   console.log('id', id);
+  //   openModal.onTrue();
+  //   editModal.onTrue();
+  // };
+
+  // ------------ EDIT FUNCTION FOR API VERSION ------------
+  // const handleEdit = (id: string) => {
+  //   const selectedData = localData?.find((item: any) => item?._id === id);
+
+  //   if (selectedData) {
+  //     setSelectedId(id);
+  //     setSelectedRecord(selectedData);
+  //     editModal.onTrue();
+  //     openModal.onTrue();
+  //   } else {
+  //     showError('Status not found');
+  //   }
+  // };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No subscription selected');
+        showError('No status selected');
         return;
       }
 
@@ -105,7 +109,7 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteSubscription(selectedId).unwrap();
+      const response = await deleteStatus(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -124,12 +128,21 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
 
   return (
     <div>
-      <SubscriptionTable
+      {/* <div>
+        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+            <Plus />
+            Create Level Status
+          </Button>
+        </div>
+      </div> */}
+
+      <HelpSupportTable
         data={localData}
         meta={meta}
-        loading={isLoading || isFetching}
+        loading={isLoading}
         handleDelete={handleDelete}
-        handleEdit={handleEdit}
+        handleEdit={handleReply}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -147,51 +160,25 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
           setStatus(val);
           setPage(1);
         }}
-        billing={billing}
-        onBillingChange={(val) => {
-          setBilling(val);
-          setPage(1);
-        }}
         date={date}
         onDateChange={(val) => {
           setDate(val);
-          setPage(1);
-        }}
-        subType={subType}
-        onSubTypeChange={(val) => {
-          setSubType(val);
-          setPage(1);
-        }}
-        orgRange={orgRange}
-        onOrgRangeChange={(val) => {
-          setOrgRange(val);
           setPage(1);
         }}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
-          setBilling('');
-          setSubType('');
-          setOrgRange('');
           setPage(1);
         }}
       />
 
-      <SubscriptionModal
-        open={editModal.value}
-        onClose={() => {
-          editModal.onFalse();
-          setSelectedRecord(null);
-        }}
-        pricingData={pricingData}
-        selectedData={selectedRecord}
-      />
+      <ReplySupportModal open={replyOpen} ticket={selectedTicket} onClose={() => setReplyOpen(false)} />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Cancel Subscriptions"
-        content="Are you sure you want to delete this subscription?"
+        title="Delete Support Ticket"
+        content="Are you sure you want to delete this support ticket?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -203,4 +190,4 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
   );
 };
 
-export default SubscriptionTableView;
+export default HelpSupportView;

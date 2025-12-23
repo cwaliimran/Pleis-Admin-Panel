@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
+import { useGetEventByMultipleOrganizationQuery } from '@/store/Reducer/helpers-api';
 import { useAddUpdateMutation, useUpdateUpdateMutation } from '@/store/Reducer/updates-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
@@ -30,7 +30,7 @@ type UpdatesModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
-  organizationId?: string | null;
+  organizationId?: any;
   companyId?: string | null;
 };
 
@@ -61,7 +61,6 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, companyId, 
   const [updateUpdate, { isLoading: updateLoading }] = useUpdateUpdateMutation();
 
   const { user } = useAuth();
-  console.log('user', user);
 
   const methods = useForm<UpdateFormValues>({
     resolver: yupResolver(schema),
@@ -93,18 +92,21 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, companyId, 
     { value: 'inactive', label: 'Inactive' },
   ];
 
-  const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
+  const { data: eventData, isLoading: isLoadingEvents } = useGetEventByMultipleOrganizationQuery(
     {
-      organization: organizationId,
+      page: 0,
+      search: '',
+      limit: '100',
+      organizations: organizationId,
     },
     {
       skip: !organizationId,
     }
   );
 
-  const eventOptions = (eventData || []).map((v: any) => ({
+  const eventOptions = (eventData?.data || [])?.map((v: any) => ({
     value: v?._id.toString(),
-    label: v?.basicInfo?.title || 'No Title',
+    label: v?.title || 'No Title',
   }));
 
   // SUBMIT HANDLER

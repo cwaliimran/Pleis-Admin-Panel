@@ -11,8 +11,7 @@ export const updatesApi = createApi({
     getUpdates: builder.query({
       query: ({ search, page, status, date, limit, companyOrganizer, organizations }) => {
         const params: any = {
-          keyword: search,
-          status,
+          // keyword: search,
           page: page + 1,
           limit,
         };
@@ -20,6 +19,8 @@ export const updatesApi = createApi({
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (organizations) params.organizations = organizations;
+        if (status) params.status = status;
+        if (search) params.keyword = search;
 
         return {
           url: '',
@@ -29,7 +30,6 @@ export const updatesApi = createApi({
             adminRoute: API_ROUTES.ADMIN_UPDATES,
             organizerRoute: API_ROUTES.UPDATES,
             adminOnlyParams: ['companyOrganizer'], // Only admins can use this param
-
           },
         };
       },

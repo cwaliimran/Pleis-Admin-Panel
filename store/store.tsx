@@ -47,6 +47,7 @@ import { thirdPartyApi } from './Reducer/third-party-api';
 import { marketingRequestApi } from './Reducer/marketing-request-api';
 import { updatesApi } from './Reducer/updates-api';
 import { subscriptionsApi } from './Reducer/subscriptions-api';
+import { helpersApi } from './Reducer/helpers-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -93,6 +94,7 @@ const appReducer = combineReducers({
   [marketingRequestApi.reducerPath]: marketingRequestApi.reducer,
   [updatesApi.reducerPath]: updatesApi.reducer,
   [subscriptionsApi.reducerPath]: subscriptionsApi.reducer,
+  [helpersApi.reducerPath]: helpersApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -146,6 +148,7 @@ export const store = configureStore({
       marketingRequestApi.middleware,
       updatesApi.middleware,
       subscriptionsApi.middleware,
+      helpersApi.middleware,
       referralsApi.middleware
     ),
 });

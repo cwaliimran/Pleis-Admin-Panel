@@ -8,50 +8,84 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
-import ChallengesTableRow from './challenges-table-row';
-import { useTableSort } from '@/hooks/useTableSort';
+import HelpSupportTableRow from './help-support-table-row';
 
-const HEAD_LABEL = [
-  { id: 'image', label: 'Image', align: 'left' },
+const supportTicketsDummyData = [
   {
-    id: 'name',
-    label: 'Name',
-    align: 'left',
-    sortable: true,
-    sortKey: 'title',
+    id: 'st_001',
+    ticketNo: 'TCK-1001',
+    photo: 'https://i.pravatar.cc/150?img=11',
+    username: 'john_doe',
+    subject: 'Login issue',
+    description: 'Unable to log in using correct credentials.',
+    createdAt: '2025-02-01T10:15:00Z',
+    status: 'closed',
   },
   {
-    id: 'rewardType',
-    label: 'Reward Type',
-    sortable: true,
-    sortKey: 'reward.rewardType',
+    id: 'st_002',
+    ticketNo: 'TCK-1002',
+    photo: 'https://i.pravatar.cc/150?img=22',
+    username: 'sarah_k',
+    subject: 'Payment failed',
+    description: 'Transaction failed but amount was deducted.',
+    createdAt: '2025-02-02T14:30:00Z',
+    status: 'pending',
   },
   {
-    id: 'reward',
-    label: 'Reward',
-    sortable: true,
-    sortKey: 'reward.rewardType',
+    id: 'st_003',
+    ticketNo: 'TCK-1003',
+    photo: 'https://i.pravatar.cc/150?img=33',
+    username: 'ali_hassan',
+    subject: 'Event ticket not received',
+    description: 'I did not receive my ticket after successful booking.',
+    createdAt: '2025-02-03T09:45:00Z',
+    status: 'closed',
   },
   {
-    id: 'taskType',
-    label: 'Task Type',
-    align: 'left',
-    sortable: true,
-    sortKey: 'taskType',
+    id: 'st_004',
+    ticketNo: 'TCK-1004',
+    photo: 'https://i.pravatar.cc/150?img=44',
+    username: 'emma_w',
+    subject: 'App crash',
+    description: 'App crashes when opening the giveaways page.',
+    createdAt: '2025-02-04T18:20:00Z',
+    status: 'open',
   },
-  { id: 'taskParameters', label: 'Task Parameters', align: 'left' },
-  { id: 'claimLimit', label: 'Claim Limit', align: 'left' },
-  { id: 'endTime', label: 'End Time', align: 'left' },
-  { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  {
+    id: 'st_005',
+    ticketNo: 'TCK-1005',
+    photo: 'https://i.pravatar.cc/150?img=55',
+    username: 'usman_dev',
+    subject: 'Incorrect event details',
+    description: 'The event date shown is incorrect.',
+    createdAt: '2025-02-05T11:05:00Z',
+    status: 'pending',
+  },
 ];
 
-const ChallengesTable: FC<SamplePageProps> = ({
+const HEAD_LABEL = [
+  { id: 'photo', label: 'Photo', align: 'left' },
+  {
+    id: 'username',
+    label: 'Username',
+    align: 'left',
+    sortable: true,
+    sortKey: 'username',
+  },
+  { id: 'ticketNumber', label: 'Ticket #', align: 'left' },
+  { id: 'subject', label: 'Subject', align: 'left' },
+  { id: 'description', label: 'Description', align: 'left' },
+  { id: 'createdAt', label: 'Created At', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'center' },
+];
+
+const HelpSupportTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
@@ -78,6 +112,8 @@ const ChallengesTable: FC<SamplePageProps> = ({
     data: data || [],
   });
 
+  console.log('sortedData', sortedData);
+
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
@@ -89,7 +125,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Challenges List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Help Support List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -121,7 +157,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search challenges...',
+                              placeholder: 'Search level status...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -129,7 +165,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
                               {
                                 id: 'sheet-revenue',
                                 label: 'Status',
-                                placeholder: 'Select by status',
+                                placeholder: 'Select by Status',
                                 value: status,
                                 onChange: onStatusChange,
                                 options: [
@@ -158,9 +194,9 @@ const ChallengesTable: FC<SamplePageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item, idx) => (
-                  <ChallengesTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={supportTicketsDummyData?.length || 0}>
+                {supportTicketsDummyData?.map((item, idx) => (
+                  <HelpSupportTableRow key={item?.id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -179,4 +215,4 @@ const ChallengesTable: FC<SamplePageProps> = ({
   );
 };
 
-export default ChallengesTable;
+export default HelpSupportTable;
