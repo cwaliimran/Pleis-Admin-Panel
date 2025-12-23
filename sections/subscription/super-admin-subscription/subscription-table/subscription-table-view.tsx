@@ -11,10 +11,16 @@ import { useCallback, useEffect, useState } from 'react';
 import SubscriptionModal from '../edit-subscription-modal';
 import SubscriptionTable from './subscription-table';
 
-const SubscriptionTableView = () => {
+type Props = {
+  pricingData: any;
+};
+
+const SubscriptionTableView = ({ pricingData }: Props) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+
+  console.log('pricingData', pricingData);
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -180,6 +186,7 @@ const SubscriptionTableView = () => {
           editModal.onFalse();
           setSelectedRecord(null);
         }}
+        pricingData={pricingData}
         selectedData={selectedRecord}
       />
 

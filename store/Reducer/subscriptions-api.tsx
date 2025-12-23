@@ -5,7 +5,7 @@ import { customFetchBaseQuery } from '../customFetchBaseQuery';
 export const subscriptionsApi = createApi({
   reducerPath: 'subscriptionsApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['subscription'],
+  tagTypes: ['subscription', 'pricing'],
 
   endpoints: (builder) => ({
     getSubscriptions: builder.query({
@@ -59,8 +59,47 @@ export const subscriptionsApi = createApi({
       }),
       invalidatesTags: ['subscription'],
     }),
+
+    getSubscriptionsPricing: builder.query({
+      query: () => {
+        return {
+          url: API_ROUTES.ADMIN_SUBSCRIPTION_PRICING,
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['pricing'],
+    }),
+
+    addSubscriptionPricing: builder.mutation({
+      query: (subscriptionPricing) => ({
+        url: API_ROUTES.ADMIN_SUBSCRIPTION_PRICING,
+        method: 'POST',
+        body: subscriptionPricing,
+      }),
+      invalidatesTags: ['pricing'],
+    }),
+
+    updateSubscriptionPricing: builder.mutation({
+      query: ({ id, ...updatedSubscription }) => ({
+        url: API_ROUTES.ADMIN_UPDATE_SUBSCRIPTION_PRICING_BY_ID(id),
+        method: 'PUT',
+        body: updatedSubscription,
+      }),
+      invalidatesTags: ['pricing'],
+    }),
   }),
 });
 
-export const { useGetSubscriptionsQuery, useAddSubscriptionMutation, useUpdateSubscriptionMutation, useDeleteSubscriptionMutation } =
-  subscriptionsApi;
+export const {
+  useGetSubscriptionsQuery,
+  useAddSubscriptionMutation,
+  useUpdateSubscriptionMutation,
+  useDeleteSubscriptionMutation,
+  useGetSubscriptionsPricingQuery,
+  useAddSubscriptionPricingMutation,
+  useUpdateSubscriptionPricingMutation,
+} = subscriptionsApi;

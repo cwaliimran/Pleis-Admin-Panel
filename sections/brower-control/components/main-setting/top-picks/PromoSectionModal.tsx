@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { useGeteventsQuery } from '@/store/Reducer/events';
-import { useAddPromoSectionMutation, useUpdatePromoSectionMutation } from '@/store/Reducer/promo-section-api';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useAddTopPicksSectionMutation, useUpdateTopPicksSectionMutation } from '@/store/Reducer/promo-section-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -17,11 +17,11 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 const defaultValues = {
-  event: '',
+  organization: '',
 };
 
 const schema = Yup.object().shape({
-  event: Yup.string().required('Event is required'),
+  organization: Yup.string().required('Organization is required'),
 });
 
 const PromoSectionModal = ({ open, onClose, isEdit = false, selectedData }: any) => {
@@ -35,26 +35,26 @@ const PromoSectionModal = ({ open, onClose, isEdit = false, selectedData }: any)
   const { reset } = methods;
   // const isDirty = formState?.isDirty;
 
-  // Load events
-  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
+  // Load organizations
+  const { data: eventData, isLoading: isLoadingEvents } = useGetOrganizationQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '100',
     status: '',
   });
 
   const eventOptions = (eventData?.data || []).map((v: any) => ({
     value: v?._id.toString(),
-    label: v?.basicInfo?.title || 'No Title',
+    label: v?.basicInfo?.name || 'No Name',
   }));
 
-  const [addPromo, { isLoading: addPromoLoading }] = useAddPromoSectionMutation();
-  const [updatePromo, { isLoading: updatePromoLoading }] = useUpdatePromoSectionMutation();
+  const [addPromo, { isLoading: addPromoLoading }] = useAddTopPicksSectionMutation();
+  const [updatePromo, { isLoading: updatePromoLoading }] = useUpdateTopPicksSectionMutation();
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
       reset({
-        event: selectedData?.event?._id || '',
+        organization: selectedData?.organization?._id || '',
       });
       setAddToTop10(!!selectedData?.isTop10);
     } else if (open && !isEdit) {
@@ -66,11 +66,9 @@ const PromoSectionModal = ({ open, onClose, isEdit = false, selectedData }: any)
   const handleSubmit = async (formData: any) => {
     try {
       const payload = {
-        event: formData?.event,
+        organization: formData?.organization,
         isTop10: addToTop10,
       };
-
-      console.log('payload', payload);
 
       let response;
       if (isEdit && selectedData?._id) {
@@ -92,7 +90,7 @@ const PromoSectionModal = ({ open, onClose, isEdit = false, selectedData }: any)
         return;
       }
 
-      showSuccess(response?.message || (isEdit ? 'Promo event updated successfully' : 'Promo event created successfully'));
+      showSuccess(response?.message || (isEdit ? 'Top Picks updated successfully' : 'Top Picks created successfully'));
 
       reset(defaultValues);
       setAddToTop10(false);
@@ -117,16 +115,16 @@ const PromoSectionModal = ({ open, onClose, isEdit = false, selectedData }: any)
         className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
       >
         <DialogHeader>
-          <DialogTitle className="text-start">{isEdit ? 'Edit Popular Event' : 'Add Popular Event'}</DialogTitle>
+          <DialogTitle className="text-start">{isEdit ? 'Edit Top Picks' : 'Add New Top Picks'}</DialogTitle>
         </DialogHeader>
 
         <div className="mt-4 w-full">
           <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
             <div className="mt-0 flex w-full flex-col gap-4">
               <RHFCustomDropdown
-                name="event"
-                label="Event"
-                placeholder="Select Event"
+                name="organization"
+                label="Organization"
+                placeholder="Select Organization"
                 options={eventOptions}
                 isLoading={isLoadingEvents}
                 showNone={false}
@@ -160,7 +158,7 @@ const PromoSectionModal = ({ open, onClose, isEdit = false, selectedData }: any)
                   className="bg-primary hover:bg-primary-dark flex-1 cursor-pointer px-4 py-2 text-white"
                   // disabled={isEdit ? !isDirty : false}
                 >
-                  {isEdit ? 'Update Popular Event' : 'Create Popular Event'}
+                  {isEdit ? 'Update Top Picks' : 'Create Top Picks'}
                 </Button>
               )}
             </div>

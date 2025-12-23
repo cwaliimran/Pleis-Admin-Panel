@@ -146,7 +146,7 @@ const SubscriptionTable: FC<SamplePageProps> = ({
                                 { value: '21-30', label: '21 - 30' },
                                 { value: '31-40', label: '31 - 40' },
                                 { value: '41-50', label: '41 - 50' },
-                                { value: '50+', label: '50+' },
+                                { value: '50', label: '50+' },
                               ],
                             },
                           ]}

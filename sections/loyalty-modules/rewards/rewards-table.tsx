@@ -14,22 +14,10 @@ import { FormProvider, useForm } from 'react-hook-form';
 import RewardsTableRow from './rewards-table-row';
 import { SamplePageProps } from './types';
 
-const HEAD_LABEL = [
-  { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'description', label: 'Description' },
-  { id: 'type', label: 'Type', align: 'left' },
-  { id: 'creationMethod', label: 'Creation Method', align: 'left' },
-  { id: 'pointValue', label: 'Point Value', align: 'left' },
-  { id: 'limit', label: 'Limit', align: 'left' },
-  { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
-  { id: 'percentOff', label: '% Off', align: 'left' },
-  { id: 'actions', label: 'Actions', align: 'left' },
-];
-
 const RewardsTable: FC<SamplePageProps> = ({
   data = [],
   meta,
+  global,
   loading,
   handleDelete,
   handleEdit,
@@ -49,6 +37,19 @@ const RewardsTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const HEAD_LABEL = [
+    { id: 'photo', label: 'Photo', align: 'left' },
+    { id: 'name', label: 'Name', align: 'left' },
+    { id: 'description', label: 'Description' },
+    global ? { id: 'category', label: 'Category', align: 'left' } : { id: 'type', label: 'Type', align: 'left' },
+    { id: 'creationMethod', label: 'Creation Method', align: 'left' },
+    { id: 'pointValue', label: 'Point Value', align: 'left' },
+    { id: 'limit', label: 'Limit', align: 'left' },
+    { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
+    { id: 'percentOff', label: '% Off', align: 'left' },
+    { id: 'actions', label: 'Actions', align: 'left' },
+  ];
 
   const methods = useForm({
     defaultValues: {
@@ -132,7 +133,7 @@ const RewardsTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
                 {data?.map((item, idx) => (
-                  <RewardsTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <RewardsTableRow key={item?._id || idx} item={item} global={global} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>

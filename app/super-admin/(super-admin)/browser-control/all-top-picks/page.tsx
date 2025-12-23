@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import PromoManager from '@/sections/brower-control/components/main-setting/promo-manager/promo-manager';
+import TopPicks from '@/sections/brower-control/components/main-setting/top-picks/top-picks';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,11 +13,11 @@ const Page = () => {
         links={[
           { name: 'Dashboard', href: '/super-admin' },
           { name: 'Browser Control', href: '/super-admin/browser-control' },
-          { name: 'All Promos', href: '' },
+          { name: 'All Top Picks', href: '' },
         ]}
       />
 
-      <PromoManager heading="Popular Events" viewAll={false} fixLength={false} />
+      <TopPicks heading="All Top Picks" viewAll={false} fixLength={false} />
     </div>
   );
 };

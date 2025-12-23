@@ -76,6 +76,9 @@ export const API_ROUTES = {
   ADMIN_DELETE_USERS_SUBSCRIPTION_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
   ADMIN_UPDATE_USERS_SUBSCRIPTION_BY_ID: (id: string) => `/admin/subscriptions/users/${id}`,
 
+  ADMIN_SUBSCRIPTION_PRICING: `/admin/subscriptions`,
+  ADMIN_UPDATE_SUBSCRIPTION_PRICING_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
+
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
   ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
@@ -171,6 +174,14 @@ export const API_ROUTES = {
 
   TIERS: `/admin/tiers`,
   TIERS_BY_ID: (id: string) => `/admin/tiers/${id}`,
+
+  POPULAR_EVENTS: `/admin/popular-events`,
+  POPULAR_EVENTS_REORDER: `/admin/popular-events/reorder`,
+  POPULAR_EVENTS_BY_ID: (id: string) => `/admin/popular-events/${id}`,
+
+  TOP_PICKS: `/admin/top-picks`,
+  TOP_PICKS_REORDER: `/admin/top-picks/reorder`,
+  TOP_PICKS_BY_ID: (id: string) => `/admin/top-picks/${id}`,
 
   PROMO_SECTION: `/admin/top-promos`,
   PROMO_SECTION_REORDER: `/admin/top-promos/reorder`,

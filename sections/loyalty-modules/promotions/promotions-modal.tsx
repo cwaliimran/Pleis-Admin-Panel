@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useAddPromotionMutation, useUpdatePromotionMutation } from '@/store/Reducer/promotion-api';
 import { useGetRewardsQuery } from '@/store/Reducer/rewards-api';
@@ -194,13 +195,31 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     formState: { isDirty },
   } = methods;
 
-  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-    date: undefined,
-  });
+  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+    },
+    {
+      skip: global,
+    }
+  );
+
+  const { data: levelStatus, isLoading: levelStatusLoading } = useGetLevelStatusQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+    },
+    {
+      skip: !global,
+    }
+  );
 
   const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemsQuery(
     {
@@ -225,6 +244,18 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     companyOrganizer: selectedCompany || undefined,
     isGlobal: global || false,
   });
+
+  const tiersOptions =
+    tiersData?.data?.map((tier: any) => ({
+      label: tier?.title,
+      value: tier?._id,
+    })) || [];
+
+  const levelStatusOptions =
+    levelStatus?.data?.map((status: any) => ({
+      label: status?.title,
+      value: status?._id,
+    })) || [];
 
   const menuItemOptions =
     menuItemsData?.data?.map((menuItem: any) => ({
@@ -488,7 +519,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                   />
                 </div>
 
-                {/* TITLE & TIER */}
+                {/* TIER */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFTextField name="title" label="Title" placeholder="Enter Title" />
                   {tiersLoading ? (
@@ -501,8 +532,8 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                       name="tierLimit"
                       label="Tier Limit"
                       placeholder="Minimum tier required"
-                      options={tiersData?.data?.map((t: any) => ({ label: t.title, value: t._id })) || []}
-                      isLoading={tiersLoading}
+                      options={global ? levelStatusOptions : tiersOptions}
+                      isLoading={global ? levelStatusLoading : tiersLoading}
                       showNone={false}
                     />
                   )}

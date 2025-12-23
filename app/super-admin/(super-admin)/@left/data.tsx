@@ -331,6 +331,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.levelStatus,
         icon: ArrowBigUp,
       },
+      {
+        title: 'Status Badges',
+        url: paths.superAdmin.status,
+        icon: ArrowBigUp,
+      },
     ],
   },
   {

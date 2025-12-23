@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import RewardCalculatorFields from '../rewards/reward-calculation-fields';
+import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 // import { useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 
 const defaultValues: any = {
@@ -157,14 +158,6 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   const selectedTaskMenuId = watch('taskMenuItem');
 
   // API QUERIES
-  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-    date: undefined,
-  });
-
   const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
     {
       page: 0,
@@ -179,22 +172,37 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     }
   );
 
-  // const {
-  //   data: ticketData,
-  //   isLoading: isTicketsLoading,
-  //   isFetching: isTicketsFetching,
-  // } = useGetTicketingQuery(
-  //   {
-  //     page: 0,
-  //     search: '',
-  //     limit: '10000',
-  //     date: undefined,
-  //     companyOrganizer: undefined,
-  //   }
-  // {
-  //   skip: !event || !organizationId,
-  // }
-  // );
+  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+    },
+    {
+      skip: global,
+    }
+  );
+
+  const { data: levelStatus, isLoading: levelStatusLoading } = useGetLevelStatusQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+    },
+    {
+      skip: !global,
+    }
+  );
+
+  const levelStatusOptions =
+    levelStatus?.data?.map((status: any) => ({
+      label: status?.title,
+      value: status?._id,
+    })) || [];
 
   const {
     data: rewardMenuItemsData,
@@ -202,7 +210,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     isFetching: rewardMenuItemsFetching,
   } = useGetMenuItemByMenuIdQuery({ menuId: selectedMenuId }, { skip: !selectedMenuId || rewardType !== 'menuItem' });
 
-  // 🔥 Dynamic menu items for task (buyMenuItem)
+  // Dynamic menu items for task (buyMenuItem)
   const { data: taskMenuItemsData, isLoading: taskMenuItemsLoading } = useGetMenuItemByMenuIdQuery(
     { menuId: selectedTaskMenuId },
     { skip: !selectedTaskMenuId || taskType !== 'buyMenuItem' }
@@ -509,8 +517,8 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                     name="tierLimit"
                     label="Tier Limit"
                     placeholder="Select Tier Limit"
-                    options={tiersOptions}
-                    isLoading={tiersLoading}
+                    options={global ? levelStatusOptions : tiersOptions}
+                    isLoading={global ? levelStatusLoading : tiersLoading}
                     showNone={false}
                   />
                 )}

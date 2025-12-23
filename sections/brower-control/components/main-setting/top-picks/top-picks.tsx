@@ -4,7 +4,7 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { CustomDndProvider } from '@/components/providers/DndProvider';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeletePromoSectionMutation, useGetPromoSectionQuery, useReorderPromoSectionMutation } from '@/store/Reducer/promo-section-api';
+import { useDeleteTopPicksSectionMutation, useGetTopPicksSectionQuery, useReorderTopPicksSectionMutation } from '@/store/Reducer/promo-section-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
@@ -23,8 +23,9 @@ type PromoManagerProps = {
   fixLength?: boolean;
 };
 
-const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
+const TopPicks = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
   const router = useRouter();
+
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -34,10 +35,10 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
   const [activePromo, setActivePromo] = useState<PromoEvent | null>(null);
   const [editingPromo, setEditingPromo] = useState<PromoEvent | null>(null);
 
-  const [deletePromo, { isLoading: deletePromoLoading }] = useDeletePromoSectionMutation();
-  const [reorderPromo, { isLoading: reorderLoading }] = useReorderPromoSectionMutation();
+  const [deletePromo, { isLoading: deletePromoLoading }] = useDeleteTopPicksSectionMutation();
+  const [reorderPromo, { isLoading: reorderLoading }] = useReorderTopPicksSectionMutation();
 
-  const { data: apiData, isLoading } = useGetPromoSectionQuery({
+  const { data: apiData, isLoading } = useGetTopPicksSectionQuery({
     page: 0,
     limit: 10,
   });
@@ -165,7 +166,7 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
   );
 
   const navigateToAllPromos = useCallback(() => {
-    router.push('/super-admin/browser-control/all-popular-events');
+    router.push('/super-admin/browser-control/all-top-picks');
   }, [router]);
 
   // Close modal
@@ -197,7 +198,7 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
               disabled={reorderLoading}
             >
               <Plus className="mr-1 h-4 w-4" />
-              New Event
+              New Top Picks
             </Button>
           </div>
 
@@ -208,7 +209,7 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
                 Array.from({ length: 3 }).map((_, i) => <DraggablePromoItemSkeleton key={i} />)
               ) : promoEvents.length === 0 ? (
                 <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-600 dark:bg-gray-800">
-                  <p className="text-gray-500 dark:text-gray-400">No popular events available. Create your first popular event!</p>
+                  <p className="text-gray-500 dark:text-gray-400">No top picks available. Create your first top pick!</p>
                 </div>
               ) : (
                 (fixLength ? promoEvents.slice(0, 10) : promoEvents).map((promo: any) => (
@@ -220,7 +221,7 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
 
           {/* View All Button */}
           <div className="mt-6 flex justify-center">
-            {displayedEvents?.length > 10 && viewAll && (
+            {displayedEvents.length > 10 && viewAll && (
               <Button variant="outline" onClick={navigateToAllPromos} className="border-gray-300 bg-white px-6 py-2 hover:border-gray-400">
                 View All
               </Button>
@@ -234,8 +235,8 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
 
           <ConfirmDialog
             open={deleteModal.value}
-            title="Delete Promo"
-            content="Are you sure you want to delete this promo? This action cannot be undone."
+            title="Delete Top Pick"
+            content="Are you sure you want to delete this top pick? This action cannot be undone."
             onClose={() => {
               deleteModal.onFalse();
               setSelectedId(null);
@@ -249,4 +250,4 @@ const PromoManager = ({ heading, viewAll, fixLength }: PromoManagerProps) => {
   );
 };
 
-export default PromoManager;
+export default TopPicks;
