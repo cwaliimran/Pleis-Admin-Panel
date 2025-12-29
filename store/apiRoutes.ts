@@ -64,6 +64,10 @@ export const API_ROUTES = {
   LOYALTY_CHALLENGE: `/loyalty/challenges`,
   LOYALTY_CHALLENGE_BY_ID: (id: string) => `/loyalty/challenges/${id}`,
 
+  GET_ORGANIZER_SUBSCRIPTION: `/organizer/subscriptions`,
+  GET_ORGANIZER_OWN_SUBSCRIPTION: `/organizer/subscriptions/user`,
+  // UPDATE_ORGANIZER_SUBSCRIPTION_BY_ID: (id: string) => `/organizer/subscriptions/${id}`,
+
   // ── ADMIN ROUTES ─────────────────────────────────
 
   ADMIN_ORGANIZATION: `/admin/organizations`,
@@ -72,6 +76,9 @@ export const API_ROUTES = {
 
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
+
+  ADMIN_GIVEAWAYS: `/admin/giveaways`,
+  ADMIN_GIVEAWAYS_BY_ID: (id: string) => `/admin/giveaways/${id}`,
 
   ADMIN_USERS_SUBSCRIPTION: `/admin/subscriptions/users`,
   ADMIN_DELETE_USERS_SUBSCRIPTION_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
@@ -122,6 +129,8 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_REWARDS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/reward' : '/admin/loyalty/rewards'),
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/reward/${id}` : `/admin/loyalty/rewards/${id}`),
 
+  ADMIN_GLOBAL_REFERRALS_SETTING: `/admin/global-loyalty/referrals`,
+  ADMIN_GLOBAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/global-loyalty/referrals/${id}`,
   ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referrals/user'),
   ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
 

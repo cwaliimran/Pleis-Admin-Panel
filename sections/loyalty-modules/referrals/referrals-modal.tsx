@@ -1,53 +1,112 @@
 'use client';
 
+import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useAddGlobalReferralSettingMutation, useUpdateGlobalReferralSettingMutation } from '@/store/Reducer/referrals-api';
+import { fDate, formatStr } from '@/utils/format-time';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
-type ReferralFormValues = {
-  refLimit: number;
+export type ReferralFormValues = {
   userPoints: number;
-  refPoints: number;
+  referrerPoints: number;
+  minimumPurchases: number;
+  purchaseThresholdAmount: number;
+  referralLimit: number;
+  expiryDate: string;
 };
-
-const defaultValues: ReferralFormValues = {
-  refLimit: 10,
-  userPoints: 132,
-  refPoints: 332,
-};
-
-const schema = Yup.object({
-  refLimit: Yup.number().min(0, 'Ref limit cannot be negative').required(),
-  userPoints: Yup.number().min(0, 'User points cannot be negative').required(),
-  refPoints: Yup.number().min(0, 'Referrer points cannot be negative').required(),
-});
 
 type ReferralModalProps = {
   open: boolean;
   onClose: () => void;
-  isEdit?: boolean;
-  selectedData?: ReferralFormValues;
   onResetCount?: () => void;
   referralSettingData?: any;
 };
 
-const ReferralModal = ({ open, onClose, isEdit = false, selectedData, onResetCount, referralSettingData }: ReferralModalProps) => {
+const defaultValues: ReferralFormValues = {
+  userPoints: 0,
+  referrerPoints: 0,
+  minimumPurchases: 0,
+  purchaseThresholdAmount: 0,
+  referralLimit: 0,
+  expiryDate: '',
+};
+
+const schema = Yup.object({
+  userPoints: Yup.number().min(0).required(),
+  referrerPoints: Yup.number().min(0).required(),
+  minimumPurchases: Yup.number().min(0).required(),
+  purchaseThresholdAmount: Yup.number().min(0).required(),
+  referralLimit: Yup.number().min(0).required(),
+  expiryDate: Yup.string().required(),
+});
+
+const ReferralModal = ({ open, onClose, onResetCount, referralSettingData }: ReferralModalProps) => {
   const methods = useForm<ReferralFormValues>({
     resolver: yupResolver(schema),
-    defaultValues: selectedData || defaultValues,
+    defaultValues,
   });
 
-  const { reset } = methods;
+  const { reset, handleSubmit } = methods;
 
-  console.log("referralSettingData", referralSettingData);
+  const [addSetting, { isLoading: isAdding }] = useAddGlobalReferralSettingMutation();
+  const [updateSetting, { isLoading: isUpdating }] = useUpdateGlobalReferralSettingMutation();
 
-  const handleSubmit = (data: ReferralFormValues) => {
-    console.log('Referral data:', data);
-    reset(defaultValues);
-    onClose();
+  const isEditMode = Boolean(referralSettingData?._id);
+
+  const mappedValues = useMemo<ReferralFormValues>(() => {
+    if (!referralSettingData) return defaultValues;
+
+    return {
+      userPoints: referralSettingData.userPoints ?? 0,
+      referrerPoints: referralSettingData.referrerPoints ?? 0,
+      minimumPurchases: referralSettingData.minimumPurchases ?? 0,
+      purchaseThresholdAmount: referralSettingData.purchaseThresholdAmount ?? 0,
+      referralLimit: referralSettingData.referralLimit ?? 0,
+      expiryDate: referralSettingData.expiryDate ? referralSettingData.expiryDate.split('T')[0] : '',
+    };
+  }, [referralSettingData]);
+
+  useEffect(() => {
+    if (open) {
+      reset(mappedValues);
+    }
+  }, [open, mappedValues, reset]);
+
+  const onSubmit = async (values: ReferralFormValues) => {
+    const basePayload = {
+      userPoints: values.userPoints,
+      referrerPoints: values.referrerPoints,
+      minimumPurchases: values.minimumPurchases,
+      purchaseThresholdAmount: values.purchaseThresholdAmount,
+      referralLimit: values.referralLimit,
+      expiryDate: fDate(values.expiryDate, formatStr.paramCase.db),
+    };
+
+    const finalPayload = isEditMode
+      ? {
+          ...basePayload,
+          id: referralSettingData?._id,
+          status: referralSettingData?.status ?? 'active',
+        }
+      : basePayload;
+
+    try {
+      if (isEditMode) {
+        await updateSetting(finalPayload).unwrap();
+      } else {
+        await addSetting(finalPayload).unwrap();
+      }
+
+      reset();
+      onClose();
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleClose = () => {
@@ -58,31 +117,22 @@ const ReferralModal = ({ open, onClose, isEdit = false, selectedData, onResetCou
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
-        <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[650px]!">
+        <DialogContent
+          aria-describedby={undefined}
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[650px]!"
+        >
           <DialogHeader>
-            <DialogTitle>{isEdit ? 'Edit Referral Settings' : 'Referral Settings'}</DialogTitle>
+            <DialogTitle>Referral Settings</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
+            <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* Referral Limit */}
-                <RHFTextField name="refLimit" label="Referral Limit" type="number" placeholder="Enter referral limit" />
-
-                {/* User Points */}
+                <RHFTextField name="referralLimit" label="Referral Limit" type="number" placeholder="Enter referral limit" />
                 <RHFTextField name="userPoints" label="User Points" type="number" placeholder="Enter user points" />
-
-                {/* Referrer Points */}
-                <RHFTextField name="refPoints" label="Referrer Points" type="number" placeholder="Enter referrer points" />
-
-                {/* Minimum Purchase */}
-                <RHFTextField name="minPurchase" label="Minimum Purchase" type="number" placeholder="Enter minimum purchase" />
-
-                {/* Purchase Threshold */}
-                <RHFTextField name="purchaseThreshold" label="Purchase Threshold" type="number" placeholder="Enter purchase threshold" />
-
-                {/* Expiry Date */}
-                {/* <RHFTextField name="expiryDate" label="Expiry Date" type="date" placeholder="Enter expiry date" /> */}
+                <RHFTextField name="referrerPoints" label="Referrer Points" type="number" placeholder="Enter referrer points" />
+                <RHFTextField name="minimumPurchases" label="Minimum Purchase" type="number" placeholder="Enter minimum purchase" />
+                <RHFTextField name="purchaseThresholdAmount" label="Purchase Threshold" type="number" placeholder="Enter purchase threshold" />
                 <RHFDate name="expiryDate" label="Expiry Date" className="h-10 w-full cursor-pointer border-gray-200 focus:border-blue-600" />
               </div>
 
@@ -91,9 +141,15 @@ const ReferralModal = ({ open, onClose, isEdit = false, selectedData, onResetCou
                   Reset Count
                 </Button>
 
-                <Button type="submit" className="bg-primary hover:bg-primary cursor-pointer px-7 text-white">
-                  Save
-                </Button>
+                {isAdding || isUpdating ? (
+                  <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
+                    <ButtonLoading title={isEditMode ? 'Updating' : 'Creating'} />
+                  </Button>
+                ) : (
+                  <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white">
+                    {isEditMode ? 'Update' : 'Create'}
+                  </Button>
+                )}
               </div>
             </FormProvider>
           </div>

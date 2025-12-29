@@ -24,6 +24,7 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'title',
   },
+  { id: 'organizationName', label: 'Organization Name', align: 'left' },
   { id: 'description', label: 'Description', align: 'left' },
   { id: 'linkedEvent', label: 'Linked Event', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },

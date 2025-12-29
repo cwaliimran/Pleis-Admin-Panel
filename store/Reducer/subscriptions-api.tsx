@@ -5,7 +5,7 @@ import { customFetchBaseQuery } from '../customFetchBaseQuery';
 export const subscriptionsApi = createApi({
   reducerPath: 'subscriptionsApi',
   baseQuery: customFetchBaseQuery(),
-  tagTypes: ['subscription', 'pricing'],
+  tagTypes: ['subscription', 'pricing', 'organizerSubscriptions'],
 
   endpoints: (builder) => ({
     getSubscriptions: builder.query({
@@ -91,6 +91,45 @@ export const subscriptionsApi = createApi({
       }),
       invalidatesTags: ['pricing'],
     }),
+
+    // GET ORGANIZER SUBSCRIPTIONS -----------------------------
+
+    getOrganizerSubscriptions: builder.query({
+      query: ({}) => {
+        return {
+          url: API_ROUTES.GET_ORGANIZER_SUBSCRIPTION,
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['organizerSubscriptions'],
+    }),
+
+    getOrganizerOwnSubscriptions: builder.query({
+      query: ({}) => {
+        return {
+          url: API_ROUTES.GET_ORGANIZER_OWN_SUBSCRIPTION,
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['organizerSubscriptions'],
+    }),
+
+    updateOrganizerSubscription: builder.mutation({
+      query: (updatedSubscription) => ({
+        url: API_ROUTES.GET_ORGANIZER_SUBSCRIPTION,
+        method: 'PUT',
+        body: updatedSubscription,
+      }),
+      invalidatesTags: ['organizerSubscriptions'],
+    }),
   }),
 });
 
@@ -102,4 +141,8 @@ export const {
   useGetSubscriptionsPricingQuery,
   useAddSubscriptionPricingMutation,
   useUpdateSubscriptionPricingMutation,
+
+  useGetOrganizerSubscriptionsQuery,
+  useGetOrganizerOwnSubscriptionsQuery,
+  useUpdateOrganizerSubscriptionMutation,
 } = subscriptionsApi;

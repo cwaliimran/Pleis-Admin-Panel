@@ -1,13 +1,12 @@
 'use client';
 
-import { useBoolean } from '@/hooks/useBoolean';
-import { formatDate } from '@/utils/format-time';
 import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import { useGetGlobalReferralSettingQuery, useGetReferralsQuery } from '@/store/Reducer/referrals-api';
+import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import RefferralModal from './referrals-modal';
 import ReferralsTable from './referrals-table';
-import { useGetReferralSettingQuery, useGetReferralsQuery } from '@/store/Reducer/referrals-api';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 interface ReferralsViewProps {
   userType: 'super-admin' | 'organizer';
@@ -24,8 +23,6 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const { companyId } = useCompanySelectionState();
-
   const { data: apiData, isLoading } = useGetReferralsQuery({
     page: page - 1,
     search,
@@ -35,13 +32,8 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
     isGlobal: global,
   });
 
-  const { data: referralSettingData, isLoading: isSettingLoading } = useGetReferralSettingQuery({
-    companyOrganizer: companyId || undefined,
-    isGlobal: global,
-  });
-
-  console.log('referralSettingData', referralSettingData?.data);
-  console.log('isSettingLoading', isSettingLoading);
+  const { data: referralSettingData, isLoading: isSettingLoading } = useGetGlobalReferralSettingQuery({});
+  const setting = referralSettingData?.data?.[0] || {};
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -72,12 +64,17 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+        {isSettingLoading ? (
+          <Button className="bg-primary cursor-not-allowed rounded-4xl py-2 text-white" disabled>
+            <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent align-middle" />
+            Loading...
+          </Button>
+        ) : (
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleSettingModal}>
             Referral Setting
           </Button>
-        </div>
+        )}
       </div>
 
       <ReferralsTable
@@ -116,7 +113,7 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
         }}
       />
 
-      <RefferralModal open={openModal.value} onClose={openModal.onFalse} referralSettingData={referralSettingData?.data} />
+      <RefferralModal open={openModal.value} onClose={openModal.onFalse} referralSettingData={setting} />
     </div>
   );
 };

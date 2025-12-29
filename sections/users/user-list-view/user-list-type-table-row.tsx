@@ -159,7 +159,7 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
             )}
 
             <button
-              title="Delete Promo Code"
+              title="Delete User"
               type="button"
               onClick={(e) => {
                 e.stopPropagation();

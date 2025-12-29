@@ -3,7 +3,6 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeletePromoCodeMutation, useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -12,6 +11,7 @@ import { useCallback, useEffect, useState } from 'react';
 import UpdatesModal from './giveaways-modal';
 import GiveawaysTable from './giveaways-table';
 import WinnersModal from './winner-modal';
+import { useDeleteGiveawayMutation, useGetGiveawaysQuery } from '@/store/Reducer/giveaways-api';
 
 const GiveawaysView = () => {
   const openModal = useBoolean();
@@ -29,9 +29,9 @@ const GiveawaysView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
+  const [deletePromoCode, { isLoading: deleteLoading }] = useDeleteGiveawayMutation();
 
-  const { data: apiData, isLoading } = useGetPromoCodesQuery({
+  const { data: apiData, isLoading } = useGetGiveawaysQuery({
     page: page - 1,
     search,
     limit,

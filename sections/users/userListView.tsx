@@ -1,8 +1,14 @@
 'use client';
 
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useAddUserMutation, useAddUserSuperAdminAndGuestMutation, useGetUserListQuery } from '@/store/Reducer/user-list';
+import {
+  useAddUserMutation,
+  useAddUserSuperAdminAndGuestMutation,
+  useGetUserListQuery,
+  useUpdateUserForUserListMutation,
+} from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -13,8 +19,6 @@ import { useCallback, useEffect, useState } from 'react';
 import UserListTypeTable from './user-list-view/user-list-type-table';
 import EditUserModal from './user-modal/custom-edit-user-modal';
 import CustomUserModal from './user-modal/custom-user-modal';
-import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
-import { useDeletePromoCodeMutation } from '@/store/Reducer/promo-codes-api';
 
 interface UserListViewProps {
   usertype: string;
@@ -39,9 +43,8 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
 
   const [addUser, { isLoading: addUserLoading }] = useAddUserMutation();
 
-  const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
-
   const [addUserSuperAdminAndGuest, { isLoading: addUserSuperAdminAndGuestLoading }] = useAddUserSuperAdminAndGuestMutation();
+  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
 
   const { data: apiData, isLoading } = useGetUserListQuery({
     page: page - 1,
@@ -149,7 +152,11 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deletePromoCode(selectedId).unwrap();
+      const payload = {
+        status: 'deleted',
+      };
+
+      const response = await updateUser({ id: selectedId, ...payload }).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -274,7 +281,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteLoading}
+        isLoading={updateUserLoading}
       />
     </div>
   );

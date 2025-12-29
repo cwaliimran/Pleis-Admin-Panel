@@ -1,16 +1,51 @@
 import { Sparkles } from 'lucide-react';
 import React from 'react';
-import { BillingCycle, ModuleId, PriceCalculation, PricingConfig } from './types';
+import { BillingCycle, ModuleId, PriceCalculation } from './types';
+
+interface ButtonLoadingProps {
+  title: string;
+}
+
+const ButtonLoading: React.FC<ButtonLoadingProps> = ({ title }) => (
+  <span className="flex items-center gap-2">
+    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+    {title}
+  </span>
+);
+
+interface DynamicPricing {
+  modules: {
+    ordering: { price: number; commission: number };
+    loyalty: { price: number; commission: number };
+    reservations: { price: number; commission: number };
+  };
+  analytics: number;
+  bundleDiscounts: {
+    2: number;
+    3: number;
+  };
+  multiOrgPricing: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+    6: number;
+  };
+  yearlyDiscount: number;
+  ticketingCommission: number;
+}
 
 interface PriceSummaryProps {
   selectedModules: ModuleId[];
   includeAnalytics: boolean;
   organizationCount: number;
   billingCycle: BillingCycle;
-  pricing: PricingConfig;
+  pricing: DynamicPricing;
   priceInfo: PriceCalculation;
   onBillingCycleChange: (cycle: BillingCycle) => void;
   onSubscribe: () => void;
+  isLoading?: boolean;
 }
 
 export const PriceSummary: React.FC<PriceSummaryProps> = ({
@@ -22,6 +57,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   priceInfo,
   onBillingCycleChange,
   onSubscribe,
+  isLoading = false,
 }) => {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#222121]">
@@ -30,6 +66,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
       {/* Billing Toggle */}
       <div className="mb-6 flex items-center justify-center gap-4">
         <button
+          type="button"
           onClick={() => onBillingCycleChange('monthly')}
           className={`rounded-lg px-6 py-3 font-semibold transition-all ${
             billingCycle === 'monthly'
@@ -40,6 +77,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           Monthly
         </button>
         <button
+          type="button"
           onClick={() => onBillingCycleChange('yearly')}
           className={`relative rounded-lg px-6 py-3 font-semibold transition-all ${
             billingCycle === 'yearly'
@@ -57,13 +95,13 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
       {/* Price Breakdown */}
       {selectedModules.length > 0 && (
         <div className="mb-6 space-y-3">
+          {/* Step 1: Base modules price */}
           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
             <span>Selected modules ({selectedModules.length})</span>
-            <span className="text-gray-900 dark:text-gray-100">
-              €{selectedModules.reduce((sum, id) => sum + pricing.modules[id].price, 0).toFixed(2)}
-            </span>
+            <span className="text-gray-900 dark:text-gray-100">€{priceInfo.baseModulesPrice}</span>
           </div>
 
+          {/* Step 2: Bundle discount */}
           {priceInfo.bundleDiscountPercent > 0 && (
             <div className="flex justify-between text-sm">
               <span className="font-semibold text-green-600 dark:text-green-500">🎉 Bundle discount ({priceInfo.bundleDiscountPercent}% off)</span>
@@ -71,33 +109,84 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
             </div>
           )}
 
+          {/* Price after bundle discount */}
+          {priceInfo.bundleDiscountPercent > 0 && (
+            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>After bundle discount</span>
+              <span className="text-gray-900 dark:text-gray-100">€{priceInfo.priceAfterBundleDiscount}</span>
+            </div>
+          )}
+
+          {/* Step 3: Analytics (no discount) */}
+          {includeAnalytics && (
+            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>+ Advanced Analytics (no bundle discount)</span>
+              <span className="text-gray-900 dark:text-gray-100">€{priceInfo.analyticsPrice}</span>
+            </div>
+          )}
+
+          {/* Subtotal before org multiply */}
+          {(priceInfo.bundleDiscountPercent > 0 || includeAnalytics) && (
+            <div className="flex justify-between border-t border-gray-200 pt-2 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">
+              <span>Subtotal per organization</span>
+              <span>€{priceInfo.priceBeforeOrgMultiply}</span>
+            </div>
+          )}
+
+          {/* Step 4: Multiply by organizations */}
           {organizationCount > 1 && (
             <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
               <span>× {organizationCount} organizations</span>
-              <span className="text-gray-900 dark:text-gray-100">Applied</span>
+              <span className="text-gray-900 dark:text-gray-100">€{priceInfo.priceAfterOrgMultiply}</span>
             </div>
           )}
 
-          {includeAnalytics && (
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-              <span>Advanced Analytics</span>
-              <span className="text-gray-900 dark:text-gray-100">€{pricing.analytics}</span>
+          {/* Step 5: Multi-org discount */}
+          {organizationCount > 1 && (
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold text-green-600 dark:text-green-500">
+                Volume discount ({100 - priceInfo.multiOrgDiscountPercent}% off - pay {priceInfo.multiOrgDiscountPercent}%)
+              </span>
+              <span className="font-semibold text-green-600 dark:text-green-500">
+                -€{(parseFloat(priceInfo.priceAfterOrgMultiply) - parseFloat(priceInfo.monthlyTotal)).toFixed(2)}
+              </span>
             </div>
           )}
 
+          {/* Monthly total */}
           <div className="border-t border-gray-200 pt-3 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-gray-900 dark:text-gray-100">{billingCycle === 'monthly' ? 'Monthly Total' : 'Yearly Total'}</span>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">Monthly Total</span>
               <div className="text-right">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">
-                  €{billingCycle === 'monthly' ? priceInfo.monthlyTotal : priceInfo.yearlyTotal}
-                </div>
-                {billingCycle === 'yearly' && (
-                  <div className="text-xs text-gray-500 dark:text-gray-500">(€{(parseFloat(priceInfo.yearlyTotal) / 12).toFixed(2)}/month)</div>
-                )}
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">€{priceInfo.monthlyTotal}</div>
               </div>
             </div>
           </div>
+
+          {/* Step 6: Yearly calculation */}
+          {billingCycle === 'yearly' && (
+            <>
+              <div className="flex justify-between border-t border-gray-200 pt-2 text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
+                <span>Monthly × 12 months</span>
+                <span className="text-gray-900 dark:text-gray-100">€{(parseFloat(priceInfo.monthlyTotal) * 12).toFixed(2)}</span>
+              </div>
+
+              <div className="flex justify-between text-sm">
+                <span className="font-semibold text-green-600 dark:text-green-500">Yearly discount ({priceInfo.yearlyDiscountPercent}% off)</span>
+                <span className="font-semibold text-green-600 dark:text-green-500">-€{priceInfo.savingsAmount}</span>
+              </div>
+
+              <div className="border-t border-gray-200 pt-3 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">Yearly Total</span>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">€{priceInfo.yearlyTotal}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-500">(€{(parseFloat(priceInfo.yearlyTotal) / 12).toFixed(2)}/month)</div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {billingCycle === 'yearly' && parseFloat(priceInfo.savingsAmount) > 0 && (
             <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800/50 dark:bg-green-950/30">
@@ -111,17 +200,30 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
       )}
 
       {/* CTA Button */}
-      <button
-        disabled={selectedModules.length === 0}
-        onClick={onSubscribe}
-        className={`w-full cursor-pointer rounded-lg py-4 text-lg font-bold transition-all ${
-          selectedModules.length === 0
-            ? 'cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600'
-            : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl'
-        }`}
-      >
-        {selectedModules.length === 0 ? 'Select modules to continue' : 'Subscribe Now'}
-      </button>
+      {isLoading ? (
+        <button
+          title="button"
+          type="button"
+          disabled
+          className="w-full cursor-not-allowed rounded-lg bg-blue-600 py-4 text-lg font-bold text-white hover:bg-blue-700"
+        >
+          <ButtonLoading title="Processing" />
+        </button>
+      ) : (
+        <button
+          title="button"
+          type="button"
+          disabled={selectedModules.length === 0}
+          onClick={onSubscribe}
+          className={`w-full rounded-lg py-4 text-lg font-bold transition-all ${
+            selectedModules.length === 0
+              ? 'cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600'
+              : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl'
+          }`}
+        >
+          {selectedModules.length === 0 ? 'Select modules to continue' : 'Subscribe Now'}
+        </button>
+      )}
 
       {selectedModules.length > 0 && (
         <p className="mt-3 text-center text-xs text-gray-500 dark:text-gray-500">

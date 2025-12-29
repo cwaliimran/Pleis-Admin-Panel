@@ -31,23 +31,39 @@ export const referralsApi = createApi({
       providesTags: (result, error, arg) => (arg.isGlobal ? ['globalReferral'] : ['referrals']),
     }),
 
-    getReferralSetting: builder.query({
-      query: ({ isGlobal = false, companyOrganizer }) => {
-        const params: any = {};
-        if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;
+    getGlobalReferralSetting: builder.query({
+      query: ({}) => {
         return {
-          url: API_ROUTES.ADMIN_REFERRALS_SETTING(isGlobal),
+          url: API_ROUTES.ADMIN_GLOBAL_REFERRALS_SETTING,
           method: 'GET',
-          params,
         };
       },
       transformResponse: (res) => ({
         data: res.data,
         meta: res.meta,
       }),
-      providesTags: (result, error, arg) => (arg.isGlobal ? ['globalReferral'] : ['referrals']),
+      providesTags: ['globalReferral'],
+    }),
+
+    addGlobalReferralSetting: builder.mutation({
+      query: (data) => ({
+        url: API_ROUTES.ADMIN_GLOBAL_REFERRALS_SETTING,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['globalReferral'],
+    }),
+
+    updateGlobalReferralSetting: builder.mutation({
+      query: ({ id, ...updatedData }) => ({
+        url: API_ROUTES.ADMIN_GLOBAL_REFERRALS_SETTING_BY_ID(id),
+        method: 'PUT',
+        body: updatedData,
+      }),
+      invalidatesTags: ['globalReferral'],
     }),
   }),
 });
 
-export const { useGetReferralsQuery, useGetReferralSettingQuery } = referralsApi;
+export const { useGetReferralsQuery, useGetGlobalReferralSettingQuery, useAddGlobalReferralSettingMutation, useUpdateGlobalReferralSettingMutation } =
+  referralsApi;
