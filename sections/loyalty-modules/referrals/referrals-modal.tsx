@@ -4,8 +4,14 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { useAddGlobalReferralSettingMutation, useUpdateGlobalReferralSettingMutation } from '@/store/Reducer/referrals-api';
+import {
+  useAddGlobalReferralSettingMutation,
+  useResetGlobalReferralSettingMutation,
+  useUpdateGlobalReferralSettingMutation,
+} from '@/store/Reducer/referrals-api';
+import { getErrorMessage } from '@/utils/api';
 import { fDate, formatStr } from '@/utils/format-time';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
@@ -23,7 +29,6 @@ export type ReferralFormValues = {
 type ReferralModalProps = {
   open: boolean;
   onClose: () => void;
-  onResetCount?: () => void;
   referralSettingData?: any;
 };
 
@@ -45,7 +50,7 @@ const schema = Yup.object({
   expiryDate: Yup.string().required(),
 });
 
-const ReferralModal = ({ open, onClose, onResetCount, referralSettingData }: ReferralModalProps) => {
+const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProps) => {
   const methods = useForm<ReferralFormValues>({
     resolver: yupResolver(schema),
     defaultValues,
@@ -55,6 +60,7 @@ const ReferralModal = ({ open, onClose, onResetCount, referralSettingData }: Ref
 
   const [addSetting, { isLoading: isAdding }] = useAddGlobalReferralSettingMutation();
   const [updateSetting, { isLoading: isUpdating }] = useUpdateGlobalReferralSettingMutation();
+  const [resetSetting, { isLoading: isResetting }] = useResetGlobalReferralSettingMutation();
 
   const isEditMode = Boolean(referralSettingData?._id);
 
@@ -109,6 +115,22 @@ const ReferralModal = ({ open, onClose, onResetCount, referralSettingData }: Ref
     }
   };
 
+  const onResetCount = async () => {
+    try {
+      const response = await resetSetting({}).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Referral counts have been reset successfully.');
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
   const handleClose = () => {
     reset(defaultValues);
     onClose();
@@ -137,9 +159,15 @@ const ReferralModal = ({ open, onClose, onResetCount, referralSettingData }: Ref
               </div>
 
               <div className="mt-6 flex w-full items-center justify-between gap-2">
-                <Button type="button" className="cursor-pointer bg-[#82181A] hover:bg-[#82181A]/80" onClick={onResetCount}>
-                  Reset Count
-                </Button>
+                {isResetting ? (
+                  <Button type="button" disabled className="cursor-not-allowed bg-[#82181A] px-4 py-2 text-white hover:bg-[#82181A]/80">
+                    <ButtonLoading title="Resetting" />
+                  </Button>
+                ) : (
+                  <Button type="button" className="cursor-pointer bg-[#82181A] hover:bg-[#82181A]/80" onClick={onResetCount}>
+                    Reset Count
+                  </Button>
+                )}
 
                 {isAdding || isUpdating ? (
                   <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">

@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGetTermsAndConditionQuery } from '@/store/Reducer/settings';
+import { useGetOrganizerTermsQuery } from '@/store/Reducer/settings';
 import { useUpdateUserTermsMutation } from '@/store/Reducer/user-list';
 import { setUser } from '@/store/slice/userSlice';
 import { RootState } from '@/store/store';
@@ -34,7 +34,8 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ left, right, children }) =>
 
   // Only call API if termsAccepted is false and userType is not 'admin'
   const shouldCallTermsApi = userTerm === false && userType !== 'admin';
-  const { data: apiData, isLoading } = useGetTermsAndConditionQuery({}, { skip: !shouldCallTermsApi });
+
+  const { data: apiData, isLoading } = useGetOrganizerTermsQuery(undefined, { skip: !shouldCallTermsApi });
 
   useEffect(() => {
     if (userTerm === false && userType !== 'admin') {
@@ -100,7 +101,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ left, right, children }) =>
           <DialogContent
             aria-describedby={undefined}
             // className="dark:bg-secondary max-h-[80vh] max-w-2xl border-none p-0 [&>button]:hidden"
-            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col overflow-y-auto pb-3 md:!max-w-[700px] [&>button]:hidden"
+            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col overflow-y-auto pb-3 md:max-w-[700px]! [&>button]:hidden"
           >
             <DialogHeader className="p-2 pb-0 sm:p-3 sm:pb-0">
               <DialogTitle className="text-2xl font-bold">Terms and Conditions</DialogTitle>

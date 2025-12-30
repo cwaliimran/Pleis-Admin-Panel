@@ -54,6 +54,15 @@ export const referralsApi = createApi({
       invalidatesTags: ['globalReferral'],
     }),
 
+    resetGlobalReferralSetting: builder.mutation({
+      query: () => ({
+        url: API_ROUTES.ADMIN_GLOBAL_REFERRALS_SETTING_RESET,
+        method: 'GET',
+        // body: data,
+      }),
+      invalidatesTags: ['globalReferral'],
+    }),
+
     updateGlobalReferralSetting: builder.mutation({
       query: ({ id, ...updatedData }) => ({
         url: API_ROUTES.ADMIN_GLOBAL_REFERRALS_SETTING_BY_ID(id),
@@ -65,5 +74,10 @@ export const referralsApi = createApi({
   }),
 });
 
-export const { useGetReferralsQuery, useGetGlobalReferralSettingQuery, useAddGlobalReferralSettingMutation, useUpdateGlobalReferralSettingMutation } =
-  referralsApi;
+export const {
+  useGetReferralsQuery,
+  useGetGlobalReferralSettingQuery,
+  useAddGlobalReferralSettingMutation,
+  useResetGlobalReferralSettingMutation,
+  useUpdateGlobalReferralSettingMutation,
+} = referralsApi;

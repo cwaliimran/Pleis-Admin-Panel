@@ -16,6 +16,9 @@ export const API_ROUTES = {
 
   // ── SIMPLE / USER ROUTES ───────────────────────────────────
   TERMSANDCONDITION: `/settings/terms-conditions`,
+  TERMSANDCONDITION_CUSTOMER: `/settings/customer-terms-conditions`,
+  TERMSANDCONDITION_PRIVACY_POLICY: `/settings/privacy-policy`,
+  CREATE_SETTINGS: `/settings/create`,
   TERMSANDCONDITION_BY_ID: (id: string) => `/settings/update/${id}`,
 
   SUPPLIERS_GLOABAL: `/suppliers/global`,
@@ -64,6 +67,12 @@ export const API_ROUTES = {
   LOYALTY_CHALLENGE: `/loyalty/challenges`,
   LOYALTY_CHALLENGE_BY_ID: (id: string) => `/loyalty/challenges/${id}`,
 
+  ORGANIZER_GIVEAWAYS: `/organizer/giveaways`,
+  ORGANIZER_GIVEAWAYS_WINNERS: `/organizer/giveaways/winners`,
+  ORGANIZER_GIVEAWAYS_BY_ID: (id: string) => `/organizer/giveaways/${id}`,
+  ORGANIZER_GIVEAWAYS_EVENTS: `/organizer/giveaways/events`,
+  ORGANIZER_GIVEAWAYS_EVENTS_TICKETS: `/organizer/giveaways/tickets`,
+
   GET_ORGANIZER_SUBSCRIPTION: `/organizer/subscriptions`,
   GET_ORGANIZER_OWN_SUBSCRIPTION: `/organizer/subscriptions/user`,
   // UPDATE_ORGANIZER_SUBSCRIPTION_BY_ID: (id: string) => `/organizer/subscriptions/${id}`,
@@ -78,7 +87,9 @@ export const API_ROUTES = {
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
 
   ADMIN_GIVEAWAYS: `/admin/giveaways`,
+  ADMIN_GIVEAWAYS_WINNERS: `/admin/giveaways/winners`,
   ADMIN_GIVEAWAYS_BY_ID: (id: string) => `/admin/giveaways/${id}`,
+  ADMIN_GIVEAWAYS_EVENTS: `/admin/giveaways/events`,
 
   ADMIN_USERS_SUBSCRIPTION: `/admin/subscriptions/users`,
   ADMIN_DELETE_USERS_SUBSCRIPTION_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
@@ -131,6 +142,8 @@ export const API_ROUTES = {
 
   ADMIN_GLOBAL_REFERRALS_SETTING: `/admin/global-loyalty/referrals`,
   ADMIN_GLOBAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/global-loyalty/referrals/${id}`,
+  ADMIN_GLOBAL_REFERRALS_SETTING_RESET: `/admin/global-loyalty/referrals/reset`,
+
   ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referrals/user'),
   ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
 

@@ -3,17 +3,23 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useDeleteGiveawayMutation, useGetGiveawaysQuery } from '@/store/Reducer/giveaways-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import UpdatesModal from './giveaways-modal';
 import GiveawaysTable from './giveaways-table';
 import WinnersModal from './winner-modal';
-import { useDeleteGiveawayMutation, useGetGiveawaysQuery } from '@/store/Reducer/giveaways-api';
+import GiveawayModal from './giveaways-modal';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
-const GiveawaysView = () => {
+type GiveawaysViewProps = {
+  userType: 'organizer' | 'super-admin';
+};
+
+const GiveawaysView = ({ userType }: GiveawaysViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -26,17 +32,26 @@ const GiveawaysView = () => {
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
+  const { organizationId } = useCompanySelectionState();
+
+  const { organizerOrganizationIds } = useCompanySelection();
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deletePromoCode, { isLoading: deleteLoading }] = useDeleteGiveawayMutation();
+  const [deleteGiveaway, { isLoading: deleteLoading }] = useDeleteGiveawayMutation();
 
-  const { data: apiData, isLoading } = useGetGiveawaysQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetGiveawaysQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    organizationId: userType === 'organizer' ? organizerOrganizationIds : organizationId || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -68,31 +83,25 @@ const GiveawaysView = () => {
     editModal.onFalse();
     openModal.onTrue();
   };
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
-  };
 
   const handleOpenWinners = (id: string) => {
     setSelectedId(id);
     winnerModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
+  // ------------ EDIT FUNCTION ------------
+  const handleEdit = (id: string) => {
+    const selectedData = localData?.find((item: any) => item?._id === id);
 
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Update not found');
-  //   }
-  // };
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Giveaway not found');
+    }
+  };
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -110,7 +119,7 @@ const GiveawaysView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deletePromoCode(selectedId).unwrap();
+      const response = await deleteGiveaway(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -139,7 +148,7 @@ const GiveawaysView = () => {
       <GiveawaysTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleOpenWinners={handleOpenWinners}
         handleEdit={handleEdit}
@@ -173,7 +182,16 @@ const GiveawaysView = () => {
         }}
       />
 
-      {openModal.value && <UpdatesModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
+      {openModal.value && (
+        <GiveawayModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          userType={userType}
+          organizationId={organizationId}
+        />
+      )}
 
       {winnerModal.value && <WinnersModal open={winnerModal.value} onClose={winnerModal.onFalse} giveawayId={selectedId} />}
 

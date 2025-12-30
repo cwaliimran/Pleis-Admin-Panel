@@ -290,6 +290,11 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
+        title: 'Tags Type',
+        url: paths.superAdmin.tagType,
+        icon: CalendarDays,
+      },
+      {
         title: 'Venue types',
         url: paths.superAdmin.venueType.default,
         icon: ChartBar,

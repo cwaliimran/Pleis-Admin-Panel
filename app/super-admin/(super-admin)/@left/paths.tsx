@@ -152,6 +152,7 @@ export const paths = {
     thirdParty: '/super-admin/third-party',
     subscription: '/super-admin/subscription',
     addSupport: '/super-admin/add-support',
+    tagType: '/super-admin/tag-type',
     logout: '/super-admin/logout',
   },
 };

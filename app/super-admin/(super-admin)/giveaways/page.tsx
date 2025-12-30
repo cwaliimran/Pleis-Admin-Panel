@@ -18,7 +18,7 @@ const Page = () => {
       />
 
       <CompanyGuard>
-        <GiveawaysView />
+        <GiveawaysView userType="super-admin" />
       </CompanyGuard>
     </div>
   );
