@@ -2,12 +2,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import {
-  useAddTagMutation,
-  useDeleteTagMutation,
-  useGetTagsQuery,
-  useUpdateTagMutation,
-} from '@/store/Reducer/tags';
+import { useAddTagMutation, useDeleteTagMutation, useGetTagsQuery, useUpdateTagMutation } from '@/store/Reducer/tags';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -163,9 +158,7 @@ const TagsView = () => {
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
-          setVenueTypes((prev) =>
-            prev.map((item) => (item._id === selectedId ? response.data : item))
-          );
+          setVenueTypes((prev) => prev.map((item) => (item._id === selectedId ? response.data : item)));
         } else {
           // Add: add new item to local state
           setVenueTypes((prev) => [response.data, ...prev]);
@@ -177,12 +170,7 @@ const TagsView = () => {
       }
 
       if (response?.message) {
-        showSuccess(
-          response?.message ||
-            (editModal.value
-              ? 'Tags updated successfully'
-              : 'Tags created successfully')
-        );
+        showSuccess(response?.message || (editModal.value ? 'Tags updated successfully' : 'Tags created successfully'));
       }
 
       CloseModal();
@@ -234,10 +222,7 @@ const TagsView = () => {
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button
-            className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white"
-            onClick={handleCreateNew}
-          >
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus className="" />
             Create Tag
           </Button>
@@ -280,15 +265,17 @@ const TagsView = () => {
         }}
       />
 
-      <TagsTypeModal
-        open={openModal.value}
-        onClose={CloseModal}
-        editMode={editModal.value}
-        methods={methods}
-        onSubmit={onSubmit}
-        isLoading={addTagLoading || updateTagLoading}
-        selectedVenueType={selectedVenueType}
-      />
+      {openModal.value && (
+        <TagsTypeModal
+          open={openModal.value}
+          onClose={CloseModal}
+          editMode={editModal.value}
+          methods={methods}
+          onSubmit={onSubmit}
+          isLoading={addTagLoading || updateTagLoading}
+          selectedVenueType={selectedVenueType}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

@@ -7,10 +7,7 @@ import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
 import ChallengeModal from './reservation-transaction-modal';
-import {
-  useDeleteChallengeMutation,
-  useGetChallengesQuery,
-} from '@/store/Reducer/challenges-api';
+import { useDeleteChallengeMutation, useGetChallengesQuery } from '@/store/Reducer/challenges-api';
 import ReservationTransactionTable from './reservation-transaction-table';
 
 interface ChallengesViewProps {
@@ -32,8 +29,7 @@ const ReservationTransactionView = ({ global }: ChallengesViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteChallenge, { isLoading: deleteLoading }] =
-    useDeleteChallengeMutation();
+  const [deleteChallenge, { isLoading: deleteLoading }] = useDeleteChallengeMutation();
 
   const { data: apiData, isLoading } = useGetChallengesQuery({
     page: page - 1,
@@ -171,13 +167,7 @@ const ReservationTransactionView = ({ global }: ChallengesViewProps) => {
       />
 
       {openModal.value && (
-        <ChallengeModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          global={global}
-        />
+        <ChallengeModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} global={global} />
       )}
 
       <ConfirmDialog

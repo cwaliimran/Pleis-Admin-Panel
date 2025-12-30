@@ -242,7 +242,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Transactions',
-        url: paths.superAdmin.reservationTransactions,
+        url: paths.superAdmin.ticketingTransactions,
         icon: ChartBar,
       },
     ],

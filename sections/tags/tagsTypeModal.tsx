@@ -1,13 +1,7 @@
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import * as React from 'react';
 
 interface TagsTypeModalProps {
@@ -42,14 +36,9 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
-        <DialogContent
-          aria-describedby={undefined}
-          className="mx-4 w-full max-w-md dark:bg-[#171717]"
-        >
+        <DialogContent aria-describedby={undefined} className="mx-4 w-full max-w-md dark:bg-[#171717]">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">
-              {editMode ? 'Edit Tag' : 'Create Tag'}
-            </DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{editMode ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
           </DialogHeader>
 
           <FormProvider methods={methods} onSubmit={onSubmit}>
@@ -59,17 +48,13 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
                   name="title"
                   label="Tag Name"
                   placeholder="Enter Tag Name"
-                  className={`$${
-                    methods.formState.errors.title
-                      ? 'border-red-400 focus:border-red-400'
-                      : ''
-                  }`}
+                  className={`$${methods.formState.errors.title ? 'border-red-400 focus:border-red-400' : ''}`}
                   disabled={isLoading}
                 />
               </div>
 
               <div className="flex w-full flex-1 flex-col">
-                {/* <RHFSelectField
+                <RHFSelectField
                   name="tag"
                   placeholder="Select Tag Type"
                   className={`w-full flex-1 ${methods.formState.errors.tag ? 'border-red-400 focus:border-red-400' : ''}`}
@@ -81,18 +66,15 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
                     { label: 'Danger', value: 'danger' },
                   ]}
                   disabled={isLoading}
-                /> */}
-                <RHFTextField
+                />
+
+                {/* <RHFTextField
                   name="type"
                   label="Tag Type"
                   placeholder="Enter Tag Type"
-                  className={`$${
-                    methods.formState.errors.title
-                      ? 'border-red-400 focus:border-red-400'
-                      : ''
-                  }`}
+                  className={`$${methods.formState.errors.title ? 'border-red-400 focus:border-red-400' : ''}`}
                   disabled={isLoading}
-                />
+                /> */}
               </div>
 
               {editMode && (
@@ -110,22 +92,12 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
               )}
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                  disabled={isLoading}
-                  className="px-4 py-2"
-                >
+                <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading} className="px-4 py-2">
                   Cancel
                 </Button>
 
                 {isLoading ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white"
-                  >
+                  <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                     <ButtonLoading title={editMode ? 'Updating' : 'Creating'} />
                   </Button>
                 ) : (
