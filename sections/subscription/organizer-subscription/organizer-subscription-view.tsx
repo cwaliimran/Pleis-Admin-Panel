@@ -305,7 +305,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
   };
 
   const handleManageSubscription = (action: 'add' | 'remove' | 'cancel'): void => {
-    console.log('Manage subscription:', action);
     showSuccess(`Subscription ${action} initiated`);
   };
 

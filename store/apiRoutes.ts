@@ -85,6 +85,9 @@ export const API_ROUTES = {
 
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
+  
+  ADMIN_QR_CODE: `/admin/qr-code`,
+  ADMIN_QR_CODE_BY_ID: (id: string) => `/admin/qr-code/${id}`,
 
   ADMIN_GIVEAWAYS: `/admin/giveaways`,
   ADMIN_GIVEAWAYS_WINNERS: `/admin/giveaways/winners`,

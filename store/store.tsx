@@ -49,6 +49,7 @@ import { updatesApi } from './Reducer/updates-api';
 import { subscriptionsApi } from './Reducer/subscriptions-api';
 import { helpersApi } from './Reducer/helpers-api';
 import { giveawaysApi } from './Reducer/giveaways-api';
+import { qrcodesApi } from './Reducer/qrcodes-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -97,6 +98,7 @@ const appReducer = combineReducers({
   [subscriptionsApi.reducerPath]: subscriptionsApi.reducer,
   [helpersApi.reducerPath]: helpersApi.reducer,
   [giveawaysApi.reducerPath]: giveawaysApi.reducer,
+  [qrcodesApi.reducerPath]: qrcodesApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -152,6 +154,7 @@ export const store = configureStore({
       subscriptionsApi.middleware,
       helpersApi.middleware,
       giveawaysApi.middleware,
+      qrcodesApi.middleware,
       referralsApi.middleware
     ),
 });

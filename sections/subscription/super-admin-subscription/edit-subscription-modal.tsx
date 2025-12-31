@@ -106,6 +106,8 @@ const SubscriptionModal = ({ open, onClose, selectedData, pricingData }: Subscri
 
   const { reset, formState, watch, setValue } = methods;
   const isDirty = formState?.isDirty;
+  const errors = formState?.errors;
+  console.log("errors", errors);
 
   const watchedSubscriptionTypes = watch('subscriptionTypes');
   const watchedNumberOfOrganizations = watch('numberOfOrganizations');
