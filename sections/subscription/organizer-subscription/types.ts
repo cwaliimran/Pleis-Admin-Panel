@@ -32,6 +32,13 @@ export interface PriceCalculation {
   bundleDiscountAmount: string;
   yearlyDiscountPercent: number;
   savingsAmount: string;
+  // Detailed breakdown fields
+  baseModulesPrice: string;
+  priceAfterBundleDiscount: string;
+  analyticsPrice: string;
+  priceBeforeOrgMultiply: string;
+  priceAfterOrgMultiply: string;
+  multiOrgDiscountPercent: number;
 }
 
 export interface SubscriptionState {

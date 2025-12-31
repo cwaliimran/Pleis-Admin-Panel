@@ -6,53 +6,57 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
+import {
+  useAddGiveawayMutation,
+  useGetOrganizerGiveawayEventsAdminSideQuery,
+  useGetOrganizerGiveawayEventsQuery,
+  useGetOrganizerGiveawayEventTicketsQuery,
+  useUpdateGiveawayMutation,
+} from '@/store/Reducer/giveaways-api';
 import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
-import { fDate, formatStr } from '@/utils/format-time';
+import { fDateTime, formatStr } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TicketingModal from '../ticketing-view/ticketing-modal';
 
 const defaultValues = {
+  title: '',
   event: '',
-  winnerCount: '' as any,
-  ticketQuantity: '' as any,
-  ticketTypeOption: 'existing',
-  existingTicketType: '',
-  newTicketTypeName: '',
-  endDate: '',
-  status: 'active',
+  ticket: '',
+  numberOfWinners: '' as any,
+  ticketsPerWinner: '' as any,
+  ticketTypeOption: 'existing' as 'existing' | 'new',
+  endDateTime: '',
+  status: 'active' as 'active' | 'inactive',
 };
 
 const schema = Yup.object().shape({
+  title: Yup.string().required('Title is required').trim().min(3, 'Title must be at least 3 characters'),
   event: Yup.string().required('Event is required'),
-  winnerCount: Yup.number()
-    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
-    .required('Number of winners is required')
-    .min(1, 'Must be at least 1'),
-  ticketQuantity: Yup.number()
-    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
-    .required('Tickets per winner is required')
-    .min(1, 'Must be at least 1'),
-  ticketTypeOption: Yup.string()
-    .oneOf(['existing', 'new'] as const)
-    .required('Ticket type option is required'),
-  existingTicketType: Yup.string().when('ticketTypeOption', {
+  ticket: Yup.string().when('ticketTypeOption', {
     is: 'existing',
     then: (schema) => schema.required('Please select a ticket type'),
     otherwise: (schema) => schema.default(''),
   }),
-  newTicketTypeName: Yup.string().when('ticketTypeOption', {
-    is: 'new',
-    then: (schema) => schema.required('Ticket type name is required'),
-    otherwise: (schema) => schema.default(''),
-  }),
-  endDate: Yup.string().required('End date is required'),
+  numberOfWinners: Yup.number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .required('Number of winners is required')
+    .min(1, 'Must be at least 1')
+    .integer('Must be a whole number'),
+  ticketsPerWinner: Yup.number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .required('Tickets per winner is required')
+    .min(1, 'Must be at least 1')
+    .integer('Must be a whole number'),
+  ticketTypeOption: Yup.string()
+    .oneOf(['existing', 'new'] as const)
+    .required('Ticket type option is required'),
+  endDateTime: Yup.string().required('End date & time is required'),
   status: Yup.string()
     .oneOf(['active', 'inactive'] as const)
     .default('active'),
@@ -65,14 +69,16 @@ type GiveawayModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
-  organizationId?: string;
+  organizationId?: string | null;
+  userType: 'organizer' | 'super-admin';
 };
 
-const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizationId }: GiveawayModalProps) => {
+const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizationId, userType }: GiveawayModalProps) => {
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const isInitializingEdit = useRef(false);
 
-  // const [addGiveaway, { isLoading: addGiveawayLoading }] = useAddGiveawayMutation();
-  // const [updateGiveaway, { isLoading: updateGiveawayLoading }] = useUpdateGiveawayMutation();
+  const [addGiveaway, { isLoading: addGiveawayLoading }] = useAddGiveawayMutation();
+  const [updateGiveaway, { isLoading: updateGiveawayLoading }] = useUpdateGiveawayMutation();
 
   const methods = useForm<GiveawayFormValues>({
     resolver: yupResolver(schema),
@@ -89,16 +95,25 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
 
   const ticketTypeOption = watch('ticketTypeOption');
   const selectedEventId = watch('event');
-  const winnerCount = watch('winnerCount');
-  const ticketQuantity = watch('ticketQuantity');
+  const numberOfWinners = watch('numberOfWinners');
+  const ticketsPerWinner = watch('ticketsPerWinner');
 
-  // API QUERIES
-  const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery({});
+  // FETCH EVENTS BASED ON ORGANIZATION
+  const { data: eventData, isLoading: isLoadingEvents } = useGetOrganizerGiveawayEventsAdminSideQuery(
+    {
+      organizationId: organizationId,
+    },
+    {
+      skip: !organizationId,
+    }
+  );
 
+  // FETCH TICKETS BASED ON SELECTED EVENT
   const {
     data: ticketData,
     isLoading: isTicketsLoading,
     isFetching: isTicketsFetching,
+    refetch: refetchTickets,
   } = useGetTicketingByEventQuery(
     {
       eventId: selectedEventId || undefined,
@@ -108,101 +123,202 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
     }
   );
 
+  // FETCH ORGANIZER EVENTS IF USER IS ORGANIZER
+  const { data: organizerEventData, isLoading: isLoadingOrganizerEvents } = useGetOrganizerGiveawayEventsQuery(
+    {},
+    {
+      skip: userType !== 'organizer',
+    }
+  );
+
+  // FETCH TICKET TYPES BASED ON SELECTED EVENT
+  const { data: organizerTicketData, isLoading: isTicketTypesLoading } = useGetOrganizerGiveawayEventTicketsQuery(
+    {
+      eventId: selectedEventId || undefined,
+    },
+    {
+      skip: !selectedEventId || userType !== 'organizer',
+    }
+  );
+
   // OPTIONS MAPPING
-  const eventOptions =
-    eventData?.data?.map((event: any) => ({
-      label: event?.basicInfo?.title || event?.title,
-      value: event?._id,
-    })) || [];
+  const eventOptions = (eventData?.data || [])?.map((v: any) => ({
+    value: v?._id.toString(),
+    label: v?.title || 'No Title',
+  }));
+
+  const organizationEventOptions = (organizerEventData?.data || []).map((v: any) => ({
+    value: v?._id.toString(),
+    label: v?.title || 'No Title',
+  }));
 
   const ticketTypeOptions =
     ticketData?.data?.map((ticket: any) => ({
-      label: `${ticket?.name} (€${ticket?.price})`,
+      label: `${ticket?.title}`,
+      value: ticket?._id,
+    })) || [];
+
+  const organizerTicketTypeOptions =
+    organizerTicketData?.data?.map((ticket: any) => ({
+      label: `${ticket?.title}`,
       value: ticket?._id,
     })) || [];
 
   // EDIT MODE DATA POPULATION
   useEffect(() => {
     if (isEdit && selectedData && open) {
-      const mappedValues: any = {
-        event: selectedData?.event?._id || selectedData?.event || '',
-        winnerCount: selectedData?.winnerCount || ('' as any),
-        ticketQuantity: selectedData?.ticketQuantity || ('' as any),
-        ticketTypeOption: selectedData?.ticketTypeOption || 'existing',
-        existingTicketType: selectedData?.existingTicketType?._id || selectedData?.existingTicketType || '',
-        newTicketTypeName: selectedData?.newTicketTypeName || '',
-        endDate: selectedData?.endDate ? new Date(selectedData.endDate) : '',
+      isInitializingEdit.current = true;
+
+      const mappedValues: GiveawayFormValues = {
+        title: selectedData?.title || '',
+        event: selectedData?.event?._id || selectedData?.eventId || '',
+        ticket: selectedData?.ticket?._id || selectedData?.ticketId || '',
+        numberOfWinners: selectedData?.numberOfWinners || ('' as any),
+        ticketsPerWinner: selectedData?.ticketsPerWinner || ('' as any),
+        ticketTypeOption: 'existing',
+        endDateTime: selectedData?.endDateTime ? parseDateTimeFromAPI(selectedData.endDateTime) : '',
         status: selectedData?.status || 'active',
       };
 
       reset(mappedValues);
+
+      setTimeout(() => {
+        isInitializingEdit.current = false;
+      }, 100);
+    } else if (open && !isEdit) {
+      reset(defaultValues);
     }
   }, [isEdit, selectedData, open, reset]);
 
-  // CLEAR TICKET TYPE WHEN EVENT CHANGES
+  // CLEAR TICKET WHEN EVENT CHANGES
   useEffect(() => {
-    if (!isEdit) {
-      setValue('existingTicketType', '');
+    if (!isInitializingEdit.current && !isEdit) {
+      setValue('ticket', '');
     }
   }, [selectedEventId, setValue, isEdit]);
 
   // CLEAR FIELDS WHEN TICKET TYPE OPTION CHANGES
   useEffect(() => {
-    if (ticketTypeOption === 'existing') {
-      setValue('newTicketTypeName', '');
-    } else {
-      setValue('existingTicketType', '');
+    if (!isInitializingEdit.current) {
+      if (ticketTypeOption === 'new') {
+        setValue('ticket', '');
+      }
     }
   }, [ticketTypeOption, setValue]);
 
   // CALCULATE TOTAL TICKETS
   const totalTickets =
-    winnerCount && ticketQuantity && Number(winnerCount) > 0 && Number(ticketQuantity) > 0 ? Number(winnerCount) * Number(ticketQuantity) : 0;
+    numberOfWinners && ticketsPerWinner && Number(numberOfWinners) > 0 && Number(ticketsPerWinner) > 0
+      ? Number(numberOfWinners) * Number(ticketsPerWinner)
+      : 0;
+
+  // FORMAT DATETIME FOR API: "2025-12-30 05:00 PM"
+  const formatDateTimeForAPI = (date: string | Date): string => {
+    if (!date) return '';
+    return fDateTime(date, formatStr.paramCase.dateTimeRev) || '';
+  };
+
+  // PARSE DATETIME FROM API: "2025-12-30 05:00 PM" to "2025-12-30T17:00"
+  const parseDateTimeFromAPI = (dateTimeString: string): string => {
+    if (!dateTimeString) return '';
+    try {
+      const date = new Date(dateTimeString);
+      if (isNaN(date.getTime())) return '';
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Error parsing datetime:', error);
+      return '';
+    }
+  };
+
+  // VALIDATION FUNCTION
+  const validateGiveawayForm = (formData: GiveawayFormValues): { isValid: boolean; errorMessage?: string } => {
+    // Validation: Organization is required
+    if (userType !== 'organizer' && !organizationId) {
+      return { isValid: false, errorMessage: 'Organization is required' };
+    }
+
+    // Validation: Ticket is required when using existing ticket type
+    if (formData.ticketTypeOption === 'existing' && !formData.ticket) {
+      return { isValid: false, errorMessage: 'Please select a ticket type' };
+    }
+
+    // Validation: End date must be valid and in the future
+    const endDate = new Date(formData.endDateTime);
+    const now = new Date();
+
+    if (isNaN(endDate.getTime())) {
+      return { isValid: false, errorMessage: 'Please provide a valid end date and time' };
+    }
+
+    if (endDate <= now) {
+      return { isValid: false, errorMessage: 'End date must be in the future' };
+    }
+
+    // Validation: Number of winners must be positive
+    if (Number(formData.numberOfWinners) <= 0) {
+      return { isValid: false, errorMessage: 'Number of winners must be greater than 0' };
+    }
+
+    // Validation: Tickets per winner must be positive
+    if (Number(formData.ticketsPerWinner) <= 0) {
+      return { isValid: false, errorMessage: 'Tickets per winner must be greater than 0' };
+    }
+
+    // Validation: Title must not be empty after trim
+    if (!formData.title || formData.title.trim().length === 0) {
+      return { isValid: false, errorMessage: 'Title is required' };
+    }
+
+    return { isValid: true };
+  };
 
   // SUBMIT HANDLER
   const handleSubmit = async (formData: GiveawayFormValues) => {
     try {
-      const payload: any = {
-        event: formData.event,
-        winnerCount: Number(formData.winnerCount),
-        ticketQuantity: Number(formData.ticketQuantity),
-        ticketTypeOption: formData.ticketTypeOption,
-        endDate: fDate(formData.endDate, formatStr.paramCase.db),
-      };
+      const validation = validateGiveawayForm(formData);
 
-      if (formData.ticketTypeOption === 'existing') {
-        payload.existingTicketType = formData.existingTicketType;
-      } else {
-        payload.newTicketTypeName = formData.newTicketTypeName;
+      if (!validation.isValid) {
+        showError(validation.errorMessage || 'Validation failed');
+        return;
       }
+
+      const payload: any = {
+        title: formData.title.trim(),
+        event: formData.event,
+        ticket: formData.ticket,
+        numberOfWinners: Number(formData.numberOfWinners),
+        ticketsPerWinner: Number(formData.ticketsPerWinner),
+        endDateTime: formatDateTimeForAPI(formData.endDateTime),
+        // organization: organizationId,
+        organization: userType === 'organizer' ? undefined : organizationId,
+      };
 
       if (isEdit && selectedData) {
         payload.status = formData.status;
         payload.id = selectedData._id;
       }
 
-      // TODO: Uncomment when API is ready
-      // const response = isEdit && selectedData
-      //   ? await updateGiveaway(payload).unwrap()
-      //   : await addGiveaway(payload).unwrap();
+      const response = isEdit && selectedData ? await updateGiveaway(payload).unwrap() : await addGiveaway(payload).unwrap();
 
-      // if (!response) {
-      //   showError('No response from server. Please try again later.');
-      //   return;
-      // }
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
 
-      // if (response?.error) {
-      //   showError(getErrorMessage(response.error));
-      //   return;
-      // }
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
 
-      // showSuccess(
-      //   response?.message || (isEdit ? 'Giveaway updated successfully' : 'Giveaway created successfully')
-      // );
-
-      // Temporary success message (remove when API is ready)
-      showSuccess(isEdit ? 'Giveaway updated successfully' : 'Giveaway created successfully');
-      console.log('Payload:', payload);
+      showSuccess(response?.message || (isEdit ? 'Giveaway updated successfully' : 'Giveaway created successfully'));
 
       methods.reset(defaultValues);
       onClose();
@@ -214,6 +330,7 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
 
   const handleClose = () => {
     reset(defaultValues);
+    isInitializingEdit.current = false;
     onClose();
   };
 
@@ -223,6 +340,9 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
 
   const handleCloseTicketModal = () => {
     setShowTicketModal(false);
+    if (selectedEventId) {
+      refetchTickets();
+    }
   };
 
   const statusOptions = [
@@ -230,11 +350,7 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
     { label: 'Inactive', value: 'inactive' },
   ];
 
-  // const isLoading = addGiveawayLoading || updateGiveawayLoading;
-  const isLoading = false; // Temporary until API is ready
-
-  // TODO: Replace with actual organization ID
-  const dummyOrganization = 'dummy-organization-id-123';
+  const isLoading = addGiveawayLoading || updateGiveawayLoading;
 
   return (
     <>
@@ -256,35 +372,35 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                   <RHFTextField name="title" label="Title" placeholder="Enter giveaway title" />
 
                   {/* Event Selection */}
-                  {isLoadingEvents ? (
+                  {isLoadingEvents || isLoadingOrganizerEvents ? (
                     <div className="w-full space-y-2">
                       <Skeleton className="ml-1 h-3 w-20" />
-                      <Skeleton className="h-10" />
+                      <Skeleton className="h-8" />
                     </div>
                   ) : (
                     <RHFCustomDropdown
                       name="event"
                       label="Select Event"
                       placeholder="Choose an event..."
-                      options={eventOptions}
-                      isLoading={isLoadingEvents}
+                      options={userType === 'organizer' ? organizationEventOptions : eventOptions}
+                      isLoading={isLoadingEvents || isLoadingOrganizerEvents}
                       showNone={false}
                     />
                   )}
 
                   {/* Winners and Tickets */}
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFTextField name="winnerCount" label="Number of Winners" placeholder="Enter number of winners" type="number" min="1" />
+                    <RHFTextField name="numberOfWinners" label="Number of Winners" placeholder="Enter number of winners" type="number" min="1" />
 
-                    <RHFTextField name="ticketQuantity" label="Tickets per Winner" placeholder="Enter tickets per winner" type="number" min="1" />
+                    <RHFTextField name="ticketsPerWinner" label="Tickets per Winner" placeholder="Enter tickets per winner" type="number" min="1" />
                   </div>
 
                   {/* Total Tickets Preview */}
                   {totalTickets > 0 && (
                     <div className="bg-primary/10 border-primary/20 rounded-lg border p-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-primary text-sm">Total tickets to distribute:</span>
-                        <span className="text-primary font-bold">{totalTickets} tickets</span>
+                        <span className="text-sm font-semibold text-blue-900 dark:text-blue-400">Total tickets to distribute:</span>
+                        <span className="font-bold text-blue-700 dark:text-blue-400">{totalTickets} tickets</span>
                       </div>
                     </div>
                   )}
@@ -303,31 +419,31 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                           value="existing"
                           checked={ticketTypeOption === 'existing'}
                           onChange={() => {
-                            setValue('ticketTypeOption', 'existing' as any);
+                            setValue('ticketTypeOption', 'existing' as any, { shouldDirty: true });
                           }}
                           className="mt-1"
                         />
+
                         <div className="flex-1">
                           <div className="mb-1 font-medium">Use Existing Ticket Type</div>
                           <div className="mb-2 text-sm text-gray-600 dark:text-gray-400">Select from your event&apos;s existing ticket types</div>
-                          {/* {ticketTypeOption === 'existing' && selectedEventId && ( */}
-                            <div>
-                              {isTicketsLoading || isTicketsFetching ? (
-                                <div className="mt-2 space-y-2">
-                                  <Skeleton className="h-10 w-full" />
-                                </div>
-                              ) : (
-                                <RHFCustomDropdown
-                                  name="existingTicketType"
-                                  label=""
-                                  placeholder="Select ticket type..."
-                                  options={ticketTypeOptions}
-                                  isLoading={isTicketsLoading}
-                                  showNone={false}
-                                />
-                              )}
-                            </div>
-                          {/* )} */}
+                          <div>
+                            {isTicketsLoading || isTicketsFetching || isTicketTypesLoading ? (
+                              <div className="mt-2 space-y-2">
+                                <Skeleton className="h-8 w-full" />
+                              </div>
+                            ) : (
+                              <RHFCustomDropdown
+                                label=""
+                                name="ticket"
+                                placeholder={selectedEventId ? 'Select ticket type...' : 'Select event first'}
+                                disabled={!selectedEventId || ticketTypeOption !== 'existing'}
+                                options={userType === 'organizer' ? organizerTicketTypeOptions : ticketTypeOptions}
+                                isLoading={userType === 'organizer' ? isTicketTypesLoading : isTicketsLoading || isTicketsFetching}
+                                showNone={false}
+                              />
+                            )}
+                          </div>
                         </div>
                       </label>
 
@@ -339,7 +455,7 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                           value="new"
                           checked={ticketTypeOption === 'new'}
                           onChange={() => {
-                            setValue('ticketTypeOption', 'new' as any);
+                            setValue('ticketTypeOption', 'new' as any, { shouldDirty: true });
                           }}
                           className="mt-1"
                         />
@@ -348,7 +464,6 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                           <div className="mb-2 text-sm text-gray-600 dark:text-gray-400">Create a special ticket type just for this giveaway</div>
                           {ticketTypeOption === 'new' && (
                             <div className="mt-3 space-y-3">
-                              {/* <RHFTextField name="newTicketTypeName" label="" placeholder="e.g., Giveaway Entry (Free)" /> */}
                               <Button type="button" variant="outline" onClick={handleAddTicket} className="w-full">
                                 Add Ticket
                               </Button>
@@ -360,7 +475,7 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                   </div>
 
                   {/* End Date */}
-                  <RHFTextField name="endDate" label="End Date & Time" placeholder="Select end date" type="datetime-local" />
+                  <RHFTextField name="endDateTime" label="End Date & Time" placeholder="Select end date" type="datetime-local" />
                   <p className="text-muted-foreground -mt-2 text-xs">Winners will be automatically selected when the giveaway ends</p>
 
                   {/* Info Banner */}
@@ -414,7 +529,7 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
           onClose={handleCloseTicketModal}
           editMode={false}
           selectedData={null}
-          selectedOrganization={dummyOrganization}
+          selectedOrganization={organizationId}
         />
       )}
     </>

@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <GiveawaysView />
+      <GiveawaysView userType="organizer" />
     </div>
   );
 };

@@ -41,7 +41,7 @@ export const ticketingApi = createApi({
       transformResponse: (res) => ({
         data: res.data,
       }),
-      // providesTags: ['ticketing'],
+      providesTags: ['ticketing'],
     }),
 
     addTicketing: builder.mutation({

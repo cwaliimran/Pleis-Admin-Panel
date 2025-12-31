@@ -9,7 +9,7 @@ export const loyaltyTransactionsApi = createApi({
 
   endpoints: (builder) => ({
     getLoyaltyTransactions: builder.query({
-      query: ({ search, page, type, date, limit, companyOrganizer, isGlobal = false, walletType, startDate, endDate }) => {
+      query: ({ search, page, type, date, limit, companyOrganizer, isGlobal = false, walletType, domainType, startDate, endDate }) => {
         const params: any = {
           page: page + 1,
           limit,
@@ -21,6 +21,7 @@ export const loyaltyTransactionsApi = createApi({
 
         if (startDate) (params as any).startDate = startDate;
         if (endDate) (params as any).endDate = endDate;
+        if (domainType) (params as any).domainType = domainType;
 
         // if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;

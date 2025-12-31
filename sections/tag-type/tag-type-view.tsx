@@ -2,25 +2,24 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useAddTagMutation, useDeleteTagMutation, useGetTagsQuery, useUpdateTagMutation } from '@/store/Reducer/tags';
+import { useAddSupplierMutation, useDeleteSupplierMutation, useGetSuppliersQuery, useUpdateSupplierMutation } from '@/store/Reducer/suppliers';
 import { getErrorMessage } from '@/utils/api';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import TagsTypeModal from './tagsTypeModal';
-import TagsTypeTable from './tagsTypeTable';
-import { formatDate } from '@/utils/format-time';
+import TagTypeTable from './tag-type-table';
+import TagTypeModal from './tag-type-modal';
 
 const defaultValues = {
   title: '',
-  type: '',
-  status: 'active',
+  status: '',
 };
 
-const TagsView = () => {
+const TagTypeView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -35,15 +34,11 @@ const TagsView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const [addTag, { isLoading: addTagLoading }] = useAddTagMutation();
-  const [updateTag, { isLoading: updateTagLoading }] = useUpdateTagMutation();
-  const [deleteTag, { isLoading: deleteTagLoading }] = useDeleteTagMutation();
+  const [addSupplier, { isLoading: addSupplierLoading }] = useAddSupplierMutation();
+  const [updateSupplier, { isLoading: updateSupplierLoading }] = useUpdateSupplierMutation();
+  const [deleteSupplier, { isLoading: deleteSupplierLoading }] = useDeleteSupplierMutation();
 
-  const {
-    data: apiData,
-    isLoading,
-    refetch,
-  } = useGetTagsQuery({
+  const { data: apiData, isLoading } = useGetSuppliersQuery({
     page: page - 1,
     search,
     limit,
@@ -51,6 +46,7 @@ const TagsView = () => {
     date: date ? formatDate(date) : undefined,
   });
 
+  // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({
     currentPage: page,
@@ -61,24 +57,21 @@ const TagsView = () => {
 
   useEffect(() => {
     if (apiData?.data) {
-      // setVenueTypes(apiData.data);
-      // setMeta(
-      //   apiData.meta || {
-      //     currentPage: page,
-      //     totalPages: 1,
-      //     totalRecords: 0,
-      //     limit,
-      //   }
-      // );
-      setVenueTypes([...apiData.data]); // make a new array copy
-      setMeta({ ...apiData.meta });
+      setVenueTypes(apiData.data);
+      setMeta(
+        apiData.meta || {
+          currentPage: page,
+          totalPages: 1,
+          totalRecords: 0,
+          limit,
+        }
+      );
     }
   }, [apiData, page, limit]);
 
   const schema = Yup.object().shape({
-    title: Yup.string().required('Tag Name is required'),
-    type: Yup.string().required('Tag Type is required'),
-    status: Yup.string().oneOf(['active', 'inactive']),
+    title: Yup.string().required('Tag Type Name is required'),
+    status: Yup.string(),
   });
 
   const methods = useForm({
@@ -93,7 +86,6 @@ const TagsView = () => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        type: selectedVenueType.type || '',
         status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
@@ -102,11 +94,12 @@ const TagsView = () => {
   }, [editModal.value, selectedVenueType, reset]);
 
   const CloseModal = () => {
-    methods.reset(defaultValues);
-    setSelectedVenueType(null);
-    setSelectedId(null);
     openModal.onFalse();
     editModal.onFalse();
+
+    setSelectedVenueType(null);
+    setSelectedId(null);
+    methods.reset(defaultValues);
   };
 
   const handleEdit = (id: string) => {
@@ -117,7 +110,7 @@ const TagsView = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Tag not found');
+      showError('Tag Type not found');
     }
   };
 
@@ -126,21 +119,18 @@ const TagsView = () => {
     deleteModal.onTrue();
   };
 
-  // CREATE/UPDATE TAGS
+  // CREATE/UPDATE SUPPLIER
   const onSubmit = handleSubmit(async (formData) => {
     try {
       let response;
       if (editModal.value && selectedId) {
-        // Update existing tag, include status
-        response = await updateTag({
+        // Update existing supplier type, include status
+        response = await updateSupplier({
           id: selectedId,
           ...formData,
         }).unwrap();
       } else {
-        response = await addTag({
-          title: formData.title,
-          type: formData.type,
-        }).unwrap();
+        response = await addSupplier({ title: formData.title }).unwrap();
       }
 
       if (!response) {
@@ -154,37 +144,44 @@ const TagsView = () => {
         return;
       }
 
-      // Handle success and update local state
       if (response?.data) {
         if (editModal.value && selectedId) {
           // Edit: update the item in local state
           setVenueTypes((prev) => prev.map((item) => (item._id === selectedId ? response.data : item)));
         } else {
-          // Add: add new item to local state
-          setVenueTypes((prev) => [response.data, ...prev]);
-          setMeta((prev: any) => ({
-            ...prev,
-            totalRecords: prev.totalRecords + 1,
-          }));
+          // Add: keep only first 10 on the current page
+          setVenueTypes((prev) => {
+            const updated = [response.data, ...prev];
+            return updated.slice(0, limit);
+          });
+
+          setMeta((prev: any) => {
+            const newTotalRecords = prev.totalRecords + 1;
+            return {
+              ...prev,
+              totalRecords: newTotalRecords,
+              totalPages: Math.ceil(newTotalRecords / limit),
+            };
+          });
         }
       }
 
       if (response?.message) {
-        showSuccess(response?.message || (editModal.value ? 'Tags updated successfully' : 'Tags created successfully'));
+        showSuccess(response?.message || (editModal.value ? 'Tag Type updated successfully' : 'Tag Type created successfully'));
       }
 
       CloseModal();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save tag:', errorMessage);
+      console.log('Failed to save supplier:', errorMessage);
       showError(errorMessage);
     }
   });
 
-  // DELETE TAG
+  // DELETE SUPPLIER
   const onDelete = async () => {
     try {
-      const response = await deleteTag(selectedId).unwrap();
+      const response = await deleteSupplier(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -198,15 +195,14 @@ const TagsView = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || 'Tag deleted successfully');
+        showSuccess(response?.message || 'Tag Type deleted successfully');
       }
 
       setSelectedId(null);
       deleteModal.onFalse();
-      refetch();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete tag:', errorMessage);
+      console.log('Failed to delete tag type:', errorMessage);
       showError(errorMessage);
     }
   };
@@ -224,12 +220,12 @@ const TagsView = () => {
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus className="" />
-            Create Tag
+            Create Tag Type
           </Button>
         </div>
       </div>
 
-      <TagsTypeTable
+      <TagTypeTable
         data={venueTypes}
         meta={meta}
         loading={isLoading}
@@ -265,31 +261,29 @@ const TagsView = () => {
         }}
       />
 
-      {openModal.value && (
-        <TagsTypeModal
-          open={openModal.value}
-          onClose={CloseModal}
-          editMode={editModal.value}
-          methods={methods}
-          onSubmit={onSubmit}
-          isLoading={addTagLoading || updateTagLoading}
-          selectedVenueType={selectedVenueType}
-        />
-      )}
+      <TagTypeModal
+        open={openModal.value}
+        onClose={CloseModal}
+        editMode={editModal.value}
+        methods={methods}
+        onSubmit={onSubmit}
+        isLoading={addSupplierLoading || updateSupplierLoading}
+        selectedVenueType={selectedVenueType}
+      />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Tag"
-        content="Are you sure you want to delete this tag?"
+        title="Delete Tag Type"
+        content="Are you sure you want to delete this tag type?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteTagLoading}
+        isLoading={deleteSupplierLoading}
       />
     </div>
   );
 };
 
-export default TagsView;
+export default TagTypeView;

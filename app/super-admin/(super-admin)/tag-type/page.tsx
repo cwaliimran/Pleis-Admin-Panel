@@ -1,9 +1,9 @@
 import Header from '@/app/common/header/header';
-import TermsView from '@/sections/terms/TermsView';
+import TagTypeView from '@/sections/tag-type/tag-type-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions - Pleis',
+  title: 'Tag Type - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Terms & Conditions', href: '' },
+          { name: 'Tag Type', href: '' },
         ]}
       />
 
-      <TermsView />
+      <TagTypeView />
     </div>
   );
 };

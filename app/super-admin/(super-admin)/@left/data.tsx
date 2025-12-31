@@ -242,7 +242,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Transactions',
-        url: paths.superAdmin.reservationTransactions,
+        url: paths.superAdmin.ticketingTransactions,
         icon: ChartBar,
       },
     ],
@@ -287,6 +287,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Tags',
         url: paths.superAdmin.tags.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Tags Type',
+        url: paths.superAdmin.tagType,
         icon: CalendarDays,
       },
       {

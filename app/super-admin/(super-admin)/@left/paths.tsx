@@ -114,6 +114,7 @@ export const paths = {
     reservation: '/super-admin/reservation',
     analytics: '/super-admin/analytics',
     calendar: '/super-admin/calendar',
+    ticketingTransactions: '/super-admin/ticketing-transactions',
     reservationTransactions: '/super-admin/reservation-transactions',
     transactionsHistory: '/super-admin/transactions-history',
     bundles: '/super-admin/bundles',
@@ -152,6 +153,7 @@ export const paths = {
     thirdParty: '/super-admin/third-party',
     subscription: '/super-admin/subscription',
     addSupport: '/super-admin/add-support',
+    tagType: '/super-admin/tag-type',
     logout: '/super-admin/logout',
   },
 };

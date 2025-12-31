@@ -27,26 +27,26 @@ const GiveawaysTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, 
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell className="w-30 text-center capitalize">{item?.winners}</TableCell>
+      <TableCell className="w-30 text-center capitalize">{item?.numberOfWinners}</TableCell>
 
       <TableCell className="w-40 text-center capitalize">{item?.ticketsPerWinner}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.event?.name}</TableCell>
+      <TableCell className="text-left capitalize">{item?.eventTitle}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.ticketType}</TableCell>
+      <TableCell className="text-left capitalize">{item?.ticketTitle}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.entries}</TableCell>
+      <TableCell className="text-left capitalize">{item?.totalParticipants}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.startDateTime, formatStr.paramCase.dateTime)}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.endedAt, formatStr.paramCase.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.endDateTime, formatStr.paramCase.dateTime)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={getGiveawayStatusVariant(item.giveawayStatus)}>{item.giveawayStatus}</CustomBadge>
+        <CustomBadge variant={getGiveawayStatusVariant(item?.giveawayStatus)}>{item?.giveawayStatus}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">
@@ -54,7 +54,7 @@ const GiveawaysTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, 
           <button
             title="View Details"
             type="button"
-            disabled={item.giveawayStatus === 'live' || item.giveawayStatus === 'upcoming'}
+            // disabled={item.giveawayStatus === 'live' || item.giveawayStatus === 'upcoming'}
             onClick={(e) => {
               e.stopPropagation();
               handleOpenWinners?.(item?._id);

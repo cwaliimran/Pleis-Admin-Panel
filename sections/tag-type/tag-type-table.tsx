@@ -12,45 +12,68 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import GiveawaysTableRow from './giveaways-table-row';
-import { SamplePageProps } from './types';
+import SupplierTypeTableRow from './tag-type-table-row';
 
-const HEAD_LABEL = [
+const headLabel = [
   {
-    id: 'title',
+    id: 'name',
     label: 'Title',
     align: 'left',
     sortable: true,
     sortKey: 'title',
   },
-  { id: 'winners', label: 'Winners', align: 'center' },
-  { id: 'ticketsPerWinner', label: 'Tickets / Winner', align: 'center' },
-  { id: 'event', label: 'Events', align: 'left', sortable: true, sortKey: 'eventTitle' },
-  { id: 'ticketType', label: 'Ticket Type', align: 'left', sortable: true, sortKey: 'ticketTitle' },
-  { id: 'entries', label: 'Entries', align: 'left' },
-  { id: 'created', label: 'Created At', align: 'left' },
-  { id: 'ended', label: 'Ended At', align: 'left' },
+  {
+    id: 'createdAt',
+    label: 'Created At',
+    align: 'left',
+    sortable: true,
+    sortKey: 'createdAt',
+  },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'giveawayStatus', label: 'Giveaway Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'center' },
+  { id: 'actions', label: 'Action', align: 'left' },
 ];
 
-const GiveawaysTable: FC<SamplePageProps> = ({
+interface Meta {
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  limit: number;
+}
+
+interface PageProps {
+  page: any;
+  data: any[];
+  meta: Meta;
+  loading?: boolean;
+  handleDelete?: (id: string) => void;
+  handleEdit?: (id: string) => void;
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
+  onSearch?: (search: string) => void;
+  search?: string;
+  limit?: number;
+  status?: string;
+  onStatusChange?: (status: string) => void;
+  date?: Date;
+  onDateChange?: (date: Date | undefined) => void;
+  onResetFilters?: () => void;
+}
+
+const TagTypeTable: FC<PageProps> = ({
   data = [],
   meta,
   loading,
   handleDelete,
   handleEdit,
-  handleOpenWinners,
   onPageChange,
-  limit = 10,
-  // filters states bellow
-  search = '',
+  // onLimitChange,
   onSearch = () => {},
+  search = '',
+  // limit = 10,
   status = '',
   onStatusChange = () => {},
-  // date,
-  // onDateChange = () => {},
+  date,
+  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -74,9 +97,8 @@ const GiveawaysTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Giveaways List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Tag Type List</h3>
 
-            {/* FILTER SHEET */}
             <Sheet>
               <SheetTrigger asChild>
                 <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-3xl border border-gray-300 bg-white px-4 py-2 text-black">
@@ -99,14 +121,14 @@ const GiveawaysTable: FC<SamplePageProps> = ({
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            // dateFilter={{
-                            //   id: 'organization-date',
-                            //   placeholder: 'Select date',
-                            //   value: date,
-                            //   onChange: onDateChange,
-                            // }}
+                            dateFilter={{
+                              id: 'organization-date',
+                              placeholder: 'Select date',
+                              value: date,
+                              onChange: onDateChange,
+                            }}
                             searchFilter={{
-                              placeholder: 'Search by title, events...',
+                              placeholder: 'Search tag type...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -139,29 +161,23 @@ const GiveawaysTable: FC<SamplePageProps> = ({
             </Sheet>
           </div>
 
-          <div className="min-h-[45vh] rounded-lg border">
+          <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
+              <TableHeadCustom headLabel={headLabel} sortConfig={sortConfig} onSort={handleSort} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item, idx) => (
-                  <GiveawaysTableRow
-                    key={item?._id || idx}
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                    handleOpenWinners={handleOpenWinners}
-                  />
+              <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
+                {sortedData?.map((item: any, index: number) => (
+                  <SupplierTypeTableRow key={item?._id || index} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
           </div>
 
           <PaginationControls
-            limit={limit}
-            totalPages={totalPages}
             currentPage={currentPage}
+            totalPages={totalPages}
             totalRecords={totalRecords}
+            limit={10}
             onPageChange={(p) => onPageChange?.(p)}
           />
         </Card>
@@ -170,4 +186,4 @@ const GiveawaysTable: FC<SamplePageProps> = ({
   );
 };
 
-export default GiveawaysTable;
+export default TagTypeTable;

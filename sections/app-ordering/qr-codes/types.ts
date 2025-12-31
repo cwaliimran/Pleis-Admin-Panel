@@ -44,3 +44,9 @@ export interface QRCodeFormData {
   size: QRCodeSize;
   [key: string]: string | number;
 }
+
+export interface SavedQRCardProps {
+  qrCode: any;
+  onDownload: (qrCode: SavedQRCode) => void;
+  onDelete: (id: string) => void;
+}

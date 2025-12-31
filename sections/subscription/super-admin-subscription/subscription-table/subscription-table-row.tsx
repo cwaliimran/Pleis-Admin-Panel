@@ -94,25 +94,13 @@ const SubscriptionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => {
             e.stopPropagation();
             handleEdit?.(item);
           }}
-          className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+          disabled={isFreeSubscription}
+          className={`rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${
+            isFreeSubscription ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+          }`}
         >
           <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
         </button>
-
-        {/* <button
-            title="Delete User Sub"
-            type="button"
-            disabled={item?.subscription?.status === 'cancelled'}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete?.(item?.userId);
-            }}
-            className={`cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 ${
-              item?.subscription?.status === 'cancelled' ? 'cursor-not-allowed opacity-50' : ''
-            }`}
-          >
-            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
-          </button> */}
       </TableCell>
     </TableRow>
   );

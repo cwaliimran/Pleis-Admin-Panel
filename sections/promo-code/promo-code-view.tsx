@@ -41,12 +41,6 @@ const PromoCodeView = () => {
     date: date ? formatDate(date) : undefined,
   });
 
-  console.log('apiData', apiData);
-
-  // useEffect(() => {
-  //   refetch();
-  // }, [selectedCompany, refetch]);
-
   const [localData, setLocalData] = useState<any[]>([]);
 
   const [meta, setMeta] = useState<any>({

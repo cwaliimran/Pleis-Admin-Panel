@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import * as React from 'react';
 
-interface TagsTypeModalProps {
+interface SupplierTypeModalProps {
   open: boolean;
   onClose: () => void;
   editMode: boolean;
@@ -14,15 +14,7 @@ interface TagsTypeModalProps {
   selectedVenueType?: any;
 }
 
-const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
-  open,
-  onClose,
-  editMode,
-  methods,
-  onSubmit,
-  isLoading,
-  // selectedVenueType,
-}) => {
+const TagTypeModal: React.FC<SupplierTypeModalProps> = ({ open, onClose, editMode, methods, onSubmit, isLoading }) => {
   const handleClose = () => {
     if (!isLoading) {
       onClose();
@@ -38,50 +30,25 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
         <DialogContent aria-describedby={undefined} className="mx-4 w-full max-w-md dark:bg-[#171717]">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">{editMode ? 'Edit Tag' : 'Create Tag'}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{editMode ? 'Edit Tag Type' : 'Create Tag Type'}</DialogTitle>
           </DialogHeader>
 
           <FormProvider methods={methods} onSubmit={onSubmit}>
             <div className="mt-4 flex flex-col gap-4">
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <RHFTextField
                   name="title"
-                  label="Tag Name"
-                  placeholder="Enter Tag Name"
+                  label="Tag Type Name"
+                  placeholder="Enter Tag Type Name"
                   className={`$${methods.formState.errors.title ? 'border-red-400 focus:border-red-400' : ''}`}
                   disabled={isLoading}
                 />
-              </div>
-
-              <div className="flex w-full flex-1 flex-col">
-                <RHFSelectField
-                  name="tag"
-                  placeholder="Select Tag Type"
-                  className={`w-full flex-1 ${methods.formState.errors.tag ? 'border-red-400 focus:border-red-400' : ''}`}
-                  label="Tag Type"
-                  options={[
-                    { label: 'Primary', value: 'primary' },
-                    { label: 'Success', value: 'success' },
-                    { label: 'Warning', value: 'warning' },
-                    { label: 'Danger', value: 'danger' },
-                  ]}
-                  disabled={isLoading}
-                />
-
-                {/* <RHFTextField
-                  name="type"
-                  label="Tag Type"
-                  placeholder="Enter Tag Type"
-                  className={`$${methods.formState.errors.title ? 'border-red-400 focus:border-red-400' : ''}`}
-                  disabled={isLoading}
-                /> */}
               </div>
 
               {editMode && (
                 <RHFSelectField
                   name="status"
                   placeholder="Select Status"
-                  label="Status"
                   className="w-full flex-1"
                   options={[
                     { label: 'Active', value: 'active' },
@@ -106,7 +73,7 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
                     className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
                     disabled={editMode ? !isDirty : false}
                   >
-                    {editMode ? 'Update Tag' : 'Create Tag'}
+                    {editMode ? 'Update Tag Type' : 'Create Tag Type'}
                   </Button>
                 )}
               </div>
@@ -118,4 +85,4 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
   );
 };
 
-export default TagsTypeModal;
+export default TagTypeModal;

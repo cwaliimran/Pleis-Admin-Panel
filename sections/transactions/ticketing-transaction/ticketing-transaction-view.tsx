@@ -1,21 +1,16 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { useBoolean } from '@/hooks/useBoolean';
-import { useGetGlobalReferralSettingQuery, useGetReferralsQuery } from '@/store/Reducer/referrals-api';
+import { useGetLoyaltyTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
-import RefferralModal from './referrals-modal';
-import ReferralsTable from './referrals-table';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import TicketingTransactionTable from './ticketing-transaction-table';
 
-interface ReferralsViewProps {
-  userType: 'super-admin' | 'organizer';
+interface LoyaltyTransactionViewProps {
   global?: boolean;
 }
 
-const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
-  const openModal = useBoolean();
-
+const TicketingTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -23,17 +18,25 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const { data: apiData, isLoading } = useGetReferralsQuery({
+  // const [selectedRecord, setSelectedRecord] = useState<any>(null);
+
+  const { companyId: selectedCompany } = useCompanySelectionState();
+
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetLoyaltyTransactionsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    isGlobal: global,
+    companyOrganizer: selectedCompany || undefined,
+    isGlobal: global || false,
+    // walletType: 'globalWallet',
+    domainType: 'ticketingorders',
   });
-
-  const { data: referralSettingData, isLoading: isSettingLoading } = useGetGlobalReferralSettingQuery({});
-  const setting = referralSettingData?.data?.[0] || {};
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -46,7 +49,7 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
 
   useEffect(() => {
     if (apiData?.data) {
-      setLocalData(apiData.data);
+      setLocalData(apiData?.data);
       setMeta(
         apiData.meta || {
           currentPage: page,
@@ -58,31 +61,18 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
     }
   }, [apiData, page, limit]);
 
-  const handleSettingModal = () => {
-    openModal.onTrue();
-  };
+  // const handleEdit = (data: string) => {
+  //   setSelectedRecord(data);
+  //   openModal.onTrue();
+  // };
 
   return (
     <div>
-      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-        {isSettingLoading ? (
-          <Button className="bg-primary cursor-not-allowed rounded-4xl py-2 text-white" disabled>
-            <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent align-middle" />
-            Loading...
-          </Button>
-        ) : (
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleSettingModal}>
-            Referral Setting
-          </Button>
-        )}
-      </div>
-
-      <ReferralsTable
+      <TicketingTransactionTable
         data={localData}
-        global={global}
         meta={meta}
-        userType={userType}
-        loading={isLoading}
+        loading={isLoading || isFetching}
+        // handleEdit={handleEdit}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -112,10 +102,8 @@ const ReferralsView = ({ userType, global }: ReferralsViewProps) => {
           setPage(1);
         }}
       />
-
-      <RefferralModal open={openModal.value} onClose={openModal.onFalse} referralSettingData={setting} />
     </div>
   );
 };
 
-export default ReferralsView;
+export default TicketingTransactionView;

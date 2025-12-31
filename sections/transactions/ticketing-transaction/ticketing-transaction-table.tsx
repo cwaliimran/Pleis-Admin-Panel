@@ -12,45 +12,37 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import GiveawaysTableRow from './giveaways-table-row';
+import { default as TicketingTransactionTableRow } from './ticketing-transaction-table-row';
 import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
-  {
-    id: 'title',
-    label: 'Title',
-    align: 'left',
-    sortable: true,
-    sortKey: 'title',
-  },
-  { id: 'winners', label: 'Winners', align: 'center' },
-  { id: 'ticketsPerWinner', label: 'Tickets / Winner', align: 'center' },
-  { id: 'event', label: 'Events', align: 'left', sortable: true, sortKey: 'eventTitle' },
-  { id: 'ticketType', label: 'Ticket Type', align: 'left', sortable: true, sortKey: 'ticketTitle' },
-  { id: 'entries', label: 'Entries', align: 'left' },
-  { id: 'created', label: 'Created At', align: 'left' },
-  { id: 'ended', label: 'Ended At', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'giveawayStatus', label: 'Giveaway Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'center' },
+  { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.firstName' },
+  { id: 'description', label: 'Description', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'publicId', label: 'Public ID', align: 'left' },
+  { id: 'transactionId', label: 'Transaction ID', align: 'left' },
+  { id: 'transactionType', label: 'Type', align: 'left' },
+  { id: 'objectType', label: 'Object Type', align: 'left' },
+  { id: 'points', label: 'Points', align: 'left' },
+  { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
+  // { id: 'status', label: 'Status', align: 'left' },
 ];
 
-const GiveawaysTable: FC<SamplePageProps> = ({
+const TicketingTransactionTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
   handleDelete,
   handleEdit,
-  handleOpenWinners,
   onPageChange,
   limit = 10,
   // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
-  // date,
-  // onDateChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
+  date,
+  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -74,7 +66,7 @@ const GiveawaysTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Giveaways List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Ticketing Transaction List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -99,31 +91,32 @@ const GiveawaysTable: FC<SamplePageProps> = ({
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            // dateFilter={{
-                            //   id: 'organization-date',
-                            //   placeholder: 'Select date',
-                            //   value: date,
-                            //   onChange: onDateChange,
-                            // }}
+                            dateFilter={{
+                              id: 'organization-date',
+                              placeholder: 'Select date',
+                              value: date,
+                              onChange: onDateChange,
+                            }}
                             searchFilter={{
-                              placeholder: 'Search by title, events...',
+                              placeholder: 'Search Transactions...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
+                            // selectFilters={[
+                            //   {
+                            //     id: 'sheet-revenue',
+                            //     label: 'Status',
+                            //     placeholder: 'Select by Status',
+                            //     value: status,
+                            //     onChange: onStatusChange,
+                            //     options: [
+                            //       { value: 'all', label: 'All' },
+                            //       { value: 'confirmed', label: 'Confirmed' },
+                            //       { value: 'cancelled', label: 'Cancelled' },
+                            //       { value: 'pending', label: 'Pending' },
+                            //     ],
+                            //   },
+                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -145,13 +138,7 @@ const GiveawaysTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <GiveawaysTableRow
-                    key={item?._id || idx}
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                    handleOpenWinners={handleOpenWinners}
-                  />
+                  <TicketingTransactionTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -170,4 +157,4 @@ const GiveawaysTable: FC<SamplePageProps> = ({
   );
 };
 
-export default GiveawaysTable;
+export default TicketingTransactionTable;

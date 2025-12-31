@@ -2,81 +2,245 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  useGetOrganizerOwnSubscriptionsQuery,
+  useGetOrganizerSubscriptionsQuery,
+  useUpdateOrganizerSubscriptionMutation,
+} from '@/store/Reducer/subscriptions-api';
+import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { Check, Sparkles, TrendingUp } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { ANALYTICS_FEATURES, FREE_PLAN_FEATURES, MODULES, ORGANIZATION_COUNTS, PRICING_CONFIG } from './constants';
+import { ANALYTICS_FEATURES, FREE_PLAN_FEATURES, ORGANIZATION_COUNTS } from './constants';
 import { InfoBanner } from './info-banner';
 import { ModuleCard } from './module-card';
 import { PriceSummary } from './price-summary';
-import { BillingCycle, ModuleId, PriceCalculation } from './types';
+import { BillingCycle, ModuleConfig, ModuleId, PriceCalculation } from './types';
+
+interface DynamicPricing {
+  modules: {
+    ordering: { price: number; commission: number };
+    loyalty: { price: number; commission: number };
+    reservations: { price: number; commission: number };
+  };
+  analytics: number;
+  bundleDiscounts: {
+    2: number;
+    3: number;
+  };
+  multiOrgPricing: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+    6: number;
+  };
+  yearlyDiscount: number;
+  ticketingCommission: number;
+}
 
 export const OrganizerSubscriptionView: React.FC = () => {
   const [selectedModules, setSelectedModules] = useState<ModuleId[]>([]);
-  const [includeAnalytics, setIncludeAnalytics] = useState(false);
-  const [organizationCount, setOrganizationCount] = useState(1);
+  const [includeAnalytics, setIncludeAnalytics] = useState<boolean>(false);
+  const [organizationCount, setOrganizationCount] = useState<number>(1);
   const [customOrgCount, setCustomOrgCount] = useState<string>('');
-  const [isCustomOrgSelected, setIsCustomOrgSelected] = useState(false);
+  const [isCustomOrgSelected, setIsCustomOrgSelected] = useState<boolean>(false);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
-  const [hasActiveSubscription] = useState(false);
+  const [hasActiveSubscription] = useState<boolean>(false);
+
+  const { data: organizerOwnSubData, isLoading: isOwnSubLoading } = useGetOrganizerOwnSubscriptionsQuery({});
+  const userSubscriptionData = organizerOwnSubData?.data?.[0] || null;
+
+  console.log('isOwnSubLoading', isOwnSubLoading);
+
+  console.log('userSubscriptionData', userSubscriptionData);
+
+  const { data: apiData, isLoading: isPricingLoading } = useGetOrganizerSubscriptionsQuery({});
+  const [updateOrganizerSubscription, { isLoading: isUpdating }] = useUpdateOrganizerSubscriptionMutation();
+
+  const pricingData = apiData?.data?.[0] || null;
+
+  // Extract dynamic pricing from API
+  const dynamicPricing = useMemo<DynamicPricing | null>(() => {
+    if (!pricingData) return null;
+
+    const modulePrice: Record<string, number> = {};
+    const moduleCommission: Record<string, number> = {};
+
+    // Map module pricing
+    if (pricingData.modulePricing && Array.isArray(pricingData.modulePricing)) {
+      pricingData.modulePricing.forEach((item: any) => {
+        if (item.module && typeof item.price === 'number') {
+          modulePrice[item.module] = item.price;
+        }
+      });
+    }
+
+    // Map commissions
+    const commissions = pricingData.commissions || {};
+    moduleCommission['ordering'] = typeof commissions.orderingCommission === 'number' ? commissions.orderingCommission : 0;
+    moduleCommission['loyalty'] = typeof commissions.ticketingCommission === 'number' ? commissions.ticketingCommission : 0;
+    moduleCommission['reservations'] = typeof commissions.reservationCommission === 'number' ? commissions.reservationCommission : 0;
+
+    return {
+      modules: {
+        ordering: {
+          price: modulePrice['ordering'] || 0,
+          commission: moduleCommission['ordering'] || 0,
+        },
+        loyalty: {
+          price: modulePrice['loyalty'] || 0,
+          commission: moduleCommission['loyalty'] || 0,
+        },
+        reservations: {
+          price: modulePrice['reservations'] || 0,
+          commission: moduleCommission['reservations'] || 0,
+        },
+      },
+      analytics: modulePrice['analytics'] || 0,
+      bundleDiscounts: {
+        2: pricingData.bundleDiscounts?.twoModules || 0,
+        3: pricingData.bundleDiscounts?.threeModules || 0,
+      },
+      multiOrgPricing: {
+        1: pricingData.multiOrgPricing?.oneOrg || 100,
+        2: pricingData.multiOrgPricing?.twoOrgs || 95,
+        3: pricingData.multiOrgPricing?.threeOrgs || 90,
+        4: pricingData.multiOrgPricing?.fourOrgs || 85,
+        5: pricingData.multiOrgPricing?.fiveOrgs || 80,
+        6: pricingData.multiOrgPricing?.sixPlusOrgs || 75,
+      },
+      yearlyDiscount: pricingData.yearlyDiscount?.discountPercent || 0,
+      ticketingCommission: commissions.ticketingCommission || 8,
+    };
+  }, [pricingData]);
+
+  // Dynamic modules configuration
+  const MODULES: ModuleConfig[] = useMemo(() => {
+    if (!dynamicPricing) return [];
+
+    return [
+      {
+        id: 'ordering' as ModuleId,
+        name: 'Ordering',
+        description: 'Enable food & drink ordering and package preorders within the app',
+        icon: '🛍️',
+        color: 'blue' as const,
+        features: ['In-app ordering', 'Menu management', 'Package preorders', 'Order tracking'],
+      },
+      {
+        id: 'loyalty' as ModuleId,
+        name: 'Loyalty',
+        description: 'Unlock loyalty programs, points tracking, and reward management',
+        icon: '🎁',
+        color: 'purple' as const,
+        features: ['Points tracking', 'Reward management', 'Customer retention', 'Loyalty analytics'],
+      },
+      {
+        id: 'reservations' as ModuleId,
+        name: 'Reservations',
+        description: 'Enable in-app reservations and table management features with ease',
+        icon: '📅',
+        color: 'green' as const,
+        features: ['Table reservations', 'Booking management', 'Capacity control', 'Guest notifications'],
+      },
+    ];
+  }, [dynamicPricing]);
+
+  const getActualOrgCount = (): number => {
+    if (isCustomOrgSelected && customOrgCount && parseInt(customOrgCount) >= 6) {
+      return parseInt(customOrgCount);
+    }
+    return isCustomOrgSelected ? 6 : organizationCount;
+  };
 
   const calculatePrice = (): PriceCalculation => {
-    let basePrice = 0;
+    if (!dynamicPricing) {
+      return {
+        monthlyTotal: '0.00',
+        yearlyTotal: '0.00',
+        bundleDiscountPercent: 0,
+        bundleDiscountAmount: '0.00',
+        yearlyDiscountPercent: 0,
+        savingsAmount: '0.00',
+        baseModulesPrice: '0.00',
+        priceAfterBundleDiscount: '0.00',
+        analyticsPrice: '0.00',
+        priceBeforeOrgMultiply: '0.00',
+        priceAfterOrgMultiply: '0.00',
+        multiOrgDiscountPercent: 0,
+      };
+    }
 
-    // Add module prices
+    // Step 1: Calculate base price from selected modules (excluding analytics)
+    let baseModulesPrice = 0;
     selectedModules.forEach((moduleId) => {
-      basePrice += PRICING_CONFIG.modules[moduleId].price;
+      const modulePrice = dynamicPricing.modules[moduleId]?.price;
+      if (typeof modulePrice === 'number') {
+        baseModulesPrice += modulePrice;
+      }
     });
 
-    // Apply bundle discount
+    // Step 2: Apply bundle discount (only on modules, not analytics)
     let bundleDiscount = 0;
+    let bundleDiscountPercent = 0;
+    let priceAfterBundleDiscount = baseModulesPrice;
+
     if (selectedModules.length >= 2) {
-      const discountPercent = PRICING_CONFIG.bundleDiscounts[selectedModules.length] || PRICING_CONFIG.bundleDiscounts[3];
-      bundleDiscount = basePrice * (discountPercent / 100);
-      basePrice -= bundleDiscount;
+      bundleDiscountPercent = selectedModules.length >= 3 ? dynamicPricing.bundleDiscounts[3] || 0 : dynamicPricing.bundleDiscounts[2] || 0;
+
+      bundleDiscount = baseModulesPrice * (bundleDiscountPercent / 100);
+      priceAfterBundleDiscount = baseModulesPrice - bundleDiscount;
     }
 
-    // Determine actual organization count - minimum 1 for calculation
-    let actualOrgCount = 1;
-    if (isCustomOrgSelected && customOrgCount && parseInt(customOrgCount) >= 6) {
-      actualOrgCount = parseInt(customOrgCount);
-    } else if (!isCustomOrgSelected) {
-      actualOrgCount = organizationCount;
-    }
+    // Step 3: Add analytics (no bundle discount applies to analytics)
+    const analyticsPrice = includeAnalytics ? dynamicPricing.analytics : 0;
+    const priceBeforeOrgMultiply = priceAfterBundleDiscount + analyticsPrice;
 
-    // Apply multi-organization pricing
-    const orgMultiplier = (PRICING_CONFIG.multiOrgPricing[actualOrgCount] || PRICING_CONFIG.multiOrgPricing[6]) / 100;
-    const totalModulesPrice = basePrice * actualOrgCount * orgMultiplier;
+    // Step 4: Multiply by organization count
+    const actualOrgCount = getActualOrgCount();
+    const priceAfterOrgMultiply = priceBeforeOrgMultiply * actualOrgCount;
 
-    // Add analytics (flat rate, no discounts)
-    const analyticsPrice = includeAnalytics ? PRICING_CONFIG.analytics : 0;
+    // Step 5: Apply multi-org discount to everything
+    const multiOrgDiscountPercent =
+      actualOrgCount >= 6
+        ? dynamicPricing.multiOrgPricing[6] || 100
+        : dynamicPricing.multiOrgPricing[actualOrgCount as keyof typeof dynamicPricing.multiOrgPricing] || 100;
 
-    const monthlyTotal = totalModulesPrice + analyticsPrice;
+    const monthlyTotal = priceAfterOrgMultiply * (multiOrgDiscountPercent / 100);
 
-    // Calculate yearly price with discount
-    const yearlyTotal = monthlyTotal * 12 * (1 - PRICING_CONFIG.yearlyDiscount / 100);
+    // Step 6: Calculate yearly price with yearly discount
+    const yearlyTotal = monthlyTotal * 12 * (1 - dynamicPricing.yearlyDiscount / 100);
+    const savingsAmount = monthlyTotal * 12 - yearlyTotal;
 
     return {
       monthlyTotal: monthlyTotal.toFixed(2),
       yearlyTotal: yearlyTotal.toFixed(2),
-      bundleDiscountPercent:
-        selectedModules.length >= 2 ? PRICING_CONFIG.bundleDiscounts[selectedModules.length] || PRICING_CONFIG.bundleDiscounts[3] : 0,
+      bundleDiscountPercent,
       bundleDiscountAmount: bundleDiscount.toFixed(2),
-      yearlyDiscountPercent: PRICING_CONFIG.yearlyDiscount,
-      savingsAmount: billingCycle === 'yearly' ? (monthlyTotal * 12 - yearlyTotal).toFixed(2) : '0',
+      yearlyDiscountPercent: dynamicPricing.yearlyDiscount,
+      savingsAmount: savingsAmount.toFixed(2),
+      baseModulesPrice: baseModulesPrice.toFixed(2),
+      priceAfterBundleDiscount: priceAfterBundleDiscount.toFixed(2),
+      analyticsPrice: analyticsPrice.toFixed(2),
+      priceBeforeOrgMultiply: priceBeforeOrgMultiply.toFixed(2),
+      priceAfterOrgMultiply: priceAfterOrgMultiply.toFixed(2),
+      multiOrgDiscountPercent,
     };
   };
 
   const priceInfo = useMemo(
     () => calculatePrice(),
-    [selectedModules, includeAnalytics, organizationCount, customOrgCount, isCustomOrgSelected, billingCycle]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedModules, includeAnalytics, organizationCount, customOrgCount, isCustomOrgSelected, billingCycle, dynamicPricing]
   );
 
-  const toggleModule = (moduleId: ModuleId) => {
+  const toggleModule = (moduleId: ModuleId): void => {
     setSelectedModules((prev) => (prev.includes(moduleId) ? prev.filter((id) => id !== moduleId) : [...prev, moduleId]));
   };
 
-  const handleOrganizationCountChange = (count: number) => {
+  const handleOrganizationCountChange = (count: number): void => {
     if (count === 6) {
       setIsCustomOrgSelected(true);
       setCustomOrgCount('6');
@@ -87,8 +251,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
     }
   };
 
-  const handleCustomOrgCountChange = (value: string) => {
-    // Allow empty string for user to clear and type new value
+  const handleCustomOrgCountChange = (value: string): void => {
     if (value === '') {
       setCustomOrgCount('');
       return;
@@ -96,7 +259,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
 
     const numValue = value.replace(/\D/g, '');
 
-    // Allow any input while typing, but show error if over 1000
     if (numValue && parseInt(numValue) > 1000) {
       showError('Maximum 1000 organizations allowed');
       return;
@@ -105,28 +267,57 @@ export const OrganizerSubscriptionView: React.FC = () => {
     setCustomOrgCount(numValue);
   };
 
-  const getActualOrgCount = () => {
-    if (isCustomOrgSelected && customOrgCount && parseInt(customOrgCount) >= 6) {
-      return parseInt(customOrgCount);
+  const handleSubscribe = async (): Promise<void> => {
+    try {
+      if (selectedModules.length === 0) {
+        showError('Please select at least one module');
+        return;
+      }
+
+      const subscriptionTypes: string[] = includeAnalytics ? [...selectedModules, 'analytics'] : [...selectedModules];
+
+      const totalAmount = parseFloat(billingCycle === 'monthly' ? priceInfo.monthlyTotal : priceInfo.yearlyTotal);
+
+      const payload = {
+        subscriptionTypes,
+        pricingPlan: billingCycle,
+        numberOfOrganizations: getActualOrgCount(),
+        totalSubscriptionAmount: totalAmount,
+      };
+
+      const response = await updateOrganizerSubscription(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
+      }
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || 'Subscription updated successfully!');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
     }
-    return isCustomOrgSelected ? 6 : organizationCount;
   };
 
-  const handleSubscribe = () => {
-    console.log('Subscription data:', {
-      selectedModules,
-      includeAnalytics,
-      organizationCount: getActualOrgCount(),
-      billingCycle,
-      priceInfo,
-    });
-    showSuccess('Subscription created successfully!');
-  };
-
-  const handleManageSubscription = (action: 'add' | 'remove' | 'cancel') => {
-    console.log('Manage subscription:', action);
+  const handleManageSubscription = (action: 'add' | 'remove' | 'cancel'): void => {
     showSuccess(`Subscription ${action} initiated`);
   };
+
+  if (isPricingLoading || !dynamicPricing) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading pricing information...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className="min-h-screen">
@@ -153,6 +344,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
             description="You have an active subscription. Changes will take effect on your next renewal date. Cancellations will keep your access until the end of the current billing period."
           />
         )}
+
         {/* Free Tier */}
         <div className="rounded-xl border-2 border-green-300 bg-linear-to-br from-green-50 to-emerald-50 p-6 shadow-lg dark:border-green-800 dark:from-green-950/40 dark:to-emerald-950/40">
           <div className="flex items-start justify-between">
@@ -177,17 +369,18 @@ export const OrganizerSubscriptionView: React.FC = () => {
             </div>
           </div>
         </div>
+
         {/* Module Selection */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#222121]">
           <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">Premium Modules</h2>
           <p className="mb-6 text-gray-600 dark:text-gray-400">Enhance your platform with powerful features</p>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {MODULES.map((module) => (
               <ModuleCard
                 key={module.id}
                 module={module}
-                pricing={PRICING_CONFIG.modules[module.id]}
+                pricing={dynamicPricing.modules[module.id]}
                 isSelected={selectedModules.includes(module.id)}
                 onToggle={() => toggleModule(module.id)}
               />
@@ -198,7 +391,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
         {/* Advanced Analytics Add-on */}
         <div
           onClick={() => setIncludeAnalytics(!includeAnalytics)}
-          className="rounded-xl border-2 border-indigo-200 bg-linear-to-br from-indigo-50 to-purple-50 p-6 shadow-sm dark:border-indigo-900/50 dark:from-indigo-950/40 dark:to-purple-950/40"
+          className="cursor-pointer rounded-xl border-2 border-indigo-200 bg-linear-to-br from-indigo-50 to-purple-50 p-6 shadow-sm transition-all hover:shadow-md dark:border-indigo-900/50 dark:from-indigo-950/40 dark:to-purple-950/40"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -219,10 +412,8 @@ export const OrganizerSubscriptionView: React.FC = () => {
               </ul>
             </div>
 
-            {/* Checkbox - Right Side */}
             <div className="flex flex-col items-end">
               <div
-                // onClick={() => setIncludeAnalytics(!includeAnalytics)}
                 className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border-2 transition-all ${
                   includeAnalytics
                     ? 'border-blue-600 bg-blue-600 dark:border-blue-500 dark:bg-blue-500'
@@ -235,15 +426,14 @@ export const OrganizerSubscriptionView: React.FC = () => {
             </div>
           </div>
 
-          {/* Price Section - Full Width at Bottom */}
           <div className="mt-4 rounded-lg border border-indigo-200 bg-white/50 p-3 dark:border-indigo-800 dark:bg-indigo-900/20">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Monthly price:</span>
-              <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">€{PRICING_CONFIG.analytics}</span>
+              <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">€{dynamicPricing.analytics}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-600 dark:text-gray-400">Flat rate:</span>
-              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">No commission</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">Note:</span>
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">No bundle discount</span>
             </div>
           </div>
         </div>
@@ -270,7 +460,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
             ))}
           </div>
 
-          {/* Custom Organization Count Input */}
           {isCustomOrgSelected && (
             <div className="mt-4 rounded-lg border-2 border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/30">
               <label className="mb-2 block text-sm font-semibold text-gray-900 dark:text-gray-100">Enter number of organizations (6-1000)</label>
@@ -296,23 +485,26 @@ export const OrganizerSubscriptionView: React.FC = () => {
                 <TrendingUp className="h-4 w-4" />
                 <span className="font-semibold">Volume discount applied!</span>
                 <span>
-                  Each additional location is {100 - (PRICING_CONFIG.multiOrgPricing[getActualOrgCount()] || PRICING_CONFIG.multiOrgPricing[6])}% off
+                  Pay only {priceInfo.multiOrgDiscountPercent}% of full price ({100 - priceInfo.multiOrgDiscountPercent}% discount)
                 </span>
               </div>
             </div>
           )}
         </div>
+
         {/* Price Summary */}
         <PriceSummary
           selectedModules={selectedModules}
           includeAnalytics={includeAnalytics}
           organizationCount={getActualOrgCount()}
           billingCycle={billingCycle}
-          pricing={PRICING_CONFIG}
+          pricing={dynamicPricing}
           priceInfo={priceInfo}
           onBillingCycleChange={setBillingCycle}
           onSubscribe={handleSubscribe}
+          isLoading={isUpdating}
         />
+
         {/* Subscription Management Actions */}
         {hasActiveSubscription && (
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#222121]">
@@ -345,6 +537,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
             </p>
           </div>
         )}
+
         {/* Free Tier Reminder */}
         {selectedModules.length === 0 && !includeAnalytics && (
           <div className="py-8 text-center">
