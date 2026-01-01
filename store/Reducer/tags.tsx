@@ -36,6 +36,7 @@ export const tagsApi = createApi({
         method: 'POST',
         body: newTag,
       }),
+      invalidatesTags: ['tag'],
     }),
 
     updateTag: builder.mutation({
@@ -44,6 +45,7 @@ export const tagsApi = createApi({
         method: 'PUT',
         body: updatedTag,
       }),
+      invalidatesTags: ['tag'],
     }),
 
     deleteTag: builder.mutation({
@@ -56,9 +58,4 @@ export const tagsApi = createApi({
   }),
 });
 
-export const {
-  useGetTagsQuery,
-  useAddTagMutation,
-  useUpdateTagMutation,
-  useDeleteTagMutation,
-} = tagsApi;
+export const { useGetTagsQuery, useAddTagMutation, useUpdateTagMutation, useDeleteTagMutation } = tagsApi;

@@ -1,7 +1,10 @@
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useGetTagTypeQuery } from '@/store/Reducer/tag-type-api';
 import * as React from 'react';
 
 interface TagsTypeModalProps {
@@ -23,6 +26,20 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
   isLoading,
   // selectedVenueType,
 }) => {
+  const { data: tagTypeData, isLoading: tagTypeLoading } = useGetTagTypeQuery({
+    page: 0,
+    search: '',
+    limit: '10000',
+    status: '',
+    date: undefined,
+  });
+
+  const tagTypeOptions =
+    tagTypeData?.data?.map((tier: any) => ({
+      label: tier?.title,
+      value: tier?._id,
+    })) || [];
+
   const handleClose = () => {
     if (!isLoading) {
       onClose();
@@ -54,27 +71,21 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
               </div>
 
               <div className="flex w-full flex-1 flex-col">
-                <RHFSelectField
-                  name="tag"
-                  placeholder="Select Tag Type"
-                  className={`w-full flex-1 ${methods.formState.errors.tag ? 'border-red-400 focus:border-red-400' : ''}`}
-                  label="Tag Type"
-                  options={[
-                    { label: 'Primary', value: 'primary' },
-                    { label: 'Success', value: 'success' },
-                    { label: 'Warning', value: 'warning' },
-                    { label: 'Danger', value: 'danger' },
-                  ]}
-                  disabled={isLoading}
-                />
-
-                {/* <RHFTextField
-                  name="type"
-                  label="Tag Type"
-                  placeholder="Enter Tag Type"
-                  className={`$${methods.formState.errors.title ? 'border-red-400 focus:border-red-400' : ''}`}
-                  disabled={isLoading}
-                /> */}
+                {tagTypeLoading ? (
+                  <div className="mt-2 w-full space-y-2">
+                    <Skeleton className="ml-1 h-3 w-20 rounded-4xl border-gray-200 px-5" />
+                    <Skeleton className="h-8 rounded-4xl border-gray-200 px-5" />
+                  </div>
+                ) : (
+                  <RHFCustomDropdown
+                    name="type"
+                    label="Tag Type"
+                    placeholder="Enter Tag Type"
+                    options={tagTypeOptions}
+                    isLoading={tagTypeLoading}
+                    showNone={false}
+                  />
+                )}
               </div>
 
               {editMode && (

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useAddTagMutation, useDeleteTagMutation, useGetTagsQuery, useUpdateTagMutation } from '@/store/Reducer/tags';
 import { getErrorMessage } from '@/utils/api';
+import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Plus } from 'lucide-react';
@@ -12,7 +13,6 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TagsTypeModal from './tagsTypeModal';
 import TagsTypeTable from './tagsTypeTable';
-import { formatDate } from '@/utils/format-time';
 
 const defaultValues = {
   title: '',
@@ -70,7 +70,7 @@ const TagsView = () => {
       //     limit,
       //   }
       // );
-      setVenueTypes([...apiData.data]); // make a new array copy
+      setVenueTypes([...apiData.data]);
       setMeta({ ...apiData.meta });
     }
   }, [apiData, page, limit]);
@@ -93,7 +93,7 @@ const TagsView = () => {
     if (editModal.value && selectedVenueType) {
       reset({
         title: selectedVenueType.title || '',
-        type: selectedVenueType.type || '',
+        type: selectedVenueType.type?._id || '',
         status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
@@ -220,13 +220,11 @@ const TagsView = () => {
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-            <Plus className="" />
-            Create Tag
-          </Button>
-        </div>
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+        <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+          <Plus className="" />
+          Create Tag
+        </Button>
       </div>
 
       <TagsTypeTable
