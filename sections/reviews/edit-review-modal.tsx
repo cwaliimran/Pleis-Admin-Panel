@@ -10,9 +10,10 @@ interface ReviewEditModalProps {
   onClose: () => void;
   onUpdate: (text: string) => void;
   defaultReview: string;
+  loading?: boolean;
 }
 
-const ReviewEditModal: FC<ReviewEditModalProps> = ({ open, onClose, onUpdate, defaultReview }) => {
+const ReviewEditModal: FC<ReviewEditModalProps> = ({ open, onClose, onUpdate, defaultReview, loading }) => {
   const [review, setReview] = useState(defaultReview);
 
   useEffect(() => {
@@ -32,7 +33,9 @@ const ReviewEditModal: FC<ReviewEditModalProps> = ({ open, onClose, onUpdate, de
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={() => onUpdate(review)}>Update</Button>
+          <Button onClick={() => onUpdate(review)} disabled={loading}>
+            {loading ? 'Updating...' : 'Update'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

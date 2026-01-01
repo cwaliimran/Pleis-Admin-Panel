@@ -86,6 +86,9 @@ export const API_ROUTES = {
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
 
+  ADMIN_REVIEWS: `/admin/reviews`,
+  ADMIN_REVIEWS_BY_ID: (id: string) => `/admin/reviews/${id}`,
+
   ADMIN_TAG_TYPE: `/admin/tag-types`,
   ADMIN_TAG_TYPE_BY_ID: (id: string) => `/admin/tag-types/${id}`,
 
