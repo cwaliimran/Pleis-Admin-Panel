@@ -1,8 +1,9 @@
 'use client';
+
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useAddSupplierMutation, useDeleteSupplierMutation, useGetSuppliersQuery, useUpdateSupplierMutation } from '@/store/Reducer/suppliers';
+import { useAddTagTypeMutation, useDeleteTagTypeMutation, useGetTagTypeQuery, useUpdateTagTypeMutation } from '@/store/Reducer/tag-type-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -11,8 +12,8 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import TagTypeTable from './tag-type-table';
 import TagTypeModal from './tag-type-modal';
+import TagTypeTable from './tag-type-table';
 
 const defaultValues = {
   title: '',
@@ -34,11 +35,12 @@ const TagTypeView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const [addSupplier, { isLoading: addSupplierLoading }] = useAddSupplierMutation();
-  const [updateSupplier, { isLoading: updateSupplierLoading }] = useUpdateSupplierMutation();
-  const [deleteSupplier, { isLoading: deleteSupplierLoading }] = useDeleteSupplierMutation();
+  const [addTagType, { isLoading: addTagTypeLoading }] = useAddTagTypeMutation();
+  const [updateTagType, { isLoading: updateTagTypeLoading }] = useUpdateTagTypeMutation();
 
-  const { data: apiData, isLoading } = useGetSuppliersQuery({
+  const [deleteTagType, { isLoading: deleteTagTypeLoading }] = useDeleteTagTypeMutation();
+
+  const { data: apiData, isLoading } = useGetTagTypeQuery({
     page: page - 1,
     search,
     limit,
@@ -124,13 +126,12 @@ const TagTypeView = () => {
     try {
       let response;
       if (editModal.value && selectedId) {
-        // Update existing supplier type, include status
-        response = await updateSupplier({
+        response = await updateTagType({
           id: selectedId,
           ...formData,
         }).unwrap();
       } else {
-        response = await addSupplier({ title: formData.title }).unwrap();
+        response = await addTagType({ title: formData.title }).unwrap();
       }
 
       if (!response) {
@@ -178,10 +179,10 @@ const TagTypeView = () => {
     }
   });
 
-  // DELETE SUPPLIER
+  // DELETE TAG TYPE
   const onDelete = async () => {
     try {
-      const response = await deleteSupplier(selectedId).unwrap();
+      const response = await deleteTagType(selectedId).unwrap();
 
       if (!response) {
         showError('No response from server. Please try again later.');
@@ -267,7 +268,7 @@ const TagTypeView = () => {
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addSupplierLoading || updateSupplierLoading}
+        isLoading={addTagTypeLoading || updateTagTypeLoading}
         selectedVenueType={selectedVenueType}
       />
 
@@ -280,7 +281,7 @@ const TagTypeView = () => {
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteSupplierLoading}
+        isLoading={deleteTagTypeLoading}
       />
     </div>
   );

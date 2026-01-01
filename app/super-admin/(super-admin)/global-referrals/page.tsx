@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <ReferralsView userType="super-admin" global={true} />
+      <ReferralsView global={true} />
     </div>
   );
 };

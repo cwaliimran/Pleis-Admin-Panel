@@ -33,7 +33,6 @@ const ReferralsTable: FC<SamplePageProps> = ({
   global = false,
   meta,
   loading,
-  userType,
   handleDelete,
   handleEdit,
   onPageChange,
@@ -100,20 +99,6 @@ const ReferralsTable: FC<SamplePageProps> = ({
                               value: search,
                               onChange: onSearch,
                             }}
-                            // selectFilters={[
-                            //   {
-                            //     id: 'sheet-revenue',
-                            //     label: 'Status',
-                            //     placeholder: 'Select by Status',
-                            //     value: status,
-                            //     onChange: onStatusChange,
-                            //     options: [
-                            //       { value: 'all', label: 'All' },
-                            //       { value: 'active', label: 'Active' },
-                            //       { value: 'inactive', label: 'Inactive' },
-                            //     ],
-                            //   },
-                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -135,15 +120,7 @@ const ReferralsTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
                 {data?.map((item, idx) => (
-                  // {ReferralData?.map((item, idx) => (
-                  <ReferralsTableRow
-                    key={item?._id || idx}
-                    userType={userType}
-                    global={global}
-                    item={item}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                  />
+                  <ReferralsTableRow key={item?._id || idx} global={global} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>

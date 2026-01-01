@@ -15,75 +15,6 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
 import ReviewsTableRow from './reviews-table-row';
 
-export const reviewDummyData = [
-  {
-    _id: 'rev_001',
-    image: 'https://randomuser.me/api/portraits/women/45.jpg',
-    name: 'Ayesha Khan',
-    organization: 'FoodDeck',
-    serviceType: 'Ordering',
-    review: 'The food ordering experience was smooth and fast. Loved the UI!',
-    createdAt: '2025-01-22T10:15:00Z',
-    status: 'approved',
-    rating: 5,
-  },
-  {
-    _id: 'rev_002',
-    image: 'https://randomuser.me/api/portraits/men/12.jpg',
-    name: 'Bilal Ahmed',
-    organization: 'Eventify',
-    serviceType: 'Ticketing',
-    review: 'Ticket booking was easy but the confirmation email came late.',
-    createdAt: '2025-01-23T14:40:00Z',
-    status: 'pending',
-    rating: 4,
-  },
-  {
-    _id: 'rev_003',
-    image: 'https://randomuser.me/api/portraits/women/33.jpg',
-    name: 'Zainab Fatima',
-    organization: 'DineMate',
-    serviceType: 'Reservation',
-    review: 'Restaurant reservation worked perfectly. No issues at all.',
-    createdAt: '2025-01-20T08:10:00Z',
-    status: 'approved',
-    rating: 5,
-  },
-  {
-    _id: 'rev_004',
-    image: 'https://randomuser.me/api/portraits/men/67.jpg',
-    name: 'Hamza Ali',
-    organization: 'Eventify',
-    serviceType: 'Ticketing',
-    review: 'The ticket page kept loading slowly. Needs some improvements.',
-    createdAt: '2025-01-18T12:55:00Z',
-    status: 'rejected',
-    rating: 2,
-  },
-  {
-    _id: 'rev_005',
-    image: 'https://randomuser.me/api/portraits/women/88.jpg',
-    name: 'Maria Shah',
-    organization: 'FoodDeck',
-    serviceType: 'Ordering',
-    review: 'Excellent service! Delivery was on time and everything was smooth.',
-    createdAt: '2025-01-25T17:20:00Z',
-    status: 'approved',
-    rating: 1,
-  },
-  {
-    _id: 'rev_006',
-    image: 'https://randomuser.me/api/portraits/men/91.jpg',
-    name: 'Usman Tariq',
-    organization: 'DineMate',
-    serviceType: 'Reservation',
-    review: 'It took too long to confirm the reservation. Please improve speed.',
-    createdAt: '2025-01-19T09:00:00Z',
-    status: 'pending',
-    rating: 3,
-  },
-];
-
 const ReviewsTable: FC<SamplePageProps> = ({
   data = [],
   meta,
@@ -111,8 +42,6 @@ const ReviewsTable: FC<SamplePageProps> = ({
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
   });
-
-  console.log('sortedData', sortedData);
 
   const HEAD_LABEL = [
     { id: 'image', label: 'Image', align: 'left' },
@@ -207,8 +136,8 @@ const ReviewsTable: FC<SamplePageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={reviewDummyData?.length || 0}>
-                {reviewDummyData?.map((item, idx) => (
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
+                {sortedData?.map((item, idx) => (
                   <ReviewsTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} user={user} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>

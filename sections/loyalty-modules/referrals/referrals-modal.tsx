@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import {
   useAddGlobalReferralSettingMutation,
+  useAddLocalReferralSettingMutation,
   useResetGlobalReferralSettingMutation,
+  useResetLocalReferralSettingMutation,
   useUpdateGlobalReferralSettingMutation,
+  useUpdateLocalReferralSettingMutation,
 } from '@/store/Reducer/referrals-api';
 import { getErrorMessage } from '@/utils/api';
 import { fDate, formatStr } from '@/utils/format-time';
@@ -30,6 +33,8 @@ type ReferralModalProps = {
   open: boolean;
   onClose: () => void;
   referralSettingData?: any;
+  global?: boolean;
+  companyId?: string | null;
 };
 
 const defaultValues: ReferralFormValues = {
@@ -50,7 +55,7 @@ const schema = Yup.object({
   expiryDate: Yup.string().required(),
 });
 
-const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProps) => {
+const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }: ReferralModalProps) => {
   const methods = useForm<ReferralFormValues>({
     resolver: yupResolver(schema),
     defaultValues,
@@ -61,6 +66,10 @@ const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProp
   const [addSetting, { isLoading: isAdding }] = useAddGlobalReferralSettingMutation();
   const [updateSetting, { isLoading: isUpdating }] = useUpdateGlobalReferralSettingMutation();
   const [resetSetting, { isLoading: isResetting }] = useResetGlobalReferralSettingMutation();
+
+  const [addLocalSetting, { isLoading: isAddingLocal }] = useAddLocalReferralSettingMutation();
+  const [updateLocalSetting, { isLoading: isUpdatingLocal }] = useUpdateLocalReferralSettingMutation();
+  const [resetLocalSetting, { isLoading: isResettingLocal }] = useResetLocalReferralSettingMutation();
 
   const isEditMode = Boolean(referralSettingData?._id);
 
@@ -91,6 +100,7 @@ const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProp
       purchaseThresholdAmount: values.purchaseThresholdAmount,
       referralLimit: values.referralLimit,
       expiryDate: fDate(values.expiryDate, formatStr.paramCase.db),
+      ...(global === false && { companyOrganizer: companyId || undefined }),
     };
 
     const finalPayload = isEditMode
@@ -103,9 +113,17 @@ const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProp
 
     try {
       if (isEditMode) {
-        await updateSetting(finalPayload).unwrap();
+        if (global) {
+          await updateSetting(finalPayload).unwrap();
+        } else {
+          await updateLocalSetting(finalPayload).unwrap();
+        }
       } else {
-        await addSetting(finalPayload).unwrap();
+        if (global) {
+          await addSetting(finalPayload).unwrap();
+        } else {
+          await addLocalSetting(finalPayload).unwrap();
+        }
       }
 
       reset();
@@ -117,7 +135,7 @@ const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProp
 
   const onResetCount = async () => {
     try {
-      const response = await resetSetting({}).unwrap();
+      const response = global ? await resetSetting({}).unwrap() : await resetLocalSetting({}).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -159,7 +177,7 @@ const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProp
               </div>
 
               <div className="mt-6 flex w-full items-center justify-between gap-2">
-                {isResetting ? (
+                {isResettingLocal || isResetting ? (
                   <Button type="button" disabled className="cursor-not-allowed bg-[#82181A] px-4 py-2 text-white hover:bg-[#82181A]/80">
                     <ButtonLoading title="Resetting" />
                   </Button>
@@ -169,7 +187,7 @@ const ReferralModal = ({ open, onClose, referralSettingData }: ReferralModalProp
                   </Button>
                 )}
 
-                {isAdding || isUpdating ? (
+                {isAddingLocal || isUpdatingLocal || isAdding || isUpdating ? (
                   <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                     <ButtonLoading title={isEditMode ? 'Updating' : 'Creating'} />
                   </Button>

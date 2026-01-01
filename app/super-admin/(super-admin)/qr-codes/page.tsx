@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import { QRCodeGeneratorView } from '@/sections/app-ordering/qr-codes/qr-code-generator-view';
+import { QRCodeGeneratorView } from '@/sections/qr-codes/qr-code-generator-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

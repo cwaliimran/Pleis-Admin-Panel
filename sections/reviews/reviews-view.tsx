@@ -1,16 +1,17 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import RatingsSummary from '@/components/common/rating-summary';
 import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeletePromoCodeMutation, useGetPromoCodesQuery } from '@/store/Reducer/promo-codes-api';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useDeleteReviewMutation, useGetReviewsQuery, useUpdateReviewMutation } from '@/store/Reducer/reviews-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
 import ReviewEditModal from './edit-review-modal';
 import ReviewsTable from './reviews-table';
-import RatingsSummary from '@/components/common/rating-summary';
 
 const ReviewsView = () => {
   const openModal = useBoolean();
@@ -28,25 +29,21 @@ const ReviewsView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deletePromoCode, { isLoading: deleteLoading }] = useDeletePromoCodeMutation();
+  const [deleteReview, { isLoading: deleteLoading }] = useDeleteReviewMutation();
+  const [updateReview, { isLoading: updateLoading }] = useUpdateReviewMutation();
 
-  const {
-    data: apiData,
-    isLoading,
-    // refetch,
-  } = useGetPromoCodesQuery({
+  const { companyId } = useCompanySelectionState();
+
+  const { data: apiData, isLoading } = useGetReviewsQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: companyId || undefined,
   });
 
-  console.log('apiData', apiData);
-
-  // useEffect(() => {
-  //   refetch();
-  // }, [selectedCompany, refetch]);
+  const reviewsStatData = apiData?.meta || {};
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -71,7 +68,6 @@ const ReviewsView = () => {
     }
   }, [apiData, page, limit]);
 
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
   const handleEdit = (id: string, review: string) => {
     setSelectedId(id);
     setSelectedRecord(review);
@@ -80,14 +76,29 @@ const ReviewsView = () => {
   };
 
   const handleUpdate = async (updatedReview: string) => {
-    console.log('updatedReview', updatedReview);
-    editModal.onFalse();
+    if (!selectedId) {
+      showError('No review selected');
+      return;
+    }
+    try {
+      const response = await updateReview({ id: selectedId, comment: updatedReview }).unwrap();
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+      showSuccess(response?.message || 'Review updated successfully');
+      editModal.onFalse();
+      setSelectedId(null);
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
   };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No promo code selected');
+        showError('No review selected');
         return;
       }
 
@@ -100,7 +111,7 @@ const ReviewsView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deletePromoCode(selectedId).unwrap();
+      const response = await deleteReview(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -121,8 +132,8 @@ const ReviewsView = () => {
     <div>
       <RatingsSummary
         title="Customer Reviews"
-        averageRating={4.5}
-        totalRatings={24000}
+        averageRating={reviewsStatData?.avgRating || 0}
+        totalRatings={reviewsStatData?.totalCount || 0}
         distribution={[
           { stars: 5, count: 20000, percentage: 83 },
           { stars: 4, count: 2000, percentage: 8 },
@@ -170,7 +181,13 @@ const ReviewsView = () => {
       />
 
       {editModal.value && (
-        <ReviewEditModal open={editModal.value} onClose={editModal.onFalse} defaultReview={selectedRecord} onUpdate={handleUpdate} />
+        <ReviewEditModal
+          open={editModal.value}
+          onClose={editModal.onFalse}
+          defaultReview={selectedRecord}
+          onUpdate={handleUpdate}
+          loading={updateLoading}
+        />
       )}
 
       <ConfirmDialog
