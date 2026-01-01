@@ -9,15 +9,15 @@ export const qrcodesApi = createApi({
 
   endpoints: (builder) => ({
     getQrcodes: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ companyOrganizer }) => {
         const params: any = {
-          keyword: search,
-          status,
-          page: page + 1,
-          limit,
+          // keyword: search,
+          // status,
+          // page: page + 1,
+          limit: 1000,
         };
 
-        if (date) (params as any).date = date;
+        // if (date) (params as any).date = date;
         if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         return {
           url: API_ROUTES.ADMIN_QR_CODE,
@@ -41,15 +41,6 @@ export const qrcodesApi = createApi({
       invalidatesTags: ['qrcode'],
     }),
 
-    updateQrcode: builder.mutation({
-      query: ({ id, ...updatedQrcode }) => ({
-        url: API_ROUTES.ADMIN_QR_CODE_BY_ID(id),
-        method: 'PUT',
-        body: updatedQrcode,
-      }),
-      invalidatesTags: ['qrcode'],
-    }),
-
     deleteQrcode: builder.mutation({
       query: (id) => ({
         url: API_ROUTES.ADMIN_QR_CODE_BY_ID(id),
@@ -60,4 +51,4 @@ export const qrcodesApi = createApi({
   }),
 });
 
-export const { useGetQrcodesQuery, useAddQrcodeMutation, useUpdateQrcodeMutation, useDeleteQrcodeMutation } = qrcodesApi;
+export const { useGetQrcodesQuery, useAddQrcodeMutation, useDeleteQrcodeMutation } = qrcodesApi;
