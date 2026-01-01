@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <ReferralsView userType="organizer" />
+      <ReferralsView />
     </div>
   );
 };

@@ -2,12 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetGlobalReferralSettingQuery, useGetLocalReferralSettingQuery, useGetReferralsQuery } from '@/store/Reducer/referrals-api';
 import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import RefferralModal from './referrals-modal';
 import ReferralsTable from './referrals-table';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 interface ReferralsViewProps {
   // userType: 'super-admin' | 'organizer';
