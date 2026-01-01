@@ -147,10 +147,14 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/reward/${id}` : `/admin/loyalty/rewards/${id}`),
 
   ADMIN_GLOBAL_REFERRALS_SETTING: `/admin/global-loyalty/referrals`,
-  ADMIN_GLOBAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/global-loyalty/referrals/${id}`,
   ADMIN_GLOBAL_REFERRALS_SETTING_RESET: `/admin/global-loyalty/referrals/reset`,
+  ADMIN_GLOBAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/global-loyalty/referrals/${id}`,
 
-  ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referrals/user'),
+  ADMIN_LOCAL_REFERRALS_SETTING: `/admin/loyalty/referral`,
+  ADMIN_LOCAL_REFERRALS_SETTING_RESET: `/admin/loyalty/referral/reset`,
+  ADMIN_LOCAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/loyalty/referral/${id}`,
+
+  ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referral/user'),
   ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
 
   ADMIN_LOYALTY_MEMBERS: `/admin/loyalty/club-members`,

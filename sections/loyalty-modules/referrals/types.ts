@@ -10,7 +10,7 @@ export interface SamplePageProps {
   global?: boolean;
   data: any[];
   meta: SampleMeta;
-  userType: 'super-admin' | 'organizer';
+  userType?: 'super-admin' | 'organizer';
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
@@ -29,7 +29,7 @@ export interface SamplePageProps {
 export interface TableRowProps {
   item: any;
   global?: boolean;
-  userType: 'super-admin' | 'organizer';
+  // userType: 'super-admin' | 'organizer';
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
