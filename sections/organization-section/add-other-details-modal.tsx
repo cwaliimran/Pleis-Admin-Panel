@@ -166,7 +166,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
   const tagOptions =
     tagData?.data?.map((tag: any) => ({
       label: tag?.title,
-      value: tag?.id,
+      value: tag?._id,
     })) || [];
 
   const venueOptions =
@@ -190,7 +190,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
           ...defaultValues,
           description: newOrganization.otherInfo.description || '',
           minAge: String(newOrganization.otherInfo.minAge ?? ''),
-          tags: newOrganization.otherInfo.tags?.map((tag: any) => tag._id) || [],
+          tags: newOrganization.otherInfo.tags?.map((tag: any) => tag.id) || [],
           categories: newOrganization.otherInfo.categories?.map((cat: any) => cat._id) || [],
           existingGallery: initialGalleryMediaInfo.map((m: any) => m) || [],
           venue: newOrganization.venue?._id || '',
@@ -264,16 +264,11 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
   // }, [watchVenue, venueData, setValue]);
 
   useEffect(() => {
-    console.log('watchVenue:', watchVenue);
-    console.log('venueData:', venueData);
 
     if (watchVenue && venueData?.data) {
       const selectedVenue = venueData.data.find((v: any) => v._id === watchVenue);
-      console.log('selectedVenue:', selectedVenue);
 
       if (selectedVenue?.location) {
-        console.log('Setting location:', selectedVenue.location.fullAddress);
-
         setValue('location.address', selectedVenue.location.fullAddress || '', { shouldValidate: true, shouldDirty: true });
         setValue('location.city', selectedVenue.location.city || '', { shouldValidate: true, shouldDirty: true });
         setValue('location.postalCode', selectedVenue.location.postalCode || '', { shouldValidate: true, shouldDirty: true });
@@ -385,7 +380,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
       }
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to update details:', errorMessage);
       showError(errorMessage);
       // Delete newly uploaded files on error
       if (galleryMedia.length > 0) {
@@ -581,8 +575,6 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ open, onClose, initialExist
   const [images, setImages] = useState<GalleryItem[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  console.log('initialExisting', initialExisting);
 
   useEffect(() => {
     if (!open) {
