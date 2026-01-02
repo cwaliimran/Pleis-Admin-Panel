@@ -18,7 +18,7 @@ const Page = () => {
       />
 
       <CompanyGuard>
-        <ReviewsView />
+        <ReviewsView userType="super-admin"/>
       </CompanyGuard>
     </div>
   );

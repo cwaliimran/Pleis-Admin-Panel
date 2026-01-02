@@ -64,6 +64,8 @@ export const API_ROUTES = {
   LOYALTY_PROMOTION: `/loyalty/promotions`,
   LOYALTY_PROMOTION_BY_ID: (id: string) => `/loyalty/promotions/${id}`,
 
+  ORGANIZER_REVIEWS: `/organizer/reviews`,
+
   LOYALTY_CHALLENGE: `/loyalty/challenges`,
   LOYALTY_CHALLENGE_BY_ID: (id: string) => `/loyalty/challenges/${id}`,
 
@@ -86,11 +88,12 @@ export const API_ROUTES = {
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
 
-  ADMIN_REVIEWS: `/admin/reviews`,
+  // ADMIN_REVIEWS: `/admin/reviews`,
+  ADMIN_REVIEWS: (userType: string) => (userType === 'super-admin' ? '/admin/reviews' : '/organizer/reviews'),
   ADMIN_REVIEWS_BY_ID: (id: string) => `/admin/reviews/${id}`,
 
-  ADMIN_TAG_TYPE: `/admin/tag-types`,
-  ADMIN_TAG_TYPE_BY_ID: (id: string) => `/admin/tag-types/${id}`,
+  ADMIN_TAG_TYPE: `/admin/tags-types`,
+  ADMIN_TAG_TYPE_BY_ID: (id: string) => `/admin/tags-types/${id}`,
 
   ADMIN_QR_CODE: `/admin/qr-code`,
   ADMIN_QR_CODE_BY_ID: (id: string) => `/admin/qr-code/${id}`,

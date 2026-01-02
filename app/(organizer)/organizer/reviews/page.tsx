@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <ReviewsView />
+      <ReviewsView userType="organizer" />
     </div>
   );
 };

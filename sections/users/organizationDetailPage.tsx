@@ -54,15 +54,12 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
   const [deleteOrganization, { isLoading: deleteOrganizationLoading }] = useDeleteOrganizationMutation();
 
   const organizationData = data?.data;
-  // console.log('organizationData', organizationData);
 
   const [active, setActive] = useState('info');
   // const [activeTab, setActiveTab] = useState('basicInfo');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [newOrganization, setNewOrganization] = useState<any>();
-
-  // console.log('newOrganization', newOrganization);
 
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -133,11 +130,9 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
       refetch();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to upload cover image:', errorMessage);
       showError(errorMessage);
 
       if (uploadedFileKey) {
-        console.log('Rolling back uploaded cover image:', uploadedFileKey);
         await deleteFileFromAzure(uploadedFileKey);
       }
     } finally {
@@ -177,7 +172,6 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
       router.push(`/${userType}/organization/organization-list`);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete organization:', errorMessage);
       showError(errorMessage);
     }
   };
