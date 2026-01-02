@@ -10,10 +10,15 @@ import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
+import RatingsSummarySkeleton from './components/rating-skelton';
 import ReviewEditModal from './edit-review-modal';
 import ReviewsTable from './reviews-table';
 
-const ReviewsView = () => {
+type ReviewsViewProps = {
+  userType: 'super-admin' | 'organizer';
+};
+
+const ReviewsView = ({ userType }: ReviewsViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -41,6 +46,7 @@ const ReviewsView = () => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: companyId || undefined,
+    userType: userType,
   });
 
   const reviewsStatData = apiData?.meta || {};
@@ -130,18 +136,16 @@ const ReviewsView = () => {
 
   return (
     <div>
-      <RatingsSummary
-        title="Customer Reviews"
-        averageRating={reviewsStatData?.avgRating || 0}
-        totalRatings={reviewsStatData?.totalCount || 0}
-        distribution={[
-          { stars: 5, count: 20000, percentage: 83 },
-          { stars: 4, count: 2000, percentage: 8 },
-          { stars: 3, count: 1000, percentage: 4 },
-          { stars: 2, count: 500, percentage: 2 },
-          { stars: 1, count: 500, percentage: 3 },
-        ]}
-      />
+      {isLoading ? (
+        <RatingsSummarySkeleton />
+      ) : (
+        <RatingsSummary
+          title="Customer Reviews"
+          averageRating={reviewsStatData?.avgRating || 0}
+          totalRatings={reviewsStatData?.totalCount || 0}
+          distribution={reviewsStatData?.distribution || []}
+        />
+      )}
 
       <ReviewsTable
         data={localData}

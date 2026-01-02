@@ -9,7 +9,7 @@ export const reviewsApi = createApi({
 
   endpoints: (builder) => ({
     getReviews: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, userType }) => {
         const params: any = {
           keyword: search,
           status,
@@ -20,7 +20,7 @@ export const reviewsApi = createApi({
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         return {
-          url: API_ROUTES.ADMIN_REVIEWS,
+          url: API_ROUTES.ADMIN_REVIEWS(userType),
           method: 'GET',
           params,
         };
