@@ -8,7 +8,7 @@ import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
-import SubscriptionModal from '../edit-subscription-modal';
+import SubscriptionModal from './edit-subscription-modal';
 import SubscriptionTable from './subscription-table';
 
 type Props = {

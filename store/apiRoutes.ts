@@ -85,6 +85,13 @@ export const API_ROUTES = {
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
 
+  ADMIN_NOTIFICATIONS: `/admin/notifications`,
+  ADMIN_NOTIFICATIONS_GET_ALL: `/admin/notifications/all`,
+  ADMIN_NOTIFICATIONS_BY_ID: (id: string) => `/admin/notifications/${id}`,
+  ADMIN_GET_ALL_ORGANIZATIONS: `/admin/notifications/organizations`,
+  ADMIN_GET_ALL_EVENTS: `/admin/notifications/events`,
+  ADMIN_GET_ALL_INTEREST_TAGS: `/admin/notifications/tags`,
+
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
 
