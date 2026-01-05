@@ -1,27 +1,35 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
-import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import ButtonLoading from '@/components/common/button-loading';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { showError, showSuccess } from '@/utils/toast';
+import {
+  useAddNotificationMutation,
+  useGetAllEventsQuery,
+  useGetAllInterestTagsQuery,
+  useGetAllOrganizatonsQuery,
+} from '@/store/Reducer/notifications-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
-import { Link2, Clock } from 'lucide-react';
-import { NotificationFormValues, Notification, DestinationType } from './types';
-import { DESTINATION_TYPE_OPTIONS, GENDER_OPTIONS, INTERESTS_OPTIONS, DEFAULT_LOCATION_RADIUS, DEFAULT_AGE_MIN, DEFAULT_AGE_MAX } from './constants';
-import { MOCK_ORGANIZATIONS, MOCK_EVENTS } from './mock-data';
-// import { useAddNotificationMutation, useUpdateNotificationMutation } from '@/store/Reducer/notifications-api';
-// import { useGetOrganizationsQuery } from '@/store/Reducer/organizations-api';
-// import { useGetEventsQuery } from '@/store/Reducer/events-api';
+import { extractAddress } from '@/utils/format-google-address';
+import { showError, showSuccess } from '@/utils/toast';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
+import { Calendar, Clock, Link2, MapPin, Users } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import * as Yup from 'yup';
+import { DEFAULT_AGE_MAX, DEFAULT_AGE_MIN, DEFAULT_LOCATION_RADIUS, DESTINATION_TYPE_OPTIONS, GENDER_OPTIONS } from './constants';
+import { NotificationFormValues, SendTiming } from './types';
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+const googleMapsLibraries: 'places'[] = ['places'];
 
 const schema = Yup.object().shape({
   title: Yup.string().required('Title is required').min(3, 'Title must be at least 3 characters'),
@@ -31,30 +39,51 @@ const schema = Yup.object().shape({
     .max(200, 'Message must not exceed 200 characters'),
   image: Yup.mixed().nullable(),
   destinationType: Yup.string()
-    .oneOf(['none', 'organization', 'event'] as const)
+    .oneOf(['home', 'organization', 'event'] as const)
     .required('Destination type is required'),
-  destinationId: Yup.string().when('destinationType', {
-    is: (val: DestinationType) => val === 'organization' || val === 'event',
-    then: (schema) => schema.required('Please select a destination'),
-    otherwise: (schema) => schema,
+  organizationId: Yup.string().when('destinationType', {
+    is: 'organization',
+    then: (schema) => schema.required('Please select an organization'),
+    otherwise: (schema) => schema.notRequired(),
   }),
-  destinationName: Yup.string(),
-  sendTime: Yup.string()
-    .oneOf(['immediate', 'scheduled'] as const)
-    .required('Send time is required'),
-  scheduledDateTime: Yup.string().when('sendTime', {
-    is: 'scheduled',
+  eventId: Yup.string().when('destinationType', {
+    is: 'event',
+    then: (schema) => schema.required('Please select an event'),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  sendTiming: Yup.string()
+    .oneOf(['immediately', 'schedule'] as const)
+    .required('Send timing is required'),
+  scheduledDateTime: Yup.string().when('sendTiming', {
+    is: 'schedule',
     then: (schema) => schema.required('Scheduled date and time is required'),
-    otherwise: (schema) => schema,
+    otherwise: (schema) => schema.notRequired(),
   }),
 
-  // Targeting fields
+  // Location
   locationEnabled: Yup.boolean(),
-  locationName: Yup.string().when('locationEnabled', {
+  locationFullAddress: Yup.string().when('locationEnabled', {
     is: true,
-    then: (schema) => schema.required('Location is required'),
-    otherwise: (schema) => schema,
+    then: (schema) => schema.required('Location address is required'),
+    otherwise: (schema) => schema.notRequired(),
   }),
+  locationCity: Yup.string(),
+  locationState: Yup.string(),
+  locationCountry: Yup.string(),
+  locationLat: Yup.number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .when('locationEnabled', {
+      is: true,
+      then: (schema) => schema.required('Latitude is required').min(-90, 'Invalid latitude').max(90, 'Invalid latitude'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  locationLong: Yup.number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .when('locationEnabled', {
+      is: true,
+      then: (schema) => schema.required('Longitude is required').min(-180, 'Invalid longitude').max(180, 'Invalid longitude'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   locationRadius: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .when('locationEnabled', {
@@ -63,13 +92,14 @@ const schema = Yup.object().shape({
       otherwise: (schema) => schema.min(1, 'Radius must be at least 1 km').max(200, 'Radius cannot exceed 200 km'),
     }),
 
+  // Age Range
   ageRangeEnabled: Yup.boolean(),
   ageMin: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .when('ageRangeEnabled', {
       is: true,
-      then: (schema) => schema.required('Minimum age is required').min(10, 'Minimum age must be at least 10').max(100, 'Invalid age'),
-      otherwise: (schema) => schema.min(10, 'Minimum age must be at least 10').max(100, 'Invalid age'),
+      then: (schema) => schema.required('Minimum age is required').min(13, 'Minimum age must be at least 13').max(100, 'Invalid age'),
+      otherwise: (schema) => schema.notRequired(),
     }),
   ageMax: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
@@ -85,20 +115,14 @@ const schema = Yup.object().shape({
             if (!value || !ageMin) return true;
             return value > ageMin;
           }),
-      otherwise: (schema) =>
-        schema
-          .min(13, 'Maximum age must be at least 13')
-          .max(100, 'Invalid age')
-          .test('age-range', 'Max age must be greater than min age', function (value) {
-            const { ageMin } = this.parent;
-            if (!value || !ageMin) return true;
-            return value > ageMin;
-          }),
+      otherwise: (schema) => schema.notRequired(),
     }),
 
+  // Gender
   genderEnabled: Yup.boolean(),
   genderValue: Yup.string().oneOf(['all', 'male', 'female', 'other'] as const),
 
+  // Interests
   interestsEnabled: Yup.boolean(),
   selectedInterests: Yup.array().of(Yup.string()),
 });
@@ -107,13 +131,18 @@ const defaultValues: NotificationFormValues = {
   title: '',
   message: '',
   image: null,
-  destinationType: 'none',
-  destinationId: '',
-  destinationName: '',
-  sendTime: 'immediate',
+  destinationType: 'home',
+  organizationId: '',
+  eventId: '',
+  sendTiming: 'immediately',
   scheduledDateTime: '',
   locationEnabled: false,
-  locationName: '',
+  locationFullAddress: '',
+  locationCity: '',
+  locationState: '',
+  locationCountry: '',
+  locationLat: 0,
+  locationLong: 0,
   locationRadius: DEFAULT_LOCATION_RADIUS,
   ageRangeEnabled: false,
   ageMin: DEFAULT_AGE_MIN,
@@ -128,31 +157,42 @@ interface NotificationModalProps {
   open: boolean;
   onClose: () => void;
   isEdit?: boolean;
-  selectedData?: Notification | null;
+  selectedData?: any | null;
 }
 
 export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose, isEdit = false, selectedData }) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
-  // Uncomment when API is ready
-  // const [addNotification, { isLoading: addLoading }] = useAddNotificationMutation();
-  // const [updateNotification, { isLoading: updateLoading }] = useUpdateNotificationMutation();
-  // const { data: organizationsData, isLoading: organizationsLoading } = useGetOrganizationsQuery({
-  //   page: 0,
-  //   search: '',
-  //   limit: '10000',
-  // });
-  // const { data: eventsData, isLoading: eventsLoading } = useGetEventsQuery({
-  //   page: 0,
-  //   search: '',
-  //   limit: '10000',
-  // });
+  const [addNotification, { isLoading: addLoading }] = useAddNotificationMutation();
 
-  const addLoading = false;
-  const updateLoading = false;
-  const organizationsLoading = false;
-  const eventsLoading = false;
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY as string,
+    libraries: googleMapsLibraries,
+  });
+
+  const { data: organizationsData, isLoading: isLoadingOrganizations } = useGetAllOrganizatonsQuery({
+    page: 0,
+    search: '',
+    limit: '100',
+    status: '',
+  });
+
+  const { data: eventData, isLoading: isLoadingEvents } = useGetAllEventsQuery({
+    page: 0,
+    search: '',
+    limit: '100',
+    status: '',
+  });
+
+  const { data: interestTagsData, isLoading: isLoadingInterestTags } = useGetAllInterestTagsQuery({
+    page: 0,
+    search: '',
+    limit: '100',
+    status: '',
+  });
 
   const methods = useForm<NotificationFormValues>({
     resolver: yupResolver(schema) as any,
@@ -160,140 +200,170 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
     mode: 'onChange',
   });
 
-  const { reset, watch, setValue } = methods;
+  const {
+    reset,
+    watch,
+    setValue,
+    formState: { isDirty },
+    control,
+  } = methods;
 
   const destinationType = watch('destinationType');
-  const sendTime = watch('sendTime');
+  const sendTiming = watch('sendTiming');
   const locationEnabled = watch('locationEnabled');
   const ageRangeEnabled = watch('ageRangeEnabled');
   const genderEnabled = watch('genderEnabled');
   const interestsEnabled = watch('interestsEnabled');
   const selectedInterests = watch('selectedInterests');
+  const locationCoordinates = [watch('locationLat'), watch('locationLong')];
 
-  // Map mock data to dropdown options
+  // Map API data to dropdown options
   const organizationOptions =
-    MOCK_ORGANIZATIONS.map((org) => ({
-      label: org.name,
-      value: org._id,
+    organizationsData?.map((org: any) => ({
+      label: org?.title || 'No Name',
+      value: org?._id,
     })) || [];
 
   const eventOptions =
-    MOCK_EVENTS.map((event) => ({
-      label: event.title,
-      value: event._id,
+    eventData?.map((event: any) => ({
+      label: event?.title || 'No Title',
+      value: event?._id,
     })) || [];
+
+  const interestOptions =
+    interestTagsData?.map((interest: any) => ({
+      label: interest?.title || 'No Title',
+      value: interest?._id,
+    })) || [];
+
+  // Google Places Autocomplete handlers
+  const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    autocompleteRef.current = autocomplete;
+  };
+
+  const onPlaceChanged = async () => {
+    const place = autocompleteRef.current?.getPlace();
+    if (place) {
+      const address = await extractAddress(place);
+      setValue('locationFullAddress', address.address_line_1 || '', { shouldValidate: true });
+      setValue('locationCity', address.city || '', { shouldValidate: true });
+      setValue('locationState', address.province || '', { shouldValidate: true });
+      setValue('locationCountry', address.country || '', { shouldValidate: true });
+      setValue('locationLat', address.latitude || 0, { shouldValidate: true });
+      setValue('locationLong', address.longitude || 0, { shouldValidate: true });
+    }
+  };
 
   // Populate form in edit mode
   useEffect(() => {
     if (isEdit && selectedData && open) {
-      const mappedData: NotificationFormValues = {
-        title: selectedData.title || '',
-        message: selectedData.message || '',
-        image: selectedData.image || null,
-        destinationType: selectedData.destination?.type || 'none',
-        destinationId: selectedData.destination?.id || '',
-        destinationName: selectedData.destination?.name || '',
-        sendTime: selectedData.status === 'scheduled' ? 'scheduled' : 'immediate',
-        scheduledDateTime: selectedData.sendTime ? new Date(selectedData.sendTime).toISOString().slice(0, 16) : '',
-        locationEnabled: !!selectedData.targeting?.location,
-        locationName: selectedData.targeting?.location?.name || '',
-        locationRadius: selectedData.targeting?.location?.radius || DEFAULT_LOCATION_RADIUS,
-        ageRangeEnabled: !!selectedData.targeting?.ageRange,
-        ageMin: selectedData.targeting?.ageRange?.min || DEFAULT_AGE_MIN,
-        ageMax: selectedData.targeting?.ageRange?.max || DEFAULT_AGE_MAX,
-        genderEnabled: !!selectedData.targeting?.gender && selectedData.targeting.gender !== 'all',
-        genderValue: selectedData.targeting?.gender || 'all',
-        interestsEnabled: !!selectedData.targeting?.interests && selectedData.targeting.interests.length > 0,
-        selectedInterests: selectedData.targeting?.interests || [],
-      };
-
-      reset(mappedData);
+      // Edit mode population logic here if needed
+      reset(defaultValues);
     } else if (open && !isEdit) {
       reset(defaultValues);
     }
   }, [isEdit, selectedData, open, reset]);
 
+  const transformToPayload = (formData: NotificationFormValues) => {
+    const payload: any = {
+      destinationType: formData.destinationType,
+      title: formData.title,
+      message: formData.message,
+      sendTiming: formData.sendTiming,
+    };
+
+    // Add destination-specific fields
+    if (formData.destinationType === 'organization' && formData.organizationId) {
+      payload.organizationId = formData.organizationId;
+    }
+
+    if (formData.destinationType === 'event' && formData.eventId) {
+      payload.eventId = formData.eventId;
+    }
+    // Add scheduled date time if needed
+    if (formData.sendTiming === 'schedule' && formData.scheduledDateTime) {
+      const date = new Date(formData.scheduledDateTime);
+      // Format as "YYYY-MM-DD hh:mm AM/PM"
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      let hours = date.getHours();
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours === 0 ? 12 : hours;
+      const hourStr = String(hours).padStart(2, '0');
+      payload.scheduledDateTime = `${year}-${month}-${day} ${hourStr}:${minutes} ${ampm}`;
+    }
+
+    // Add location if enabled
+    if (formData.locationEnabled && formData.locationFullAddress) {
+      payload.location = {
+        city: formData.locationCity,
+        lat: formData.locationLat,
+        long: formData.locationLong,
+        radius: formData.locationRadius,
+      };
+    }
+
+    // Add age range if enabled
+    if (formData.ageRangeEnabled && formData.ageMin && formData.ageMax) {
+      payload.ageRange = [formData.ageMin, formData.ageMax];
+    }
+
+    // Add gender if enabled and not 'all'
+    if (formData.genderEnabled && formData.genderValue && formData.genderValue !== 'all') {
+      payload.gender = formData.genderValue;
+    }
+
+    // Add interests if enabled
+    if (formData.interestsEnabled && formData.selectedInterests && formData.selectedInterests.length > 0) {
+      payload.interests = formData.selectedInterests;
+    }
+
+    return payload;
+  };
+
   const handleSubmit = async (formData: NotificationFormValues) => {
     let uploadedFileKey: string | null = null;
 
+    // Check that image is uploaded
+    if (!formData.image || (formData.image instanceof FileList && formData.image.length === 0)) {
+      showError('Please upload a notification image.');
+      return;
+    }
+
     try {
       // Upload image if provided
+
       if (formData.image instanceof FileList && formData.image.length > 0) {
         const file = formData.image[0];
         uploadedFileKey = await uploadImage(file);
       }
 
       // Build payload
-      const payload: any = {
-        title: formData.title,
-        message: formData.message,
-        destination: {
-          type: formData.destinationType,
-          id: formData.destinationId || undefined,
-          name: formData.destinationName || undefined,
-        },
-        sendTime: formData.sendTime === 'immediate' ? new Date().toISOString() : new Date(formData.scheduledDateTime).toISOString(),
-        status: formData.sendTime === 'immediate' ? 'sent' : 'scheduled',
-        targeting: {},
-      };
+      const payload = transformToPayload(formData);
+
+      if (!payload) return;
 
       // Add image if uploaded
       if (uploadedFileKey) {
         payload.image = uploadedFileKey;
-      } else if (isEdit && selectedData?.image) {
-        payload.image = selectedData.image;
       }
 
-      // Add targeting data
-      if (formData.locationEnabled && formData.locationName) {
-        payload.targeting.location = {
-          name: formData.locationName,
-          radius: formData.locationRadius,
-        };
+      const response = await addNotification(payload).unwrap();
+
+      if (!response) {
+        showError('No response from server. Please try again later.');
+        return;
       }
 
-      if (formData.ageRangeEnabled) {
-        payload.targeting.ageRange = {
-          min: formData.ageMin,
-          max: formData.ageMax,
-        };
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
       }
 
-      if (formData.genderEnabled) {
-        payload.targeting.gender = formData.genderValue;
-      }
-
-      if (formData.interestsEnabled && formData.selectedInterests.length > 0) {
-        payload.targeting.interests = formData.selectedInterests;
-      }
-
-      // Add edit-specific fields
-      if (isEdit && selectedData) {
-        payload.id = selectedData._id;
-      }
-
-      // Uncomment when API is ready
-      // const response = isEdit
-      //   ? await updateNotification(payload).unwrap()
-      //   : await addNotification(payload).unwrap();
-
-      // if (!response) {
-      //   showError('No response from server. Please try again later.');
-      //   return;
-      // }
-
-      // if (response?.error) {
-      //   showError(getErrorMessage(response.error));
-      //   return;
-      //}
-
-      // showSuccess(
-      //   response?.message || (isEdit ? 'Notification updated successfully' : 'Notification created successfully')
-      // );
-
-      // Mock success for now
-      console.log('Notification payload:', payload);
-      showSuccess(isEdit ? 'Notification updated successfully' : 'Notification created successfully');
+      showSuccess(response?.message || 'Notification created successfully');
 
       reset(defaultValues);
       onClose();
@@ -320,13 +390,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
     onClose();
   };
 
-  const toggleInterest = (interest: string) => {
-    const current = selectedInterests;
-    const newSelected = current.includes(interest) ? current.filter((i) => i !== interest) : [...current, interest];
-    setValue('selectedInterests', newSelected);
-  };
-
-  const isLoading = addLoading || updateLoading || imageUploading || deleting;
+  const isLoading = addLoading || imageUploading || deleting;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -334,6 +398,12 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
         <DialogContent
           aria-describedby={undefined}
           className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[700px]!"
+          onInteractOutside={(event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest('.pac-container')) {
+              event.preventDefault();
+            }
+          }}
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Notification' : 'Create Global Notification'}</DialogTitle>
@@ -344,12 +414,19 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
               <div className="mt-6 flex w-full flex-col gap-6">
                 {/* Content Section */}
                 <div className="space-y-4">
-                  <RHFUploadAvatar name="image" label="Image (Optional)" />
+                  <RHFUploadAvatar name="image" label="Notification Image (Optional)" />
 
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
+                  <div className="grid grid-cols-1 gap-4">
                     <RHFTextField name="title" label="Title" placeholder="e.g., Weekend Sale - 30% Off!" />
 
-                    <RHFTextField name="message" label="Message" placeholder="Enter your notification message..." multiline rows={3} />
+                    <RHFTextField
+                      className="capitalize"
+                      name="message"
+                      label="Message"
+                      placeholder="Enter your notification message..."
+                      multiline
+                      rows={3}
+                    />
                   </div>
 
                   <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
@@ -374,18 +451,18 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
 
                     {destinationType === 'organization' && (
                       <>
-                        {organizationsLoading ? (
+                        {isLoadingOrganizations ? (
                           <div className="space-y-2">
                             <Skeleton className="ml-1 h-3 w-20" />
                             <Skeleton className="h-10" />
                           </div>
                         ) : (
                           <RHFCustomDropdown
-                            name="destinationId"
+                            name="organizationId"
                             label="Select Organization"
                             placeholder="Choose organization"
                             options={organizationOptions}
-                            isLoading={organizationsLoading}
+                            isLoading={isLoadingOrganizations}
                             showNone={false}
                           />
                         )}
@@ -394,18 +471,18 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
 
                     {destinationType === 'event' && (
                       <>
-                        {eventsLoading ? (
+                        {isLoadingEvents ? (
                           <div className="space-y-2">
                             <Skeleton className="ml-1 h-3 w-20" />
                             <Skeleton className="h-10" />
                           </div>
                         ) : (
                           <RHFCustomDropdown
-                            name="destinationId"
+                            name="eventId"
                             label="Select Event"
                             placeholder="Choose event"
                             options={eventOptions}
-                            isLoading={eventsLoading}
+                            isLoading={isLoadingEvents}
                             showNone={false}
                           />
                         )}
@@ -417,7 +494,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                 {/* User Targeting Section */}
                 <div className="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
                   <div className="mb-4 flex items-center justify-between">
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                    <h4 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-gray-100">
+                      <Users className="h-5 w-5" />
                       User Targeting <span className="text-sm font-normal text-gray-500 dark:text-gray-400">(Optional)</span>
                     </h4>
                     <div className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
@@ -425,9 +503,13 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
+                  <div className="grid grid-cols-1 gap-4">
                     {/* Location Filter */}
-                    <div className="rounded-lg border-2 border-gray-200 bg-gray-50/50 p-4 transition-all dark:border-gray-700 dark:bg-gray-800/30">
+                    <div
+                      className={`rounded-lg border-2 bg-gray-50/50 p-4 transition-all dark:bg-gray-800/30 ${
+                        locationEnabled ? 'border-blue-300 dark:border-blue-700' : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
                       <label className={`${locationEnabled ? 'mb-3' : ''} flex cursor-pointer items-center justify-between`}>
                         <div className="flex items-center gap-2">
                           <input
@@ -436,6 +518,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                             onChange={(e) => setValue('locationEnabled', e.target.checked)}
                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
                           />
+                          <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                           <span className="font-medium text-gray-900 dark:text-gray-100">Location</span>
                         </div>
                         {locationEnabled && (
@@ -445,16 +528,60 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                         )}
                       </label>
                       {locationEnabled && (
-                        <div className="mt-2 space-y-2">
-                          <RHFTextField name="locationName" placeholder="Enter city name" className="text-sm" />
-                          <RHFTextField name="locationRadius" type="number" placeholder="Radius (km)" min="1" max="200" className="text-sm" />
+                        <div className="mt-3 space-y-3">
+                          {/* Google Places Autocomplete */}
+                          <div className="w-full">
+                            <label htmlFor="location-input" className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Location Address
+                            </label>
+                            {isLoaded && (
+                              <Controller
+                                name="locationFullAddress"
+                                control={control}
+                                render={({ field }) => (
+                                  <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                                    <input
+                                      id="location-input"
+                                      type="text"
+                                      placeholder="Enter Location"
+                                      value={field.value || ''}
+                                      className="h-10 w-full rounded-md border bg-white px-3 py-2 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-700 dark:bg-[#212121] dark:placeholder:text-slate-400"
+                                      onChange={(e) => field.onChange(e.target.value)}
+                                      onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+                                    />
+                                  </Autocomplete>
+                                )}
+                              />
+                            )}
+                          </div>
+
+                          {/* Radius */}
+                          <RHFTextField name="locationRadius" label="Radius (km)" type="number" placeholder="50" min="1" max="200" />
+
+                          {/* Map Preview */}
+                          {locationCoordinates[0] !== 0 && locationCoordinates[1] !== 0 && (
+                            <div className="w-full">
+                              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Map Preview</label>
+                              <div className="h-[200px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
+                                <iframe
+                                  title="Notification Location Map"
+                                  src={`https://www.google.com/maps?q=${locationCoordinates[0]},${locationCoordinates[1]}&hl=es;z=14&output=embed`}
+                                  className="h-full w-full border-0"
+                                  referrerPolicy="no-referrer-when-downgrade"
+                                ></iframe>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
 
                     {/* Age Range Filter */}
-                    <div className="rounded-lg border-2 border-gray-200 bg-gray-50/50 p-4 transition-all dark:border-gray-700 dark:bg-gray-800/30">
-                      {/* <label className="mb-3 flex cursor-pointer items-center justify-between"> */}
+                    <div
+                      className={`rounded-lg border-2 bg-gray-50/50 p-4 transition-all dark:bg-gray-800/30 ${
+                        ageRangeEnabled ? 'border-purple-300 dark:border-purple-700' : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
                       <label className={`${ageRangeEnabled ? 'mb-3' : ''} flex cursor-pointer items-center justify-between`}>
                         <div className="flex items-center gap-2">
                           <input
@@ -463,6 +590,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                             onChange={(e) => setValue('ageRangeEnabled', e.target.checked)}
                             className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700"
                           />
+                          <Calendar className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                           <span className="font-medium text-gray-900 dark:text-gray-100">Age Range</span>
                         </div>
                         {ageRangeEnabled && (
@@ -472,16 +600,19 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                         )}
                       </label>
                       {ageRangeEnabled && (
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <RHFTextField name="ageMin" type="number" placeholder="Min age" min="13" max="100" className="text-sm" />
-                          <RHFTextField name="ageMax" type="number" placeholder="Max age" min="13" max="100" className="text-sm" />
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                          <RHFTextField name="ageMin" label="Min Age" type="number" placeholder="18" min="13" max="100" />
+                          <RHFTextField name="ageMax" label="Max Age" type="number" placeholder="65" min="13" max="100" />
                         </div>
                       )}
                     </div>
 
                     {/* Gender Filter */}
-                    <div className="rounded-lg border-2 border-gray-200 bg-gray-50/50 p-4 transition-all dark:border-gray-700 dark:bg-gray-800/30">
-                      {/* <label className="mb-3 flex cursor-pointer items-center justify-between"> */}
+                    <div
+                      className={`rounded-lg border-2 bg-gray-50/50 p-4 transition-all dark:bg-gray-800/30 ${
+                        genderEnabled ? 'border-pink-300 dark:border-pink-700' : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
                       <label className={`${genderEnabled ? 'mb-3' : ''} flex cursor-pointer items-center justify-between`}>
                         <div className="flex items-center gap-2">
                           <input
@@ -490,6 +621,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                             onChange={(e) => setValue('genderEnabled', e.target.checked)}
                             className="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500 dark:border-gray-600 dark:bg-gray-700"
                           />
+                          <Users className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                           <span className="font-medium text-gray-900 dark:text-gray-100">Gender</span>
                         </div>
                         {genderEnabled && (
@@ -499,15 +631,18 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                         )}
                       </label>
                       {genderEnabled && (
-                        <div className="mt-2">
+                        <div className="mt-3">
                           <RHFSelectField name="genderValue" placeholder="Select gender" options={GENDER_OPTIONS} />
                         </div>
                       )}
                     </div>
 
                     {/* Interests Filter */}
-                    <div className="rounded-lg border-2 border-gray-200 bg-gray-50/50 p-4 transition-all dark:border-gray-700 dark:bg-gray-800/30">
-                      {/* <label className="mb-3 flex cursor-pointer items-center justify-between"> */}
+                    <div
+                      className={`rounded-lg border-2 bg-gray-50/50 p-4 transition-all dark:bg-gray-800/30 ${
+                        interestsEnabled ? 'border-green-300 dark:border-green-700' : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
                       <label className={`${interestsEnabled ? 'mb-3' : ''} flex cursor-pointer items-center justify-between`}>
                         <div className="flex items-center gap-2">
                           <input
@@ -516,31 +651,35 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                             onChange={(e) => setValue('interestsEnabled', e.target.checked)}
                             className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700"
                           />
+                          <span className="text-xl">🎯</span>
                           <span className="font-medium text-gray-900 dark:text-gray-100">Interests</span>
                         </div>
-                        {interestsEnabled && selectedInterests.length > 0 && (
+                        {interestsEnabled && selectedInterests && selectedInterests.length > 0 && (
                           <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300">
                             {selectedInterests.length} selected
                           </span>
                         )}
                       </label>
                       {interestsEnabled && (
-                        <div className="mt-2 flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
-                          {INTERESTS_OPTIONS.map((interest) => (
-                            <button
-                              key={interest}
-                              type="button"
-                              onClick={() => toggleInterest(interest)}
-                              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                                selectedInterests.includes(interest)
-                                  ? 'bg-green-600 text-white dark:bg-green-500'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                              }`}
-                            >
-                              {interest}
-                            </button>
-                          ))}
-                        </div>
+                        <>
+                          {isLoadingInterestTags ? (
+                            <div className="mt-3 space-y-2">
+                              <Skeleton className="h-10 w-full" />
+                            </div>
+                          ) : (
+                            <div className="mt-3">
+                              <RHFCustomCombobox
+                                name="selectedInterests"
+                                label=""
+                                placeholder="Select Interests"
+                                className="w-full"
+                                multiple={true}
+                                allowCustom={false}
+                                options={interestOptions}
+                              />
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -554,45 +693,49 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                   </h4>
 
                   <div className="flex gap-4">
-                    <label className="flex cursor-pointer items-center gap-2">
+                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-gray-200 bg-white px-4 py-3 transition-all hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
                       <input
                         type="radio"
-                        value="immediate"
-                        checked={sendTime === 'immediate'}
-                        onChange={(e) => setValue('sendTime', e.target.value as any)}
+                        value="immediately"
+                        checked={sendTiming === 'immediately'}
+                        onChange={(e) => setValue('sendTiming', e.target.value as SendTiming)}
                         className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-gray-900 dark:text-gray-100">Send Immediately</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">Send Immediately</span>
                     </label>
-                    <label className="flex cursor-pointer items-center gap-2">
+                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-gray-200 bg-white px-4 py-3 transition-all hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
                       <input
                         type="radio"
-                        value="scheduled"
-                        checked={sendTime === 'scheduled'}
-                        onChange={(e) => setValue('sendTime', e.target.value as any)}
+                        value="schedule"
+                        checked={sendTiming === 'schedule'}
+                        onChange={(e) => setValue('sendTiming', e.target.value as SendTiming)}
                         className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="text-gray-900 dark:text-gray-100">Schedule</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">Schedule</span>
                     </label>
                   </div>
 
-                  {sendTime === 'scheduled' && <RHFTextField name="scheduledDateTime" type="datetime-local" label="Scheduled Date & Time" />}
+                  {sendTiming === 'schedule' && <RHFTextField name="scheduledDateTime" type="datetime-local" label="Scheduled Date & Time" />}
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="mt-6 flex items-center justify-center gap-3 border-t border-gray-200 pt-6 dark:border-gray-700">
-                <Button type="button" variant="outline" onClick={handleClose} className="px-6">
+                <Button type="button" variant="outline" onClick={handleClose} className="px-6" disabled={isLoading}>
                   Cancel
                 </Button>
 
                 {isLoading ? (
                   <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-6 text-white">
-                    <ButtonLoading title={isEdit ? 'Updating' : sendTime === 'immediate' ? 'Sending' : 'Scheduling'} />
+                    <ButtonLoading title={isEdit ? 'Updating' : sendTiming === 'immediately' ? 'Sending' : 'Scheduling'} />
                   </Button>
                 ) : (
-                  <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-6 text-white">
-                    {isEdit ? 'Update Notification' : sendTime === 'immediate' ? 'Send Now' : 'Schedule Notification'}
+                  <Button
+                    type="submit"
+                    className="bg-primary hover:bg-primary-dark cursor-pointer px-6 text-white"
+                    disabled={isEdit ? !isDirty : false}
+                  >
+                    {isEdit ? 'Update Notification' : sendTiming === 'immediately' ? 'Send Now' : 'Schedule Notification'}
                   </Button>
                 )}
               </div>

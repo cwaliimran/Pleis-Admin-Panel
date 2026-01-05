@@ -42,37 +42,80 @@ export interface Notification {
   updatedAt?: string;
 }
 
+// export type DestinationType = 'home' | 'organization' | 'event';
+export type SendTiming = 'immediately' | 'schedule';
+// export type Gender = 'all' | 'male' | 'female' | 'other';
+
+// export interface NotificationFormValues {
+//   title: string;
+//   message: string;
+//   image: any; // Changed from optional to required
+//   destinationType: DestinationType;
+//   destinationId: string;
+//   destinationName: string;
+//   sendTime: 'immediate' | 'scheduled';
+//   scheduledDateTime: string | Date;
+
+//   // Targeting
+//   locationEnabled: boolean;
+//   locationName: string;
+//   locationRadius: number;
+
+//   ageRangeEnabled: boolean;
+//   ageMin: number;
+//   ageMax: number;
+
+//   genderEnabled: boolean;
+//   genderValue: Gender;
+
+//   interestsEnabled: boolean;
+//   selectedInterests: string[];
+// }
+
+// types.ts - Update the form values type
 export interface NotificationFormValues {
   title: string;
   message: string;
-  image: any; // Changed from optional to required
+  image: any;
   destinationType: DestinationType;
-  destinationId: string;
-  destinationName: string;
-  sendTime: 'immediate' | 'scheduled';
+  organizationId: string;
+  eventId: string;
+  sendTiming: SendTiming;
   scheduledDateTime: string | Date;
 
-  // Targeting
+  // Location (using Google Places API)
   locationEnabled: boolean;
-  locationName: string;
+  locationFullAddress: string;
+  locationCity: string;
+  locationState: string;
+  locationCountry: string;
+  locationLat: number;
+  locationLong: number;
   locationRadius: number;
 
+  // Age Range
   ageRangeEnabled: boolean;
   ageMin: number;
   ageMax: number;
 
+  // Gender
   genderEnabled: boolean;
   genderValue: Gender;
 
+  // Interests
   interestsEnabled: boolean;
   selectedInterests: string[];
 }
 
 export interface NotificationStats {
-  totalSent: number;
-  totalScheduled: number;
-  totalReach: number;
+  sent: number;
+  scheduled: number;
+  totalReached: number;
   activeFilters: number;
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  limit: number;
 }
 
 // For dropdown options

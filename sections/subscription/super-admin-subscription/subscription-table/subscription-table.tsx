@@ -24,6 +24,7 @@ const HEAD_LABEL = [
   { id: 'period', label: 'Period', align: 'left' },
   { id: 'price', label: 'Price', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
+  { id: 'nextRenewal', label: 'Next Renewal', align: 'left' },
   { id: 'actions', label: 'Actions', align: 'center' },
 ];
 

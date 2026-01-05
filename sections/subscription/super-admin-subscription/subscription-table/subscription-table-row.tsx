@@ -4,7 +4,7 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
-import { Pencil } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
@@ -86,9 +86,27 @@ const SubscriptionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => {
         <CustomBadge variant={getStatusVariant(item?.subscription?.status)}>{item?.subscription?.status}</CustomBadge>
       </TableCell>
 
+      {/* Next Renewal */}
       <TableCell className="text-center">
         <button
-          title="Edit User Sub"
+          title="View Next Renewal Date"
+          type="button"
+          // onClick={(e) => {
+          //   e.stopPropagation();
+          //   handleEdit?.(item);
+          // }}
+          disabled={isFreeSubscription}
+          className={`rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${
+            isFreeSubscription ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+          }`}
+        >
+          <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+        </button>
+      </TableCell>
+
+      <TableCell className="text-center">
+        <button
+          title="Edit Subscription"
           type="button"
           onClick={(e) => {
             e.stopPropagation();

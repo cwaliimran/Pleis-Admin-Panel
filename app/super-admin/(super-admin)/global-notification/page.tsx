@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import GlobalNotificationsView from '@/sections/global-notifications';
+import GlobalNotificationsView from '@/sections/global-notifications/global-notification-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
