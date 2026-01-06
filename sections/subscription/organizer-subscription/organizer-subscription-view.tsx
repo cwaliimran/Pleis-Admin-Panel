@@ -517,6 +517,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
               >
                 Add Modules
               </Button>
+
               <Button
                 variant="outline"
                 onClick={() => handleManageSubscription('remove')}
@@ -524,6 +525,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
               >
                 Remove Modules
               </Button>
+
               <Button
                 variant="outline"
                 onClick={() => handleManageSubscription('cancel')}

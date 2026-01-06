@@ -12,6 +12,7 @@ export interface SamplePageProps {
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  handleViewRenewal?: (record: any) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -34,4 +35,5 @@ export interface TableRowProps {
   item: any;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  handleViewRenewal?: (record: any) => void;
 }
