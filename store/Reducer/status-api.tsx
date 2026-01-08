@@ -18,7 +18,7 @@ export const statusApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.STATUS_BADGE,
+          url: API_ROUTES.ADMIN_BADGE_CATEGORIES,
           method: 'GET',
           params,
         };
@@ -32,7 +32,7 @@ export const statusApi = createApi({
 
     addStatus: builder.mutation({
       query: (newStatus) => ({
-        url: API_ROUTES.STATUS_BADGE,
+        url: API_ROUTES.ADMIN_BADGE_CATEGORIES,
         method: 'POST',
         body: newStatus,
       }),
@@ -50,7 +50,7 @@ export const statusApi = createApi({
 
     updateStatus: builder.mutation({
       query: ({ id, ...updatedStatus }) => ({
-        url: API_ROUTES.STATUS_BADGE_BY_ID(id),
+        url: API_ROUTES.ADMIN_BADGE_CATEGORIES_BY_ID(id),
         method: 'PUT',
         body: updatedStatus,
       }),
@@ -59,7 +59,7 @@ export const statusApi = createApi({
 
     deleteStatus: builder.mutation({
       query: (id) => ({
-        url: API_ROUTES.STATUS_BADGE_BY_ID(id),
+        url: API_ROUTES.ADMIN_BADGE_CATEGORIES_BY_ID(id),
         method: 'DELETE',
       }),
       invalidatesTags: ['status'],
