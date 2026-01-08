@@ -132,6 +132,7 @@ export const paths = {
     rewardCategory: '/super-admin/reward-category',
     reviews: '/super-admin/reviews',
 
+    faqs: '/super-admin/faqs',
     streak: '/super-admin/streaks',
     helpSupport: '/super-admin/help-support',
     updates: '/super-admin/updates',

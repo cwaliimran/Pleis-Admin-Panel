@@ -192,7 +192,7 @@ const TicketingView = () => {
           onClose={CloseModal}
           editMode={editModal.value}
           selectedData={selectedVenueType}
-          selectedOrganization={selectedOrganization}
+          selectedOrganization={organizationId}
         />
       )}
 

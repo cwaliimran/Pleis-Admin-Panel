@@ -69,7 +69,9 @@ export const eventApi = createApi({
 
     updateevent: builder.mutation({
       query: ({ id, ...updatedevent }) => ({
+        // query: ({ id, scope, ...updatedevent }) => ({
         url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
+        // url: API_ROUTES.UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE(id, scope),
         method: 'PUT',
         body: updatedevent,
       }),
@@ -77,8 +79,8 @@ export const eventApi = createApi({
     }),
 
     deleteevent: builder.mutation({
-      query: (id) => ({
-        url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
+      query: (payload) => ({
+        url: API_ROUTES.DELETE_ADMIN_EVENTS_BY_ID_AND_SCOPE(payload.id, payload.scope),
         method: 'DELETE',
       }),
       invalidatesTags: ['event'],

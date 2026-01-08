@@ -33,7 +33,7 @@ export const defaultValues: EventFormValues = {
   endDate: null,
   endTime: '',
   recurring: false,
-  recurringType: 'weekly',
+  recurringType: 'daily',
   recurringInterval: 1,
   recurringDays: [],
   recurringEnd: 'never',
