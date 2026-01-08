@@ -238,12 +238,8 @@ export const useEventForm = ({ userType }: { userType: string }) => {
 
     try {
       setLoading(true);
-      if (file && file instanceof File) {
-        imageFileString = await uploadFileToAzure(file);
-      } else {
-        imageFileString = data.mediaUrl || '';
-      }
 
+      // Validate schedule dates before image uploading
       const formatDateTimeForAPI = (datetimeLocal: string): string => {
         if (!datetimeLocal) return '';
         const date = new Date(datetimeLocal);
@@ -257,6 +253,42 @@ export const useEventForm = ({ userType }: { userType: string }) => {
         const paddedHours12 = String(hours12).padStart(2, '0');
         return `${year}-${month}-${day} ${paddedHours12}:${minutes} ${period}`;
       };
+
+      const startDateStr = data.fromDate ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}` : '';
+      const endDateStr = data.endDate ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}` : '';
+
+      if (startDateStr && endDateStr) {
+        const startDateTime = new Date(startDateStr);
+        const endDateTime = new Date(endDateStr);
+        const now = new Date();
+
+        // Check if startDateTime is in the past
+        if (startDateTime < now) {
+          showError('Start date and time cannot be in the past');
+          setLoading(false);
+          return;
+        }
+
+        // Check if endDateTime is in the past
+        if (endDateTime < now) {
+          showError('End date and time cannot be in the past');
+          setLoading(false);
+          return;
+        }
+
+        // Check if startDateTime is before endDateTime
+        if (startDateTime >= endDateTime) {
+          showError('Start date and time must be before end date and time');
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (file && file instanceof File) {
+        imageFileString = await uploadFileToAzure(file);
+      } else {
+        imageFileString = data.mediaUrl || '';
+      }
 
       const payload: any = {
         basicInfo: {
@@ -481,7 +513,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
       endDate: endDate_,
       endTime: endTime_,
       recurring: event?.schedule?.recurringDetails?.isEnabled || false,
-      recurringType: event?.schedule?.recurringDetails?.frequency || 'weekly',
+      recurringType: event?.schedule?.recurringDetails?.frequency || 'daily',
       recurringInterval: event?.schedule?.recurringDetails?.interval || 1,
       recurringDays: recurringDays_,
       recurringEnd: event?.schedule?.recurringDetails?.endType || 'never',

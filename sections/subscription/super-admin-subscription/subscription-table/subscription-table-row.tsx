@@ -8,8 +8,11 @@ import { Eye, Pencil } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const SubscriptionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => {
+const SubscriptionTableRow: FC<TableRowProps> = ({ item, handleEdit, handleViewRenewal }) => {
   const isFreeSubscription = item?.subscription?.subscriptionTypes?.includes('free');
+  const hasInactiveSubscription = !!item?.inactiveSubscription;
+
+  const isNextSubscriptionFree = item?.inactiveSubscription?.subscriptionTypes?.includes('free');
 
   return (
     <TableRow className="h-16 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
@@ -86,18 +89,22 @@ const SubscriptionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => {
         <CustomBadge variant={getStatusVariant(item?.subscription?.status)}>{item?.subscription?.status}</CustomBadge>
       </TableCell>
 
+      <TableCell className="text-left">
+        <CustomBadge variant={isNextSubscriptionFree ? 'error' : 'success'}>{isNextSubscriptionFree ? 'No' : 'Yes'}</CustomBadge>
+      </TableCell>
+
       {/* Next Renewal */}
       <TableCell className="text-center">
         <button
           title="View Next Renewal Date"
           type="button"
-          // onClick={(e) => {
-          //   e.stopPropagation();
-          //   handleEdit?.(item);
-          // }}
-          disabled={isFreeSubscription}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleViewRenewal?.(item);
+          }}
+          disabled={isNextSubscriptionFree || !hasInactiveSubscription}
           className={`rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${
-            isFreeSubscription ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+            isNextSubscriptionFree || !hasInactiveSubscription ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
           }`}
         >
           <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />

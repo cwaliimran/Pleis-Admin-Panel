@@ -2,19 +2,22 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeleteVenueMutation, useGetVenuesQuery } from '@/store/Reducer/venue';
+import { useDeleteFaqMutation, useGetFaqsQuery } from '@/store/Reducer/faqs-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import VenueTypeTable from './venueTypeTable';
-import VenueTypeModalV2 from './venueTypeModal';
+import { useCallback, useEffect, useState } from 'react';
+import FaqsModal from './faqs-modal';
+import FaqsTable from './faqs-table';
 
-const VenueView = () => {
+const FaqsView = () => {
   const openModal = useBoolean();
+  const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const { user } = useAuth();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -24,16 +27,11 @@ const VenueView = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedData, setSelectedData] = useState();
 
-  const [deleteVenue, { isLoading: deleteVenueLoading }] = useDeleteVenueMutation();
+  const [deleteFaq, { isLoading: deleteLoading }] = useDeleteFaqMutation();
 
-  const {
-    data: apiData,
-    isLoading,
-    isFetching,
-  } = useGetVenuesQuery({
+  const { data: apiData, isLoading } = useGetFaqsQuery({
     page: page - 1,
     search,
     limit,
@@ -41,8 +39,8 @@ const VenueView = () => {
     date: date ? formatDate(date) : undefined,
   });
 
-  // Local state for venue types and meta
-  const [venueTypes, setVenueTypes] = useState<any[]>([]);
+  const [localData, setLocalData] = useState<any[]>([]);
+
   const [meta, setMeta] = useState<any>({
     currentPage: page,
     totalPages: 1,
@@ -52,7 +50,7 @@ const VenueView = () => {
 
   useEffect(() => {
     if (apiData?.data) {
-      setVenueTypes(apiData.data);
+      setLocalData(apiData.data);
       setMeta(
         apiData.meta || {
           currentPage: page,
@@ -65,74 +63,90 @@ const VenueView = () => {
   }, [apiData, page, limit]);
 
   const handleCreateNew = () => {
-    setSelectedVenueType(null);
     setSelectedId(null);
-    setIsEditMode(false);
+    editModal.onFalse();
     openModal.onTrue();
   };
 
-  const handleEdit = (id: string) => {
-    const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
+  // // ------------ EDIT FUNCTION FOR API VERSION ------------
+  // const handleEdit = async (id: string, status: string) => {
+  //   setUpdatingId(id);
+  //   try {
+  //     const response = await updateMarketingRequest({ id, status }).unwrap();
 
-    if (venueTypeToEdit) {
-      setSelectedVenueType(venueTypeToEdit);
-      setSelectedId(id);
-      setIsEditMode(true);
+  //     if (response?.error) {
+  //       const errorMessage = getErrorMessage(response.error);
+  //       showError(errorMessage);
+  //       return;
+  //     }
+
+  //     showSuccess(response?.message || 'Updated successfully');
+  //     setSelectedId(null);
+  //   } catch (error) {
+  //     showError(getErrorMessage(error));
+  //   } finally {
+  //     setUpdatingId(null);
+  //   }
+  // };
+
+  const handleEdit = (selectedData: any) => {
+    if (selectedData) {
+      setSelectedData(selectedData);
+      editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Venue not found');
+      showError('FAQ not found');
     }
   };
 
-  const handleDelete = (id: string) => {
-    setSelectedId(id);
-    deleteModal.onTrue();
-  };
+  const handleDelete = useCallback(
+    (id: string) => {
+      if (!id) {
+        showError('No FAQ selected');
+        return;
+      }
 
-  const handleModalClose = () => {
-    setSelectedVenueType(null);
-    setSelectedId(null);
-    setIsEditMode(false);
-    openModal.onFalse();
-  };
+      setSelectedId(id);
+      deleteModal.onTrue();
+    },
+    [deleteModal]
+  );
 
-  // DELETE VENUE
+  // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deleteFaq(selectedId).unwrap();
 
-      if (response.error) {
+      if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
         showError(errorMessage);
         return;
       }
 
-      showSuccess(response?.message || 'Venue deleted successfully');
+      showSuccess(response?.message || 'Deleted successfully');
 
       setSelectedId(null);
       deleteModal.onFalse();
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete venue:', errorMessage);
-      showError(errorMessage);
+      showError(getErrorMessage(error));
     }
   };
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-            <Plus className="" />
-            Create Venue
-          </Button>
-        </div>
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+        <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+          <Plus />
+          Create FAQ
+        </Button>
       </div>
 
-      <VenueTypeTable
-        data={venueTypes}
+      <FaqsTable
+        data={localData}
         meta={meta}
-        loading={isLoading || isFetching}
+        user={user}
+        loading={isLoading}
+        // updatingId={updatingId}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -165,29 +179,21 @@ const VenueView = () => {
         }}
       />
 
-      {openModal.value && (
-        <VenueTypeModalV2
-          open={openModal.value}
-          onClose={handleModalClose}
-          isEditMode={isEditMode}
-          selectedVenueData={selectedVenueType}
-          selectedId={selectedId}
-        />
-      )}
+      {openModal.value && <FaqsModal open={openModal.value} onClose={openModal.onFalse} editData={selectedData} />}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Venue"
-        content="Are you sure you want to delete this venue?"
+        title="Delete FAQ"
+        content="Are you sure you want to delete this FAQ?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteVenueLoading}
+        isLoading={deleteLoading}
       />
     </div>
   );
 };
 
-export default VenueView;
+export default FaqsView;

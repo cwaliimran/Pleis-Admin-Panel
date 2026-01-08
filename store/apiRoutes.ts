@@ -94,6 +94,9 @@ export const API_ROUTES = {
 
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
+  
+  ADMIN_FAQS: `/admin/faqs`,
+  ADMIN_FAQS_BY_ID: (id: string) => `/admin/faqs/${id}`,
 
   // ADMIN_REVIEWS: `/admin/reviews`,
   ADMIN_REVIEWS: (userType: string) => (userType === 'super-admin' ? '/admin/reviews' : '/organizer/reviews'),
@@ -118,7 +121,9 @@ export const API_ROUTES = {
   ADMIN_UPDATE_SUBSCRIPTION_PRICING_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
 
   ADMIN_EVENTS: `/admin/events`,
-  ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
+  ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}?scope=future`,
+  UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
+  DELETE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
   ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
 
   ADMIN_VENUES: `/admin/venues`,

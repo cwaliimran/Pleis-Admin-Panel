@@ -10,6 +10,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { useCallback, useEffect, useState } from 'react';
 import SubscriptionModal from './edit-subscription-modal';
 import SubscriptionTable from './subscription-table';
+import ViewRenewalModal from './view-renewal-modal';
 
 type Props = {
   pricingData: any;
@@ -19,6 +20,9 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const viewRenewalModal = useBoolean();
+
+  const [viewRecord, setViewRecord] = useState<any>(null);
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -102,6 +106,18 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
     [deleteModal]
   );
 
+  const handleViewRenewal = useCallback(
+    (record: any) => {
+      if (!record?.inactiveSubscription) {
+        showError('No renewal data available');
+        return;
+      }
+      setViewRecord(record);
+      viewRenewalModal.onTrue();
+    },
+    [viewRenewalModal]
+  );
+
   // DELETE CALL
   const onDelete = async () => {
     try {
@@ -130,6 +146,7 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
         loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
+        handleViewRenewal={handleViewRenewal}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -198,6 +215,15 @@ const SubscriptionTableView = ({ pricingData }: Props) => {
         }}
         onConfirm={onDelete}
         isLoading={deleteLoading}
+      />
+
+      <ViewRenewalModal
+        open={viewRenewalModal.value}
+        onClose={() => {
+          viewRenewalModal.onFalse();
+          setViewRecord(null);
+        }}
+        selectedData={viewRecord}
       />
     </div>
   );

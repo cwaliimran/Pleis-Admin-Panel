@@ -19,6 +19,7 @@ import {
   FileClock,
   SlidersVertical,
   Volume1,
+  ListFilter,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -432,6 +433,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Help & Support',
     key: paths.superAdmin.helpSupport,
     icon: Volume1,
+  },
+  {
+    label: 'FAQs',
+    key: paths.superAdmin.faqs,
+    icon: ListFilter,
   },
   // {
   //   label: 'Giveaways',

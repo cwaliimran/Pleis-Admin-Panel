@@ -53,6 +53,7 @@ import { qrcodesApi } from './Reducer/qrcodes-api';
 import { tagTypeApi } from './Reducer/tag-type-api';
 import { reviewsApi } from './Reducer/reviews-api';
 import { notificationsApi } from './Reducer/notifications-api';
+import { faqsApi } from './Reducer/faqs-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -105,6 +106,7 @@ const appReducer = combineReducers({
   [tagTypeApi.reducerPath]: tagTypeApi.reducer,
   [reviewsApi.reducerPath]: reviewsApi.reducer,
   [notificationsApi.reducerPath]: notificationsApi.reducer,
+  [faqsApi.reducerPath]: faqsApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -164,6 +166,7 @@ export const store = configureStore({
       tagTypeApi.middleware,
       reviewsApi.middleware,
       notificationsApi.middleware,
+      faqsApi.middleware,
       referralsApi.middleware
     ),
 });

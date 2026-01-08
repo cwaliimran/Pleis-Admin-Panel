@@ -24,7 +24,8 @@ const HEAD_LABEL = [
   { id: 'period', label: 'Period', align: 'left' },
   { id: 'price', label: 'Price', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'nextRenewal', label: 'Next Renewal', align: 'left' },
+  { id: 'nextRenewal', label: 'Next Sub.', align: 'left' },
+  { id: 'subInfo', label: 'Sub. Info', align: 'center' },
   { id: 'actions', label: 'Actions', align: 'center' },
 ];
 
@@ -34,6 +35,7 @@ const SubscriptionTable: FC<SamplePageProps> = ({
   loading,
   handleDelete,
   handleEdit,
+  handleViewRenewal,
   onPageChange,
   limit = 10,
   // filters states bellow
@@ -171,7 +173,13 @@ const SubscriptionTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <SubscriptionTableRow key={item?.id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <SubscriptionTableRow
+                    key={item?.id || idx}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    handleViewRenewal={handleViewRenewal}
+                  />
                 ))}
               </TableBodyWrapper>
             </Table>

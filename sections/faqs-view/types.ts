@@ -8,11 +8,12 @@ export interface SampleMeta {
 export interface SamplePageProps {
   page: any;
   data: any[];
+  user?: any;
   meta: SampleMeta;
   loading?: boolean;
+  updatingId?: string | null;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
-  handleViewRenewal?: (record: any) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -20,20 +21,15 @@ export interface SamplePageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
-  billing?: string;
-  onBillingChange?: (billing: string) => void;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
-  subType?: string;
-  onSubTypeChange?: (subType: string) => void;
-  orgRange?: string;
-  onOrgRangeChange?: (orgRange: string) => void;
   onResetFilters?: () => void;
 }
 
 export interface TableRowProps {
   item: any;
+  user?: any;
+  updatingId?: string | null;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
-  handleViewRenewal?: (record: any) => void;
 }

@@ -14,7 +14,7 @@ export const SubscriptionManagementView: React.FC = () => {
 
   const pricingData = apiData?.data[0] || [];
 
-  console.log('pricingData Org', pricingData);
+  // console.log('pricingData Org', pricingData);
 
   return (
     <>
