@@ -2,7 +2,7 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeleteLevelStatusMutation, useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
+import { useDeleteHelpSupportMutation, useGetHelpSupportQuery } from '@/store/Reducer/help-support-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -22,7 +22,7 @@ const HelpSupportView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [deleteStatus, { isLoading: deleteLoading }] = useDeleteLevelStatusMutation();
+  const [deleteSupportRequest, { isLoading: deleteLoading }] = useDeleteHelpSupportMutation();
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyOpen, setReplyOpen] = useState(false);
@@ -32,15 +32,13 @@ const HelpSupportView = () => {
     setReplyOpen(true);
   };
 
-  const { data: apiData, isLoading } = useGetLevelStatusQuery({
+  const { data: apiData, isLoading } = useGetHelpSupportQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
-
-  console.log('apiData', apiData?.data);
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -65,34 +63,6 @@ const HelpSupportView = () => {
     }
   }, [apiData, page, limit]);
 
-  // const handleCreateNew = () => {
-  //   setSelectedRecord(null);
-  //   setSelectedId(null);
-  //   editModal.onFalse();
-  //   openModal.onTrue();
-  // };
-
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  // const handleEdit = (id: string) => {
-  //   console.log('id', id);
-  //   openModal.onTrue();
-  //   editModal.onTrue();
-  // };
-
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
-
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Status not found');
-  //   }
-  // };
-
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
@@ -109,7 +79,7 @@ const HelpSupportView = () => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteStatus(selectedId).unwrap();
+      const response = await deleteSupportRequest(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -128,15 +98,6 @@ const HelpSupportView = () => {
 
   return (
     <div>
-      {/* <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-            <Plus />
-            Create Level Status
-          </Button>
-        </div>
-      </div> */}
-
       <HelpSupportTable
         data={localData}
         meta={meta}

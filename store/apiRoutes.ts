@@ -94,9 +94,12 @@ export const API_ROUTES = {
 
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
-  
+
   ADMIN_FAQS: `/admin/faqs`,
   ADMIN_FAQS_BY_ID: (id: string) => `/admin/faqs/${id}`,
+
+  ADMIN_HELP_SUPPORT: `/admin/support`,
+  ADMIN_HELP_SUPPORT_BY_ID: (id: string) => `/admin/support/${id}`,
 
   // ADMIN_REVIEWS: `/admin/reviews`,
   ADMIN_REVIEWS: (userType: string) => (userType === 'super-admin' ? '/admin/reviews' : '/organizer/reviews'),
@@ -260,6 +263,10 @@ export const API_ROUTES = {
 
   TAGS: `/admin/tags`,
   TAGS_BY_ID: (id: string) => `/admin/tags/${id}`,
+
+  ADMIN_BADGE_CATEGORIES: `/admin/badge-categories`,
+  ADMIN_BADGE_CATEGORIES_BY_ID: (id: string) => `/admin/badge-categories/${id}`,
+  
 
   STATUS_BADGE: `/admin/status-badges`,
   STATUS_BADGE_REORDER: `/admin/status-badges/reorder`,

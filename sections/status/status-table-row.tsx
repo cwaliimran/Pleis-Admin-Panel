@@ -1,5 +1,6 @@
 'use client';
 
+import { TruncatedTextWithModal } from '@/components/common/long-text-modal';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -8,16 +9,35 @@ import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
-import ImageWithModal from './image-with-modal';
 import { TableRowProps } from './types';
 
 const StatusTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
+  const renderCategory = (category?: string) => {
+    switch (category) {
+      case 'referral':
+        return 'Referral';
+      case 'spending':
+        return 'Spending';
+      case 'singlePurchase':
+        return 'Single Purchase';
+      case 'topSpender':
+        return 'Top Spender';
+      case 'repeatVisit':
+        return 'Repeat Visit';
+      case 'venueExplorer':
+        return 'Venue Explorer';
+      case 'streak':
+        return 'Streak';
+      default:
+        return 'N/A';
+    }
+  };
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.image && item?.image !== noImageUrl && item?.image !== noImageUrlDev ? (
-            <AvatarImage src={item?.image} alt="Status Image" className="h-full w-full cursor-pointer object-cover" />
+          {item?.icon && item?.icon !== noImageUrl && item?.icon !== noImageUrlDev ? (
+            <AvatarImage src={item?.icon} alt="Status Image" className="h-full w-full cursor-pointer object-cover" />
           ) : (
             <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
           )}
@@ -26,15 +46,13 @@ const StatusTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =
 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left capitalize">
-        <ImageWithModal src={item?.backgroundImage} title="Background" width={250} height={250} className="h-11 w-20" />
+      <TableCell className="text-left">
+        <TruncatedTextWithModal text={item?.description} title="Description" />
       </TableCell>
 
-      {/* <TableCell className="text-left">{item?.order || 'N/A'}</TableCell> */}
+      <TableCell className="text-left">{renderCategory(item?.category)}</TableCell>
 
-      <TableCell className="text-left">{item?.entryPoints || 'N/A'}</TableCell>
-
-      <TableCell className="text-left">{item?.retainPoints || 'N/A'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.condition?.type || 'N/A'}</TableCell>
 
       <TableCell className="text-left">{fDate(item?.updatedAt, formatStr.paramCase.date)}</TableCell>
 

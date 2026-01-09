@@ -16,26 +16,26 @@ const HelpSupportTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit
       {/* Photo */}
       <TableCell>
         <Avatar className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800">
-          {item?.photo && item?.photo !== noImageUrl && item?.photo !== noImageUrlDev ? (
-            <AvatarImage src={item.photo} alt={item.username} className="object-cover" />
+          {item?.user?.profileIcon && item?.user?.profileIcon !== noImageUrl && item?.user?.profileIcon !== noImageUrlDev ? (
+            <AvatarImage src={item.user.profileIcon} alt={item.user.username} className="object-cover" />
           ) : (
-            <span className="text-sm font-semibold text-gray-500">{item?.username?.[0]?.toUpperCase()}</span>
+            <span className="text-sm font-semibold text-gray-500">{item?.user?.firstName?.[0]?.toUpperCase()}</span>
           )}
         </Avatar>
       </TableCell>
 
       {/* Username */}
-      <TableCell className="text-left font-medium capitalize">{item?.username || '-'}</TableCell>
+      <TableCell className="text-left font-medium capitalize">{item?.user?.firstName || '-'}</TableCell>
 
       {/* Ticket Number */}
-      <TableCell className="text-left font-medium capitalize">{item?.ticketNo || '-'}</TableCell>
+      <TableCell className="text-left font-medium capitalize">{item?.ticket || '-'}</TableCell>
 
       {/* Subject */}
       <TableCell className="text-left">{item?.subject || '-'}</TableCell>
 
       {/* Description */}
       <TableCell className="max-w-[320px] truncate text-left text-sm text-gray-600 dark:text-gray-300">
-        <TruncatedTextWithModal text={item?.description} title="Description" />
+        <TruncatedTextWithModal text={item?.message} title="Description" />
       </TableCell>
 
       {/* Created At */}
@@ -54,7 +54,7 @@ const HelpSupportTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleEdit?.(item?.id);
+              handleEdit?.(item);
             }}
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
@@ -66,7 +66,7 @@ const HelpSupportTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete?.(item?.id);
+              handleDelete?.(item?._id);
             }}
             className="cursor-pointer rounded-md bg-red-100 p-1.5 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >

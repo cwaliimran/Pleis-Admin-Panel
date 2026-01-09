@@ -12,61 +12,8 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import HelpSupportTableRow from './help-support-table-row';
-
-const supportTicketsDummyData = [
-  {
-    id: 'st_001',
-    ticketNo: 'TCK-1001',
-    photo: 'https://i.pravatar.cc/150?img=11',
-    username: 'john_doe',
-    subject: 'Login issue',
-    description: 'Unable to log in using correct credentials.',
-    createdAt: '2025-02-01T10:15:00Z',
-    status: 'closed',
-  },
-  {
-    id: 'st_002',
-    ticketNo: 'TCK-1002',
-    photo: 'https://i.pravatar.cc/150?img=22',
-    username: 'sarah_k',
-    subject: 'Payment failed',
-    description: 'Transaction failed but amount was deducted.',
-    createdAt: '2025-02-02T14:30:00Z',
-    status: 'pending',
-  },
-  {
-    id: 'st_003',
-    ticketNo: 'TCK-1003',
-    photo: 'https://i.pravatar.cc/150?img=33',
-    username: 'ali_hassan',
-    subject: 'Event ticket not received',
-    description: 'I did not receive my ticket after successful booking.',
-    createdAt: '2025-02-03T09:45:00Z',
-    status: 'closed',
-  },
-  {
-    id: 'st_004',
-    ticketNo: 'TCK-1004',
-    photo: 'https://i.pravatar.cc/150?img=44',
-    username: 'emma_w',
-    subject: 'App crash',
-    description: 'App crashes when opening the giveaways page.',
-    createdAt: '2025-02-04T18:20:00Z',
-    status: 'open',
-  },
-  {
-    id: 'st_005',
-    ticketNo: 'TCK-1005',
-    photo: 'https://i.pravatar.cc/150?img=55',
-    username: 'usman_dev',
-    subject: 'Incorrect event details',
-    description: 'The event date shown is incorrect.',
-    createdAt: '2025-02-05T11:05:00Z',
-    status: 'pending',
-  },
-];
+import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
@@ -96,8 +43,8 @@ const HelpSupportTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -111,8 +58,6 @@ const HelpSupportTable: FC<SamplePageProps> = ({
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
   });
-
-  console.log('sortedData', sortedData);
 
   const methods = useForm({
     defaultValues: {
@@ -157,24 +102,10 @@ const HelpSupportTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search level status...',
+                              placeholder: 'Search Support Ticket...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -194,9 +125,9 @@ const HelpSupportTable: FC<SamplePageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={supportTicketsDummyData?.length || 0}>
-                {supportTicketsDummyData?.map((item, idx) => (
-                  <HelpSupportTableRow key={item?.id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
+                {sortedData?.map((item, idx) => (
+                  <HelpSupportTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>

@@ -168,12 +168,12 @@ const StatusView = () => {
         }}
       />
 
-      {openModal.value && <StatusModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />}
+      {openModal.value && <StatusModal open={openModal.value} onClose={openModal.onFalse} editData={selectedRecord} />}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Status"
-        content="Are you sure you want to delete this status?"
+        title="Delete Status Badge"
+        content="Are you sure you want to delete this status badge?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
