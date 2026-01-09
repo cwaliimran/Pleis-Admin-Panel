@@ -215,10 +215,10 @@ const SubscriptionModal = ({ open, onClose, selectedData, pricingData }: Subscri
   }, [selectedSubscriptionTypes, modulePrices, numberOfOrganizations, pricingPlan, bundleDiscounts, yearlyDiscount, pricingData]);
 
   useEffect(() => {
-    if (pricingCalculation.finalAmount >= 0) {
+    if (pricingCalculation.finalAmount >= 0 && !selectedData?.subscription) {
       setValue('totalSubscriptionAmount', Number(pricingCalculation.finalAmount.toFixed(2)), { shouldDirty: false });
     }
-  }, [pricingCalculation.finalAmount, setValue]);
+  }, [pricingCalculation.finalAmount, setValue, selectedData?.subscription]);
 
   useEffect(() => {
     if (open && selectedData?.subscription) {
@@ -488,6 +488,12 @@ const SubscriptionModal = ({ open, onClose, selectedData, pricingData }: Subscri
                 )}
 
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
+                  {selectedSubscriptionTypes.length > 0 && (
+                    <div className="mb-4 flex items-center justify-between rounded-md bg-white p-3 dark:bg-gray-900">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Calculated Amount:</span>
+                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400">€{pricingCalculation.finalAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   <RHFTextField
                     name="totalSubscriptionAmount"
                     label="Final Amount (Editable)"
