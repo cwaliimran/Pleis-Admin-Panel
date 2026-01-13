@@ -42,16 +42,18 @@ export const OrderTabs: React.FC<OrderTabsProps> = ({
             )}
           >
             {tab.label}
-            {orderCounts[tab.id] > 0 && (
-              <span
-                className={cn(
-                  'ml-2 inline-block min-w-5 rounded-full px-2 py-0.5 text-center text-xs font-bold',
-                  activeTab === tab.id ? 'bg-blue-600 text-white dark:bg-blue-500' : 'bg-red-500 text-white'
-                )}
-              >
-                {orderCounts[tab.id]}
-              </span>
-            )}
+            <span
+              className={cn(
+                'ml-2 inline-block min-w-5 rounded-full px-2 py-0.5 text-center text-xs font-bold',
+                activeTab === tab.id
+                  ? 'bg-blue-600 text-white dark:bg-blue-500'
+                  : orderCounts[tab.id] > 0
+                    ? 'bg-red-500 text-white'
+                    : 'bg-gray-400 text-white dark:bg-gray-600'
+              )}
+            >
+              {orderCounts[tab.id]}
+            </span>
           </button>
         ))}
       </div>
@@ -74,16 +76,18 @@ export const OrderTabs: React.FC<OrderTabsProps> = ({
                 )}
               >
                 {subTab.label}
-                {subTabCounts[subTab.id] > 0 && (
-                  <span
-                    className={cn(
-                      'ml-2 inline-block min-w-5 rounded-full px-2 py-0.5 text-center text-xs font-bold',
-                      activeOrderSubTab === subTab.id ? 'bg-blue-600 text-white dark:bg-blue-500' : 'bg-red-500 text-white'
-                    )}
-                  >
-                    {subTabCounts[subTab.id]}
-                  </span>
-                )}
+                <span
+                  className={cn(
+                    'ml-2 inline-block min-w-5 rounded-full px-2 py-0.5 text-center text-xs font-bold',
+                    activeOrderSubTab === subTab.id
+                      ? 'bg-blue-600 text-white dark:bg-blue-500'
+                      : subTabCounts[subTab.id] > 0
+                        ? 'bg-red-500 text-white'
+                        : 'bg-gray-400 text-white dark:bg-gray-600'
+                  )}
+                >
+                  {subTabCounts[subTab.id]}
+                </span>
               </button>
             ))}
           </div>

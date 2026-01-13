@@ -3,18 +3,27 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetAppOrderingStatusQuery, useUpdateAppOrderingStatusMutation } from '@/store/Reducer/app-ordering-api';
+import {
+  useGetAppOrderingQuery,
+  useGetAppOrderingStatusQuery,
+  useUpdateAppOrderingMutation,
+  useUpdateAppOrderingStatusMutation,
+} from '@/store/Reducer/app-ordering-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { API_ACTIVE_SUB_TAB_MAP, API_ORDER_STATUS_MAP, mapDeliveryFilterToPickupType } from './constants';
 import { DeliveryItemsModal } from './delivery-items-modal';
 import { FilterPanel } from './filter-panel';
-import { MOCK_ACTIVE_ORDERS, MOCK_PAST_ORDERS, MOCK_PREORDERS } from './mock-data';
 import { OrderCard } from './order-card';
+import { OrderSkeletonGrid } from './order-card-skeleton';
 import { OrderTabs } from './order-tabs';
 import { SearchBar } from './search-bar';
 import { ToggleSwitch } from './toggle-switch';
 import { ActiveOrderSubTab, DeliveryFilterType, FilterOptions, ModalAction, Order, OrderTab } from './types';
+import { transformApiOrdersToFrontend } from './utils';
+
+const AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
 
 export const OrderManagementView: React.FC = () => {
   // State
@@ -22,10 +31,28 @@ export const OrderManagementView: React.FC = () => {
   const [activeOrderSubTab, setActiveOrderSubTab] = useState<ActiveOrderSubTab>('new-order');
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryFilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  // Ref for content container to scroll to top
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
 
   const { companyId } = useCompanySelectionState();
 
+  // Ordering status query
   const {
     data: orderingStatusData,
     isLoading: statusLoading,
@@ -38,30 +65,104 @@ export const OrderManagementView: React.FC = () => {
 
   const [orderingEnabled, setOrderingEnabled] = useState<boolean>(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (orderingStatusData?.data?.isOrderingEnabled !== undefined) {
       setOrderingEnabled(orderingStatusData.data.isOrderingEnabled);
     }
   }, [orderingStatusData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (statusError) {
       const errorMessage = getErrorMessage(statusError);
       showError(errorMessage);
     }
   }, [statusError]);
 
-  // Orders state (in production, this would come from API/state management)
-  const [activeOrders, setActiveOrders] = useState<Order[]>(MOCK_ACTIVE_ORDERS);
-  const [preorders, setPreorders] = useState<Order[]>(MOCK_PREORDERS);
-  const [pastOrders, setPastOrders] = useState<Order[]>(MOCK_PAST_ORDERS);
+  // Build query parameters for orders
+  const ordersQueryParams = useMemo(() => {
+    const params: any = {
+      page: page - 1,
+      limit,
+      search: debouncedSearchQuery,
+      status: API_ORDER_STATUS_MAP[activeTab],
+    };
+
+    // Add company organizer
+    if (companyId) {
+      params.companyOrganizer = companyId;
+    }
+
+    // Add active order sub-tab filter
+    if (activeTab === 'active') {
+      params.activeorderStatus = API_ACTIVE_SUB_TAB_MAP[activeOrderSubTab];
+
+      // Add delivery filter only for new-order sub-tab
+      if (activeOrderSubTab === 'new-order') {
+        const pickupType = mapDeliveryFilterToPickupType(deliveryFilter);
+        if (pickupType) {
+          params.pickupFilter = pickupType;
+        }
+      }
+    }
+
+    return params;
+  }, [activeTab, activeOrderSubTab, deliveryFilter, debouncedSearchQuery, page, limit, companyId]);
+
+  // Orders query with auto-refresh
+  const {
+    data: ordersData,
+    isLoading: ordersLoading,
+    isFetching: ordersFetching,
+    error: ordersError,
+    refetch: refetchOrders,
+  } = useGetAppOrderingQuery(ordersQueryParams, {
+    skip: !companyId,
+    pollingInterval: AUTO_REFRESH_INTERVAL, // Auto-refresh every 30 seconds
+  });
+
+  const [updateAppOrdering, { isLoading: updateOrderLoading }] = useUpdateAppOrderingMutation();
+
+  useEffect(() => {
+    if (ordersError) {
+      const errorMessage = getErrorMessage(ordersError);
+      showError(errorMessage);
+    }
+  }, [ordersError]);
+
+  // Transform API orders to frontend format
+  const orders = useMemo(() => {
+    if (!ordersData?.data?.orders) return [];
+    return transformApiOrdersToFrontend(ordersData.data.orders);
+  }, [ordersData]);
+
+  // Order counts from API
+  const orderCounts = useMemo(
+    () => ({
+      active: ordersData?.data?.activeOrdersCount || 0,
+      preorders: ordersData?.data?.preordersCount || 0,
+      past: ordersData?.data?.pastOrdersCount || 0,
+    }),
+    [ordersData]
+  );
+
+  // Sub-tab counts for Active Orders from API
+  const subTabCounts = useMemo(
+    () => ({
+      'new-order': ordersData?.data?.activeDetails?.new || 0,
+      'in-progress': ordersData?.data?.activeDetails?.inProgress || 0,
+      completed: ordersData?.data?.activeDetails?.completed || 0,
+    }),
+    [ordersData]
+  );
+
+  // Pagination metadata
+  const meta = useMemo(() => ordersData?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit }, [ordersData, page, limit]);
 
   // Filters state
   const [filters, setFilters] = useState<FilterOptions>({
-    statuses: ['sent', 'preparing', 'delivered', 'waiting-payment'],
-    deliveryTypes: ['table', 'pickup', 'togo'],
+    statuses: ['pending', 'confirmed', 'completed', 'cancelled', 'preorder'],
+    deliveryTypes: ['table', 'togo', 'preorder', 'counter'],
     preorderOnly: false,
-    vipOnly: false,
   });
 
   // Modal states
@@ -72,111 +173,40 @@ export const OrderManagementView: React.FC = () => {
   const [selectedOrderForDelivery, setSelectedOrderForDelivery] = useState<Order | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Get current orders based on active tab
-  const currentOrders = useMemo(() => {
-    switch (activeTab) {
-      case 'active':
-        return activeOrders;
-      case 'preorders':
-        return preorders;
-      case 'past':
-        return pastOrders;
-      default:
-        return [];
-    }
-  }, [activeTab, activeOrders, preorders, pastOrders]);
-
-  // Filter orders by active order sub-tab
-  const filteredBySubTab = useMemo(() => {
-    if (activeTab !== 'active') return currentOrders;
-
-    return currentOrders.filter((order) => {
-      switch (activeOrderSubTab) {
-        case 'new-order':
-          return order.status === 'sent' || order.status === 'pending';
-        case 'in-progress':
-          return order.status === 'preparing';
-        case 'completed':
-          return order.status === 'delivered' || order.status === 'waiting-payment';
-        default:
-          return true;
-      }
-    });
-  }, [activeTab, activeOrderSubTab, currentOrders]);
-
-  // Filter by delivery type (only for new-order sub-tab)
-  const filteredByDelivery = useMemo(() => {
-    if (activeTab !== 'active' || activeOrderSubTab !== 'new-order') return filteredBySubTab;
-
-    return filteredBySubTab.filter((order) => {
-      switch (deliveryFilter) {
-        case 'all':
-          return true;
-        case 'table':
-          return order.deliveryType === 'table';
-        case 'togo':
-          return order.deliveryType === 'togo' || order.deliveryType === 'pickup';
-        case 'preorders':
-          return order.isPreorder;
-        default:
-          return true;
-      }
-    });
-  }, [activeTab, activeOrderSubTab, deliveryFilter, filteredBySubTab]);
-
-  // Filter and search orders
+  // Filter orders (client-side filtering for search and filters)
   const filteredOrders = useMemo(() => {
-    return filteredByDelivery.filter((order) => {
-      // Search filter
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch =
-        !searchQuery ||
-        order.userName.toLowerCase().includes(searchLower) ||
-        order.location.toLowerCase().includes(searchLower) ||
-        order.userEmail.toLowerCase().includes(searchLower) ||
-        order.userHandle.toLowerCase().includes(searchLower);
+    return orders.filter((order) => {
+      // Search filter (client-side for immediate feedback)
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const matchesSearch =
+          order.userName.toLowerCase().includes(searchLower) ||
+          order.location.toLowerCase().includes(searchLower) ||
+          order.userEmail.toLowerCase().includes(searchLower) ||
+          (order.orderNumber && order.orderNumber.toLowerCase().includes(searchLower));
 
-      if (!matchesSearch) return false;
+        if (!matchesSearch) return false;
+      }
 
-      // Delivery type filter (from filter panel)
+      // Status filter from filter panel
+      const matchesStatus = filters.statuses.includes(order.status);
+      if (!matchesStatus) return false;
+
+      // Delivery type filter from filter panel
       const matchesDeliveryType = filters.deliveryTypes.includes(order.deliveryType);
       if (!matchesDeliveryType) return false;
 
       // Preorder filter
-      if (filters.preorderOnly && !order.isPreorder) return false;
-
-      // VIP filter
-      if (filters.vipOnly && !order.isVIP) return false;
+      if (filters.preorderOnly && order.orderType !== 'preorder') return false;
 
       return true;
     });
-  }, [filteredByDelivery, searchQuery, filters]);
-
-  // Order counts for tabs
-  const orderCounts = useMemo(
-    () => ({
-      active: activeOrders.length,
-      preorders: preorders.length,
-      past: pastOrders.length,
-    }),
-    [activeOrders, preorders, pastOrders]
-  );
-
-  // Sub-tab counts for Active Orders
-  const subTabCounts = useMemo(
-    () => ({
-      'new-order': activeOrders.filter((o) => o.status === 'sent' || o.status === 'pending').length,
-      'in-progress': activeOrders.filter((o) => o.status === 'preparing').length,
-      completed: activeOrders.filter((o) => o.status === 'delivered' || o.status === 'waiting-payment').length,
-    }),
-    [activeOrders]
-  );
+  }, [orders, searchQuery, filters]);
 
   // Modal handlers
   const openConfirmModal = (action: ModalAction) => {
     setModalAction(action);
     confirmModal.onTrue();
-    setPreorders((prev) => [...prev]);
   };
 
   const handleConfirmAction = async () => {
@@ -188,32 +218,32 @@ export const OrderManagementView: React.FC = () => {
       switch (modalAction.type) {
         case 'accept':
           if (modalAction.order) {
-            handleAcceptOrder(modalAction.order);
+            await handleAcceptOrder(modalAction.order);
           }
           break;
         case 'deliver':
           if (modalAction.order) {
-            handleDeliverOrder(modalAction.order);
+            await handleDeliverOrder(modalAction.order);
           }
           break;
         case 'deliver-all':
           if (modalAction.order) {
-            handleDeliverAllItems(modalAction.order);
+            await handleDeliverAllItems(modalAction.order);
           }
           break;
         case 'deliver-selected':
           if (modalAction.order && modalAction.selectedItemIds) {
-            handleDeliverSelectedItems(modalAction.order, modalAction.selectedItemIds);
+            await handleDeliverSelectedItems(modalAction.order, modalAction.selectedItemIds);
           }
           break;
         case 'paid':
           if (modalAction.order) {
-            handleMarkAsPaid(modalAction.order);
+            await handleMarkAsPaid(modalAction.order);
           }
           break;
         case 'cancel':
           if (modalAction.order) {
-            handleCancelOrder(modalAction.order);
+            await handleCancelOrder(modalAction.order);
           }
           break;
         case 'toggle-ordering':
@@ -225,6 +255,18 @@ export const OrderManagementView: React.FC = () => {
 
       confirmModal.onFalse();
       setModalAction(null);
+
+      // Close any expanded card
+      setExpandedOrderId(null);
+
+      // Refetch orders after action
+      await refetchOrders();
+
+      // Scroll to top of page smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error: any) {
+      showError(error);
+      // Error already handled in individual functions
     } finally {
       setIsActionLoading(false);
     }
@@ -235,7 +277,6 @@ export const OrderManagementView: React.FC = () => {
     if (!companyId) return;
 
     try {
-      // Call API to update ordering status
       const response = await updateAppOrderingStatus({
         id: companyId,
         isOrderingEnabled: String(newState),
@@ -246,56 +287,104 @@ export const OrderManagementView: React.FC = () => {
         return;
       }
 
-      // Update local state
       setOrderingEnabled(newState);
-
-      // Refetch to confirm
       await refetchOrderingStatus();
 
       showSuccess(response?.message || `In-App Ordering ${newState ? 'enabled' : 'disabled'} successfully`);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       showError(errorMessage);
+      throw error;
     }
   };
 
   // Order action handlers
-  const handleAcceptOrder = (order: Order) => {
-    setActiveOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status: 'preparing' } : o)));
+  const handleAcceptOrder = async (order: Order) => {
+    try {
+      const response = await updateAppOrdering({
+        id: order.id,
+        status: 'confirmed',
+      }).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || 'Order accepted successfully');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+      throw error;
+    }
   };
 
-  const handleDeliverOrder = (order: Order) => {
-    setActiveOrders((prev) =>
-      prev.map((o) => (o.id === order.id ? { ...o, status: order.paymentType === 'pay-later' ? 'waiting-payment' : 'delivered' } : o))
-    );
+  const handleDeliverOrder = async (order: Order) => {
+    try {
+      const response = await updateAppOrdering({
+        id: order.id,
+        status: 'completed',
+      }).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || 'Order marked as delivered');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+      throw error;
+    }
   };
 
   // Handle marking all items as delivered
-  const handleDeliverAllItems = (order: Order) => {
-    setActiveOrders((prev) =>
-      prev.map((o) =>
-        o.id === order.id
-          ? {
-              ...o,
-              items: o.items.map((item) => ({ ...item, isDelivered: true })),
-            }
-          : o
-      )
-    );
+  const handleDeliverAllItems = async (order: Order) => {
+    try {
+      const response = await updateAppOrdering({
+        id: order.id,
+        deliveredall: true,
+      }).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || 'All items marked as delivered');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+      throw error;
+    }
   };
 
   // Handle marking selected items as delivered
-  const handleDeliverSelectedItems = (order: Order, selectedItemIds: string[]) => {
-    setActiveOrders((prev) =>
-      prev.map((o) =>
-        o.id === order.id
-          ? {
-              ...o,
-              items: o.items.map((item) => (selectedItemIds.includes(item.id) ? { ...item, isDelivered: true } : item)),
-            }
-          : o
-      )
-    );
+  const handleDeliverSelectedItems = async (order: Order, selectedItemIds: string[]) => {
+    try {
+      // Get the menuItemIds (not the _id of items array, but the actual menuItem field)
+      const menuItemIds = order.items
+        .filter((item) => selectedItemIds.includes(item.id))
+        .map((item) => item.menuItemId)
+        .join(',');
+
+      const response = await updateAppOrdering({
+        id: order.id,
+        deliveredMenuItem: menuItemIds,
+      }).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || 'Selected items marked as delivered');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+      throw error;
+    }
   };
 
   // Open delivery items modal
@@ -308,52 +397,54 @@ export const OrderManagementView: React.FC = () => {
   const handleConfirmDeliveryItems = async (selectedItemIds: string[]) => {
     if (!selectedOrderForDelivery) return;
 
-    setIsActionLoading(true);
+    openConfirmModal({
+      type: 'deliver-selected',
+      order: selectedOrderForDelivery,
+      selectedItemIds,
+    });
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    deliveryModal.onFalse();
+    setSelectedOrderForDelivery(null);
+  };
 
+  const handleMarkAsPaid = async (order: Order) => {
     try {
-      handleDeliverSelectedItems(selectedOrderForDelivery, selectedItemIds);
-      deliveryModal.onFalse();
-      setSelectedOrderForDelivery(null);
-    } finally {
-      setIsActionLoading(false);
+      const response = await updateAppOrdering({
+        id: order.id,
+        paymentStatus: 'paid',
+      }).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(response?.message || 'Order marked as paid');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+      throw error;
     }
   };
 
-  const handleMarkAsPaid = (order: Order) => {
-    const updatedOrder = {
-      ...order,
-      status: 'paid' as const,
-      completedAt: new Date().toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      }),
-    };
+  const handleCancelOrder = async (order: Order) => {
+    try {
+      const response = await updateAppOrdering({
+        id: order.id,
+        status: 'cancelled',
+      }).unwrap();
 
-    setActiveOrders((prev) => prev.filter((o) => o.id !== order.id));
-    setPastOrders((prev) => [updatedOrder, ...prev]);
-  };
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
 
-  const handleCancelOrder = (order: Order) => {
-    const updatedOrder = {
-      ...order,
-      status: 'canceled' as const,
-      completedAt: new Date().toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      }),
-    };
-
-    setActiveOrders((prev) => prev.filter((o) => o.id !== order.id));
-    setPastOrders((prev) => [updatedOrder, ...prev]);
+      showSuccess(response?.message || 'Order cancelled successfully');
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+      throw error;
+    }
   };
 
   // Filter handlers
@@ -363,21 +454,14 @@ export const OrderManagementView: React.FC = () => {
 
   const handleClearFilters = () => {
     setFilters({
-      statuses: ['sent', 'preparing', 'delivered', 'waiting-payment'],
-      deliveryTypes: ['table', 'pickup', 'togo'],
+      statuses: ['pending', 'confirmed', 'completed', 'cancelled', 'preorder'],
+      deliveryTypes: ['table', 'togo', 'preorder', 'counter'],
       preorderOnly: false,
-      vipOnly: false,
     });
   };
 
-  // Menu editor handler
-  // const handleOpenMenuEditor = () => {
-  //   console.log('Open menu editor');
-  // };
-
   // Ordering toggle handler
   const handleOrderingToggle = (value: boolean) => {
-    // Check if companyId is available
     if (!companyId) {
       showError('Please select a company first before toggling ordering status');
       return;
@@ -388,6 +472,12 @@ export const OrderManagementView: React.FC = () => {
       newState: value,
     });
   };
+
+  // Reset to page 1 and close expanded card when changing tabs or filters
+  useEffect(() => {
+    setPage(1);
+    setExpandedOrderId(null);
+  }, [activeTab, activeOrderSubTab, deliveryFilter, debouncedSearchQuery]);
 
   // Modal content based on action type
   const getModalContent = () => {
@@ -421,6 +511,13 @@ export const OrderManagementView: React.FC = () => {
           content: `Mark all items in the order from ${modalAction.order?.userName} as delivered?`,
           confirmVariant: 'success' as const,
           confirmText: 'Mark All Delivered',
+        };
+      case 'deliver-selected':
+        return {
+          title: 'Mark Selected Items as Delivered?',
+          content: `Mark ${modalAction.selectedItemIds?.length || 0} selected item(s) as delivered?`,
+          confirmVariant: 'success' as const,
+          confirmText: 'Mark as Delivered',
         };
       case 'paid':
         return {
@@ -458,6 +555,8 @@ export const OrderManagementView: React.FC = () => {
 
   const modalContent = getModalContent();
 
+  const isLoading = ordersLoading || ordersFetching;
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -465,19 +564,6 @@ export const OrderManagementView: React.FC = () => {
         <div className="px-5 py-4">
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Orders</h1>
-            <div className="flex items-center gap-3">
-              {/* <Button variant="outline" onClick={filterPanel.onTrue} className="h-11 gap-2 px-5! font-semibold">
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button> */}
-
-              {/* <Button
-                onClick={handleOpenMenuEditor}
-                className="bg-primary dark:bg-primary dark:hover:bg-primary/80 h-11 gap-2 px-6 font-semibold hover:bg-blue-700"
-              >
-                📝 Menu
-              </Button> */}
-            </div>
           </div>
 
           {/* Ordering Toggle */}
@@ -509,8 +595,10 @@ export const OrderManagementView: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="mx-auto min-h-screen max-w-full py-5">
-        {filteredOrders.length === 0 ? (
+      <div ref={contentRef} className="mx-auto min-h-screen max-w-full py-5">
+        {isLoading && filteredOrders.length === 0 ? (
+          <OrderSkeletonGrid count={6} />
+        ) : filteredOrders.length === 0 ? (
           <div className="py-16 text-center">
             <div className="mb-4 text-6xl opacity-30">📦</div>
             <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-gray-100">No Orders Found</h3>
@@ -536,6 +624,29 @@ export const OrderManagementView: React.FC = () => {
             ))}
           </div>
         )}
+
+        {/* Pagination Controls */}
+        {!isLoading && filteredOrders.length > 0 && (
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Page {meta.currentPage} of {meta.totalPages} ({meta.totalRecords} total)
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
+              disabled={page === meta.totalPages}
+              className="rounded-lg bg-gray-200 px-4 py-2 font-semibold text-gray-700 transition-colors hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filter Panel */}
@@ -558,8 +669,7 @@ export const OrderManagementView: React.FC = () => {
           setModalAction(null);
         }}
         onConfirm={handleConfirmAction}
-        isLoading={isActionLoading}
-        // buttonClass="bg-blue-400 hover:bg-blue-400/80"
+        isLoading={isActionLoading || updateOrderLoading}
       />
 
       {/* Delivery Items Modal */}
