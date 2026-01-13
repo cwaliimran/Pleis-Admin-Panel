@@ -6,11 +6,7 @@ import { useEffect, useState } from 'react';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import ReservationTransactionTable from './reservation-transaction-table';
 
-interface LoyaltyTransactionViewProps {
-  global?: boolean;
-}
-
-const ReservationTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
+const ReservationTransactionView = () => {
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -33,9 +29,9 @@ const ReservationTransactionView = ({ global }: LoyaltyTransactionViewProps) => 
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
-    isGlobal: global || false,
+    // isGlobal: global || false,
     // walletType: 'globalWallet',
-    domainType: 'reservation',
+    domainType: 'userreservations',
   });
 
   const [localData, setLocalData] = useState<any[]>([]);

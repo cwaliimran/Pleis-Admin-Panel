@@ -39,8 +39,6 @@ const ReservationTransactionTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  // status = '',
-  // onStatusChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -98,25 +96,10 @@ const ReservationTransactionTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Transactions...',
+                              placeholder: 'Search Reservation Transactions...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            // selectFilters={[
-                            //   {
-                            //     id: 'sheet-revenue',
-                            //     label: 'Status',
-                            //     placeholder: 'Select by Status',
-                            //     value: status,
-                            //     onChange: onStatusChange,
-                            //     options: [
-                            //       { value: 'all', label: 'All' },
-                            //       { value: 'confirmed', label: 'Confirmed' },
-                            //       { value: 'cancelled', label: 'Cancelled' },
-                            //       { value: 'pending', label: 'Pending' },
-                            //     ],
-                            //   },
-                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,

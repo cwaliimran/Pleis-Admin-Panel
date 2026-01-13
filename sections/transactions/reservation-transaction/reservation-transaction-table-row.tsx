@@ -4,8 +4,8 @@ import { TruncatedTextWithModal } from '@/components/common/long-text-modal';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { FC } from 'react';
-import { TableRowProps } from './types';
 import { getDomainType } from '../helpers';
+import { TableRowProps } from './types';
 
 const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
   const getLabel = (type: string) => {
@@ -29,7 +29,7 @@ const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
         </TableCell>
 
         <TableCell className="text-left">
-          <TruncatedTextWithModal text={item?.description || 'N/A'} title="Description" />
+          <TruncatedTextWithModal text={item?.description || '-'} title="Description" />
         </TableCell>
 
         <TableCell className="text-left capitalize">{item?.organization?.basicInfo?.name || 'N/A'}</TableCell>
@@ -42,28 +42,11 @@ const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
 
         <TableCell className="text-left capitalize">{getLabel(item?.type)}</TableCell>
 
-        {/* <TableCell className="text-left capitalize">{item?.domainType || 'N/A'}</TableCell> */}
         <TableCell className="text-left capitalize">{getDomainType(item?.domainType)}</TableCell>
 
-        <TableCell className="text-left capitalize">{item?.points.total || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.points?.total || 'N/A'}</TableCell>
 
         <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
-
-        {/* <TableCell className="text-center">
-          <CustomBadge
-            variant={
-              item?.status === 'confirmed' ? 'success' : item?.status === 'pending' ? 'warning' : item?.status === 'cancelled' ? 'error' : 'default'
-            }
-          >
-            {item?.status === 'confirmed'
-              ? 'gaining'
-              : item?.status === 'pending'
-                ? 'pending'
-                : item?.status === 'cancelled'
-                  ? 'cancelled'
-                  : 'spending'}
-          </CustomBadge>
-        </TableCell> */}
       </TableRow>
     </>
   );

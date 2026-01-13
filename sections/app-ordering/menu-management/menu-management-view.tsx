@@ -12,11 +12,13 @@ import { LimitedTimeItemModal } from './modals/limited-time-item-modal';
 import { MOCK_MENU_ITEMS } from './mock-data';
 import { SearchBar } from './search-bar';
 import { StatsCard } from './stats-card';
-import { BulkSaleFormData, LimitedTimeFormData, MenuCategory, MenuItem, MenuStats, MenuTab } from './types';
+import { BulkSaleFormData, LimitedTimeFormData, MenuCategory, MenuItem, MenuTab } from './types';
 import MenuItemModal from '@/sections/menu-management-modules/menuItems/menuItems-modal';
 import PresetImportScreen from './preset-import';
 import { Package, Tag } from 'lucide-react';
 import { AddSaleFormData, AddSaleModal } from './modals/add-sale-mdoal';
+import { useGetMenuManagementQuery } from '@/store/Reducer/menu-management-api';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 export const MenuManagementViewV1: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MenuTab>('all');
@@ -25,6 +27,26 @@ export const MenuManagementViewV1: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>('name');
 
   const [menuItems, setMenuItems] = useState<MenuItem[]>(MOCK_MENU_ITEMS);
+
+  const { companyId } = useCompanySelectionState();
+
+  // Orders query with auto-refresh
+  const {
+    data: ordersData,
+    isLoading: ordersLoading,
+    // isFetching: ordersFetching,
+    // error: ordersError,
+    // refetch: refetchOrders,
+  } = useGetMenuManagementQuery(
+    {
+      organizer: companyId || '',
+    },
+    {
+      skip: !companyId,
+    }
+  );
+
+  const menuStats = ordersData?.meta || null;
 
   // Modal states
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
@@ -103,17 +125,17 @@ export const MenuManagementViewV1: React.FC = () => {
     [menuItems]
   );
 
-  const dynamicStats: MenuStats = useMemo(
-    () => ({
-      totalItems: menuItems.length,
-      inStock: menuItems.filter((item) => item.isInStock).length,
-      outOfStock: menuItems.filter((item) => !item.isInStock).length,
-      limitedTimeItems: menuItems.filter((item) => item.isLimitedTime).length,
-      upsellItems: menuItems.filter((item) => item.isUpsell).length,
-      saleItems: menuItems.filter((item) => item.isOnSale).length,
-    }),
-    [menuItems]
-  );
+  // const dynamicStats: MenuStats = useMemo(
+  //   () => ({
+  //     totalItems: menuItems.length,
+  //     inStock: menuItems.filter((item) => item.isInStock).length,
+  //     outOfStock: menuItems.filter((item) => !item.isInStock).length,
+  //     limitedTimeItems: menuItems.filter((item) => item.isLimitedTime).length,
+  //     upsellItems: menuItems.filter((item) => item.isUpsell).length,
+  //     saleItems: menuItems.filter((item) => item.isOnSale).length,
+  //   }),
+  //   [menuItems]
+  // );
 
   // Handlers
   const handleAddItem = () => {
@@ -234,11 +256,11 @@ export const MenuManagementViewV1: React.FC = () => {
         {/* Stats Grid */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {/* Now using the dynamicStats calculated from menuItems */}
-          <StatsCard value={dynamicStats.totalItems} label="Total Menu Items" />
-          <StatsCard value={dynamicStats.inStock} label="In Stock" />
-          <StatsCard value={dynamicStats.outOfStock} label="Out of Stock" />
-          <StatsCard value={dynamicStats.limitedTimeItems} label="Limited-Time Items" />
-          <StatsCard value={dynamicStats.upsellItems} label="Upsell Items" />
+          <StatsCard value={menuStats?.totalMenuItems} label="Total Menu Items" isLoading={ordersLoading} />
+          <StatsCard value={menuStats?.inStock} label="In Stock" isLoading={ordersLoading} />
+          <StatsCard value={menuStats?.outOfStock} label="Out of Stock" isLoading={ordersLoading} />
+          <StatsCard value={menuStats?.limitedTimeItems} label="Limited-Time Items" isLoading={ordersLoading} />
+          <StatsCard value={menuStats?.upSellItems} label="Upsell Items" isLoading={ordersLoading} />
         </div>
 
         {/* Tabs */}
