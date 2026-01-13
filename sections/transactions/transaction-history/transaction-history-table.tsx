@@ -21,6 +21,7 @@ const HEAD_LABEL = [
   { id: 'transactionId', label: 'Transaction ID', align: 'left' },
   { id: 'transactionType', label: 'Transaction Type', align: 'left' },
   { id: 'points', label: 'Points', align: 'left' },
+  { id: 'percentage', label: 'Percentage', align: 'left' },
   { id: 'reference', label: 'Reference', align: 'left' },
   { id: 'closingBalance', label: 'Closing Balance', align: 'left' },
   { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },

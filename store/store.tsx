@@ -55,6 +55,7 @@ import { reviewsApi } from './Reducer/reviews-api';
 import { notificationsApi } from './Reducer/notifications-api';
 import { faqsApi } from './Reducer/faqs-api';
 import { helpSupportApi } from './Reducer/help-support-api';
+import { appOrderingApi } from './Reducer/app-ordering-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -109,6 +110,7 @@ const appReducer = combineReducers({
   [notificationsApi.reducerPath]: notificationsApi.reducer,
   [faqsApi.reducerPath]: faqsApi.reducer,
   [helpSupportApi.reducerPath]: helpSupportApi.reducer,
+  [appOrderingApi.reducerPath]: appOrderingApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -170,6 +172,7 @@ export const store = configureStore({
       notificationsApi.middleware,
       faqsApi.middleware,
       helpSupportApi.middleware,
+      appOrderingApi.middleware,
       referralsApi.middleware
     ),
 });

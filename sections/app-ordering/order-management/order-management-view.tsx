@@ -1,9 +1,11 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
-// import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-// import { Filter } from 'lucide-react';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useGetAppOrderingStatusQuery, useUpdateAppOrderingStatusMutation } from '@/store/Reducer/app-ordering-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
 import { DeliveryItemsModal } from './delivery-items-modal';
 import { FilterPanel } from './filter-panel';
@@ -11,25 +13,8 @@ import { MOCK_ACTIVE_ORDERS, MOCK_PAST_ORDERS, MOCK_PREORDERS } from './mock-dat
 import { OrderCard } from './order-card';
 import { OrderTabs } from './order-tabs';
 import { SearchBar } from './search-bar';
+import { ToggleSwitch } from './toggle-switch';
 import { ActiveOrderSubTab, DeliveryFilterType, FilterOptions, ModalAction, Order, OrderTab } from './types';
-
-const ToggleSwitch: React.FC<{
-  value: boolean;
-  onChange: (value: boolean) => void;
-  label: string;
-}> = ({ value, onChange, label }) => (
-  <div className="flex items-center justify-between rounded-lg bg-gray-100 p-3 dark:bg-[#222121]">
-    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{label}</span>
-    <button
-      title="Toggle Switch"
-      type="button"
-      onClick={() => onChange(!value)}
-      className={`relative h-6 w-12 cursor-pointer rounded-full transition-colors ${value ? 'bg-green-600' : 'bg-gray-300'}`}
-    >
-      <div className={`absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform ${value ? 'translate-x-6 transform' : ''}`} />
-    </button>
-  </div>
-);
 
 export const OrderManagementView: React.FC = () => {
   // State
@@ -38,7 +23,33 @@ export const OrderManagementView: React.FC = () => {
   const [deliveryFilter, setDeliveryFilter] = useState<DeliveryFilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-  const [orderingEnabled, setOrderingEnabled] = useState(true);
+
+  const { companyId } = useCompanySelectionState();
+
+  const {
+    data: orderingStatusData,
+    isLoading: statusLoading,
+    isFetching: statusFetching,
+    error: statusError,
+    refetch: refetchOrderingStatus,
+  } = useGetAppOrderingStatusQuery({ companyOrganizer: companyId || '' }, { skip: !companyId });
+
+  const [updateAppOrderingStatus, { isLoading: updateStatusLoading }] = useUpdateAppOrderingStatusMutation();
+
+  const [orderingEnabled, setOrderingEnabled] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (orderingStatusData?.data?.isOrderingEnabled !== undefined) {
+      setOrderingEnabled(orderingStatusData.data.isOrderingEnabled);
+    }
+  }, [orderingStatusData]);
+
+  React.useEffect(() => {
+    if (statusError) {
+      const errorMessage = getErrorMessage(statusError);
+      showError(errorMessage);
+    }
+  }, [statusError]);
 
   // Orders state (in production, this would come from API/state management)
   const [activeOrders, setActiveOrders] = useState<Order[]>(MOCK_ACTIVE_ORDERS);
@@ -173,9 +184,6 @@ export const OrderManagementView: React.FC = () => {
 
     setIsActionLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     try {
       switch (modalAction.type) {
         case 'accept':
@@ -210,7 +218,7 @@ export const OrderManagementView: React.FC = () => {
           break;
         case 'toggle-ordering':
           if (modalAction.newState !== undefined) {
-            setOrderingEnabled(modalAction.newState);
+            await handleToggleOrderingStatus(modalAction.newState);
           }
           break;
       }
@@ -219,6 +227,35 @@ export const OrderManagementView: React.FC = () => {
       setModalAction(null);
     } finally {
       setIsActionLoading(false);
+    }
+  };
+
+  // Handle ordering status toggle
+  const handleToggleOrderingStatus = async (newState: boolean) => {
+    if (!companyId) return;
+
+    try {
+      // Call API to update ordering status
+      const response = await updateAppOrderingStatus({
+        id: companyId,
+        isOrderingEnabled: String(newState),
+      }).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      // Update local state
+      setOrderingEnabled(newState);
+
+      // Refetch to confirm
+      await refetchOrderingStatus();
+
+      showSuccess(response?.message || `In-App Ordering ${newState ? 'enabled' : 'disabled'} successfully`);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
     }
   };
 
@@ -340,6 +377,12 @@ export const OrderManagementView: React.FC = () => {
 
   // Ordering toggle handler
   const handleOrderingToggle = (value: boolean) => {
+    // Check if companyId is available
+    if (!companyId) {
+      showError('Please select a company first before toggling ordering status');
+      return;
+    }
+
     openConfirmModal({
       type: 'toggle-ordering',
       newState: value,
@@ -439,7 +482,13 @@ export const OrderManagementView: React.FC = () => {
 
           {/* Ordering Toggle */}
           <div className="mb-3">
-            <ToggleSwitch value={orderingEnabled} onChange={handleOrderingToggle} label="In-App Ordering" />
+            <ToggleSwitch
+              value={orderingEnabled}
+              onChange={handleOrderingToggle}
+              label="In-App Ordering"
+              isLoading={statusLoading || statusFetching || updateStatusLoading}
+              isDisabled={!companyId || statusLoading || statusFetching}
+            />
           </div>
 
           {/* Search Bar */}

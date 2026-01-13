@@ -8,12 +8,12 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import ChallengesTableRow from './challenges-table-row';
-import { useTableSort } from '@/hooks/useTableSort';
+import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'image', label: 'Image', align: 'left' },

@@ -36,6 +36,8 @@ const TransactionHistoryTableRow: FC<TableRowProps> = ({ item }) => {
 
         <TableCell className="text-left capitalize">{item?.points?.total || 'N/A'}</TableCell>
 
+        <TableCell className="text-left capitalize">{item?.points?.percentage || 'N/A'} %</TableCell>
+
         <TableCell className="text-left capitalize">
           {(() => {
             const titles = item?.ticketingBookings?.map((t: any) => t?.ticket?.snapshot?.title)?.filter(Boolean) as string[] | undefined;

@@ -46,12 +46,20 @@ const EventDetailsPage = () => {
 
   const toggle = () => setExpanded(!expanded);
 
+  const [preOrdersEnabled, setPreOrdersEnabled] = useState(false);
+
   const [updateEvent] = useUpdateeventMutation();
   const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
   const [deleteEvent, { isLoading: deleteEventLoading }] = useDeleteeventMutation();
 
   const [cloneEvent] = useCloneeventMutation();
   const userType = window?.location?.pathname?.split('/')[1];
+
+  React.useEffect(() => {
+    if (event?.preOrdersEnabled !== undefined) {
+      setPreOrdersEnabled(event.preOrdersEnabled);
+    }
+  }, [event?.preOrdersEnabled]);
 
   // console.log('Event in details page', event);
 
@@ -85,6 +93,22 @@ const EventDetailsPage = () => {
 
   const handleRequestFeedback = async () => {
     setShowFeedback(true);
+  };
+
+  const handlePreOrderToggle = async () => {
+    try {
+      setLoading(true);
+      const newPreOrderStatus = !preOrdersEnabled;
+      const res = await updateEvent({ id, preOrdersEnabled: newPreOrderStatus }).unwrap();
+      if (res?.data) {
+        setPreOrdersEnabled(newPreOrderStatus);
+        refetch();
+      }
+    } catch (error) {
+      console.log('Failed to update preorder status', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCloneEvent = async () => {
@@ -185,15 +209,21 @@ const EventDetailsPage = () => {
 
                           <div className="flex items-center">
                             {/* Static Preorder Toggle Button */}
+
                             <label className="mr-2 flex cursor-pointer items-center select-none">
-                              <input type="checkbox" checked={false} readOnly className="sr-only" />
-                              <span className={`relative inline-block h-5 w-10 rounded-full bg-gray-300 transition`}>
+                              <input type="checkbox" checked={preOrdersEnabled} onChange={handlePreOrderToggle} className="sr-only" />
+                              <span
+                                className={`relative inline-block h-5 w-10 rounded-full transition ${preOrdersEnabled ? 'bg-blue-500' : 'bg-gray-300'}`}
+                              >
                                 <span
-                                  className={`absolute top-0 left-0 h-5 w-5 transform rounded-full border border-gray-300 bg-white shadow transition-transform`}
+                                  className={`absolute top-0 h-5 w-5 transform rounded-full border border-gray-300 bg-white shadow transition-transform ${
+                                    preOrdersEnabled ? 'translate-x-5' : 'left-0'
+                                  }`}
                                 />
                               </span>
                               <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">Preorder</span>
                             </label>
+
                             <Pencil
                               className="h-4 w-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700 md:h-5 md:w-5"
                               onClick={() => router.push(`/${window.location.pathname.split('/')[1]}/events/edit-event/${event?._id}`)}
