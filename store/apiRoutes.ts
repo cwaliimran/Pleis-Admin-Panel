@@ -92,6 +92,12 @@ export const API_ROUTES = {
   ADMIN_GET_ALL_EVENTS: `/admin/notifications/events`,
   ADMIN_GET_ALL_INTEREST_TAGS: `/admin/notifications/tags`,
 
+  ADMIN_ORDER_MANAGEMENT_GET: `/admin/in-app-ordering/ordermanagement`,
+  ADMIN_ORDER_MANAGEMENT_UPDATE: (id: string) => `/admin/in-app-ordering/ordermanagement/${id}`,
+
+  ADMIN_ORDER_MANAGEMENT_STATUS: `/admin/in-app-ordering/ordermanagement/update`,
+  ADMIN_ORDER_MANAGEMENT_STATUS_BY_ID: (id: string) => `/admin/in-app-ordering/ordermanagement/update/${id}`,
+
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
 
@@ -266,7 +272,6 @@ export const API_ROUTES = {
 
   ADMIN_BADGE_CATEGORIES: `/admin/badge-categories`,
   ADMIN_BADGE_CATEGORIES_BY_ID: (id: string) => `/admin/badge-categories/${id}`,
-  
 
   STATUS_BADGE: `/admin/status-badges`,
   STATUS_BADGE_REORDER: `/admin/status-badges/reorder`,

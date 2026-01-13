@@ -12,46 +12,23 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import ChallengesTableRow from './challenges-table-row';
+import ReservationTransactionTableRow from './reservation-transaction-table-row';
 import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
-  { id: 'image', label: 'Image', align: 'left' },
-  {
-    id: 'name',
-    label: 'Name',
-    align: 'left',
-    sortable: true,
-    sortKey: 'title',
-  },
-  {
-    id: 'rewardType',
-    label: 'Reward Type',
-    sortable: true,
-    sortKey: 'reward.rewardType',
-  },
-  {
-    id: 'reward',
-    label: 'Reward',
-    sortable: true,
-    sortKey: 'reward.rewardType',
-  },
-  {
-    id: 'taskType',
-    label: 'Task Type',
-    align: 'left',
-    sortable: true,
-    sortKey: 'taskType',
-  },
-  { id: 'taskParameters', label: 'Task Parameters', align: 'left' },
-  { id: 'claimLimit', label: 'Claim Limit', align: 'left' },
-  { id: 'endTime', label: 'End Time', align: 'left' },
-  { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.firstName' },
+  { id: 'description', label: 'Description', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'publicId', label: 'Public ID', align: 'left' },
+  { id: 'transactionId', label: 'Transaction ID', align: 'left' },
+  { id: 'transactionType', label: 'Type', align: 'left' },
+  { id: 'objectType', label: 'Object Type', align: 'left' },
+  { id: 'points', label: 'Points', align: 'left' },
+  { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
+  // { id: 'status', label: 'Status', align: 'left' },
 ];
 
-const ChallengesTable: FC<SamplePageProps> = ({
+const ReservationTransactionTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
@@ -62,8 +39,8 @@ const ChallengesTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -89,7 +66,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Challenges List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Reservation Transaction List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -121,24 +98,25 @@ const ChallengesTable: FC<SamplePageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search challenges...',
+                              placeholder: 'Search Transactions...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                            ]}
+                            // selectFilters={[
+                            //   {
+                            //     id: 'sheet-revenue',
+                            //     label: 'Status',
+                            //     placeholder: 'Select by Status',
+                            //     value: status,
+                            //     onChange: onStatusChange,
+                            //     options: [
+                            //       { value: 'all', label: 'All' },
+                            //       { value: 'confirmed', label: 'Confirmed' },
+                            //       { value: 'cancelled', label: 'Cancelled' },
+                            //       { value: 'pending', label: 'Pending' },
+                            //     ],
+                            //   },
+                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -160,7 +138,7 @@ const ChallengesTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <ChallengesTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <ReservationTransactionTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -179,4 +157,4 @@ const ChallengesTable: FC<SamplePageProps> = ({
   );
 };
 
-export default ChallengesTable;
+export default ReservationTransactionTable;

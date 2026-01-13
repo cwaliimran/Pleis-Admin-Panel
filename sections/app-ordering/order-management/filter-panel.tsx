@@ -1,10 +1,10 @@
-import React from 'react';
-import { FilterOptions } from './types';
-import { FILTER_STATUS_OPTIONS, FILTER_DELIVERY_OPTIONS } from './constants';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { X } from 'lucide-react';
+import React from 'react';
+import { FILTER_DELIVERY_OPTIONS, FILTER_STATUS_OPTIONS } from './constants';
+import { FilterOptions } from './types';
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -113,14 +113,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isOpen, onClose, filte
                   className="mr-3 h-5 w-5"
                 />
                 <span className="flex-1 text-sm text-gray-900 dark:text-gray-100">Preorders Only</span>
-              </label>
-              <label className="dark:hover:bg-gray-750 flex min-h-12 cursor-pointer items-center rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-800">
-                <Checkbox
-                  checked={filters.vipOnly}
-                  onCheckedChange={(checked) => onFiltersChange({ ...filters, vipOnly: checked as boolean })}
-                  className="mr-3 h-5 w-5"
-                />
-                <span className="flex-1 text-sm text-gray-900 dark:text-gray-100">VIP Customers</span>
               </label>
             </div>
           </div>
