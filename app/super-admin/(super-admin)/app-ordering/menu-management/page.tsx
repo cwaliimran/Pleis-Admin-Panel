@@ -1,6 +1,5 @@
 import Header from '@/app/common/header/header';
 import { MenuManagementViewV1 } from '@/sections/app-ordering/menu-management';
-// import { MenuManagementView } from '@/sections/app-ordering/menu-management-v2/menu-management-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -18,7 +17,6 @@ const Page = () => {
       />
 
       <MenuManagementViewV1 />
-      {/* <MenuManagementView /> */}
     </div>
   );
 };

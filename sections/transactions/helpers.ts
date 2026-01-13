@@ -34,6 +34,8 @@ export const getDomainType = (type: string): string => {
       return 'Loyalty Rewards Orders';
     case 'loyaltychallengesorders':
       return 'Loyalty Challenges Orders';
+    case 'userreservations':
+      return 'User Reservations';
     default:
       return 'N/A';
   }
