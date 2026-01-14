@@ -105,12 +105,12 @@ export const OrderCard: React.FC<OrderCardProps> = ({
           {/* Show status badge only if not preorder status (to avoid duplicate with orderType) */}
           {order.status !== 'preorder' && (
             <span className={cn('rounded-lg px-3 py-1.5 text-xs font-bold tracking-wide uppercase', statusConfig?.className)}>
-              {statusConfig.label}
+              {statusConfig?.label}
             </span>
           )}
           {/* Always show order type badge */}
           <span className={cn('rounded-md px-2.5 py-1 text-xs font-bold tracking-wide uppercase shadow-sm', orderTypeConfig?.className)}>
-            {orderTypeConfig.label}
+            {orderTypeConfig?.label}
           </span>
         </div>
       </div>
@@ -184,7 +184,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                       {order.paymentStatus === 'paid' && '✓'}
                       {order.paymentStatus === 'pending' && '⏳'}
                       {order.paymentStatus === 'failed' && '✗'}
-                      <span className="capitalize">{paymentStatusConfig.label}</span>
+                      <span className="capitalize">{paymentStatusConfig?.label}</span>
                     </span>
                   </div>
                 </div>
