@@ -17,9 +17,9 @@ export const CATEGORY_OPTIONS = [
 
 export const SORT_OPTIONS = [
   { value: 'name', label: 'Sort by Name' },
-  { value: 'price-low', label: 'Price: Low to High' },
-  { value: 'price-high', label: 'Price: High to Low' },
-  { value: 'recent', label: 'Recently Added' },
+  { value: 'priceLowToHigh', label: 'Price: Low to High' },
+  { value: 'priceHighToLow', label: 'Price: High to Low' },
+  { value: 'recentlyAdded', label: 'Recently Added' },
 ] as const;
 
 export const AVAILABILITY_OPTIONS = [

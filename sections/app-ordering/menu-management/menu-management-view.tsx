@@ -2,23 +2,23 @@
 
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import MenuItemModal from '@/sections/menu-management-modules/menuItems/menuItems-modal';
+import { useGetCategoriesForMenuQuery, useGetMenuManagementQuery } from '@/store/Reducer/menu-management-api';
 import { showSuccess } from '@/utils/toast';
+import { Package, Tag } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { CATEGORY_OPTIONS, SORT_OPTIONS } from './constants';
+import { SORT_OPTIONS } from './constants';
 import { MenuItemCard } from './menu-item-card';
 import { MenuTabs } from './menu-tabs';
+import { MOCK_MENU_ITEMS } from './mock-data';
+import { AddSaleFormData, AddSaleModal } from './modals/add-sale-mdoal';
 import { BulkSaleModal } from './modals/bulk-sale-modal';
 import { LimitedTimeItemModal } from './modals/limited-time-item-modal';
-import { MOCK_MENU_ITEMS } from './mock-data';
+import PresetImportScreen from './preset-import';
 import { SearchBar } from './search-bar';
 import { StatsCard } from './stats-card';
 import { BulkSaleFormData, LimitedTimeFormData, MenuCategory, MenuItem, MenuTab } from './types';
-import MenuItemModal from '@/sections/menu-management-modules/menuItems/menuItems-modal';
-import PresetImportScreen from './preset-import';
-import { Package, Tag } from 'lucide-react';
-import { AddSaleFormData, AddSaleModal } from './modals/add-sale-mdoal';
-import { useGetMenuManagementQuery } from '@/store/Reducer/menu-management-api';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 export const MenuManagementViewV1: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MenuTab>('all');
@@ -47,6 +47,19 @@ export const MenuManagementViewV1: React.FC = () => {
   );
 
   const menuStats = ordersData?.meta || null;
+
+  const { data: categoryData, isLoading: categoryLoading } = useGetCategoriesForMenuQuery({
+    page: 0,
+    search: '',
+    limit: '100',
+  });
+  console.log('categoryLoading', categoryLoading);
+
+  const categoryOptions =
+    categoryData?.data?.map((category: any) => ({
+      label: category?.title,
+      value: category?._id,
+    })) || [];
 
   // Modal states
   const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
@@ -253,7 +266,7 @@ export const MenuManagementViewV1: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* --------------- Stats Grid --------------- */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {/* Now using the dynamicStats calculated from menuItems */}
           <StatsCard value={menuStats?.totalMenuItems} label="Total Menu Items" isLoading={ordersLoading} />
@@ -263,12 +276,12 @@ export const MenuManagementViewV1: React.FC = () => {
           <StatsCard value={menuStats?.upSellItems} label="Upsell Items" isLoading={ordersLoading} />
         </div>
 
-        {/* Tabs */}
+        {/* --------------- Tabs --------------- */}
         <div className="mb-6">
           <MenuTabs activeTab={activeTab} onTabChange={setActiveTab} itemCounts={tabCounts} />
         </div>
 
-        {/* Toolbar */}
+        {/* --------------- Toolbar --------------- */}
         <div className="mb-6 flex flex-wrap gap-3">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
@@ -278,7 +291,7 @@ export const MenuManagementViewV1: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {CATEGORY_OPTIONS.map((option) => (
+              {categoryOptions.map((option: any) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -327,20 +340,7 @@ export const MenuManagementViewV1: React.FC = () => {
         )}
       </div>
 
-      {/* Modals */}
-      {isAddEditModalOpen && (
-        <MenuItemModal open={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} menuManagementView={true} selectedData={editingItem} />
-      )}
-
-      <LimitedTimeItemModal isOpen={isLimitedTimeModalOpen} onClose={() => setIsLimitedTimeModalOpen(false)} onSubmit={handleSubmitLimitedTime} />
-
-      <BulkSaleModal
-        isOpen={isBulkSaleModalOpen}
-        onClose={() => setIsBulkSaleModalOpen(false)}
-        onSubmit={handleSubmitBulkSale}
-        availableItems={menuItems.filter((item) => item.isInStock)}
-      />
-
+      {/* --------------- MODALS --------------- */}
       <AddSaleModal
         isOpen={isAddSaleModalOpen}
         onClose={() => setIsAddSaleModalOpen(false)}
@@ -353,6 +353,19 @@ export const MenuManagementViewV1: React.FC = () => {
         onClose={() => setIsPresetImportModalOpen(false)}
         onImportComplete={handlePresetImportComplete}
       />
+
+      <BulkSaleModal
+        isOpen={isBulkSaleModalOpen}
+        onClose={() => setIsBulkSaleModalOpen(false)}
+        onSubmit={handleSubmitBulkSale}
+        availableItems={menuItems.filter((item) => item.isInStock)}
+      />
+
+      <LimitedTimeItemModal isOpen={isLimitedTimeModalOpen} onClose={() => setIsLimitedTimeModalOpen(false)} onSubmit={handleSubmitLimitedTime} />
+
+      {isAddEditModalOpen && (
+        <MenuItemModal open={isAddEditModalOpen} onClose={() => setIsAddEditModalOpen(false)} menuManagementView={true} selectedData={editingItem} />
+      )}
     </section>
   );
 };

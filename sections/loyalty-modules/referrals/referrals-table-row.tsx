@@ -36,6 +36,8 @@ const ReferralsTableRow: FC<TableRowProps> = ({ item, global }) => {
       <TableCell className="text-left">{item?.referrerReward}</TableCell>
 
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+
+      <TableCell className="text-left">{fDate(item?.expiryDate, formatStr.paramCase.date)}</TableCell>
     </TableRow>
   );
 };

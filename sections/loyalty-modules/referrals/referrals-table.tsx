@@ -24,6 +24,7 @@ const HEAD_LABEL = [
   { id: 'userPoints', label: 'User Points', align: 'left' },
   { id: 'refPoints', label: 'Referrer Points', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
+  { id: 'expiryDate', label: 'Expiry Date', align: 'left' },
   // { id: 'status', label: 'Status', align: 'left' },
   // { id: 'actions', label: 'Actions', align: 'center' },
 ];

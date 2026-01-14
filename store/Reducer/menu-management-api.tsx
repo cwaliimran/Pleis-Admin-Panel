@@ -31,6 +31,26 @@ export const menuManagementApi = createApi({
       providesTags: ['menu-management'],
     }),
 
+    getCategoriesForMenu: builder.query({
+      query: ({ search, page, limit }) => {
+        const params: any = {
+          keyword: search,
+          page: page + 1,
+          limit,
+        };
+        return {
+          url: API_ROUTES.ADMIN_MENU_MANAGEMENT_CATEGORIES,
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['menu-management'],
+    }),
+
     addMenuManagementSale: builder.mutation({
       query: (newMenuManagement) => ({
         url: API_ROUTES.ADMIN_MENU_MANAGEMENT_CREATE_SALE,
@@ -39,24 +59,7 @@ export const menuManagementApi = createApi({
       }),
       invalidatesTags: ['menu-management'],
     }),
-
-    // updateLimitedTimeMenu: builder.mutation({
-    //   query: ({ id, ...updatedMenuManagement }) => ({
-    //     url: API_ROUTES.ADMIN_MENU_MANAGEMENT_UPDATE(id),
-    //     method: 'PUT',
-    //     body: updatedMenuManagement,
-    //   }),
-    //   invalidatesTags: ['menu-management'],
-    // }),
-
-    // deleteMenuManagement: builder.mutation({
-    //   query: (id) => ({
-    //     url: API_ROUTES.MENU_MANAGEMENT_BY_ID(id),
-    //     method: 'DELETE',
-    //   }),
-    //   invalidatesTags: ['menu-management'],
-    // }),
   }),
 });
 
-export const { useGetMenuManagementQuery, useAddMenuManagementSaleMutation } = menuManagementApi;
+export const { useGetMenuManagementQuery, useAddMenuManagementSaleMutation, useGetCategoriesForMenuQuery } = menuManagementApi;

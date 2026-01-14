@@ -9,7 +9,7 @@ export const appOrderingApi = createApi({
 
   endpoints: (builder) => ({
     getAppOrdering: builder.query({
-      query: ({ search, page, status, limit, activeorderStatus, pickupFilter, companyOrganizer }) => {
+      query: ({ search, page, status, limit, activeorderStatus, pickupFilter, organization }) => {
         const params: any = {
           page: page + 1, // Already 0-indexed from the component
           limit,
@@ -36,8 +36,13 @@ export const appOrderingApi = createApi({
         }
 
         // Add company organizer
-        if (companyOrganizer) {
-          params.companyOrganizer = companyOrganizer;
+        // if (companyOrganizer) {
+        //   params.companyOrganizer = companyOrganizer;
+        // }
+
+        // Add organization ID
+        if (organization) {
+          params.organization = organization;
         }
 
         return {
@@ -63,10 +68,10 @@ export const appOrderingApi = createApi({
     }),
 
     getAppOrderingStatus: builder.query({
-      query: ({ companyOrganizer }) => {
+      query: ({ organizationId }) => {
         const params: any = {};
-        if (companyOrganizer) {
-          params.companyOrganizer = companyOrganizer;
+        if (organizationId) {
+          params.organization = organizationId;
         }
         return {
           url: API_ROUTES.ADMIN_ORDER_MANAGEMENT_STATUS,
