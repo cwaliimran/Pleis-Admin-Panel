@@ -158,11 +158,18 @@ const schema = Yup.object().shape({
     then: (s) => s.required('Reward is required'),
     otherwise: (s) => s.notRequired(),
   }),
+  // claimPoints: Yup.number()
+  //   .transform((v, o) => (o === '' ? 0 : v))
+  //   .when('promotionType', {
+  //     is: 'claimPromotion',
+  //     then: (s) => s.min(1, 'Points ≥ 1').required('Claim points required'),
+  //     otherwise: (s) => s.notRequired(),
+  //   }),
   claimPoints: Yup.number()
     .transform((v, o) => (o === '' ? 0 : v))
     .when('promotionType', {
       is: 'claimPromotion',
-      then: (s) => s.min(1, 'Points ≥ 1').required('Claim points required'),
+      then: (s) => s.min(0, 'Points cannot be negative').required('Claim points required'),
       otherwise: (s) => s.notRequired(),
     }),
 });

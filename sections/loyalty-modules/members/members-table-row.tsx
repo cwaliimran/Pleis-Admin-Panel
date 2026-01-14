@@ -40,7 +40,7 @@ const LoyaltyMembersTableRow: FC<TableRowProps> = ({ item, global, userType, han
 
         {global && <TableCell className="text-left capitalize">{item?.user?.globalStatus || 'N/A'}</TableCell>}
 
-        <TableCell className="text-left capitalize">{item?.user?.pointsEarned || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.points || 'N/A'}</TableCell>
 
         <TableCell className="text-left capitalize">{item?.user?.revenue || 'N/A'}</TableCell>
 

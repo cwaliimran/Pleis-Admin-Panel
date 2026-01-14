@@ -181,6 +181,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
         setValue('basePrice', selectedPresetData.basePrice || '');
         setValue('description', selectedPresetData.description || '');
         setValue('category', selectedPresetData.category?._id || '');
+        setValue('image', selectedPresetData.imageInfo?.url || selectedPresetData.image || '');
       }
     }
   }, [selectedPreset, presetData, setValue]);
