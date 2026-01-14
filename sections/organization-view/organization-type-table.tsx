@@ -24,6 +24,13 @@ const headLabel = [
     sortKey: 'basicInfo.name',
   },
   {
+    id: 'organizer',
+    label: 'Organizer',
+    align: 'left',
+    sortable: true,
+    sortKey: 'organizer',
+  },
+  {
     id: 'createdDate',
     label: 'Created Date',
     align: 'left',

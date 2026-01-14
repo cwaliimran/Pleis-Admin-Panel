@@ -37,6 +37,8 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
 
       <TableCell className="text-left font-medium capitalize">{item?.basicInfo?.name || '-'}</TableCell>
 
+      <TableCell className="text-left text-sm">{item?.organizer || '-'}</TableCell>
+
       <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
 
       <TableCell className="text-left text-sm">-</TableCell>
