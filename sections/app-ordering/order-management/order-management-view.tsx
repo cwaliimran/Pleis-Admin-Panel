@@ -50,7 +50,7 @@ export const OrderManagementView: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
-  const { companyId } = useCompanySelectionState();
+  const { companyId, organizationId } = useCompanySelectionState();
 
   // Ordering status query
   const {
@@ -59,7 +59,7 @@ export const OrderManagementView: React.FC = () => {
     isFetching: statusFetching,
     error: statusError,
     refetch: refetchOrderingStatus,
-  } = useGetAppOrderingStatusQuery({ companyOrganizer: companyId || '' }, { skip: !companyId });
+  } = useGetAppOrderingStatusQuery({ organizationId: organizationId || '' }, { skip: !companyId });
 
   const [updateAppOrderingStatus, { isLoading: updateStatusLoading }] = useUpdateAppOrderingStatusMutation();
 
@@ -92,6 +92,10 @@ export const OrderManagementView: React.FC = () => {
       params.companyOrganizer = companyId;
     }
 
+    if (organizationId) {
+      params.organization = organizationId;
+    }
+
     // Add active order sub-tab filter
     if (activeTab === 'active') {
       params.activeorderStatus = API_ACTIVE_SUB_TAB_MAP[activeOrderSubTab];
@@ -106,7 +110,7 @@ export const OrderManagementView: React.FC = () => {
     }
 
     return params;
-  }, [activeTab, activeOrderSubTab, deliveryFilter, debouncedSearchQuery, page, limit, companyId]);
+  }, [activeTab, activeOrderSubTab, deliveryFilter, debouncedSearchQuery, page, limit, companyId, organizationId]);
 
   // Orders query with auto-refresh
   const {
@@ -279,7 +283,7 @@ export const OrderManagementView: React.FC = () => {
 
     try {
       const response = await updateAppOrderingStatus({
-        id: companyId,
+        id: organizationId,
         isOrderingEnabled: String(newState),
       }).unwrap();
 
