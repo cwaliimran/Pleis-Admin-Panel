@@ -1,6 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import { Order } from './types';
-import { STATUS_CONFIG, DELIVERY_TYPE_CONFIG, PAYMENT_STATUS_CONFIG, ORDER_TYPE_CONFIG } from './constants';
+import {
+  STATUS_CONFIG,
+  //  DELIVERY_TYPE_CONFIG,
+  PAYMENT_STATUS_CONFIG,
+  ORDER_TYPE_CONFIG,
+} from './constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +34,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const deliveryConfig = DELIVERY_TYPE_CONFIG[order.deliveryType];
+  // const deliveryConfig = DELIVERY_TYPE_CONFIG[order.deliveryType];
   const statusConfig = STATUS_CONFIG[order.status];
   const paymentStatusConfig = PAYMENT_STATUS_CONFIG[order.paymentStatus];
   const orderTypeConfig = ORDER_TYPE_CONFIG[order.orderType];
@@ -78,7 +83,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       <div className="mb-3 flex items-start justify-between">
         <div className="flex-1">
           <div className="mb-1 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-gray-100">
-            <span className="text-xl">{deliveryConfig.icon}</span>
+            {/* <span className="text-xl">{deliveryConfig.icon}</span> */}
             <span>{order.location}</span>
           </div>
           <div className="mb-1 text-sm text-gray-600 dark:text-gray-400">{order.userName}</div>

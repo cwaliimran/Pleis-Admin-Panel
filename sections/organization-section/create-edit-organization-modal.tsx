@@ -58,8 +58,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
     image: Yup.mixed().nullable().optional(),
     name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
     ...(userType !== 'organizer' && {
-      // user: Yup.string().required('User is required').trim().min(2, 'User must be at least 2 characters'),
-      user: Yup.string().optional(),
+      user: Yup.string().required('User is required').trim().min(2, 'User must be at least 2 characters'),
+      // user: Yup.string().optional(),
     }),
     website: Yup.string().nullable().optional().matches(urlRegex, {
       message: 'Website link must be a valid URL',
