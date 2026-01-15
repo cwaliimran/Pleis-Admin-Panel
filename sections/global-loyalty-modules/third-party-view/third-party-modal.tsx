@@ -276,7 +276,7 @@ const ThirdPartyModal = ({ open, onClose, isEdit = false, selectedData }: ThirdP
                     className="bg-primary hover:bg-primary-dark cursor-pointer px-6 text-white"
                     disabled={isEdit ? !isDirty : false}
                   >
-                    {isEdit ? 'Update Reward' : 'Save Reward'}
+                    {isEdit ? 'Update' : 'Save'}
                   </Button>
                 )}
               </div>

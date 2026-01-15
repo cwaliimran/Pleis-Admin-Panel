@@ -53,7 +53,7 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit })
 
       <TableCell className="text-left capitalize">{item?.type || '-'}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.category?.title || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.categoryData?.title || '-'}</TableCell>
 
       <TableCell className="text-left">{item?.basePrice || '-'}</TableCell>
 

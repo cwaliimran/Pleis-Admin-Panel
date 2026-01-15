@@ -31,6 +31,7 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/reviews',
   '/super-admin/app-ordering/order-management',
   '/super-admin/app-ordering/order-settings',
+  '/super-admin/app-ordering/menu-management',
 ] as const;
 
 /**
@@ -42,6 +43,7 @@ const ORGANIZATION_REQUIRED_ROUTES = [
   '/super-admin/giveaways',
   '/super-admin/bundles',
   '/super-admin/app-ordering/order-management',
+  '/super-admin/app-ordering/menu-management',
 ] as const;
 
 export class RouteConfig {

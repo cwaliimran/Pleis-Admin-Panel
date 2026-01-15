@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -13,7 +13,6 @@ import {
   useUpdateLocalReferralSettingMutation,
 } from '@/store/Reducer/referrals-api';
 import { getErrorMessage } from '@/utils/api';
-import { fDate, formatStr } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo } from 'react';
@@ -26,7 +25,6 @@ export type ReferralFormValues = {
   minimumPurchases: number;
   purchaseThresholdAmount: number;
   referralLimit: number;
-  expiryDate: string;
 };
 
 type ReferralModalProps = {
@@ -43,7 +41,6 @@ const defaultValues: ReferralFormValues = {
   minimumPurchases: 0,
   purchaseThresholdAmount: 0,
   referralLimit: 0,
-  expiryDate: '',
 };
 
 const schema = Yup.object({
@@ -52,7 +49,6 @@ const schema = Yup.object({
   minimumPurchases: Yup.number().min(0).required(),
   purchaseThresholdAmount: Yup.number().min(0).required(),
   referralLimit: Yup.number().min(0).required(),
-  expiryDate: Yup.string().required(),
 });
 
 const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }: ReferralModalProps) => {
@@ -82,7 +78,6 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
       minimumPurchases: referralSettingData.minimumPurchases ?? 0,
       purchaseThresholdAmount: referralSettingData.purchaseThresholdAmount ?? 0,
       referralLimit: referralSettingData.referralLimit ?? 0,
-      expiryDate: referralSettingData.expiryDate ? referralSettingData.expiryDate.split('T')[0] : '',
     };
   }, [referralSettingData]);
 
@@ -99,7 +94,6 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
       minimumPurchases: values.minimumPurchases,
       purchaseThresholdAmount: values.purchaseThresholdAmount,
       referralLimit: values.referralLimit,
-      expiryDate: fDate(values.expiryDate, formatStr.paramCase.db),
       ...(global === false && { companyOrganizer: companyId || undefined }),
     };
 
@@ -173,7 +167,6 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
                 <RHFTextField name="referrerPoints" label="Referrer Points" type="number" placeholder="Enter referrer points" />
                 <RHFTextField name="minimumPurchases" label="Minimum Purchase" type="number" placeholder="Enter minimum purchase" />
                 <RHFTextField name="purchaseThresholdAmount" label="Purchase Threshold" type="number" placeholder="Enter purchase threshold" />
-                <RHFDate name="expiryDate" label="Expiry Date" className="h-10 w-full cursor-pointer border-gray-200 focus:border-blue-600" />
               </div>
 
               <div className="mt-6 flex w-full items-center justify-between gap-2">
