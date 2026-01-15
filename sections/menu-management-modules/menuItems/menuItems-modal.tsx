@@ -225,6 +225,9 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
 
       if (uploadedFileKey) {
         payload.image = uploadedFileKey;
+      } else if (formData?.image && typeof formData.image === 'string') {
+        // Extract filename from preset image URL
+        payload.image = formData.image.split('/').pop();
       }
 
       if (isEdit && selectedData) {

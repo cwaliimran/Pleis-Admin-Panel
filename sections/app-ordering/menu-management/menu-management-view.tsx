@@ -12,7 +12,7 @@ import { SORT_OPTIONS } from './constants';
 import { MenuItemCard } from './menu-item-card';
 import { MenuTabs } from './menu-tabs';
 import { MOCK_MENU_ITEMS } from './mock-data';
-import { AddSaleFormData, AddSaleModal } from './modals/add-sale-mdoal';
+import { AddSaleFormData, AddSaleModal } from './modals/add-sale-modal';
 import { BulkSaleModal } from './modals/bulk-sale-modal';
 import { LimitedTimeItemModal } from './modals/limited-time-item-modal';
 import PresetImportScreen from './preset-import';

@@ -90,7 +90,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Reward not found');
+      showError('Promotion not found');
     }
   };
 
