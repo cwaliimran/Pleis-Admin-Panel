@@ -73,6 +73,7 @@ const ReservationView = () => {
       <ReservationBody
         isLoading={isLoading || isFetching}
         data={reservationsData}
+        organizationId={organizationId}
         meta={meta}
         onPageChange={handlePageChange}
         limit={limit}

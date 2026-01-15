@@ -14,9 +14,10 @@ import UpdateReservationModal from '../reservation-calendar/components/change-re
 interface UserReservationsListProps {
   reservationId: string;
   companyOrganizer: string;
+  organizationId?: string;
 }
 
-const UserReservationsList: React.FC<UserReservationsListProps> = ({ reservationId, companyOrganizer }) => {
+const UserReservationsList: React.FC<UserReservationsListProps> = ({ reservationId, companyOrganizer, organizationId }) => {
   const updateModal = useBoolean();
   const deleteModal = useBoolean();
   const confirmModal = useBoolean();
@@ -26,7 +27,7 @@ const UserReservationsList: React.FC<UserReservationsListProps> = ({ reservation
 
   const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateReservationStatusMutation();
 
-  const { data: apiData, isLoading, isFetching } = useGetUserReservationsQuery({ reservationId, companyOrganizer }, { skip: !companyOrganizer });
+  const { data: apiData, isLoading, isFetching } = useGetUserReservationsQuery({ reservationId, companyOrganizer, organizationId }, { skip: !companyOrganizer });
   const pendingRequests: UserReservation[] = apiData?.data || [];
 
   const handleSelectReservationId = (id: string, status: string) => {
