@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useGeteventsQuery } from '@/store/Reducer/events';
 import { useGetEventByMultipleOrganizationQuery } from '@/store/Reducer/helpers-api';
 import { useAddUpdateMutation, useUpdateUpdateMutation } from '@/store/Reducer/updates-api';
 import { getErrorMessage } from '@/utils/api';
@@ -31,7 +32,8 @@ type UpdatesModalProps = {
   isEdit?: boolean;
   selectedData?: any;
   organizationId?: any;
-  companyId?: string | null;
+  companyId: string | null;
+  userType: string;
 };
 
 // VALIDATION SCHEMA
@@ -55,7 +57,7 @@ const defaultValues: UpdateFormValues = {
 };
 
 // MODAL COMPONENT
-const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, companyId, organizationId }: UpdatesModalProps) => {
+const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, companyId, organizationId, userType }: UpdatesModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [addUpdate, { isLoading: addLoading }] = useAddUpdateMutation();
   const [updateUpdate, { isLoading: updateLoading }] = useUpdateUpdateMutation();
@@ -92,7 +94,23 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, companyId, 
     { value: 'inactive', label: 'Inactive' },
   ];
 
-  const { data: eventData, isLoading: isLoadingEvents } = useGetEventByMultipleOrganizationQuery(
+  const isSuperAdmin = userType === 'super-admin';
+
+  // Query for super-admin
+  const { data: adminEventData, isLoading: adminEventLoading } = useGeteventsQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+    },
+    {
+      skip: !isSuperAdmin,
+    }
+  );
+
+  // Query for organizer
+  const { data: eventData, isLoading: organizerEventLoading } = useGetEventByMultipleOrganizationQuery(
     {
       page: 0,
       search: '',
@@ -100,14 +118,22 @@ const UpdatesModal = ({ open, onClose, isEdit = false, selectedData, companyId, 
       organizations: organizationId,
     },
     {
-      skip: !organizationId,
+      skip: isSuperAdmin || !organizationId,
     }
   );
 
-  const eventOptions = (eventData?.data || [])?.map((v: any) => ({
-    value: v?._id.toString(),
-    label: v?.title || 'No Title',
-  }));
+  // Determine which options to use based on user type
+  const eventOptions = isSuperAdmin
+    ? (adminEventData?.data || []).map((v: any) => ({
+        value: v?._id.toString(),
+        label: v?.basicInfo?.title || 'No Title',
+      }))
+    : (eventData?.data || [])?.map((v: any) => ({
+        value: v?._id.toString(),
+        label: v?.title || 'No Title',
+      }));
+
+  const isLoadingEvents = isSuperAdmin ? adminEventLoading : organizerEventLoading;
 
   // SUBMIT HANDLER
   const handleSubmit = async (formData: UpdateFormValues) => {

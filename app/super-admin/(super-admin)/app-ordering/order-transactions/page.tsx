@@ -1,10 +1,9 @@
 import Header from '@/app/common/header/header';
-import CompanyGuard from '@/components/guards/CompanyGuard';
-import UpdatesView from '@/sections/updates/updates-view';
+import OrderingTransactionView from '@/sections/transactions/ordering-transaction/ordering-transaction-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Updates - Pleis',
+  title: 'Reservation Transactions - Pleis',
 };
 
 const Page = () => {
@@ -13,13 +12,11 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Updates', href: '' },
+          { name: 'Reservation Transactions', href: '' },
         ]}
       />
 
-      <CompanyGuard>
-        <UpdatesView userType="super-admin" />
-      </CompanyGuard>
+      <OrderingTransactionView />
     </div>
   );
 };

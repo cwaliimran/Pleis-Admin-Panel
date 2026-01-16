@@ -31,7 +31,11 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
 
   const [deleteOrganization, { isLoading: deleteOrganizationLoading }] = useDeleteOrganizationMutation();
 
-  const { data: apiData, isLoading } = useGetOrganizationQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetOrganizationQuery({
     page: page - 1,
     search,
     limit,
@@ -117,7 +121,7 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
       <OrganizationTypeTable
         data={venueTypes}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         onPageChange={setPage}
         userType={userType}

@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useAddFaqMutation, useUpdateFaqMutation } from '@/store/Reducer/faqs-api';
@@ -9,7 +9,7 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 type FaqFormValues = {
@@ -28,12 +28,6 @@ type FaqModalProps = {
     type: 'saved_events' | 'saved_organizers' | 'purchases';
   } | null;
 };
-
-const FAQ_TYPES = [
-  { value: 'saved_events', label: 'Saved Events' },
-  { value: 'saved_organizers', label: 'Saved Organizers' },
-  { value: 'purchases', label: 'Purchases' },
-] as const;
 
 const schema = Yup.object().shape({
   question: Yup.string().required('Question is required').min(5, 'Must be at least 5 characters').default(''),
@@ -63,7 +57,7 @@ const FaqsModal = ({ open, onClose, editData }: FaqModalProps) => {
     mode: 'onChange',
   });
 
-  const { reset, control } = methods;
+  const { reset } = methods;
 
   // Populate form with edit data
   useEffect(() => {
@@ -110,7 +104,7 @@ const FaqsModal = ({ open, onClose, editData }: FaqModalProps) => {
 
       showSuccess(response?.message || `FAQ ${isEditMode ? 'updated' : 'created'} successfully`);
 
-      methods.reset(defaultValues);
+      methods.reset();
       onClose();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
@@ -141,27 +135,15 @@ const FaqsModal = ({ open, onClose, editData }: FaqModalProps) => {
 
                 <RHFTextField name="answer" label="Answer" placeholder="Provide a detailed answer to the question..." multiline rows={5} />
 
-                <Controller
+                <RHFSelectField
                   name="type"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <div>
-                      <label className="mb-2 block text-sm font-medium">FAQ Type</label>
-                      <select
-                        {...field}
-                        className={`file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input focus-visible:ring-ring/50 flex h-[42px] w-full rounded-lg border px-3 py-2 text-base shadow-sm transition-colors outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${
-                          fieldState.invalid ? 'border-destructive ring-destructive/40' : 'border-gray-300 dark:border-gray-600'
-                        }`}
-                      >
-                        {FAQ_TYPES.map((type) => (
-                          <option key={type.value} value={type.value}>
-                            {type.label}
-                          </option>
-                        ))}
-                      </select>
-                      {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
-                    </div>
-                  )}
+                  label="FAQ Type"
+                  placeholder="Select FAQ Type"
+                  options={[
+                    { label: 'Saved Events', value: 'saved_events' },
+                    { label: 'Saved Organizers', value: 'saved_organizers' },
+                    { label: 'Purchases', value: 'purchases' },
+                  ]}
                 />
 
                 <div className="rounded-lg bg-blue-50 p-3 text-sm dark:bg-blue-900/20">

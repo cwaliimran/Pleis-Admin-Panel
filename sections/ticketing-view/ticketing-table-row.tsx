@@ -21,7 +21,7 @@ const TicketingTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) =>
 
       <TableCell className="text-left font-medium">{item?.quantity || 'N/A'}</TableCell>
 
-      <TableCell className="text-left font-medium">{item?.taxPercentage || '-'}%</TableCell>
+      <TableCell className="text-left font-medium">{item?.taxPercentage ? `${item.taxPercentage}%` : '-'}</TableCell>
 
       <TableCell className="text-left font-medium">{item?.price || '-'}</TableCell>
 

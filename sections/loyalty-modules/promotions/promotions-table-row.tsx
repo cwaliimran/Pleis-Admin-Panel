@@ -22,6 +22,10 @@ const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
         return 'Claim Promotion';
       case 'productSale':
         return 'Product Sale';
+      case 'globalHappyHourPromotion':
+        return 'Global Happy Hour';
+      case 'globalClaimPromotion':
+        return 'Global Claim Promotion';
       default:
         return '-';
     }

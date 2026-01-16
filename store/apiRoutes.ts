@@ -98,6 +98,8 @@ export const API_ROUTES = {
   ADMIN_MENU_MANAGEMENT_GET: `/admin/in-app-ordering/menu-management`,
   ADMIN_MENU_MANAGEMENT_CREATE_SALE: `/admin/in-app-ordering/menu-management/sale`,
   ADMIN_MENU_MANAGEMENT_CATEGORIES: `/admin/in-app-ordering/menu-management/menu-item-categories`,
+  ADMIN_GET_MENU_ITEMS_BY_ORG: `/admin/in-app-ordering/menu-management/menu-items`,
+  ADMIN_ADD_LIMITED_TIME_ITEMS: `/admin/in-app-ordering/menu-management/limited-time`,
   // ADMIN_MENU_MANAGEMENT_LIMITED_TIME: `/admin/in-app-ordering/menu-management/limited-time`,
   // ADMIN_MENU_MANAGEMENT_UPDATE: (id: string) => `/admin/menu/items/${id}`,
 

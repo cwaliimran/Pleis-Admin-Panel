@@ -79,7 +79,6 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [updateUser, { isLoading: updateLoading }] = useUpdateUserMutation();
 
-
   const methods = useForm<SettingsFormValues>({
     resolver: yupResolver(schema),
     defaultValues,
@@ -337,7 +336,9 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                       max={20}
                       value={pointValue}
                       onChange={(e) => {
-                        const value = Number(e.target.value);
+                        let value = Number(e.target.value);
+                        // Clamp value between 1 and 20
+                        value = Math.max(1, Math.min(20, value));
                         setPointValue(value);
                         setValue('pointValuePercentage', value, { shouldDirty: true });
                       }}

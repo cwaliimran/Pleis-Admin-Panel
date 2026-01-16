@@ -90,6 +90,8 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
 
 const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManagementView }: MenuItemModalProps) => {
   const [deleting, setDeleting] = useState(false);
+
+  console.log('selectedData', selectedData);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
   const [addMenuItem, { isLoading: addMenuItemLoading }] = useAddMenuItemMutation();

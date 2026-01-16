@@ -8,7 +8,7 @@ import ReservationSkelton from './reservation-skelton';
 import { ReservationBodyProps } from './reservation-types';
 import UserReservationsList from './user-reservation-list';
 
-const ReservationBody = ({ data, isLoading, meta, onPageChange, limit }: ReservationBodyProps) => {
+const ReservationBody = ({ data, isLoading, meta, onPageChange, limit, organizationId }: ReservationBodyProps) => {
   const [expandedReservations, setExpandedReservations] = useState<Set<string>>(new Set());
 
   const toggleExpand = (reservationId: string) => {
@@ -108,7 +108,11 @@ const ReservationBody = ({ data, isLoading, meta, onPageChange, limit }: Reserva
               style={{ maxHeight: isExpanded ? '2000px' : '0', opacity: isExpanded ? 1 : 0 }}
             >
               {isExpanded && reservation.companyOrganizer && (
-                <UserReservationsList reservationId={reservation._id} companyOrganizer={reservation.companyOrganizer} />
+                <UserReservationsList
+                  reservationId={reservation._id}
+                  companyOrganizer={reservation.companyOrganizer}
+                  organizationId={organizationId}
+                />
               )}
             </div>
           </div>
