@@ -40,7 +40,7 @@ export type ReservationBodyProps = {
   data?: Reservation[];
   isLoading: boolean;
   meta?: ReservationsApiResponse['meta'];
-  organizationId?: string;
+  organizationId?: string | null;
   onPageChange: (page: number) => void;
   limit: number;
   companyOrganizer?: string;

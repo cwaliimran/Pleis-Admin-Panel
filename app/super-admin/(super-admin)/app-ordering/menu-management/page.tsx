@@ -1,6 +1,6 @@
 import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
-import { MenuManagementViewV1 } from '@/sections/app-ordering/menu-management';
+import { MenuManagementView } from '@/sections/app-ordering/menu-management';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ const Page = () => {
         ]}
       />
       <CompanyGuard>
-        <MenuManagementViewV1 />
+        <MenuManagementView />
       </CompanyGuard>
     </div>
   );

@@ -12,6 +12,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import PromotionsModal from './promotions-modal';
 import PromotionsTable from './promotions-table';
+import GlobalPromotionModal from './global-promotions-modal';
 
 interface PromotionsViewProps {
   global?: boolean;
@@ -177,14 +178,24 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
         }}
       />
 
-      {openModal.value && (
+      {openModal.value && !global && (
         <PromotionsModal
           open={openModal.value}
           onClose={openModal.onFalse}
           isEdit={editModal.value}
           selectedData={selectedRecord}
           selectedCompany={selectedCompany}
-          global={global}
+          global={false}
+        />
+      )}
+
+      {openModal.value && global && (
+        <GlobalPromotionModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          selectedCompany={selectedCompany}
         />
       )}
 

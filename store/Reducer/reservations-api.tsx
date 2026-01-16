@@ -48,8 +48,8 @@ export const reservationsApi = createApi({
       providesTags: ['reservation'],
     }),
 
-    getUserReservations: builder.query<UserReservationsApiResponse, { reservationId: string; companyOrganizer: string, organizationId?: string }>({
-      query: ({ reservationId, companyOrganizer, organizationId }) => {
+    getUserReservations: builder.query<UserReservationsApiResponse, { reservationId: string; organizationId?: string }>({
+      query: ({ reservationId, organizationId }) => {
         const params: Record<string, string> = {};
         if (reservationId) params.reservationId = reservationId;
         // if (companyOrganizer) params.companyOrganizer = companyOrganizer;

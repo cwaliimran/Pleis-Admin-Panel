@@ -10,10 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
-import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useAddPromotionMutation, useUpdatePromotionMutation } from '@/store/Reducer/promotion-api';
 import { useGetRewardsQuery } from '@/store/Reducer/rewards-api';
-import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { fDate, formatStr } from '@/utils/format-time';
@@ -23,7 +21,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
-type PromotionsFormValues = {
+type GlobalPromotionsFormValues = {
   photo: any;
   title: string;
   description: string;
@@ -36,23 +34,17 @@ type PromotionsFormValues = {
   interval: number;
   daysOfWeek: string[];
   /* ---- type ---- */
-  promotionType: 'happyHour' | 'claimPromotion' | 'buyMenuItemPromotion' | 'productSale';
-  /* ---- Happy Hour ---- */
+  promotionType: 'globalHappyHourPromotion' | 'globalClaimPromotion';
+  /* ---- Global Happy Hour ---- */
   timeStart: string;
   timeEnd: string;
-  pointsMultiplier: string; // string for RHFSelectField
-  /* ---- Buy Menu Item ---- */
-  menuItem: string;
-  extraPoints: number;
-  /* ---- Product Sale ---- */
-  saleMenuItem: string;
-  discountedPrice: number;
-  /* ---- Claim Promotion ---- */
+  pointsMultiplier: string;
+  /* ---- Global Claim Promotion ---- */
   claimReward: string;
   claimPoints: number;
 };
 
-const defaultValues: PromotionsFormValues = {
+const defaultValues: GlobalPromotionsFormValues = {
   photo: null,
   title: '',
   description: '',
@@ -63,14 +55,10 @@ const defaultValues: PromotionsFormValues = {
   frequency: '',
   interval: 1,
   daysOfWeek: [],
-  promotionType: 'happyHour',
+  promotionType: 'globalHappyHourPromotion',
   timeStart: '',
   timeEnd: '',
   pointsMultiplier: '1.5',
-  menuItem: '',
-  extraPoints: 0,
-  saleMenuItem: '',
-  discountedPrice: 0,
   claimReward: '',
   claimPoints: 0,
 };
@@ -81,7 +69,7 @@ const schema = Yup.object().shape({
   description: Yup.string().required('Description is required'),
   startDate: Yup.date().required('Start date is required').typeError('Invalid date'),
   endDate: Yup.date().required('End date is required').min(Yup.ref('startDate'), 'End date must be after start date').typeError('Invalid date'),
-  tierLimit: Yup.string().required('Tier limit is required'),
+  tierLimit: Yup.string().required('Level status is required'),
 
   /* ---- Recurring ---- */
   recurringEnabled: Yup.string().oneOf(['true', 'false']).required(),
@@ -105,92 +93,56 @@ const schema = Yup.object().shape({
       otherwise: (s) => s.notRequired(),
     }),
 
-  promotionType: Yup.string().oneOf(['happyHour', 'claimPromotion', 'buyMenuItemPromotion', 'productSale']).required('Promotion type is required'),
+  promotionType: Yup.string().oneOf(['globalHappyHourPromotion', 'globalClaimPromotion']).required('Promotion type is required'),
 
-  /* ---- Happy Hour ---- */
+  /* ---- Global Happy Hour ---- */
   timeStart: Yup.string().when('promotionType', {
-    is: 'happyHour',
+    is: 'globalHappyHourPromotion',
     then: (s) => s.required('Start time is required').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time'),
     otherwise: (s) => s.notRequired(),
   }),
   timeEnd: Yup.string().when('promotionType', {
-    is: 'happyHour',
+    is: 'globalHappyHourPromotion',
     then: (s) => s.required('End time is required').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time'),
     otherwise: (s) => s.notRequired(),
   }),
   pointsMultiplier: Yup.string().when('promotionType', {
-    is: 'happyHour',
+    is: 'globalHappyHourPromotion',
     then: (s) => s.required('Multiplier is required'),
     otherwise: (s) => s.notRequired(),
   }),
 
-  /* ---- Buy Menu Item ---- */
-  menuItem: Yup.string().when('promotionType', {
-    is: 'buyMenuItemPromotion',
-    then: (s) => s.required('Menu item is required'),
-    otherwise: (s) => s.notRequired(),
-  }),
-  extraPoints: Yup.number()
-    .transform((v, o) => (o === '' ? 0 : v))
-    .when('promotionType', {
-      is: 'buyMenuItemPromotion',
-      then: (s) => s.min(1, 'Extra points ≥ 1').required('Extra points required'),
-      otherwise: (s) => s.notRequired(),
-    }),
-
-  /* ---- Product Sale ---- */
-  saleMenuItem: Yup.string().when('promotionType', {
-    is: 'productSale',
-    then: (s) => s.required('Menu item is required'),
-    otherwise: (s) => s.notRequired(),
-  }),
-  discountedPrice: Yup.number()
-    .transform((v, o) => (o === '' ? 0 : v))
-    .when('promotionType', {
-      is: 'productSale',
-      then: (s) => s.min(0.01, 'Price > 0').required('Discounted price required'),
-      otherwise: (s) => s.notRequired(),
-    }),
-
-  /* ---- Claim Promotion ---- */
+  /* ---- Global Claim Promotion ---- */
   claimReward: Yup.string().when('promotionType', {
-    is: 'claimPromotion',
+    is: 'globalClaimPromotion',
     then: (s) => s.required('Reward is required'),
     otherwise: (s) => s.notRequired(),
   }),
-  // claimPoints: Yup.number()
-  //   .transform((v, o) => (o === '' ? 0 : v))
-  //   .when('promotionType', {
-  //     is: 'claimPromotion',
-  //     then: (s) => s.min(1, 'Points ≥ 1').required('Claim points required'),
-  //     otherwise: (s) => s.notRequired(),
-  //   }),
   claimPoints: Yup.number()
     .transform((v, o) => (o === '' ? 0 : v))
     .when('promotionType', {
-      is: 'claimPromotion',
+      is: 'globalClaimPromotion',
       then: (s) => s.min(0, 'Points cannot be negative').required('Claim points required'),
       otherwise: (s) => s.notRequired(),
     }),
 });
 
-type PromotionModalProps = {
+type GlobalPromotionModalProps = {
   open: boolean;
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
-  global?: boolean;
   selectedCompany?: any;
 };
 
-const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = false, selectedCompany }: PromotionModalProps) => {
+const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: GlobalPromotionModalProps) => {
   const [deleting, setDeleting] = useState(false);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
   const [addPromotion, { isLoading: addLoading }] = useAddPromotionMutation();
   const [updatePromotion, { isLoading: updateLoading }] = useUpdatePromotionMutation();
 
-  const methods = useForm<PromotionsFormValues>({
+  const methods = useForm<GlobalPromotionsFormValues>({
     resolver: yupResolver(schema) as any,
     defaultValues,
     mode: 'onChange',
@@ -202,72 +154,27 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     formState: { isDirty },
   } = methods;
 
-  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
-    {
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-      date: undefined,
-    },
-    {
-      skip: global,
-    }
-  );
-
-  const { data: levelStatus, isLoading: levelStatusLoading } = useGetLevelStatusQuery(
-    {
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-      date: undefined,
-    },
-    {
-      skip: !global,
-    }
-  );
-
-  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemsQuery(
-    {
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-      date: undefined,
-      companyOrganizer: selectedCompany || undefined,
-    },
-    {
-      skip: global,
-    }
-  );
+  const { data: levelStatus, isLoading: levelStatusLoading } = useGetLevelStatusQuery({
+    page: 0,
+    search: '',
+    limit: '100',
+    status: '',
+    date: undefined,
+  });
 
   const { data: rewardData, isLoading: rewardsLoading } = useGetRewardsQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '100',
     status: '',
     date: undefined,
-    companyOrganizer: selectedCompany || undefined,
-    isGlobal: global || false,
+    isGlobal: true,
   });
-
-  const tiersOptions =
-    tiersData?.data?.map((tier: any) => ({
-      label: tier?.title,
-      value: tier?._id,
-    })) || [];
 
   const levelStatusOptions =
     levelStatus?.data?.map((status: any) => ({
       label: status?.title,
       value: status?._id,
-    })) || [];
-
-  const menuItemOptions =
-    menuItemsData?.data?.map((menuItem: any) => ({
-      label: menuItem?.title,
-      value: menuItem?._id,
     })) || [];
 
   const rewardOptions =
@@ -283,23 +190,10 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
   useEffect(() => {
     if (!isEdit || !selectedData) return;
 
-    const {
-      image,
-      title,
-      description,
-      startDate,
-      endDate,
-      tierLimit,
-      recurringDetails,
-      promotionType,
-      pointsMultiplier,
-      menuItem,
-      discountedPrice,
-      reward,
-      claimPoints,
-    } = selectedData;
+    const { image, title, description, startDate, endDate, tierLimit, recurringDetails, promotionType, pointsMultiplier, reward, claimPoints } =
+      selectedData;
 
-    const mapped: Partial<PromotionsFormValues> = {
+    const mapped: Partial<GlobalPromotionsFormValues> = {
       photo: image || null,
       title: title || '',
       description: description || '',
@@ -316,31 +210,22 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     };
 
     // type-specific
-    if (promotionType === 'happyHour') {
+    if (promotionType === 'globalHappyHourPromotion') {
       const startTimeMatch = startDate?.match(/(\d{2}:\d{2})/);
       const endTimeMatch = endDate?.match(/(\d{2}:\d{2})/);
       mapped.timeStart = startTimeMatch ? startTimeMatch[1] : '';
       mapped.timeEnd = endTimeMatch ? endTimeMatch[1] : '';
       mapped.pointsMultiplier = String(pointsMultiplier || 1.5);
     }
-    if (promotionType === 'buyMenuItemPromotion') {
-      mapped.menuItem = menuItem?._id || '';
-      mapped.extraPoints = selectedData.extraPoints || 0;
-    }
-    if (promotionType === 'productSale') {
-      mapped.saleMenuItem = menuItem?._id || '';
-      mapped.discountedPrice = discountedPrice || 0;
-    }
-    if (promotionType === 'claimPromotion') {
+    if (promotionType === 'globalClaimPromotion') {
       mapped.claimReward = reward?._id || reward || '';
       mapped.claimPoints = claimPoints || 0;
     }
 
-    reset(mapped as PromotionsFormValues);
+    reset(mapped as GlobalPromotionsFormValues);
   }, [isEdit, selectedData, reset]);
 
   function formatDateWithTime(dateInput: Date | string, time: string): string {
-    // Returns 'YYYY-MM-DD hh:mm A' format
     const pad = (n: number) => n.toString().padStart(2, '0');
     const date = new Date(dateInput);
     if (time) {
@@ -351,34 +236,21 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     const minutes = pad(date.getMinutes());
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours ? hours : 12;
     const timeStr = pad(hours) + ':' + minutes + ' ' + ampm;
     return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + timeStr;
   }
 
-  const transformToPayload = (data: PromotionsFormValues) => {
-    if (!selectedCompany && !global) {
-      showError('Please select a company first');
-      return null;
-    }
-
+  const transformToPayload = (data: GlobalPromotionsFormValues) => {
     const base: any = {
-      // companyOrganizer: selectedCompany,
       title: data.title,
       description: data.description,
       startDate: fDate(data.startDate, formatStr.paramCase.db),
       endDate: fDate(data.endDate, formatStr.paramCase.db),
       tierLimit: data.tierLimit,
       promotionType: data.promotionType,
+      isGlobal: true,
     };
-
-    if (!global) {
-      base.companyOrganizer = selectedCompany;
-    }
-
-    if (global) {
-      base.isGlobal = true;
-    }
 
     // Recurring: only if enabled
     if (data.recurringEnabled === 'true') {
@@ -394,21 +266,13 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
 
     // Type-specific
     switch (data.promotionType) {
-      case 'happyHour': {
+      case 'globalHappyHourPromotion': {
         base.startDate = formatDateWithTime(data.startDate, data.timeStart);
         base.endDate = formatDateWithTime(data.endDate, data.timeEnd);
         base.pointsMultiplier = parseFloat(data.pointsMultiplier);
         break;
       }
-      case 'buyMenuItemPromotion':
-        base.menuItem = data.menuItem;
-        base.extraPoints = data.extraPoints;
-        break;
-      case 'productSale':
-        base.menuItem = data.saleMenuItem;
-        base.discountedPrice = data.discountedPrice;
-        break;
-      case 'claimPromotion':
+      case 'globalClaimPromotion':
         base.reward = data.claimReward;
         base.claimPoints = data.claimPoints;
         break;
@@ -425,7 +289,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       if (!isEdit) {
         const startDate = new Date(formData.startDate);
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+        today.setHours(0, 0, 0, 0);
 
         if (startDate < today) {
           showError('Start date cannot be in the past');
@@ -433,12 +297,11 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
         }
       }
 
-      // Check happyHour time logic
-      if (formData.promotionType === 'happyHour') {
+      // Check globalHappyHourPromotion time logic
+      if (formData.promotionType === 'globalHappyHourPromotion') {
         const start = formData.timeStart;
         const end = formData.timeEnd;
         if (start && end) {
-          // Compare as HH:mm
           const [startH, startM] = start.split(':').map(Number);
           const [endH, endM] = end.split(':').map(Number);
           const startMinutes = startH * 60 + startM;
@@ -460,7 +323,6 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       if (uploadedFileKey) {
         payload.image = uploadedFileKey;
       } else if (!isEdit && selectedData?.image) {
-        // Only send image in non-edit mode if it exists
         payload.image = selectedData.image;
       }
 
@@ -476,7 +338,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
         return;
       }
 
-      showSuccess(response?.message || (isEdit ? 'Promotion updated' : 'Promotion created'));
+      showSuccess(response?.message || (isEdit ? 'Global promotion updated' : 'Global promotion created'));
       methods.reset(defaultValues);
       onClose();
     } catch (err: any) {
@@ -501,7 +363,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
           className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[640px]!"
         >
           <DialogHeader>
-            <DialogTitle>{isEdit ? 'Edit Promotion' : 'Create Promotion'}</DialogTitle>
+            <DialogTitle>{isEdit ? 'Edit Global Promotion' : 'Create Global Promotion'}</DialogTitle>
           </DialogHeader>
 
           <div className="w-full">
@@ -518,18 +380,16 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                     placeholder="Select Type"
                     disabled={isEdit}
                     options={[
-                      { label: 'Happy Hour', value: 'happyHour' },
-                      { label: 'Claim Promotion', value: 'claimPromotion' },
-                      ...(!global ? [{ label: 'Buy Menu Item (Extra Points)', value: 'buyMenuItemPromotion' }] : []),
-                      ...(!global ? [{ label: 'Product Sale', value: 'productSale' }] : []),
+                      { label: 'Global Happy Hour', value: 'globalHappyHourPromotion' },
+                      { label: 'Global Claim Promotion', value: 'globalClaimPromotion' },
                     ]}
                   />
                 </div>
 
-                {/* TIER */}
+                {/* TITLE & LEVEL STATUS */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFTextField name="title" label="Title" placeholder="Enter Title" />
-                  {tiersLoading ? (
+                  {levelStatusLoading ? (
                     <div className="mt-2 w-full space-y-2">
                       <Skeleton className="ml-1 h-3 w-20 rounded-4xl border-gray-200 px-5" />
                       <Skeleton className="h-8 rounded-4xl border-gray-200 px-5" />
@@ -537,10 +397,10 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                   ) : (
                     <RHFCustomDropdown
                       name="tierLimit"
-                      label="Tier Limit"
-                      placeholder="Minimum tier required"
-                      options={global ? levelStatusOptions : tiersOptions}
-                      isLoading={global ? levelStatusLoading : tiersLoading}
+                      label="Level Status"
+                      placeholder="Minimum level required"
+                      options={levelStatusOptions}
+                      isLoading={levelStatusLoading}
                       showNone={false}
                     />
                   )}
@@ -599,8 +459,8 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                   </>
                 )}
 
-                {/* CLAIM PROMOTION FIELDS */}
-                {promotionType === 'claimPromotion' && (
+                {/* GLOBAL CLAIM PROMOTION FIELDS */}
+                {promotionType === 'globalClaimPromotion' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <RHFCustomDropdown
                       name="claimReward"
@@ -617,8 +477,8 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 {/* DESCRIPTION */}
                 <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
 
-                {/* HAPPY HOUR */}
-                {promotionType === 'happyHour' && (
+                {/* GLOBAL HAPPY HOUR */}
+                {promotionType === 'globalHappyHourPromotion' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <RHFTextField name="timeStart" label="Promotion Time Start" placeholder="17:00" type="time" />
                     <RHFTextField name="timeEnd" label="Promotion Time End" placeholder="20:00" type="time" />
@@ -633,36 +493,6 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                         { label: '3x', value: '3' },
                       ]}
                     />
-                  </div>
-                )}
-
-                {/* BUY MENU ITEM */}
-                {promotionType === 'buyMenuItemPromotion' && (
-                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFCustomDropdown
-                      name="menuItem"
-                      label="Menu Item"
-                      placeholder="Select Menu Item"
-                      options={menuItemOptions}
-                      isLoading={menuItemsLoading}
-                      showNone={false}
-                    />
-                    <RHFTextField name="extraPoints" label="Extra Points" placeholder="0" type="number" />
-                  </div>
-                )}
-
-                {/* PRODUCT SALE */}
-                {promotionType === 'productSale' && (
-                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFCustomDropdown
-                      name="saleMenuItem"
-                      label="Menu Item"
-                      placeholder="Select Item"
-                      options={menuItemOptions}
-                      isLoading={menuItemsLoading}
-                      showNone={false}
-                    />
-                    <RHFTextField name="discountedPrice" label="Discounted Price" placeholder="0.00" type="number" step="0.01" />
                   </div>
                 )}
               </div>
@@ -684,7 +514,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                       className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
                       disabled={isEdit ? !isDirty : false}
                     >
-                      {isEdit ? 'Update Promotion' : 'Create Promotion'}
+                      {isEdit ? 'Update Global Promotion' : 'Create Global Promotion'}
                     </Button>
                   )}
                 </div>
@@ -697,4 +527,4 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
   );
 };
 
-export default PromotionModal;
+export default GlobalPromotionModal;
