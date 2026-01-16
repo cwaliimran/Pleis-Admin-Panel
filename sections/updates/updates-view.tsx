@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import UpdatesModal from './updates-modal';
 import UpdatesTable from './updates-table';
 
-const UpdatesView = () => {
+const UpdatesView = ({ userType }: { userType: string }) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -178,6 +178,7 @@ const UpdatesView = () => {
           isEdit={editModal.value}
           selectedData={selectedRecord}
           companyId={companyId}
+          userType={userType}
           organizationId={organizerOrganizationIds}
         />
       )}

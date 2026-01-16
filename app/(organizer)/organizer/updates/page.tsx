@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <UpdatesView />
+      <UpdatesView userType="organizer" />
     </div>
   );
 };

@@ -63,6 +63,7 @@ const FaqsView = () => {
   }, [apiData, page, limit]);
 
   const handleCreateNew = () => {
+    setSelectedData(undefined);
     setSelectedId(null);
     editModal.onFalse();
     openModal.onTrue();

@@ -93,7 +93,6 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
 
   console.log('selectedData', selectedData);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
-  
 
   const [addMenuItem, { isLoading: addMenuItemLoading }] = useAddMenuItemMutation();
   const [updateMenuItem, { isLoading: updateMenuItemLoading }] = useUpdateMenuItemMutation();

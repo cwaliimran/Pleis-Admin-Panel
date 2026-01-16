@@ -125,6 +125,7 @@ export const paths = {
     menuManagement: '/super-admin/app-ordering/menu-management',
     orderAnalytics: '/super-admin/app-ordering/order-analytics',
     orderSettings: '/super-admin/app-ordering/order-settings',
+    orderTransactions: '/super-admin/app-ordering/order-transactions',
 
     qrCodes: '/super-admin/qr-codes',
     levelStatus: '/super-admin/level-status',
