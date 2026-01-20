@@ -7,13 +7,13 @@ export const transformApiMenuItemToFrontend = (apiItem: ApiMenuItem): MenuItem =
   // Calculate if item is on sale (has discount)
   const isOnSale = apiItem.discountPrice > 0 && apiItem.discountPrice < apiItem.basePrice;
   const discountValue = isOnSale ? apiItem.basePrice - apiItem.discountPrice : 0;
-//   const discountPercent = isOnSale ? Math.round((discountValue / apiItem.basePrice) * 100) : 0;
+  //   const discountPercent = isOnSale ? Math.round((discountValue / apiItem.basePrice) * 100) : 0;
 
   return {
     id: apiItem._id,
     name: apiItem.title,
-    category: apiItem.category.title,
-    categoryId: apiItem.category._id,
+    category: apiItem?.category?.title,
+    categoryId: apiItem?.category?._id,
     price: apiItem.basePrice,
     discountPrice: apiItem.discountPrice,
     description: apiItem.description,

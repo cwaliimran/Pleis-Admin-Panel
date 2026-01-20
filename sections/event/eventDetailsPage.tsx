@@ -61,16 +61,6 @@ const EventDetailsPage = () => {
     }
   }, [event?.preOrdersEnabled]);
 
-  // console.log('Event in details page', event);
-
-  // const event = {
-  //   id: "1",
-  //   name: "Summer Music Festival 2025",
-  //   published: true,
-  //   fromDate: "2025-03-23T13:00:00Z",
-  //   endDate: "2025-03-25T13:00:00Z",
-  // };
-
   const handleDelete = (id: string) => {
     setDeleteId(id);
     deleteModal.onTrue();
@@ -139,10 +129,6 @@ const EventDetailsPage = () => {
     }
   };
 
-  // const media = event?.basicInfo?.media?.url;
-  // const mediaUrl = typeof media === 'string' ? media.toLowerCase() : null;
-  // const isVideo = mediaUrl?.endsWith('.mp4');
-
   return (
     <>
       {isLoading || loading ? (
@@ -152,6 +138,7 @@ const EventDetailsPage = () => {
           <div className="mt-10 h-full">
             <div className="grid grid-cols-12 md:gap-7">
               <div className="col-span-12 lg:col-span-9">
+                {/* ---------------- INFO CARD ---------------- */}
                 <Card className="pb-0 shadow-md dark:bg-[#171717]">
                   <CardContent>
                     <div className="flex flex-col gap-4 sm:flex-row">
@@ -171,34 +158,11 @@ const EventDetailsPage = () => {
                             {event?.basicInfo?.title?.[0]?.toUpperCase() || ''}
                           </span>
                         )}
-
-                        {/* <ImageWithFallback
-                          url={event?.basicInfo?.media}
-                          size={300}
-                          alt={event?.basicInfo?.title}
-                          className="h-auto w-full rounded-md object-contain object-top"
-                        />
-                         */}
-
-                        {/* {isVideo ? (
-                          <video src={event?.basicInfo?.media?.url} controls className="h-full w-full rounded-lg object-cover" />
-                        ) : (
-                          <Image
-                            src={event?.basicInfo?.media?.url}
-                            alt="Event preview"
-                            className="rounded-lg object-cover"
-                            sizes="(max-width: 768px) 100vw, 40vw"
-                            priority
-                            // quality={85}
-                            height={300}
-                            width={300}
-                          />
-                        )} */}
                       </div>
 
                       {/* Right Content */}
                       <div className="flex w-full flex-col gap-3 sm:w-2/3">
-                        {/* Status and Date */}
+                        {/* Top Row */}
                         <div className="flex items-center justify-between gap-3 text-sm text-gray-500">
                           <div className="flex flex-col items-center gap-2 md:flex-row">
                             <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800">
@@ -209,7 +173,6 @@ const EventDetailsPage = () => {
 
                           <div className="flex items-center">
                             {/* Static Preorder Toggle Button */}
-
                             <label className="mr-2 flex cursor-pointer items-center select-none">
                               <input type="checkbox" checked={preOrdersEnabled} onChange={handlePreOrderToggle} className="sr-only" />
                               <span
@@ -336,7 +299,10 @@ const EventDetailsPage = () => {
 
                       {/* Boost Button */}
                       <div className="w-full sm:w-auto">
-                        <button className="bg-primary hover:bg-primary w-full cursor-pointer rounded-3xl px-4 py-2 text-white transition sm:w-auto">
+                        <button
+                          type="button"
+                          className="bg-primary hover:bg-primary w-full cursor-pointer rounded-3xl px-4 py-2 text-white transition sm:w-auto"
+                        >
                           Boost
                         </button>
                       </div>
@@ -393,7 +359,7 @@ const EventDetailsPage = () => {
 
                   {active === 'notifications' && <EventNotification />}
 
-                  {active === 'feedback' && showFeedback && <EventFeedbackView />}
+                  {active === 'feedback' && showFeedback ? <EventFeedbackView /> : null}
                 </div>
               </div>
 

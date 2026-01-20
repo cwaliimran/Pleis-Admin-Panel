@@ -20,6 +20,7 @@ import {
   SlidersVertical,
   Volume1,
   ListFilter,
+  BadgeInfo,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -427,7 +428,7 @@ export const menuGroups: MenuGroup[] = [
   {
     label: 'Help & Support',
     key: paths.superAdmin.helpSupport,
-    icon: Volume1,
+    icon: BadgeInfo,
   },
   {
     label: 'FAQs',
