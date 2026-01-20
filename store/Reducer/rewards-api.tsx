@@ -34,6 +34,15 @@ export const rewardsApi = createApi({
       providesTags: (result, error, arg) => (arg.isGlobal ? ['globalReward'] : ['reward']),
     }),
 
+    rewardPointCalculator: builder.mutation({
+      query: ({ data }) => ({
+        url: API_ROUTES.ADMIN_POINT_CAL,
+        method: 'POST',
+        body: data,
+      }),
+      // invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalReward'] : ['reward']),
+    }),
+
     addReward: builder.mutation({
       query: ({ isGlobal = false, ...newReward }) => ({
         url: API_ROUTES.ADMIN_LOYALTY_REWARDS(isGlobal),
@@ -66,4 +75,5 @@ export const rewardsApi = createApi({
   }),
 });
 
-export const { useGetRewardsQuery, useAddRewardMutation, useUpdateRewardMutation, useDeleteRewardMutation } = rewardsApi;
+export const { useGetRewardsQuery, useRewardPointCalculatorMutation, useAddRewardMutation, useUpdateRewardMutation, useDeleteRewardMutation } =
+  rewardsApi;

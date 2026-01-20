@@ -66,7 +66,6 @@ const schema = yup.object({
     if (!value || value === '') return true;
     return Number(value) > 0;
   }),
-  tierLimit: yup.string(),
   description: yup.string(),
   rewardType: yup.string().required('Creation method is required'),
   percentOff: yup.string().test('is-valid-percent', 'Must be between 0 and 100', (value) => {
@@ -75,6 +74,7 @@ const schema = yup.object({
     return num >= 0 && num <= 100;
   }),
   menu: yup.string(),
+  tierLimit: yup.string().required('Tier limit is required'),
   menuItem: yup.string().when('rewardType', {
     is: 'buyMenuItemReward',
     then: (schema) => schema.required('Menu item is required'),
@@ -94,6 +94,8 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
 
+  console.log('selectedData', selectedData);
+
   const [addReward, { isLoading: addRewardLoading }] = useAddRewardMutation();
   const [updateReward, { isLoading: updateRewardLoading }] = useUpdateRewardMutation();
 
@@ -106,7 +108,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     sortingType: '',
     minPointsRequiredToClaim: '',
     claimLimit: '',
-    tierLimit: 'none',
+    tierLimit: '',
     percentOff: '',
     description: '',
     event: '',
@@ -217,8 +219,9 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
         percentOff: selectedData.percentOff?.toString() || '',
         description: selectedData.description || '',
         rewardType: selectedData.rewardType || initialRewardType,
-        menuItem: selectedData.menuItem || '',
-        event: selectedData.event || '',
+        menu: selectedData.menuItem?.menu?._id || '',
+        menuItem: selectedData.menuItem?._id || '',
+        event: selectedData.event?._id || selectedData.event || '',
         endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
@@ -476,7 +479,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                   ) : (
                     <RHFCustomDropdown
                       name="tierLimit"
-                      label="Tier Limit (Optional)"
+                      label="Tier Limit"
                       placeholder="Minimum tier required"
                       options={global ? levelStatusOptions : tiersOptions}
                       isLoading={global ? levelStatusLoading : tiersLoading}
@@ -508,7 +511,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                   <RHFTextField name="description" label="Description (Optional)" placeholder="Enter reward details" multiline rows={2} />
                 </div>
 
-                {!global && <RewardCalculatorFields />}
+                {!global && <RewardCalculatorFields companyOrganizer={selectedCompany} />}
               </div>
 
               <div className="mt-4 flex items-center justify-end gap-2">
