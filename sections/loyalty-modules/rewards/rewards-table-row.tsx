@@ -44,7 +44,7 @@ const RewardsTableRow: FC<TableRowProps> = ({ item, global, handleDelete, handle
 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left">
+      <TableCell className="text-left capitalize">
         <TruncatedTextWithModal text={item?.description} title="Description" />
       </TableCell>
 

@@ -200,8 +200,10 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
       const start = parse12HourTo24Hour(formData.startTime);
       const end = parse12HourTo24Hour(formData.endTime);
 
-      if (start && end && start >= end) {
-        showError('End time must be after start time.');
+      // Allow end time to be earlier than start time (overnight shift)
+      // Only reject if times are exactly equal
+      if (start && end && start === end) {
+        showError('End time must be different from start time.');
         return;
       }
     }

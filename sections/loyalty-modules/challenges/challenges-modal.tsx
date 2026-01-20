@@ -610,7 +610,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 )}
               </div>
 
-              {!global && <RewardCalculatorFields />}
+              {!global && <RewardCalculatorFields companyOrganizer={selectedCompany} />}
               {/* <RewardCalculatorFields /> */}
 
               <div className="mt-5 flex items-center justify-end gap-2">
