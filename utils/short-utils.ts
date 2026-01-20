@@ -1,7 +1,7 @@
 // Utility to format date as 'dd-MM-yyyy, h:mm:ss AM/PM'
 export function formatDateTime(dateInput: string | Date): string {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  if (isNaN(date.getTime())) return '-';
+  if (isNaN(date?.getTime())) return '-';
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
@@ -26,9 +26,7 @@ export function capitalizeFirst(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export const getStatusVariant = (
-  status?: string
-): 'success' | 'error' | 'info' | 'warning' | 'default' | undefined => {
+export const getStatusVariant = (status?: string): 'success' | 'error' | 'info' | 'warning' | 'default' | undefined => {
   const variants = {
     active: 'success',
     inactive: 'error',
@@ -45,8 +43,6 @@ export const formatTimeTo12Hour = (time: string | null | undefined): string | nu
   const [hours, minutes] = time.split(':');
   const hourNum = parseInt(hours, 10);
   const period = hourNum >= 12 ? 'PM' : 'AM';
-  const formattedHour = (hourNum % 12 === 0 ? 12 : hourNum % 12)
-    .toString()
-    .padStart(2, '0');
+  const formattedHour = (hourNum % 12 === 0 ? 12 : hourNum % 12).toString().padStart(2, '0');
   return `${formattedHour}:${minutes} ${period}`;
 };

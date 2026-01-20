@@ -1,6 +1,5 @@
 import ImageWithFallback from '@/components/common/img-with-fallback';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { capitalizeFirst, formatDateTime } from '@/utils/short-utils';
 import { Calendar, Dot, Ellipsis, MapPin, UsersRound } from 'lucide-react';
@@ -14,29 +13,21 @@ const EventOverView = ({ event }: { event: any }) => {
 
   const toggle = () => setExpanded(!expanded);
 
-  const tickets = [
+  const ticketsData = [
     {
       title: 'Early Bird Tickets',
-      from: 'Mon 13, 25',
-      sold: 1500,
-      total: 2000,
+      sold: event?.ticketingStats?.earlyBird?.used?.count || 0,
+      total: event?.ticketingStats?.earlyBird?.totalCreated || 0,
     },
     {
-      title: 'Early Bird Tickets',
-      from: 'Mon 13, 25',
-      sold: 1800,
-      total: 2000,
-    },
-  ];
-
-  const updates = [
-    {
-      title: 'Early Bird Tickets',
-      description: 'Lorem ipsum dolor sit amet consectetur. Posuere tellus sagittis morbi eu ac justo. Phasellus in in porta egestas eget massa.',
+      title: 'Last Minute Tickets',
+      sold: event?.ticketingStats?.lastMinute?.used?.count || 0,
+      total: event?.ticketingStats?.lastMinute?.totalCreated || 0,
     },
     {
-      title: 'Early Bird Tickets',
-      description: 'Tellus congue tortor non morbi eros risus aenean.',
+      title: 'Regular Tickets',
+      sold: event?.ticketingStats?.regular?.used?.count || 0,
+      total: event?.ticketingStats?.regular?.totalCreated || 0,
     },
   ];
 
@@ -59,10 +50,6 @@ const EventOverView = ({ event }: { event: any }) => {
                     <span className="text-sm font-bold text-gray-800 dark:text-white">
                       {event?.basicInfo?.organization?.basicInfo?.name || 'Unknown Organizer'}
                     </span>
-                    {/* <div className="flex">
-                      <MapPin className="h-4 w-4" />
-                      <span>Trnjanska cesta 5, 10 00...</span>
-                    </div> */}
                   </div>
                 </div>
 
@@ -71,8 +58,16 @@ const EventOverView = ({ event }: { event: any }) => {
                 </h1>
 
                 <Badge
-                  onClick={() => router.push(`/${window.location.pathname.split('/')[1]}/organization/${event?.basicInfo?.organization?._id}`)}
-                  className="text-md w-full cursor-pointer rounded-full border border-gray-400 bg-transparent px-4 py-1 font-medium text-black transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-white"
+                  onClick={
+                    event?.basicInfo?.organization?._id
+                      ? () => router.push(`/${window.location.pathname.split('/')[1]}/organization/${event?.basicInfo?.organization?._id}`)
+                      : undefined
+                  }
+                  className={`text-md w-full rounded-full border border-gray-400 bg-transparent px-4 py-1 font-medium transition-colors ${
+                    event?.basicInfo?.organization?._id
+                      ? 'cursor-pointer text-black hover:bg-gray-200 hover:text-gray-800 dark:bg-white'
+                      : 'pointer-events-none cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800'
+                  }`}
                 >
                   Profile
                 </Badge>
@@ -108,7 +103,7 @@ const EventOverView = ({ event }: { event: any }) => {
               <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
               <div className="flex items-center gap-2">
                 {/* <PartyPopper /> */}
-                <p className="text-md mt-2 capitalize">{event?.basicInfo?.venue?.title || 'Unknown Type'}</p>
+                <p className="text-md mt-2 capitalize">{event?.basicInfo?.venue?.title || ''}</p>
               </div>
             </CardHeader>
           </Card>
@@ -146,6 +141,7 @@ const EventOverView = ({ event }: { event: any }) => {
               </div>
             </CardHeader>
           </Card>
+
           <Card className="dark:bg-secondary mt-4 w-full shadow-lg">
             <CardHeader>
               {/* Top: Status + Ellipsis */}
@@ -215,6 +211,7 @@ const EventOverView = ({ event }: { event: any }) => {
               </div>
             </CardContent>
           </Card>
+
           <div className="mt-5 grid grid-cols-12 gap-4">
             <div className="col-span-12 w-full rounded-full border-2 border-gray-300 bg-white text-center shadow-lg hover:bg-gray-100 md:col-span-6 dark:bg-black">
               <Badge className="text-md bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-500">New Promotion</Badge>
@@ -224,6 +221,7 @@ const EventOverView = ({ event }: { event: any }) => {
             </div>
           </div>
         </div>
+
         <div className="col-span-12 md:col-span-7">
           {/* timeline  */}
           <Card className="shadow-lg dark:bg-[#171717]">
@@ -248,6 +246,7 @@ const EventOverView = ({ event }: { event: any }) => {
               </div>
             </CardHeader>
           </Card>
+
           {/* location */}
           <Card className="mt-4 shadow-lg dark:bg-[#171717]">
             <CardHeader className="flex w-full flex-col gap-2">
@@ -280,17 +279,16 @@ const EventOverView = ({ event }: { event: any }) => {
             <CardContent>
               <h2 className="text-muted-foreground text-sm font-semibold">TICKETS</h2>
 
-              {tickets.map((ticket, index) => (
+              {ticketsData.map((ticket, index) => (
                 <div key={index}>
                   <div className="flex items-start justify-between rounded-md py-4">
                     <div className="flex-1 space-y-1">
                       <div className="mr-2 flex items-center justify-between">
                         <div>
                           <p className="text-base font-medium">{ticket.title}</p>
-                          <p className="text-muted-foreground text-xs">From {ticket.from}</p>
                         </div>
                         <p>
-                          {ticket.sold}/ {ticket.total}
+                          {ticket.sold} / {ticket.total}
                         </p>
                       </div>
 
@@ -299,7 +297,7 @@ const EventOverView = ({ event }: { event: any }) => {
                           <div
                             className="bg-primary h-full transition-all"
                             style={{
-                              width: `${(ticket.sold / ticket.total) * 100}%`,
+                              width: ticket.total > 0 ? `${(ticket.sold / ticket.total) * 100}%` : '0%',
                             }}
                           />
                         </div>
@@ -309,9 +307,6 @@ const EventOverView = ({ event }: { event: any }) => {
                         {ticket.sold}/{ticket.total}
                       </p>
                     </div>
-                    {/* <Button variant="outline" size="sm">
-                      Boost
-                    </Button> */}
                   </div>
                   <hr />
                 </div>
@@ -321,44 +316,33 @@ const EventOverView = ({ event }: { event: any }) => {
               <div className="flex items-center justify-between pt-2 md:pt-4">
                 <div>
                   <p className="text-muted-foreground text-sm font-semibold">Total</p>
-                  <p className="text-lg font-bold">12,026 €</p>
+                  <p className="text-lg font-bold">{event?.ticketingStats?.grandTotal?.amount || 0} €</p>
                 </div>
-                <Button variant="outline" size="sm">
+                {/* <Button variant="outline" size="sm">
                   Manage Tickets
-                </Button>
+                </Button> */}
               </div>
             </CardContent>
           </Card>
+
           {/* Updates Section */}
           <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
               <h2 className="text-muted-foreground text-sm font-semibold">UPDATES</h2>
 
-              {updates.map((update, index) => (
+              {event?.updates?.map((update: any, index: number) => (
                 <div key={index}>
                   <div className="flex items-start justify-between rounded-md py-4">
                     <div className="flex-1 space-y-1">
                       <div className="mb-1 flex items-center gap-2">
                         <Dot className="text-primary bg-primary -ml-1 h-2 w-2 rounded-full" />
-                        <p className="text-sm font-medium">{update.title}</p>
+                        <p className="text-sm font-medium">{update?.title}</p>
                       </div>
-                      <p className="text-muted-foreground text-sm">{update.description}</p>
+                      <p className="text-muted-foreground text-sm">{update?.description}</p>
                     </div>
-                    {/* <Button variant="outline" size="sm">
-                      Boost
-                    </Button> */}
                   </div>
-                  <hr />
                 </div>
               ))}
-
-              {/* Optional Summary Section */}
-              <div className="flex items-center justify-between px-2 pt-5">
-                <p className="text-muted-foreground text-sm font-semibold">Last updated: 2 hours ago</p>
-                <Button variant="outline" size="sm">
-                  Manage Updates
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>

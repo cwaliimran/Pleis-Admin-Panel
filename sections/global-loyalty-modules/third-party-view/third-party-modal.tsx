@@ -10,6 +10,7 @@ import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
+import { useGetRewardCategoryMiniQuery } from '@/store/Reducer/reward-category-api';
 import { useAddThirdPartyMutation, useUpdateThirdPartyMutation } from '@/store/Reducer/third-party-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
@@ -27,6 +28,7 @@ type ThirdPartyFormValues = {
   claimLimit: number | null;
   rewardSourceLink: string;
   publicKeyForPartner: string;
+  globalRewardCategory: string;
   statusLevel?: any;
   status: 'active' | 'inactive';
 };
@@ -54,6 +56,7 @@ const schema = Yup.object().shape({
     .default(null),
   rewardSourceLink: Yup.string().required('Reward source link is required').url('Must be a valid URL').default(''),
   publicKeyForPartner: Yup.string().required('Public key for partner is required').default(''),
+  globalRewardCategory: Yup.string().required('Reward category is required'),
   statusLevel: Yup.string().required('Status level is required'),
   status: Yup.string()
     .oneOf(['active', 'inactive'] as const)
@@ -68,6 +71,7 @@ const defaultValues: ThirdPartyFormValues = {
   claimLimit: '' as any,
   rewardSourceLink: '',
   publicKeyForPartner: '',
+  globalRewardCategory: '',
   statusLevel: '',
   status: 'active',
 };
@@ -91,6 +95,18 @@ const ThirdPartyModal = ({ open, onClose, isEdit = false, selectedData }: ThirdP
     levelStatus?.data?.map((status: any) => ({
       label: status?.title,
       value: status?._id,
+    })) || [];
+
+  const { data: rewardCategory, isLoading: isLoadingRewardCategory } = useGetRewardCategoryMiniQuery({
+    search: '',
+    page: 0,
+    limit: '100',
+  });
+
+  const rewardCategoryOptions =
+    rewardCategory?.data?.map((category: any) => ({
+      label: category?.title,
+      value: category?._id,
     })) || [];
 
   const methods = useForm<ThirdPartyFormValues>({
@@ -123,6 +139,7 @@ const ThirdPartyModal = ({ open, onClose, isEdit = false, selectedData }: ThirdP
         claimLimit: selectedData?.claimLimit || ('' as any),
         rewardSourceLink: selectedData?.rewardSourceLink || '',
         publicKeyForPartner: selectedData?.publicKeyForPartner || '',
+        globalRewardCategory: selectedData?.globalrewardcategories?._id || '',
         statusLevel: selectedData?.statusLevel?._id || '',
         status: selectedData?.status || 'active',
       };
@@ -148,6 +165,7 @@ const ThirdPartyModal = ({ open, onClose, isEdit = false, selectedData }: ThirdP
         pointCost: Number(formData.pointCost),
         rewardSourceLink: formData.rewardSourceLink,
         publicKeyForPartner: formData.publicKeyForPartner,
+        globalRewardCategory: formData.globalRewardCategory,
         statusLevel: formData.statusLevel,
         status: formData.status,
       };
@@ -245,18 +263,33 @@ const ThirdPartyModal = ({ open, onClose, isEdit = false, selectedData }: ThirdP
 
                 <RHFTextField name="publicKeyForPartner" label="Public Key For Partner" placeholder="Enter public key" />
 
-                {levelStatusLoading ? (
-                  <FieldSkeleton />
-                ) : (
-                  <RHFCustomDropdown
-                    name="statusLevel"
-                    label="Status Level"
-                    placeholder="Select Status Level"
-                    options={levelStatusOptions}
-                    isLoading={levelStatusLoading}
-                    showNone={false}
-                  />
-                )}
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  {isLoadingRewardCategory ? (
+                    <FieldSkeleton />
+                  ) : (
+                    <RHFCustomDropdown
+                      name="globalRewardCategory"
+                      label="Reward Category"
+                      placeholder="Select reward category"
+                      options={rewardCategoryOptions}
+                      isLoading={isLoadingRewardCategory}
+                      showNone={false}
+                    />
+                  )}
+
+                  {levelStatusLoading ? (
+                    <FieldSkeleton />
+                  ) : (
+                    <RHFCustomDropdown
+                      name="statusLevel"
+                      label="Status Level"
+                      placeholder="Select Status Level"
+                      options={levelStatusOptions}
+                      isLoading={levelStatusLoading}
+                      showNone={false}
+                    />
+                  )}
+                </div>
 
                 {isEdit && <RHFSelectField name="status" label="Status" placeholder="Select Status" options={statusOptions} />}
               </div>

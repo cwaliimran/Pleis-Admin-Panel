@@ -33,6 +33,8 @@ const ThirdPartyTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
 
       <TableCell className="text-left">{item?.claimLimit || '-'}</TableCell>
 
+      <TableCell className="text-left">{item?.globalrewardcategories?.title || '-'}</TableCell>
+
       <TableCell className="text-left">
         <TruncatedTextWithModal text={item?.rewardSourceLink} maxLength={30} title="Source Link" />
       </TableCell>

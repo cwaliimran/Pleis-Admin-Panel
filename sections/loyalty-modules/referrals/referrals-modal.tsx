@@ -16,15 +16,15 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import * as Yup from 'yup';
 
 export type ReferralFormValues = {
   userPoints: number;
   referrerPoints: number;
   minimumPurchases: number;
-  purchaseThresholdAmount: number;
   referralLimit: number;
+  status: 'active' | 'inactive';
 };
 
 type ReferralModalProps = {
@@ -39,16 +39,16 @@ const defaultValues: ReferralFormValues = {
   userPoints: 0,
   referrerPoints: 0,
   minimumPurchases: 0,
-  purchaseThresholdAmount: 0,
   referralLimit: 0,
+  status: 'active',
 };
 
 const schema = Yup.object({
   userPoints: Yup.number().min(0).required(),
   referrerPoints: Yup.number().min(0).required(),
   minimumPurchases: Yup.number().min(0).required(),
-  purchaseThresholdAmount: Yup.number().min(0).required(),
   referralLimit: Yup.number().min(0).required(),
+  status: Yup.string().oneOf(['active', 'inactive']).required(),
 });
 
 const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }: ReferralModalProps) => {
@@ -57,7 +57,7 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
     defaultValues,
   });
 
-  const { reset, handleSubmit } = methods;
+  const { reset, handleSubmit, control } = methods;
 
   const [addSetting, { isLoading: isAdding }] = useAddGlobalReferralSettingMutation();
   const [updateSetting, { isLoading: isUpdating }] = useUpdateGlobalReferralSettingMutation();
@@ -76,8 +76,8 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
       userPoints: referralSettingData.userPoints ?? 0,
       referrerPoints: referralSettingData.referrerPoints ?? 0,
       minimumPurchases: referralSettingData.minimumPurchases ?? 0,
-      purchaseThresholdAmount: referralSettingData.purchaseThresholdAmount ?? 0,
       referralLimit: referralSettingData.referralLimit ?? 0,
+      status: referralSettingData.status ?? 'active',
     };
   }, [referralSettingData]);
 
@@ -92,8 +92,8 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
       userPoints: values.userPoints,
       referrerPoints: values.referrerPoints,
       minimumPurchases: values.minimumPurchases,
-      purchaseThresholdAmount: values.purchaseThresholdAmount,
       referralLimit: values.referralLimit,
+      status: values.status,
       ...(global === false && { companyOrganizer: companyId || undefined }),
     };
 
@@ -101,7 +101,6 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
       ? {
           ...basePayload,
           id: referralSettingData?._id,
-          status: referralSettingData?.status ?? 'active',
         }
       : basePayload;
 
@@ -166,7 +165,27 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
                 <RHFTextField name="userPoints" label="User Points" type="number" placeholder="Enter user points" />
                 <RHFTextField name="referrerPoints" label="Referrer Points" type="number" placeholder="Enter referrer points" />
                 <RHFTextField name="minimumPurchases" label="Minimum Purchase" type="number" placeholder="Enter minimum purchase" />
-                <RHFTextField name="purchaseThresholdAmount" label="Purchase Threshold" type="number" placeholder="Enter purchase threshold" />
+              </div>
+
+              <div className="mt-6 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center gap-x-1">
+                      <div
+                        className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
+                          field.value === 'active' ? 'bg-primary after:translate-x-full after:border-white' : 'bg-gray-200'
+                        }`}
+                        onClick={() => field.onChange(field.value === 'active' ? 'inactive' : 'active')}
+                      />
+                      <span className="ml-2 text-xs font-medium text-gray-600 dark:text-gray-400">
+                        {field.value === 'active' ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  )}
+                />
               </div>
 
               <div className="mt-6 flex w-full items-center justify-between gap-2">

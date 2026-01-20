@@ -30,6 +30,27 @@ export const rewardCategoryApi = createApi({
       providesTags: ['reward-category'],
     }),
 
+    getRewardCategoryMini: builder.query({
+      query: ({ search, page, limit }) => {
+        const params: any = {
+          keyword: search,
+          status: 'active',
+          page: page + 1,
+          limit,
+        };
+        return {
+          url: API_ROUTES.ADMIN_GLOBAL_REWARD_CATEGORIES_MINI,
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['reward-category'],
+    }),
+
     addRewardCategory: builder.mutation({
       query: (newRewardCategory) => ({
         url: API_ROUTES.ADMIN_GLOBAL_REWARD_CATEGORIES,
@@ -58,5 +79,10 @@ export const rewardCategoryApi = createApi({
   }),
 });
 
-export const { useGetRewardCategoryQuery, useAddRewardCategoryMutation, useUpdateRewardCategoryMutation, useDeleteRewardCategoryMutation } =
-  rewardCategoryApi;
+export const {
+  useGetRewardCategoryQuery,
+  useGetRewardCategoryMiniQuery,
+  useAddRewardCategoryMutation,
+  useUpdateRewardCategoryMutation,
+  useDeleteRewardCategoryMutation,
+} = rewardCategoryApi;

@@ -727,7 +727,7 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
                     className="w-full flex-1"
                     options={[
                       { label: 'Visit X Times', value: 'globalVisit' },
-                      { label: 'Spend X Points', value: 'globalEarnPoints' },
+                      { label: 'Earn X Points', value: 'globalEarnPoints' },
                       { label: 'Refer X Users', value: 'globalReferUsers' },
                     ]}
                   />

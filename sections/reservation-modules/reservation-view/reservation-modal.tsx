@@ -26,21 +26,20 @@ import { formatDateForInput, isDateInRange, isTimeInEventRange, parseEventDateTi
 // ============================================
 // CONSTANTS (inline as requested)
 // ============================================
-const RESERVATION_TYPE_OPTIONS = [
-  { value: 'regular', label: 'Regular' },
-  { value: 'vip', label: 'VIP' },
-  { value: 'outdoor', label: 'Outdoor' },
-  { value: 'private', label: 'Private' },
-  { value: 'bar', label: 'Bar' },
-  { value: 'window', label: 'Window' },
-];
+// const RESERVATION_TYPE_OPTIONS = [
+//   { value: 'regular', label: 'Regular' },
+//   { value: 'vip', label: 'VIP' },
+//   { value: 'outdoor', label: 'Outdoor' },
+//   { value: 'private', label: 'Private' },
+//   { value: 'bar', label: 'Bar' },
+//   { value: 'window', label: 'Window' },
+// ];
 
 const CONDITION_OPTIONS = [
   { label: 'Fixed Price - User pays full amount', value: 'fixedPrice' },
   { label: 'Minimum Spend on Location', value: 'minimumSpendOnLocation' },
   { label: 'Prepay Option - Deducted from ordering', value: 'prepayOption' },
   { label: 'No Condition - Free reservation', value: 'noCondition' },
-  { label: 'Ticket Requirement', value: 'ticketRequirement' },
   { label: 'Custom Text Condition', value: 'customText' },
 ];
 
@@ -95,7 +94,8 @@ const schema = Yup.object().shape({
     otherwise: (schema) => schema.notRequired(),
   }),
   taxPercentage: Yup.string().required('Tax percentage is required'),
-  needsConfirmation: Yup.boolean().required('Confirmation requirement is mandatory').oneOf([true], 'Needs confirmation must be enabled'),
+  needsConfirmation: Yup.boolean(),
+  ticketRequirement: Yup.boolean(),
   optionalEventId: Yup.string().notRequired(),
   timingSlotsEnabled: Yup.boolean(),
   status: Yup.string().oneOf(['active', 'inactive'] as const),
@@ -109,8 +109,9 @@ const defaultValues: ReservationFormValues = {
   amount: '',
   customText: '',
   ticketType: '',
-  taxPercentage: '25',
+  taxPercentage: '5',
   needsConfirmation: true,
+  ticketRequirement: false,
   optionalEventId: '',
   timingSlotsEnabled: false,
   status: 'active',
@@ -144,6 +145,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
   const conditionType = watch('conditionType');
   const timingSlotsEnabled = watch('timingSlotsEnabled');
   const selectedEventId = watch('optionalEventId');
+  const ticketRequirement = watch('ticketRequirement');
 
   const eventOptions = useMemo(() => {
     if (!eventData || !Array.isArray(eventData)) return [];
@@ -445,6 +447,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         ticketType: selectedData?.ticketType || '',
         taxPercentage: selectedData?.taxPercentage?.toString() || '25',
         needsConfirmation: selectedData?.needsConfirmation ?? true,
+        ticketRequirement: selectedData?.ticketRequirement ?? false,
         optionalEventId: selectedData?.optionalEventId?._id || selectedData?.optionalEventId || '',
         timingSlotsEnabled: selectedData?.timingSlots?.enabled || false,
         status: selectedData?.status || 'active',
@@ -464,8 +467,8 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
 
   const handleSubmit = async (formData: ReservationFormValues) => {
     try {
-      if (!formData.needsConfirmation) {
-        showError('Needs confirmation must be enabled for all reservations');
+      if (formData.optionalEventId && !formData.timingSlotsEnabled) {
+        showError('Timing slots must be enabled when an event is selected');
         return;
       }
 
@@ -536,6 +539,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         conditionType: formData.conditionType,
         taxPercentage: formData.taxPercentage,
         needsConfirmation: formData.needsConfirmation,
+        ticketRequirement: formData.ticketRequirement,
         status: formData.status,
       };
 
@@ -548,12 +552,13 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
           payload.amount = Number(formData.amount);
           payload.customText = formData.customText;
           break;
-        case 'ticketRequirement':
-          payload.ticketType = formData.ticketType;
-          break;
         case 'customText':
           payload.customText = formData.customText;
           break;
+      }
+
+      if (formData.ticketRequirement) {
+        payload.ticketType = formData.ticketType;
       }
 
       if (formData.optionalEventId) {
@@ -676,7 +681,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col overflow-y-auto md:max-w-[750px]"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col overflow-y-auto md:max-w-187.5"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Reservation' : 'Create New Reservation'}</DialogTitle>
@@ -689,7 +694,9 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Basic Information</h3>
 
-                  <RHFSelectField name="reservationType" label="Reservation Type" placeholder="Select Type" options={RESERVATION_TYPE_OPTIONS} />
+                  {/* <RHFSelectField name="reservationType" label="Reservation Type" placeholder="Select Type" options={RESERVATION_TYPE_OPTIONS} /> */}
+
+                  <RHFTextField name="reservationType" label="Reservation Type" placeholder="Add Reservation" />
 
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
@@ -717,6 +724,35 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                   />
 
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">{renderConditionFields()}</div>
+                </div>
+
+                {/* Ticket Requirement */}
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <Checkbox
+                      id="ticketRequirement"
+                      checked={ticketRequirement}
+                      onCheckedChange={(checked) => setValue('ticketRequirement', !!checked, { shouldDirty: true })}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="ticketRequirement" className="cursor-pointer font-semibold">
+                        Require Ticket for Reservation
+                      </Label>
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                        User must own or purchase a specific ticket type to make this reservation
+                      </p>
+                    </div>
+                  </div>
+
+                  {ticketRequirement && (
+                    <RHFCustomDropdown
+                      name="ticketType"
+                      label="Required Ticket Type"
+                      placeholder="Select required ticket"
+                      options={TICKET_TYPE_OPTIONS}
+                      showNone={false}
+                    />
+                  )}
                 </div>
 
                 {/* Event Link */}
