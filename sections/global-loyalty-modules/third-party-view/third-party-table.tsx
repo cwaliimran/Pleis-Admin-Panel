@@ -21,6 +21,7 @@ const HEAD_LABEL = [
   { id: 'description', label: 'Description', align: 'left' },
   { id: 'pointCost', label: 'Point Cost', align: 'left', sortable: true, sortKey: 'pointCost' },
   { id: 'claimLimits', label: 'Claim Limits', align: 'left', sortable: true, sortKey: 'claimLimit' },
+  { id: 'category', label: 'Category', align: 'left', sortable: true, sortKey: 'category' },
   { id: 'rewardSourceLink', label: 'Reward Source Link', align: 'left' },
   { id: 'publicKeyForPartner', label: 'Public Key For Partner', align: 'left' },
   { id: 'statusLevel', label: 'Status Level', align: 'left', sortable: true, sortKey: 'statusLevel.title' },

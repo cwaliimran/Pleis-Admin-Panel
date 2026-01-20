@@ -9,7 +9,7 @@ import {
     CartesianGrid,
     Tooltip,
     ResponsiveContainer,
-    Legend,
+    // Legend,
 } from "recharts";
 
 interface PageProps {
@@ -24,7 +24,7 @@ const ViewsOverTime: FC<PageProps> = ({ data }) => {
                     <CartesianGrid strokeDasharray="4 4" />
                     <XAxis dataKey="month" axisLine={false} />
                     <YAxis tickFormatter={(v) => `${v}`} axisLine={false} />
-                    <Tooltip formatter={(value: number) => `${value.toLocaleString()}`} />
+                    <Tooltip formatter={(value: any) => `${value.toLocaleString()}`} />
                     <Line
                         type="monotone"
                         dataKey="followers"

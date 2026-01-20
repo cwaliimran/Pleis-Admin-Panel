@@ -156,6 +156,7 @@ export const API_ROUTES = {
   MARKETING_REQUEST_BY_ID_UPDATE: (id: string, status: string) => `/admin/marketing/${id}?status=${status || ''}`,
 
   ADMIN_GLOBAL_REWARD_CATEGORIES: `/admin/global-loyalty/reward-categories`,
+  ADMIN_GLOBAL_REWARD_CATEGORIES_MINI: `/admin/global-loyalty/reward-categories/summary`,
   ADMIN_GLOBAL_REWARD_CATEGORIES_BY_ID: (id: string) => `/admin/global-loyalty/reward-categories/${id}`,
 
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL: `/admin/global-loyalty/status-levels`,

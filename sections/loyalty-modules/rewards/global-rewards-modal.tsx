@@ -4,7 +4,6 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
-import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import FieldSkeleton from '@/components/ui/field-skeleton';
@@ -43,11 +42,6 @@ type RewardFormValues = {
   endDate: string | Date;
   status: string;
   companyOrganizer: string;
-  customReward: {
-    image?: null;
-    title?: string;
-    description?: string;
-  };
 };
 
 type RewardFormModalProps = {
@@ -95,19 +89,6 @@ const schema = yup.object({
   endDate: yup.mixed<string | Date>().required('End date is required'),
   status: yup.string(),
   companyOrganizer: yup.string(),
-  customReward: yup.object().shape({
-    image: yup.mixed().nullable(),
-    title: yup.string().when('$rewardType', {
-      is: 'globalCustomReward',
-      then: (schema) => schema.required('Custom reward name is required'),
-      otherwise: (schema) => schema,
-    }),
-    description: yup.string().when('$rewardType', {
-      is: 'globalCustomReward',
-      then: (schema) => schema.required('Custom reward description is required'),
-      otherwise: (schema) => schema,
-    }),
-  }),
 });
 
 const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, selectedCompany }: RewardFormModalProps) => {
@@ -133,11 +114,6 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
     endDate: '',
     status: '',
     companyOrganizer: '',
-    customReward: {
-      image: null,
-      title: '',
-      description: '',
-    },
   };
 
   const methods = useForm({
@@ -260,21 +236,20 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
         endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
-        customReward: selectedData.customReward || {
-          image: null,
-          title: '',
-          description: '',
-        },
       });
     }
   }, [isEdit, selectedData, open, reset, global]);
 
   const handleSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
-    let customRewardPhotoKey: string | null = null;
 
     if (!selectedCompany && !global) {
       showError('Please select a company first before submitting the form');
+      return;
+    }
+
+    if (!formData?.endDate) {
+      showError('End date is required');
       return;
     }
 
@@ -287,15 +262,6 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
       if (formData?.image instanceof FileList && formData?.image.length > 0) {
         const file = formData.image[0];
         uploadedFileKey = await uploadImage(file);
-      }
-
-      if (
-        formData.rewardType === 'globalCustomReward' &&
-        formData?.customReward?.image instanceof FileList &&
-        formData?.customReward?.image.length > 0
-      ) {
-        const file = formData.customReward.image[0];
-        customRewardPhotoKey = await uploadImage(file);
       }
 
       // Build base payload
@@ -338,14 +304,6 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
         payload.event = formData.event;
       }
 
-      if (formData.rewardType === 'globalCustomReward') {
-        payload.customReward = {
-          image: customRewardPhotoKey || formData.customReward?.image || null,
-          title: formData.customReward?.title || '',
-          description: formData.customReward?.description || '',
-        };
-      }
-
       // Add edit-specific fields
       if (isEdit && selectedData) {
         payload.status = formData?.status;
@@ -386,14 +344,6 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
         }
       }
 
-      if (customRewardPhotoKey) {
-        try {
-          await deleteFileFromAzure(customRewardPhotoKey);
-        } catch (deleteError) {
-          console.error('Failed to delete custom reward photo:', deleteError);
-        }
-      }
-
       const errorMessage = getErrorMessage(error);
       showError(errorMessage);
     }
@@ -409,7 +359,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[700px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-175!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? `Edit Global Reward` : `Create Global Reward`}</DialogTitle>
@@ -582,17 +532,6 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
                   <RHFTextField name="description" label="Description (Optional)" placeholder="Enter reward details" multiline rows={2} />
                 </div>
-
-                {rewardType === 'globalCustomReward' && (
-                  <div className="col-span-2 flex flex-col gap-2 gap-y-3">
-                    <div className="mb-2 flex max-w-40 items-center justify-start">
-                      <RHFUploadButton name="customReward.image" label="Upload Photo" initialImage={null} />
-                    </div>
-
-                    <RHFTextField name="customReward.title" label="Custom Reward Name" placeholder="Enter custom reward name" />
-                    <RHFTextField name="customReward.description" label="Custom Reward Description" placeholder="Enter description" />
-                  </div>
-                )}
 
                 {!global && <RewardCalculatorFields />}
               </div>
