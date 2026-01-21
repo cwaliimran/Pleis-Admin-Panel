@@ -170,19 +170,19 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                               {userType === 'user' && (
                                 <>
                                   <p>
-                                    <span className="font-medium">Gender:</span> -
+                                    <span className="font-medium">Gender:</span> {apiData?.basicInfo?.gender || '-'}
                                   </p>
                                   <p>
-                                    <span className="font-medium">DOB:</span> -
+                                    <span className="font-medium">DOB:</span> {apiData?.basicInfo?.dob || '-'}
                                   </p>
                                   <p>
-                                    <span className="font-medium">Region:</span> -
+                                    <span className="font-medium">Region:</span> {apiData?.basicInfo?.region || '-'}
                                   </p>
                                 </>
                               )}
                               {userType === 'staff' && (
                                 <p>
-                                  <span className="font-medium">Surname:</span> -
+                                  <span className="font-medium">Surname:</span> {apiData?.basicInfo?.gender || '-'}
                                 </p>
                               )}
                             </div>

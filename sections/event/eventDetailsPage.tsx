@@ -351,9 +351,9 @@ const EventDetailsPage = () => {
                 <div className="mt-4 rounded-lg">
                   {active === 'overview' && <EventOverView event={event} />}
 
-                  {active === 'analytics' && <EventAnalytics />}
+                  {active === 'analytics' && <EventAnalytics id={id} />}
 
-                  {active === 'tickets' && <EventTicket />}
+                  {active === 'tickets' && <EventTicket id={id} />}
 
                   {active === 'reservations' && <EventReservation />}
 

@@ -50,6 +50,30 @@ export const eventApi = createApi({
       providesTags: ['event'],
     }),
 
+    geteventAnalyticsById: builder.query({
+      query: (id) => ({
+        url: API_ROUTES.ADMIN_EVENTS_ANALYTICS_BY_ID(id),
+        method: 'GET',
+      }),
+      transformResponse: (res) => res.data,
+    }),
+
+    geteventTicketsAnalyticsById: builder.query({
+      query: (id) => ({
+        url: API_ROUTES.ADMIN_EVENTS_TICKETS_ANALYTICS_BY_ID(id),
+        method: 'GET',
+      }),
+      transformResponse: (res) => res.data,
+    }),
+
+    geteventNotificationsById: builder.query({
+      query: (id) => ({
+        url: API_ROUTES.ADMIN_EVENTS_NOTIFICATIONS_BY_ID(id),
+        method: 'GET',
+      }),
+      transformResponse: (res) => res.data,
+    }),
+
     addevent: builder.mutation({
       query: (newevent) => ({
         url: API_ROUTES.ADMIN_EVENTS,
@@ -92,6 +116,9 @@ export const {
   useGeteventsQuery,
   useGetEventsByOrganizationQuery,
   useGeteventByIdQuery,
+  useGeteventAnalyticsByIdQuery,
+  useGeteventTicketsAnalyticsByIdQuery,
+  useGeteventNotificationsByIdQuery,
   useAddeventMutation,
   useUpdateeventMutation,
   useCloneeventMutation,

@@ -330,19 +330,23 @@ const EventOverView = ({ event }: { event: any }) => {
             <CardContent>
               <h2 className="text-muted-foreground text-sm font-semibold">UPDATES</h2>
 
-              {event?.updates?.map((update: any, index: number) => (
-                <div key={index}>
-                  <div className="flex items-start justify-between rounded-md py-4">
-                    <div className="flex-1 space-y-1">
-                      <div className="mb-1 flex items-center gap-2">
-                        <Dot className="text-primary bg-primary -ml-1 h-2 w-2 rounded-full" />
-                        <p className="text-sm font-medium">{update?.title}</p>
+              {event?.updates && event.updates.length > 0 ? (
+                event.updates.map((update: any, index: number) => (
+                  <div key={index}>
+                    <div className="flex items-start justify-between rounded-md py-4">
+                      <div className="flex-1 space-y-1">
+                        <div className="mb-1 flex items-center gap-2">
+                          <Dot className="text-primary bg-primary -ml-1 h-2 w-2 rounded-full" />
+                          <p className="text-sm font-medium">{update?.title}</p>
+                        </div>
+                        <p className="text-muted-foreground text-sm">{update?.description}</p>
                       </div>
-                      <p className="text-muted-foreground text-sm">{update?.description}</p>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="text-muted-foreground py-4 text-center text-sm">No updates available.</div>
+              )}
             </CardContent>
           </Card>
         </div>
