@@ -1,40 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { VisitorInterest } from '../invoices';
 import { Button } from '@/components/ui/button';
-import { Dot, Plus } from 'lucide-react';
-// import { updates } from './data';
-import TicketingModal from '../ticketing-view/ticketing-modal';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useGeteventTicketsAnalyticsByIdQuery } from '@/store/Reducer/events';
+import { Dot, Plus } from 'lucide-react';
+import { VisitorInterest } from '../invoices';
+import TicketingModal from '../ticketing-view/ticketing-modal';
+import EventLoading from './components/event-loading';
 
-const EventTicket = ({ id }: { id: any }) => {
+const EventTicket = ({ event }: { event: any }) => {
   const openModal = useBoolean();
-  const { data = {}, isLoading } = useGeteventTicketsAnalyticsByIdQuery(id);
+  const { data = {}, isLoading } = useGeteventTicketsAnalyticsByIdQuery(event?._id);
 
-  // Defensive fallback for missing fields
   const paidVsUnpaid = data?.paidVsUnpaidTicketStats || {
     soldTickets: 0,
     totalTickets: 0,
     paid: { count: 0, percentage: 0, amount: 0 },
     unpaid: { count: 0, percentage: 0, amount: 0 },
   };
+
   const scannedProgress = data?.scannedTicketProgress || {
     totalSold: 0,
     scanned: { count: 0, percentage: 0 },
     notScanned: { count: 0, percentage: 0 },
   };
+
   const ticketPerformanceWeekly = data?.ticketPerformanceWeekly || [];
   const ticketingStats = data?.ticketingStats || { earlyBird: {}, lastMinute: {}, regular: {}, grandTotal: { count: 0, amount: 0 } };
 
   return (
     <>
       {isLoading ? (
-        <div className="flex h-96 items-center justify-center">
-          <svg className="text-primary h-10 w-10 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-          </svg>
-        </div>
+        <EventLoading />
       ) : (
         <div>
           <div className="grid grid-cols-12 gap-4">
@@ -200,6 +196,7 @@ const EventTicket = ({ id }: { id: any }) => {
                       </div>
                     );
                   })}
+
                   {/* Optional Summary Section */}
                   {/* <div className="flex flex-col px-1 pt-2">
                 <p className="text-sm text-slate-500">
@@ -218,7 +215,7 @@ const EventTicket = ({ id }: { id: any }) => {
             </div>
           </div>
 
-          <TicketingModal open={openModal.value} onClose={openModal.onFalse} />
+          <TicketingModal open={openModal.value} onClose={openModal.onFalse} event={event} />
         </div>
       )}
     </>

@@ -2,8 +2,7 @@ import ImageWithFallback from '@/components/common/img-with-fallback';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { capitalizeFirst, formatDateTime } from '@/utils/short-utils';
-import { Calendar, Dot, Ellipsis, MapPin, UsersRound } from 'lucide-react';
-import Image from 'next/image';
+import { Calendar, Dot, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -142,17 +141,14 @@ const EventOverView = ({ event }: { event: any }) => {
             </CardHeader>
           </Card>
 
-          <Card className="dark:bg-secondary mt-4 w-full shadow-lg">
+          {/* <Card className="dark:bg-secondary mt-4 w-full shadow-lg">
             <CardHeader>
-              {/* Top: Status + Ellipsis */}
               <div className="flex items-center justify-between">
                 <Badge className="rounded-full bg-gray-100 px-4 py-1 text-sm font-medium text-black dark:bg-white">Active</Badge>
                 <Ellipsis className="h-4 w-4 cursor-pointer" />
               </div>
 
-              {/* Middle: Image + Info */}
               <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row">
-                {/* Image */}
                 <Image
                   src="/images/bannerImage.png"
                   alt="Promotion"
@@ -161,18 +157,14 @@ const EventOverView = ({ event }: { event: any }) => {
                   className="h-30 w-full rounded-[10px] object-cover sm:w-20 md:h-20"
                 />
 
-                {/* Text Info */}
                 <div className="flex flex-1 flex-col">
-                  {/* Row 1: Label + Days Left */}
                   <div className="mb-1 flex items-center justify-between">
                     <h1 className="font-semibold text-slate-500">PROMOTION</h1>
                     <h1 className="font-semibold whitespace-nowrap text-green-500">24 Days left</h1>
                   </div>
 
-                  {/* Row 2: Title */}
                   <h1 className="text-lg font-medium sm:text-xl">Promotion Name</h1>
 
-                  {/* Row 3: Description */}
                   <p className="mt-1 text-sm text-slate-500">lorem ipsum dolor sit amet, consectetur ...</p>
                 </div>
               </div>
@@ -181,7 +173,6 @@ const EventOverView = ({ event }: { event: any }) => {
             <hr />
 
             <CardContent>
-              {/* Info Stats Row */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start">
                 <div className="flex items-center">
                   <UsersRound className="h-5 w-5 text-slate-500" />
@@ -197,29 +188,52 @@ const EventOverView = ({ event }: { event: any }) => {
                 </div>
               </div>
 
-              {/* Reward Availability */}
               <div className="mt-4 flex items-center justify-between text-sm">
                 <h1 className="font-semibold text-slate-500">REWARD AVAILABILITY</h1>
                 <h1 className="text-slate-500">488/2300</h1>
               </div>
 
-              {/* Progress Bar */}
               <div className="mt-2">
                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
                   <div className="h-full w-5/6 bg-blue-600 transition-all duration-500"></div>
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
-          <div className="mt-5 grid grid-cols-12 gap-4">
+          {/* <div className="mt-5 grid grid-cols-12 gap-4">
             <div className="col-span-12 w-full rounded-full border-2 border-gray-300 bg-white text-center shadow-lg hover:bg-gray-100 md:col-span-6 dark:bg-black">
               <Badge className="text-md bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-500">New Promotion</Badge>
             </div>
             <div className="col-span-12 w-full rounded-full border-2 border-gray-300 bg-white text-center shadow-lg hover:bg-gray-100 md:col-span-6 dark:bg-black">
               <Badge className="text-md bg-transparent px-4 py-1 font-semibold text-black dark:text-slate-500">New Notification</Badge>
             </div>
-          </div>
+          </div> */}
+
+          {/* Updates Section */}
+          <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
+            <CardContent>
+              <h2 className="text-muted-foreground text-sm font-semibold">UPDATES</h2>
+
+              {event?.updates && event.updates.length > 0 ? (
+                event.updates.map((update: any, index: number) => (
+                  <div key={index}>
+                    <div className="flex items-start justify-between rounded-md py-4">
+                      <div className="flex-1 space-y-1">
+                        <div className="mb-1 flex items-center gap-2">
+                          <Dot className="text-primary bg-primary -ml-1 h-2 w-2 rounded-full" />
+                          <p className="text-sm font-medium">{update?.title}</p>
+                        </div>
+                        <p className="text-muted-foreground text-sm">{update?.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-muted-foreground py-4 text-center text-sm">No updates available.</div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="col-span-12 md:col-span-7">
@@ -322,31 +336,6 @@ const EventOverView = ({ event }: { event: any }) => {
                   Manage Tickets
                 </Button> */}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Updates Section */}
-          <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
-            <CardContent>
-              <h2 className="text-muted-foreground text-sm font-semibold">UPDATES</h2>
-
-              {event?.updates && event.updates.length > 0 ? (
-                event.updates.map((update: any, index: number) => (
-                  <div key={index}>
-                    <div className="flex items-start justify-between rounded-md py-4">
-                      <div className="flex-1 space-y-1">
-                        <div className="mb-1 flex items-center gap-2">
-                          <Dot className="text-primary bg-primary -ml-1 h-2 w-2 rounded-full" />
-                          <p className="text-sm font-medium">{update?.title}</p>
-                        </div>
-                        <p className="text-muted-foreground text-sm">{update?.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-muted-foreground py-4 text-center text-sm">No updates available.</div>
-              )}
             </CardContent>
           </Card>
         </div>
