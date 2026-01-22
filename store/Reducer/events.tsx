@@ -66,12 +66,60 @@ export const eventApi = createApi({
       transformResponse: (res) => res.data,
     }),
 
+    // geteventNotificationsById: builder.query({
+    //   query: (id) => ({
+    //     url: API_ROUTES.ADMIN_EVENTS_NOTIFICATIONS_BY_ID(id),
+    //     method: 'GET',
+    //   }),
+    //   // transformResponse: (res) => res.data,
+    //   transformResponse: (res) => ({
+    //     data: res.data,
+    //     meta: res.meta,
+    //   }),
+    // }),
+
     geteventNotificationsById: builder.query({
-      query: (id) => ({
+      query: ({ id, page, limit }) => ({
         url: API_ROUTES.ADMIN_EVENTS_NOTIFICATIONS_BY_ID(id),
         method: 'GET',
+        params: {
+          page: page + 1,
+          limit,
+        },
       }),
-      transformResponse: (res) => res.data,
+      // transformResponse: (res) => res.data,
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+    }),
+
+    // geteventFeedbackById: builder.query({
+    //   query: (id) => ({
+    //     url: API_ROUTES.ADMIN_EVENTS_FEEDBACK_BY_ID(id),
+    //     method: 'GET',
+    //   }),
+    //   transformResponse: (res) => res.data,
+    // }),
+
+    geteventFeedbackById: builder.query({
+      query: ({ id, search, page, limit }) => {
+        const params: any = {
+          keyword: search,
+          page: page + 1,
+          limit,
+        };
+        return {
+          url: API_ROUTES.ADMIN_EVENTS_FEEDBACK_BY_ID(id),
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['event'],
     }),
 
     addevent: builder.mutation({
@@ -119,6 +167,7 @@ export const {
   useGeteventAnalyticsByIdQuery,
   useGeteventTicketsAnalyticsByIdQuery,
   useGeteventNotificationsByIdQuery,
+  useGeteventFeedbackByIdQuery,
   useAddeventMutation,
   useUpdateeventMutation,
   useCloneeventMutation,

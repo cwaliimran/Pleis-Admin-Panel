@@ -120,7 +120,7 @@ const defaultValues: ReservationFormValues = {
 // ============================================
 // MAIN COMPONENT
 // ============================================
-const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organizationId }: ReservationModalProps) => {
+const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organizationId, event }: ReservationModalProps) => {
   const [addReservation, { isLoading: addLoading }] = useAddReservationMutation();
   const [updateReservation, { isLoading: updateLoading }] = useUpdateReservationMutation();
 
@@ -139,8 +139,6 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
   });
 
   const { reset, formState, watch, setValue } = methods;
-
-  console.log('formState', formState.errors);
 
   const conditionType = watch('conditionType');
   const timingSlotsEnabled = watch('timingSlotsEnabled');
@@ -441,14 +439,13 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         availableReservations: selectedData?.availableReservations || 0,
         maxCapacityPerReservation: selectedData?.maxCapacityPerReservation || 0,
         conditionType: selectedData?.conditionType || 'fixedPrice',
-        // amount: selectedData?.amount || null,
         amount: selectedData?.amount != null ? selectedData.amount : '',
         customText: selectedData?.customText || '',
         ticketType: selectedData?.ticketType || '',
         taxPercentage: selectedData?.taxPercentage?.toString() || '25',
         needsConfirmation: selectedData?.needsConfirmation ?? true,
         ticketRequirement: selectedData?.ticketRequirement ?? false,
-        optionalEventId: selectedData?.optionalEventId?._id || selectedData?.optionalEventId || '',
+        optionalEventId: event?._id || selectedData?.optionalEventId?._id || selectedData?.optionalEventId || '',
         timingSlotsEnabled: selectedData?.timingSlots?.enabled || false,
         status: selectedData?.status || 'active',
       };
@@ -459,11 +456,16 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
 
       reset(mappedData);
     } else if (open && !isEdit) {
-      reset(defaultValues);
+      // If event is present, prefill optionalEventId
+      if (event) {
+        reset({ ...defaultValues, optionalEventId: event._id });
+      } else {
+        reset(defaultValues);
+      }
       setDateTimeSlots([]);
       setValidationErrors({});
     }
-  }, [open, isEdit, selectedData, reset]);
+  }, [open, isEdit, selectedData, reset, event]);
 
   const handleSubmit = async (formData: ReservationFormValues) => {
     try {
@@ -758,12 +760,38 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                 {/* Event Link */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Event Link</h3>
-
                   {isLoadingEvents ? (
                     <div className="space-y-2">
                       <Skeleton className="h-3 w-32" />
                       <Skeleton className="h-10 w-full" />
                     </div>
+                  ) : event ? (
+                    <>
+                      <RHFCustomDropdown
+                        name="optionalEventId"
+                        label="Optional Event Link"
+                        placeholder="No linked event"
+                        options={eventOptions.length > 0 ? eventOptions : [{ value: event._id, label: event.basicInfo?.title || 'No Title' }]}
+                        isLoading={isLoadingEvents}
+                        showNone={false}
+                        disabled
+                      />
+                      <p className="text-xs text-gray-500">Event is preselected and cannot be changed.</p>
+                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
+                        <div className="flex gap-2">
+                          <Info size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
+                          <div className="text-xs text-blue-900 dark:text-blue-300">
+                            <strong>Event:</strong> {event.basicInfo.title}
+                            <br />
+                            <span>
+                              From: {event.schedule.startDateTime}
+                              <br />
+                              To: {event.schedule.endDateTime}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   ) : (
                     <>
                       <RHFCustomDropdown
@@ -774,8 +802,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                         isLoading={isLoadingEvents}
                         showNone={true}
                       />
-                      <p className="text-xs text-gray-500">Shows on event page and in checkout</p>
-
+                      {/* <p className="text-xs text-gray-500">Shows on event page and in checkout</p> */}
                       {selectedEvent && eventDateRange && (
                         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-900/20">
                           <div className="flex gap-2">

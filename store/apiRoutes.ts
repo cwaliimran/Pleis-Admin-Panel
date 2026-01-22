@@ -146,6 +146,7 @@ export const API_ROUTES = {
   ADMIN_EVENTS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/analytics`,
   ADMIN_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/tickets-analytics`,
   ADMIN_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/admin/events/${id}/notifications`,
+  ADMIN_EVENTS_FEEDBACK_BY_ID: (id: string) => `/admin/events/${id}/ratting`,
 
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_ID: (id: string) => `/admin/venues/${id}`,

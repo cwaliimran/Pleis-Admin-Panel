@@ -17,9 +17,10 @@ export const reservationsApi = createApi({
         range?: string;
         date?: string;
         companyOrganizer?: string;
+        organizationsId?: string;
       }
     >({
-      query: ({ page, limit, range, date, companyOrganizer }) => {
+      query: ({ page, limit, range, date, companyOrganizer, organizationsId }) => {
         const params: Record<string, string | number> = {
           page: page + 1,
           limit,
@@ -33,6 +34,10 @@ export const reservationsApi = createApi({
 
         if (companyOrganizer) {
           params.companyOrganizer = companyOrganizer;
+        }
+
+        if (organizationsId) {
+          params.organizationsId = organizationsId;
         }
 
         return {

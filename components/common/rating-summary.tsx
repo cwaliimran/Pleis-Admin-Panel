@@ -18,12 +18,8 @@ interface RatingsSummaryProps {
 }
 
 const formatCount = (count: number): string => {
-  if (count >= 1000000) {
-    return `${(count / 1000000).toFixed(1)}M`;
-  }
-  if (count >= 1000) {
-    return `${(count / 1000).toFixed(0)}K`;
-  }
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(0)}K`;
   return count.toString();
 };
 
@@ -36,7 +32,19 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
   compact = false,
   hideTitle = false,
 }) => {
-  const sortedDistribution = [...distribution].sort((a, b) => b.stars - a.stars);
+  /**
+   * Normalize distribution so 5 → 1 stars
+   * always exist even if API returns empty data
+   */
+  const normalizedDistribution: RatingDistribution[] = [5, 4, 3, 2, 1].map((stars) => {
+    const found = distribution.find((item) => item.stars === stars);
+
+    return {
+      stars,
+      count: found?.count ?? 0,
+      percentage: found?.percentage ?? 0,
+    };
+  });
 
   return (
     <div className={cn('dark:bg-secondary w-full rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700', className)}>
@@ -52,7 +60,7 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
         {/* Right side - Distribution bars */}
         {!compact && (
           <div className="flex w-full max-w-2xl flex-1 flex-col gap-2">
-            {sortedDistribution.map((item) => (
+            {normalizedDistribution.map((item) => (
               <div key={item.stars} className="flex items-center gap-3">
                 {/* Stars */}
                 <div className="flex min-w-[90px] gap-0.5 lg:min-w-[100px]">
@@ -73,12 +81,14 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                   <div
                     className="h-full rounded-full bg-yellow-400 transition-all duration-300 ease-in-out dark:bg-yellow-500"
-                    style={{ width: `${item.percentage}%` }}
+                    style={{
+                      width: item.percentage > 0 ? `${item.percentage}%` : '0%',
+                    }}
                   />
                 </div>
 
                 {/* Review count */}
-                <div className="min-w-[60px] text-right text-sm font-medium text-gray-700 dark:text-gray-300">{formatCount(item.count)}</div>
+                <div className="min-w-15 text-right text-sm font-medium text-gray-700 dark:text-gray-300">{formatCount(item.count)}</div>
               </div>
             ))}
           </div>
@@ -86,7 +96,7 @@ const RatingsSummary: React.FC<RatingsSummaryProps> = ({
       </div>
 
       {/* Total ratings count */}
-      <div className="mt-4 text-right text-lg text-gray-600 lg:text-lg dark:text-gray-400">{formatCount(totalRatings)} Ratings</div>
+      <div className="mt-4 text-right text-lg text-gray-600 dark:text-gray-400">{formatCount(totalRatings)} Ratings</div>
     </div>
   );
 };

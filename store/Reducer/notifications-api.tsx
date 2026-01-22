@@ -33,30 +33,48 @@ export const notificationsApi = createApi({
     }),
 
     getAllOrganizatons: builder.query({
-      query: () => ({
-        url: API_ROUTES.ADMIN_GET_ALL_ORGANIZATIONS,
-        method: 'GET',
-      }),
+      query: ({ search, limit, page }) => {
+        const params: any = {};
+        if (search) params.keyword = search;
+        if (limit) params.limit = limit;
+        if (page !== undefined) params.page = page + 1;
+        return {
+          url: API_ROUTES.ADMIN_GET_ALL_ORGANIZATIONS,
+          method: 'GET',
+          params,
+        };
+      },
       transformResponse: (res) => res.data,
-      // providesTags: ['notification'],
     }),
 
     getAllEvents: builder.query({
-      query: () => ({
-        url: API_ROUTES.ADMIN_GET_ALL_EVENTS,
-        method: 'GET',
-      }),
+      query: ({ search, limit, page }) => {
+        const params: any = {};
+        if (search) params.keyword = search;
+        if (limit) params.limit = limit;
+        if (page !== undefined) params.page = page + 1;
+        return {
+          url: API_ROUTES.ADMIN_GET_ALL_EVENTS,
+          method: 'GET',
+          params,
+        };
+      },
       transformResponse: (res) => res.data,
-      // providesTags: ['notification'],
     }),
 
     getAllInterestTags: builder.query({
-      query: () => ({
-        url: API_ROUTES.ADMIN_GET_ALL_INTEREST_TAGS,
-        method: 'GET',
-      }),
+      query: ({ search, limit, page }) => {
+        const params: any = {};
+        if (search) params.keyword = search;
+        if (limit) params.limit = limit;
+        if (page !== undefined) params.page = page + 1;
+        return {
+          url: API_ROUTES.ADMIN_GET_ALL_INTEREST_TAGS,
+          method: 'GET',
+          params,
+        };
+      },
       transformResponse: (res) => res.data,
-      // providesTags: ['notification'],
     }),
 
     addNotification: builder.mutation({

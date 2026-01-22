@@ -51,7 +51,7 @@ const EventTicket = ({ id }: { id: any }) => {
                     <div className="flex flex-1 flex-col">
                       <h1 className="mb-1 font-semibold">Paid Tickets</h1>
                       <h1 className="text-end text-sm">{paidVsUnpaid.paid.percentage ?? 0}%</h1>
-                      <div className="mb-2 h-4 w-full overflow-hidden rounded-full bg-gray-200">
+                      <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
                         <div className="bg-primary h-full transition-all duration-500" style={{ width: `${paidVsUnpaid.paid.percentage ?? 0}%` }} />
                       </div>
                       <h1 className="text-start text-sm">
@@ -64,7 +64,7 @@ const EventTicket = ({ id }: { id: any }) => {
                     <div className="flex flex-1 flex-col">
                       <h1 className="mb-1 font-semibold">Free Tickets</h1>
                       <h1 className="text-end text-sm">{paidVsUnpaid.unpaid.percentage ?? 0}%</h1>
-                      <div className="mb-2 h-4 w-full overflow-hidden rounded-full bg-gray-200">
+                      <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
                         <div className="bg-primary h-full transition-all duration-500" style={{ width: `${paidVsUnpaid.unpaid.percentage ?? 0}%` }} />
                       </div>
                       <h1 className="text-start text-sm">
@@ -84,7 +84,7 @@ const EventTicket = ({ id }: { id: any }) => {
                     <div className="flex flex-1 flex-col">
                       <h1 className="mb-1 font-semibold">Scanned Tickets</h1>
                       <h1 className="text-end text-sm">{scannedProgress.scanned.percentage ?? 0}%</h1>
-                      <div className="mb-2 h-4 w-full overflow-hidden rounded-full bg-gray-200">
+                      <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
                         <div
                           className="bg-primary h-full transition-all duration-500"
                           style={{ width: `${scannedProgress.scanned.percentage ?? 0}%` }}
@@ -98,7 +98,7 @@ const EventTicket = ({ id }: { id: any }) => {
                     <div className="flex flex-1 flex-col">
                       <h1 className="mb-1 font-semibold">Not Scanned</h1>
                       <h1 className="text-end text-sm">{scannedProgress.notScanned.percentage ?? 0}%</h1>
-                      <div className="mb-2 h-4 w-full overflow-hidden rounded-full bg-gray-200">
+                      <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
                         <div
                           className="bg-primary h-full transition-all duration-500"
                           style={{ width: `${scannedProgress.notScanned.percentage ?? 0}%` }}
@@ -226,6 +226,3 @@ const EventTicket = ({ id }: { id: any }) => {
 };
 
 export default EventTicket;
-
-
-// 75 grm wallnut, badam
