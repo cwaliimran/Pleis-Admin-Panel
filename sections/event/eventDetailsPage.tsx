@@ -3,32 +3,29 @@
 import { AppLoading } from '@/components/atoms/app-loading';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import ImageWithFallback from '@/components/common/img-with-fallback';
-import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
-import { cn } from '@/lib/utils';
 import CapacityGaugeChart from '@/sections/event/CapacityGaugeChart';
-import { eventCardData, tabsData } from '@/sections/event/data';
+import { tabsData } from '@/sections/event/data';
 import EventAnalytics from '@/sections/event/eventAnalytics';
 import EventNotification from '@/sections/event/eventNotification';
 import EventOverView from '@/sections/event/eventOverview';
 import EventReservation from '@/sections/event/eventReservation';
 import EventTicket from '@/sections/event/eventTicket';
 import LastTransaction from '@/sections/event/lastTransaction';
-import { TransactionHistory } from '@/sections/invoices';
-import UserCard from '@/sections/users/userCard';
 import { useCloneeventMutation, useDeleteeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
 import { fDate } from '@/utils/format-time';
 import { capitalizeFirst } from '@/utils/short-utils';
-import { Calendar, Copy, Pencil, Trash2 } from 'lucide-react';
+import { Copy, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-import EventFeedbackView from '../event-feedback/event-feedback-view';
+// import EventFeedbackView from '../event-feedback/event-feedback-view';
+import FeedbackView from '../feedback/feedback-view';
 
 const EventDetailsPage = () => {
   const { id } = useParams();
@@ -39,7 +36,6 @@ const EventDetailsPage = () => {
   const [loading, setLoading] = React.useState(false);
   const [active, setActive] = React.useState('overview');
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
   const [showFeedback, setShowFeedback] = useState(false);
 
   const [expanded, setExpanded] = useState(false);
@@ -324,6 +320,7 @@ const EventDetailsPage = () => {
                           </SelectContent>
                         </Select>
                       </div>
+
                       {/* Tabs for larger screens */}
                       <Tabs value={active} onValueChange={setActive} className="hidden w-full sm:block">
                         <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
@@ -351,31 +348,70 @@ const EventDetailsPage = () => {
                 <div className="mt-4 rounded-lg">
                   {active === 'overview' && <EventOverView event={event} />}
 
-                  {active === 'analytics' && <EventAnalytics />}
+                  {active === 'analytics' && <EventAnalytics id={id} />}
 
-                  {active === 'tickets' && <EventTicket />}
+                  {active === 'tickets' && <EventTicket event={event} />}
 
-                  {active === 'reservations' && <EventReservation />}
+                  {active === 'reservations' && <EventReservation event={event} />}
 
-                  {active === 'notifications' && <EventNotification />}
+                  {active === 'notifications' && <EventNotification id={id} />}
 
-                  {active === 'feedback' && showFeedback ? <EventFeedbackView /> : null}
+                  {active === 'feedback' && <FeedbackView id={id} />}
+                  {/* {active === 'feedback' && showFeedback ? <EventFeedbackView /> : null} */}
                 </div>
               </div>
 
               {/* Sidebar or Additional Panel */}
               <div className="col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-3">
-                {eventCardData.map((user: any) => (
-                  <UserCard item={user} key={user._id} />
-                ))}
-                <CapacityGaugeChart />
-                <LastTransaction />
+                {/* Total Revenue */}
+                <Card className="dark:bg-secondary">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold">Total Revenue</h3>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center text-4xl font-bold">{event?.meta?.revenue}</div>
+                  </CardHeader>
+                </Card>
 
-                <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
+                {/* Total Tickets Sold */}
+                <Card className="dark:bg-secondary">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold">Total Tickets Sold</h3>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center text-4xl font-bold">
+                      0
+                      {event?.ticketingStats?.grandTotal?.count && (
+                        <sub className="ml-1 text-base font-medium">/ {event?.ticketingStats?.grandTotal?.amount}</sub>
+                      )}
+                    </div>
+                  </CardHeader>
+                </Card>
+
+                {/* Views */}
+                <Card className="dark:bg-secondary">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold">Views</h3>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center text-4xl font-bold">{event?.eventViews}</div>
+                  </CardHeader>
+                </Card>
+
+                <CapacityGaugeChart data={event} />
+
+                <LastTransaction data={event} />
+
+                {/* <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
                   <CardContent>
                     <div className="w-full flex-wrap items-start justify-between gap-y-6 px-2 md:flex md:px-0">
-                      {/* START DATE */}
-                      <div className="flex min-w-[140px] flex-col gap-1">
+                      <div className="flex min-w-35 flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
                           <p className="text-xs font-semibold text-gray-600 dark:text-white">START DATE</p>
@@ -383,8 +419,7 @@ const EventDetailsPage = () => {
                         <p className="text-sm font-medium text-black dark:text-white">{fDate(event?.schedule?.startDateTime) || 'N/A'}</p>
                       </div>
 
-                      {/* END DATE */}
-                      <div className="mt-4 flex min-w-[140px] flex-col gap-1 md:mt-0">
+                      <div className="mt-4 flex min-w-35 flex-col gap-1 md:mt-0">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
                           <p className="text-xs font-semibold text-gray-600 dark:text-white">END DATE</p>
@@ -393,144 +428,9 @@ const EventDetailsPage = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </div>
-
-            {active === 'analytics' && (
-              <div className="mt-5 grid grid-cols-12">
-                <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
-                  {/* <CardHeader>
-                  <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4">
-                    <h3 className="text-xl font-semibold">
-                      Transaction History
-                    </h3>
-                    <div>
-                      <Tabs
-                        value={tabActive}
-                        onValueChange={setTabActive}
-                        defaultValue="all"
-                        className="w-full "
-                      >
-                        <TabsList className="flex items-center gap-2 bg-[#EBEBEB] dark:bg-black dark:border-white border  rounded-full p-1">
-                          <TabsTrigger
-                            value="all"
-                            className={cn(
-                              "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer "
-                            )}
-                          >
-                            All
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="transactions"
-                            className={cn(
-                              "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
-                            )}
-                          >
-                            Transactions
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="refunds"
-                            className={cn(
-                              "text-md font-semibold relative z-10 rounded-full px-4 py-2 transition-colors cursor-pointer"
-                            )}
-                          >
-                            Refunds
-                          </TabsTrigger>
-                        </TabsList>
-                      </Tabs>
-                    </div>
-                    <div className="flex flex-col md:items-center items-end">
-                      <Select defaultValue="all">
-                        <SelectTrigger>
-                          <SelectValue placeholder="" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup className="w-auto">
-                            <SelectLabel>Transaction</SelectLabel>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="today">Today</SelectItem>
-                            <SelectItem value="thisWeek">This Week</SelectItem>
-                            <SelectItem value="thisMonth">
-                              This Month
-                            </SelectItem>
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardHeader> */}
-                  <CardHeader>
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <h3 className="text-xl font-semibold">Transaction History</h3>
-                      <div>
-                        <div className="w-full">
-                          {/* Show select on small screens */}
-                          <div className="block sm:hidden">
-                            <Select value={active} onValueChange={setActive}>
-                              <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
-                                <SelectValue placeholder="Select tab" />
-                              </SelectTrigger>
-                              <SelectContent className="dark:bg-secondary">
-                                <SelectItem value="all">All</SelectItem>
-                                <SelectItem value="transactions">Transactions</SelectItem>
-                                <SelectItem value="refunds">Refunds</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Show tabs on medium and larger screens */}
-                          <div className="hidden sm:block">
-                            <Tabs value={active} onValueChange={setActive} defaultValue="all" className="w-full">
-                              <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
-                                <TabsTrigger
-                                  value="all"
-                                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                                >
-                                  All
-                                </TabsTrigger>
-                                <TabsTrigger
-                                  value="transactions"
-                                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                                >
-                                  Transactions
-                                </TabsTrigger>
-                                <TabsTrigger
-                                  value="refunds"
-                                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                                >
-                                  Refunds
-                                </TabsTrigger>
-                              </TabsList>
-                            </Tabs>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end md:items-center">
-                        <FilterDropdown
-                          selectedOptions={selectedOptions}
-                          onSelectOption={setSelectedOptions}
-                          options={[
-                            { id: 'user', label: 'User' },
-                            { id: 'contact', label: 'Contact' },
-                            { id: 'invoice', label: 'Invoice' },
-                            { id: 'organizer', label: 'Organizer ' },
-                            { id: 'date', label: 'Date' },
-                            { id: 'total', label: 'Total' },
-                            {
-                              id: 'transactionType',
-                              label: 'Transaction Type',
-                            },
-                            { id: 'status', label: 'Status' },
-                          ]}
-                        />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <TransactionHistory />
-                </Card>
-              </div>
-            )}
           </div>
         </div>
       )}

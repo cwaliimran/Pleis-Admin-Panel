@@ -24,6 +24,7 @@ interface TicketingModalProps {
   editMode?: boolean;
   selectedData?: any;
   selectedOrganization?: any;
+  event?: any;
 }
 
 const FeatureSection: React.FC<{
@@ -155,7 +156,7 @@ const schema = Yup.object().shape({
   }),
 });
 
-const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization }) => {
+const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization, event }) => {
   const [addTicketing, { isLoading: addTicketingLoading }] = useAddTicketingMutation();
   const [updateTicketing, { isLoading: updateTicketingLoading }] = useUpdateTicketingMutation();
 
@@ -174,19 +175,56 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
 
   const { handleSubmit, formState, watch, setValue, reset } = methods;
 
+  // If event prop is provided, use it directly, else fetch events by organization
+  const shouldUseEventProp = !!event;
+  // const eventData = shouldUseEventProp ? [event] : undefined;
+  const isLoadingEvents = false;
+
+  // Only call API if event prop is not provided
+  const apiEvents = useGetEventsByOrganizationQuery(
+    {
+      organization: selectedOrganization,
+    },
+    {
+      skip: shouldUseEventProp || !selectedOrganization,
+    }
+  );
+  // Use API data if event prop is not provided
+  const allEventData = React.useMemo(() => (shouldUseEventProp ? [event] : apiEvents.data || []), [shouldUseEventProp, event, apiEvents.data]);
+  const eventOptions = allEventData.map((v: any) => ({
+    value: v?._id.toString(),
+    label: v?.basicInfo?.title || 'No Title',
+  }));
+
+  // Move selectedEventId before selectedEvent
+  const selectedEventId = watch('event');
+  const selectedEvent = React.useMemo(() => {
+    if (!selectedEventId || !allEventData) return null;
+    return allEventData.find((event: any) => event._id === selectedEventId) || null;
+  }, [selectedEventId, allEventData]);
+
   React.useEffect(() => {
     if (editMode && selectedData) {
       const formData = transformApiDataToForm(selectedData);
+      // If event prop is provided, override event field with event._id
+      if (shouldUseEventProp && event?._id) {
+        formData.event = event._id;
+      }
       reset({ ...defaultValues, ...formData });
 
       if (formData.features?.timeSlotConfig) {
         setTimeSlotConfig(formData.features.timeSlotConfig);
       }
     } else {
-      reset(defaultValues);
+      // If event prop is provided, set event field to event._id
+      if (shouldUseEventProp && event?._id) {
+        reset({ ...defaultValues, event: event._id });
+      } else {
+        reset(defaultValues);
+      }
       setTimeSlotConfig(null);
     }
-  }, [editMode, selectedData, reset]);
+  }, [editMode, selectedData, reset, shouldUseEventProp, event]);
   const isDirty = formState.isDirty;
 
   const timeslotEnabled = watch('features.timeslot');
@@ -199,7 +237,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   const transferEnabled = watch('features.transfer');
   const baseQuantity = watch('quantity');
   const publishType = watch('publishSettings.publishType');
-  const selectedEventId = watch('event');
 
   const [showTimeSlotModal, setShowTimeSlotModal] = React.useState(false);
   const [timeSlotConfig, setTimeSlotConfig] = React.useState<any>(null);
@@ -243,25 +280,6 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
     setValue('features.timeSlotConfig', config, { shouldDirty: true }); // Save API format to form
   };
 
-  const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
-    {
-      organization: selectedOrganization,
-    },
-    {
-      skip: !selectedOrganization,
-    }
-  );
-
-  const eventOptions = (eventData || []).map((v: any) => ({
-    value: v?._id.toString(),
-    label: v?.basicInfo?.title || 'No Title',
-  }));
-
-  const selectedEvent = React.useMemo(() => {
-    if (!selectedEventId || !eventData) return null;
-    return eventData.find((event: any) => event._id === selectedEventId) || null;
-  }, [selectedEventId, eventData]);
-
   const onSubmit = handleSubmit(async (formData) => {
     try {
       setIsLoading(true);
@@ -299,7 +317,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
         <DialogOverlay className="fixed inset-0 z-50 flex w-full items-center justify-center bg-black/50">
           <DialogContent
             aria-describedby={undefined}
-            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[700px]"
+            className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-175"
           >
             <DialogHeader className="flex flex-row items-center justify-between">
               <DialogTitle className="text-xl font-bold">{editMode ? 'Edit Ticket' : 'Create New Ticket'}</DialogTitle>
@@ -360,7 +378,8 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                           placeholder="Select Event"
                           options={eventOptions}
                           isLoading={isLoadingEvents}
-                          showNone={true}
+                          showNone={!shouldUseEventProp}
+                          disabled={shouldUseEventProp}
                         />
                       </div>
                     </div>

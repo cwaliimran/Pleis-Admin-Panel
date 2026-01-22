@@ -11,17 +11,23 @@ import ReservationHeader from './reservation-header';
 import ReservationModal from './reservation-modal';
 import { ReservationsApiResponse } from './reservation-types';
 
-const ReservationView = () => {
+type ReservationViewProps = {
+  event?: any;
+};
+
+const ReservationView = ({ event }: ReservationViewProps) => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
+  const organizationIdFromEvent = event?.basicInfo?.organization?._id || undefined;
+
   const [range, setRange] = useState('today');
+  const [openModal, setOpenModal] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  const [openModal, setOpenModal] = useState(false);
-
   const { companyId, organizationId } = useCompanySelectionState();
-  const companyOrganizer = companyId || organizationId || undefined;
+
+  const companyOrganizer = companyId || undefined;
 
   const {
     data: apiData,
@@ -32,7 +38,9 @@ const ReservationView = () => {
     limit,
     range: date ? undefined : range,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer,
+    organizationsId: organizationIdFromEvent || organizationId || undefined,
+    // organizationsId: organizationId || undefined,
+    // companyOrganizer,
   });
 
   const reservationsData: ReservationsApiResponse['data'] | undefined = apiData?.data;
@@ -73,7 +81,8 @@ const ReservationView = () => {
       <ReservationBody
         isLoading={isLoading || isFetching}
         data={reservationsData}
-        organizationId={organizationId}
+        // organizationId={organizationId}
+        organizationId={organizationIdFromEvent || organizationId}
         meta={meta}
         onPageChange={handlePageChange}
         limit={limit}
@@ -81,7 +90,16 @@ const ReservationView = () => {
         onLimitChange={(l) => setLimit(l)}
       />
 
-      {openModal && <ReservationModal open={openModal} onClose={handleClose} isEdit={false} selectedData={null} organizationId={organizationId} />}
+      {openModal && (
+        <ReservationModal
+          open={openModal}
+          onClose={handleClose}
+          isEdit={false}
+          selectedData={null}
+          organizationId={organizationIdFromEvent || organizationId}
+          event={event}
+        />
+      )}
     </>
   );
 };

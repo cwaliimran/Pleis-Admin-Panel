@@ -30,6 +30,7 @@ export type ReservationModalProps = {
   isEdit?: boolean;
   selectedData?: any;
   organizationId: string | null;
+  event: any;
 };
 
 export type EventSchedule = {
