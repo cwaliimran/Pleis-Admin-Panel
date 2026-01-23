@@ -20,7 +20,7 @@ import LastTransaction from '@/sections/event/lastTransaction';
 import { useCloneeventMutation, useDeleteeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
 import { fDate } from '@/utils/format-time';
 import { capitalizeFirst } from '@/utils/short-utils';
-import { Copy, Pencil, Trash2 } from 'lucide-react';
+import { Copy, Loader2, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -34,6 +34,7 @@ const EventDetailsPage = () => {
   const deleteModal = useBoolean();
 
   const [loading, setLoading] = React.useState(false);
+  const [preOrderLoading, setPreOrderLoading] = useState(false);
   const [active, setActive] = React.useState('overview');
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -83,7 +84,7 @@ const EventDetailsPage = () => {
 
   const handlePreOrderToggle = async () => {
     try {
-      setLoading(true);
+      setPreOrderLoading(true);
       const newPreOrderStatus = !preOrdersEnabled;
       const res = await updateEvent({ id, preOrdersEnabled: newPreOrderStatus }).unwrap();
       if (res?.data) {
@@ -93,7 +94,7 @@ const EventDetailsPage = () => {
     } catch (error) {
       console.log('Failed to update preorder status', error);
     } finally {
-      setLoading(false);
+      setPreOrderLoading(false);
     }
   };
 
@@ -169,17 +170,24 @@ const EventDetailsPage = () => {
 
                           <div className="flex items-center">
                             {/* Static Preorder Toggle Button */}
+
                             <label className="mr-2 flex cursor-pointer items-center select-none">
-                              <input type="checkbox" checked={preOrdersEnabled} onChange={handlePreOrderToggle} className="sr-only" />
-                              <span
-                                className={`relative inline-block h-5 w-10 rounded-full transition ${preOrdersEnabled ? 'bg-blue-500' : 'bg-gray-300'}`}
-                              >
-                                <span
-                                  className={`absolute top-0 h-5 w-5 transform rounded-full border border-gray-300 bg-white shadow transition-transform ${
-                                    preOrdersEnabled ? 'translate-x-5' : 'left-0'
-                                  }`}
-                                />
-                              </span>
+                              {preOrderLoading ? (
+                                <Loader2 className="mr-3 h-6 w-6 animate-spin text-gray-500" />
+                              ) : (
+                                <div>
+                                  <input type="checkbox" checked={preOrdersEnabled} onChange={handlePreOrderToggle} className="sr-only" />
+                                  <span
+                                    className={`relative inline-block h-5 w-10 rounded-full transition ${preOrdersEnabled ? 'bg-blue-500' : 'bg-gray-300'}`}
+                                  >
+                                    <span
+                                      className={`absolute top-0 h-5 w-5 transform rounded-full border border-gray-300 bg-white shadow transition-transform ${
+                                        preOrdersEnabled ? 'translate-x-5' : 'left-0'
+                                      }`}
+                                    />
+                                  </span>
+                                </div>
+                              )}
                               <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">Preorder</span>
                             </label>
 
