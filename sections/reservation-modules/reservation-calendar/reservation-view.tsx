@@ -5,8 +5,10 @@ import { Copy } from 'lucide-react';
 import React, { useState } from 'react';
 import ReservationGrid from '../../reservation-modules/reservation-view/new-reservation-chart';
 import { ActiveBookings } from './components/active-bookings';
-import { ActiveBooking, Booking } from './components/types';
 import PendingRequests from './components/pending-request';
+import { ActiveBooking, Booking } from './components/types';
+import { useGetReservationCalendarQuery } from '@/store/Reducer/reservation-calendar-api';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 const mockBookings: Booking[] = [
   {
@@ -56,6 +58,13 @@ const ReservationCalendar: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [pendingBookings, setPendingBookings] = useState<Booking[]>(mockBookings);
+
+  const { organizationId } = useCompanySelectionState();
+
+  const { data, isLoading } = useGetReservationCalendarQuery(
+    { date: selectedDate.toISOString().split('T')[0], organization: organizationId },
+    { skip: !organizationId }
+  );
 
   const handleConfirm = (id: number) => setPendingBookings((prev) => prev.filter((b) => b.id !== id));
   const handleReject = (id: number) => setPendingBookings((prev) => prev.filter((b) => b.id !== id));
@@ -107,7 +116,13 @@ const ReservationCalendar: React.FC = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className={`col-span-12 space-y-6 ${click ? 'lg:col-span-7' : 'lg:col-span-12'}`}>
-            <ReservationGrid setClick={setClick} />
+            <ReservationGrid
+              setClick={setClick}
+              reservations={data?.data || []}
+              isLoading={isLoading}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+            />
           </div>
 
           {click && (
@@ -129,18 +144,11 @@ const ReservationCalendar: React.FC = () => {
                         type="date"
                         title="copy date"
                         onChange={handleDateSelect}
-                        className="w-[180px] cursor-pointer rounded-lg border px-3 py-2 text-sm dark:bg-[#2A2A2A] dark:text-white"
+                        className="w-45 cursor-pointer rounded-lg border px-3 py-2 text-sm dark:bg-[#2A2A2A] dark:text-white"
                         min={new Date().toISOString().split('T')[0]}
                         autoFocus
                       />
                     )}
-                    {/* 
-                  <button
-                    type="button"
-                    className="flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm text-white"
-                  >
-                    <Plus className="h-4 w-4" /> Add Slot
-                  </button> */}
                   </div>
                 </div>
 

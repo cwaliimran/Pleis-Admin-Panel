@@ -81,6 +81,8 @@ export const API_ROUTES = {
 
   // ── ADMIN ROUTES ─────────────────────────────────
 
+  ADMIN_RESERVATION_CALENDAR: `/admin/reservations/calendar`,
+
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,

@@ -57,6 +57,7 @@ import { faqsApi } from './Reducer/faqs-api';
 import { helpSupportApi } from './Reducer/help-support-api';
 import { appOrderingApi } from './Reducer/app-ordering-api';
 import { menuManagementApi } from './Reducer/menu-management-api';
+import { reservationCalendarApi } from './Reducer/reservation-calendar-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -113,6 +114,7 @@ const appReducer = combineReducers({
   [helpSupportApi.reducerPath]: helpSupportApi.reducer,
   [appOrderingApi.reducerPath]: appOrderingApi.reducer,
   [menuManagementApi.reducerPath]: menuManagementApi.reducer,
+  [reservationCalendarApi.reducerPath]: reservationCalendarApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -176,6 +178,7 @@ export const store = configureStore({
       helpSupportApi.middleware,
       appOrderingApi.middleware,
       menuManagementApi.middleware,
+      reservationCalendarApi.middleware,
       referralsApi.middleware
     ),
 });
