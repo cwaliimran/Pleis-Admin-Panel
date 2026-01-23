@@ -114,7 +114,7 @@ const StepOne = ({
             placeholder="Type Event Description"
             multiline
             rows={8}
-            className="max-w-xl resize-none rounded-lg border-gray-200 bg-[#F8F6F7] wrap-break-word whitespace-pre-wrap focus:border-blue-600 sm:min-h-[120px] lg:min-h-[275px] dark:border-zinc-600 dark:hover:border-zinc-500"
+            className="max-w-xl resize-none rounded-lg border-gray-200 bg-[#F8F6F7] wrap-break-word whitespace-pre-wrap focus:border-blue-600 sm:min-h-30 lg:min-h-68.75 dark:border-zinc-600 dark:hover:border-zinc-500"
           />
         </div>
       </div>
@@ -124,14 +124,14 @@ const StepOne = ({
 
         {orgLoading ? (
           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-            <Skeleton className="h-[35px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+            <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
           </div>
         ) : (
           <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
             <RHFCustomDropdown
               name="organization"
               placeholder="Choose Organization"
-              className="sm:max-w-[120px] lg:max-w-[440px]"
+              className="sm:max-w-30 lg:max-w-110"
               triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
               contentClassName="rounded-xl shadow-md"
               options={organizations?.map((org: any) => ({
@@ -150,15 +150,15 @@ const StepOne = ({
 
         {showVenueSkeleton ? (
           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-            <Skeleton className="h-[35px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+            <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
           </div>
         ) : (
           <div className="w-full items-center gap-2 md:flex md:w-[70%]">
             <RHFCustomDropdown
               name="venue"
               placeholder={!organization ? 'Select organization first' : 'Suggested Venue'}
-              className="sm:max-w-[120px] lg:max-w-[440px]"
-              triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
+              className="sm:max-w-30 lg:max-w-110"
+              triggerClassName="h-10 rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
               contentClassName="rounded-xl shadow-md"
               disabled={!organization}
               options={venues?.map((val: any) => ({
@@ -185,7 +185,7 @@ const StepOne = ({
 
           {categoriesLoading ? (
             <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-              <Skeleton className="h-[35px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+              <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
             </div>
           ) : (
             <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
@@ -196,7 +196,7 @@ const StepOne = ({
                   value: val._id,
                   label: val.title,
                 }))}
-                className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
               />
             </div>
           )}
@@ -209,7 +209,7 @@ const StepOne = ({
 
         {tagsLoading ? (
           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-            <Skeleton className="h-[35px] flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+            <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
           </div>
         ) : (
           <div className="mt-2 w-full items-center gap-2 md:flex md:w-[70%]">
@@ -220,7 +220,7 @@ const StepOne = ({
                 value: val._id,
                 label: val.title,
               }))}
-              className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+              className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
             />
           </div>
         )}
@@ -242,7 +242,7 @@ const StepOne = ({
             <RHFCustomDropdown
               name="partnerOrganization"
               placeholder="Search for partner organization"
-              className="sm:max-w-[120px] lg:max-w-[440px]"
+              className="sm:max-w-30 lg:max-w-110"
               triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
               contentClassName="rounded-xl shadow-md"
               disabled={!organization}
@@ -276,7 +276,7 @@ const StepOne = ({
 
       {/* Navigation buttons */}
       <div className="mt-22 flex flex-wrap items-center justify-end gap-2">
-        <Button type="button" variant="outline" onClick={() => router.back()} className="cursor-pointer rounded-4xl py-2 md:mt-2 md:min-w-[90px]">
+        <Button type="button" variant="outline" onClick={() => router.back()} className="cursor-pointer rounded-4xl py-2 md:mt-2 md:min-w-22.5">
           Cancel
         </Button>
 
@@ -284,7 +284,7 @@ const StepOne = ({
           type="button"
           disabled={!isStepValid(1)}
           onClick={() => setStep(2)}
-          className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-[90px]"
+          className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-22.5"
         >
           Next
         </Button>

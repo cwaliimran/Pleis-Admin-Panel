@@ -139,11 +139,20 @@ export const eventApi = createApi({
       invalidatesTags: ['event'],
     }),
 
+    // updateevent: builder.mutation({
+    //   query: ({ id, ...updatedevent }) => ({
+    //     // query: ({ id, scope, ...updatedevent }) => ({
+    //     url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
+    //     // url: API_ROUTES.UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE(id, scope),
+    //     method: 'PUT',
+    //     body: updatedevent,
+    //   }),
+    //   invalidatesTags: ['event'],
+    // }),
+
     updateevent: builder.mutation({
-      query: ({ id, ...updatedevent }) => ({
-        // query: ({ id, scope, ...updatedevent }) => ({
-        url: API_ROUTES.ADMIN_EVENTS_BY_ID(id),
-        // url: API_ROUTES.UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE(id, scope),
+      query: ({ id, scope, ...updatedevent }) => ({
+        url: scope ? API_ROUTES.UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE(id, scope) : API_ROUTES.ADMIN_EVENTS_BY_ID(id),
         method: 'PUT',
         body: updatedevent,
       }),
