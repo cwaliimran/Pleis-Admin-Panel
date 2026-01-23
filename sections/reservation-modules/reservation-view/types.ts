@@ -67,3 +67,70 @@ export type EventDateRange = {
 };
 
 export type ValidationErrors = Record<string, string>;
+
+// ============================================
+// Reservation Calendar Grid Types
+// ============================================
+
+// API Response Types for Calendar
+export interface TimeSlotData {
+  startTime: string;
+  endTime: string;
+  _id: string;
+}
+
+export interface DateTimeSlotData {
+  date: string;
+  timeSlots: TimeSlotData[];
+  _id: string;
+}
+
+export interface ReservationData {
+  _id: string;
+  userId: string;
+  partySize: number;
+  organizationId: string;
+  reservationId: string;
+  companyOrganizer: string;
+  timingSlots: {
+    dateTimeSlots: DateTimeSlotData[];
+  };
+  notes: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: {
+      code: string;
+      number: string;
+    };
+  };
+  reservation: {
+    _id: string;
+    reservationType: string;
+  };
+  member: string;
+  eventTitle: string;
+}
+
+// Processed booking for grid display
+export interface ProcessedBooking {
+  type: string;
+  startTime: string;
+  endTime: string;
+  slotKey: string;
+  bookings: ReservationData[];
+  totalPartySize: number;
+  bookingCount: number;
+}
+
+export interface ReservationGridProps {
+  setClick: (value: boolean) => void;
+  reservations: ReservationData[];
+  isLoading: boolean;
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
+}

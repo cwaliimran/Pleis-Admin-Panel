@@ -198,7 +198,7 @@ const AdminProfileSection = () => {
 
                 <RHFTextField name="lastName" label="Last Name" placeholder="Enter your last name" />
 
-                <RHFTextField name="email" type="email" label="Email" placeholder="Enter your email address" />
+                <RHFTextField name="email" type="email" label="Email" placeholder="Enter your email address" readOnly />
 
                 <Controller
                   name="phone"
@@ -220,6 +220,7 @@ const AdminProfileSection = () => {
                         inputProps={{
                           required: true,
                           'aria-invalid': fieldState.invalid,
+                          readOnly: true, // Added readOnly attribute
                         }}
                         containerClass="w-full"
                         dropdownStyle={{

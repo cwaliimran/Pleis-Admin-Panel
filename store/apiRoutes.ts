@@ -81,6 +81,8 @@ export const API_ROUTES = {
 
   // ── ADMIN ROUTES ─────────────────────────────────
 
+  ADMIN_RESERVATION_CALENDAR: `/admin/reservations/calendar`,
+
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
@@ -138,11 +140,16 @@ export const API_ROUTES = {
   ADMIN_UPDATE_SUBSCRIPTION_PRICING_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
 
   ADMIN_EVENTS: `/admin/events`,
-  ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}?scope=future`,
+  ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
+  // ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}?scope=future`,
+
+  UPDATE_ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
   UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
+
   DELETE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
+
   ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
-  
+
   ADMIN_EVENTS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/analytics`,
   ADMIN_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/tickets-analytics`,
   ADMIN_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/admin/events/${id}/notifications`,
@@ -180,10 +187,10 @@ export const API_ROUTES = {
   ADMIN_REQUEST_LOYALTY_CLUBS: `/admin/loyalty/club-collaborations`,
   ADMIN_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/admin/loyalty/club-collaborations/${id}`,
   GET_ADMIN_REQUEST_LOYALTY_CLUBS: (companyOrganizer: string) => `/admin/loyalty/club-collaborations/${companyOrganizer}`,
-  
+
   // ADMIN_LOYALTY_REWARDS: `/admin/loyalty/rewards`,
   // ADMIN_LOYALTY_REWARDS_BY_ID: (id: string) => `/admin/loyalty/rewards/${id}`,
-  
+
   ADMIN_POINT_CAL: `/admin/loyalty/points-calculator`,
   ADMIN_LOYALTY_REWARDS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/reward' : '/admin/loyalty/rewards'),
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/reward/${id}` : `/admin/loyalty/rewards/${id}`),

@@ -47,14 +47,14 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit })
         )}
       </TableCell>
 
-      <TableCell className="text-left capitalize">{item?.menuData?.title || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.menu?.title || '-'}</TableCell>
 
       {/* <TableCell className="text-left capitalize">{item?.taxPercent || '-'}%</TableCell> */}
       <TableCell className="text-left capitalize">{item?.taxPercent ? `${item.taxPercent}%` : '-'}</TableCell>
 
       <TableCell className="text-left capitalize">{item?.type || '-'}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.categoryData?.title || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.category?.title || '-'}</TableCell>
 
       <TableCell className="text-left">{item?.basePrice || '-'}</TableCell>
 
