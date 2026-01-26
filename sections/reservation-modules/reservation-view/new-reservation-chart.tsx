@@ -508,7 +508,7 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
                 <p className="text-sm font-medium">Selected Dates ({selectedDates.length}):</p>
                 <div className="flex flex-wrap justify-start gap-1.5">
                   {selectedDates.map((date, idx) => (
-                    <Badge key={idx} variant="secondary" className="bg-black text-xs text-white dark:bg-white dark:text-black">
+                    <Badge key={idx} variant="secondary" className="bg-blac~k text-xs text-white dark:bg-white dark:text-black">
                       {date instanceof Date ? format(date, 'dd-MM-yy') : String(date)}
                     </Badge>
                   ))}

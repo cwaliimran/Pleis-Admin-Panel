@@ -132,8 +132,8 @@ const HighlightsView = () => {
         video: selectedVenueType?.media || '',
         title: selectedVenueType.title || '',
         status: selectedVenueType.status || '',
-        event: selectedVenueType.type === 'event' ? selectedVenueType.object._id : undefined,
-        organization: selectedVenueType.type === 'organization' ? selectedVenueType.object._id : undefined,
+        event: selectedVenueType.type === 'event' ? selectedVenueType?.object?._id : undefined,
+        organization: selectedVenueType.type === 'organization' ? selectedVenueType?.object?._id : undefined,
       });
     } else if (!editModal.value) {
       reset(defaultValues);
