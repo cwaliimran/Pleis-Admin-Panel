@@ -122,11 +122,12 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     defaultValues,
   });
 
-  const { watch, reset } = methods;
+  const { watch, reset, setValue } = methods;
 
   const rewardType = watch('rewardType');
   const percentOff = watch('percentOff');
   const selectedMenuId = watch('menu');
+  const selectedMenuItem = watch('menuItem');
 
   const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
     {
@@ -205,6 +206,20 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
       value: menuItem?._id,
     })) || [];
 
+  // Prefill image when menu item is selected
+  useEffect(() => {
+    if (selectedMenuItem && menuItemsData?.data && rewardType === 'buyMenuItemReward') {
+      const menuItem = menuItemsData.data.find((item: any) => item._id === selectedMenuItem);
+      if (menuItem?.image) {
+        const img = menuItem.image;
+        // Check if image is not a placeholder
+        if (img && img !== noImageUrl && img !== noImageUrlDev && !img.toLowerCase().includes('noimage.png')) {
+          setValue('image', img);
+        }
+      }
+    }
+  }, [selectedMenuItem, menuItemsData, rewardType, setValue]);
+
   // Populate form when editing
   useEffect(() => {
     if (isEdit && selectedData && open) {
@@ -278,6 +293,12 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
       // Add main image if uploaded
       if (uploadedFileKey) {
         payload.image = uploadedFileKey;
+      } else if (typeof formData.image === 'string' && formData.image) {
+        // Extract filename from URL if it's a string (e.g., from menu item prefill)
+        // URL format: https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/be54cd34-c0a6-42b5-b7a0-66dd1c5666f9.png
+        const imageUrl = formData.image;
+        const filename = imageUrl.includes('/') ? imageUrl.split('/').pop() : imageUrl;
+        payload.image = filename;
       } else if (!isEdit && selectedData?.image) {
         // Only send image in non-edit mode if it exists
         payload.image = selectedData.image;
@@ -361,11 +382,25 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                   name="image"
                   label="Image"
                   initialImage={(() => {
-                    const img = selectedData?.media;
-                    if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
-                      return null;
+                    // First check if editing and has existing image
+                    const editImg = selectedData?.media;
+                    if (editImg && editImg !== noImageUrl && editImg !== noImageUrlDev && !editImg.toLowerCase().includes('noimage.png')) {
+                      return editImg;
                     }
-                    return img;
+                    // Then check if menu item is selected and has image
+                    if (selectedMenuItem && menuItemsData?.data) {
+                      const menuItem = menuItemsData.data.find((item: any) => item._id === selectedMenuItem);
+                      const menuItemImg = menuItem?.image;
+                      if (
+                        menuItemImg &&
+                        menuItemImg !== noImageUrl &&
+                        menuItemImg !== noImageUrlDev &&
+                        !menuItemImg.toLowerCase().includes('noimage.png')
+                      ) {
+                        return menuItemImg;
+                      }
+                    }
+                    return null;
                   })()}
                 />
 

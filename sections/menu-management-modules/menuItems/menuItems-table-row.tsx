@@ -58,7 +58,7 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit })
 
       <TableCell className="text-left">{item?.basePrice || '-'}</TableCell>
 
-      <TableCell className="text-left">{item?.discountPrice || '-'}</TableCell>
+      {/* <TableCell className="text-left">{item?.discountPrice || '-'}</TableCell> */}
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>

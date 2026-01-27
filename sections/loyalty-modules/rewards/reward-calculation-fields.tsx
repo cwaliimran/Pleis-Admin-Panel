@@ -8,9 +8,11 @@ import { useEffect, useRef, useState } from 'react';
 interface CalculatorResponse {
   data?: {
     points?: number;
+    totalSpend?: number;
   };
   message?: string;
   points?: number;
+  totalSpend?: number;
 }
 
 interface RewardCalculatorFieldsProps {
@@ -20,6 +22,7 @@ interface RewardCalculatorFieldsProps {
 const RewardCalculatorFields = ({ companyOrganizer }: RewardCalculatorFieldsProps) => {
   const [itemPrice, setItemPrice] = useState<string>('');
   const [calculatedPoints, setCalculatedPoints] = useState<number | null>(null);
+  const [totalSpend, setTotalSpend] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -34,6 +37,7 @@ const RewardCalculatorFields = ({ companyOrganizer }: RewardCalculatorFieldsProp
 
     // Reset states
     setCalculatedPoints(null);
+    setTotalSpend(null);
     setError(null);
 
     if (!itemPrice) {
@@ -63,18 +67,22 @@ const RewardCalculatorFields = ({ companyOrganizer }: RewardCalculatorFieldsProp
 
         // Extract points from response (handle different response structures)
         const points = response?.data?.points || response?.points;
+        const spend = response?.data?.totalSpend || response?.totalSpend;
 
         if (points && typeof points === 'number' && points >= 0) {
           setCalculatedPoints(points);
+          setTotalSpend(spend ?? null);
           setError(null);
         } else {
           setError('Invalid response from server');
           setCalculatedPoints(null);
+          setTotalSpend(null);
         }
       } catch (error) {
         const errorMessage = getErrorMessage(error);
         setError(errorMessage || 'Failed to calculate reward points');
         setCalculatedPoints(null);
+        setTotalSpend(null);
       }
     }, 500);
 
@@ -122,9 +130,17 @@ const RewardCalculatorFields = ({ companyOrganizer }: RewardCalculatorFieldsProp
       {/* Result Display */}
       {calculatedPoints !== null && !error && (
         <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
-          <div className="text-center">
-            <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">Calculated Point Value:</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{calculatedPoints} points</p>
+          <div className="flex items-center justify-center gap-8">
+            <div className="text-center">
+              <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">Calculated Point Value:</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{calculatedPoints} points</p>
+            </div>
+            {totalSpend !== null && (
+              <div className="text-center">
+                <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">Total Spend:</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">€{totalSpend}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

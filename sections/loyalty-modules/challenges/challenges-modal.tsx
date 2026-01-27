@@ -18,11 +18,16 @@ import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { fDate, formatStr } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import RewardCalculatorFields from '../rewards/reward-calculation-fields';
 import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
+import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
+import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
+import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
+import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
+import type { CompanyOption, EventOption, OrganizationOption, TicketOption } from './special-ticket-types';
 // import { useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 
 const defaultValues: any = {
@@ -36,8 +41,14 @@ const defaultValues: any = {
   customRewardImage: null,
   customRewardTitle: '',
   customRewardDescription: '',
+  // Special Ticket Fields
+  companyId: '',
+  organizationId: '',
+  eventId: '',
+  ticketId: '',
   taskType: 'visit',
   taskValue: '' as any,
+  taskMenu: '',
   taskMenuItem: '',
   claimLimit: '' as any,
   endDate: '',
@@ -57,9 +68,39 @@ const schema = Yup.object().shape({
   rewardValue: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .when('rewardType', {
-      is: (val: string) => val === 'points' || val === 'specialTicket',
+      is: (val: string) => val === 'points',
       then: (schema) => schema.required('Reward value is required').min(1, 'Must be at least 1'),
       otherwise: (schema) => schema.nullable(),
+    }),
+
+  // Special Ticket Validation
+  companyId: Yup.string()
+    .default('')
+    .when('rewardType', {
+      is: 'specialTicket',
+      then: (schema) => schema.required('Company is required for special tickets'),
+      otherwise: (schema) => schema.default(''),
+    }),
+  organizationId: Yup.string()
+    .default('')
+    .when('rewardType', {
+      is: 'specialTicket',
+      then: (schema) => schema.required('Organization is required for special tickets'),
+      otherwise: (schema) => schema.default(''),
+    }),
+  eventId: Yup.string()
+    .default('')
+    .when('rewardType', {
+      is: 'specialTicket',
+      then: (schema) => schema.required('Event is required for special tickets'),
+      otherwise: (schema) => schema.default(''),
+    }),
+  ticketId: Yup.string()
+    .default('')
+    .when('rewardType', {
+      is: 'specialTicket',
+      then: (schema) => schema.required('Ticket is required for special tickets'),
+      otherwise: (schema) => schema.default(''),
     }),
 
   rewardMenu: Yup.string()
@@ -101,6 +142,13 @@ const schema = Yup.object().shape({
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Task value is required')
     .min(1, 'Must be at least 1'),
+  taskMenu: Yup.string()
+    .default('')
+    .when('taskType', {
+      is: 'buyMenuItem',
+      then: (schema) => schema.required('Menu is required for this task type'),
+      otherwise: (schema) => schema.default(''),
+    }),
   taskMenuItem: Yup.string()
     .default('')
     .when('taskType', {
@@ -155,7 +203,18 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   const rewardType = watch('rewardType');
   const taskType = watch('taskType');
   const selectedMenuId = watch('rewardMenu');
-  const selectedTaskMenuId = watch('taskMenuItem');
+  const selectedTaskMenuId = watch('taskMenu');
+
+  // Special Ticket Fields
+  const companyId = watch('companyId');
+  const organizationId = watch('organizationId');
+  const eventId = watch('eventId');
+
+  // Determine when to show special ticket dropdowns
+  const shouldShowCompanyDropdown = rewardType === 'specialTicket';
+  const shouldShowOrganizationDropdown = rewardType === 'specialTicket' && !!companyId;
+  const shouldShowEventDropdown = rewardType === 'specialTicket' && !!organizationId;
+  const shouldShowTicketDropdown = rewardType === 'specialTicket' && !!eventId;
 
   // API QUERIES
   const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
@@ -211,9 +270,61 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   } = useGetMenuItemByMenuIdQuery({ menuId: selectedMenuId }, { skip: !selectedMenuId || rewardType !== 'menuItem' });
 
   // Dynamic menu items for task (buyMenuItem)
-  const { data: taskMenuItemsData, isLoading: taskMenuItemsLoading } = useGetMenuItemByMenuIdQuery(
-    { menuId: selectedTaskMenuId },
-    { skip: !selectedTaskMenuId || taskType !== 'buyMenuItem' }
+  const {
+    data: taskMenuItemsData,
+    isLoading: taskMenuItemsLoading,
+    isFetching: taskMenuItemsFetching,
+  } = useGetMenuItemByMenuIdQuery({ menuId: selectedTaskMenuId }, { skip: !selectedTaskMenuId || taskType !== 'buyMenuItem' });
+
+  // API QUERIES - Special Ticket Feature
+  const {
+    data: companyList,
+    isLoading: isLoadingCompanies,
+    isFetching: isCompanyFetching,
+  } = useGetCompanyListQuery(
+    {},
+    {
+      skip: !shouldShowCompanyDropdown,
+    }
+  );
+
+  const {
+    data: organizationResponse,
+    isLoading: isLoadingOrganizations,
+    isFetching: isOrganizationFetching,
+  } = useGetOrganizationByCompanyQuery(
+    {
+      companyOrganizer: companyId || undefined,
+    },
+    {
+      skip: !shouldShowOrganizationDropdown || !companyId,
+    }
+  );
+
+  const {
+    data: eventData,
+    isLoading: isLoadingEvents,
+    isFetching: isEventFetching,
+  } = useGetEventsByOrganizationQuery(
+    {
+      organization: organizationId || undefined,
+    },
+    {
+      skip: !shouldShowEventDropdown || !organizationId,
+    }
+  );
+
+  const {
+    data: ticketData,
+    isLoading: isTicketsLoading,
+    isFetching: isTicketsFetching,
+  } = useGetTicketingByEventQuery(
+    {
+      eventId: eventId || undefined,
+    },
+    {
+      skip: !shouldShowTicketDropdown || !eventId,
+    }
   );
 
   // OPTIONS MAPPING
@@ -241,6 +352,80 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
       value: tier?._id,
     })) || [];
 
+  // OPTIONS MAPPING - Special Ticket Feature
+  const companyOptions = useMemo<CompanyOption[]>(
+    () =>
+      companyList?.map((company: any) => ({
+        label: company?.companyDetails?.name || 'Unknown Company',
+        value: company?._id,
+      })) || [],
+    [companyList]
+  );
+
+  const organizationOptions = useMemo<OrganizationOption[]>(
+    () =>
+      organizationResponse?.data?.map((organization: any) => ({
+        label: organization?.basicInfo?.name || 'Unknown Organization',
+        value: organization?._id,
+        companyId: companyId || '',
+      })) || [],
+    [organizationResponse, companyId]
+  );
+
+  const eventOptions = useMemo<EventOption[]>(
+    () =>
+      (eventData || []).map((event: any) => ({
+        value: event?._id?.toString(),
+        label: event?.basicInfo?.title || 'No Title',
+      })),
+    [eventData]
+  );
+
+  const ticketOptions = useMemo<TicketOption[]>(
+    () =>
+      (ticketData?.data || []).map((ticket: any) => ({
+        label: `${ticket?.title}`,
+        value: ticket?._id,
+        price: ticket?.amount,
+      })),
+    [ticketData]
+  );
+
+  // CASCADING DROPDOWN LOGIC - Clear dependent fields when parent changes
+  useEffect(() => {
+    if (!isInitializingEdit.current && rewardType === 'specialTicket') {
+      // Clear all dependent fields when company changes
+      setValue('organizationId', '');
+      setValue('eventId', '');
+      setValue('ticketId', '');
+    }
+  }, [companyId, setValue, rewardType]);
+
+  useEffect(() => {
+    if (!isInitializingEdit.current && rewardType === 'specialTicket') {
+      // Clear event and ticket when organization changes
+      setValue('eventId', '');
+      setValue('ticketId', '');
+    }
+  }, [organizationId, setValue, rewardType]);
+
+  useEffect(() => {
+    if (!isInitializingEdit.current && rewardType === 'specialTicket') {
+      // Clear ticket when event changes
+      setValue('ticketId', '');
+    }
+  }, [eventId, setValue, rewardType]);
+
+  // Clear special ticket fields when reward type changes
+  useEffect(() => {
+    if (!isInitializingEdit.current && rewardType !== 'specialTicket') {
+      setValue('companyId', '');
+      setValue('organizationId', '');
+      setValue('eventId', '');
+      setValue('ticketId', '');
+    }
+  }, [rewardType, setValue]);
+
   // EDIT MODE DATA POPULATION
   useEffect(() => {
     if (isEdit && selectedData) {
@@ -254,6 +439,12 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
         description: rest?.description || '',
         taskType: rest?.taskType || 'visit',
         taskValue: rest?.taskValue || ('' as any),
+        taskMenu:
+          rest?.taskType === 'buyMenuItem' && rest?.taskMenuItem?.menu
+            ? typeof rest.taskMenuItem.menu === 'string'
+              ? rest.taskMenuItem.menu
+              : rest.taskMenuItem.menu._id || rest.taskMenuItem.menu
+            : '',
         taskMenuItem: rest?.taskMenuItem?._id || '',
         claimLimit: rest?.claimLimit || ('' as any),
         endDate: rest?.endDate ? new Date(rest.endDate) : '',
@@ -276,6 +467,32 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
         customRewardImage: reward?.rewardType === 'customReward' ? reward?.customReward?.mediaInfo?.url || null : null,
         customRewardTitle: reward?.rewardType === 'customReward' ? reward?.customReward?.title || '' : '',
         customRewardDescription: reward?.rewardType === 'customReward' ? reward?.customReward?.description || '' : '',
+
+        // Special Ticket fields mapping
+        companyId:
+          reward?.rewardType === 'specialTicket'
+            ? typeof reward?.specialTicket?.companyOrganizer === 'string'
+              ? reward.specialTicket.companyOrganizer
+              : reward?.specialTicket?.companyOrganizer?._id || ''
+            : '',
+        organizationId:
+          reward?.rewardType === 'specialTicket'
+            ? typeof reward?.specialTicket?.organization === 'string'
+              ? reward.specialTicket.organization
+              : reward?.specialTicket?.organization?._id || ''
+            : '',
+        eventId:
+          reward?.rewardType === 'specialTicket'
+            ? typeof reward?.specialTicket?.event === 'string'
+              ? reward.specialTicket.event
+              : reward?.specialTicket?.event?._id || ''
+            : '',
+        ticketId:
+          reward?.rewardType === 'specialTicket'
+            ? typeof reward?.specialTicket?.ticket === 'string'
+              ? reward.specialTicket.ticket
+              : reward?.specialTicket?.ticket?._id || ''
+            : '',
       };
 
       reset(mappedValues);
@@ -293,11 +510,20 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     }
   }, [selectedMenuId, setValue, rewardType]);
 
+  // Clear taskMenuItem when taskMenu changes
   useEffect(() => {
-    if (taskType === 'buyMenuItem' && !isInitializingEdit.current) {
+    if (taskType === 'buyMenuItem' && selectedTaskMenuId && !isInitializingEdit.current) {
       setValue('taskMenuItem', '');
     }
   }, [selectedTaskMenuId, setValue, taskType]);
+
+  // Clear taskMenu and taskMenuItem when taskType changes away from buyMenuItem
+  useEffect(() => {
+    if (taskType !== 'buyMenuItem' && !isInitializingEdit.current) {
+      setValue('taskMenu', '');
+      setValue('taskMenuItem', '');
+    }
+  }, [taskType, setValue]);
 
   // TRANSFORM TO API PAYLOAD
   const transformToPayload = (data: ChallengesFormValues) => {
@@ -366,7 +592,12 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
       case 'specialTicket':
         basePayload.reward = {
           rewardType: 'specialTicket',
-          rewardValue: Number(data.rewardValue),
+          specialTicket: {
+            companyOrganizer: data.companyId,
+            organization: data.organizationId,
+            event: data.eventId,
+            ticket: data.ticketId,
+          },
         };
         break;
     }
@@ -471,6 +702,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                     label="Task Type"
                     placeholder="Select Task Type"
                     className="w-full flex-1"
+                    disabled={isEdit}
                     options={[
                       { label: 'Visit X Times', value: 'visit' },
                       { label: 'Earn X Points', value: 'earnPoints' },
@@ -482,29 +714,52 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                   <RHFTextField name="taskValue" label="Task Value (X)" placeholder="Enter value (e.g. 5)" type="number" min="1" />
                 </div>
 
-                {/* Task Menu Item */}
+                {/* Task Menu & Menu Item for buyMenuItem */}
                 {taskType === 'buyMenuItem' && (
-                  <>
-                    {taskMenuItemsLoading ? (
-                      <div className="mt-2 w-full space-y-2 md:w-full">
-                        <Skeleton className="ml-1 h-3 w-20 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-                        <Skeleton className="h-8 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
+                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    {menuLoading ? (
+                      <div className="space-y-2">
+                        <Skeleton className="ml-1 h-3 w-20" />
+                        <Skeleton className="h-8" />
                       </div>
                     ) : (
                       <RHFCustomDropdown
-                        name="taskMenuItem"
-                        label="Menu Item"
-                        placeholder="Select Menu Item"
-                        options={taskMenuItemOptions}
-                        isLoading={taskMenuItemsLoading}
+                        name="taskMenu"
+                        label="Select Menu"
+                        placeholder="Select Menu"
+                        options={menuOptions}
+                        isLoading={menuLoading}
                         showNone={false}
                       />
                     )}
-                  </>
+
+                    {/* Show menu items ONLY when menu is selected */}
+                    {selectedTaskMenuId && (
+                      <>
+                        {taskMenuItemsLoading || taskMenuItemsFetching ? (
+                          <div className="space-y-2">
+                            <Skeleton className="ml-1 h-3 w-20" />
+                            <Skeleton className="h-8" />
+                          </div>
+                        ) : (
+                          <RHFCustomDropdown
+                            name="taskMenuItem"
+                            label="Select Menu Item"
+                            placeholder="Select Menu Item"
+                            options={taskMenuItemOptions}
+                            isLoading={taskMenuItemsLoading}
+                            showNone={false}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
                 )}
 
-                <RHFTextField name="claimLimit" label="Claim Limit (Optional)" placeholder="Enter Claim Limit" type="number" min="0" />
-                <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFTextField name="claimLimit" label="Claim Limit (Optional)" placeholder="Enter Claim Limit" type="number" min="0" />
+                  <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
+                </div>
 
                 {/* Tier Limit */}
                 {tiersLoading ? (
@@ -549,12 +804,94 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                   {rewardType === 'points' && (
                     <RHFTextField name="rewardValue" label="Point Reward" placeholder="Enter points" type="number" min="1" />
                   )}
-
-                  {/* Special Ticket */}
-                  {rewardType === 'specialTicket' && (
-                    <RHFTextField name="rewardValue" label="Special Ticket Reward" placeholder="Enter tickets" type="number" min="1" />
-                  )}
                 </div>
+
+                {/* Special Ticket - Cascading Dropdowns */}
+                {rewardType === 'specialTicket' && (
+                  <div className="space-y-4">
+                    <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
+                      {/* Company Dropdown */}
+                      {isLoadingCompanies || isCompanyFetching ? (
+                        <div className="space-y-2">
+                          <Skeleton className="ml-1 h-3 w-20" />
+                          <Skeleton className="h-8" />
+                        </div>
+                      ) : (
+                        <RHFCustomDropdown
+                          name="companyId"
+                          label="Company"
+                          placeholder="Select Company"
+                          options={companyOptions}
+                          isLoading={isLoadingCompanies}
+                          showNone={false}
+                        />
+                      )}
+
+                      {/* Organization Dropdown - Only show when company is selected */}
+                      {companyId && (
+                        <>
+                          {isLoadingOrganizations || isOrganizationFetching ? (
+                            <div className="space-y-2">
+                              <Skeleton className="ml-1 h-3 w-20" />
+                              <Skeleton className="h-8" />
+                            </div>
+                          ) : (
+                            <RHFCustomDropdown
+                              name="organizationId"
+                              label="Organization"
+                              placeholder="Select Organization"
+                              options={organizationOptions}
+                              isLoading={isLoadingOrganizations}
+                              showNone={false}
+                            />
+                          )}
+                        </>
+                      )}
+
+                      {/* Event Dropdown - Only show when organization is selected */}
+                      {organizationId && (
+                        <>
+                          {isLoadingEvents || isEventFetching ? (
+                            <div className="space-y-2">
+                              <Skeleton className="ml-1 h-3 w-20" />
+                              <Skeleton className="h-8" />
+                            </div>
+                          ) : (
+                            <RHFCustomDropdown
+                              name="eventId"
+                              label="Event"
+                              placeholder="Select Event"
+                              options={eventOptions}
+                              isLoading={isLoadingEvents}
+                              showNone={false}
+                            />
+                          )}
+                        </>
+                      )}
+
+                      {/* Ticket Dropdown - Only show when event is selected */}
+                      {eventId && (
+                        <>
+                          {isTicketsLoading || isTicketsFetching ? (
+                            <div className="space-y-2">
+                              <Skeleton className="ml-1 h-3 w-20" />
+                              <Skeleton className="h-8" />
+                            </div>
+                          ) : (
+                            <RHFCustomDropdown
+                              name="ticketId"
+                              label="Ticket"
+                              placeholder="Select Ticket"
+                              options={ticketOptions}
+                              isLoading={isTicketsLoading}
+                              showNone={false}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Menu Item Reward */}
                 {rewardType === 'menuItem' && (
@@ -575,7 +912,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                       />
                     )}
 
-                    {/* 🔥 Show menu items ONLY when menu is selected */}
+                    {/* Show menu items ONLY when menu is selected */}
                     {selectedMenuId && (
                       <>
                         {rewardMenuItemsLoading || rewardMenuItemsFetching ? (

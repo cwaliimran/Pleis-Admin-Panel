@@ -394,7 +394,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0" />
       <DialogContent
         aria-describedby={undefined}
-        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
+        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:max-w-160!"
       >
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>

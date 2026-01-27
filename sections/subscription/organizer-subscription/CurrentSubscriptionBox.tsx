@@ -87,7 +87,7 @@ export const CurrentSubscriptionBox: React.FC<CurrentSubscriptionBoxProps> = ({
           <span className="text-sm font-medium text-blue-800 dark:text-blue-300">Current Price:</span>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              €{displayPrice.toFixed(2)}
+              €{displayPrice?.toFixed(2)}
               <span className="text-sm font-normal text-blue-700 dark:text-blue-500">{priceLabel}</span>
             </div>
             {subscription.billingCycle === 'yearly' && (

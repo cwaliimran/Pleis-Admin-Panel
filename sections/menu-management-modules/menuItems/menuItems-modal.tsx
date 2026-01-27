@@ -24,12 +24,12 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 // Utility function to convert hh:mm A to HH:mm
-const parse12HourTo24Hour = (time: string | null | undefined): string | null => {
-  if (!time) return null;
+const parse12HourTo24Hour = (time: string | null | undefined): string => {
+  if (!time) return '';
   const [timePart, period] = time.split(' ');
   const [hours, minutes] = timePart.split(':').map(Number);
   const formattedHour = period === 'PM' && hours !== 12 ? hours + 12 : period === 'AM' && hours === 12 ? 0 : hours;
-  return `${formattedHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  return `${formattedHour.toString().padStart(2, '0')}:${minutes?.toString().padStart(2, '0')}`;
 };
 
 type MenuItemFormValues = {
@@ -40,7 +40,6 @@ type MenuItemFormValues = {
   menu: string;
   taxPercent: string;
   basePrice: string;
-  discountPrice: string | null;
   description: string;
   preset?: string;
   startTime?: string;
@@ -64,11 +63,10 @@ const defaultValues: MenuItemFormValues = {
   menu: '',
   taxPercent: '',
   basePrice: '',
-  discountPrice: '',
   description: '',
   preset: '',
-  startTime: '12:00',
-  endTime: '12:00',
+  startTime: '',
+  endTime: '',
   status: '',
 };
 
@@ -79,7 +77,6 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   type: Yup.string().required('Type is required'),
   category: Yup.string().required('Item category is required'),
   basePrice: Yup.string().required('Base price is required'),
-  discountPrice: Yup.string().nullable().default(''),
   taxPercent: Yup.string().required('Tax is required'),
   menu: Yup.string().required('Menu is required'),
   description: Yup.string().required('Description is required'),
@@ -163,11 +160,10 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
         menu: selectedData.menu?._id || '',
         taxPercent: selectedData.taxPercent?.toString() || '',
         basePrice: selectedData.basePrice?.toString() || '',
-        discountPrice: selectedData.discountPrice?.toString() || '',
         description: selectedData.description || '',
         preset: selectedData.preset?._id || '',
-        startTime: parse12HourTo24Hour(selectedData.startTime) || '',
-        endTime: parse12HourTo24Hour(selectedData.endTime) || '',
+        startTime: selectedData.startTime ? parse12HourTo24Hour(selectedData.startTime) : '',
+        endTime: selectedData.endTime ? parse12HourTo24Hour(selectedData.endTime) : '',
         status: selectedData.status || '',
       });
     } else {
@@ -188,24 +184,21 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
     }
   }, [selectedPreset, presetData, setValue]);
 
+  const isValidTime = (time?: string) => {
+    if (!time) return false;
+    const [h, m] = time.split(':');
+    return !isNaN(Number(h)) && !isNaN(Number(m));
+  };
+
   const handleSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
 
-    if (Number(formData.discountPrice) > Number(formData.basePrice)) {
-      showError('Discount price must be less than base price.');
+    const hasValidStart = isValidTime(formData.startTime);
+    const hasValidEnd = isValidTime(formData.endTime);
+
+    if (hasValidStart && hasValidEnd && formData.startTime === formData.endTime) {
+      showError('End time must be different from start time.');
       return;
-    }
-
-    if (formData.startTime && formData.endTime) {
-      const start = parse12HourTo24Hour(formData.startTime);
-      const end = parse12HourTo24Hour(formData.endTime);
-
-      // Allow end time to be earlier than start time (overnight shift)
-      // Only reject if times are exactly equal
-      if (start && end && start === end) {
-        showError('End time must be different from start time.');
-        return;
-      }
     }
 
     try {
@@ -218,14 +211,20 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
         title: formData.title,
         description: formData.description,
         basePrice: Number(formData.basePrice),
-        discountPrice: formData.discountPrice ? Number(formData.discountPrice) : null,
         taxPercent: Number(formData.taxPercent),
         type: formData.type,
         category: formData.category,
         menu: formData.menu,
-        startTime: formatTimeTo12Hour(formData.startTime),
-        endTime: formatTimeTo12Hour(formData.endTime),
       };
+
+      // only add times if valid
+      if (hasValidStart) {
+        payload.startTime = formatTimeTo12Hour(formData.startTime);
+      }
+
+      if (hasValidEnd) {
+        payload.endTime = formatTimeTo12Hour(formData.endTime);
+      }
 
       if (uploadedFileKey) {
         payload.image = uploadedFileKey;
@@ -337,8 +336,6 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
 
                   <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" />
 
-                  <RHFTextField name="discountPrice" label="Discount Price" type="number" placeholder="Enter Discount Price" />
-
                   <RHFSelectField
                     name="taxPercent"
                     label="Tax %"
@@ -352,20 +349,20 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
                     ]}
                   />
 
-                  <div className="col-span-2">
-                    {menuLoading ? (
-                      <FieldSkeleton />
-                    ) : (
-                      <RHFCustomDropdown
-                        name="menu"
-                        label="Select Menu"
-                        placeholder="Select Menu"
-                        options={menuOptions}
-                        isLoading={menuLoading}
-                        showNone={false}
-                      />
-                    )}
-                  </div>
+                  {/* <div className="col-span-2"> */}
+                  {menuLoading ? (
+                    <FieldSkeleton />
+                  ) : (
+                    <RHFCustomDropdown
+                      name="menu"
+                      label="Select Menu"
+                      placeholder="Select Menu"
+                      options={menuOptions}
+                      isLoading={menuLoading}
+                      showNone={false}
+                    />
+                  )}
+                  {/* </div> */}
                 </div>
 
                 {/* Description */}

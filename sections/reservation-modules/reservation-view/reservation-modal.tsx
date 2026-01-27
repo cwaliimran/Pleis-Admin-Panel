@@ -95,6 +95,7 @@ const schema = Yup.object().shape({
   }),
   taxPercentage: Yup.string().required('Tax percentage is required'),
   needsConfirmation: Yup.boolean(),
+  allowPreOrderMenuItems: Yup.boolean(),
   ticketRequirement: Yup.boolean(),
   optionalEventId: Yup.string().notRequired(),
   timingSlotsEnabled: Yup.boolean(),
@@ -111,6 +112,7 @@ const defaultValues: ReservationFormValues = {
   ticketType: '',
   taxPercentage: '5',
   needsConfirmation: true,
+  allowPreOrderMenuItems: false,
   ticketRequirement: false,
   optionalEventId: '',
   timingSlotsEnabled: false,
@@ -444,6 +446,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         ticketType: selectedData?.ticketType || '',
         taxPercentage: selectedData?.taxPercentage?.toString() || '25',
         needsConfirmation: selectedData?.needsConfirmation ?? true,
+        allowPreOrderMenuItems: selectedData?.allowPreOrderMenuItems ?? false,
         ticketRequirement: selectedData?.ticketRequirement ?? false,
         optionalEventId: event?._id || selectedData?.optionalEventId?._id || selectedData?.optionalEventId || '',
         timingSlotsEnabled: selectedData?.timingSlots?.enabled || false,
@@ -541,6 +544,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         conditionType: formData.conditionType,
         taxPercentage: formData.taxPercentage,
         needsConfirmation: formData.needsConfirmation,
+        allowPreOrderMenuItems: formData.allowPreOrderMenuItems,
         ticketRequirement: formData.ticketRequirement,
         status: formData.status,
       };
@@ -726,6 +730,25 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                   />
 
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">{renderConditionFields()}</div>
+                </div>
+
+                {/* Pre-Order Menu Items */}
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <Checkbox
+                      id="allowPreOrderMenuItems"
+                      checked={watch('allowPreOrderMenuItems')}
+                      onCheckedChange={(checked) => setValue('allowPreOrderMenuItems', !!checked, { shouldDirty: true })}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="allowPreOrderMenuItems" className="cursor-pointer font-semibold">
+                        Allow Pre-Order Menu Items
+                      </Label>
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                        Allow users to pre-order menu items when making this reservation
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Ticket Requirement */}

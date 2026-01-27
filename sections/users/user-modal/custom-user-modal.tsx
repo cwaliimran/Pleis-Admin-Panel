@@ -241,13 +241,9 @@ const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, on
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0" />
-      {/* <DialogContent
-        aria-describedby={undefined}
-        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
-      > */}
       <DialogContent
         aria-describedby={undefined}
-        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[640px]"
+        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:max-w-160!"
       >
         <DialogHeader>
           <DialogTitle>Create User</DialogTitle>

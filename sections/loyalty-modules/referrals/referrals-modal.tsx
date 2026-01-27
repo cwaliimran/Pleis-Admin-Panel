@@ -40,7 +40,7 @@ const defaultValues: ReferralFormValues = {
   referrerPoints: 0,
   minimumPurchases: 0,
   referralLimit: 0,
-  status: 'active',
+  status: 'inactive',
 };
 
 const schema = Yup.object({
@@ -56,6 +56,8 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
     resolver: yupResolver(schema),
     defaultValues,
   });
+
+  console.log('referralSettingData', referralSettingData);
 
   const { reset, handleSubmit, control } = methods;
 
@@ -77,7 +79,7 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
       referrerPoints: referralSettingData.referrerPoints ?? 0,
       minimumPurchases: referralSettingData.minimumPurchases ?? 0,
       referralLimit: referralSettingData.referralLimit ?? 0,
-      status: referralSettingData.status ?? 'active',
+      status: referralSettingData.status ?? 'inactive',
     };
   }, [referralSettingData]);
 
@@ -104,25 +106,34 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
         }
       : basePayload;
 
+    let response;
+
     try {
       if (isEditMode) {
         if (global) {
-          await updateSetting(finalPayload).unwrap();
+          response = await updateSetting(finalPayload).unwrap();
         } else {
-          await updateLocalSetting(finalPayload).unwrap();
+          response = await updateLocalSetting(finalPayload).unwrap();
         }
       } else {
         if (global) {
-          await addSetting(finalPayload).unwrap();
+          response = await addSetting(finalPayload).unwrap();
         } else {
-          await addLocalSetting(finalPayload).unwrap();
+          response = await addLocalSetting(finalPayload).unwrap();
         }
       }
 
-      reset();
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || '');
       onClose();
+      reset();
     } catch (error) {
-      console.error(error);
+      showError(getErrorMessage(error));
     }
   };
 
