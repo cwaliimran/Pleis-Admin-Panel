@@ -80,6 +80,14 @@ const ReservationBody = ({ data, isLoading, meta, onPageChange, limit, organizat
                     <div className="text-gray-500">Tax</div>
                     <div className="text-lg font-semibold">{reservation.taxPercentage}%</div>
                   </div>
+                  <div>
+                    <div className="text-gray-500">PreOrder</div>
+                    <div className="text-lg font-semibold">
+                      <CustomBadge variant={reservation?.allowPreOrderMenuItems ? 'success' : 'error'}>
+                        {reservation.allowPreOrderMenuItems ? 'Active' : 'Inactive'}
+                      </CustomBadge>
+                    </div>
+                  </div>
                   {reservation.amount !== undefined && (
                     <div>
                       <div className="text-gray-500">Total Price</div>

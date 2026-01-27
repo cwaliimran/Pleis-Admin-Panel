@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import FieldSkeleton from '@/components/ui/field-skeleton';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
@@ -57,9 +56,10 @@ const schema = Yup.object().shape({
   pointValuePercentage: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Point value percentage is required')
-    .min(1, 'Must be at least 1%')
+    .integer('Only whole numbers are allowed')
+    .min(0, 'Must be at least 0%')
     .max(20, 'Cannot exceed 20%')
-    .default(1),
+    .default(0),
 });
 
 const defaultValues: SettingsFormValues = {
@@ -69,12 +69,12 @@ const defaultValues: SettingsFormValues = {
   description: '',
   category: '',
   model: 'essential',
-  pointValuePercentage: 1,
+  pointValuePercentage: 0,
 };
 
 const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handleSuccess, user }: SettingsModalProps) => {
   const [deleting, setDeleting] = useState(false);
-  const [pointValue, setPointValue] = useState(1);
+  const [pointValue, setPointValue] = useState(0);
 
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [updateUser, { isLoading: updateLoading }] = useUpdateUserMutation();
@@ -146,14 +146,14 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
         description: companyDetails?.description || '',
         category: companyDetails?.category?._id || '',
         model: loyaltySettings?.model || 'essential',
-        pointValuePercentage: loyaltySettings?.pointValuePercentage || 1,
+        pointValuePercentage: loyaltySettings?.pointValuePercentage ?? 0,
       };
 
-      setPointValue(loyaltySettings?.pointValuePercentage || 1);
+      setPointValue(loyaltySettings?.pointValuePercentage ?? 0);
       reset(mappedValues);
     } else if (open && !companyDetails) {
       reset(defaultValues);
-      setPointValue(1);
+      setPointValue(0);
     }
   }, [open, companyDetails, reset]);
 
@@ -161,7 +161,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === 'pointValuePercentage') {
-        setPointValue(value.pointValuePercentage || 1);
+        setPointValue(value.pointValuePercentage ?? 0);
       }
     });
     return () => subscription.unsubscribe();
@@ -212,7 +212,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
 
       showSuccess(response?.message || 'Settings updated successfully');
       methods.reset(defaultValues);
-      setPointValue(1);
+      setPointValue(0);
       onClose();
       handleSuccess();
     } catch (error) {
@@ -234,7 +234,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
 
   const handleClose = () => {
     reset(defaultValues);
-    setPointValue(1);
+    setPointValue(0);
     onClose();
   };
 
@@ -329,32 +329,18 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                 {/* Point Value Percentage */}
                 <div>
                   <Label className="mb-3 block text-sm font-medium">Point Value Percentage</Label>
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={pointValue}
-                      onChange={(e) => {
-                        let value = Number(e.target.value);
-                        // Clamp value between 1 and 20
-                        value = Math.max(1, Math.min(20, value));
-                        setPointValue(value);
-                        setValue('pointValuePercentage', value, { shouldDirty: true });
-                      }}
-                      className="w-24 border border-gray-400 bg-white text-gray-900 placeholder:text-gray-500 dark:border-gray-700 dark:bg-[#171717] dark:text-gray-100"
-                    />
-                    <span className="font-medium">%</span>
+                  <div className="mb-4 flex items-center gap-2">
+                    <span className="text-2xl font-semibold">{pointValue}%</span>
                   </div>
-                  <div className="mt-4">
+                  <div>
                     <Slider
-                      min={1}
+                      min={0}
                       max={20}
                       step={1}
                       value={[pointValue]}
                       onValueChange={(val) => {
                         setPointValue(val[0]);
-                        setValue('pointValuePercentage', val[0], { shouldDirty: true });
+                        setValue('pointValuePercentage', val[0], { shouldValidate: true, shouldDirty: true });
                       }}
                     />
                   </div>

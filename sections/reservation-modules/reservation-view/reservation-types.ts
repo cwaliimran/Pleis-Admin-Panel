@@ -5,6 +5,7 @@ export type Reservation = {
   maxCapacityPerReservation: number;
   conditionType: 'fixedPrice' | 'minimumSpendOnLocation' | 'prepayOption' | 'noCondition' | 'ticketRequirement' | 'customText' | string;
   taxPercentage: number;
+  allowPreOrderMenuItems: boolean;
   amount?: number;
   status: 'active' | 'inactive' | string;
   companyOrganizer: string;

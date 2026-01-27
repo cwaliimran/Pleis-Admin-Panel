@@ -64,7 +64,8 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
   const schema = Yup.object().shape({
     title: Yup.string().required('Venue name is required'),
     venueType: Yup.array().of(Yup.string()).min(1, 'At least one venue type is required').required('Venue Type is required'),
-    organization: Yup.string().required('Organization is required'),
+    // organization: Yup.string().required('Organization is required'),
+    organization: Yup.string().optional(),
     status: Yup.string().oneOf(['active', 'inactive']),
     floorPlan: Yup.mixed().nullable(),
     location: Yup.object().shape({
@@ -152,14 +153,14 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
   const { data: apiData, isLoading: venueLoading } = useGetVenueTypesQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '100',
     status: '',
   });
 
   const { data: orgData, isLoading: orgLoading } = useGetOrganizationQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '100',
     status: '',
   });
 
@@ -201,9 +202,13 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
       const payload: any = {
         title: formData.title,
         venueType: formData.venueType,
-        organization: formData.organization,
+        // organization: formData.organization,
         location: formData.location,
       };
+
+      if (formData.organization) {
+        payload.organization = formData.organization;
+      }
 
       if (imageFileString) {
         payload.floorPlan = imageFileString;
@@ -211,9 +216,17 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
         payload.floorPlan = formData.floorPlan;
       }
 
+      // If editing and organization changed, set isPrimary true
       if (isEditMode && selectedId) {
         payload.status = formData.status;
         payload.id = selectedId;
+        if (
+          selectedVenueData &&
+          ((typeof selectedVenueData.organization === 'string' && selectedVenueData.organization !== formData.organization) ||
+            (typeof selectedVenueData.organization === 'object' && selectedVenueData.organization?._id?.toString() !== formData.organization))
+        ) {
+          payload.isPrimary = true;
+        }
       }
 
       let response;

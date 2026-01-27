@@ -48,7 +48,7 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'basePrice',
   },
-  { id: 'discount', label: 'Temp Discount', align: 'left' },
+  // { id: 'discount', label: 'Temp Discount', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];

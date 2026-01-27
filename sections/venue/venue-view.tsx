@@ -1,16 +1,17 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeleteVenueMutation, useGetVenuesQuery } from '@/store/Reducer/venue';
+import { useDeleteVenueMutation, useGetVenuesQuery, useUpdateVenueMutation } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import VenueTypeTable from './venueTypeTable';
 import VenueTypeModalV2 from './venueTypeModal';
+import VenueTypeTable from './venueTypeTable';
 
 const VenueView = () => {
   const openModal = useBoolean();
@@ -28,6 +29,29 @@ const VenueView = () => {
   const [isEditMode, setIsEditMode] = useState(false);
 
   const [deleteVenue, { isLoading: deleteVenueLoading }] = useDeleteVenueMutation();
+  const [updateVenue, { isLoading: updateVenueLoading }] = useUpdateVenueMutation();
+  const [updatingPrimaryId, setUpdatingPrimaryId] = useState<string | null>(null);
+
+  const handlePinned = async (item: any) => {
+    setUpdatingPrimaryId(item._id);
+    try {
+      const response = await updateVenue({ id: item._id, isPrimary: !item.isPrimary }).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+      } else {
+        showSuccess(response?.message || 'Venue updated successfully');
+      }
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      showError(errorMessage);
+    } finally {
+      setUpdatingPrimaryId(null);
+    }
+  };
+
+  const { organizerOrganizationIds } = useCompanySelection();
 
   const {
     data: apiData,
@@ -37,6 +61,7 @@ const VenueView = () => {
     page: page - 1,
     search,
     limit,
+    organization: organizerOrganizationIds || undefined,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
   });
@@ -72,7 +97,7 @@ const VenueView = () => {
   };
 
   const handleEdit = (id: string) => {
-    const venueTypeToEdit = venueTypes?.find((item: any) => item._id === id);
+    const venueTypeToEdit = venueTypes?.find((item: any) => item?._id === id);
 
     if (venueTypeToEdit) {
       setSelectedVenueType(venueTypeToEdit);
@@ -135,6 +160,9 @@ const VenueView = () => {
         loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
+        handlePinned={handlePinned}
+        updatingPrimaryId={updatingPrimaryId}
+        updateVenueLoading={updateVenueLoading}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);

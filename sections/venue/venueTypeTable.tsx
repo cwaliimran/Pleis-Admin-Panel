@@ -1,19 +1,18 @@
 'use client';
 
-import TableHeadCustom from '@/components/table/table-head-custom';
-import { Card } from '@/components/ui/card';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
+import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
+import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import VenueTypeTableRow from './venueTypeTableRow';
-import { useTableSort } from '@/hooks/useTableSort';
-import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 
 const headLabel = [
   {
@@ -57,8 +56,10 @@ interface PageProps {
   meta: Meta;
   loading?: boolean;
   handleDelete?: (id: string) => void;
-  handlePinned?: (id: string) => void;
+  handlePinned?: (item: any) => void;
   handleEdit?: (id: string) => void;
+  updatingPrimaryId?: string | null;
+  updateVenueLoading?: boolean;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -78,11 +79,11 @@ const VenueTypeTable: FC<PageProps> = ({
   handlePinned,
   handleDelete,
   handleEdit,
+  updatingPrimaryId,
+  updateVenueLoading,
   onPageChange,
-  // onLimitChange,
   onSearch = () => {},
   search = '',
-  // limit = 10,
   status = '',
   onStatusChange = () => {},
   date,
@@ -141,7 +142,7 @@ const VenueTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, location, organization...',
+                              placeholder: 'Search name, organization...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -186,6 +187,8 @@ const VenueTypeTable: FC<PageProps> = ({
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}
                     handlePinned={handlePinned}
+                    updatingPrimaryId={updatingPrimaryId}
+                    updateVenueLoading={updateVenueLoading}
                   />
                 ))}
               </TableBodyWrapper>

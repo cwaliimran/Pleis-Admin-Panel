@@ -14,6 +14,7 @@ import {
   SquareMenu,
   Tags,
   ThumbsUp,
+  TicketSlash,
   VenetianMask,
   Volume1,
 } from 'lucide-react';
@@ -143,10 +144,15 @@ export const menuGroups: MenuGroup[] = [
     key: paths.organizer.reviews,
     icon: ThumbsUp,
   },
-   {
+  {
     label: 'Updates',
     key: paths.organizer.updates,
     icon: Megaphone,
+  },
+  {
+    label: 'Promo codes',
+    key: paths.organizer.promoCodes,
+    icon: TicketSlash,
   },
   {
     label: 'Giveaways',
