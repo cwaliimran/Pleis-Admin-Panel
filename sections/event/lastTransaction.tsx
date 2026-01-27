@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 // import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
@@ -12,8 +13,21 @@ const LastTransaction = ({ data }: { data: any }) => {
         {data?.latestEventOrders?.map((data: any) => (
           <div className="mb-4 flex flex-row items-center justify-between" key={data?._id}>
             <div className="flex items-center gap-1">
-              <Image src={data?.user?.profileIcon} alt={data?.user?.firstName} width={25} height={25} className="rounded-full" />
-              <h1>{data?.user?.firstName}</h1>
+              {data?.user?.profileIcon && data?.user?.profileIcon !== noImageUrl && data?.user?.profileIcon !== noImageUrlDev ? (
+                <Image
+                  src={data?.user?.profileIcon || ''}
+                  alt="Image"
+                  className="h-7 w-7 rounded-full object-cover"
+                  priority
+                  height={25}
+                  width={35}
+                />
+              ) : (
+                <span className="flex h-7 w-7 items-center justify-center rounded-full border bg-gray-200 text-center text-sm font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-300">
+                  {data?.user?.firstName?.[0]?.toUpperCase() || ''}
+                </span>
+              )}
+              <h1 className="ml-1 capitalize">{data?.user?.firstName || ''}</h1>
             </div>
             <div>
               {data?.orderPricing?.currency}

@@ -2,21 +2,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useGeteventTicketsAnalyticsByIdQuery } from '@/store/Reducer/events';
-import { Dot, Plus } from 'lucide-react';
+import { useUpdateTicketingMutation } from '@/store/Reducer/ticketing-api';
+import { Dot, Loader2, Plus } from 'lucide-react';
+import { useState } from 'react';
 import { VisitorInterest } from '../invoices';
 import TicketingModal from '../ticketing-view/ticketing-modal';
 import EventLoading from './components/event-loading';
 
 const EventTicket = ({ event }: { event: any }) => {
   const openModal = useBoolean();
-  const { data = {}, isLoading } = useGeteventTicketsAnalyticsByIdQuery(event?._id);
+  const { data = {}, isLoading, refetch } = useGeteventTicketsAnalyticsByIdQuery(event?._id);
+  const [updateTicketing] = useUpdateTicketingMutation();
+  const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
 
-  const paidVsUnpaid = data?.paidVsUnpaidTicketStats || {
-    soldTickets: 0,
-    totalTickets: 0,
-    paid: { count: 0, percentage: 0, amount: 0 },
-    unpaid: { count: 0, percentage: 0, amount: 0 },
-  };
+  // New ticketTypeStats array
+  const ticketTypeStats = data?.ticketTypeStats || [];
+
+  // Calculate totals from ticketTypeStats
+  const totalSold = ticketTypeStats.reduce((acc: number, ticket: any) => acc + (ticket.sold || 0), 0);
+  const totalCreated = ticketTypeStats.reduce((acc: number, ticket: any) => acc + (ticket.totalCreated || 0), 0);
 
   const scannedProgress = data?.scannedTicketProgress || {
     totalSold: 0,
@@ -25,7 +29,22 @@ const EventTicket = ({ event }: { event: any }) => {
   };
 
   const ticketPerformanceWeekly = data?.ticketPerformanceWeekly || [];
-  const ticketingStats = data?.ticketingStats || { earlyBird: {}, lastMinute: {}, regular: {}, grandTotal: { count: 0, amount: 0 } };
+  const ticketingStatsTickets = data?.ticketingStats?.tickets || [];
+
+  const handleStatusToggle = async (ticketId: string, currentStatus: string) => {
+    try {
+      setUpdatingTicketId(ticketId);
+      await updateTicketing({
+        id: ticketId,
+        status: currentStatus === 'active' ? 'inactive' : 'active',
+      }).unwrap();
+      refetch();
+    } catch (error) {
+      console.error('Failed to update ticket status:', error);
+    } finally {
+      setUpdatingTicketId(null);
+    }
+  };
 
   return (
     <>
@@ -34,40 +53,58 @@ const EventTicket = ({ event }: { event: any }) => {
       ) : (
         <div>
           <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 lg:col-span-6">
-              {/* paid tickets and free tickets */}
+            <div className="col-span-12 max-h-[calc(100vh-200px)] overflow-y-auto lg:col-span-6">
+              {/* Ticket Types Stats - Dynamic from ticketTypeStats array */}
               <Card className="dark:bg-[#171717]">
                 <CardHeader>
                   <CardTitle>
-                    {paidVsUnpaid.soldTickets} Tickets Sold / {paidVsUnpaid.totalTickets}
+                    {totalSold} Tickets Sold / {totalCreated}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="mt-2 flex items-start justify-between gap-4">
-                    <div className="flex flex-1 flex-col">
-                      <h1 className="mb-1 font-semibold">Paid Tickets</h1>
-                      <h1 className="text-end text-sm">{paidVsUnpaid.paid.percentage ?? 0}%</h1>
-                      <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                        <div className="bg-primary h-full transition-all duration-500" style={{ width: `${paidVsUnpaid.paid.percentage ?? 0}%` }} />
-                      </div>
-                      <h1 className="text-start text-sm">
-                        {paidVsUnpaid.paid.count ?? 0} ({paidVsUnpaid.paid.amount ?? 0})
-                      </h1>
-                    </div>
-                  </div>
-                  <hr className="my-5" />
-                  <div className="mt-2 flex items-start justify-between gap-4">
-                    <div className="flex flex-1 flex-col">
-                      <h1 className="mb-1 font-semibold">Free Tickets</h1>
-                      <h1 className="text-end text-sm">{paidVsUnpaid.unpaid.percentage ?? 0}%</h1>
-                      <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                        <div className="bg-primary h-full transition-all duration-500" style={{ width: `${paidVsUnpaid.unpaid.percentage ?? 0}%` }} />
-                      </div>
-                      <h1 className="text-start text-sm">
-                        {paidVsUnpaid.unpaid.count ?? 0} ({paidVsUnpaid.unpaid.amount ?? 0})
-                      </h1>
-                    </div>
-                  </div>
+                <CardContent className="max-h-100 overflow-y-auto">
+                  {ticketTypeStats.length > 0 ? (
+                    ticketTypeStats.map((ticket: any, index: number) => {
+                      const totalTickets = ticket.totalCreated || 0;
+                      const paidPercentage = totalTickets > 0 ? ((ticket.paid?.count || 0) / totalTickets) * 100 : 0;
+                      const unpaidPercentage = totalTickets > 0 ? ((ticket.unpaid?.count || 0) / totalTickets) * 100 : 0;
+
+                      return (
+                        <div key={ticket.ticketId || index}>
+                          <h2 className="mb-3 text-base font-bold">{ticket.title}</h2>
+                          <p className="text-muted-foreground mb-2 text-xs">
+                            Sold: {ticket.sold || 0} | Remaining: {ticket.remaining || 0} | Total: {totalTickets}
+                          </p>
+                          <div className="mt-2 flex items-start justify-between gap-4">
+                            <div className="flex flex-1 flex-col">
+                              <h1 className="mb-1 font-semibold">Paid Tickets</h1>
+                              <h1 className="text-end text-sm">{paidPercentage.toFixed(1)}%</h1>
+                              <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                                <div className="bg-primary h-full transition-all duration-500" style={{ width: `${paidPercentage}%` }} />
+                              </div>
+                              <h1 className="text-start text-sm">
+                                {ticket.paid?.count ?? 0} (${ticket.paid?.amount ?? 0})
+                              </h1>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-start justify-between gap-4">
+                            <div className="flex flex-1 flex-col">
+                              <h1 className="mb-1 font-semibold">Free Tickets</h1>
+                              <h1 className="text-end text-sm">{unpaidPercentage.toFixed(1)}%</h1>
+                              <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                                <div className="bg-primary h-full transition-all duration-500" style={{ width: `${unpaidPercentage}%` }} />
+                              </div>
+                              <h1 className="text-start text-sm">
+                                {ticket.unpaid?.count ?? 0} (${ticket.unpaid?.amount ?? 0})
+                              </h1>
+                            </div>
+                          </div>
+                          {index < ticketTypeStats.length - 1 && <hr className="my-5" />}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No ticket types available</p>
+                  )}
                 </CardContent>
               </Card>
               {/* Scanned Ticket Progress */}
@@ -111,7 +148,7 @@ const EventTicket = ({ event }: { event: any }) => {
               </Button>
             </div>
 
-            <div className="col-span-12 lg:col-span-6">
+            <div className="col-span-12 max-h-[calc(100vh-200px)] overflow-y-auto lg:col-span-6">
               {/* revenue chart of paid and free tickets */}
               <Card className="dark:bg-[#171717]">
                 <CardHeader>
@@ -131,7 +168,7 @@ const EventTicket = ({ event }: { event: any }) => {
                   <VisitorInterest
                     chartData={ticketPerformanceWeekly.map((item: any) => ({
                       month: item.day,
-                      males: item.paid ?? 0,
+                      males: item.value ?? item.paid ?? 0,
                       females: item.free ?? 0,
                     }))}
                     chartConfig={{
@@ -143,21 +180,30 @@ const EventTicket = ({ event }: { event: any }) => {
               </Card>
               {/* sale by ticket type */}
               <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
-                <CardContent>
+                <CardContent className="max-h-100 overflow-y-auto">
                   <h2 className="text-muted-foreground text-sm font-semibold">Sales by Ticket Type</h2>
-                  {['earlyBird', 'lastMinute', 'regular'].map((type) => {
-                    const stats = ticketingStats[type] || {};
+                  {ticketingStatsTickets.map((ticket: any) => {
+                    const isOnSale = ticket.saleStatus === 'onSale';
+                    const isActive = ticket.status === 'active';
                     return (
-                      <div key={type}>
+                      <div key={ticket.ticketId}>
                         <div className="flex items-center justify-between rounded-md p-4">
                           {/* Left side */}
                           <div className="flex-1">
-                            <p className="mb-1 text-sm font-medium">{type.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</p>
-                            <div className="text-muted-foreground flex items-center gap-3 text-sm">
-                              {/* Status Dot */}
+                            <p className="mb-1 text-sm font-medium">{ticket.title}</p>
+                            <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+                              {/* Sale Status Dot */}
                               <div className="flex items-center gap-1">
-                                <Dot className={`h-2 w-2 rounded-full ${stats.total?.count > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
-                                <span>{stats.total?.count > 0 ? 'On sale' : 'Sold Out'}</span>
+                                <Dot className={`h-2 w-2 rounded-full ${isOnSale ? 'bg-green-500' : 'bg-red-500'}`} />
+                                <span>{isOnSale ? 'On Sale' : 'Sold Out'}</span>
+                              </div>
+                              {/* Separator Dot */}
+                              <div className="flex items-center gap-1">
+                                <Dot className="h-1 w-1 rounded-full bg-slate-500" />
+                              </div>
+                              {/* Status */}
+                              <div className="flex items-center gap-1">
+                                <span className={`capitalize ${isActive ? 'text-green-600' : 'text-red-500'}`}>{ticket.status}</span>
                               </div>
                               {/* Separator Dot */}
                               <div className="flex items-center gap-1">
@@ -165,30 +211,33 @@ const EventTicket = ({ event }: { event: any }) => {
                               </div>
                               {/* Description */}
                               <span>
-                                Valid: {stats.valid?.count ?? 0}, Used: {stats.used?.count ?? 0}, Cancelled: {stats.cancelled?.count ?? 0}
+                                Valid: {ticket.valid?.count ?? 0}, Used: {ticket.used?.count ?? 0}, Cancelled: {ticket.cancelled?.count ?? 0}
                               </span>
                             </div>
                           </div>
                           {/* Right side */}
                           <div className="text-muted-foreground flex items-center gap-4 text-sm">
                             <span>
-                              {stats.used?.count ?? 0}/{stats.totalCreated ?? 0}
+                              {ticket.used?.count ?? 0}/{ticket.totalCreated ?? 0}
                             </span>
-                            <span>${stats.used?.amount?.toFixed(2) ?? '0.00'}</span>
+                            <span>${ticket.used?.amount?.toFixed(2) ?? '0.00'}</span>
                             <div>
-                              <label className="relative inline-flex cursor-pointer items-center">
-                                <input
-                                  title="status"
-                                  type="checkbox"
-                                  // checked={stats.total?.count > 0}
-                                  onChange={() => {
-                                    console.log(`Toggled active for ${type}`);
-                                  }}
-                                  className="peer sr-only"
-                                />
-                                <div className="peer-focus:ring-primary peer peer-checked:bg-primary h-6 w-10 rounded-full bg-gray-200 transition-colors duration-200 peer-focus:ring-2 peer-focus:outline-none"></div>
-                                <div className="absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 peer-checked:translate-x-4"></div>
-                              </label>
+                              {updatingTicketId === ticket.ticketId ? (
+                                <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+                              ) : (
+                                <label className="relative inline-flex cursor-pointer items-center">
+                                  <input
+                                    title="status"
+                                    type="checkbox"
+                                    checked={isActive}
+                                    disabled={updatingTicketId !== null}
+                                    onChange={() => handleStatusToggle(ticket.ticketId, ticket.status)}
+                                    className="peer sr-only"
+                                  />
+                                  <div className="peer-focus:ring-primary peer peer-checked:bg-primary h-6 w-10 rounded-full bg-gray-200 transition-colors duration-200 peer-focus:ring-2 peer-focus:outline-none"></div>
+                                  <div className="absolute top-1 left-1 h-4 w-4 rounded-full bg-white transition-transform duration-200 peer-checked:translate-x-4"></div>
+                                </label>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -196,6 +245,8 @@ const EventTicket = ({ event }: { event: any }) => {
                       </div>
                     );
                   })}
+
+                  {ticketingStatsTickets.length === 0 && <p className="text-muted-foreground py-4 text-sm">No ticket types available</p>}
 
                   {/* Optional Summary Section */}
                   {/* <div className="flex flex-col px-1 pt-2">
