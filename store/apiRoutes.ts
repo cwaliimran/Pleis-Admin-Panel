@@ -9,9 +9,15 @@ export const API_ROUTES = {
   RESET_PASSWORD: `/auth/link/reset-password`,
   RESUME_ACCOUNT: `/auth/resume-account`,
   CHANGE_PASSWORD: `/auth/change-password`,
-  TWO_FACTOR_AUTH_SETUP: `/users/twofa/setup`,
-  TWO_FACTOR_AUTH_CONFIRM: `/users/twofa/confirm`,
-  TWO_FACTOR_AUTH_DISABLE: `/users/twofa/disable`,
+
+  TWO_FACTOR_AUTH_SETUP: `/admin/users/twofa/setup`,
+  TWO_FACTOR_AUTH_CONFIRM: `/admin/users/twofa/confirm`,
+  TWO_FACTOR_AUTH_DISABLE: `/admin/users/twofa/disable`,
+
+  ORGANIZER_TWO_FACTOR_AUTH_SETUP: `/organizer/users/twofa/setup`,
+  ORGANIZER_TWO_FACTOR_AUTH_CONFIRM: `/organizer/users/twofa/confirm`,
+  ORGANIZER_TWO_FACTOR_AUTH_DISABLE: `/organizer/users/twofa/disable`,
+
   UPDATE_TERMS: (id: string) => `/organizer/users/${id}`,
 
   // ── SIMPLE / USER ROUTES ───────────────────────────────────
@@ -158,6 +164,9 @@ export const API_ROUTES = {
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_ID: (id: string) => `/admin/venues/${id}`,
 
+  ORGANIZER_VENUES: `/organizer/venues`,
+  ORGANIZER_VENUES_BY_ID: (id: string) => `/organizer/venues/${id}`,
+
   ADMIN_BUNDLES: `/admin/bundles`,
   ADMIN_BUNDLES_BY_ID: (id: string) => `/admin/bundles/${id}`,
 
@@ -173,6 +182,9 @@ export const API_ROUTES = {
 
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL: `/admin/global-loyalty/status-levels`,
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL_BY_ID: (id: string) => `/admin/global-loyalty/status-levels/${id}`,
+
+  ORGANIZER_VENUES_TYPES: `/organizer/venue-types`,
+  ORGANIZER_VENUES_TYPE_BY_ID: (id: string) => `/organizer/venue-types/${id}`,
 
   VENUES_TYPES: `/admin/venue-types`,
   VENUES_TYPE_By_ID: (id: string) => `/admin/venue-types/${id}`,
@@ -241,8 +253,11 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,
   // ADMIN_LOYALTY_TRANSACTIONS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/transactions' : '/admin/transactions'),
 
-  PROMO_CODES: `/admin/promo-codes`,
-  PROMO_CODES_BY_ID: (id: string) => `/admin/promo-codes/${id}`,
+  ORGANIZER_PROMO_CODES: `/organizer/promo-codes`,
+  ORGANIZER_PROMO_CODES_BY_ID: (id: string) => `/organizer/promo-codes/${id}`,
+
+  ADMIN_PROMO_CODES: `/admin/promo-codes`,
+  ADMIN_PROMO_CODES_BY_ID: (id: string) => `/admin/promo-codes/${id}`,
 
   ADMIN_MENU: `/admin/menu`,
   ADMIN_MENU_BY_ID: (id: string) => `/admin/menu/${id}`,

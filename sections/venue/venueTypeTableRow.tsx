@@ -15,10 +15,13 @@ import placeHolderImg from '../../assets/profile/placeholder.png';
 interface PageProps {
   item: any;
   handleDelete?: (id: string) => void;
-  handlePinned?: (id: string) => void;
+  handlePinned?: (item: any) => void;
   handleEdit?: (id: string) => void;
+  updatingPrimaryId?: string | null;
+  updateVenueLoading?: boolean;
 }
-const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, handleEdit }) => {
+const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, handleEdit, updatingPrimaryId, updateVenueLoading }) => {
+  const isPrimaryLoading = updateVenueLoading && updatingPrimaryId === item._id;
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
@@ -84,20 +87,31 @@ const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, ha
 
       <TableCell className="text-end">
         <div className="flex gap-2">
-          <button
-            type="button"
-            title="Select Primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePinned?.(item);
-            }}
-            className={`cursor-pointer rounded-md ${item?.isPrimary ? 'bg-green-600 text-white dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-800'} p-1.5 transition`}
-          >
-            <PrimaryIcon />
-          </button>
+          {isPrimaryLoading ? (
+            <button
+              title="Select Primary"
+              type="button"
+              className={`flex min-h-8 min-w-8 cursor-not-allowed items-center justify-center rounded-md bg-gray-100 p-1.5 transition dark:bg-gray-800`}
+            >
+              <span className="loader border-t-primary h-4 w-4 animate-spin cursor-not-allowed rounded-full border-2 border-t-2 border-gray-200"></span>
+            </button>
+          ) : (
+            <button
+              title="Select Primary"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isPrimaryLoading) handlePinned?.(item);
+              }}
+              className={`cursor-pointer rounded-md ${item?.isPrimary ? 'bg-green-600 text-white dark:bg-green-700' : 'bg-gray-100 dark:bg-gray-800'} flex min-h-8 min-w-8 items-center justify-center p-1.5 transition`}
+              disabled={isPrimaryLoading}
+            >
+              <PrimaryIcon />
+            </button>
+          )}
 
           <button
-            title="View Venue"
+            title="Edit Venue"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -109,7 +123,7 @@ const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, ha
           </button>
 
           <button
-            title="View Venue"
+            title="Delete Venue"
             type="button"
             onClick={(e) => {
               e.stopPropagation();

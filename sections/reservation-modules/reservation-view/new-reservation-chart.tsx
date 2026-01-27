@@ -292,14 +292,14 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
             </thead>
 
             <tbody>
-              {reservationTypes.length === 0 ? (
+              {reservationTypes?.length === 0 ? (
                 <tr>
-                  <td colSpan={timeSlots.length + 1} className="p-8 text-center text-gray-500 dark:text-zinc-400">
+                  <td colSpan={timeSlots?.length + 1} className="p-8 text-center text-gray-500 dark:text-zinc-400">
                     No reservations found for this date
                   </td>
                 </tr>
               ) : (
-                reservationTypes.map((type) => (
+                reservationTypes?.map((type) => (
                   <tr key={type}>
                     <td className="sticky left-0 z-10 h-14 border border-gray-300 bg-gray-200 p-2 font-medium dark:border-zinc-700 dark:bg-zinc-800">
                       {type}
@@ -508,7 +508,7 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
                 <p className="text-sm font-medium">Selected Dates ({selectedDates.length}):</p>
                 <div className="flex flex-wrap justify-start gap-1.5">
                   {selectedDates.map((date, idx) => (
-                    <Badge key={idx} variant="secondary" className="bg-black text-xs text-white dark:bg-white dark:text-black">
+                    <Badge key={idx} variant="secondary" className="bg-blac~k text-xs text-white dark:bg-white dark:text-black">
                       {date instanceof Date ? format(date, 'dd-MM-yy') : String(date)}
                     </Badge>
                   ))}

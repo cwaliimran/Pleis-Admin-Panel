@@ -1,51 +1,115 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
-import { customFetchBaseQuery } from '../customFetchBaseQuery';
+import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
 export const twoFactorAuthApi = createApi({
   reducerPath: 'twoFactorAuthApi',
-  baseQuery: customFetchBaseQuery(),
+  baseQuery: customFetchBaseQueryWithRoleRouting(),
   tagTypes: ['twoFactorAuth'],
 
   endpoints: (builder) => ({
     addTwoFactorAuth: builder.mutation({
       query: () => ({
-        url: API_ROUTES.TWO_FACTOR_AUTH_SETUP,
+        url: '',
         method: 'POST',
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.TWO_FACTOR_AUTH_SETUP,
+          organizerRoute: API_ROUTES.ORGANIZER_TWO_FACTOR_AUTH_SETUP,
+        },
       }),
     }),
 
     confirmTwoFactorAuth: builder.mutation({
       query: (token) => ({
-        url: API_ROUTES.TWO_FACTOR_AUTH_CONFIRM,
+        url: '',
         method: 'POST',
         body: token,
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.TWO_FACTOR_AUTH_CONFIRM,
+          organizerRoute: API_ROUTES.ORGANIZER_TWO_FACTOR_AUTH_CONFIRM,
+        },
       }),
     }),
 
     confirmTwoFactorAuthLogin: builder.mutation({
       query: ({ token, headers }) => ({
-        url: API_ROUTES.TWO_FACTOR_AUTH_CONFIRM,
+        url: '',
         method: 'POST',
         body: { token },
         headers: {
-          ...headers, 
+          ...headers,
+        },
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.TWO_FACTOR_AUTH_CONFIRM,
+          organizerRoute: API_ROUTES.ORGANIZER_TWO_FACTOR_AUTH_CONFIRM,
         },
       }),
     }),
 
     disableTwoFactorAuth: builder.mutation({
       query: () => ({
-        url: API_ROUTES.TWO_FACTOR_AUTH_DISABLE,
+        url: '',
         method: 'POST',
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.TWO_FACTOR_AUTH_DISABLE,
+          organizerRoute: API_ROUTES.ORGANIZER_TWO_FACTOR_AUTH_DISABLE,
+        },
       }),
     }),
   }),
 });
 
-export const {
-  useAddTwoFactorAuthMutation,
-  useConfirmTwoFactorAuthMutation,
-  useDisableTwoFactorAuthMutation,
-  useConfirmTwoFactorAuthLoginMutation,
-} = twoFactorAuthApi;
+export const { useAddTwoFactorAuthMutation, useConfirmTwoFactorAuthMutation, useDisableTwoFactorAuthMutation, useConfirmTwoFactorAuthLoginMutation } =
+  twoFactorAuthApi;
+
+// import { createApi } from '@reduxjs/toolkit/query/react';
+// import API_ROUTES from '../apiRoutes';
+// import { customFetchBaseQuery } from '../customFetchBaseQuery';
+
+// export const twoFactorAuthApi = createApi({
+//   reducerPath: 'twoFactorAuthApi',
+//   baseQuery: customFetchBaseQuery(),
+//   tagTypes: ['twoFactorAuth'],
+
+//   endpoints: (builder) => ({
+//     addTwoFactorAuth: builder.mutation({
+//       query: () => ({
+//         url: API_ROUTES.TWO_FACTOR_AUTH_SETUP,
+//         method: 'POST',
+//       }),
+//     }),
+
+//     confirmTwoFactorAuth: builder.mutation({
+//       query: (token) => ({
+//         url: API_ROUTES.TWO_FACTOR_AUTH_CONFIRM,
+//         method: 'POST',
+//         body: token,
+//       }),
+//     }),
+
+//     confirmTwoFactorAuthLogin: builder.mutation({
+//       query: ({ token, headers }) => ({
+//         url: API_ROUTES.TWO_FACTOR_AUTH_CONFIRM,
+//         method: 'POST',
+//         body: { token },
+//         headers: {
+//           ...headers,
+//         },
+//       }),
+//     }),
+
+//     disableTwoFactorAuth: builder.mutation({
+//       query: () => ({
+//         url: API_ROUTES.TWO_FACTOR_AUTH_DISABLE,
+//         method: 'POST',
+//       }),
+//     }),
+//   }),
+// });
+
+// export const {
+//   useAddTwoFactorAuthMutation,
+//   useConfirmTwoFactorAuthMutation,
+//   useDisableTwoFactorAuthMutation,
+//   useConfirmTwoFactorAuthLoginMutation,
+// } = twoFactorAuthApi;

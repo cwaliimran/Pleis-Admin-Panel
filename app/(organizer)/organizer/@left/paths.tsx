@@ -72,6 +72,7 @@ export const paths = {
     updates: '/organizer/updates',
     giveaways: '/organizer/giveaways',
 
+    promoCodes: '/organizer/promo-code',
 
     logout: '/organizer/logout',
   },

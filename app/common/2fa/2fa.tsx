@@ -1,17 +1,8 @@
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  useAddTwoFactorAuthMutation,
-  useConfirmTwoFactorAuthMutation,
-  useDisableTwoFactorAuthMutation,
-} from '@/store/Reducer/twoFactorAuth';
+import { useAddTwoFactorAuthMutation, useConfirmTwoFactorAuthMutation, useDisableTwoFactorAuthMutation } from '@/store/Reducer/twoFactorAuth';
 import { setUser } from '@/store/slice/userSlice';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
@@ -22,9 +13,7 @@ import { useDispatch } from 'react-redux';
 
 export default function TwoFactorAuth({ user }: any) {
   const dispatch = useDispatch();
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(
-    user?.accountState?.twoFactorAuth || false
-  );
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(user?.accountState?.twoFactorAuth || false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [otp, setOtp] = useState('');
@@ -55,11 +44,6 @@ export default function TwoFactorAuth({ user }: any) {
         setIsLoading(true);
         const response = await disableTwoFactorAuth({}).unwrap();
 
-        if (!response) {
-          showError('No response from server. Please try again later.');
-          return;
-        }
-
         if (response.error) {
           const errorMessage = getErrorMessage(response.error);
           showError(errorMessage);
@@ -69,9 +53,7 @@ export default function TwoFactorAuth({ user }: any) {
         // Update global user state with twoFactorAuth: false
         updateUserState(false);
 
-        showSuccess(
-          response?.message || 'Two-factor authentication disabled successfully'
-        );
+        showSuccess(response?.message || 'Two-factor authentication disabled successfully');
         setIsTwoFactorEnabled(false);
       } catch (error) {
         const errorMessage = getErrorMessage(error);
@@ -87,11 +69,6 @@ export default function TwoFactorAuth({ user }: any) {
         const response = await addTwoFactorAuth({
           enabled: true,
         }).unwrap();
-
-        if (!response) {
-          showError('No response from server. Please try again later.');
-          return;
-        }
 
         if (response.error) {
           const errorMessage = getErrorMessage(response.error);
@@ -141,9 +118,7 @@ export default function TwoFactorAuth({ user }: any) {
 
       updateUserState(true);
 
-      showSuccess(
-        response?.message || 'Two-factor authentication enabled successfully'
-      );
+      showSuccess(response?.message || 'Two-factor authentication enabled successfully');
       setIsModalOpen(false);
       setOtp('');
       setQrCode(null);
@@ -160,11 +135,7 @@ export default function TwoFactorAuth({ user }: any) {
   return (
     <>
       <div className="flex items-center space-x-3">
-        <Label
-          htmlFor="two-factor"
-          className="cursor-pointer text-gray-700 dark:text-white"
-          onClick={handleToggleChange}
-        >
+        <Label htmlFor="two-factor" className="cursor-pointer text-gray-700 dark:text-white" onClick={handleToggleChange}>
           Enable two factor
         </Label>
         <div className="relative flex items-center gap-x-1">
@@ -180,46 +151,33 @@ export default function TwoFactorAuth({ user }: any) {
               />
 
               <div
-                className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-[2px] after:left-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
-                  isTwoFactorEnabled
-                    ? 'bg-primary after:translate-x-full after:border-white'
-                    : 'bg-gray-200'
+                className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
+                  isTwoFactorEnabled ? 'bg-primary after:translate-x-full after:border-white' : 'bg-gray-200'
                 } ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                 onClick={isLoading ? undefined : handleToggleChange}
               ></div>
             </>
           )}
 
-          {isLoading && (
-            <Loader2 className="ml-2 h-5 w-5 animate-spin text-gray-500" />
-          )}
+          {isLoading && <Loader2 className="ml-2 h-5 w-5 animate-spin text-gray-500" />}
         </div>
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="dark:bg-secondary sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="mb-3 text-center">
-              Setup Two-Factor Authentication
-            </DialogTitle>
+            <DialogTitle className="mb-3 text-center">Setup Two-Factor Authentication</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center space-y-4">
             {qrCode ? (
-              <Image
-                src={qrCode}
-                alt="2FA QR Code"
-                width={192}
-                height={192}
-                className="h-48 w-48"
-              />
+              <Image src={qrCode} alt="2FA QR Code" width={192} height={192} className="h-48 w-48" />
             ) : (
               <div className="flex h-48 w-48 items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
               </div>
             )}
             <p className="text-center text-sm text-gray-600 dark:text-gray-300">
-              Scan the QR code with your authenticator app and enter the OTP
-              below.
+              Scan the QR code with your authenticator app and enter the OTP below.
             </p>
             <Input
               type="text"
@@ -229,16 +187,8 @@ export default function TwoFactorAuth({ user }: any) {
               className="w-full py-2"
               disabled={isLoading}
             />
-            <Button
-              onClick={handleConfirmOtp}
-              className="w-full h-10"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                'Confirm OTP'
-              )}
+            <Button onClick={handleConfirmOtp} className="h-10 w-full" disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Confirm OTP'}
             </Button>
           </div>
         </DialogContent>

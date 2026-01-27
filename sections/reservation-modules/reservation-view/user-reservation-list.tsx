@@ -99,7 +99,7 @@ const UserReservationsList: React.FC<UserReservationsListProps> = ({ reservation
                     {request?.user?.firstName} {request?.user?.lastName}
                   </h4>
                   <p className="border-balck inline-block rounded-full border bg-black px-2.5 py-1 text-xs font-semibold text-gray-50 dark:border-gray-200 dark:bg-gray-50 dark:text-gray-800">
-                    {request.member}
+                    {request?.user?.tier?.title || 'N/A'}
                   </p>
                 </div>
 
@@ -116,7 +116,7 @@ const UserReservationsList: React.FC<UserReservationsListProps> = ({ reservation
               <div className="mb-4 grid grid-cols-3 gap-3">
                 <div>
                   <div className="mb-1 text-sm text-gray-500">Reservation Type</div>
-                  <div className="text-md font-bold capitalize">{request.reservationType}</div>
+                  <div className="text-md font-bold capitalize">{request?.reservation?.reservationType}</div>
                 </div>
                 <div>
                   <div className="mb-1 text-sm text-gray-500">Number of People</div>
@@ -124,7 +124,9 @@ const UserReservationsList: React.FC<UserReservationsListProps> = ({ reservation
                 </div>
                 <div>
                   <div className="mb-1 text-sm text-gray-500">Linked Event</div>
-                  <div className="text-md font-bold">{request?.eventTitle === 'No Event Title' ? 'No Event Selected' : request?.eventTitle}</div>
+                  <div className="text-md font-bold">
+                    {request?.event?.basicInfo?.title === 'No Event Title' ? 'No Event Selected' : request?.event?.basicInfo?.title}
+                  </div>
                 </div>
               </div>
 
