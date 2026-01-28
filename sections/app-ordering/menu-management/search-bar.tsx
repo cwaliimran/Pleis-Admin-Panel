@@ -9,7 +9,7 @@ interface SearchBarProps {
 
 export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange }) => {
   return (
-    <div className="relative min-w-[250px] flex-1 bg-white dark:bg-[#222121]">
+    <div className="relative min-w-62.5 flex-1 bg-white dark:bg-[#222121]">
       <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-gray-500 dark:text-gray-400" />
       <Input
         type="text"

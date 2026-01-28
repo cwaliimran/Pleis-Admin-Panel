@@ -53,7 +53,8 @@ const schema = Yup.object().shape({
       const menuItems = this.options.context?.menuItems || [];
       const selectedItem = menuItems.find((item: MenuItem) => item._id === menuItemId);
       if (selectedItem && value) {
-        return value < selectedItem.basePrice;
+        const effectivePrice = selectedItem.discountPrice ?? selectedItem.basePrice;
+        return value < effectivePrice;
       }
       return true;
     }),
@@ -111,28 +112,39 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
 
   const menuItemOptions = useMemo(
     () =>
-      menuItems.map((item) => ({
-        label: `${item.title} - $${item.basePrice.toFixed(2)}`,
-        value: item._id,
-      })),
+      menuItems.map((item) => {
+        const effectivePrice = item.discountPrice ?? item.basePrice;
+        return {
+          label: `${item.title} - €${effectivePrice.toFixed(2)}`,
+          value: item._id,
+        };
+      }),
     [menuItems]
   );
 
   const selectedItem = useMemo(() => menuItems.find((item) => item._id === selectedMenuItemId), [menuItems, selectedMenuItemId]);
 
-  const discountAmount = useMemo(() => {
-    if (selectedItem && discountValue > 0 && discountValue < selectedItem.basePrice) {
-      return selectedItem.basePrice - discountValue;
+  // Get effective price (discountPrice if available, otherwise basePrice)
+  const effectivePrice = useMemo(() => {
+    if (selectedItem) {
+      return selectedItem.discountPrice ?? selectedItem.basePrice;
     }
     return 0;
-  }, [selectedItem, discountValue]);
+  }, [selectedItem]);
+
+  const discountAmount = useMemo(() => {
+    if (selectedItem && discountValue > 0 && discountValue < effectivePrice) {
+      return effectivePrice - discountValue;
+    }
+    return 0;
+  }, [selectedItem, discountValue, effectivePrice]);
 
   const discountPercentage = useMemo(() => {
-    if (selectedItem && discountAmount > 0) {
-      return ((discountAmount / selectedItem.basePrice) * 100).toFixed(0);
+    if (selectedItem && discountAmount > 0 && effectivePrice > 0) {
+      return ((discountAmount / effectivePrice) * 100).toFixed(0);
     }
     return 0;
-  }, [selectedItem, discountAmount]);
+  }, [selectedItem, discountAmount, effectivePrice]);
 
   useEffect(() => {
     if (isOpen) {
@@ -216,18 +228,18 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold">Original Price</Label>
                     <div className="flex h-11 items-center rounded-md border-2 border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-gray-900 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100">
-                      ${selectedItem ? selectedItem.basePrice.toFixed(2) : '0.00'}
+                      €{selectedItem ? effectivePrice.toFixed(2) : '0.00'}
                     </div>
                   </div>
 
-                  <RHFTextField name="discountValue" label="Sale Price ($)" placeholder="0.00" type="number" step="0.01" min="0.01" />
+                  <RHFTextField name="discountValue" label="Sale Price (€)" placeholder="0.00" type="number" step="0.01" min="0.01" />
                 </div>
 
                 {/* Sale Discount Preview */}
-                {selectedItem && discountValue > 0 && discountValue < selectedItem.basePrice && (
+                {selectedItem && discountValue > 0 && discountValue < effectivePrice && (
                   <div className="rounded-xl bg-green-50 p-4 dark:bg-green-950">
                     <div className="text-sm font-semibold text-green-900 dark:text-green-100">
-                      💰 Discount: ${discountAmount.toFixed(2)} ({discountPercentage}% off)
+                      💰 Discount: €{discountAmount.toFixed(2)} ({discountPercentage}% off)
                     </div>
                   </div>
                 )}

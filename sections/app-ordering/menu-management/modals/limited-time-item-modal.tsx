@@ -151,10 +151,13 @@ export const LimitedTimeItemModal: React.FC<LimitedTimeItemModalProps> = ({
 
   const menuItemOptions = useMemo(
     () =>
-      menuItems.map((item) => ({
-        label: `${item.title} - $${item.basePrice.toFixed(2)}`,
-        value: item._id,
-      })),
+      menuItems.map((item) => {
+        const effectivePrice = item.discountPrice ?? item.basePrice;
+        return {
+          label: `${item.title} - €${effectivePrice.toFixed(2)}`,
+          value: item._id,
+        };
+      }),
     [menuItems]
   );
 

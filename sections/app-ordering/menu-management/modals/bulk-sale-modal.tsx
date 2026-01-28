@@ -111,10 +111,13 @@ export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, m
 
   const menuItemOptions = useMemo(
     () =>
-      menuItems.map((item) => ({
-        label: `${item.title} - $${item.basePrice.toFixed(2)}`,
-        value: item._id,
-      })),
+      menuItems.map((item) => {
+        const effectivePrice = item.discountPrice ?? item.basePrice;
+        return {
+          label: `${item.title} - €${effectivePrice.toFixed(2)}`,
+          value: item._id,
+        };
+      }),
     [menuItems]
   );
 
@@ -186,13 +189,13 @@ export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, m
                     placeholder="Select type"
                     options={[
                       { label: 'Percentage (%)', value: 'percentage' },
-                      { label: 'Fixed Amount ($)', value: 'fixed' },
+                      { label: 'Fixed Amount (€)', value: 'fixed' },
                     ]}
                   />
 
                   <RHFTextField
                     name="discountValue"
-                    label="Discount Value"
+                    label={discountType === 'percentage' ? 'Discount Value' : 'Discount Price'}
                     placeholder={discountType === 'percentage' ? 'e.g., 20' : 'e.g., 5.00'}
                     type="number"
                     step="0.01"
@@ -205,7 +208,7 @@ export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, m
                 {discountValue > 0 && (
                   <div className="rounded-xl bg-green-50 p-4 dark:bg-green-950">
                     <div className="text-sm font-semibold text-green-900 dark:text-green-100">
-                      💰 Discount: {discountType === 'percentage' ? `${discountValue}% OFF` : `$${Number(discountValue).toFixed(2)} OFF`}
+                      💰 Discount: {discountType === 'percentage' ? `${discountValue}% OFF` : `€${Number(discountValue).toFixed(2)} OFF`}
                     </div>
                   </div>
                 )}
