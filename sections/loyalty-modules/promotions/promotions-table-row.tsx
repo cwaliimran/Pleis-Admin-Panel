@@ -83,6 +83,8 @@ const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
 
       <TableCell className="text-left">{item?.tierLimit?.title || '-'}</TableCell>
 
+      <TableCell className="text-left">{item?.claimLimit || '-'}</TableCell>
+
       <TableCell className="text-left capitalize">{item?.recurringDetails?.frequency || '-'}</TableCell>
 
       <TableCell className="text-end">

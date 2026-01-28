@@ -27,6 +27,7 @@ type GlobalPromotionsFormValues = {
   description: string;
   startDate: Date | string;
   endDate: Date | string;
+  claimLimit: number;
   tierLimit: string;
   /* ---- recurring ---- */
   recurringEnabled: 'true' | 'false';
@@ -50,6 +51,7 @@ const defaultValues: GlobalPromotionsFormValues = {
   description: '',
   startDate: '',
   endDate: '',
+  claimLimit: 1,
   tierLimit: '',
   recurringEnabled: 'false',
   frequency: '',
@@ -69,6 +71,10 @@ const schema = Yup.object().shape({
   description: Yup.string().required('Description is required'),
   startDate: Yup.date().required('Start date is required').typeError('Invalid date'),
   endDate: Yup.date().required('End date is required').min(Yup.ref('startDate'), 'End date must be after start date').typeError('Invalid date'),
+  claimLimit: Yup.number()
+    .transform((v, o) => (o === '' ? 1 : v))
+    .min(1, 'Claim limit must be at least 1')
+    .required('Claim limit is required'),
   tierLimit: Yup.string().required('Level status is required'),
 
   /* ---- Recurring ---- */
@@ -190,8 +196,20 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
   useEffect(() => {
     if (!isEdit || !selectedData) return;
 
-    const { image, title, description, startDate, endDate, tierLimit, recurringDetails, promotionType, pointsMultiplier, reward, claimPoints } =
-      selectedData;
+    const {
+      image,
+      title,
+      description,
+      startDate,
+      endDate,
+      claimLimit,
+      tierLimit,
+      recurringDetails,
+      promotionType,
+      pointsMultiplier,
+      reward,
+      claimPoints,
+    } = selectedData;
 
     const mapped: Partial<GlobalPromotionsFormValues> = {
       photo: image || null,
@@ -199,6 +217,7 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
       description: description || '',
       startDate: startDate ? new Date(startDate) : '',
       endDate: endDate ? new Date(endDate) : '',
+      claimLimit: claimLimit || 1,
       tierLimit: tierLimit?._id || '',
       promotionType: promotionType as any,
 
@@ -247,6 +266,7 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
       description: data.description,
       startDate: fDate(data.startDate, formatStr.paramCase.db),
       endDate: fDate(data.endDate, formatStr.paramCase.db),
+      claimLimit: data.claimLimit,
       tierLimit: data.tierLimit,
       promotionType: data.promotionType,
       isGlobal: true,
@@ -410,6 +430,11 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFDate name="startDate" label="Start Date" placeholder="Select Start Date" minDate={isEdit ? undefined : new Date()} />
                   <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
+                </div>
+
+                {/* CLAIM LIMIT */}
+                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFTextField name="claimLimit" label="Claim Limit" placeholder="Enter claim limit" type="number" />
                 </div>
 
                 {/* RECURRING TOGGLE */}
