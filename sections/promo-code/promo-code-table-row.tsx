@@ -74,7 +74,7 @@ const PromoCodeTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }
 
       <TableCell className="text-left">{item?.usedCount}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.expiryDate, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.expiryDate, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>

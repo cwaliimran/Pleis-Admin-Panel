@@ -31,7 +31,7 @@ const MarketingRequestTableRow: FC<TableRowProps> = ({ user, item, updatingId, h
 
       <TableCell className="text-left">{item?.budget ? `€${item?.budget}` : 'N/A'}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge

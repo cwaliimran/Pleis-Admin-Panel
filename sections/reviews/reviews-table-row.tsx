@@ -34,7 +34,7 @@ const ReviewsTableRow: FC<TableRowProps> = ({ user, item, handleEdit, handleDele
         <TruncatedTextWithModal text={item?.comment} title="Review" />
       </TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       {user?.accountState?.userType === 'admin' && (
         <TableCell className="text-end">

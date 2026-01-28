@@ -22,7 +22,7 @@ const SupplierTypeTableRow: FC<PageProps> = ({
         {item?.title}
       </TableCell>
       <TableCell className="text-left text-sm">
-        {fDate(item?.createdAt, formatStr.paramCase.date)}
+        {fDate(item?.createdAt, formatStr.split.date)}
       </TableCell>
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge

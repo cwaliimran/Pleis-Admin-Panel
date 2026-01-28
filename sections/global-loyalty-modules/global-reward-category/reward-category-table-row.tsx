@@ -25,7 +25,7 @@ const RewardCategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handleE
 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>

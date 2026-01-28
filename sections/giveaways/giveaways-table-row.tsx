@@ -37,9 +37,9 @@ const GiveawaysTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, 
 
       <TableCell className="text-left capitalize">{item?.totalParticipants}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.startDateTime, formatStr.paramCase.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.startDateTime, formatStr.split.dateTime)}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.endDateTime, formatStr.paramCase.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.endDateTime, formatStr.split.dateTime)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>

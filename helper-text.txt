@@ -8,7 +8,7 @@
 
 
 // ------------- DATE FORMATTER -------------
-<TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+<TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
 
 // ------------- GET ORGANIZATION & ORGANIZATION IDS - ORGANIZER ONLY -------------

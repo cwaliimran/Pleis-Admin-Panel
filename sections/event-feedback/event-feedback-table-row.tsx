@@ -37,7 +37,7 @@ const EventFeedbackTableRow: FC<TableRowProps> = ({ item }) => {
 
       <TableCell className="text-left">{item?.rating || '-'}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
     </TableRow>
   );
 };

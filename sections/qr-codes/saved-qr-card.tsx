@@ -35,7 +35,7 @@ export const SavedQRCard: React.FC<SavedQRCardProps> = ({ qrCode, onDownload, on
       <div className="mb-4 text-center">
         <div className="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-500">{typeLabel}</div>
         <div className="mb-1 text-base font-bold text-gray-900 capitalize dark:text-gray-100">{qrCode?.label}</div>
-        <div className="text-sm text-gray-500 dark:text-gray-500">Generated on: {fDate(qrCode?.createdAt, formatStr.paramCase.date)}</div>
+        <div className="text-sm text-gray-500 dark:text-gray-500">Generated on: {fDate(qrCode?.createdAt, formatStr.split.date)}</div>
       </div>
 
       <div className="flex items-center justify-center gap-2">

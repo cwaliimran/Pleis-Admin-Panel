@@ -29,7 +29,7 @@ const StreaksTableRow: FC<TableRowProps> = ({ item }) => {
       <TableCell className="text-left">{item?.longestStreak || 'N/A'}</TableCell>
       <TableCell className="text-left">{item?.points || 'N/A'}</TableCell>
       <TableCell className="text-left">{item?.visits || 'N/A'}</TableCell>
-      <TableCell className="text-left">{fDate(item?.lastVisitAt, formatStr.paramCase.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.lastVisitAt, formatStr.split.dateTime)}</TableCell>
     </TableRow>
   );
 };

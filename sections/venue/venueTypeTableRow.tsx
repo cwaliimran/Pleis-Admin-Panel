@@ -28,7 +28,7 @@ const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, ha
         <div className="flex items-center gap-3 capitalize">{item?.title || '-'}</div>
       </TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="flex items-center justify-start gap-x-2 pt-3 text-left">
         <Avatar className="">
@@ -83,7 +83,7 @@ const VenueTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePinned, ha
         <CustomBadge variant={item?.status === 'active' ? 'success' : item?.status === 'inactive' ? 'error' : 'default'}>{item?.status}</CustomBadge>
       </TableCell>
 
-      <TableCell className="text-left">{fDate(item?.updatedAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.updatedAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">

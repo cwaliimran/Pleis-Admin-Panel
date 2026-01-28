@@ -94,7 +94,7 @@ const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
             <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-44 justify-between font-normal">
-                  {startDate ? fDate(startDate, formatStr.paramCase.date) : 'Select start date'}
+                  {startDate ? fDate(startDate, formatStr.split.date) : 'Select start date'}
                   <ChevronDownIcon className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
@@ -120,7 +120,7 @@ const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
             <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-44 justify-between font-normal">
-                  {endDate ? fDate(endDate, formatStr.paramCase.date) : 'Select end date'}
+                  {endDate ? fDate(endDate, formatStr.split.date) : 'Select end date'}
                   <ChevronDownIcon className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>

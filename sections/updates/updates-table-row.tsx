@@ -33,7 +33,7 @@ const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
 
       <TableCell className="text-left capitalize">{item?.eventTitle}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>

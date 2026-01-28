@@ -54,7 +54,7 @@ const StatusTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =
 
       <TableCell className="text-left capitalize">{item?.condition?.type || 'N/A'}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.updatedAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.updatedAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>
