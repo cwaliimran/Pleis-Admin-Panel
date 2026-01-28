@@ -253,7 +253,7 @@ const UpdateReservationModal = ({ open, onClose, selectedData }: UpdateReservati
                           <p className="mb-0.5 text-sm font-medium">Phone</p>
                           <PhoneInput
                             value={displayValue}
-                            country="pk"
+                            country="hr"
                             onChange={(value, country: any) => {
                               const phoneCode = `+${country?.dialCode || ''}`;
                               const phoneNumber = value.replace(country?.dialCode || '', '');

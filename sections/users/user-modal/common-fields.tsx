@@ -41,7 +41,7 @@ const CommonFields: React.FC<CommonFieldsProps> = ({ mode }) => {
             <p className="mb-0.5 text-sm font-medium">Phone</p>
             <PhoneInput
               {...field}
-              country="pk"
+              country="hr"
               onChange={(value, country: any) => {
                 field.onChange(value);
                 setValue('phoneCode', `+${country?.dialCode || ''}`, {
