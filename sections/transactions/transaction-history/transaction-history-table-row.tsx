@@ -72,7 +72,7 @@ const TransactionHistoryTableRow: FC<TableRowProps> = ({ item }) => {
         </TableCell>
 
         <TableCell className="text-left">{item?.closingBalance ? `€${item.closingBalance}` : 'N/A'}</TableCell>
-        <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
+        <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
 
         <TableCell className="text-center">
           <CustomBadge variant={getBadgeVariant(item?.type)}>{getBadgeLabel(item?.type)}</CustomBadge>

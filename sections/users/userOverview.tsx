@@ -2,35 +2,13 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { m } from 'framer-motion';
-import {
-  CalendarDays,
-  DollarSign,
-  Eye,
-  Globe,
-  Heart,
-  MapPin,
-  Pencil,
-  Share2,
-  UserRound,
-  Users,
-} from 'lucide-react';
+import { CalendarDays, DollarSign, Eye, Globe, Heart, MapPin, Pencil, Share2, UserRound, Users } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import {
-  followedEventList,
-  followedOrganizationsList,
-  userTags,
-  venueTypes,
-} from '../users/data';
+import { followedEventList, followedOrganizationsList, userTags, venueTypes } from '../users/data';
 import { fDate, formatStr } from '@/utils/format-time';
 
 const UserOverView: React.FC<{
@@ -101,18 +79,14 @@ const UserOverView: React.FC<{
             <>
               <Card className="dark:bg-secondary mt-4 w-full shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">
-                    Permissions
-                  </CardTitle>
+                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">Permissions</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
-                  {apiData?.organizations?.[0]?.staff?.[0]?.featuresAccess?.map(
-                    (perm: string, idx: number) => (
-                      <Badge key={idx} variant="default">
-                        {permissionLabels[perm] ?? perm}
-                      </Badge>
-                    )
-                  )}
+                  {apiData?.organizations?.[0]?.staff?.[0]?.featuresAccess?.map((perm: string, idx: number) => (
+                    <Badge key={idx} variant="default">
+                      {permissionLabels[perm] ?? perm}
+                    </Badge>
+                  ))}
                 </CardContent>
               </Card>
             </>
@@ -122,26 +96,18 @@ const UserOverView: React.FC<{
             <>
               <Card className="dark:bg-secondary mt-6 gap-2 rounded-2xl bg-white pb-2 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">
-                    Business Details
-                  </CardTitle>
+                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">Business Details</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   {/* Name */}
                   <div className="">
-                    <span className="w-28 font-semibold text-gray-500">
-                      Name:{' '}
-                    </span>
-                    <span className="text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.name || '-'}
-                    </span>
+                    <span className="w-28 font-semibold text-gray-500">Name: </span>
+                    <span className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.name || '-'}</span>
                   </div>
 
                   {/* Description */}
                   <div className=" ">
-                    <span className="w-28 font-semibold text-gray-500">
-                      Description:{' '}
-                    </span>
+                    <span className="w-28 font-semibold text-gray-500">Description: </span>
                     <span className="text-gray-800 dark:text-white">
                       {/* {user.businessDetails.description} */}
                       {apiData?.basicInfo?.companyDetails?.description || '-'}
@@ -151,9 +117,7 @@ const UserOverView: React.FC<{
                   {/* Website */}
                   <div className="flex items-center gap-2">
                     {/* <Globe size={16} /> */}
-                    <span className="w-28 font-semibold text-gray-500">
-                      Website:
-                    </span>
+                    <span className="w-28 font-semibold text-gray-500">Website:</span>
                     <span className="text-gray-800 dark:text-white">
                       <a
                         href={user.businessDetails.website || '-'}
@@ -243,107 +207,73 @@ const UserOverView: React.FC<{
 
               <Card className="dark:bg-secondary mt-4 gap-2 rounded-2xl bg-white shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-slate-500">
-                    Bank Details
-                  </CardTitle>
+                  <CardTitle className="text-lg font-semibold text-slate-500">Bank Details</CardTitle>
                 </CardHeader>
 
                 <CardContent className="space-y-1 text-sm text-slate-500 dark:text-gray-400">
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-slate-500">VAT:</p>
-                    <p className="text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.oib || 'N/A'}
-                    </p>
+                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.oib || 'N/A'}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-slate-500">IBAN:</p>
-                    <p className="text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.bankAccountNumber ||
-                        'N/A'}
-                    </p>
+                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.bankAccountNumber || 'N/A'}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">
-                      Bank Account Name:
-                    </p>
-                    <p className="font-semibold text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.name || 'N/A'}
-                    </p>
+                    <p className="font-bold text-gray-500">Bank Account Name:</p>
+                    <p className="font-semibold text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.name || 'N/A'}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">
-                      Representative Full Name:
-                    </p>
-                    <p className="font-semibold text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.representativeName ||
-                        'N/A'}
-                    </p>
+                    <p className="font-bold text-gray-500">Representative Full Name:</p>
+                    <p className="font-semibold text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.representativeName || 'N/A'}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="text-gray-800 dark:text-white">
                       <span className="font-bold text-gray-500">Address: </span>
-                      {apiData?.basicInfo?.companyDetails?.location
-                        ?.fullAddress || 'N/A'}
+                      {apiData?.basicInfo?.companyDetails?.location?.fullAddress || 'N/A'}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-gray-500">Postal Code:</p>
-                    <p className="text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.location
-                        ?.postalCode || 'N/A'}
-                    </p>
+                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.postalCode || 'N/A'}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-gray-500">City:</p>
-                    <p className="text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.location?.city ||
-                        'N/A'}
-                    </p>
+                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.city || 'N/A'}</p>
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-nowrap">
                     <p className="font-bold text-gray-500">Country:</p>
-                    <p className="text-gray-800 dark:text-white">
-                      {apiData?.basicInfo?.companyDetails?.location?.country ||
-                        'N/A'}
-                    </p>
+                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.country || 'N/A'}</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="dark:bg-secondary mt-6 mb-6 w-full max-w-4xl gap-2 rounded-2xl bg-white shadow-sm transition hover:shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-muted-foreground text-lg font-semibold">
-                    Event Details
-                  </CardTitle>
+                  <CardTitle className="text-muted-foreground text-lg font-semibold">Event Details</CardTitle>
                 </CardHeader>
                 <CardContent className=" ">
                   {/* Left: Event Info */}
                   <div className="flex flex-col justify-center space-y-2">
-                    <h2 className="text-primary mb-1 text-2xl font-extrabold">
-                      {apiData?.basicInfo?.eventDetails?.name || 'Event Name'}
-                    </h2>
+                    <h2 className="text-primary mb-1 text-2xl font-extrabold">{apiData?.basicInfo?.eventDetails?.name || 'Event Name'}</h2>
                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <span className="flex items-center gap-x-1">
                         <MapPin className="h-5 w-5" />
                         <span className="font-medium">Location:</span>{' '}
                       </span>
 
-                      <span className="font-medium">
-                        {apiData?.basicInfo?.eventDetails?.location || '-'}
-                      </span>
+                      <span className="font-medium">{apiData?.basicInfo?.eventDetails?.location || '-'}</span>
                     </div>
                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <Users className="h-5 w-5" />
-                      <span className="font-medium">
-                        By: {apiData?.basicInfo?.eventDetails?.organizer || '-'}
-                      </span>
+                      <span className="font-medium">By: {apiData?.basicInfo?.eventDetails?.organizer || '-'}</span>
                     </div>
                     <div className="text-muted-foreground flex items-center gap-2 text-sm">
                       <span className="flex items-center gap-x-1">
@@ -351,15 +281,8 @@ const UserOverView: React.FC<{
                         <span className="font-medium">Date:</span>{' '}
                       </span>
                       <span className="font-medium">
-                        {fDate(
-                          apiData?.basicInfo?.eventDetails?.startDate,
-                          formatStr.paramCase.date
-                        )}{' '}
-                        –{' '}
-                        {fDate(
-                          apiData?.basicInfo?.eventDetails?.endDate,
-                          formatStr.paramCase.date
-                        )}
+                        {fDate(apiData?.basicInfo?.eventDetails?.startDate, formatStr.split.date)} –{' '}
+                        {fDate(apiData?.basicInfo?.eventDetails?.endDate, formatStr.split.date)}
                       </span>
                     </div>
                   </div>
@@ -369,24 +292,20 @@ const UserOverView: React.FC<{
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-5 w-5" />
                         <span>
-                          <span className="font-medium">Budget:</span>{' '}
-                          <strong className="text-foreground">-</strong>
+                          <span className="font-medium">Budget:</span> <strong className="text-foreground">-</strong>
                         </span>
                       </div>
                       <div className="items- flex gap-2">
                         <UserRound className="h-5 w-5" />
                         <span>
-                          <span className="font-medium">Attendees:</span>{' '}
-                          <strong className="text-foreground">-</strong>
+                          <span className="font-medium">Attendees:</span> <strong className="text-foreground">-</strong>
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Globe className="h-5 w-5" />
                         <span>
                           <span className="font-medium">Region:</span>{' '}
-                          <strong className="text-foreground">
-                            {apiData?.basicInfo?.eventDetails?.region || '-'}
-                          </strong>
+                          <strong className="text-foreground">{apiData?.basicInfo?.eventDetails?.region || '-'}</strong>
                         </span>
                       </div>
                     </div>
@@ -454,18 +373,14 @@ const UserOverView: React.FC<{
 
           <Card className="dark:bg-secondary mt-4 gap-y-0 shadow-lg">
             <CardHeader className="">
-              <h3 className="mb-2 text-lg font-semibold text-slate-500">
-                Wallet Information
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold text-slate-500">Wallet Information</h3>
             </CardHeader>
             <CardContent className="text-sm">
               <p className="flex items-center gap-2 text-xl">
-                <strong className="text-slate-500">Balance:</strong>{' '}
-                <span className="text-3xl font-bold">$0</span>
+                <strong className="text-slate-500">Balance:</strong> <span className="text-3xl font-bold">$0</span>
               </p>
               <p>
-                <strong className="text-slate-500">Recent Transactions:</strong>{' '}
-                See more go to transaction tab
+                <strong className="text-slate-500">Recent Transactions:</strong> See more go to transaction tab
               </p>
 
               <div className="mt-4 space-y-2">
@@ -486,30 +401,18 @@ const UserOverView: React.FC<{
         <div className="col-span-12 lg:col-span-7">
           <Card className="mt-4 rounded-2xl bg-white shadow-lg dark:bg-[#1a1a1a]">
             <CardHeader>
-              <h1 className="text-xl font-semibold text-slate-500 dark:text-slate-500">
-                User Interactions
-              </h1>
+              <h1 className="text-xl font-semibold text-slate-500 dark:text-slate-500">User Interactions</h1>
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {interactions.map((item, index) => (
-                  <m.div
-                    key={index}
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
+                  <m.div key={index} whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 300 }}>
                     <Card className="border-muted dark:bg-muted/50 cursor-pointer rounded-xl border p-5 shadow-md transition-all duration-300 hover:shadow-lg sm:p-6">
                       <div className="flex flex-col items-center gap-4">
-                        <div className="bg-muted rounded-full p-2">
-                          {item.icon}
-                        </div>
+                        <div className="bg-muted rounded-full p-2">{item.icon}</div>
                         <div className="text-center">
-                          <h2 className="text-muted-foreground text-sm text-nowrap">
-                            {item.label}
-                          </h2>
-                          <p className="text-primary text-2xl font-extrabold">
-                            0
-                          </p>
+                          <h2 className="text-muted-foreground text-sm text-nowrap">{item.label}</h2>
+                          <p className="text-primary text-2xl font-extrabold">0</p>
                         </div>
                       </div>
                     </Card>
@@ -524,30 +427,22 @@ const UserOverView: React.FC<{
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <h1 className="font-semibold text-slate-500">
-                    Loyalty Program Participation
-                  </h1>
+                  <h1 className="font-semibold text-slate-500">Loyalty Program Participation</h1>
 
                   <div className="flex gap-3">
-                    <Pencil
-                      className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition"
-                      onClick={openModal.onTrue}
-                    />
+                    <Pencil className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition" onClick={openModal.onTrue} />
                   </div>
                 </div>
 
                 <div className="mt-2 space-y-2 text-sm">
                   <p>
-                    <strong className="text-slate-500">Global Status:</strong>{' '}
-                    Platium
+                    <strong className="text-slate-500">Global Status:</strong> Platium
                   </p>
                   <p>
-                    <strong className="text-slate-500">Global Points:</strong> 0
-                    pts
+                    <strong className="text-slate-500">Global Points:</strong> 0 pts
                   </p>
                   <p>
-                    <strong className="text-slate-500">Global Spent:</strong> 0
-                    pts
+                    <strong className="text-slate-500">Global Spent:</strong> 0 pts
                   </p>
                 </div>
 
@@ -556,18 +451,10 @@ const UserOverView: React.FC<{
                     <table className="min-w-full text-left text-sm">
                       <thead>
                         <tr className="border-b border-gray-200 dark:border-gray-600">
-                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">
-                            Club Name
-                          </th>
-                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">
-                            Points
-                          </th>
-                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">
-                            Tier
-                          </th>
-                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">
-                            Spent
-                          </th>
+                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Club Name</th>
+                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Points</th>
+                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Tier</th>
+                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Spent</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -575,9 +462,7 @@ const UserOverView: React.FC<{
                           <td className="px-2 py-1">Premium Club</td>
                           <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
-                            <Badge className="bg-yellow-400 text-white">
-                              Gold
-                            </Badge>
+                            <Badge className="bg-yellow-400 text-white">Gold</Badge>
                           </td>
                           <td className="px-2 py-1">0</td>
                         </tr>
@@ -585,9 +470,7 @@ const UserOverView: React.FC<{
                           <td className="px-2 py-1">EventPlus</td>
                           <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
-                            <Badge className="bg-gray-400 text-white">
-                              Silver
-                            </Badge>
+                            <Badge className="bg-gray-400 text-white">Silver</Badge>
                           </td>
                           <td className="px-2 py-1">0</td>
                         </tr>
@@ -595,9 +478,7 @@ const UserOverView: React.FC<{
                           <td className="px-2 py-1">VIP Access</td>
                           <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
-                            <Badge className="bg-yellow-800 text-white">
-                              Premium
-                            </Badge>
+                            <Badge className="bg-yellow-800 text-white">Premium</Badge>
                           </td>
                           <td className="px-2 py-1">0</td>
                         </tr>
@@ -605,9 +486,7 @@ const UserOverView: React.FC<{
                           <td className="px-2 py-1">Music Lovers</td>
                           <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
-                            <Badge className="bg-gray-400 text-white">
-                              Silver
-                            </Badge>
+                            <Badge className="bg-gray-400 text-white">Silver</Badge>
                           </td>
                           <td className="px-2 py-1">0</td>
                         </tr>
@@ -615,9 +494,7 @@ const UserOverView: React.FC<{
                           <td className="px-2 py-1">Cinema Club</td>
                           <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
-                            <Badge className="bg-yellow-400 text-white">
-                              Gold
-                            </Badge>
+                            <Badge className="bg-yellow-400 text-white">Gold</Badge>
                           </td>
                           <td className="px-2 py-1">0</td>
                         </tr>
@@ -625,9 +502,7 @@ const UserOverView: React.FC<{
                           <td className="px-2 py-1">Sports Elite</td>
                           <td className="px-2 py-1">0 pts</td>
                           <td className="px-2 py-1">
-                            <Badge className="bg-gray-400 text-white">
-                              Silver
-                            </Badge>
+                            <Badge className="bg-gray-400 text-white">Silver</Badge>
                           </td>
                           <td className="px-2 py-1">0</td>
                         </tr>
@@ -642,22 +517,14 @@ const UserOverView: React.FC<{
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
-                <h1 className="font-semibold text-slate-500">
-                  FOLLOWED ORGANIZATION
-                </h1>
+                <h1 className="font-semibold text-slate-500">FOLLOWED ORGANIZATION</h1>
 
                 <div className="mt-2 max-h-48 gap-2 overflow-y-auto">
                   {followedOrganizationsList?.map((item, index) => (
-                    <div
-                      className="flex items-center justify-between gap-3 border-b border-gray-300 py-2 dark:border-gray-600"
-                      key={index}
-                    >
+                    <div className="flex items-center justify-between gap-3 border-b border-gray-300 py-2 dark:border-gray-600" key={index}>
                       <p>{item.orgName}</p>
 
-                      <Badge
-                        variant="secondary"
-                        className="mt-1 bg-gray-200 text-xs capitalize dark:bg-gray-600"
-                      >
+                      <Badge variant="secondary" className="mt-1 bg-gray-200 text-xs capitalize dark:bg-gray-600">
                         {item.status}
                       </Badge>
                     </div>
@@ -670,21 +537,13 @@ const UserOverView: React.FC<{
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
-                <h1 className="font-semibold text-slate-500">
-                  FOLLOWED EVENTS
-                </h1>
+                <h1 className="font-semibold text-slate-500">FOLLOWED EVENTS</h1>
                 <div className="mt-2 max-h-48 gap-2 overflow-y-auto">
                   {followedEventList?.map((item, index) => (
-                    <div
-                      className="flex items-center justify-between gap-3 border-b border-gray-300 py-2 dark:border-gray-600"
-                      key={index}
-                    >
+                    <div className="flex items-center justify-between gap-3 border-b border-gray-300 py-2 dark:border-gray-600" key={index}>
                       <p>{item.orgName}</p>
 
-                      <Badge
-                        variant="secondary"
-                        className="mt-1 bg-gray-200 text-xs capitalize dark:bg-gray-600"
-                      >
+                      <Badge variant="secondary" className="mt-1 bg-gray-200 text-xs capitalize dark:bg-gray-600">
                         0 Views
                       </Badge>
                     </div>
@@ -703,10 +562,7 @@ const UserOverView: React.FC<{
             <DialogHeader>
               <DialogTitle>Edit Loyalty Program</DialogTitle>
             </DialogHeader>
-            <FormProvider
-              methods={methods}
-              onSubmit={methods.handleSubmit(() => {})}
-            >
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit(() => {})}>
               <div className="mt-4 flex w-full flex-col gap-4">
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFSelectField
@@ -721,17 +577,9 @@ const UserOverView: React.FC<{
                     ]}
                   />
 
-                  <RHFTextField
-                    name="globalPoints"
-                    label="Global Points"
-                    placeholder="Enter Global Points"
-                  />
+                  <RHFTextField name="globalPoints" label="Global Points" placeholder="Enter Global Points" />
 
-                  <RHFTextField
-                    name="globalSpent"
-                    label="Global Spent"
-                    placeholder="Enter Global Spent"
-                  />
+                  <RHFTextField name="globalSpent" label="Global Spent" placeholder="Enter Global Spent" />
                 </div>
 
                 <div className="flex border-t border-gray-300 pt-4">
@@ -754,23 +602,11 @@ const UserOverView: React.FC<{
                   {/* Show next 3 fields only if a club name is selected */}
                   {methods.watch('clubName') && (
                     <>
-                      <RHFTextField
-                        name="points"
-                        label="Points"
-                        placeholder="Enter Points"
-                      />
+                      <RHFTextField name="points" label="Points" placeholder="Enter Points" />
 
-                      <RHFTextField
-                        name="tier"
-                        label="Tier"
-                        placeholder="Enter Tier"
-                      />
+                      <RHFTextField name="tier" label="Tier" placeholder="Enter Tier" />
 
-                      <RHFTextField
-                        name="spent"
-                        label="Spent"
-                        placeholder="Enter Spent"
-                      />
+                      <RHFTextField name="spent" label="Spent" placeholder="Enter Spent" />
                     </>
                   )}
                 </div>
@@ -778,10 +614,7 @@ const UserOverView: React.FC<{
 
               <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
-                  <Button
-                    type="button"
-                    className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white"
-                  >
+                  <Button type="button" className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white">
                     Save
                   </Button>
                 </div>

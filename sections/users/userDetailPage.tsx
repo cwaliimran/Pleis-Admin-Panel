@@ -135,7 +135,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                               <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800 capitalize">
                                 {apiData?.accountState?.userType || '-'}
                               </span>
-                              <span>Joined: {fDate(apiData?.metadata?.createdAt, formatStr.paramCase.date)}</span>
+                              <span>Joined: {fDate(apiData?.metadata?.createdAt, formatStr.split.date)}</span>
                             </div>
                             <div className="flex gap-3">
                               <Pencil

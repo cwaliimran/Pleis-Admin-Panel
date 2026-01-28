@@ -39,7 +39,7 @@ const HelpSupportTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit
       </TableCell>
 
       {/* Created At */}
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       {/* Status */}
       <TableCell className="text-left">

@@ -1,4 +1,62 @@
-import { ApiMenuItem, MenuItem } from './types';
+import { ApiMenuItem, ApiSaleItem, MenuItem, SaleItem } from './types';
+
+/**
+ * Check if an item is a Sale item (has menuItems array)
+ */
+export const isSaleItem = (item: any): item is ApiSaleItem => {
+  return item && Array.isArray(item.menuItems) && item.discountType !== undefined;
+};
+
+/**
+ * Transform API sale item to frontend format
+ */
+export const transformApiSaleItemToFrontend = (apiSale: ApiSaleItem): SaleItem => {
+  return {
+    id: apiSale._id,
+    title: apiSale.title,
+    totalPriceBeforeDiscount: apiSale.totalPriceBeforeDiscount,
+    totalPrice: apiSale.totalPrice,
+    discountType: apiSale.discountType,
+    discountValue: apiSale.discountValue,
+    startDateTime: new Date(apiSale.startDateTime),
+    endDateTime: new Date(apiSale.endDateTime),
+    status: apiSale.status,
+    createdAt: apiSale.createdAt,
+    menuItems: apiSale.menuItems.map((item) => ({
+      id: item._id,
+      title: item.title,
+      image: item.image,
+      basePrice: item.basePrice,
+      isAvailableInStock: item.isAvailableInStock,
+    })),
+    itemCount: apiSale.menuItems.length,
+  };
+};
+
+/**
+ * Transform array of API sale items to frontend format
+ */
+export const transformApiSaleItemsToFrontend = (apiSales: ApiSaleItem[]): SaleItem[] => {
+  return apiSales.map(transformApiSaleItemToFrontend);
+};
+
+/**
+ * Separate sales and menu items from mixed API response
+ */
+export const separateSalesAndMenuItems = (data: any[]): { sales: ApiSaleItem[]; menuItems: ApiMenuItem[] } => {
+  const sales: ApiSaleItem[] = [];
+  const menuItems: ApiMenuItem[] = [];
+
+  data.forEach((item) => {
+    if (isSaleItem(item)) {
+      sales.push(item);
+    } else {
+      menuItems.push(item);
+    }
+  });
+
+  return { sales, menuItems };
+};
 
 /**
  * Transform API menu item to frontend format

@@ -539,7 +539,7 @@ function SignUpView() {
                       render={({ field }) => (
                         <div className="w-full">
                           <PhoneInput
-                            country="pk"
+                            country="hr"
                             value={
                               field.value
                                 ? `${field.value.code}${field.value.number}`

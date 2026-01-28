@@ -37,7 +37,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery({
     page: 0,
     search: '',
-    limit: 10000,
+    limit: 100,
     userType: 'organizer',
     status: undefined,
     date: undefined,
@@ -309,7 +309,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                           <p className="mb-0.5 text-sm font-medium">Phone</p>
                           <PhoneInput
                             value={displayValue}
-                            country="pk"
+                            country="hr"
                             onChange={(value, country: any) => {
                               const phoneCode = `+${country?.dialCode || ''}`;
                               const phoneNumber = value.replace(country?.dialCode || '', '');

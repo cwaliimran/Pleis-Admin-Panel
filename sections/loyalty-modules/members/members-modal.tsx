@@ -346,8 +346,8 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     // Type-specific
     switch (data.promotionType) {
       case 'happyHour':
-        base.startDate = fDate(data.startDate, formatStr.paramCase.dateTimeRev);
-        base.endDate = fDate(data.endDate, formatStr.paramCase.dateTimeRev);
+        base.startDate = fDate(data.startDate, formatStr.split.dateTimeRev);
+        base.endDate = fDate(data.endDate, formatStr.split.dateTimeRev);
         base.pointsMultiplier = parseFloat(data.pointsMultiplier);
         break;
 

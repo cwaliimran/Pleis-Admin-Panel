@@ -16,6 +16,7 @@ export const formatStr = {
   time: 'h:mm a', // 12:00 am
   split: {
     dateTime: 'DD/MM/YYYY h:mm a', // 17/04/2022 12:00 am
+    dateTimeRev: 'YYYY-MM-DD h:mm a', // 2022-04-17 12:00 am
     date: 'DD/MM/YYYY', // 17/04/2022
   },
   paramCase: {
@@ -63,7 +64,7 @@ export function fDate(date: ConfigType, format?: string): string | null {
   return isValid ? dayjs(date).format(format ?? formatStr.date) : 'Invalid time value';
 }
 
-// fDate(row.date, formatStr.paramCase.date)
+// fDate(row.date, formatStr.split.date)
 
 // ----------------------------------------------------------------------
 

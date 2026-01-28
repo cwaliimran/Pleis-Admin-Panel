@@ -52,10 +52,80 @@ export interface ApiMenuResponse {
   };
 }
 
+// Sale API Types
+export interface ApiSaleMenuItem {
+  _id: string;
+  title: string;
+  image: string;
+  description: string;
+  basePrice: number;
+  discountPrice: number | null;
+  taxPercent: number;
+  availabilityType: string | null;
+  isLimitedTimeOffer: boolean;
+  upSellItem: boolean;
+  isAvailableInStock: boolean;
+  isScheduled: boolean;
+  createdAt: string;
+  menu: {
+    _id: string;
+    title: string;
+    organization: string;
+  };
+  category: ApiCategory;
+}
+
+export interface ApiSaleItem {
+  _id: string;
+  title: string;
+  totalPriceBeforeDiscount: number;
+  totalPrice: number;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  startDateTime: string;
+  endDateTime: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  menuItems: ApiSaleMenuItem[];
+}
+
+export interface ApiSaleResponse {
+  message: string;
+  data: ApiSaleItem[];
+  meta: {
+    currentPage: number;
+    totalPages: number;
+    totalRecords: number;
+    limit: number;
+  };
+}
+
+// Frontend Sale Item
+export interface SaleItem {
+  id: string;
+  title: string;
+  totalPriceBeforeDiscount: number;
+  totalPrice: number;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  startDateTime: Date;
+  endDateTime: Date;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  menuItems: {
+    id: string;
+    title: string;
+    image: string;
+    basePrice: number;
+    isAvailableInStock: boolean;
+  }[];
+  itemCount: number;
+}
+
 // Frontend Types
 export type MenuCategory = string;
 
-export type MenuTab = 'all' | 'limited' | 'upsells' | 'out-of-stock' | 'schedule-sale';
+export type MenuTab = 'all' | 'sale' | 'limited' | 'upsells' | 'out-of-stock' | 'schedule-sale';
 
 export type MenuFilter = 'all' | 'limited' | 'upsell' | 'outOfStock' | 'schedule';
 

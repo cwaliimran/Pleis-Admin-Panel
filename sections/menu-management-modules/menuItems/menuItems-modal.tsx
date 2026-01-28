@@ -53,6 +53,7 @@ type MenuItemModalProps = {
   isEdit?: boolean;
   selectedData?: any;
   menuManagementView?: boolean;
+  onSuccess?: () => void;
 };
 
 const defaultValues: MenuItemFormValues = {
@@ -85,7 +86,7 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   status: Yup.string(),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManagementView }: MenuItemModalProps) => {
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManagementView, onSuccess }: MenuItemModalProps) => {
   const [deleting, setDeleting] = useState(false);
 
   console.log('selectedData', selectedData);
@@ -253,6 +254,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
       showSuccess(response?.message || (isEdit ? 'Menu item updated successfully' : 'Menu item created successfully'));
 
       methods.reset(defaultValues);
+      onSuccess?.();
       onClose();
     } catch (error) {
       if (uploadedFileKey) {
@@ -300,22 +302,24 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
                 />
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="col-span-2">
-                    {presetLoading ? (
-                      <FieldSkeleton />
-                    ) : (
-                      <>
-                        <h4 className="mb-2 text-sm font-semibold">Presets</h4>
-                        <RHFCustomDropdown
-                          name="preset"
-                          placeholder="Select Preset"
-                          options={presetOptions}
-                          isLoading={presetLoading}
-                          showNone={false}
-                        />
-                      </>
-                    )}
-                  </div>
+                  {!menuManagementView && (
+                    <div className="col-span-2">
+                      {presetLoading ? (
+                        <FieldSkeleton />
+                      ) : (
+                        <>
+                          <h4 className="mb-2 text-sm font-semibold">Presets</h4>
+                          <RHFCustomDropdown
+                            name="preset"
+                            placeholder="Select Preset"
+                            options={presetOptions}
+                            isLoading={presetLoading}
+                            showNone={false}
+                          />
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   <RHFTextField name="title" label="Name" placeholder="Enter Name" />
 

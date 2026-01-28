@@ -288,9 +288,9 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                           <TabsTrigger
                             key={tab.value}
                             value={tab.value}
-                            className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold !shadow-none transition-all dark:!bg-transparent ${
+                            className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
                               active === tab.value
-                                ? 'after:absolute after:bottom-0 after:left-1/2 after:h-[4px] after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
+                                ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
                                 : 'text-muted-foreground'
                             }`}
                           >

@@ -46,7 +46,7 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item }) => {
 
         <TableCell className="text-left capitalize">{item?.points.total || 'N/A'}</TableCell>
 
-        <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
+        <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
 
         {/* <TableCell className="text-center">
           <CustomBadge

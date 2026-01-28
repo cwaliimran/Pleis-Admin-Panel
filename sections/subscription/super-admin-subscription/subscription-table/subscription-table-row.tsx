@@ -68,8 +68,8 @@ const SubscriptionTableRow: FC<TableRowProps> = ({ item, handleEdit, handleViewR
           <span className="text-sm text-gray-500 dark:text-gray-400">-</span>
         ) : (
           <>
-            <div>{fDate(item?.subscription?.startDate, formatStr.paramCase.date)}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-500">to {fDate(item?.subscription?.endDate, formatStr.paramCase.date)}</div>
+            <div>{fDate(item?.subscription?.startDate, formatStr.split.date)}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-500">to {fDate(item?.subscription?.endDate, formatStr.split.date)}</div>
           </>
         )}
       </TableCell>

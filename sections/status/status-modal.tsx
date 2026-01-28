@@ -261,14 +261,14 @@ const StatusModal = ({ open, onClose, editData }: StatusModalProps) => {
               <div className="mt-7 flex w-full flex-col gap-4">
                 <RHFUploadAvatar name="icon" label="Badge Icon" />
 
-                <RHFTextField name="title" label="Badge Title" placeholder="e.g., Refer 5 Friends" />
+                <RHFTextField name="title" label="Badge Title" placeholder="Badge Title" />
 
-                <RHFTextField name="description" label="Description" placeholder="e.g., Earn points by referring 5 friends" multiline rows={3} />
+                <RHFTextField name="description" label="Description" placeholder="Description" multiline rows={3} />
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   <RHFCustomDropdown name="category" label="Category" placeholder="Select Category" options={CATEGORIES as any} showNone={false} />
 
-                  <RHFTextField name="points" label="Points" placeholder="e.g., 500" type="number" min="1" />
+                  <RHFTextField name="points" label="Points" placeholder="e.g., 10" type="number" min="1" />
                 </div>
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">

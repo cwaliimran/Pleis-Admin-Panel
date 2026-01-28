@@ -25,7 +25,7 @@ const TicketingTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) =>
 
       <TableCell className="text-left font-medium">{item?.price || '-'}</TableCell>
 
-      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge variant={item?.timingSlots?.enabled ? 'success' : 'error'}>{item?.timingSlots?.enabled ? 'Enabled' : 'Disabled'}</CustomBadge>

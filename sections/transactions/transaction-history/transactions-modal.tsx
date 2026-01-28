@@ -42,7 +42,7 @@ const TransactionModal = ({ open, onClose, selectedData: item }: ChallengeModalP
 
             <div>
               <h4 className="text-muted-foreground text-sm font-medium">Timestamp</h4>
-              <p className="text-base font-semibold">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</p>
+              <p className="text-base font-semibold">{fDate(item?.createdAt, formatStr.split.dateTime)}</p>
             </div>
 
             <div>

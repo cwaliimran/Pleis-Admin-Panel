@@ -12,7 +12,7 @@ export const menuManagementApi = createApi({
       query: ({ search, page, filter, sortBy, categoryId, limit, organizer }) => {
         const params: any = {
           page: page + 1,
-          limit: limit || 10,
+          limit: limit || 18,
         };
         if (search) params.keyword = search;
         if (filter) params.filter = filter;
@@ -21,6 +21,28 @@ export const menuManagementApi = createApi({
         if (organizer) params.organization = organizer;
         return {
           url: API_ROUTES.ADMIN_MENU_MANAGEMENT_GET,
+          method: 'GET',
+          params,
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['menu-management'],
+    }),
+
+    getSaleItems: builder.query({
+      query: ({ search, page, filter, limit, organizer }) => {
+        const params: any = {
+          page: page + 1,
+          limit: limit || 18,
+        };
+        if (search) params.keyword = search;
+        if (filter) params.filter = filter;
+        if (organizer) params.organization = organizer;
+        return {
+          url: API_ROUTES.ADMIN_GET_SALE_ITEMS,
           method: 'GET',
           params,
         };
@@ -95,6 +117,7 @@ export const menuManagementApi = createApi({
 
 export const {
   useGetMenuManagementQuery,
+  useGetSaleItemsQuery,
   useAddMenuManagementSaleMutation,
   useGetMenuItemByOrganizerQuery,
   useGetCategoriesForMenuQuery,

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export async function deleteFileFromAzure(fileUrl: string): Promise<boolean> {
   try {
-    const response = await axios.delete(`${CurrentUrl}upload/azure`, {
+    const response = await axios.delete(`${CurrentUrl}/upload/azure`, {
       data: { fileKey: fileUrl },
     });
 

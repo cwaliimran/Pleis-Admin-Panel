@@ -69,7 +69,7 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
           })()}
         </TableCell>
 
-        <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.dateTime)}</TableCell>
+        <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
 
         <TableCell className="text-center">
           <CustomBadge variant={getBadgeVariant(item?.type)}>{getBadgeLabel(item?.type)}</CustomBadge>

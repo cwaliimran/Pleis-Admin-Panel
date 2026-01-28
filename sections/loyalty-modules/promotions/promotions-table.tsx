@@ -41,6 +41,7 @@ const HEAD_LABEL = [
   { id: 'startTime', label: 'Start Date', align: 'left' },
   { id: 'endTime', label: 'End Date', align: 'left' },
   { id: 'tierLimit', label: 'Tier limit', align: 'left' },
+  { id: 'claimLimit', label: 'Claim limit', align: 'left' },
   { id: 'repeatSettings', label: 'Repeat Settings', align: 'left' },
 
   { id: 'actions', label: 'Action', align: 'left' },

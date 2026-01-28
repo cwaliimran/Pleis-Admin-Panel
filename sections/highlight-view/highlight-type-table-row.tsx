@@ -34,7 +34,7 @@ const HighlightTypeTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }
         </Dialog>
       </TableCell>
 
-      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>

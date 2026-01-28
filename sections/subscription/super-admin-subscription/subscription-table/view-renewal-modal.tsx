@@ -46,7 +46,7 @@ const ViewRenewalModal = ({ open, onClose, selectedData }: ViewRenewalModalProps
                 <div className="text-right">
                   <p className="text-xs text-gray-500 dark:text-gray-400">Start Date</p>
                   <p className="mt-1 text-base font-semibold text-gray-900 dark:text-gray-100">
-                    {inactiveSubscription?.startDate ? fDate(inactiveSubscription.startDate, formatStr.paramCase.date) : '-'}
+                    {inactiveSubscription?.startDate ? fDate(inactiveSubscription.startDate, formatStr.split.date) : '-'}
                   </p>
                 </div>
               </div>

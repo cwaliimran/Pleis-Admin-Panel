@@ -33,7 +33,7 @@ const ReviewsTableRow: FC<TableRowProps> = ({ item }) => {
         <TruncatedTextWithModal text={item?.comment} title="Review" />
       </TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
     </TableRow>
   );
 };

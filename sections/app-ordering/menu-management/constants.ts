@@ -6,6 +6,7 @@ export const TAB_CONFIG: Array<{ id: MenuTab; label: string }> = [
   { id: 'upsells', label: 'Upsell Items' },
   { id: 'out-of-stock', label: 'Out of Stock' },
   { id: 'schedule-sale', label: 'Schedule Sale' },
+  { id: 'sale', label: 'Sale' },
 ];
 
 export const SORT_OPTIONS = [

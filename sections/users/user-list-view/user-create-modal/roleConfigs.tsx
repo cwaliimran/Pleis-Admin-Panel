@@ -670,7 +670,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({
                           <div className="w-full">
                             <PhoneInput
                               {...field}
-                              country="pk"
+                              country="hr"
                               onChange={(value, country: any) => {
                                 field.onChange(value);
                                 // keep dial code in hidden field for mapping

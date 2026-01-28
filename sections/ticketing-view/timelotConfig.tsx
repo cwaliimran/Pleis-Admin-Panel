@@ -715,8 +715,8 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
               {eventConstraints.minDate && eventConstraints.maxDate && (
                 <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                  Available dates: {fDate(eventConstraints.minDate, formatStr.paramCase.date)} -{' '}
-                  {fDate(eventConstraints.maxDate, formatStr.paramCase.date)}
+                  Available dates: {fDate(eventConstraints.minDate, formatStr.split.date)} -{' '}
+                  {fDate(eventConstraints.maxDate, formatStr.split.date)}
                 </p>
               )}
 

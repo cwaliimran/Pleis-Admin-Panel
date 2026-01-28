@@ -26,7 +26,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
       }
     >
       <TableCell>
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl! bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.basicInfo?.media?.logo && item?.basicInfo?.media?.logo !== noImageUrl && item?.basicInfo?.media?.logo !== noImageUrlDev ? (
             <AvatarImage src={item?.basicInfo?.media?.logo} alt="Store" className="h-full w-full cursor-pointer object-cover" />
           ) : (
@@ -39,7 +39,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
 
       <TableCell className="text-left text-sm">{item?.organizer || '-'}</TableCell>
 
-      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left text-sm">-</TableCell>
 
@@ -58,7 +58,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
       <TableCell className="text-end">
         <div className="flex gap-2">
           <button
-            title="View Organization"
+            title="View Org"
             type="button"
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
@@ -66,7 +66,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
           </button>
 
           <button
-            title="Edit Organization"
+            title="Edit Org"
             type="button"
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
@@ -74,8 +74,8 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
           </button>
 
           <button
+            title="Delete Org"
             type="button"
-            title="Delete"
             onClick={(e) => {
               e.stopPropagation();
               handleDelete?.(item._id);

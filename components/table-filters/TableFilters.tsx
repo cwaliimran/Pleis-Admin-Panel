@@ -176,7 +176,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                     className="w-full justify-between font-normal"
                   >
                     {dateFilter.value
-                      ? fDate(dateFilter.value, formatStr.paramCase.date)
+                      ? fDate(dateFilter.value, formatStr.split.date)
                       : dateFilter.placeholder}
 
                     <ChevronDownIcon className="h-4 w-4" />

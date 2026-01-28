@@ -11,7 +11,7 @@ const ClubsTableRow: FC<TableRowProps> = ({ item, type, handleAcceptRequest, han
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left capitalize">{item?.selectedUserData?.user?.clubName || '-'}</TableCell>
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge

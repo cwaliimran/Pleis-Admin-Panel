@@ -58,7 +58,7 @@ const MenuItemTableRow: FC<TableRowProps> = ({
       </TableCell>
 
       <TableCell className="text-left">
-        {fDate(item?.createdAt, formatStr.paramCase.date)}
+        {fDate(item?.createdAt, formatStr.split.date)}
       </TableCell>
 
       <TableCell className="text-left">

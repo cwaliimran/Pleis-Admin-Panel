@@ -31,7 +31,7 @@ const FaqsTableRow: FC<TableRowProps> = ({ item, handleEdit, handleDelete }) => 
 
       <TableCell className="text-left">{getType(item?.type)}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.paramCase.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-end">
         <div className="flex gap-2">
