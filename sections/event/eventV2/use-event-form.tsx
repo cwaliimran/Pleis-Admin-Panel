@@ -220,6 +220,35 @@ export const useEventForm = ({ userType }: { userType: string }) => {
     await onSubmit(formDataWithoutTicketing);
   };
 
+  // Helper function to properly create a DateTime from date and time string
+  const createDateTime = (dateValue: Date | null, timeString: string): Date | null => {
+    if (!dateValue || !timeString) return null;
+
+    const date = new Date(dateValue);
+    let hours = 0;
+    let minutes = 0;
+
+    // Handle 24-hour format "HH:MM"
+    const time24Match = timeString.match(/^(\d{1,2}):(\d{2})$/);
+    if (time24Match) {
+      hours = parseInt(time24Match[1], 10);
+      minutes = parseInt(time24Match[2], 10);
+    } else {
+      // Handle 12-hour format "HH:MM AM/PM" or "H:MM AM/PM"
+      const time12Match = timeString.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (time12Match) {
+        hours = parseInt(time12Match[1], 10);
+        minutes = parseInt(time12Match[2], 10);
+        const period = time12Match[3].toUpperCase();
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+      }
+    }
+
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+  };
+
   const onSubmit = async (data: EventFormValues, scope?: any) => {
     let imageFileString = '';
 
@@ -233,7 +262,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
         setUpdateAllLoading(true);
       }
 
-      // Validate schedule dates before image uploading
+      // Helper to format datetime for API
       const formatDateTimeForAPI = (datetimeLocal: string): string => {
         if (!datetimeLocal) return '';
         const date = new Date(datetimeLocal);
@@ -248,16 +277,16 @@ export const useEventForm = ({ userType }: { userType: string }) => {
         return `${year}-${month}-${day} ${paddedHours12}:${minutes} ${period}`;
       };
 
-      const startDateStr = data.fromDate ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}` : '';
-      const endDateStr = data.endDate ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}` : '';
+      // Validate schedule dates before image uploading
+      // Create proper Date objects from date and time components
+      const startDateTime = createDateTime(data.fromDate, data.fromTime);
+      const endDateTime = createDateTime(data.endDate, data.endTime);
 
-      if (startDateStr && endDateStr) {
-        const startDateTime = new Date(startDateStr);
-        const endDateTime = new Date(endDateStr);
+      if (startDateTime && endDateTime) {
         const now = new Date();
 
-        // Check if startDateTime is in the past
-        if (startDateTime < now) {
+        // Check if startDateTime is in the past (comparing full date + time)
+        if (startDateTime.getTime() < now.getTime()) {
           showError('Start date and time cannot be in the past');
           setLoading(false);
           if (scope === 'single') setUpdateSingleLoading(false);
@@ -265,8 +294,8 @@ export const useEventForm = ({ userType }: { userType: string }) => {
           return;
         }
 
-        // Check if endDateTime is in the past
-        if (endDateTime < now) {
+        // Check if endDateTime is in the past (comparing full date + time)
+        if (endDateTime.getTime() < now.getTime()) {
           showError('End date and time cannot be in the past');
           setLoading(false);
           if (scope === 'single') setUpdateSingleLoading(false);
@@ -275,7 +304,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
         }
 
         // Check if startDateTime is before endDateTime
-        if (startDateTime >= endDateTime) {
+        if (startDateTime.getTime() >= endDateTime.getTime()) {
           showError('Start date and time must be before end date and time');
           setLoading(false);
           if (scope === 'single') setUpdateSingleLoading(false);

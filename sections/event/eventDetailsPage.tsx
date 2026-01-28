@@ -26,6 +26,8 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 // import EventFeedbackView from '../event-feedback/event-feedback-view';
 import FeedbackView from '../feedback/feedback-view';
+import { showError } from '@/utils/toast';
+import { getErrorMessage } from '@/utils/api';
 
 const EventDetailsPage = () => {
   const { id } = useParams();
@@ -35,9 +37,9 @@ const EventDetailsPage = () => {
 
   const [loading, setLoading] = React.useState(false);
   const [preOrderLoading, setPreOrderLoading] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [active, setActive] = React.useState('overview');
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   const [expanded, setExpanded] = useState(false);
 
@@ -58,6 +60,13 @@ const EventDetailsPage = () => {
     }
   }, [event?.preOrdersEnabled]);
 
+  // Check if event has ended
+  const isEventEnded = React.useMemo(() => {
+    if (!event?.schedule?.endDateTime) return false;
+    const endDate = new Date(event.schedule.endDateTime);
+    return endDate < new Date();
+  }, [event?.schedule?.endDateTime]);
+
   const handleDelete = (id: string) => {
     setDeleteId(id);
     deleteModal.onTrue();
@@ -72,14 +81,25 @@ const EventDetailsPage = () => {
         refetch();
       }
     } catch (error) {
-      console.log('Failed to update event', error);
+      showError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
   };
 
   const handleRequestFeedback = async () => {
-    setShowFeedback(true);
+    try {
+      setFeedbackLoading(true);
+      const res = await updateEvent({ id, feedbackEnabled: true }).unwrap();
+      if (res?.data) {
+        refetch();
+      }
+    } catch (error) {
+      // console.log('Failed to request feedback', error);
+      showError(getErrorMessage(error));
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   const handlePreOrderToggle = async () => {
@@ -262,18 +282,21 @@ const EventDetailsPage = () => {
                       </Button>
                     </div> */}
 
-                      {/* Clone Button */}
+                      {/* Request Feedback Button */}
                       <div className="w-full sm:w-auto">
-                        {showFeedback ? (
+                        {event?.feedbackEnabled ? (
                           <span className="flex w-full items-center justify-center gap-2 rounded-3xl px-4 py-2 font-semibold text-green-600 sm:w-auto">
-                            Feedback Requested
+                            Feedback Request Sent
                           </span>
                         ) : (
                           <Button
                             variant="default"
                             onClick={handleRequestFeedback}
-                            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-3xl px-4 py-2 sm:w-auto"
+                            disabled={feedbackLoading || !isEventEnded}
+                            title={!isEventEnded ? 'Event must end before requesting feedback' : ''}
+                            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-3xl px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                           >
+                            {feedbackLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                             Request Feedback
                           </Button>
                         )}
@@ -364,7 +387,15 @@ const EventDetailsPage = () => {
 
                   {active === 'notifications' && <EventNotification id={id} />}
 
-                  {active === 'feedback' && <FeedbackView id={id} />}
+                  {active === 'feedback' && (
+                    <FeedbackView
+                      id={id}
+                      feedbackEnabled={event?.feedbackEnabled}
+                      onRequestFeedback={handleRequestFeedback}
+                      feedbackLoading={feedbackLoading}
+                      isEventEnded={isEventEnded}
+                    />
+                  )}
                   {/* {active === 'feedback' && showFeedback ? <EventFeedbackView /> : null} */}
                 </div>
               </div>
