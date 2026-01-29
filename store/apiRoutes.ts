@@ -163,6 +163,7 @@ export const API_ROUTES = {
   ADMIN_EVENTS_FEEDBACK_BY_ID: (id: string) => `/admin/events/${id}/ratting`,
 
   ADMIN_VENUES: `/admin/venues`,
+  ADMIN_VENUES_BY_COMPANY_ORGANIZER: `/admin/venues/title`,
   ADMIN_VENUES_BY_ID: (id: string) => `/admin/venues/${id}`,
 
   ORGANIZER_VENUES: `/organizer/venues`,

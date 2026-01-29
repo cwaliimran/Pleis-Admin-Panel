@@ -132,9 +132,10 @@ interface AddOtherDetailsModalProps {
   newOrganization?: any;
   onClose: () => void;
   open: boolean;
+  venueList: any[];
 }
 
-const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganization, onClose, open }) => {
+const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganization, onClose, open, venueList }) => {
   const router = useRouter();
   const [imageUploading, setImageUploading] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -170,10 +171,15 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
     })) || [];
 
   const venueOptions =
-    venueData?.data?.map((venue: any) => ({
-      label: venue?.title,
-      value: venue?._id,
-    })) || [];
+    (venueList && venueList.length > 0
+      ? venueList.map((venue: any) => ({
+          label: venue?.venueTitle,
+          value: venue?.venueId,
+        }))
+      : venueData?.data?.map((venue: any) => ({
+          label: venue?.title,
+          value: venue?._id,
+        }))) || [];
 
   const categoryOptions =
     categoryData?.data?.map((category: any) => ({
@@ -264,7 +270,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
   // }, [watchVenue, venueData, setValue]);
 
   useEffect(() => {
-
     if (watchVenue && venueData?.data) {
       const selectedVenue = venueData.data.find((v: any) => v._id === watchVenue);
 
