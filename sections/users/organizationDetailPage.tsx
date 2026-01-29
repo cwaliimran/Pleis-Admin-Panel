@@ -329,7 +329,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
               <ActivePromontion />
 
-              <BusinessInfo />
+              <BusinessInfo organizationData={organizationData} />
             </div>
           </div>
 
