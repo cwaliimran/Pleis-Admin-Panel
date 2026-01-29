@@ -396,8 +396,8 @@ export const MenuManagementView: React.FC = () => {
           )}
         </div>
 
-        {/* Sales Preview Section (only on non-Sale tabs when there are sales) */}
-        {!isSaleTab && previewSales.length > 0 && (
+        {/* Sales Preview Section (only on All Items tab when there are sales) */}
+        {activeTab === 'all' && previewSales.length > 0 && (
           <div className="mb-8">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">🏷️ Active Sales ({tabCounts.sale})</h2>

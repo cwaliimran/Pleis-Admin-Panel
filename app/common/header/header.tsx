@@ -5,8 +5,8 @@ import FormProvider from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { RHFMultiSelectCount } from '@/components/rhf/rhf-multiselect-count';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { Input } from '@/components/ui/input';
 import { useSidebar } from '@/components/ui/sidebar';
+import NavigationSearch from './navigation-search';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetOrganizationByCompanyQuery, useGetOrganizationsOnOrganizerSideQuery } from '@/store/Reducer/organization';
@@ -287,7 +287,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
           )}
         </FormProvider>
 
-        <Input placeholder="Search..." className="h-10 w-full rounded-full bg-white pl-5 md:w-60 lg:w-[280px]" />
+        <NavigationSearch />
 
         <div className="flex items-center justify-end gap-3">
           <ModeToggle />
