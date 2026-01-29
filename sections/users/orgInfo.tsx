@@ -45,7 +45,7 @@ const OrgInfo = ({ organizationData }: any) => {
           <Card className="dark:bg-secondary shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">DESCRIPTION</h1>
-              <p className="mt-2 capitalize">{organizationData?.otherInfo?.description || ''}</p>
+              <p className="mt-2">{organizationData?.otherInfo?.description || ''}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <Badge className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
                   {organizationData?.otherInfo?.minAge || ''}
