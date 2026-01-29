@@ -73,6 +73,26 @@ export const paths = {
     giveaways: '/organizer/giveaways',
 
     promoCodes: '/organizer/promo-code',
+    ticketing: '/organizer/ticketing',
+    ticketingTransactions: '/organizer/ticketing-transactions',
+
+    bundles: '/organizer/bundles',
+    transactionsHistory: '/organizer/transactions-history',
+
+    reservation: '/organizer/reservation',
+    reservationCalendar: '/organizer/calendar',
+    reservationAnalytics: '/organizer/analytics',
+    reservationTransactions: '/organizer/reservation-transactions',
+
+    orderManagement: '/organizer/app-ordering/order-management',
+    menuManagement: '/organizer/app-ordering/menu-management',
+    orderAnalytics: '/organizer/app-ordering/order-analytics',
+    orderTransactions: '/organizer/app-ordering/order-transactions',
+    orderSettings: '/organizer/app-ordering/order-settings',
+
+    qrCodes: '/organizer/qr-codes',
+
+    referralsAnalytics: '/organizer/referrals/analytics',
 
     logout: '/organizer/logout',
   },

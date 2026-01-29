@@ -4,9 +4,10 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
-import { menuGroups } from '@/app/super-admin/(super-admin)/@left/data';
+import { menuGroups as superAdminMenuGroups } from '@/app/super-admin/(super-admin)/@left/data';
+import { menuGroups as organizerMenuGroups } from '@/app/(organizer)/organizer/@left/data';
 
 interface SearchableRoute {
   label: string;
@@ -17,9 +18,14 @@ interface SearchableRoute {
 
 const NavigationSearch: FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [isMac, setIsMac] = useState(false);
+
+  // Determine which dashboard the user is on
+  const isOrganizerSide = pathname?.startsWith('/organizer');
+  const menuGroups = isOrganizerSide ? organizerMenuGroups : superAdminMenuGroups;
 
   // Detect OS for keyboard shortcut display
   useEffect(() => {
@@ -72,19 +78,14 @@ const NavigationSearch: FC = () => {
     });
 
     return routes;
-  }, []);
+  }, [menuGroups]);
 
   // Filter routes based on search value
   const filteredRoutes = useMemo(() => {
     if (!searchValue.trim()) return allRoutes;
 
     const searchLower = searchValue.toLowerCase();
-    return allRoutes.filter(
-      (route) =>
-        route.label.toLowerCase().includes(searchLower) ||
-        route.group.toLowerCase().includes(searchLower) ||
-        route.url.toLowerCase().includes(searchLower)
-    );
+    return allRoutes.filter((route) => route.label.toLowerCase().includes(searchLower) || route.url.toLowerCase().includes(searchLower));
   }, [allRoutes, searchValue]);
 
   // Group filtered routes by their group
@@ -114,6 +115,7 @@ const NavigationSearch: FC = () => {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
+          type="button"
           className={cn(
             'text-muted-foreground flex h-10 w-full items-center gap-2 rounded-full bg-white px-4 text-sm transition-colors',
             'focus:ring-primary/20 hover:bg-gray-50 focus:ring-2 focus:outline-none',

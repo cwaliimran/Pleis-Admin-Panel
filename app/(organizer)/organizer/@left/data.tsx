@@ -1,21 +1,20 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+  Box,
   Building,
   Calendar,
+  CalendarDays,
+  ChartBar,
   ChartColumnBig,
-  Gift,
+  FileClock,
   // Grid2x2Check,
   Handshake,
-  Highlighter,
   List,
   ListOrdered,
-  Megaphone,
   Podcast,
-  SquareMenu,
+  ShoppingBasket,
   Tags,
-  ThumbsUp,
   TicketSlash,
-  VenetianMask,
   Volume1,
 } from 'lucide-react';
 import { paths } from './paths';
@@ -43,15 +42,112 @@ export const menuGroups: MenuGroup[] = [
     icon: ChartColumnBig,
   },
   {
-    label: 'Organizations',
+    label: 'Org Management',
     key: paths.organizer.organizations.list,
     icon: Building,
+    items: [
+      {
+        title: 'Organizations',
+        url: paths.organizer.organizations.list,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Venues',
+        url: paths.organizer.venue.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Events',
+        url: paths.organizer.events.list,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Highlights',
+        url: paths.organizer.hightLight.default,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Reviews',
+        url: paths.organizer.reviews,
+        icon: CalendarDays,
+      },
+      {
+        title: 'QR codes',
+        url: paths.organizer.qrCodes,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Updates',
+        url: paths.organizer.updates,
+        icon: CalendarDays,
+      },
+    ],
   },
+
+  // {
+  //   label: 'Organizations',
+  //   key: paths.organizer.organizations.list,
+  //   icon: Building,
+  // },
+  // {
+  //   label: 'Venue',
+  //   key: paths.organizer.venue.default,
+  //   icon: VenetianMask,
+  // },
+  // {
+  //   label: 'Events',
+  //   key: paths.organizer.events.list,
+  //   icon: Calendar,
+  // },
+  // {
+  //   label: 'Highlights',
+  //   key: paths.organizer.hightLight.default,
+  //   icon: Highlighter,
+  // },
+  // {
+  //   label: 'Reviews',
+  //   key: paths.organizer.reviews,
+  //   icon: ThumbsUp,
+  // },
+  // {
+  //   label: 'QR codes',
+  //   key: paths.organizer.reviews,
+  //   icon: ThumbsUp,
+  // },
+  // {
+  //   label: 'Updates',
+  //   key: paths.organizer.updates,
+  //   icon: Megaphone,
+  // },
+
   {
-    label: 'Events',
-    key: paths.organizer.events.list,
-    icon: Calendar,
+    label: 'Menu',
+    key: paths.organizer.menuList,
+    icon: List,
+    items: [
+      {
+        title: 'Menu List',
+        url: paths.organizer.menuList,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Menu Items',
+        url: paths.organizer.menuItems,
+        icon: CalendarDays,
+      },
+    ],
   },
+
+  // {
+  //   label: 'Menu List',
+  //   key: paths.organizer.menuList,
+  //   icon: List,
+  // },
+  // {
+  //   label: 'Menu Items',
+  //   key: paths.organizer.menuItems,
+  //   icon: SquareMenu,
+  // },
   {
     label: 'Loyalty',
     key: paths.organizer.loyalty.default,
@@ -73,6 +169,11 @@ export const menuGroups: MenuGroup[] = [
         icon: ListOrdered,
       },
       {
+        title: 'Members',
+        url: paths.organizer.members,
+        icon: Tags,
+      },
+      {
         title: 'Challenges',
         url: paths.organizer.challenges,
         icon: Tags,
@@ -83,18 +184,13 @@ export const menuGroups: MenuGroup[] = [
         icon: Tags,
       },
       {
-        title: 'Members',
-        url: paths.organizer.members,
-        icon: Tags,
-      },
-      {
-        title: 'Settings',
-        url: paths.organizer.settings,
-        icon: Tags,
-      },
-      {
         title: 'Referrals',
         url: paths.organizer.referrals,
+        icon: Tags,
+      },
+      {
+        title: 'Referrals Analytics',
+        url: paths.organizer.referralsAnalytics,
         icon: Tags,
       },
       {
@@ -102,28 +198,98 @@ export const menuGroups: MenuGroup[] = [
         url: paths.organizer.transactions.default,
         icon: Tags,
       },
+      {
+        title: 'Settings',
+        url: paths.organizer.settings,
+        icon: Tags,
+      },
     ],
   },
+
   {
-    label: 'Venue',
-    key: paths.organizer.venue.default,
-    icon: VenetianMask,
-  },
-  {
-    label: 'Highlights',
-    key: paths.organizer.hightLight.default,
-    icon: Highlighter,
-  },
-  {
-    label: 'Menu List',
-    key: paths.organizer.menuList,
+    label: 'Ticketing',
+    key: paths.organizer.ticketing,
     icon: List,
+    items: [
+      {
+        title: 'Ticket List',
+        url: paths.organizer.ticketing,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Giveaways',
+        url: paths.organizer.giveaways,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Transactions',
+        url: paths.organizer.ticketingTransactions,
+        icon: CalendarDays,
+      },
+    ],
   },
+
   {
-    label: 'Menu Items',
-    key: paths.organizer.menuItems,
-    icon: SquareMenu,
+    label: 'Reservations',
+    key: paths.organizer.reservation,
+    icon: CalendarDays,
+    items: [
+      {
+        title: 'Reservations',
+        url: paths.organizer.reservation,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Calendar view',
+        url: paths.organizer.reservationCalendar,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Analytics',
+        url: paths.organizer.reservationAnalytics,
+        icon: ChartBar,
+      },
+      {
+        title: 'Transactions',
+        url: paths.organizer.reservationTransactions,
+        icon: ChartBar,
+      },
+    ],
   },
+
+  {
+    label: 'In App Ordering',
+    key: paths.organizer.orderManagement,
+    icon: ShoppingBasket,
+    items: [
+      {
+        title: 'Order Management',
+        url: paths.organizer.orderManagement,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Menu Management',
+        url: paths.organizer.menuManagement,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Analytics',
+        url: paths.organizer.orderAnalytics,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Transactions',
+        url: paths.organizer.orderTransactions,
+        icon: ChartBar,
+      },
+      {
+        title: 'Settings',
+        url: paths.organizer.orderSettings,
+        icon: CalendarDays,
+      },
+    ],
+  },
+
   {
     label: 'Subscription',
     key: paths.organizer.subscription,
@@ -135,19 +301,14 @@ export const menuGroups: MenuGroup[] = [
     icon: Calendar,
   },
   {
-    label: 'Marketing Requests',
-    key: paths.organizer.marketingRequests,
-    icon: Volume1,
+    label: 'Transaction history',
+    key: paths.organizer.transactionsHistory,
+    icon: FileClock,
   },
   {
-    label: 'Reviews',
-    key: paths.organizer.reviews,
-    icon: ThumbsUp,
-  },
-  {
-    label: 'Updates',
-    key: paths.organizer.updates,
-    icon: Megaphone,
+    label: 'Bundles',
+    key: paths.organizer.bundles,
+    icon: Box,
   },
   {
     label: 'Promo codes',
@@ -155,10 +316,16 @@ export const menuGroups: MenuGroup[] = [
     icon: TicketSlash,
   },
   {
-    label: 'Giveaways',
-    key: paths.organizer.giveaways,
-    icon: Gift,
+    label: 'Marketing Requests',
+    key: paths.organizer.marketingRequests,
+    icon: Volume1,
   },
+
+  // {
+  //   label: 'Giveaways',
+  //   key: paths.organizer.giveaways,
+  //   icon: Gift,
+  // },
   // ...(isDev
   //   ? [
   //       {
