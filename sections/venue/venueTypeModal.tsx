@@ -27,6 +27,7 @@ interface VenueTypeModalProps {
   isEditMode?: boolean;
   selectedVenueData?: any;
   selectedId?: string | null;
+  orgId?: string | null;
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -48,7 +49,7 @@ const defaultValues = {
   },
 };
 
-const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData, selectedId }: VenueTypeModalProps) => {
+const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData, selectedId, orgId }: VenueTypeModalProps) => {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [imageUploading, setImageUploading] = React.useState(false);
 
@@ -118,9 +119,13 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
         status: selectedVenueData.status || 'active',
       });
     } else if (open && !isEditMode) {
-      reset(defaultValues);
+      // If orgId is provided, pre-select it in create mode
+      reset({
+        ...defaultValues,
+        organization: orgId || '',
+      });
     }
-  }, [open, isEditMode, selectedVenueData, reset]);
+  }, [open, isEditMode, selectedVenueData, reset, orgId]);
 
   const handleClose = () => {
     if (!addVenueLoading && !updateVenueLoading && !imageUploading) {
@@ -206,7 +211,10 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
         location: formData.location,
       };
 
-      if (formData.organization) {
+      // Use orgId if provided, otherwise use formData.organization
+      if (orgId) {
+        payload.organization = orgId;
+      } else if (formData.organization) {
         payload.organization = formData.organization;
       }
 
@@ -315,6 +323,7 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
                   options={organizationOptions}
                   isLoading={orgLoading}
                   showNone={false}
+                  disabled={!!orgId}
                 />
               )}
 

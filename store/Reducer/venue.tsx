@@ -38,6 +38,34 @@ export const venueApi = createApi({
       providesTags: ['venue'],
     }),
 
+    getVenuesByCompany: builder.query({
+      query: ({ page, status, limit, companyOrganizer }) => {
+        const params: any = {
+          status,
+          page: page + 1,
+          limit,
+        };
+
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+
+        return {
+          url: '',
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_VENUES_BY_COMPANY_ORGANIZER,
+            organizerRoute: API_ROUTES.ORGANIZER_VENUES,
+            adminOnlyParams: ['companyOrganizer'],
+          },
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['venue'],
+    }),
+
     addVenue: builder.mutation({
       query: (newVenue) => ({
         url: '',
@@ -78,7 +106,7 @@ export const venueApi = createApi({
   }),
 });
 
-export const { useGetVenuesQuery, useAddVenueMutation, useUpdateVenueMutation, useDeleteVenueMutation } = venueApi;
+export const { useGetVenuesQuery, useGetVenuesByCompanyQuery, useAddVenueMutation, useUpdateVenueMutation, useDeleteVenueMutation } = venueApi;
 
 // import { createApi } from '@reduxjs/toolkit/query/react';
 // import API_ROUTES from '../apiRoutes';

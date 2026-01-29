@@ -14,9 +14,12 @@ import VenueTypeModalV2 from '../venue/venueTypeModal';
 interface UserInfoProps {
   newOrganization?: any;
   setNewOrganization?: any;
+  venueList: any[];
+  creatorId: string;
+  orgId: string | null;
 }
 
-const UserInfo = ({ newOrganization }: UserInfoProps) => {
+const UserInfo = ({ newOrganization, venueList, orgId }: UserInfoProps) => {
   const openModal = useBoolean();
   const openVenueModal = useBoolean();
 
@@ -34,6 +37,18 @@ const UserInfo = ({ newOrganization }: UserInfoProps) => {
     showError('Please create an organization first!');
   };
 
+  const showVenueRequiredToast = () => {
+    showError('Please create a venue first!');
+  };
+
+  const handleEditClick = () => {
+    if (!venueList || venueList.length === 0) {
+      showVenueRequiredToast();
+      return;
+    }
+    openModal.onTrue();
+  };
+
   const CloseVenueModal = () => {
     openVenueModal.onFalse();
   };
@@ -43,7 +58,7 @@ const UserInfo = ({ newOrganization }: UserInfoProps) => {
       <div>
         <div className="flex justify-end">
           {newOrganization ? (
-            <Pencil width={22} className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
+            <Pencil width={22} className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={handleEditClick} />
           ) : (
             <Pencil width={22} className="mr-2 cursor-not-allowed text-gray-500 transition-colors hover:text-gray-700" onClick={showToast} />
           )}
@@ -169,7 +184,7 @@ const UserInfo = ({ newOrganization }: UserInfoProps) => {
                   alt=""
                   className="w-full h-full mt-2"
                 /> */}
-                <div className="col-span-12 flex h-[100px] w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-100 md:col-span-12 md:h-[140px] dark:bg-gray-800">
+                <div className="col-span-12 flex h-25 w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-100 md:col-span-12 md:h-[140px] dark:bg-gray-800">
                   <span className="text-sm text-gray-400">No Venue Selected</span>
                 </div>
               </CardHeader>
@@ -180,7 +195,7 @@ const UserInfo = ({ newOrganization }: UserInfoProps) => {
               <CardHeader className="gap-4">
                 <h1 className="font-semibold text-slate-500">GALLERY</h1>
                 {/* Placeholder image */}
-                <div className="col-span-12 flex h-[100px] w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-100 md:col-span-12 md:h-[140px] dark:bg-gray-800">
+                <div className="col-span-12 flex h-25 w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-100 md:col-span-12 md:h-[140px] dark:bg-gray-800">
                   <span className="text-sm text-gray-400">No Image</span>
                 </div>
               </CardHeader>
@@ -188,11 +203,18 @@ const UserInfo = ({ newOrganization }: UserInfoProps) => {
           </div>
         </div>
 
-        <AddOtherDetailsModal open={openModal.value} onClose={CloseModal} newOrganization={newOrganization} />
+        <AddOtherDetailsModal open={openModal.value} onClose={CloseModal} newOrganization={newOrganization} venueList={venueList} />
       </div>
 
       {openVenueModal.value && (
-        <VenueTypeModalV2 open={openVenueModal.value} onClose={CloseVenueModal} isEditMode={false} selectedVenueData={null} selectedId={null} />
+        <VenueTypeModalV2
+          open={openVenueModal.value}
+          onClose={CloseVenueModal}
+          isEditMode={false}
+          selectedVenueData={null}
+          selectedId={null}
+          orgId={orgId}
+        />
       )}
     </>
   );

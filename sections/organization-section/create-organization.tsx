@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useUpdateOrganizationMutation } from '@/store/Reducer/organization';
+import { useGetVenuesByCompanyQuery } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -33,7 +34,22 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
   const [updateOrganization] = useUpdateOrganizationMutation();
 
   const [newOrganization, setNewOrganization] = useState<any>();
+  const [creatorId, setCreatorId] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
   const [coverImageUploading, setCoverImageUploading] = useState(false);
+
+  // Fetch venues by company when we have a creator ID
+  const { data: venueData } = useGetVenuesByCompanyQuery(
+    {
+      page: 0,
+      status: undefined,
+      limit: 100,
+      companyOrganizer: creatorId,
+    },
+    {
+      skip: !creatorId,
+    }
+  );
 
   const CloseModal = () => {
     methods.reset(defaultValues);
@@ -115,6 +131,11 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
 
   const handleSuccess = (org: any) => {
     setNewOrganization(org);
+
+    if (org?.creator) {
+      setOrgId(org?._id);
+      setCreatorId(org?.creator);
+    }
     CloseModal();
   };
 
@@ -225,8 +246,13 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
           </Card>
 
           <div className="mt-4 rounded-lg">
-            {/* {active === "info" && <UserInfo />} */}
-            <UserInfo newOrganization={newOrganization} setNewOrganization={setNewOrganization} />
+            <UserInfo
+              newOrganization={newOrganization}
+              setNewOrganization={setNewOrganization}
+              venueList={venueData?.data || []}
+              creatorId={creatorId || ''}
+              orgId={orgId}
+            />
           </div>
         </div>
       </div>

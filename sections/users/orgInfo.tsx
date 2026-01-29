@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
+import { useGetVenuesByCompanyQuery } from '@/store/Reducer/venue';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Ellipsis, MapPin, Pencil, Shirt, UserPlus, UsersRound } from 'lucide-react';
 import Image from 'next/image';
@@ -15,6 +16,18 @@ const OrgInfo = ({ organizationData }: any) => {
   const totalDays = 30;
   const remainingDays = 5;
   const progressPercent = ((totalDays - remainingDays) / totalDays) * 100;
+
+  const { data: venueData } = useGetVenuesByCompanyQuery(
+    {
+      page: 0,
+      status: undefined,
+      limit: 100,
+      companyOrganizer: organizationData?.creator?._id || '',
+    },
+    {
+      skip: !organizationData?.creator?._id,
+    }
+  );
 
   const openModal = useBoolean();
   const openVenueModal = useBoolean();
@@ -209,10 +222,17 @@ const OrgInfo = ({ organizationData }: any) => {
       </div>
 
       {openVenueModal.value && (
-        <VenueTypeModalV2 open={openVenueModal.value} onClose={CloseVenueModal} isEditMode={false} selectedVenueData={null} selectedId={null} />
+        <VenueTypeModalV2
+          open={openVenueModal.value}
+          onClose={CloseVenueModal}
+          isEditMode={false}
+          selectedVenueData={null}
+          selectedId={null}
+          orgId={organizationData?._id || null}
+        />
       )}
 
-      <AddOtherDetailsModal open={openModal.value} onClose={CloseModal} newOrganization={organizationData} />
+      <AddOtherDetailsModal open={openModal.value} onClose={CloseModal} newOrganization={organizationData} venueList={venueData?.data || []} />
     </>
   );
 };

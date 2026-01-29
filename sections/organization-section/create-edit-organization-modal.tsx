@@ -2,11 +2,13 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useAddOrganizationMutation, useUpdateOrganizationMutation } from '@/store/Reducer/organization';
+import { useGetUserListQuery } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -31,6 +33,21 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   const [imageUploading, setImageUploading] = useState(false);
   const [addOrganization, { isLoading: isAdding }] = useAddOrganizationMutation();
   const [updateOrganization, { isLoading: isUpdating }] = useUpdateOrganizationMutation();
+
+  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery({
+    page: 0,
+    search: '',
+    limit: 100,
+    userType: 'organizer',
+    status: undefined,
+    date: undefined,
+  });
+
+  const userOptions =
+    apiData?.data?.map((user: any) => ({
+      label: `${user?.basicInfo?.companyDetails?.name || ''}`,
+      value: user?.basicInfo?._id,
+    })) || [];
 
   const isLoading = isAdding || isUpdating;
 
@@ -267,7 +284,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {organization?.creator && (
+                  {isEdit && organization?.creator && (
                     <div className="col-span-2">
                       <p className="mb-0.5 text-sm font-medium">Company Name</p>
                       <p className="text-muted-foreground text-sm">
@@ -276,9 +293,26 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                     </div>
                   )}
 
-                  <div className="col-span-2">
-                    <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
-                  </div>
+                  {isEdit ? (
+                    <div className="col-span-2">
+                      <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
+                    </div>
+                  ) : (
+                    <>
+                      <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
+
+                      {userType !== 'organizer' && (
+                        <RHFCustomDropdown
+                          name="user"
+                          label="Company Name"
+                          placeholder="Select Company"
+                          options={userOptions}
+                          isLoading={isUserLoading}
+                          showNone={false}
+                        />
+                      )}
+                    </>
+                  )}
 
                   <Controller
                     name="phone"
