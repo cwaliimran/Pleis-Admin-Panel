@@ -134,4 +134,5 @@ export interface ReservationGridProps {
   isLoading: boolean;
   selectedDate: Date;
   onDateChange: (date: Date) => void;
+  onSlotClick?: (slot: { reservationType: string; startTime: string; endTime: string; slotKey: string }) => void;
 }

@@ -1,91 +1,132 @@
-import { Clock } from 'lucide-react';
-import { ActiveBooking, ActiveBookingsProps } from './types';
+import { Clock, Phone, Users } from 'lucide-react';
+import { useMemo } from 'react';
+import { ActiveBookingsProps, CalendarReservation } from './types';
+
+/**
+ * Parse time string (e.g., "05:00 PM") to minutes since midnight
+ */
+const parseTimeToMinutes = (timeStr: string): number => {
+  if (!timeStr) return 0;
+  const [time, period] = timeStr.split(' ');
+  const [hours, minutes] = time.split(':').map(Number);
+  let hour24 = hours;
+  if (period === 'PM' && hours !== 12) hour24 += 12;
+  if (period === 'AM' && hours === 12) hour24 = 0;
+  return hour24 * 60 + minutes;
+};
+
+/**
+ * Check if current time falls within the booking time range
+ */
+const isBookingActive = (booking: CalendarReservation): boolean => {
+  const timeSlot = booking.timingSlots?.dateTimeSlots?.[0]?.timeSlots?.[0];
+  const bookingDate = booking.timingSlots?.dateTimeSlots?.[0]?.date;
+
+  if (!timeSlot || !bookingDate) return false;
+
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+
+  // Only show bookings for today
+  if (bookingDate !== today) return false;
+
+  // Only show confirmed bookings
+  if (booking.status !== 'confirmed') return false;
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = parseTimeToMinutes(timeSlot.startTime);
+  const endMinutes = parseTimeToMinutes(timeSlot.endTime);
+
+  // Handle overnight bookings (e.g., 11:00 PM - 02:00 AM)
+  if (endMinutes < startMinutes) {
+    return currentMinutes >= startMinutes || currentMinutes <= endMinutes;
+  }
+
+  return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+};
 
 export const ActiveBookings: React.FC<ActiveBookingsProps> = ({ bookings }) => {
-  if (bookings.length === 0) return null;
+  // Filter bookings to only show active ones (current time within booking time range)
+  const activeBookings = useMemo(() => {
+    return bookings.filter(isBookingActive);
+  }, [bookings]);
+
+  if (activeBookings.length === 0) {
+    return (
+      <div className="rounded-xl border bg-white p-4 dark:bg-[#1E1E1E]">
+        <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+          <Clock className="h-5 w-5" />
+          <h3 className="font-semibold">No Active Bookings</h3>
+        </div>
+        <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">No bookings are currently active at this time.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+    <div className="rounded-xl border bg-white p-4 dark:bg-[#1E1E1E]">
+      <div className="mb-4 flex items-center gap-2 text-gray-900 dark:text-gray-100">
         <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
-        <h3 className="text-lg font-semibold">
-          Active Bookings ({bookings.length})
-        </h3>
+        <h3 className="text-lg font-semibold">Active Bookings ({activeBookings.length})</h3>
       </div>
 
-      {bookings.map((booking: ActiveBooking) => (
-        <div
-          key={booking.id}
-          className="space-y-3 rounded-lg border-2 border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20"
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-green-200 bg-white dark:border-green-600 dark:bg-gray-700">
-                <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  {booking.guests}
+      <div className="max-h-80 space-y-4 overflow-y-auto">
+        {activeBookings.map((booking: CalendarReservation) => {
+          const timeSlot = booking.timingSlots?.dateTimeSlots?.[0]?.timeSlots?.[0];
+          const customerName = `${booking.user?.firstName || ''} ${booking.user?.lastName || ''}`.trim();
+          const phone = booking.user?.phoneNumber ? `${booking.user.phoneNumber.code}${booking.user.phoneNumber.number}` : '';
+
+          return (
+            <div
+              key={booking._id}
+              className="space-y-3 rounded-lg border-2 border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-green-200 bg-white dark:border-green-600 dark:bg-gray-700">
+                    <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{booking.partySize}</span>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{customerName || 'Unknown Customer'}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {booking.reservation?.reservationType} · {timeSlot?.startTime} - {timeSlot?.endTime}
+                    </p>
+                  </div>
+                </div>
+                <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                  Active
                 </span>
               </div>
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  {booking.customerName}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {booking.table} · {booking.time}
-                </p>
+
+              <div className="flex flex-wrap items-center gap-4 text-sm">
+                <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <Users className="h-4 w-4" />
+                  <span className="font-medium">{booking.partySize} guests</span>
+                </div>
+                {phone && (
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <Phone className="h-4 w-4" />
+                    <span>{phone}</span>
+                  </div>
+                )}
+                {booking.member && (
+                  <span className="rounded bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                    {booking.member}
+                  </span>
+                )}
               </div>
-            </div>
-            <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700 dark:bg-green-900/40 dark:text-green-300">
-              checked-in
-            </span>
-          </div>
 
-          <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <span className="font-medium">Guests:</span>
-              <span className="font-semibold">{booking.guests}</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-              <span className="font-medium">Checked:</span>
-              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                {booking.checkedIn}/{booking.guests}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                />
-              </svg>
-              <span>{booking.phone}</span>
-            </div>
-          </div>
+              {booking.eventTitle && <div className="text-xs text-gray-500 dark:text-gray-400">Event: {booking.eventTitle}</div>}
 
-          {booking.note && (
-            <div className="border-t border-green-200 pt-2 dark:border-green-800">
-              <p className="text-sm text-gray-600 italic dark:text-gray-400">
-                {booking.note}
-              </p>
+              {booking.notes && (
+                <div className="border-t border-green-200 pt-2 dark:border-green-800">
+                  <p className="text-sm text-gray-600 italic dark:text-gray-400">{booking.notes}</p>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* <div className="flex gap-2 pt-2">
-            <button className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800">
-              View Details
-            </button>
-            <button className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
-              Check Out
-            </button>
-          </div> */}
-        </div>
-      ))}
+          );
+        })}
+      </div>
     </div>
   );
 };

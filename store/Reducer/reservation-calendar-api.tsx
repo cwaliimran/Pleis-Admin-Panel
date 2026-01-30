@@ -24,7 +24,16 @@ export const reservationCalendarApi = createApi({
       }),
       providesTags: ['reservation-calendar'],
     }),
+
+    copyBookingOnMultipleDates: builder.mutation({
+      query: ({ reservations, dates }) => ({
+        url: API_ROUTES.ADMIN_RESERVATION_COPY,
+        method: 'POST',
+        body: { reservations, dates },
+      }),
+      invalidatesTags: ['reservation-calendar'],
+    }),
   }),
 });
 
-export const { useGetReservationCalendarQuery } = reservationCalendarApi;
+export const { useGetReservationCalendarQuery, useCopyBookingOnMultipleDatesMutation } = reservationCalendarApi;
