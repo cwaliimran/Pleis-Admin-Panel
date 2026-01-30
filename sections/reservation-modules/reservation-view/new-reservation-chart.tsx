@@ -6,7 +6,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { showSuccess } from '@/utils/toast';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCopyBookingOnMultipleDatesMutation } from '@/store/Reducer/reservation-calendar-api';
+import { showError, showSuccess } from '@/utils/toast';
 import { format } from 'date-fns';
 import { Calendar, Copy, Timer, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -22,7 +24,7 @@ import {
 } from './helpers';
 import { ProcessedBooking, ReservationGridProps } from './types';
 
-export default function ReservationGrid({ setClick, reservations, isLoading, selectedDate, onDateChange }: ReservationGridProps) {
+export default function ReservationGrid({ setClick, reservations, isLoading, selectedDate, onDateChange, onSlotClick }: ReservationGridProps) {
   const [mounted, setMounted] = useState<boolean>(false);
 
   // Time update modal state
@@ -42,6 +44,9 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
   // Selection mode state
   const [selectionMode, setSelectionMode] = useState<boolean>(false);
   const [selectedBookings, setSelectedBookings] = useState<Set<string>>(new Set());
+
+  // Copy booking mutation
+  const [copyBookings, { isLoading: isCopying }] = useCopyBookingOnMultipleDatesMutation();
 
   useEffect(() => {
     setMounted(true);
@@ -158,23 +163,57 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
     }
   };
 
-  // Handle multi-date confirmation
-  const handleMultiDateConfirm = (): void => {
+  // Collect all reservation IDs from selected bookings
+  const getSelectedReservationIds = (): string[] => {
+    const reservationIds: string[] = [];
+    selectedBookings.forEach((slotKey) => {
+      const booking = processedBookings.find((b) => b.slotKey === slotKey);
+      if (booking) {
+        booking.bookings.forEach((reservation) => {
+          if (reservation._id && !reservationIds.includes(reservation._id)) {
+            reservationIds.push(reservation._id);
+          }
+        });
+      }
+    });
+    return reservationIds;
+  };
+
+  // Handle multi-date confirmation with API call
+  const handleMultiDateConfirm = async (): Promise<void> => {
     if (selectedDates.length === 0) {
-      showSuccess('Please select at least one date.');
+      showError('Please select at least one date.');
       return;
     }
 
     if (selectedBookings.size === 0) {
-      showSuccess('No bookings selected.');
+      showError('No bookings selected.');
       return;
     }
 
-    showSuccess(`${selectedBookings.size} booking(s) copied to ${selectedDates.length} date(s)!`);
-    setDatePickerOpen(false);
-    setSelectedDates([]);
-    setSelectionMode(false);
-    setSelectedBookings(new Set());
+    const reservationIds = getSelectedReservationIds();
+    if (reservationIds.length === 0) {
+      showError('No valid reservations found.');
+      return;
+    }
+
+    // Format dates as YYYY-MM-DD strings
+    const formattedDates = selectedDates.map((date) => format(date, 'yyyy-MM-dd'));
+
+    try {
+      await copyBookings({
+        reservations: reservationIds,
+        dates: formattedDates,
+      }).unwrap();
+
+      showSuccess(`${reservationIds.length} reservation(s) copied to ${selectedDates.length} date(s)!`);
+      setDatePickerOpen(false);
+      setSelectedDates([]);
+      setSelectionMode(false);
+      setSelectedBookings(new Set());
+    } catch (error: any) {
+      showError(error?.data?.message || 'Failed to copy reservations.');
+    }
   };
 
   // Cancel paste mode
@@ -188,11 +227,78 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
     return null;
   }
 
-  // Show loading state
+  // Show loading state with skeleton
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="text-gray-500 dark:text-zinc-400">Loading reservations...</div>
+      <div>
+        {/* Header Card Skeleton */}
+        <Card className="mb-4 border-gray-300 bg-gray-100 dark:border-zinc-700 dark:bg-zinc-900">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-5 rounded bg-gray-300 dark:bg-zinc-700" />
+                <Skeleton className="h-9 w-40 rounded bg-gray-300 dark:bg-zinc-700" />
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Calendar Grid Skeleton */}
+        <div className="max-w-full">
+          <div className="max-h-150 overflow-auto rounded-lg border border-gray-300 bg-gray-100 dark:border-zinc-700 dark:bg-zinc-900">
+            <table className="w-full border-collapse text-sm">
+              <thead className="sticky top-0 z-20 bg-gray-200 dark:bg-zinc-800">
+                <tr>
+                  <th className="sticky left-0 z-20 min-w-20 border border-gray-300 bg-gray-200 p-2 text-left dark:border-zinc-700 dark:bg-zinc-800">
+                    <Skeleton className="h-4 w-12 bg-gray-300 dark:bg-zinc-600" />
+                  </th>
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <th key={i} className="min-w-22.5 border border-gray-300 p-2 dark:border-zinc-700">
+                      <Skeleton className="h-4 w-16 bg-gray-300 dark:bg-zinc-600" />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from({ length: 4 }).map((_, rowIdx) => (
+                  <tr key={rowIdx}>
+                    <td className="sticky left-0 z-10 h-14 border border-gray-300 bg-gray-200 p-2 dark:border-zinc-700 dark:bg-zinc-800">
+                      <Skeleton className="h-4 w-16 bg-gray-300 dark:bg-zinc-600" />
+                    </td>
+                    {Array.from({ length: 12 }).map((_, colIdx) => (
+                      <td key={colIdx} className="border border-gray-300 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-950">
+                        {/* Randomly show some skeleton booking cards */}
+                        {(rowIdx + colIdx) % 4 === 0 && (
+                          <div className="relative h-full overflow-hidden rounded border border-gray-200 bg-gray-50 p-2 dark:border-zinc-600 dark:bg-zinc-800/80">
+                            <Skeleton className="absolute top-0 right-0 h-5 w-16 rounded-none rounded-tr-xs rounded-bl-md bg-gray-300 dark:bg-zinc-600" />
+                            <div className="mt-4 space-y-2">
+                              <Skeleton className="h-3 w-14 bg-gray-300 dark:bg-zinc-600" />
+                              <Skeleton className="h-3 w-20 bg-gray-300 dark:bg-zinc-600" />
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Stats Card Skeleton */}
+        <Card className="mt-4 border-gray-300 bg-gray-100 dark:border-zinc-700 dark:bg-zinc-900">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i}>
+                  <Skeleton className="mb-2 h-3 w-20 bg-gray-300 dark:bg-zinc-700" />
+                  <Skeleton className="h-8 w-12 bg-gray-300 dark:bg-zinc-600" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -325,7 +431,17 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
                         >
                           {request && isStart && (
                             <div
-                              onClick={() => !selectionMode && setClick(true)}
+                              onClick={() => {
+                                if (!selectionMode) {
+                                  setClick(true);
+                                  onSlotClick?.({
+                                    reservationType: request.type,
+                                    startTime: request.startTime,
+                                    endTime: request.endTime,
+                                    slotKey: request.slotKey,
+                                  });
+                                }
+                              }}
                               className={`relative h-full overflow-hidden rounded border border-green-500 bg-green-100/50 p-2 dark:border-green-700 dark:bg-green-900/50 ${
                                 !selectionMode ? 'cursor-pointer' : ''
                               } ${selectionMode && selectedBookings.has(request.slotKey) ? '' : ''} `}
@@ -500,6 +616,16 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
               mode="multiple"
               selected={selectedDates}
               onSelect={handleDateSelect}
+              disabled={(date) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const checkDate = new Date(date);
+                checkDate.setHours(0, 0, 0, 0);
+                const selected = new Date(selectedDate);
+                selected.setHours(0, 0, 0, 0);
+                // Disable past dates, today, and the currently selected calendar date
+                return checkDate <= today || checkDate.getTime() === selected.getTime();
+              }}
               className="w-full rounded-md border border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
             />
 
@@ -530,10 +656,10 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
             </Button>
             <Button
               onClick={handleMultiDateConfirm}
-              disabled={selectedDates.length === 0}
+              disabled={selectedDates.length === 0 || isCopying}
               className="bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
             >
-              Confirm ({selectedDates.length})
+              {isCopying ? 'Copying...' : `Confirm (${selectedDates.length})`}
             </Button>
           </DialogFooter>
         </DialogContent>

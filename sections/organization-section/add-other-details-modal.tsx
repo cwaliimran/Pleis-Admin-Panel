@@ -170,16 +170,24 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
       value: tag?._id,
     })) || [];
 
+  // const venueOptions =
+  //   (venueList && venueList.length > 0
+  //     ? venueList.map((venue: any) => ({
+  //         label: venue?.venueTitle,
+  //         value: venue?.venueId,
+  //       }))
+  //     : venueData?.data?.map((venue: any) => ({
+  //         label: venue?.title,
+  //         value: venue?._id,
+  //       }))) || [];
+
   const venueOptions =
-    (venueList && venueList.length > 0
+    venueList && venueList.length > 0
       ? venueList.map((venue: any) => ({
           label: venue?.venueTitle,
           value: venue?.venueId,
         }))
-      : venueData?.data?.map((venue: any) => ({
-          label: venue?.title,
-          value: venue?._id,
-        }))) || [];
+      : [];
 
   const categoryOptions =
     categoryData?.data?.map((category: any) => ({

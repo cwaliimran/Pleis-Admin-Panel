@@ -25,6 +25,7 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/ticketing',
   '/super-admin/bundles',
   '/super-admin/reservation',
+  '/super-admin/calendar',
   '/super-admin/streaks',
   '/super-admin/updates',
   '/super-admin/giveaways',
@@ -40,6 +41,7 @@ const COMPANY_REQUIRED_ROUTES = [
 const ORGANIZATION_REQUIRED_ROUTES = [
   '/super-admin/ticketing',
   '/super-admin/reservation',
+  '/super-admin/calendar',
   '/super-admin/giveaways',
   '/super-admin/bundles',
   '/super-admin/app-ordering/order-management',
