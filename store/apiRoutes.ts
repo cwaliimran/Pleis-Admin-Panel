@@ -89,6 +89,8 @@ export const API_ROUTES = {
 
   ADMIN_RESERVATION_CALENDAR: `/admin/reservations/calendar`,
   ADMIN_RESERVATION_COPY: `/admin/reservations/copy`,
+  ADMIN_RESERVATION_CHANGE_TIMING: `/admin/reservations/change-timing`,
+  ADMIN_RESERVATION_COPY_SLOTS: `/admin/reservations/copy-slots`,
 
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
