@@ -32,7 +32,21 @@ export const helpersApi = createApi({
       }),
       providesTags: ['helper'],
     }),
+
+    getAllByOrganization: builder.query({
+      // query: ({ organization }) => ({
+      query: ({}) => ({
+        url: API_ROUTES.ORGANIZER_GENERAL_ORGANIZATIONS,
+        method: 'GET',
+      }),
+      // transformResponse: (res) => res.data,
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      // providesTags: ['event'],
+    }),
   }),
 });
 
-export const { useGetEventByMultipleOrganizationQuery } = helpersApi;
+export const { useGetEventByMultipleOrganizationQuery, useGetAllByOrganizationQuery } = helpersApi;

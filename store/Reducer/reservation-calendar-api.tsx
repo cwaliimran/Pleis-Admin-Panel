@@ -33,7 +33,30 @@ export const reservationCalendarApi = createApi({
       }),
       invalidatesTags: ['reservation-calendar'],
     }),
+
+    copyReservationSlots: builder.mutation({
+      query: ({ data }) => ({
+        url: API_ROUTES.ADMIN_RESERVATION_COPY_SLOTS,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['reservation-calendar'],
+    }),
+
+    updateReservationsTiming: builder.mutation({
+      query: ({ updatedData }) => ({
+        url: API_ROUTES.ADMIN_RESERVATION_CHANGE_TIMING,
+        method: 'PUT',
+        body: updatedData,
+      }),
+      invalidatesTags: ['reservation-calendar'],
+    }),
   }),
 });
 
-export const { useGetReservationCalendarQuery, useCopyBookingOnMultipleDatesMutation } = reservationCalendarApi;
+export const {
+  useGetReservationCalendarQuery,
+  useCopyBookingOnMultipleDatesMutation,
+  useCopyReservationSlotsMutation,
+  useUpdateReservationsTimingMutation,
+} = reservationCalendarApi;

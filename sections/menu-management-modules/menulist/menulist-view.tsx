@@ -13,8 +13,13 @@ import DuplicateMenuModal from './duplicate-menu-modal';
 import MenuItemModal from './menulist-modal';
 import MenuItemTable from './menulist-table';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
-const MenuListView = () => {
+type MenuListViewProps = {
+  userType: 'super-admin' | 'organizer';
+};
+
+const MenuListView = ({ userType }: MenuListViewProps) => {
   const openModal = useBoolean();
   const duplicateModal = useBoolean();
   const editModal = useBoolean();
@@ -28,6 +33,9 @@ const MenuListView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+
+  const { organizerOrganizationIds } = useCompanySelection();
+  console.log('organizerOrganizationIds', organizerOrganizationIds);
 
   const [deleteMenuList, { isLoading: deleteLoading }] = useDeleteMenuListMutation();
 
@@ -44,6 +52,7 @@ const MenuListView = () => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
+    organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -183,6 +192,7 @@ const MenuListView = () => {
           isEdit={editModal.value}
           selectedCompany={selectedCompany}
           selectedData={selectedRecord}
+          userType={userType}
         />
       )}
 

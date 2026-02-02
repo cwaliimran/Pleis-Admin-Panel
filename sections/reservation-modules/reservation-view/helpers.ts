@@ -139,3 +139,48 @@ export const calculateAvgPartySize = (reservations: ReservationData[]): string =
   const totalCovers = calculateTotalCovers(reservations);
   return (totalCovers / reservations.length).toFixed(1);
 };
+
+// ============================================
+// Time Conversion Helpers
+// ============================================
+
+/**
+ * Convert 12-hour format (02:30 PM) to 24-hour format (14:30) for input elements
+ */
+export const convert12To24 = (time12: string): string => {
+  if (!time12) return '';
+  const match = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return '';
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3].toUpperCase();
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  return `${hours.toString().padStart(2, '0')}:${minutes}`;
+};
+
+/**
+ * Convert 24-hour format (14:30) to 12-hour format (02:30 PM) for display/API
+ */
+export const convert24To12 = (time24: string): string => {
+  if (!time24) return '';
+  const [hoursStr, minutes] = time24.split(':');
+  let hours = parseInt(hoursStr, 10);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  if (hours === 0) hours = 12;
+  else if (hours > 12) hours -= 12;
+  return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`;
+};
+
+/**
+ * Format time to ensure leading zeros (e.g., "2:30 AM" -> "02:30 AM")
+ */
+export const formatTimeWithLeadingZero = (time: string): string => {
+  if (!time) return '';
+  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return time;
+  const hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3].toUpperCase();
+  return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`;
+};

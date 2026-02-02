@@ -41,6 +41,8 @@ export const API_ROUTES = {
   UPDATES_BY_ID: (id: string) => `/organizer/updates/${id}`,
   GET_EVENT_BY_MULTIPLE_ORGANIZATION: `/organizer/updates/events`,
 
+  ORGANIZER_GENERAL_ORGANIZATIONS: `/organizer/general/organizations`,
+
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
   PENDING_USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -89,6 +91,8 @@ export const API_ROUTES = {
 
   ADMIN_RESERVATION_CALENDAR: `/admin/reservations/calendar`,
   ADMIN_RESERVATION_COPY: `/admin/reservations/copy`,
+  ADMIN_RESERVATION_CHANGE_TIMING: `/admin/reservations/change-timing`,
+  ADMIN_RESERVATION_COPY_SLOTS: `/admin/reservations/copy-slots`,
 
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
@@ -266,6 +270,11 @@ export const API_ROUTES = {
   ADMIN_MENU_BY_ID: (id: string) => `/admin/menu/${id}`,
   ADMIN_MENU_DUPLICATE_BY_ID: (id: string) => `/admin/menu/duplicate/${id}`,
   ADMIN_MENU_BY_COMPANY_ORGANIZER: (id: string) => `/admin/menu/names/by-company-organizer/${id}`,
+
+  ORGANIZER_MENU: `/organizer/menu`,
+  ORGANIZER_MENU_BY_ID: (id: string) => `/organizer/menu/${id}`,
+  ORGANIZER_MENU_DUPLICATE_BY_ID: (id: string) => `/organizer/menu/duplicate/${id}`,
+  ORGANIZER_MENU_BY_COMPANY_ORGANIZER: (id: string) => `/organizer/menu/names/by-company-organizer/${id}`,
 
   ADMIN_MENU_ITEMS: `/admin/menu/items`,
   ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,

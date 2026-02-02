@@ -18,7 +18,7 @@ const Page = () => {
       />
 
       <CompanyGuard>
-        <MenuListView />
+        <MenuListView userType="super-admin" />
       </CompanyGuard>
     </div>
   );
