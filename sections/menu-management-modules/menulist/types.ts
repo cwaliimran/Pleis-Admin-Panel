@@ -47,4 +47,5 @@ export type MenuItemModalProps = {
   isEdit?: boolean;
   selectedData?: any;
   selectedCompany?: any;
+  userType: 'super-admin' | 'organizer';
 };

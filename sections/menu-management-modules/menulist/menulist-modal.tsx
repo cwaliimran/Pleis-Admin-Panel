@@ -5,6 +5,7 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useGetAllByOrganizationQuery } from '@/store/Reducer/helpers-api';
 import { useAddMenuListMutation, useUpdateMenuListMutation } from '@/store/Reducer/menu-list-api';
 import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
@@ -29,7 +30,7 @@ const schema = Yup.object().shape({
   status: Yup.string().required('Status is required'),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCompany }: MenuItemModalProps) => {
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCompany, userType }: MenuItemModalProps) => {
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
     defaultValues,
@@ -54,12 +55,22 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCo
     }
   }, [open, isEdit, selectedData, reset]);
 
-  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationByCompanyQuery({
-    companyOrganizer: selectedCompany || undefined,
-  });
+  const isSuperAdmin = userType === 'super-admin';
+
+  const { data: { data: superAdminOrgs = [] } = {}, isLoading: superAdminOrgsLoading } = useGetOrganizationByCompanyQuery(
+    { companyOrganizer: selectedCompany || undefined },
+    { skip: !isSuperAdmin }
+  );
+
+  const { data: { data: organizerOrgs = [] } = {}, isLoading: organizerOrgsLoading } = useGetAllByOrganizationQuery(
+    { companyOrganizer: selectedCompany || undefined },
+    { skip: isSuperAdmin }
+  );
+
+  const organizations = isSuperAdmin ? superAdminOrgs : organizerOrgs;
+  const organizationsLoading = isSuperAdmin ? superAdminOrgsLoading : organizerOrgsLoading;
 
   const [addMenuList, { isLoading: addMenuListLoading }] = useAddMenuListMutation();
-
   const [updateMenuList, { isLoading: updateMenuListLoading }] = useUpdateMenuListMutation();
 
   const handleSubmit = async (formData: any) => {
@@ -141,7 +152,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCo
                       placeholder="Select Organization"
                       options={organizations?.map((val: any) => ({
                         value: val?._id,
-                        label: val?.basicInfo?.name,
+                        label: isSuperAdmin ? val?.basicInfo?.name : val?.name,
                       }))}
                       isLoading={organizationsLoading}
                       showNone={false}

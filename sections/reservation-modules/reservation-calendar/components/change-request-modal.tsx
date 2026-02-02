@@ -30,6 +30,7 @@ interface UpdateReservationModalProps {
   open: boolean;
   onClose: () => void;
   selectedData?: any;
+  onSuccess?: () => void;
 }
 
 // SCHEMA VALIDATION
@@ -86,7 +87,7 @@ const defaultValues: UpdateReservationFormValues = {
 };
 
 // MAIN COMPONENT
-const UpdateReservationModal = ({ open, onClose, selectedData }: UpdateReservationModalProps) => {
+const UpdateReservationModal = ({ open, onClose, selectedData, onSuccess }: UpdateReservationModalProps) => {
   const [updateReservation, { isLoading: isUpdating }] = useUpdateUserReservationMutation();
 
   console.log('selectedData', selectedData);
@@ -206,6 +207,7 @@ const UpdateReservationModal = ({ open, onClose, selectedData }: UpdateReservati
 
       showSuccess(response?.message || 'Reservation updated successfully');
       methods.reset(defaultValues);
+      onSuccess?.();
       onClose();
     } catch (error) {
       const errorMessage = getErrorMessage(error);

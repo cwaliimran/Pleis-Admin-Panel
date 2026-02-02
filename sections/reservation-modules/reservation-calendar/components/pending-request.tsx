@@ -149,7 +149,7 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({ bookings, selectedSlo
                   </div>
                   <div className="ml-2">
                     <span
-                      className={`rounded-full px-2 py-1 capitalize text-xs font-medium ${
+                      className={`rounded-full px-2 py-1 text-xs font-medium capitalize ${
                         booking.status === 'confirmed'
                           ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                           : booking.status === 'pending'
@@ -204,7 +204,9 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({ bookings, selectedSlo
         </div>
       </div>
 
-      {openModal.value && <UpdateReservationModal open={openModal.value} onClose={openModal.onFalse} selectedData={selectedBooking} />}
+      {openModal.value && (
+        <UpdateReservationModal open={openModal.value} onClose={openModal.onFalse} selectedData={selectedBooking} onSuccess={onStatusUpdate} />
+      )}
 
       <QueryDialog
         open={confirmModal.value}
