@@ -22,7 +22,10 @@ const ReservationView = ({ event }: ReservationViewProps) => {
   const organizationIdFromEvent = event?.basicInfo?.organization?._id || undefined;
 
   const [range, setRange] = useState('today');
+  const [status, setStatus] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [selectedData, setSelectedData] = useState<any>(null);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const { companyId, organizationId } = useCompanySelectionState();
@@ -39,6 +42,7 @@ const ReservationView = ({ event }: ReservationViewProps) => {
     range: date ? undefined : range,
     date: date ? formatDate(date) : undefined,
     organizationsId: organizationIdFromEvent || organizationId || undefined,
+    status: status === 'all' ? undefined : status,
     // organizationsId: organizationId || undefined,
     // companyOrganizer,
   });
@@ -46,8 +50,24 @@ const ReservationView = ({ event }: ReservationViewProps) => {
   const reservationsData: ReservationsApiResponse['data'] | undefined = apiData?.data;
   const meta: ReservationsApiResponse['meta'] | undefined = apiData?.meta;
 
-  const handleCreateNew = () => setOpenModal(true);
-  const handleClose = () => setOpenModal(false);
+  const handleCreateNew = () => {
+    setSelectedData(null);
+    setIsEdit(false);
+    setOpenModal(true);
+  };
+
+  const handleClose = () => {
+    setOpenModal(false);
+    setIsEdit(false);
+    setSelectedData(null);
+  };
+
+  const handleEdit = (reservation: any) => {
+    setSelectedData(reservation);
+    setIsEdit(true);
+    setOpenModal(true);
+  };
+
   const handlePageChange = (newPage: number) => setPage(newPage);
 
   // Fix: When range changes, clear date
@@ -67,6 +87,11 @@ const ReservationView = ({ event }: ReservationViewProps) => {
     setPage(1);
   };
 
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    setPage(1);
+  };
+
   return (
     <>
       <div className="flex w-full items-center justify-end md:mb-5">
@@ -76,7 +101,14 @@ const ReservationView = ({ event }: ReservationViewProps) => {
         </Button>
       </div>
 
-      <ReservationHeader date={date} onDateChange={handleDateChange} range={range} onRangeChange={handleRangeChange} />
+      <ReservationHeader
+        date={date}
+        onDateChange={handleDateChange}
+        range={range}
+        onRangeChange={handleRangeChange}
+        status={status}
+        onStatusChange={handleStatusChange}
+      />
 
       <ReservationBody
         isLoading={isLoading || isFetching}
@@ -88,14 +120,15 @@ const ReservationView = ({ event }: ReservationViewProps) => {
         limit={limit}
         companyOrganizer={companyOrganizer}
         onLimitChange={(l) => setLimit(l)}
+        onEdit={handleEdit}
       />
 
       {openModal && (
         <ReservationModal
           open={openModal}
           onClose={handleClose}
-          isEdit={false}
-          selectedData={null}
+          isEdit={isEdit}
+          selectedData={selectedData}
           organizationId={organizationIdFromEvent || organizationId}
           event={event}
         />

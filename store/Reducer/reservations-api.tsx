@@ -18,9 +18,10 @@ export const reservationsApi = createApi({
         date?: string;
         companyOrganizer?: string;
         organizationsId?: string;
+        status?: string;
       }
     >({
-      query: ({ page, limit, range, date, companyOrganizer, organizationsId }) => {
+      query: ({ page, limit, range, date, companyOrganizer, organizationsId, status }) => {
         const params: Record<string, string | number> = {
           page: page + 1,
           limit,
@@ -38,6 +39,10 @@ export const reservationsApi = createApi({
 
         if (organizationsId) {
           params.organizationsId = organizationsId;
+        }
+
+        if (status) {
+          params.status = status;
         }
 
         return {
@@ -108,7 +113,7 @@ export const reservationsApi = createApi({
     }),
 
     deleteReservation: builder.mutation({
-      query: (id) => ({
+      query: ({ id }) => ({
         url: API_ROUTES.ADMIN_RESERVATION_BY_ID(id),
         method: 'DELETE',
       }),

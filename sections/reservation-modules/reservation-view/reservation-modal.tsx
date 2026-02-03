@@ -14,7 +14,7 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle, Info, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
@@ -427,15 +427,26 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
     setValidationErrors(newErrors);
   };
 
+  // Use ref to track initial edit load - refs update synchronously and don't cause re-renders
+  const isInitialEditLoadRef = useRef(false);
+
   useEffect(() => {
-    if (selectedEventId && timingSlotsEnabled) {
+    // Only clear dateTimeSlots when user manually changes event, not during edit load
+    if (selectedEventId && timingSlotsEnabled && !isInitialEditLoadRef.current) {
       setDateTimeSlots([]);
       setValidationErrors({});
+    }
+    // Reset the flag after this effect runs
+    if (isInitialEditLoadRef.current) {
+      isInitialEditLoadRef.current = false;
     }
   }, [selectedEventId, timingSlotsEnabled]);
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
+      // Set ref to prevent the other useEffect from clearing dateTimeSlots
+      isInitialEditLoadRef.current = true;
+
       const mappedData: ReservationFormValues = {
         reservationType: selectedData?.reservationType || '',
         availableReservations: selectedData?.availableReservations || 0,
@@ -454,7 +465,16 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
       };
 
       if (selectedData?.timingSlots?.dateTimeSlots) {
-        setDateTimeSlots(selectedData.timingSlots.dateTimeSlots);
+        // Convert 12-hour format from API to 24-hour format for time inputs
+        const convertedSlots = selectedData.timingSlots.dateTimeSlots.map((dateSlot: any) => ({
+          ...dateSlot,
+          timeSlots: dateSlot.timeSlots.map((timeSlot: any) => ({
+            ...timeSlot,
+            startTime: timeSlot.startTime ? convertTimeFormat(timeSlot.startTime, true) : '',
+            endTime: timeSlot.endTime ? convertTimeFormat(timeSlot.endTime, true) : '',
+          })),
+        }));
+        setDateTimeSlots(convertedSlots);
       }
 
       reset(mappedData);
@@ -619,6 +639,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
     reset(defaultValues);
     setDateTimeSlots([]);
     setValidationErrors({});
+    isInitialEditLoadRef.current = false;
     onClose();
   };
 

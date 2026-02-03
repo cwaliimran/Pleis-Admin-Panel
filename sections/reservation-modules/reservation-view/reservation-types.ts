@@ -46,6 +46,7 @@ export type ReservationBodyProps = {
   limit: number;
   companyOrganizer?: string;
   onLimitChange: (limit: number) => void;
+  onEdit?: (reservation: Reservation) => void;
 };
 
 export type ReservationHeaderProps = {
@@ -53,4 +54,6 @@ export type ReservationHeaderProps = {
   onDateChange: (date: Date | undefined) => void;
   range: string;
   onRangeChange: (range: string) => void;
+  status: string;
+  onStatusChange: (status: string) => void;
 };
