@@ -106,7 +106,7 @@ const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete?.(item?._id);
+              handleDelete?.(item);
             }}
             className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >

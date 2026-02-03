@@ -5,7 +5,7 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import ButtonLoading from '@/components/common/button-loading';
 import SocialLinks from '@/components/common/social-links';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
@@ -21,12 +21,11 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ActivePromontion, BusinessInfo, TotalFollowers, UserCalender } from '.';
+import { BusinessInfo, UserCalender } from '.';
 import OrganizationModal from '../organization-section/create-edit-organization-modal';
-import { tabsData, userData } from './data';
+import { tabsData } from './data';
 import UserInfo from './orgInfo';
 import Useranalytics from './organalytics';
-import UserCard from './userCard';
 import UserEvents from './userEvents';
 import UserLoyalty from './userLoyalty';
 import UserNotifications from './userNotifications';
@@ -314,7 +313,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
                 {active === 'analytics' && <Useranalytics />}
 
-                {active === 'notifications' && <UserNotifications />}
+                {active === 'notifications' && <UserNotifications organizationId={organizationData?._id} />}
 
                 {active === 'calendar' && <UserCalender />}
               </div>
@@ -322,12 +321,53 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
             {/* Sidebar or Additional Panel */}
             <div className="col-span-12 space-y-3 md:space-y-2 xl:col-span-3">
-              {userData.map((user: any) => (
-                <UserCard item={user} key={user._id} />
-              ))}
-              <TotalFollowers />
+              <Card className="dark:bg-secondary">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold">Total Revenue</h3>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center text-4xl font-bold">{organizationData?.revenue !== 0 ? organizationData?.revenue : 0}</div>
+                </CardHeader>
+              </Card>
 
-              <ActivePromontion />
+              <Card className="dark:bg-secondary">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold">Views</h3>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center text-4xl font-bold">{organizationData?.views !== 0 ? organizationData?.views : 0}</div>
+                </CardHeader>
+              </Card>
+
+              <Card className="dark:bg-secondary">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold">Total Tickets Sold</h3>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center text-4xl font-bold">
+                    {organizationData?.ticketsSold !== 0 ? organizationData?.ticketsSold : 0}
+                  </div>
+                </CardHeader>
+              </Card>
+
+              <Card className="dark:bg-secondary">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold">Orgainizer Events</h3>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center text-4xl font-bold">{organizationData?.events !== 0 ? organizationData?.events : 0}</div>
+                </CardHeader>
+              </Card>
+
+              {/* <TotalFollowers /> */}
 
               <BusinessInfo organizationData={organizationData} />
             </div>

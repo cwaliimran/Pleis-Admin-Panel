@@ -97,6 +97,8 @@ export const API_ROUTES = {
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
+  ADMIN_ORGANIZATION_NOTIFICATIONS_BY_ID: (id: string) => `/admin/organizations/${id}/notifications`,
+
 
   ADMIN_NOTIFICATIONS: `/admin/notifications`,
   ADMIN_NOTIFICATIONS_GET_ALL: `/admin/notifications/all`,
@@ -232,8 +234,12 @@ export const API_ROUTES = {
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
 
   ADMIN_LOYALTY_PROMOTION: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/promotions' : '/admin/loyalty/promotions'),
-  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean) =>
-    isGlobal ? `/admin/global-loyalty/promotions/${id}` : `/admin/loyalty/promotions/${id}`,
+  // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean) =>isGlobal ? `/admin/global-loyalty/promotions/${id}` : `/admin/loyalty/promotions/${id}`,
+
+  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean, scope?: string) =>
+    isGlobal
+      ? `/admin/global-loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`
+      : `/admin/loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`,
 
   // ADMIN_LOYALTY_CHALLENGE: `/admin/loyalty/challenges`,
   // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,

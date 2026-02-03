@@ -1,4 +1,4 @@
-import { id } from "date-fns/locale";
+// import { id } from "date-fns/locale";
 
 export const organizerData = [
   {
@@ -106,10 +106,10 @@ export const organizerData = [
 export const tabsData = [
   { value: "info", label: "Info" },
   { value: "events", label: "Events" },
-  { value: "loyalty", label: "Loyalty" },
+  // { value: "loyalty", label: "Loyalty" },
   { value: "analytics", label: "Analytics" },
   { value: "notifications", label: "Notifications" },
-  { value: "calendar", label: "Calendar" },
+  // { value: "calendar", label: "Calendar" },
 ];
 
 export const organizerTabs = [

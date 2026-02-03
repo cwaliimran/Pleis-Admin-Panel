@@ -27,24 +27,9 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
     router.push(`/${userType}/events/edit-event/${id}`);
   };
 
-  // const media = item?.basicInfo?.media;
-  // const mediaUrl = typeof media === 'string' ? media.toLowerCase() : '';
-  // const isVideo = mediaUrl.endsWith('.mp4');
-
   return (
     <TableRow className="h-14 w-full cursor-pointer transition-colors" onClick={handleNavigateToDetails}>
       <TableCell>
-        {/* <Avatar className="h-12 w-12 overflow-hidden !rounded-xl shadow-sm"> */}
-        {/* {item?.basicInfo?.media && item.basicInfo.media !== 'noimage.png' ? (
-            <ImageWithFallback
-            url={item?.basicInfo?.mediaInfo?.url}
-            alt={item?.basicInfo?.title}
-            className="h-full w-full cursor-pointer object-cover"
-            />
-            ) : (
-              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.title?.[0]?.toUpperCase() || ''}</span>
-              )} */}
-
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.basicInfo?.media && item?.basicInfo?.media !== noImageUrl && item?.basicInfo?.media !== noImageUrlDev ? (
             <AvatarImage src={item?.basicInfo?.media} alt="Logo" className="h-full w-full cursor-pointer object-cover" />
@@ -93,21 +78,6 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>
       </TableCell>
-
-      {/* Category */}
-      {/* <TableCell className="text-left flex items-center gap-2">
-      {item?.basicInfo?.category?.imageInfo?.url &&
-      item?.basicInfo?.category?.imageInfo?.name !== "noimage.png" ? (
-        <Avatar className="w-6 h-6 !rounded">
-        <AvatarImage
-          src={item?.basicInfo?.category?.imageInfo?.url}
-          alt={item?.basicInfo?.category?.imageInfo?.name}
-          className="object-cover w-full h-full"
-        />
-        </Avatar>
-      ) : null}
-      <span>{item?.basicInfo?.category?.title || "-"}</span>
-      </TableCell> */}
 
       {/* Actions */}
       <TableCell className="text-end">

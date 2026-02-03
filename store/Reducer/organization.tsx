@@ -124,6 +124,22 @@ export const organizationApi = createApi({
       }),
       invalidatesTags: ['organization'],
     }),
+
+    getOrgNotificationsById: builder.query({
+      query: ({ id, page, limit }) => ({
+        url: API_ROUTES.ADMIN_ORGANIZATION_NOTIFICATIONS_BY_ID(id),
+        method: 'GET',
+        params: {
+          page: page + 1,
+          limit,
+        },
+      }),
+      // transformResponse: (res) => res.data,
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+    }),
   }),
 });
 
@@ -135,4 +151,5 @@ export const {
   useGetOrganizationByIdQuery,
   useUpdateOrganizationMutation,
   useDeleteOrganizationMutation,
+  useGetOrgNotificationsByIdQuery,
 } = organizationApi;
