@@ -11,26 +11,29 @@ import { ReservationHeaderProps } from './reservation-types';
 const schema = Yup.object({
   date: Yup.date().nullable().defined(),
   range: Yup.string().defined(),
+  status: Yup.string().defined(),
 });
 
 type FormValues = Yup.InferType<typeof schema>;
 
-export default function ReservationHeader({ date, onDateChange, range, onRangeChange }: ReservationHeaderProps) {
+export default function ReservationHeader({ date, onDateChange, range, onRangeChange, status, onStatusChange }: ReservationHeaderProps) {
   const defaultValues: FormValues = {
     date: date ?? null,
     range: range,
+    status: status,
   };
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema),
     defaultValues,
-    values: { date: date ?? null, range },
+    values: { date: date ?? null, range, status },
   });
 
   const { handleSubmit, watch, setValue } = methods;
 
   const watchedDate = watch('date');
   const watchedRange = watch('range');
+  const watchedStatus = watch('status');
 
   React.useEffect(() => {
     const currentDate = watchedDate ?? undefined;
@@ -57,6 +60,12 @@ export default function ReservationHeader({ date, onDateChange, range, onRangeCh
       }
     }
   }, [watchedRange, range, onRangeChange, setValue, onDateChange]);
+
+  React.useEffect(() => {
+    if (watchedStatus !== status) {
+      onStatusChange(watchedStatus);
+    }
+  }, [watchedStatus, status, onStatusChange]);
 
   const onSubmit = () => {
     // No-op for this component as changes are handled in useEffect/watch
@@ -87,6 +96,20 @@ export default function ReservationHeader({ date, onDateChange, range, onRangeCh
                       { value: 'today', label: 'Today' },
                       { value: 'weekly', label: 'This Week' },
                       { value: 'monthly', label: 'This Month' },
+                    ]}
+                  />
+                </div>
+
+                <div className="flex w-full items-center justify-center gap-x-2 rounded-md bg-white md:w-[160px] lg:w-[160px] dark:bg-[#171717]">
+                  <RHFSelectField
+                    name="status"
+                    label="Status"
+                    placeholder="Select Status"
+                    className="w-[160px] flex-1"
+                    options={[
+                      { value: 'all', label: 'All' },
+                      { value: 'active', label: 'Active' },
+                      { value: 'inactive', label: 'Inactive' },
                     ]}
                   />
                 </div>

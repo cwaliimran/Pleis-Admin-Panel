@@ -1,6 +1,7 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import PromotionConfirmDialog from '@/components/comfirm-dialog/promotion-confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
@@ -10,9 +11,9 @@ import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import GlobalPromotionModal from './global-promotions-modal';
 import PromotionsModal from './promotions-modal';
 import PromotionsTable from './promotions-table';
-import GlobalPromotionModal from './global-promotions-modal';
 
 interface PromotionsViewProps {
   global?: boolean;
@@ -22,6 +23,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const recurringDeleteModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -32,6 +34,7 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [deleteScope, setDeleteScope] = useState<string | null>(null);
 
   const { companyId: selectedCompany } = useCompanySelectionState();
 
@@ -95,27 +98,34 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
     }
   };
 
-  const handleDelete = useCallback(
-    (id: string) => {
-      if (!id) {
+  const handleDelete = useCallback((data: any) => {
+      if (!data) {
         showError('No promotion selected');
         return;
       }
 
-      setSelectedId(id);
-      deleteModal.onTrue();
+      if (data?.recurringMeta?.parentPromotion === null) {
+        setSelectedId(data?._id);
+        deleteModal.onTrue();
+      } else {
+        setSelectedId(data?._id);
+        recurringDeleteModal.onTrue();
+      }
     },
-    [deleteModal]
+    [recurringDeleteModal, deleteModal]
   );
 
   // DELETE CALL
-  const onDelete = async () => {
+  const onDelete = async (scope?: string) => {
     try {
-      // const response = await deletePromotion(selectedId).unwrap();
+      if (scope) {
+        setDeleteScope(scope);
+      }
 
       const response = await deletePromotion({
         id: selectedId,
         isGlobal: global,
+        ...(scope && { scope }),
       }).unwrap();
 
       if (response?.error) {
@@ -127,9 +137,12 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
       showSuccess(response?.message || 'Deleted successfully');
 
       setSelectedId(null);
+      setDeleteScope(null);
       deleteModal.onFalse();
+      recurringDeleteModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
+      setDeleteScope(null);
     }
   };
 
@@ -210,6 +223,18 @@ const PromotionsView = ({ global }: PromotionsViewProps) => {
         onConfirm={onDelete}
         isLoading={deleteLoading}
       />
+
+      {recurringDeleteModal.value && (
+        <PromotionConfirmDialog
+          open={recurringDeleteModal.value}
+          title="Delete Promotion"
+          content="Are you sure you want to delete this promotion?"
+          onClose={recurringDeleteModal.onFalse}
+          onConfirm={onDelete}
+          isLoading={deleteLoading && deleteScope === 'single'}
+          isLoadingForAllEventsDelete={deleteLoading && deleteScope === 'future'}
+        />
+      )}
     </div>
   );
 };

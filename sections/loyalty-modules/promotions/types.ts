@@ -10,7 +10,7 @@ export interface SamplePageProps {
   data: any[];
   meta: SampleMeta;
   loading?: boolean;
-  handleDelete?: (id: string) => void;
+  handleDelete?: (id: any) => void;
   handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
@@ -26,6 +26,6 @@ export interface SamplePageProps {
 
 export interface TableRowProps {
   item: any;
-  handleDelete?: (id: string) => void;
+  handleDelete?: (id: any) => void;
   handleEdit?: (id: string) => void;
 }

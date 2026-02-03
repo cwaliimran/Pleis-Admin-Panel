@@ -27,6 +27,9 @@ export default function TimeUpdateModal({
   onUpdate,
   isUpdating,
 }: TimeUpdateModalProps) {
+  // Check if start and end time are the same
+  const isSameTime = !!(startTime && endTime && convert12To24(startTime) === convert12To24(endTime));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
@@ -63,13 +66,15 @@ export default function TimeUpdateModal({
               />
             </div>
           </div>
+
+          {isSameTime && <p className="text-sm text-red-500">Start time and end time cannot be the same</p>}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isUpdating} className="border-gray-300 dark:border-zinc-700">
             Cancel
           </Button>
-          <Button onClick={onUpdate} disabled={isUpdating} className="bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">
+          <Button onClick={onUpdate} disabled={isUpdating || isSameTime} className="bg-green-600 text-white hover:bg-green-700 disabled:opacity-50">
             {isUpdating ? 'Updating...' : 'Update'}
           </Button>
         </DialogFooter>

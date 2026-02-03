@@ -190,7 +190,15 @@ type PromotionModalProps = {
 };
 
 const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = false, selectedCompany }: PromotionModalProps) => {
+
+
+  console.log("selectedData", selectedData);
+
   const [deleting, setDeleting] = useState(false);
+  const [updateScope, setUpdateScope] = useState<string | null>(null);
+
+  // Check if this is a child of a recurring promotion
+  const isRecurringChild = isEdit && selectedData?.recurringMeta?.parentPromotion !== null;
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
   const [addPromotion, { isLoading: addLoading }] = useAddPromotionMutation();
@@ -212,7 +220,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     {
       page: 0,
       search: '',
-      limit: '10000',
+      limit: '100',
       status: '',
       date: undefined,
     },
@@ -225,7 +233,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     {
       page: 0,
       search: '',
-      limit: '10000',
+      limit: '100',
       status: '',
       date: undefined,
     },
@@ -238,7 +246,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     {
       page: 0,
       search: '',
-      limit: '10000',
+      limit: '100',
       status: '',
       date: undefined,
       companyOrganizer: selectedCompany || undefined,
@@ -251,7 +259,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
   const { data: rewardData, isLoading: rewardsLoading } = useGetRewardsQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '100',
     status: '',
     date: undefined,
     companyOrganizer: selectedCompany || undefined,
@@ -426,8 +434,13 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
     return base;
   };
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: any, scope?: string) => {
     let uploadedFileKey: string | null = null;
+
+    // Set the scope for loading state tracking
+    if (scope) {
+      setUpdateScope(scope);
+    }
 
     try {
       // Check if start date is in the past (only for new promotions)
@@ -478,7 +491,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
         payload.status = selectedData.status;
       }
 
-      const response = isEdit ? await updatePromotion(payload).unwrap() : await addPromotion(payload).unwrap();
+      const response = isEdit ? await updatePromotion({ ...payload, ...(scope && { scope }) }).unwrap() : await addPromotion(payload).unwrap();
 
       if (response?.error) {
         showError(getErrorMessage(response.error));
@@ -487,6 +500,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
 
       showSuccess(response?.message || (isEdit ? 'Promotion updated' : 'Promotion created'));
       methods.reset(defaultValues);
+      setUpdateScope(null);
       onClose();
     } catch (err: any) {
       if (uploadedFileKey) {
@@ -494,6 +508,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
         await deleteFileFromAzure(uploadedFileKey).finally(() => setDeleting(false));
       }
       showError(getErrorMessage(err));
+      setUpdateScope(null);
     }
   };
 
@@ -514,7 +529,7 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit((data) => handleSubmit(data))}>
               <div className="mt-7 flex w-full flex-col gap-4">
                 {/* IMAGE */}
                 <RHFUploadAvatar name="photo" label="Promotion Image" />
@@ -683,23 +698,67 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
 
               {/* SUBMIT */}
               <div className="mt-5 flex items-center justify-end gap-2">
-                <div className="flex w-full items-center justify-center gap-3">
-                  <Button type="button" variant="outline" onClick={handleClose} className="px-7">
+                <div className="flex w-full flex-col items-center justify-center gap-3 md:flex-row">
+                  <Button type="button" variant="outline" onClick={handleClose} className="w-full px-7 md:w-auto">
                     Cancel
                   </Button>
 
-                  {addLoading || updateLoading || imageUploading || deleting ? (
-                    <Button disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
-                      <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
-                    </Button>
+                  {isEdit && isRecurringChild ? (
+                    // Two buttons for recurring child promotions
+                    <>
+                      {updateLoading && updateScope === 'single' ? (
+                        <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
+                          <ButtonLoading title="Updating" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          className="bg-primary hover:bg-primary-dark w-full cursor-pointer px-4 py-2 text-white md:w-auto"
+                          disabled={!isDirty || (updateLoading && updateScope === 'future') || imageUploading || deleting}
+                          onClick={() => {
+                            setUpdateScope('single');
+                            methods.handleSubmit((data) => handleSubmit(data, 'single'))();
+                          }}
+                        >
+                          Update This Promotion
+                        </Button>
+                      )}
+
+                      {updateLoading && updateScope === 'future' ? (
+                        <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
+                          <ButtonLoading title="Updating" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          className="bg-primary hover:bg-primary-dark w-full cursor-pointer px-4 py-2 text-white md:w-auto"
+                          disabled={!isDirty || (updateLoading && updateScope === 'single') || imageUploading || deleting}
+                          onClick={() => {
+                            setUpdateScope('future');
+                            methods.handleSubmit((data) => handleSubmit(data, 'future'))();
+                          }}
+                        >
+                          Update All Further
+                        </Button>
+                      )}
+                    </>
                   ) : (
-                    <Button
-                      type="submit"
-                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
-                      disabled={isEdit ? !isDirty : false}
-                    >
-                      {isEdit ? 'Update Promotion' : 'Create Promotion'}
-                    </Button>
+                    // Single button for non-recurring or parent promotions
+                    <>
+                      {addLoading || updateLoading || imageUploading || deleting ? (
+                        <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
+                          <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          className="bg-primary hover:bg-primary-dark w-full cursor-pointer px-4 py-2 text-white md:w-auto"
+                          disabled={isEdit ? !isDirty : false}
+                        >
+                          {isEdit ? 'Update Promotion' : 'Create Promotion'}
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

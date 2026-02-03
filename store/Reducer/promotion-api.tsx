@@ -45,8 +45,8 @@ export const promotionApi = createApi({
     }),
 
     updatePromotion: builder.mutation({
-      query: ({ id, isGlobal = false, ...updatedPromotion }) => ({
-        url: API_ROUTES.ADMIN_LOYALTY_PROMOTION_BY_ID(id, isGlobal),
+      query: ({ id, isGlobal = false, scope, ...updatedPromotion }) => ({
+        url: API_ROUTES.ADMIN_LOYALTY_PROMOTION_BY_ID(id, isGlobal, scope),
         method: 'PUT',
         body: updatedPromotion,
       }),
@@ -55,12 +55,10 @@ export const promotionApi = createApi({
     }),
 
     deletePromotion: builder.mutation({
-      query: ({ id, isGlobal = false }) => ({
-        // url: API_ROUTES.ADMIN_LOYALTY_PROMOTION_BY_ID(id),
-        url: API_ROUTES.ADMIN_LOYALTY_PROMOTION_BY_ID(id, isGlobal),
+      query: ({ id, isGlobal = false, scope }) => ({
+        url: API_ROUTES.ADMIN_LOYALTY_PROMOTION_BY_ID(id, isGlobal, scope),
         method: 'DELETE',
       }),
-      // invalidatesTags: ['promotion'],
       invalidatesTags: (result, error, arg) => (arg.isGlobal ? ['globalPromotion'] : ['promotion']),
     }),
   }),
