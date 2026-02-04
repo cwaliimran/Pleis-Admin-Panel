@@ -437,6 +437,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 supplierOptions={supplierOptions}
                 supplierLoading={supplierLoading}
                 methods={methods}
+                mode="edit"
               />
             </div>
 

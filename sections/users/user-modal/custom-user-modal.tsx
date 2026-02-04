@@ -84,14 +84,14 @@ const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, on
   const { data: orgData } = useGetOrganizationQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '1000',
     status: '',
   });
 
   const { data: supplierData, isLoading: supplierLoading } = useGetSuppliersQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '1000',
     status: '',
   });
 

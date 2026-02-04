@@ -42,6 +42,7 @@ export const API_ROUTES = {
   GET_EVENT_BY_MULTIPLE_ORGANIZATION: `/organizer/updates/events`,
 
   ORGANIZER_GENERAL_ORGANIZATIONS: `/organizer/general/organizations`,
+  ORGANIZER_GENERAL_EVENTS: `/organizer/general/events`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -99,7 +100,6 @@ export const API_ROUTES = {
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
   ADMIN_ORGANIZATION_NOTIFICATIONS_BY_ID: (id: string) => `/admin/organizations/${id}/notifications`,
 
-
   ADMIN_NOTIFICATIONS: `/admin/notifications`,
   ADMIN_NOTIFICATIONS_GET_ALL: `/admin/notifications/all`,
   ADMIN_NOTIFICATIONS_BY_ID: (id: string) => `/admin/notifications/${id}`,
@@ -140,6 +140,9 @@ export const API_ROUTES = {
 
   ADMIN_QR_CODE: `/admin/qr-code`,
   ADMIN_QR_CODE_BY_ID: (id: string) => `/admin/qr-code/${id}`,
+
+  ORGANIZER_QR_CODE: `/organizer/qr-code`,
+  ORGANIZER_QR_CODE_BY_ID: (id: string) => `/organizer/qr-code/${id}`,
 
   ADMIN_GIVEAWAYS: `/admin/giveaways`,
   ADMIN_GIVEAWAYS_WINNERS: `/admin/giveaways/winners`,

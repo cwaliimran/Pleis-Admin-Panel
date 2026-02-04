@@ -6,16 +6,17 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { useBoolean } from '@/hooks/useBoolean';
 import { fDate, formatStr } from '@/utils/format-time';
 import { m } from 'framer-motion';
-import { CalendarDays, DollarSign, Eye, Globe, Heart, MapPin, Pencil, Share2, UserRound, Users } from 'lucide-react';
+import { CalendarDays, Eye, Globe, Heart, MapPin, Pencil, Share2 } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { followedEventList, followedOrganizationsList, userTags, venueTypes } from '../users/data';
+import UserBusinessInfo from './userBusinessInfo';
 
 const UserOverView: React.FC<{
   userType: string | null;
   user: any;
   apiData: any;
-}> = ({ userType, apiData, user }) => {
+}> = ({ userType, apiData }) => {
   const permissionLabels: Record<string, string> = {
     inAppOrdering: 'InApp ordering',
     reservationManagement: 'Reservation management',
@@ -78,231 +79,7 @@ const UserOverView: React.FC<{
             </Card>
           )}
 
-          {(userType === 'admin' || userType === 'organizer') && (
-            <>
-              {/* BUSINESS INFO */}
-              <Card className="dark:bg-secondary mt-6 gap-2 rounded-2xl bg-white pb-2 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">Business Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  {/* Name */}
-                  <div className="">
-                    <span className="w-28 font-semibold text-gray-500">Name: </span>
-                    <span className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.name || '-'}</span>
-                  </div>
-
-                  {/* Description */}
-                  <div className=" ">
-                    <span className="w-28 font-semibold text-gray-500">Description: </span>
-                    <span className="text-gray-800 dark:text-white">
-                      {/* {user.businessDetails.description} */}
-                      {apiData?.basicInfo?.companyDetails?.description || '-'}
-                    </span>
-                  </div>
-
-                  {/* Website */}
-                  <div className="flex items-center gap-2">
-                    {/* <Globe size={16} /> */}
-                    <span className="w-28 font-semibold text-gray-500">Website:</span>
-                    <span className="text-gray-800 dark:text-white">
-                      <a
-                        href={user.businessDetails.website || '-'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium break-all text-gray-600 hover:underline"
-                      >
-                        {user.businessDetails.website || '-'}
-                      </a>
-                    </span>
-                  </div>
-
-                  {/* Social Links */}
-                  {/* <div className="mt-5 flex justify-end gap-2">
-                    <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-200 p-0 text-blue-800 transition-colors hover:bg-blue-300">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                          d="M17 2h-3a5 5 0 0 0-5 5v3H6v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-200 p-0 text-blue-800 transition-colors hover:bg-blue-300">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                      >
-                        <g
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="1.5"
-                        >
-                          <path d="M2.5 12c0-4.478 0-6.718 1.391-8.109S7.521 2.5 12 2.5c4.478 0 6.718 0 8.109 1.391S21.5 7.521 21.5 12c0 4.478 0 6.718-1.391 8.109S16.479 21.5 12 21.5c-4.478 0-6.718 0-8.109-1.391S2.5 16.479 2.5 12" />
-                          <path d="M16.5 12a4.5 4.5 0 1 1-9 0a4.5 4.5 0 0 1 9 0m1.008-5.5h-.01" />
-                        </g>
-                      </svg>
-                    </div>
-                    <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-200 p-0 text-blue-800 transition-colors hover:bg-blue-300">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          fill="currentColor"
-                          fillRule="evenodd"
-                          d="M5 1.25a2.75 2.75 0 1 0 0 5.5a2.75 2.75 0 0 0 0-5.5M3.75 4a1.25 1.25 0 1 1 2.5 0a1.25 1.25 0 0 1-2.5 0m-1.5 4A.75.75 0 0 1 3 7.25h4a.75.75 0 0 1 .75.75v13a.75.75 0 0 1-.75.75H3a.75.75 0 0 1-.75-.75zm1.5.75v11.5h2.5V8.75zM9.25 8a.75.75 0 0 1 .75-.75h4a.75.75 0 0 1 .75.75v.434l.435-.187a7.8 7.8 0 0 1 2.358-.595C20.318 7.4 22.75 9.58 22.75 12.38V21a.75.75 0 0 1-.75.75h-4a.75.75 0 0 1-.75-.75v-7a1.25 1.25 0 0 0-2.5 0v7a.75.75 0 0 1-.75.75h-4a.75.75 0 0 1-.75-.75zm1.5.75v11.5h2.5V14a2.75 2.75 0 1 1 5.5 0v6.25h2.5v-7.87c0-1.904-1.661-3.408-3.57-3.234a6.3 6.3 0 0 0-1.904.48l-1.48.635a.75.75 0 0 1-1.046-.69V8.75z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-200 p-0 text-blue-800 transition-colors hover:bg-blue-300">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                      >
-                        <g fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path
-                            fill="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m14 12l-3.5 2v-4z"
-                          />
-                          <path d="M2 12.708v-1.416c0-2.895 0-4.343.905-5.274c.906-.932 2.332-.972 5.183-1.053C9.438 4.927 10.818 4.9 12 4.9s2.561.027 3.912.065c2.851.081 4.277.121 5.182 1.053S22 8.398 22 11.292v1.415c0 2.896 0 4.343-.905 5.275c-.906.931-2.331.972-5.183 1.052c-1.35.039-2.73.066-3.912.066s-2.561-.027-3.912-.066c-2.851-.08-4.277-.12-5.183-1.052S2 15.602 2 12.708Z" />
-                        </g>
-                      </svg>
-                    </div>
-                  </div> */}
-                </CardContent>
-              </Card>
-
-              {/* BANK DETAILS */}
-              <Card className="dark:bg-secondary mt-4 gap-2 rounded-2xl bg-white shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold text-slate-500">Bank Details</CardTitle>
-                </CardHeader>
-
-                <CardContent className="space-y-1 text-sm text-slate-500 dark:text-gray-400">
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-slate-500">VAT:</p>
-                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.oib || 'N/A'}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-slate-500">IBAN:</p>
-                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.bankAccountNumber || 'N/A'}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">Bank Account Name:</p>
-                    <p className="font-semibold text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.name || 'N/A'}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">Representative Full Name:</p>
-                    <p className="font-semibold text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.representativeName || 'N/A'}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="text-gray-800 dark:text-white">
-                      <span className="font-bold text-gray-500">Address: </span>
-                      {apiData?.basicInfo?.companyDetails?.location?.fullAddress || 'N/A'}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">Postal Code:</p>
-                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.postalCode || 'N/A'}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">City:</p>
-                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.city || 'N/A'}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-                    <p className="font-bold text-gray-500">Country:</p>
-                    <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.country || 'N/A'}</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* EVENT DETAILS */}
-              <Card className="dark:bg-secondary mt-6 mb-6 w-full max-w-4xl gap-2 rounded-2xl bg-white shadow-sm transition hover:shadow-md">
-                <CardHeader>
-                  <CardTitle className="text-muted-foreground text-lg font-semibold">Event Details</CardTitle>
-                </CardHeader>
-                <CardContent className=" ">
-                  {/* Left: Event Info */}
-                  <div className="flex flex-col justify-center space-y-2">
-                    <h2 className="text-primary mb-1 text-2xl font-extrabold">{apiData?.basicInfo?.eventDetails?.name || 'Event Name'}</h2>
-                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <span className="flex items-center gap-x-1">
-                        <MapPin className="h-5 w-5" />
-                        <span className="font-medium">Location:</span>{' '}
-                      </span>
-
-                      <span className="font-medium">{apiData?.basicInfo?.eventDetails?.location || '-'}</span>
-                    </div>
-                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <Users className="h-5 w-5" />
-                      <span className="font-medium">By: {apiData?.basicInfo?.eventDetails?.organizer || '-'}</span>
-                    </div>
-                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <span className="flex items-center gap-x-1">
-                        <CalendarDays className="h-5 w-5" />
-                        <span className="font-medium">Date:</span>{' '}
-                      </span>
-                      <span className="font-medium">
-                        {fDate(apiData?.basicInfo?.eventDetails?.startDate, formatStr.split.date)} –{' '}
-                        {fDate(apiData?.basicInfo?.eventDetails?.endDate, formatStr.split.date)}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Right: Stats + CTA */}
-                  <div className="mt-3 flex flex-col items-start gap-4 text-sm">
-                    <div className="text-muted-foreground space-y-2">
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5" />
-                        <span>
-                          <span className="font-medium">Budget:</span> <strong className="text-foreground">-</strong>
-                        </span>
-                      </div>
-                      <div className="items- flex gap-2">
-                        <UserRound className="h-5 w-5" />
-                        <span>
-                          <span className="font-medium">Attendees:</span> <strong className="text-foreground">-</strong>
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Globe className="h-5 w-5" />
-                        <span>
-                          <span className="font-medium">Region:</span>{' '}
-                          <strong className="text-foreground">{apiData?.basicInfo?.eventDetails?.region || '-'}</strong>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
+          {(userType === 'admin' || userType === 'organizer') && <UserBusinessInfo organizationData={apiData?.basicInfo?.companyDetails} />}
 
           {/* CATEGORIES */}
           {userType === 'user' && (
@@ -392,6 +169,107 @@ const UserOverView: React.FC<{
         </div>
 
         <div className="col-span-12 lg:col-span-7">
+          {/* BANK DETAILS */}
+          {(userType === 'admin' || userType === 'organizer') && (
+            <Card className="dark:bg-secondary mt-4 gap-2 rounded-2xl bg-white shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-500">Bank Details</CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-1 text-sm text-slate-500 dark:text-gray-400">
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="font-bold text-slate-500">VAT:</p>
+                  <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.oib || 'N/A'}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="font-bold text-slate-500">IBAN:</p>
+                  <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.bankAccountNumber || 'N/A'}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="font-bold text-gray-500">Bank Account Name:</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.name || 'N/A'}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="font-bold text-gray-500">Representative Full Name:</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.representativeName || 'N/A'}</p>
+                </div>
+
+                {/* <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="text-gray-800 dark:text-white">
+                    <span className="font-bold text-gray-500">Address: </span>
+                    {apiData?.basicInfo?.companyDetails?.location?.fullAddress || 'N/A'}
+                  </p>
+                </div> */}
+
+                {/* 
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="font-bold text-gray-500">Postal Code:</p>
+                  <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.postalCode || 'N/A'}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="font-bold text-gray-500">City:</p>
+                  <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.city || 'N/A'}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <p className="font-bold text-gray-500">Country:</p>
+                  <p className="text-gray-800 dark:text-white">{apiData?.basicInfo?.companyDetails?.location?.country || 'N/A'}</p>
+                </div> */}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* LATEST EVENT DETAILS */}
+          {(userType === 'admin' || userType === 'organizer') && (
+            <Card className="dark:bg-secondary mt-6 mb-6 w-full max-w-4xl gap-2 rounded-2xl bg-white shadow-sm transition hover:shadow-md">
+              <CardHeader>
+                <CardTitle className="text-muted-foreground text-lg font-semibold">Latest Event Details</CardTitle>
+              </CardHeader>
+              <CardContent className=" ">
+                {/* Left: Event Info */}
+                <div className="flex flex-col justify-center space-y-2">
+                  <h2 className="mb-3 text-xl font-extrabold text-gray-800 dark:text-gray-300">{apiData?.event?.basicInfo?.title || 'Event Name'}</h2>
+
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                    <span className="flex items-center gap-x-1">
+                      <MapPin className="h-5 w-5" />
+                      <span className="font-medium">Location:</span>{' '}
+                    </span>
+
+                    <span className="font-medium">{apiData?.event?.basicInfo?.venueLocation?.fullAddress || '-'}</span>
+                  </div>
+
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                    <span className="flex items-center gap-x-1">
+                      <CalendarDays className="h-5 w-5" />
+                      <span className="font-medium">Date:</span>{' '}
+                    </span>
+                    <span className="font-medium">
+                      {fDate(apiData?.event?.schedule?.startDateTime, formatStr.split.date)} –{' '}
+                      {fDate(apiData?.event?.schedule?.endDateTime, formatStr.split.date)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-col items-start gap-4 text-sm">
+                  <div className="text-muted-foreground space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-5 w-5" />
+                      <span>
+                        <span className="font-medium">Region:</span>{' '}
+                        <strong className="text-foreground">{apiData?.event?.meta?.region || '-'}</strong>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* USER INTERACTIONS */}
           {(userType === 'user' || userType === 'guest') && (
             <Card className="mt-4 rounded-2xl bg-white shadow-lg dark:bg-[#1a1a1a]">

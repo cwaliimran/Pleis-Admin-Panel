@@ -61,15 +61,16 @@ const ImageGrid: React.FC<{ images: string[]; title: string }> = ({ images, titl
 
 export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
   const images = sale.menuItems.map((item) => item.image).filter(Boolean);
+  console.log('sale', sale);
 
   // Calculate discount display
-  const discountDisplay = sale.discountType === 'percentage' ? `${sale.discountValue}% OFF` : `€${sale.discountValue.toFixed(2)} OFF`;
+  // const discountDisplay = sale.discountType === 'percentage' ? `${sale.discountValue}% OFF` : `€${sale.discountValue.toFixed(2)} OFF`;
 
   // Calculate time remaining
   const now = new Date();
   const endDate = sale.endDateTime;
   const isActive = sale.status === 'active' && endDate > now;
-  const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  // const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
   // Format dates
   const formatDate = (date: Date) => {
@@ -99,10 +100,12 @@ export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
         <ImageGrid images={images} title={sale.title} />
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          <span className="rounded-md bg-pink-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase shadow-lg">{discountDisplay}</span>
+        {/* <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+          <span className="rounded-md bg-pink-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase shadow-lg">
+            €{(sale.totalPriceBeforeDiscount - sale.totalPrice).toFixed(2)}
+          </span>
           {!isActive && <span className="rounded-md bg-gray-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase">Inactive</span>}
-        </div>
+        </div> */}
 
         {/* Item count badge */}
         <div className="absolute right-3 bottom-3">
@@ -153,11 +156,11 @@ export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
             <span className={cn('h-2.5 w-2.5 rounded-full', isActive ? 'bg-green-500' : 'bg-gray-400')}></span>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{isActive ? 'Active' : 'Inactive'}</span>
           </div>
-          {isActive && daysRemaining > 0 && (
+          {/* {isActive && daysRemaining > 0 && (
             <span className="text-sm font-medium text-orange-600 dark:text-orange-400">
               {daysRemaining} day{daysRemaining !== 1 ? 's' : ''} left
             </span>
-          )}
+          )} */}
         </div>
       </div>
     </div>

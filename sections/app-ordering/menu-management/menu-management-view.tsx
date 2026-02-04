@@ -175,7 +175,11 @@ export const MenuManagementView: React.FC = () => {
   );
 
   // Get menu items for modals (all items, not filtered)
-  const { data: allMenuItemsData, isLoading: allMenuItemsLoading } = useGetMenuItemByOrganizerQuery({
+  const {
+    data: allMenuItemsData,
+    isLoading: allMenuItemsLoading,
+    refetch: refetchAllMenuItems,
+  } = useGetMenuItemByOrganizerQuery({
     page: 0,
     search: '',
     limit: '100',
@@ -573,7 +577,11 @@ export const MenuManagementView: React.FC = () => {
           isEdit={isEditMode}
           selectedData={editingItem}
           menuManagementView={true}
-          onSuccess={() => refetchMenu()}
+          showDiscountPrice={true}
+          onSuccess={() => {
+            refetchMenu();
+            refetchAllMenuItems();
+          }}
         />
       )}
     </section>

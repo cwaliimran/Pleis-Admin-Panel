@@ -82,7 +82,7 @@ interface PageProps {
   data?: any[];
   meta?: Meta;
   loading?: boolean;
-  handleDelete?: (id: string) => void;
+  handleDelete?: (item: any) => void;
   handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;

@@ -21,7 +21,9 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { QR_TYPE_CONFIG } from './constants';
-import { QRCodePayload, QRCodeType } from './types';
+import { QRCodeType } from './types';
+import { useAuth } from '@/hooks/useAuth';
+import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 
 interface QRGeneratorModalProps {
   isOpen: boolean;
@@ -73,6 +75,9 @@ type QRFormValues = {
 
 export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onClose, qrType }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { user } = useAuth();
+
+  console.log('user', user?.basicInfo?.companyDetails?.loyaltySettings?.title);
 
   // Fixed colors (not customizable)
   const color = '#1d1d1f';
@@ -124,9 +129,18 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
       status: '',
     },
     {
-      skip: !isOpen || qrType !== 'event-page',
+      skip: !isOpen || qrType !== 'event-page' || user?.accountState?.userType !== 'admin',
     }
   );
+
+  const { data: { data: eventsOrgs = [] } = {}, isLoading: eventsLoading } = useGetAllEventsQuery(
+    {},
+    { skip: user?.accountState?.userType === 'admin' || !isOpen || qrType !== 'event-page' }
+  );
+
+  const isAdmin = user?.accountState?.userType === 'admin';
+  const selectedEventData = isAdmin ? eventData?.data : eventsOrgs;
+  const selectedEventsLoading = isAdmin ? isLoadingEvents : eventsLoading;
 
   const { data: venueData, isLoading: isLoadingVenues } = useGetVenuesQuery(
     {
@@ -149,7 +163,7 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
   } = useGetCompanyListQuery(
     {},
     {
-      skip: !isOpen || qrType !== 'loyalty-page',
+      skip: !isOpen || qrType !== 'loyalty-page' || user?.accountState?.userType !== 'admin',
     }
   );
 
@@ -165,11 +179,11 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
 
   const eventOptions = useMemo(
     () =>
-      eventData?.data?.map((event: any) => ({
+      selectedEventData?.map((event: any) => ({
         label: event?.basicInfo?.title || 'No Title',
         value: event?._id?.toString(),
       })) || [],
-    [eventData]
+    [selectedEventData]
   );
 
   const venueOptions = useMemo(
@@ -197,12 +211,13 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
         label: '',
         organizationId: '',
         eventId: '',
-        loyaltyId: '',
+        // For non-admin users, auto-set loyaltyId from their company
+        loyaltyId: !isAdmin && qrType === 'loyalty-page' ? user?.basicInfo?._id : '',
         venueId: '',
         tableNo: '',
       });
     }
-  }, [isOpen, config, reset]);
+  }, [isOpen, config, reset, isAdmin, qrType, user?.basicInfo?._id]);
 
   // UPDATE PREVIEW
   useEffect(() => {
@@ -338,7 +353,7 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
       return;
     }
 
-    if (!companyId) {
+    if (user?.accountState?.userType === 'admin' && !companyId) {
       showError('Please select a company first');
       return;
     }
@@ -363,11 +378,12 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
       }
 
       // Build payload based on QR type
-      const payload: QRCodePayload = {
+      const payload: any = {
         label: data.label,
         image: uploadedImageKey,
         globalQrType: config.globalQrType,
-        companyOrganizer: companyId,
+        // companyOrganizer: companyId,
+        companyOrganizer: user?.accountState?.userType === 'admin' ? companyId : undefined,
       };
 
       // Add type-specific fields
@@ -490,10 +506,10 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
               {/* Event Dropdown */}
               {qrType === 'event-page' && (
                 <>
-                  {isLoadingEvents ? (
+                  {selectedEventsLoading ? (
                     <div className="space-y-2">
                       <Skeleton className="ml-1 h-3 w-20" />
-                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-9 w-full" />
                     </div>
                   ) : (
                     <RHFCustomDropdown
@@ -501,20 +517,20 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
                       label="Select Event"
                       placeholder="Choose an event"
                       options={eventOptions}
-                      isLoading={isLoadingEvents}
+                      isLoading={selectedEventsLoading}
                       showNone={false}
                     />
                   )}
                 </>
               )}
 
-              {/* Loyalty Dropdown */}
-              {qrType === 'loyalty-page' && (
+              {/* Loyalty Dropdown - Admin only */}
+              {qrType === 'loyalty-page' && isAdmin && (
                 <>
                   {isLoadingCompanies || isFetchingCompanies ? (
                     <div className="space-y-2">
                       <Skeleton className="ml-1 h-3 w-32" />
-                      <Skeleton className="h-12 w-full" />
+                      <Skeleton className="h-9 w-full" />
                     </div>
                   ) : (
                     <RHFCustomDropdown
@@ -527,6 +543,16 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
                     />
                   )}
                 </>
+              )}
+
+              {/* Loyalty Program Text - Non-admin users */}
+              {qrType === 'loyalty-page' && !isAdmin && (
+                <div className="space-y-2">
+                  <label className="ml-1 text-sm font-medium text-gray-700 dark:text-gray-300">Loyalty Program</label>
+                  <div className="flex h-10 w-full items-center rounded-lg border border-gray-200 bg-gray-50 px-4 text-sm text-gray-900 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-gray-100">
+                    {user?.basicInfo?.companyDetails?.loyaltySettings?.title || 'No Loyalty Program'}
+                  </div>
+                </div>
               )}
 
               {/* Venue Dropdown - Check-in Ordering */}

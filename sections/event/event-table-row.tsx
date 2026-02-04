@@ -12,7 +12,7 @@ import { FC } from 'react';
 
 interface PageProps {
   item: any;
-  handleDelete?: (id: string) => void;
+  handleDelete?: (item: any) => void;
   userType?: string;
 }
 
@@ -107,7 +107,7 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete?.(item?._id);
+              handleDelete?.(item);
             }}
             className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
           >

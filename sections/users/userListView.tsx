@@ -46,7 +46,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const [addUserSuperAdminAndGuest, { isLoading: addUserSuperAdminAndGuestLoading }] = useAddUserSuperAdminAndGuestMutation();
   const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
 
-  const { data: apiData, isLoading } = useGetUserListQuery({
+  const { data: apiData, isLoading, isFetching } = useGetUserListQuery({
     page: page - 1,
     search,
     limit,
@@ -203,7 +203,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
       <UserListTypeTable
         data={venueTypes}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleEdit={handleEdit}
         handleDelete={handleDelete}
         onPageChange={setPage}

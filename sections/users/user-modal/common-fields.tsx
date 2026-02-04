@@ -17,22 +17,9 @@ const CommonFields: React.FC<CommonFieldsProps> = ({ mode }) => {
 
   return (
     <>
-      <RHFTextField
-        name="firstName"
-        label="First Name"
-        placeholder="Enter your first name"
-      />
-      <RHFTextField
-        name="lastName"
-        label="Last Name"
-        placeholder="Enter your last name"
-      />
-      <RHFTextField
-        name="email"
-        type="email"
-        label="Email"
-        placeholder="Enter your email address"
-      />
+      <RHFTextField name="firstName" label="First Name" placeholder="Enter your first name" />
+      <RHFTextField name="lastName" label="Last Name" placeholder="Enter your last name" />
+      <RHFTextField name="email" type="email" label="Email" placeholder="Enter your email address" disabled={mode === 'edit'} />
       <Controller
         name="phone"
         control={control}
@@ -73,15 +60,9 @@ const CommonFields: React.FC<CommonFieldsProps> = ({ mode }) => {
             disabled:opacity-50 md:text-sm
             focus-visible:ring-ring/50 focus-visible:ring-[3px]
             aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40
-            aria-invalid:border-destructive ${
-              fieldState.invalid ? 'border-destructive ring-destructive/40' : ''
-            }`}
+            aria-invalid:border-destructive ${fieldState.invalid ? 'border-destructive ring-destructive/40' : ''}`}
             />
-            {fieldState.error && (
-              <p className="mt-1 text-xs text-red-500">
-                {fieldState.error.message}
-              </p>
-            )}
+            {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
           </div>
         )}
       />

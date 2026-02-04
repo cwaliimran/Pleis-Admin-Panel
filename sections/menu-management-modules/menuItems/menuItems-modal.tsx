@@ -40,6 +40,7 @@ type MenuItemFormValues = {
   menu: string;
   taxPercent: string;
   basePrice: string;
+  discountPrice?: string;
   description: string;
   preset?: string;
   startTime?: string;
@@ -53,6 +54,7 @@ type MenuItemModalProps = {
   isEdit?: boolean;
   selectedData?: any;
   menuManagementView?: boolean;
+  showDiscountPrice?: boolean;
   onSuccess?: () => void;
 };
 
@@ -64,6 +66,7 @@ const defaultValues: MenuItemFormValues = {
   menu: '',
   taxPercent: '',
   basePrice: '',
+  discountPrice: '',
   description: '',
   preset: '',
   startTime: '',
@@ -77,7 +80,30 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   title: Yup.string().required('Name is required'),
   type: Yup.string().required('Type is required'),
   category: Yup.string().required('Item category is required'),
-  basePrice: Yup.string().required('Base price is required'),
+  basePrice: Yup.string()
+    .required('Base price is required')
+    .test('is-integer', 'Base price must be a whole number', (value) => {
+      if (!value) return true;
+      const num = Number(value);
+      return !isNaN(num) && Number.isInteger(num) && num >= 1;
+    }),
+  discountPrice: Yup.string()
+    .optional()
+    .test('is-integer', 'Discount price must be a whole number', (value) => {
+      if (!value || value === '') return true;
+      const num = Number(value);
+      return !isNaN(num) && Number.isInteger(num);
+    })
+    .test('min-value', 'Discount price must be at least 0', (value) => {
+      if (!value || value === '') return true;
+      return Number(value) >= 0;
+    })
+    .test('less-than-base', 'Discount price must be less than base price', function (value) {
+      if (!value || value === '' || Number(value) === 0) return true;
+      const { basePrice } = this.parent;
+      if (!basePrice) return true;
+      return Number(value) < Number(basePrice);
+    }),
   taxPercent: Yup.string().required('Tax is required'),
   menu: Yup.string().required('Menu is required'),
   description: Yup.string().required('Description is required'),
@@ -86,10 +112,17 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   status: Yup.string(),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManagementView, onSuccess }: MenuItemModalProps) => {
+const MenuItemModal = ({
+  open,
+  onClose,
+  isEdit = false,
+  selectedData,
+  menuManagementView,
+  showDiscountPrice = false,
+  onSuccess,
+}: MenuItemModalProps) => {
   const [deleting, setDeleting] = useState(false);
 
-  console.log('selectedData', selectedData);
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
   const [addMenuItem, { isLoading: addMenuItemLoading }] = useAddMenuItemMutation();
@@ -161,6 +194,7 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
         menu: selectedData.menu?._id || '',
         taxPercent: selectedData.taxPercent?.toString() || '',
         basePrice: selectedData.basePrice?.toString() || '',
+        discountPrice: selectedData.discountPrice !== undefined && selectedData.discountPrice !== null ? selectedData.discountPrice.toString() : '',
         description: selectedData.description || '',
         preset: selectedData.preset?._id || '',
         startTime: selectedData.startTime ? parse12HourTo24Hour(selectedData.startTime) : '',
@@ -217,6 +251,11 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
         category: formData.category,
         menu: formData.menu,
       };
+
+      // Add discountPrice only when showDiscountPrice prop is true
+      if (showDiscountPrice && formData.discountPrice !== undefined && formData.discountPrice !== '') {
+        payload.discountPrice = Number(formData.discountPrice);
+      }
 
       // only add times if valid
       if (hasValidStart) {
@@ -338,7 +377,18 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, menuManage
 
                   <RHFTextField name="type" label="Type" placeholder="Enter Type" />
 
-                  <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" />
+                  <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" step="1" min="1" />
+
+                  {showDiscountPrice && (
+                    <RHFTextField
+                      name="discountPrice"
+                      label="Discount Price (Optional)"
+                      type="number"
+                      placeholder="Enter Discount Price"
+                      step="1"
+                      min="0"
+                    />
+                  )}
 
                   <RHFSelectField
                     name="taxPercent"

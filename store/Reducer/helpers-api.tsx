@@ -39,14 +39,24 @@ export const helpersApi = createApi({
         url: API_ROUTES.ORGANIZER_GENERAL_ORGANIZATIONS,
         method: 'GET',
       }),
-      // transformResponse: (res) => res.data,
       transformResponse: (res) => ({
         data: res.data,
         meta: res.meta,
       }),
-      // providesTags: ['event'],
+    }),
+
+    getAllEvents: builder.query({
+      // query: ({ organization }) => ({
+      query: ({}) => ({
+        url: API_ROUTES.ORGANIZER_GENERAL_EVENTS,
+        method: 'GET',
+      }),
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
     }),
   }),
 });
 
-export const { useGetEventByMultipleOrganizationQuery, useGetAllByOrganizationQuery } = helpersApi;
+export const { useGetEventByMultipleOrganizationQuery, useGetAllByOrganizationQuery, useGetAllEventsQuery } = helpersApi;
