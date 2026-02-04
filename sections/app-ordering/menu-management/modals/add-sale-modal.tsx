@@ -23,6 +23,11 @@ interface MenuItem {
   taxPercent: number;
 }
 
+// Helper function to get effective price (handles discountPrice being 0, null, or undefined)
+const getEffectivePrice = (item: MenuItem): number => {
+  return item.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.basePrice;
+};
+
 interface AddSaleModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,13 +52,14 @@ const schema = Yup.object().shape({
   discountValue: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Sale price is required')
-    .min(0.01, 'Sale price must be greater than 0')
+    .integer('Sale price must be a whole number')
+    .min(1, 'Sale price must be at least 1')
     .test('less-than-base', 'Sale price must be less than original price', function (value) {
       const { menuItemId } = this.parent;
       const menuItems = this.options.context?.menuItems || [];
       const selectedItem = menuItems.find((item: MenuItem) => item._id === menuItemId);
       if (selectedItem && value) {
-        const effectivePrice = selectedItem.discountPrice ?? selectedItem.basePrice;
+        const effectivePrice = getEffectivePrice(selectedItem);
         return value < effectivePrice;
       }
       return true;
@@ -110,27 +116,20 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
   const selectedMenuItemId = watch('menuItemId');
   const discountValue = watch('discountValue');
 
-  const menuItemOptions = useMemo(() =>
-      menuItems.map((item) => {
-        const effectivePrice = item.discountPrice === 0 || item.discountPrice === null || item.discountPrice === undefined ? item.basePrice : item.discountPrice;
-        
-        return {
-          label: `${item.title} - €${effectivePrice.toFixed(2)}`,
-          value: item._id,
-        };
-      }),
+  const menuItemOptions = useMemo(
+    () =>
+      menuItems.map((item) => ({
+        label: `${item.title} - €${getEffectivePrice(item).toFixed(2)}`,
+        value: item._id,
+      })),
     [menuItems]
   );
 
   const selectedItem = useMemo(() => menuItems.find((item) => item._id === selectedMenuItemId), [menuItems, selectedMenuItemId]);
 
-  // Get effective price (discountPrice if available, otherwise basePrice)
+  // Get effective price (discountPrice if available and > 0, otherwise basePrice)
   const effectivePrice = useMemo(() => {
-    if (selectedItem) {
-      // return selectedItem.discountPrice ?? selectedItem.basePrice;
-      return selectedItem.discountPrice && selectedItem.discountPrice > 0 ? selectedItem.discountPrice : selectedItem.basePrice;
-    }
-    return 0;
+    return selectedItem ? getEffectivePrice(selectedItem) : 0;
   }, [selectedItem]);
 
   const discountAmount = useMemo(() => {
@@ -233,7 +232,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
                     </div>
                   </div>
 
-                  <RHFTextField name="discountValue" label="Sale Price (€)" placeholder="0.00" type="number" step="0.01" min="0.01" />
+                  <RHFTextField name="discountValue" label="Sale Price (€)" placeholder="0" type="number" step="1" min="1" />
                 </div>
 
                 {/* Sale Discount Preview */}

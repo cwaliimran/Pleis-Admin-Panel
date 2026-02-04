@@ -22,6 +22,11 @@ interface MenuItem {
   taxPercent: number;
 }
 
+// Helper function to get effective price (handles discountPrice being 0, null, or undefined)
+const getEffectivePrice = (item: MenuItem): number => {
+  return item.discountPrice && item.discountPrice > 0 ? item.discountPrice : item.basePrice;
+};
+
 interface BulkSaleModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -111,13 +116,10 @@ export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, m
 
   const menuItemOptions = useMemo(
     () =>
-      menuItems.map((item) => {
-        const effectivePrice = item.discountPrice ?? item.basePrice;
-        return {
-          label: `${item.title} - €${effectivePrice.toFixed(2)}`,
-          value: item._id,
-        };
-      }),
+      menuItems.map((item) => ({
+        label: `${item.title} - €${getEffectivePrice(item).toFixed(2)}`,
+        value: item._id,
+      })),
     [menuItems]
   );
 
