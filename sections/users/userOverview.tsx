@@ -4,20 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
+import { fDate, formatStr } from '@/utils/format-time';
 import { m } from 'framer-motion';
 import { CalendarDays, DollarSign, Eye, Globe, Heart, MapPin, Pencil, Share2, UserRound, Users } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { followedEventList, followedOrganizationsList, userTags, venueTypes } from '../users/data';
-import { fDate, formatStr } from '@/utils/format-time';
 
 const UserOverView: React.FC<{
   userType: string | null;
   user: any;
   apiData: any;
 }> = ({ userType, apiData, user }) => {
-  console.log('user', apiData);
-
   const permissionLabels: Record<string, string> = {
     inAppOrdering: 'InApp ordering',
     reservationManagement: 'Reservation management',
@@ -42,17 +40,6 @@ const UserOverView: React.FC<{
     },
   });
 
-  // const accessList = [
-  //   'Ticket validation',
-  //   'Reservation info',
-  //   'Ticket analytics',
-  //   'NFC/QR scanning of tickets and loyalty cards',
-  //   'Viewing active loyalty transactions (point redemption)',
-  //   'Manually entering transaction codes (if NFC unavailable)',
-  //   'Checking orders and confirming delivery',
-  //   'Viewing table booking sta`t`us',
-  // ];
-
   const interactions = [
     {
       label: 'Viewed Content',
@@ -75,28 +62,28 @@ const UserOverView: React.FC<{
     <div>
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-12 lg:col-span-5">
+          {/* USERTYPE -> STAFF */}
           {userType === 'staff' && (
-            <>
-              <Card className="dark:bg-secondary mt-4 w-full shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">Permissions</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-wrap gap-2">
-                  {apiData?.organizations?.[0]?.staff?.[0]?.featuresAccess?.map((perm: string, idx: number) => (
-                    <Badge key={idx} variant="default">
-                      {permissionLabels[perm] ?? perm}
-                    </Badge>
-                  ))}
-                </CardContent>
-              </Card>
-            </>
+            <Card className="dark:bg-secondary mt-4 w-full shadow-lg">
+              <CardHeader className="gap-0">
+                <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">Permissions</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                {apiData?.organizations?.[0]?.staff?.[0]?.featuresAccess?.map((perm: string, idx: number) => (
+                  <Badge key={idx} variant="default">
+                    {permissionLabels[perm] ?? perm}
+                  </Badge>
+                ))}
+              </CardContent>
+            </Card>
           )}
 
           {(userType === 'admin' || userType === 'organizer') && (
             <>
+              {/* BUSINESS INFO */}
               <Card className="dark:bg-secondary mt-6 gap-2 rounded-2xl bg-white pb-2 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">Business Details</CardTitle>
+                  <CardTitle className="text-xl font-semibold text-slate-500 dark:text-slate-500">Business Info</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   {/* Name */}
@@ -205,6 +192,7 @@ const UserOverView: React.FC<{
                 </CardContent>
               </Card>
 
+              {/* BANK DETAILS */}
               <Card className="dark:bg-secondary mt-4 gap-2 rounded-2xl bg-white shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-slate-500">Bank Details</CardTitle>
@@ -255,6 +243,7 @@ const UserOverView: React.FC<{
                 </CardContent>
               </Card>
 
+              {/* EVENT DETAILS */}
               <Card className="dark:bg-secondary mt-6 mb-6 w-full max-w-4xl gap-2 rounded-2xl bg-white shadow-sm transition hover:shadow-md">
                 <CardHeader>
                   <CardTitle className="text-muted-foreground text-lg font-semibold">Event Details</CardTitle>
@@ -315,6 +304,7 @@ const UserOverView: React.FC<{
             </>
           )}
 
+          {/* CATEGORIES */}
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
@@ -333,7 +323,7 @@ const UserOverView: React.FC<{
             </Card>
           )}
 
-          {/* tags */}
+          {/* TAGS */}
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
@@ -352,7 +342,7 @@ const UserOverView: React.FC<{
             </Card>
           )}
 
-          {/* venue tag */}
+          {/* VENUE TYPE */}
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
@@ -371,58 +361,64 @@ const UserOverView: React.FC<{
             </Card>
           )}
 
-          <Card className="dark:bg-secondary mt-4 gap-y-0 shadow-lg">
-            <CardHeader className="">
-              <h3 className="mb-2 text-lg font-semibold text-slate-500">Wallet Information</h3>
-            </CardHeader>
-            <CardContent className="text-sm">
-              <p className="flex items-center gap-2 text-xl">
-                <strong className="text-slate-500">Balance:</strong> <span className="text-3xl font-bold">$0</span>
-              </p>
-              <p>
-                <strong className="text-slate-500">Recent Transactions:</strong> See more go to transaction tab
-              </p>
+          {/* WALLET INFORMATION */}
+          {userType !== 'staff' && (
+            <Card className="dark:bg-secondary mt-4 gap-y-0 shadow-lg">
+              <CardHeader className="">
+                <h3 className="mb-2 text-lg font-semibold text-slate-500">Wallet Information</h3>
+              </CardHeader>
+              <CardContent className="text-sm">
+                <p className="flex items-center gap-2 text-xl">
+                  <strong className="text-slate-500">Balance:</strong> <span className="text-3xl font-bold">$0</span>
+                </p>
+                <p>
+                  <strong className="text-slate-500">Recent Transactions:</strong> See more go to transaction tab
+                </p>
 
-              <div className="mt-4 space-y-2">
-                <div>
-                  <p className="text-sm">Tickets: 0</p>
+                <div className="mt-4 space-y-2">
+                  <div>
+                    <p className="text-sm">Tickets: 0</p>
+                  </div>
+                  <div>
+                    <p className="text-sm">Rewards: 0</p>
+                  </div>
+                  <div>
+                    <p className="text-sm">Loyalty Cards: 0</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm">Rewards: 0</p>
-                </div>
-                <div>
-                  <p className="text-sm">Loyalty Cards: 0</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <div className="col-span-12 lg:col-span-7">
-          <Card className="mt-4 rounded-2xl bg-white shadow-lg dark:bg-[#1a1a1a]">
-            <CardHeader>
-              <h1 className="text-xl font-semibold text-slate-500 dark:text-slate-500">User Interactions</h1>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {interactions.map((item, index) => (
-                  <m.div key={index} whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 300 }}>
-                    <Card className="border-muted dark:bg-muted/50 cursor-pointer rounded-xl border p-5 shadow-md transition-all duration-300 hover:shadow-lg sm:p-6">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="bg-muted rounded-full p-2">{item.icon}</div>
-                        <div className="text-center">
-                          <h2 className="text-muted-foreground text-sm text-nowrap">{item.label}</h2>
-                          <p className="text-primary text-2xl font-extrabold">0</p>
+          {/* USER INTERACTIONS */}
+          {(userType === 'user' || userType === 'guest') && (
+            <Card className="mt-4 rounded-2xl bg-white shadow-lg dark:bg-[#1a1a1a]">
+              <CardHeader>
+                <h1 className="text-xl font-semibold text-slate-500 dark:text-slate-500">User Interactions</h1>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {interactions.map((item, index) => (
+                    <m.div key={index} whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 300 }}>
+                      <Card className="border-muted dark:bg-muted/50 cursor-pointer rounded-xl border p-5 shadow-md transition-all duration-300 hover:shadow-lg sm:p-6">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="bg-muted rounded-full p-2">{item.icon}</div>
+                          <div className="text-center">
+                            <h2 className="text-muted-foreground text-sm text-nowrap">{item.label}</h2>
+                            <p className="text-primary text-2xl font-extrabold">0</p>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  </m.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          {/* timeline  */}
+                      </Card>
+                    </m.div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
+          {/* LOYALTY PROGRAM PARTICIPATION */}
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
@@ -514,6 +510,7 @@ const UserOverView: React.FC<{
             </Card>
           )}
 
+          {/* FOLLOWED ORGANIZATIONS */}
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
@@ -534,6 +531,7 @@ const UserOverView: React.FC<{
             </Card>
           )}
 
+          {/* FOLLOWED EVENTS */}
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>

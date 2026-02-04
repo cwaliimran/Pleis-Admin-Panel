@@ -110,10 +110,10 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
   const selectedMenuItemId = watch('menuItemId');
   const discountValue = watch('discountValue');
 
-  const menuItemOptions = useMemo(
-    () =>
+  const menuItemOptions = useMemo(() =>
       menuItems.map((item) => {
-        const effectivePrice = item.discountPrice ?? item.basePrice;
+        const effectivePrice = item.discountPrice === 0 || item.discountPrice === null || item.discountPrice === undefined ? item.basePrice : item.discountPrice;
+        
         return {
           label: `${item.title} - €${effectivePrice.toFixed(2)}`,
           value: item._id,
@@ -127,7 +127,8 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
   // Get effective price (discountPrice if available, otherwise basePrice)
   const effectivePrice = useMemo(() => {
     if (selectedItem) {
-      return selectedItem.discountPrice ?? selectedItem.basePrice;
+      // return selectedItem.discountPrice ?? selectedItem.basePrice;
+      return selectedItem.discountPrice && selectedItem.discountPrice > 0 ? selectedItem.discountPrice : selectedItem.basePrice;
     }
     return 0;
   }, [selectedItem]);
@@ -194,7 +195,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:max-w-[600px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:max-w-150!"
         >
           <DialogHeader>
             <DialogTitle>Add Sale</DialogTitle>

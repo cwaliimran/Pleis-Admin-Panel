@@ -64,8 +64,8 @@ const ChallengesTable: FC<SamplePageProps> = ({
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
-  date,
-  onDateChange = () => {},
+  // date,
+  // onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -108,18 +108,18 @@ const ChallengesTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
+                        {/* <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
                           Select Date
-                        </label>
+                        </label> */}
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateFilter={{
-                              id: 'organization-date',
-                              placeholder: 'Select date',
-                              value: date,
-                              onChange: onDateChange,
-                            }}
+                            // dateFilter={{
+                            //   id: 'organization-date',
+                            //   placeholder: 'Select date',
+                            //   value: date,
+                            //   onChange: onDateChange,
+                            // }}
                             searchFilter={{
                               placeholder: 'Search challenges...',
                               value: search,

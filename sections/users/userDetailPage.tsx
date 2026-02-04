@@ -17,7 +17,7 @@ import UserOverView from '@/sections/users/userOverview';
 import { useGetUserByIdQuery } from '@/store/Reducer/user-list';
 import { fDate, formatStr } from '@/utils/format-time';
 import { showError } from '@/utils/toast';
-import { Calendar, Pencil } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
@@ -109,16 +109,14 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                       <div className="flex flex-col gap-6 lg:flex-row">
                         {/* Profile Image */}
                         <div className="w-full lg:w-1/3">
-                          {apiData?.basicInfo?.profileIcon &&
-                          apiData?.basicInfo?.profileIcon !== 'https://pleisstorage.blob.core.windows.net/pleisappcontainer/noImage.png' &&
-                          apiData?.basicInfo?.profileIcon !== 'https://pleisstorage.blob.core.windows.net/pleisappcontainerdev/noImage.png' ? (
+                          {apiData?.basicInfo?.profileIcon && !apiData?.basicInfo?.profileIcon.toLowerCase().includes('noimage.png') ? (
                             <Image
                               src={apiData?.basicInfo?.profileIcon || '-'}
-                              alt={user?.fullName}
+                              alt={apiData?.basicInfo?.firstName || '-'}
                               priority
-                              className="h-56 w-full rounded-lg object-cover shadow sm:h-auto"
-                              width={100}
-                              height={100}
+                              className="h-56 w-full rounded-lg object-cover shadow sm:h-72"
+                              width={300}
+                              height={300}
                             />
                           ) : (
                             <div className="flex h-56 items-center justify-center rounded-md border text-center text-4xl font-semibold text-gray-500 dark:text-gray-300">
@@ -149,11 +147,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                           <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
                             {apiData?.basicInfo?.firstName || '-'} {apiData?.basicInfo?.lastName || '-'}
                           </h2>
-                          {/* {userType === 'staff' && (
-                          <h2 className="text-2xl leading-snug font-bold text-gray-900 dark:text-white">
-                            {user.surname}
-                          </h2>
-                        )} */}
+
                           {userType === 'staff' && <p className="text-sm text-gray-500 dark:text-gray-400">Linked Organization: -</p>}
 
                           {/* More Info */}
@@ -164,9 +158,10 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                                 <span className="font-medium">Email:</span> {apiData?.basicInfo?.email || '-'}
                               </p>
                               <p>
-                                <span className="font-medium">Phone:</span> {apiData?.basicInfo?.phoneNumber?.code || ''}
-                                {apiData?.basicInfo?.phoneNumber?.number || ''}
+                                <span className="font-medium">Phone:</span> {apiData?.basicInfo?.phoneNumber?.code || '-'}
+                                {/* {apiData?.basicInfo?.phoneNumber?.number || '-'} */}
                               </p>
+
                               {userType === 'user' && (
                                 <>
                                   <p>
@@ -190,7 +185,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                         </div>
                       </div>
 
-                      <div className="mt-3 w-full px-2 md:px-0">
+                      <div className="mt-5 w-full px-2 md:px-0">
                         {/* Small screen dropdown */}
                         <div className="mb-4 block sm:hidden">
                           <Select value={activeTransactionTab} onValueChange={setActive}>
@@ -215,9 +210,9 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                                 <TabsTrigger
                                   key={tab.value}
                                   value={tab.value}
-                                  className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold !shadow-none transition-all dark:!bg-transparent ${
+                                  className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
                                     active === tab.value
-                                      ? 'after:absolute after:bottom-0 after:left-1/2 after:h-[4px] after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
+                                      ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
                                       : 'text-muted-foreground'
                                   }`}
                                 >
@@ -354,30 +349,6 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                 {organizerCardData.map((user: any) => (
                   <UserCard item={user} key={user._id} />
                 ))}
-
-                <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
-                  <CardContent>
-                    <div className="w-full flex-wrap items-start justify-between gap-y-6 px-2 md:flex md:px-0">
-                      {/* START DATE */}
-                      <div className="flex min-w-[140px] flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">START DATE</p>
-                        </div>
-                        <p className="text-sm font-medium text-black dark:text-white">-</p>
-                      </div>
-
-                      {/* END DATE */}
-                      <div className="mt-4 flex min-w-[140px] flex-col gap-1 md:mt-0">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">Last Activity</p>
-                        </div>
-                        <p className="text-sm font-medium text-black dark:text-white">-</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </div>
