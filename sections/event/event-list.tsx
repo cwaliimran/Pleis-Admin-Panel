@@ -1,5 +1,6 @@
 'use client';
 
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import EventConfirmDialog from '@/components/comfirm-dialog/event-confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
@@ -18,6 +19,7 @@ type OrganizationListProps = {
 const EventList = ({ userType, organization }: OrganizationListProps) => {
   const router = useRouter();
   const deleteModal = useBoolean();
+  const recurringDeleteModal = useBoolean();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteEvent] = useDeleteeventMutation();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -46,9 +48,18 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     ...(organization ? { organization } : {}),
   });
 
-  const handleDelete = (id: string) => {
-    setDeleteId(id);
-    deleteModal.onTrue();
+  const handleDelete = (data: any) => {
+    if (!data) return;
+
+    // If parentEvent is null, it's a parent/non-recurring event - use simple delete
+    if (data?.recurringMeta?.parentEvent === null) {
+      setDeleteId(data?._id);
+      deleteModal.onTrue();
+    } else {
+      // It's a recurring child event - show options to delete single or all future
+      setDeleteId(data?._id);
+      recurringDeleteModal.onTrue();
+    }
   };
 
   const onDelete = async (scope: string) => {
@@ -73,6 +84,8 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
       }
 
       deleteModal.onFalse();
+      recurringDeleteModal.onFalse();
+      setDeleteId(null);
     } catch (error) {
       console.log('Failed to delete event', error);
     } finally {
@@ -136,16 +149,34 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
         )}
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <EventConfirmDialog
+      {/* Simple Delete Confirmation Dialog - for parent/non-recurring events */}
+      <ConfirmDialog
         open={deleteModal.value}
         title="Delete Event"
         content="Are you sure you want to delete this event? This action cannot be undone."
-        onClose={deleteModal.onFalse}
-        onConfirm={onDelete}
+        onClose={() => {
+          deleteModal.onFalse();
+          setDeleteId(null);
+        }}
+        onConfirm={() => onDelete('single')}
         isLoading={isDeleting}
-        isLoadingForAllEventsDelete={isDeletingAllEvents}
       />
+
+      {/* Recurring Delete Confirmation Dialog - for recurring child events */}
+      {recurringDeleteModal.value && (
+        <EventConfirmDialog
+          open={recurringDeleteModal.value}
+          title="Delete Event"
+          content="Are you sure you want to delete this event? This action cannot be undone."
+          onClose={() => {
+            recurringDeleteModal.onFalse();
+            setDeleteId(null);
+          }}
+          onConfirm={onDelete}
+          isLoading={isDeleting}
+          isLoadingForAllEventsDelete={isDeletingAllEvents}
+        />
+      )}
 
       {/* Event Table */}
       <EventTable

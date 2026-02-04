@@ -1,13 +1,10 @@
 'use client';
 
 import { AppLoading } from '@/components/atoms/app-loading';
-import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
-import { cn } from '@/lib/utils';
-import { TransactionHistory } from '@/sections/invoices';
 import BookingHistory from '@/sections/users/bookingHistory';
 import { organizerCardData } from '@/sections/users/data';
 import Loyalty from '@/sections/users/loyalty';
@@ -22,6 +19,7 @@ import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
 import EditUserModal from './user-modal/custom-edit-user-modal';
+import UserAllTransactionView from '../transactions/user-all-transaction/user-all-transaction-view';
 
 interface UserDetailPageProps {
   userDashboardType: string;
@@ -41,8 +39,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
   const userType = data.get('userType');
 
   const [active, setActive] = React.useState('overview');
-  const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
-  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+  const [activeTransactionTab] = React.useState('all');
 
   const { data: apiData = {}, isLoading } = useGetUserByIdQuery({ id });
 
@@ -158,8 +155,8 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                                 <span className="font-medium">Email:</span> {apiData?.basicInfo?.email || '-'}
                               </p>
                               <p>
-                                <span className="font-medium">Phone:</span> {apiData?.basicInfo?.phoneNumber?.code || '-'}
-                                {/* {apiData?.basicInfo?.phoneNumber?.number || '-'} */}
+                                <span className="font-medium">Phone:</span> {apiData?.basicInfo?.phoneNumber?.code || '-'}{' '}
+                                {apiData?.basicInfo?.phoneNumber?.number || '-'}
                               </p>
 
                               {userType === 'user' && (
@@ -232,78 +229,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                   {active === 'overview' && <UserOverView userType={userType} user={user} apiData={apiData} />}
 
                   {/* ---------------- TRANSACTION ---------------- */}
-                  {active === 'transactions' && (
-                    <Card className="dark:bg-secondary mt-4 shadow-lg">
-                      <CardHeader>
-                        <div className="flex flex-col gap-4 md:justify-between lg:flex-row lg:items-center">
-                          <h3 className="text-xl font-semibold">Transaction History</h3>
-                          <div>
-                            <div className="w-full">
-                              {/* Show select on small screens */}
-                              <div className="block sm:hidden">
-                                <Select value={activeTransactionTab} onValueChange={setActiveTransactionTab}>
-                                  <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
-                                    <SelectValue placeholder="Select tab" />
-                                  </SelectTrigger>
-                                  <SelectContent className="dark:bg-secondary">
-                                    <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="transactions">Transactions</SelectItem>
-                                    <SelectItem value="refunds">Refunds</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              {/* Show tabs on medium and larger screens */}
-                              <div className="hidden sm:block">
-                                <Tabs value={activeTransactionTab} onValueChange={setActiveTransactionTab} defaultValue="all" className="w-full">
-                                  <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
-                                    <TabsTrigger
-                                      value="all"
-                                      className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                                    >
-                                      All
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                      value="transactions"
-                                      className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                                    >
-                                      Transactions
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                      value="refunds"
-                                      className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                                    >
-                                      Refunds
-                                    </TabsTrigger>
-                                  </TabsList>
-                                </Tabs>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end lg:items-center">
-                            <FilterDropdown
-                              selectedOptions={selectedOptions}
-                              onSelectOption={setSelectedOptions}
-                              options={[
-                                { id: 'user', label: 'User' },
-                                { id: 'contact', label: 'Contact' },
-                                { id: 'invoice', label: 'Invoice' },
-                                { id: 'organizer', label: 'Organizer ' },
-                                { id: 'date', label: 'Date' },
-                                { id: 'total', label: 'Total' },
-                                {
-                                  id: 'transactionType',
-                                  label: 'Transaction Type',
-                                },
-                                { id: 'status', label: 'Status' },
-                              ]}
-                            />
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <TransactionHistory />
-                    </Card>
-                  )}
+                  {active === 'transactions' && <UserAllTransactionView userId={id} />}
 
                   {/* ---------------- BOOKING & LOYALTY ---------------- */}
                   {active === 'booking&loyalty' && (

@@ -7,6 +7,7 @@ import type { Option } from './types';
 
 interface UserFieldsProps {
   organizationOptions: Option[];
+  mode?: 'create' | 'edit';
 }
 
 const genderOptions: Option[] = [
@@ -15,25 +16,12 @@ const genderOptions: Option[] = [
   { value: 'Other', label: 'Other' },
 ];
 
-const UserFields: React.FC<UserFieldsProps> = () => {
+const UserFields: React.FC<UserFieldsProps> = ({ mode = 'create' }) => {
   return (
     <>
-      <RHFTextField
-        name="username"
-        label="Username"
-        placeholder="Enter your username"
-      />
-      <RHFDatePickerWithDropdown
-        name="dob"
-        label="Date of Birth"
-        placeholder="Select your date"
-      />
-      <RHFSelectField
-        name="gender"
-        label="Gender"
-        placeholder="Select Gender"
-        options={genderOptions}
-      />
+      <RHFTextField name="username" label="Username" placeholder="Enter your username" disabled={mode === 'edit'} />
+      <RHFDatePickerWithDropdown name="dob" label="Date of Birth" placeholder="Select your date" />
+      <RHFSelectField name="gender" label="Gender" placeholder="Select Gender" options={genderOptions} />
     </>
   );
 };
