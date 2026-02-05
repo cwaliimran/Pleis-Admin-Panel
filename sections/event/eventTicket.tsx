@@ -53,7 +53,7 @@ const EventTicket = ({ event }: { event: any }) => {
       ) : (
         <div>
           <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-12 max-h-[calc(100vh-200px)] overflow-y-auto lg:col-span-6">
+            <div className="col-span-12 lg:col-span-6">
               {/* Ticket Types Stats - Dynamic from ticketTypeStats array */}
               <Card className="dark:bg-[#171717]">
                 <CardHeader>
@@ -107,6 +107,7 @@ const EventTicket = ({ event }: { event: any }) => {
                   )}
                 </CardContent>
               </Card>
+
               {/* Scanned Ticket Progress */}
               <Card className="mt-4 dark:bg-[#171717]">
                 <CardHeader>
@@ -148,7 +149,7 @@ const EventTicket = ({ event }: { event: any }) => {
               </Button>
             </div>
 
-            <div className="col-span-12 max-h-[calc(100vh-200px)] overflow-y-auto lg:col-span-6">
+            <div className="col-span-12 lg:col-span-6">
               {/* revenue chart of paid and free tickets */}
               <Card className="dark:bg-[#171717]">
                 <CardHeader>
@@ -178,9 +179,10 @@ const EventTicket = ({ event }: { event: any }) => {
                   />
                 </CardContent>
               </Card>
+
               {/* sale by ticket type */}
               <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
-                <CardContent className="max-h-100 overflow-y-auto">
+                <CardContent>
                   <h2 className="text-muted-foreground text-sm font-semibold">Sales by Ticket Type</h2>
                   {ticketingStatsTickets.map((ticket: any) => {
                     const isOnSale = ticket.saleStatus === 'onSale';

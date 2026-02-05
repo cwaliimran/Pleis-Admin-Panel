@@ -230,6 +230,7 @@ export interface MenuItemCardProps {
   item: MenuItem;
   onEdit: (item: MenuItem) => void;
   onToggleStock: (item: MenuItem) => void;
+  onToggleUpsell: (item: MenuItem) => void;
   isUpdating?: boolean;
 }
 

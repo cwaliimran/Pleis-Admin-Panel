@@ -43,6 +43,8 @@ export const API_ROUTES = {
 
   ORGANIZER_GENERAL_ORGANIZATIONS: `/organizer/general/organizations`,
   ORGANIZER_GENERAL_EVENTS: `/organizer/general/events`,
+  ORGANIZER_GENERAL_MENU: `/organizer/general/menu`,
+  ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -289,6 +291,11 @@ export const API_ROUTES = {
   ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
   ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
+
+  ORGANIZER_MENU_ITEMS: `/organizer/menu-management/items`,
+  ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
+  ORGANIZER_MENU_ITEMS_BY_ID: (id: string) => `/organizer/menu/items/${id}`,
+  ORGANIZER_MENU_ITEMS_BY_MENU_ID: (id: string) => `/organizer/menu/items/menu/${id}`,
 
   TIERS: `/admin/tiers`,
   TIERS_BY_ID: (id: string) => `/admin/tiers/${id}`,

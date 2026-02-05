@@ -8,6 +8,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 import CustomBadge from '@/components/ui/custom-badge';
+import { fDate, formatStr } from '@/utils/format-time';
 
 const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   const getChallengesTypeLabel = (type: string) => {
@@ -77,7 +78,7 @@ const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
 
       <TableCell className="text-left">{item?.taskValue || '-'}</TableCell>
       <TableCell className="text-left">{item?.claimLimit || '-'}</TableCell>
-      <TableCell className="text-left">{item?.endDate || '-'}</TableCell>
+      <TableCell className="text-left">{fDate(item?.endDate, formatStr.split.date)}</TableCell>
       <TableCell className="text-left capitalize">{item?.tierLimit?.title || '-'}</TableCell>
 
       <TableCell className="text-left">

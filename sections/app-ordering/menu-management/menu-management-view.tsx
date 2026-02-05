@@ -239,12 +239,45 @@ export const MenuManagementView: React.FC = () => {
       setUpdatingItemId(item.id);
       const newStockStatus = !item.isInStock;
 
-      await updateMenuItem({
+      // If marking as out of stock, also disable upsell
+      const updatePayload: { id: string; isAvailableInStock: string; upSellItem?: string } = {
         id: item.id,
         isAvailableInStock: String(newStockStatus),
-      }).unwrap();
+      };
+
+      if (!newStockStatus) {
+        updatePayload.upSellItem = 'false';
+      }
+
+      await updateMenuItem(updatePayload).unwrap();
 
       showSuccess(newStockStatus ? 'Item restocked and available for ordering' : 'Item marked as out of stock');
+      refetchMenu();
+    } catch (error) {
+      showError(getErrorMessage(error));
+    } finally {
+      setUpdatingItemId(null);
+    }
+  };
+
+  const handleToggleUpsell = async (item: MenuItem) => {
+    try {
+      setUpdatingItemId(item.id);
+      const newUpsellStatus = !item.isUpsell;
+
+      const response = await updateMenuItem({
+        id: item.id,
+        upSellItem: String(newUpsellStatus),
+      }).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Deleted successfully');
+
       refetchMenu();
     } catch (error) {
       showError(getErrorMessage(error));
@@ -465,6 +498,7 @@ export const MenuManagementView: React.FC = () => {
                     item={item}
                     onEdit={handleEditItem}
                     onToggleStock={handleToggleStock}
+                    onToggleUpsell={handleToggleUpsell}
                     isUpdating={updatingItemId === item.id}
                   />
                 ))}

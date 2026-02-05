@@ -645,9 +645,9 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                                   name="features.earlyBirdPrice"
                                   label="Discounted Price (€)"
                                   type="number"
-                                  step="0.01"
+                                  step="1"
                                   min="0"
-                                  placeholder="0.00"
+                                  placeholder="0"
                                   disabled={isLoading}
                                   required={earlyBirdEnabled}
                                 />
@@ -693,9 +693,9 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                                   name="features.lastMinutePrice"
                                   label="Discounted Price (€)"
                                   type="number"
-                                  step="0.01"
+                                  step="1"
                                   min="0"
-                                  placeholder="0.00"
+                                  placeholder="0"
                                   disabled={isLoading}
                                   required={lastMinuteEnabled}
                                 />
