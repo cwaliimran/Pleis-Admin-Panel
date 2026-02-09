@@ -9,8 +9,8 @@ import { m } from 'framer-motion';
 import { CalendarDays, Eye, Globe, Heart, MapPin, Pencil, Share2 } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { followedEventList, followedOrganizationsList } from '../users/data';
 import UserBusinessInfo from './userBusinessInfo';
+import CustomBadge from '@/components/ui/custom-badge';
 
 // Reusable Badge List Component with "See more" functionality
 const ITEMS_LIMIT = 10;
@@ -95,17 +95,17 @@ const UserOverView: React.FC<{
   const interactions = [
     {
       label: 'Viewed Content',
-      value: 124,
+      value: apiData?.eventEngagement?.views || 0,
       icon: <Eye className="h-6 w-6 text-blue-500" />,
     },
     {
       label: 'Liked Content',
-      value: 78,
+      value: apiData?.eventEngagement?.favorites || 0,
       icon: <Heart className="h-6 w-6 text-pink-500" />,
     },
     {
       label: 'Shared Content',
-      value: 32,
+      value: apiData?.eventEngagement?.shares || 0,
       icon: <Share2 className="h-6 w-6 text-green-500" />,
     },
   ];
@@ -288,7 +288,7 @@ const UserOverView: React.FC<{
                           <div className="bg-muted rounded-full p-2">{item.icon}</div>
                           <div className="text-center">
                             <h2 className="text-muted-foreground text-sm text-nowrap">{item.label}</h2>
-                            <p className="text-primary text-2xl font-extrabold">0</p>
+                            <p className="text-2xl font-extrabold text-gray-600 dark:text-gray-300">{item?.value}</p>
                           </div>
                         </div>
                       </Card>
@@ -313,13 +313,14 @@ const UserOverView: React.FC<{
 
                 <div className="mt-2 space-y-2 text-sm">
                   <p>
-                    <strong className="text-slate-500">Global Status:</strong> Platium
+                    <strong className="text-slate-500">Global Status:</strong> {apiData?.globalPoints?.global?.level?.title || 'N/A'}
                   </p>
                   <p>
-                    <strong className="text-slate-500">Global Points:</strong> 0 pts
+                    <strong className="text-slate-500">Global Points:</strong>{' '}
+                    {apiData?.globalPoints?.global?.points ? `${apiData.globalPoints.global.points} pts` : 'N/A'}
                   </p>
                   <p>
-                    <strong className="text-slate-500">Global Spent:</strong> 0 pts
+                    <strong className="text-slate-500">Global Spent:</strong> {apiData?.globalPoints?.global?.spent || 'N/A'}
                   </p>
                 </div>
 
@@ -335,54 +336,27 @@ const UserOverView: React.FC<{
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b border-gray-100 dark:border-gray-700">
-                          <td className="px-2 py-1">Premium Club</td>
-                          <td className="px-2 py-1">0 pts</td>
-                          <td className="px-2 py-1">
-                            <Badge className="bg-yellow-400 text-white">Gold</Badge>
-                          </td>
-                          <td className="px-2 py-1">0</td>
-                        </tr>
-                        <tr className="border-b border-gray-100 dark:border-gray-700">
-                          <td className="px-2 py-1">EventPlus</td>
-                          <td className="px-2 py-1">0 pts</td>
-                          <td className="px-2 py-1">
-                            <Badge className="bg-gray-400 text-white">Silver</Badge>
-                          </td>
-                          <td className="px-2 py-1">0</td>
-                        </tr>
-                        <tr className="border-b border-gray-100 dark:border-gray-700">
-                          <td className="px-2 py-1">VIP Access</td>
-                          <td className="px-2 py-1">0 pts</td>
-                          <td className="px-2 py-1">
-                            <Badge className="bg-yellow-800 text-white">Premium</Badge>
-                          </td>
-                          <td className="px-2 py-1">0</td>
-                        </tr>
-                        <tr className="border-b border-gray-100 dark:border-gray-700">
-                          <td className="px-2 py-1">Music Lovers</td>
-                          <td className="px-2 py-1">0 pts</td>
-                          <td className="px-2 py-1">
-                            <Badge className="bg-gray-400 text-white">Silver</Badge>
-                          </td>
-                          <td className="px-2 py-1">0</td>
-                        </tr>
-                        <tr className="border-b border-gray-100 dark:border-gray-700">
-                          <td className="px-2 py-1">Cinema Club</td>
-                          <td className="px-2 py-1">0 pts</td>
-                          <td className="px-2 py-1">
-                            <Badge className="bg-yellow-400 text-white">Gold</Badge>
-                          </td>
-                          <td className="px-2 py-1">0</td>
-                        </tr>
-                        <tr className="border-b border-gray-100 dark:border-gray-700">
-                          <td className="px-2 py-1">Sports Elite</td>
-                          <td className="px-2 py-1">0 pts</td>
-                          <td className="px-2 py-1">
-                            <Badge className="bg-gray-400 text-white">Silver</Badge>
-                          </td>
-                          <td className="px-2 py-1">0</td>
-                        </tr>
+                        {apiData?.joinedClubs?.length > 0 ? (
+                          apiData.joinedClubs.map((club: any, index: number) => (
+                            <tr className="border-b border-gray-100 dark:border-gray-700" key={index}>
+                              <td className="px-2 py-1">{club?.companyOrganizer?.companyDetails?.name || 'N/A'}</td>
+                              <td className="px-2 py-1">{club?.points?.toFixed(0) || 'N/A'} pts</td>
+                              <td className="px-2 py-1">
+                                {/* <Badge className={`bg-green-800 text-white`}>{club?.level?.title || 'N/A'}</Badge> */}
+                                <CustomBadge variant={club.status === 'active' ? 'success' : club.status === 'inactive' ? 'error' : 'info'}>
+                                  {club.status}
+                                </CustomBadge>
+                              </td>
+                              <td className="px-2 py-1">{club?.spent || 'N/A'}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr className="border-b border-gray-100 dark:border-gray-700">
+                            <td className="px-2 py-1" colSpan={4} align="center">
+                              No club participation data available.
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -391,20 +365,20 @@ const UserOverView: React.FC<{
             </Card>
           )}
 
-          {/* FOLLOWED ORGANIZATIONS */}
+          {/* FOLLOWED ORGANIZERS */}
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
-                <h1 className="font-semibold text-slate-500">FOLLOWED ORGANIZATION</h1>
+                <h1 className="font-semibold text-slate-500">FOLLOWED ORGANIZER</h1>
 
                 <div className="mt-2 max-h-48 gap-2 overflow-y-auto">
-                  {followedOrganizationsList?.map((item, index) => (
+                  {apiData?.joinedClubs?.map((club: any, index: number) => (
                     <div className="flex items-center justify-between gap-3 border-b border-gray-300 py-2 dark:border-gray-600" key={index}>
-                      <p>{item.orgName}</p>
+                      <p>{club?.companyOrganizer?.companyDetails?.name || 'N/A'}</p>
 
-                      <Badge variant="secondary" className="mt-1 bg-gray-200 text-xs capitalize dark:bg-gray-600">
-                        {item.status}
-                      </Badge>
+                      <CustomBadge variant={club.status === 'active' ? 'success' : club.status === 'inactive' ? 'error' : 'info'}>
+                        {club.status}
+                      </CustomBadge>
                     </div>
                   ))}
                 </div>
@@ -416,14 +390,14 @@ const UserOverView: React.FC<{
           {userType === 'user' && (
             <Card className="dark:bg-secondary mt-4 shadow-lg">
               <CardHeader>
-                <h1 className="font-semibold text-slate-500">FOLLOWED EVENTS</h1>
+                <h1 className="font-semibold text-slate-500">EVENT</h1>
                 <div className="mt-2 max-h-48 gap-2 overflow-y-auto">
-                  {followedEventList?.map((item, index) => (
-                    <div className="flex items-center justify-between gap-3 border-b border-gray-300 py-2 dark:border-gray-600" key={index}>
-                      <p>{item.orgName}</p>
+                  {apiData?.eventEngagement?.events?.map((item: any, index: number) => (
+                    <div className="flex items-center justify-between gap-3 py-2 dark:border-gray-600" key={index}>
+                      <p>{item?.eventDetails?.basicInfo?.title}</p>
 
                       <Badge variant="secondary" className="mt-1 bg-gray-200 text-xs capitalize dark:bg-gray-600">
-                        0 Views
+                        {item?.views?.toFixed(0) || 'N/A'} Views
                       </Badge>
                     </div>
                   ))}

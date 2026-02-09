@@ -12,6 +12,7 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGeteventsQuery } from '@/store/Reducer/events';
 import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
+import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useAddRewardMutation, useUpdateRewardMutation } from '@/store/Reducer/rewards-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
@@ -20,7 +21,7 @@ import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { fDate, formatStr } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import RewardCalculatorFields from './reward-calculation-fields';
@@ -38,6 +39,7 @@ type RewardFormValues = {
   menu: string;
   menuItem: string;
   event: string;
+  ticket: string;
   endDate: string | Date;
   status: string;
   companyOrganizer: string;
@@ -85,6 +87,11 @@ const schema = yup.object({
     then: (schema) => schema.required('Event is required'),
     otherwise: (schema) => schema,
   }),
+  ticket: yup.string().when('rewardType', {
+    is: 'ticketReward',
+    then: (schema) => schema.required('Ticket is required'),
+    otherwise: (schema) => schema,
+  }),
   endDate: yup.mixed<string | Date>().required('End date is required'),
   status: yup.string(),
   companyOrganizer: yup.string(),
@@ -93,8 +100,7 @@ const schema = yup.object({
 const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, selectedCompany }: RewardFormModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
-
-  console.log('selectedData', selectedData);
+  const isInitializingEdit = useRef(false);
 
   const [addReward, { isLoading: addRewardLoading }] = useAddRewardMutation();
   const [updateReward, { isLoading: updateRewardLoading }] = useUpdateRewardMutation();
@@ -112,6 +118,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     percentOff: '',
     description: '',
     event: '',
+    ticket: '',
     endDate: '',
     status: '',
     companyOrganizer: '',
@@ -128,6 +135,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
   const percentOff = watch('percentOff');
   const selectedMenuId = watch('menu');
   const selectedMenuItem = watch('menuItem');
+  const selectedEventId = watch('event');
 
   const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
     {
@@ -176,6 +184,12 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     { skip: !selectedMenuId || rewardType !== 'buyMenuItemReward' }
   );
 
+  const {
+    data: ticketData,
+    isLoading: isTicketsLoading,
+    isFetching: isTicketsFetching,
+  } = useGetTicketingByEventQuery({ eventId: selectedEventId || undefined }, { skip: !selectedEventId || rewardType !== 'ticketReward' });
+
   const tiersOptions =
     tiersData?.data?.map((preset: any) => ({
       label: preset?.title,
@@ -206,6 +220,19 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
       value: menuItem?._id,
     })) || [];
 
+  const ticketOptions =
+    (ticketData?.data || []).map((ticket: any) => ({
+      label: ticket?.title,
+      value: ticket?._id,
+    })) || [];
+
+  // Clear ticket when event changes (but not during edit mode initialization)
+  useEffect(() => {
+    if (rewardType === 'ticketReward' && !isInitializingEdit.current) {
+      setValue('ticket', '');
+    }
+  }, [selectedEventId, setValue, rewardType]);
+
   // Prefill image when menu item is selected
   useEffect(() => {
     if (selectedMenuItem && menuItemsData?.data && rewardType === 'buyMenuItemReward') {
@@ -223,6 +250,8 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
   // Populate form when editing
   useEffect(() => {
     if (isEdit && selectedData && open) {
+      isInitializingEdit.current = true;
+
       const initialRewardType = global ? 'customReward' : 'buyMenuItemReward';
       reset({
         image: selectedData?.image || '',
@@ -237,10 +266,16 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
         menu: selectedData.menuItem?.menu?._id || '',
         menuItem: selectedData.menuItem?._id || '',
         event: selectedData.event?._id || selectedData.event || '',
+        ticket: selectedData.ticket?._id || selectedData.ticket || '',
         endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
       });
+
+      // Reset the flag after a short delay to allow form to settle
+      setTimeout(() => {
+        isInitializingEdit.current = false;
+      }, 100);
     }
   }, [isEdit, selectedData, open, reset, global]);
 
@@ -312,6 +347,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
 
       if (formData.rewardType === 'ticketReward') {
         payload.event = formData.event;
+        payload.ticket = formData.ticket;
       }
 
       // Add edit-specific fields
@@ -361,6 +397,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
 
   const handleClose = () => {
     reset(defaultValues);
+    isInitializingEdit.current = false;
     onClose();
   };
 
@@ -482,7 +519,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                 )}
 
                 {rewardType === 'ticketReward' && (
-                  <div className="grid w-full grid-cols-1 gap-4">
+                  <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-1">
                     {isLoadingEvents ? (
                       <FieldSkeleton />
                     ) : (
@@ -494,6 +531,23 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                         isLoading={isLoadingEvents}
                         showNone={false}
                       />
+                    )}
+
+                    {selectedEventId && (
+                      <>
+                        {isTicketsLoading || isTicketsFetching ? (
+                          <FieldSkeleton />
+                        ) : (
+                          <RHFCustomDropdown
+                            name="ticket"
+                            label="Select Ticket"
+                            placeholder="Choose ticket"
+                            options={ticketOptions}
+                            isLoading={isTicketsLoading}
+                            showNone={false}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 )}

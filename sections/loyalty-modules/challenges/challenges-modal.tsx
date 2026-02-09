@@ -27,7 +27,7 @@ import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
 import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
 import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
 import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
-import type { CompanyOption, EventOption, OrganizationOption, TicketOption } from './special-ticket-types';
+import type { EventOption, OrganizationOption, TicketOption } from './special-ticket-types';
 // import { useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 
 const defaultValues: any = {
@@ -183,6 +183,8 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   const [deleting, setDeleting] = useState(false);
   const isInitializingEdit = useRef(false);
 
+  console.log('selectedCompany', selectedCompany);
+
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [addChallenge, { isLoading: addChallengeLoading }] = useAddChallengeMutation();
   const [updateChallenge, { isLoading: updateChallengeLoading }] = useUpdateChallengeMutation();
@@ -206,15 +208,14 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   const selectedTaskMenuId = watch('taskMenu');
 
   // Special Ticket Fields
-  const companyId = watch('companyId');
   const organizationId = watch('organizationId');
   const eventId = watch('eventId');
 
   // Determine when to show special ticket dropdowns
-  const shouldShowCompanyDropdown = rewardType === 'specialTicket';
-  const shouldShowOrganizationDropdown = rewardType === 'specialTicket' && !!companyId;
-  const shouldShowEventDropdown = rewardType === 'specialTicket' && !!organizationId;
-  const shouldShowTicketDropdown = rewardType === 'specialTicket' && !!eventId;
+  const shouldShowSpecialTicketFields = rewardType === 'specialTicket' && !!selectedCompany;
+  const shouldShowOrganizationDropdown = shouldShowSpecialTicketFields;
+  const shouldShowEventDropdown = shouldShowSpecialTicketFields && !!organizationId;
+  const shouldShowTicketDropdown = shouldShowSpecialTicketFields && !!eventId;
 
   // API QUERIES
   const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
@@ -277,14 +278,11 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   } = useGetMenuItemByMenuIdQuery({ menuId: selectedTaskMenuId }, { skip: !selectedTaskMenuId || taskType !== 'buyMenuItem' });
 
   // API QUERIES - Special Ticket Feature
-  const {
-    data: companyList,
-    isLoading: isLoadingCompanies,
-    isFetching: isCompanyFetching,
-  } = useGetCompanyListQuery(
+  // Fetch company list only to get the selected company's name for display
+  const { data: companyList, isLoading: isLoadingCompanies } = useGetCompanyListQuery(
     {},
     {
-      skip: !shouldShowCompanyDropdown,
+      skip: !shouldShowSpecialTicketFields,
     }
   );
 
@@ -294,10 +292,10 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     isFetching: isOrganizationFetching,
   } = useGetOrganizationByCompanyQuery(
     {
-      companyOrganizer: companyId || undefined,
+      companyOrganizer: selectedCompany || undefined,
     },
     {
-      skip: !shouldShowOrganizationDropdown || !companyId,
+      skip: !shouldShowOrganizationDropdown || !selectedCompany,
     }
   );
 
@@ -353,23 +351,21 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     })) || [];
 
   // OPTIONS MAPPING - Special Ticket Feature
-  const companyOptions = useMemo<CompanyOption[]>(
-    () =>
-      companyList?.map((company: any) => ({
-        label: company?.companyDetails?.name || 'Unknown Company',
-        value: company?._id,
-      })) || [],
-    [companyList]
-  );
+  // Get the selected company name for display in the disabled field
+  const selectedCompanyName = useMemo(() => {
+    if (!selectedCompany || !companyList) return 'Selected Company';
+    const company = companyList.find((c: any) => c._id === selectedCompany);
+    return company?.companyDetails?.name || 'Selected Company';
+  }, [companyList, selectedCompany]);
 
   const organizationOptions = useMemo<OrganizationOption[]>(
     () =>
       organizationResponse?.data?.map((organization: any) => ({
         label: organization?.basicInfo?.name || 'Unknown Organization',
         value: organization?._id,
-        companyId: companyId || '',
+        companyId: selectedCompany || '',
       })) || [],
-    [organizationResponse, companyId]
+    [organizationResponse, selectedCompany]
   );
 
   const eventOptions = useMemo<EventOption[]>(
@@ -391,16 +387,14 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     [ticketData]
   );
 
-  // CASCADING DROPDOWN LOGIC - Clear dependent fields when parent changes
+  // Auto-set companyId when specialTicket is selected (using selectedCompany)
   useEffect(() => {
-    if (!isInitializingEdit.current && rewardType === 'specialTicket') {
-      // Clear all dependent fields when company changes
-      setValue('organizationId', '');
-      setValue('eventId', '');
-      setValue('ticketId', '');
+    if (rewardType === 'specialTicket' && selectedCompany && !isInitializingEdit.current) {
+      setValue('companyId', selectedCompany);
     }
-  }, [companyId, setValue, rewardType]);
+  }, [rewardType, selectedCompany, setValue]);
 
+  // CASCADING DROPDOWN LOGIC - Clear dependent fields when parent changes
   useEffect(() => {
     if (!isInitializingEdit.current && rewardType === 'specialTicket') {
       // Clear event and ticket when organization changes
@@ -416,7 +410,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     }
   }, [eventId, setValue, rewardType]);
 
-  // Clear special ticket fields when reward type changes
+  // Clear special ticket fields when reward type changes away from specialTicket
   useEffect(() => {
     if (!isInitializingEdit.current && rewardType !== 'specialTicket') {
       setValue('companyId', '');
@@ -468,13 +462,8 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
         customRewardTitle: reward?.rewardType === 'customReward' ? reward?.customReward?.title || '' : '',
         customRewardDescription: reward?.rewardType === 'customReward' ? reward?.customReward?.description || '' : '',
 
-        // Special Ticket fields mapping
-        companyId:
-          reward?.rewardType === 'specialTicket'
-            ? typeof reward?.specialTicket?.companyOrganizer === 'string'
-              ? reward.specialTicket.companyOrganizer
-              : reward?.specialTicket?.companyOrganizer?._id || ''
-            : '',
+        // Special Ticket fields mapping - Use selectedCompany for companyId
+        companyId: reward?.rewardType === 'specialTicket' ? selectedCompany || '' : '',
         organizationId:
           reward?.rewardType === 'specialTicket'
             ? typeof reward?.specialTicket?.organization === 'string'
@@ -501,7 +490,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
         isInitializingEdit.current = false;
       }, 100);
     }
-  }, [isEdit, selectedData, reset]);
+  }, [isEdit, selectedData, reset, selectedCompany]);
 
   // CLEAR MENU ITEM WHEN MENU CHANGES
   useEffect(() => {
@@ -810,25 +799,25 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 {rewardType === 'specialTicket' && (
                   <div className="space-y-4">
                     <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
-                      {/* Company Dropdown */}
-                      {isLoadingCompanies || isCompanyFetching ? (
-                        <div className="space-y-2">
-                          <Skeleton className="ml-1 h-3 w-20" />
-                          <Skeleton className="h-8" />
-                        </div>
-                      ) : (
-                        <RHFCustomDropdown
-                          name="companyId"
-                          label="Company"
-                          placeholder="Select Company"
-                          options={companyOptions}
-                          isLoading={isLoadingCompanies}
-                          showNone={false}
-                        />
-                      )}
+                      {/* Company Field - Disabled, shows selected company */}
+                      <div className="space-y-2">
+                        <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Company</label>
+                        {isLoadingCompanies ? (
+                          <Skeleton className="h-10 w-full rounded-md" />
+                        ) : (
+                          <input
+                            type="text"
+                            value={selectedCompanyName}
+                            disabled
+                            aria-label="Company"
+                            title="Company (auto-selected)"
+                            className="border-input bg-muted text-muted-foreground flex h-10 w-full cursor-not-allowed rounded-md border px-3 py-2 text-sm opacity-70"
+                          />
+                        )}
+                      </div>
 
-                      {/* Organization Dropdown - Only show when company is selected */}
-                      {companyId && (
+                      {/* Organization Dropdown - Shows immediately since company is pre-selected */}
+                      {selectedCompany && (
                         <>
                           {isLoadingOrganizations || isOrganizationFetching ? (
                             <div className="space-y-2">

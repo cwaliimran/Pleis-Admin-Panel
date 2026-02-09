@@ -5,6 +5,7 @@ import { useGetReservationCalendarQuery } from '@/store/Reducer/reservation-cale
 import { format } from 'date-fns';
 import React, { useMemo, useState } from 'react';
 import ReservationGrid from '../../reservation-modules/reservation-view/new-reservation-chart';
+import { getTimeIndex } from '../../reservation-modules/reservation-view/helpers';
 import { ActiveBookings } from './components/active-bookings';
 import PendingRequests from './components/pending-request';
 import { CalendarReservation, SelectedSlot } from './components/types';
@@ -21,9 +22,12 @@ const ReservationCalendar: React.FC = () => {
     { skip: !organizationId, refetchOnMountOrArgChange: true }
   );
 
-  // Filter bookings based on selected slot
+  // Filter bookings based on selected slot (handles merged/overlapping slots)
   const filteredBookings = useMemo(() => {
     if (!selectedSlot || !data?.data) return [];
+
+    const slotStartIdx = getTimeIndex(selectedSlot.startTime);
+    const slotEndIdx = getTimeIndex(selectedSlot.endTime);
 
     return data.data.filter((booking: CalendarReservation) => {
       const reservationType = booking.reservation?.reservationType;
@@ -31,9 +35,15 @@ const ReservationCalendar: React.FC = () => {
 
       if (!reservationType || !timeSlot) return false;
 
-      return (
-        reservationType === selectedSlot.reservationType && timeSlot.startTime === selectedSlot.startTime && timeSlot.endTime === selectedSlot.endTime
-      );
+      // Must match reservation type
+      if (reservationType !== selectedSlot.reservationType) return false;
+
+      // Check if booking's time range overlaps with the selected slot's time range
+      // Two intervals overlap if: bookingStart <= slotEnd AND bookingEnd >= slotStart
+      const bookingStartIdx = getTimeIndex(timeSlot.startTime);
+      const bookingEndIdx = getTimeIndex(timeSlot.endTime);
+
+      return bookingStartIdx <= slotEndIdx && bookingEndIdx >= slotStartIdx;
     });
   }, [data?.data, selectedSlot]);
 

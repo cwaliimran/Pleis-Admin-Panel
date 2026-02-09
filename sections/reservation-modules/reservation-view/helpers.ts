@@ -49,12 +49,24 @@ export const extractReservationTypes = (reservations: ReservationData[]): string
 
 /**
  * Process reservations into grouped bookings for the grid
- * Groups bookings by reservationType + startTime + endTime
+ * Groups bookings by reservationType and merges overlapping time slots
+ * e.g., if one booking is 12:30 AM - 01:30 AM and another is 01:00 AM - 02:00 AM,
+ * they will be merged into a single grid cell spanning 12:30 AM - 02:00 AM
  */
 export const processReservationsToBookings = (reservations: ReservationData[]): ProcessedBooking[] => {
   if (!reservations || reservations.length === 0) return [];
 
-  const bookingMap = new Map<string, ProcessedBooking>();
+  // First, collect all time slots with their reservations grouped by type
+  const typeBookings = new Map<
+    string,
+    Array<{
+      startTime: string;
+      endTime: string;
+      startIdx: number;
+      endIdx: number;
+      reservation: ReservationData;
+    }>
+  >();
 
   reservations.forEach((reservation) => {
     const reservationType = reservation.reservation?.reservationType;
@@ -62,29 +74,93 @@ export const processReservationsToBookings = (reservations: ReservationData[]): 
 
     reservation.timingSlots?.dateTimeSlots?.forEach((dateSlot) => {
       dateSlot.timeSlots?.forEach((timeSlot) => {
-        const slotKey = `${reservationType}-${timeSlot.startTime}-${timeSlot.endTime}`;
-
-        if (bookingMap.has(slotKey)) {
-          const existing = bookingMap.get(slotKey)!;
-          existing.bookings.push(reservation);
-          existing.totalPartySize += reservation.partySize;
-          existing.bookingCount += 1;
-        } else {
-          bookingMap.set(slotKey, {
-            type: reservationType,
-            startTime: timeSlot.startTime,
-            endTime: timeSlot.endTime,
-            slotKey,
-            bookings: [reservation],
-            totalPartySize: reservation.partySize,
-            bookingCount: 1,
-          });
+        if (!typeBookings.has(reservationType)) {
+          typeBookings.set(reservationType, []);
         }
+
+        const startIdx = getTimeIndex(timeSlot.startTime);
+        const endIdx = getTimeIndex(timeSlot.endTime);
+
+        typeBookings.get(reservationType)!.push({
+          startTime: timeSlot.startTime,
+          endTime: timeSlot.endTime,
+          startIdx,
+          endIdx,
+          reservation,
+        });
       });
     });
   });
 
-  return Array.from(bookingMap.values());
+  // Now merge overlapping intervals for each type
+  const result: ProcessedBooking[] = [];
+
+  typeBookings.forEach((bookings, type) => {
+    if (bookings.length === 0) return;
+
+    // Sort by start index
+    bookings.sort((a, b) => a.startIdx - b.startIdx);
+
+    // Merge overlapping intervals using interval merging algorithm
+    const merged: Array<{
+      startIdx: number;
+      endIdx: number;
+      startTime: string;
+      endTime: string;
+      reservations: ReservationData[];
+    }> = [];
+
+    for (const booking of bookings) {
+      if (merged.length === 0) {
+        merged.push({
+          startIdx: booking.startIdx,
+          endIdx: booking.endIdx,
+          startTime: booking.startTime,
+          endTime: booking.endTime,
+          reservations: [booking.reservation],
+        });
+      } else {
+        const last = merged[merged.length - 1];
+        // Check if current booking overlaps with the last merged interval
+        // Two intervals overlap if: booking.startIdx <= last.endIdx
+        if (booking.startIdx <= last.endIdx) {
+          // Merge: extend the end if needed and add reservation
+          if (booking.endIdx > last.endIdx) {
+            last.endIdx = booking.endIdx;
+            last.endTime = booking.endTime;
+          }
+          last.reservations.push(booking.reservation);
+        } else {
+          // No overlap, create new merged interval
+          merged.push({
+            startIdx: booking.startIdx,
+            endIdx: booking.endIdx,
+            startTime: booking.startTime,
+            endTime: booking.endTime,
+            reservations: [booking.reservation],
+          });
+        }
+      }
+    }
+
+    // Convert merged intervals to ProcessedBooking
+    for (const interval of merged) {
+      const slotKey = `${type}-${interval.startTime}-${interval.endTime}`;
+      const totalPartySize = interval.reservations.reduce((sum, r) => sum + r.partySize, 0);
+
+      result.push({
+        type,
+        startTime: interval.startTime,
+        endTime: interval.endTime,
+        slotKey,
+        bookings: interval.reservations,
+        totalPartySize,
+        bookingCount: interval.reservations.length,
+      });
+    }
+  });
+
+  return result;
 };
 
 /**

@@ -13,13 +13,14 @@ import { useGeteventsQuery } from '@/store/Reducer/events';
 import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useAddRewardMutation, useUpdateRewardMutation } from '@/store/Reducer/rewards-api';
+import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { fDate, formatStr } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import RewardCalculatorFields from './reward-calculation-fields';
@@ -39,6 +40,7 @@ type RewardFormValues = {
   menu: string;
   menuItem: string;
   event: string;
+  ticket: string;
   endDate: string | Date;
   status: string;
   companyOrganizer: string;
@@ -86,6 +88,11 @@ const schema = yup.object({
     then: (schema) => schema.required('Event is required'),
     otherwise: (schema) => schema,
   }),
+  ticket: yup.string().when('rewardType', {
+    is: 'globalTicketReward',
+    then: (schema) => schema.required('Ticket is required'),
+    otherwise: (schema) => schema,
+  }),
   endDate: yup.mixed<string | Date>().required('End date is required'),
   status: yup.string(),
   companyOrganizer: yup.string(),
@@ -94,6 +101,7 @@ const schema = yup.object({
 const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, selectedCompany }: RewardFormModalProps) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
+  const isInitializingEdit = useRef(false);
 
   const [addReward, { isLoading: addRewardLoading }] = useAddRewardMutation();
   const [updateReward, { isLoading: updateRewardLoading }] = useUpdateRewardMutation();
@@ -111,6 +119,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
     percentOff: '',
     description: '',
     event: '',
+    ticket: '',
     endDate: '',
     status: '',
     companyOrganizer: '',
@@ -121,11 +130,12 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
     defaultValues,
   });
 
-  const { watch, reset } = methods;
+  const { watch, reset, setValue } = methods;
 
   const rewardType = watch('rewardType');
   const percentOff = watch('percentOff');
   const selectedMenuId = watch('menu');
+  const selectedEventId = watch('event');
 
   const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
     {
@@ -181,6 +191,12 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
     { skip: !selectedMenuId || rewardType !== 'buyMenuItemReward' }
   );
 
+  const {
+    data: ticketData,
+    isLoading: isTicketsLoading,
+    isFetching: isTicketsFetching,
+  } = useGetTicketingByEventQuery({ eventId: selectedEventId || undefined }, { skip: !selectedEventId || rewardType !== 'globalTicketReward' });
+
   const tiersOptions =
     tiersData?.data?.map((preset: any) => ({
       label: preset?.title,
@@ -217,9 +233,24 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
       value: menuItem?._id,
     })) || [];
 
+  const ticketOptions =
+    (ticketData?.data || []).map((ticket: any) => ({
+      label: ticket?.title,
+      value: ticket?._id,
+    })) || [];
+
+  // Clear ticket when event changes (but not during edit mode initialization)
+  useEffect(() => {
+    if (rewardType === 'globalTicketReward' && !isInitializingEdit.current) {
+      setValue('ticket', '');
+    }
+  }, [selectedEventId, setValue, rewardType]);
+
   // Populate form when editing
   useEffect(() => {
     if (isEdit && selectedData && open) {
+      isInitializingEdit.current = true;
+
       const initialRewardType = global ? 'globalCustomReward' : 'buyMenuItemReward';
       reset({
         image: selectedData?.image || '',
@@ -232,11 +263,17 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
         description: selectedData.description || '',
         rewardType: selectedData.rewardType || initialRewardType,
         menuItem: selectedData.menuItem || '',
-        event: selectedData.event || '',
+        event: selectedData.event?._id || selectedData.event || '',
+        ticket: selectedData.ticket?._id || selectedData.ticket || '',
         endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
       });
+
+      // Reset the flag after a short delay to allow form to settle
+      setTimeout(() => {
+        isInitializingEdit.current = false;
+      }, 100);
     }
   }, [isEdit, selectedData, open, reset, global]);
 
@@ -302,6 +339,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
 
       if (formData.rewardType === 'globalTicketReward') {
         payload.event = formData.event;
+        payload.ticket = formData.ticket;
       }
 
       // Add edit-specific fields
@@ -351,6 +389,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
 
   const handleClose = () => {
     reset(defaultValues);
+    isInitializingEdit.current = false;
     onClose();
   };
 
@@ -458,7 +497,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
                 )}
 
                 {rewardType === 'globalTicketReward' && (
-                  <div className="grid w-full grid-cols-1 gap-4">
+                  <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-1">
                     {isLoadingEvents ? (
                       <FieldSkeleton />
                     ) : (
@@ -470,6 +509,23 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
                         isLoading={isLoadingEvents}
                         showNone={false}
                       />
+                    )}
+
+                    {selectedEventId && (
+                      <>
+                        {isTicketsLoading || isTicketsFetching ? (
+                          <FieldSkeleton />
+                        ) : (
+                          <RHFCustomDropdown
+                            name="ticket"
+                            label="Select Ticket"
+                            placeholder="Choose ticket"
+                            options={ticketOptions}
+                            isLoading={isTicketsLoading}
+                            showNone={false}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 )}

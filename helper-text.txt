@@ -17,3 +17,17 @@ const { organizerOrganizations, organizerOrganizationIds } = useCompanySelection
 
 // ------------- GET COMPANY ID & ORGANIZATION ID - ADMIN ONLY -------------
 const { companyId, organizationId } = useCompanySelectionState();
+
+// ------------- SAMPLE API CALL -------------
+  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '100',
+      status: '',
+      date: undefined,
+    },
+    {
+      skip: global,
+    }
+  );
