@@ -9,8 +9,59 @@ import { m } from 'framer-motion';
 import { CalendarDays, Eye, Globe, Heart, MapPin, Pencil, Share2 } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { followedEventList, followedOrganizationsList, userTags, venueTypes } from '../users/data';
+import { followedEventList, followedOrganizationsList } from '../users/data';
 import UserBusinessInfo from './userBusinessInfo';
+
+// Reusable Badge List Component with "See more" functionality
+const ITEMS_LIMIT = 10;
+
+interface BadgeListProps {
+  title: string;
+  items: Array<{ _id: string; title: string }> | undefined;
+}
+
+const BadgeListCard: React.FC<BadgeListProps> = ({ title, items }) => {
+  const [showAll, setShowAll] = React.useState(false);
+
+  const hasItems = items && items.length > 0;
+  const displayedItems = hasItems ? (showAll ? items : items.slice(0, ITEMS_LIMIT)) : [];
+  const hasMoreItems = hasItems && items.length > ITEMS_LIMIT;
+
+  return (
+    <Card className="dark:bg-secondary mt-4 shadow-lg">
+      <CardHeader>
+        <h1 className="font-semibold text-slate-500">{title}</h1>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {hasItems ? (
+            <>
+              {displayedItems.map((item) => (
+                <Badge
+                  key={item._id}
+                  className="rounded-full border border-gray-400 bg-white px-2 py-1 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:text-gray-300 dark:hover:text-white"
+                >
+                  {item.title}
+                </Badge>
+              ))}
+              {hasMoreItems && (
+                <button
+                  type="button"
+                  onClick={() => setShowAll(!showAll)}
+                  className="text-primary cursor-pointer text-sm font-medium hover:underline dark:text-gray-200"
+                >
+                  {showAll ? 'See less' : `+${items.length - ITEMS_LIMIT} more`}
+                </button>
+              )}
+            </>
+          ) : (
+            <Badge className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
+              -
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+    </Card>
+  );
+};
 
 const UserOverView: React.FC<{
   userType: string | null;
@@ -82,64 +133,16 @@ const UserOverView: React.FC<{
           {(userType === 'admin' || userType === 'organizer') && <UserBusinessInfo organizationData={apiData?.basicInfo?.companyDetails} />}
 
           {/* CATEGORIES */}
-          {userType === 'user' && (
-            <Card className="dark:bg-secondary mt-4 shadow-lg">
-              <CardHeader>
-                <h1 className="font-semibold text-slate-500">CATEGORIES</h1>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {[userTags].slice(0, 1).map((item, index) => (
-                    <Badge
-                      key={index}
-                      className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
-                    >
-                      -
-                    </Badge>
-                  ))}
-                </div>
-              </CardHeader>
-            </Card>
-          )}
+          {userType === 'user' && <BadgeListCard title="CATEGORIES" items={apiData?.interests?.categories} />}
 
           {/* TAGS */}
-          {userType === 'user' && (
-            <Card className="dark:bg-secondary mt-4 shadow-lg">
-              <CardHeader>
-                <h1 className="font-semibold text-slate-500">TAGS</h1>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {userTags?.slice(0, 1)?.map((item, index) => (
-                    <Badge
-                      key={index}
-                      className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
-                    >
-                      -
-                    </Badge>
-                  ))}
-                </div>
-              </CardHeader>
-            </Card>
-          )}
+          {userType === 'user' && <BadgeListCard title="TAGS" items={apiData?.interests?.tags} />}
 
           {/* VENUE TYPE */}
-          {userType === 'user' && (
-            <Card className="dark:bg-secondary mt-4 shadow-lg">
-              <CardHeader>
-                <h1 className="font-semibold text-slate-500">VENUE TYPE</h1>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {venueTypes?.slice(0, 1)?.map((item, index) => (
-                    <Badge
-                      key={index}
-                      className="text-md rounded-full border border-gray-400 bg-white px-2 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
-                    >
-                      -
-                    </Badge>
-                  ))}
-                </div>
-              </CardHeader>
-            </Card>
-          )}
+          {userType === 'user' && <BadgeListCard title="VENUE TYPE" items={apiData?.interests?.venueTypes} />}
 
           {/* WALLET INFORMATION */}
-          {userType !== 'staff' && (
+          {(userType === 'manager' || userType === 'organizer' || userType === 'staff') && (
             <Card className="dark:bg-secondary mt-4 gap-y-0 shadow-lg">
               <CardHeader className="">
                 <h3 className="mb-2 text-lg font-semibold text-slate-500">Wallet Information</h3>

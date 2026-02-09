@@ -553,22 +553,30 @@ export const getUpdatedFields = (formData: FormData, originalData: any): Partial
     if (formData.features.earlyBirdEnabled) {
       timeSensitivePricing.earlyBird = {
         endDate: formatLocalDateTimeToApi(formData.features.earlyBirdDate),
-        discountedPrice: parseFloat(formData.features.earlyBirdPrice),
+        discountedPrice: parseInt(formData.features.earlyBirdPrice, 10) || 0,
+      };
+    } else {
+      // Explicitly send null structure when disabled to clear on backend
+      timeSensitivePricing.earlyBird = {
+        endDate: null,
+        discountedPrice: 0,
       };
     }
 
     if (formData.features.lastMinuteEnabled) {
       timeSensitivePricing.lastMinute = {
         startDate: formatLocalDateTimeToApi(formData.features.lastMinuteDate),
-        discountedPrice: parseFloat(formData.features.lastMinutePrice),
+        discountedPrice: parseInt(formData.features.lastMinutePrice, 10) || 0,
+      };
+    } else {
+      // Explicitly send null structure when disabled to clear on backend
+      timeSensitivePricing.lastMinute = {
+        startDate: null,
+        discountedPrice: 0,
       };
     }
 
-    if (Object.keys(timeSensitivePricing).length > 0) {
-      updatedFields.timeSensitivePricing = timeSensitivePricing;
-    } else {
-      updatedFields.timeSensitivePricing = null;
-    }
+    updatedFields.timeSensitivePricing = timeSensitivePricing;
   }
 
   const originalFastTrack = originalData.fastTrackEntry?.enabled || false;
@@ -685,13 +693,13 @@ export const transformTicketPayload = (formData: FormData, editMode: boolean = f
   if (formData.features.earlyBirdEnabled) {
     timeSensitivePricing.earlyBird = {
       endDate: formatLocalDateTimeToApi(formData.features.earlyBirdDate),
-      discountedPrice: parseFloat(formData.features.earlyBirdPrice),
+      discountedPrice: parseInt(formData.features.earlyBirdPrice, 10) || 0,
     };
   }
   if (formData.features.lastMinuteEnabled) {
     timeSensitivePricing.lastMinute = {
       startDate: formatLocalDateTimeToApi(formData.features.lastMinuteDate),
-      discountedPrice: parseFloat(formData.features.lastMinutePrice),
+      discountedPrice: parseInt(formData.features.lastMinutePrice, 10) || 0,
     };
   }
   if (Object.keys(timeSensitivePricing).length > 0) {

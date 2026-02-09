@@ -122,6 +122,10 @@ const ReservationBody = ({ data, isLoading, meta, onPageChange, limit, organizat
                     <div className="text-lg font-semibold">{reservation.taxPercentage}%</div>
                   </div>
                   <div>
+                    <div className="text-gray-500">Bonus Points</div>
+                    <div className="text-lg font-semibold">{reservation?.bonusPoints || 'N/A'}</div>
+                  </div>
+                  <div>
                     <div className="text-gray-500">PreOrder</div>
                     <div className="text-lg font-semibold">
                       <CustomBadge variant={reservation?.allowPreOrderMenuItems ? 'success' : 'error'}>

@@ -155,12 +155,12 @@ export const userData = [
   },
 ];
 export const organizerCardData = [
-  {
-    _id: 1,
-    title: "Total Revenue",
-    value: 0, // in USD or your currency
-    status: "up",
-  },
+  // {
+  //   _id: 1,
+  //   title: "Total Revenue",
+  //   value: 0, // in USD or your currency
+  //   status: "up",
+  // },
   {
     _id: 2,
     title: "Total Purchases",
@@ -168,12 +168,12 @@ export const organizerCardData = [
     status: "down",
     total: 10, // Optional: could represent comparison with last period
   },
-  {
-    _id: 3,
-    title: "Follows",
-    value: 0, // Followed Organizations + Events
-    status: "up",
-  },
+  // {
+  //   _id: 3,
+  //   title: "Follows",
+  //   value: 0, // Followed Organizations + Events
+  //   status: "up",
+  // },
 ];
 
 export const activePromontions = [

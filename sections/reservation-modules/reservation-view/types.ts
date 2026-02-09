@@ -12,6 +12,7 @@ export type ReservationFormValues = {
   reservationType: string;
   availableReservations: number;
   maxCapacityPerReservation: number;
+  bonusPoints: number;
   conditionType: string;
   amount: string | null;
   customText: string;

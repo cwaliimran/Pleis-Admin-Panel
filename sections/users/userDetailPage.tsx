@@ -99,6 +99,11 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
           <div className="mt-10 h-full">
             <div className="grid grid-cols-12 md:gap-7">
               <div className="col-span-12 lg:col-span-8 xl:col-span-9">
+              {/* <div
+                className={` ${
+                  userType === 'user' || userType === 'guest' || userType === 'staff' ? 'col-span-12' : 'col-span-12 lg:col-span-8 xl:col-span-9'
+                } `}
+              > */}
                 {/* ---------------- UPPER PROFILE SECTION ---------------- */}
                 <Card className="dark:bg-secondary overflow-hidden rounded-xl bg-white pb-0 shadow-lg transition-all">
                   <CardContent>
@@ -165,7 +170,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                                     <span className="font-medium">Gender:</span> {apiData?.basicInfo?.gender || '-'}
                                   </p>
                                   <p>
-                                    <span className="font-medium">DOB:</span> {apiData?.basicInfo?.dob || '-'}
+                                    <span className="font-medium">DOB:</span> {fDate(apiData?.basicInfo?.dob, formatStr.split.date) || '-'}
                                   </p>
                                   <p>
                                     <span className="font-medium">Region:</span> {apiData?.basicInfo?.region || '-'}
@@ -271,11 +276,13 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                 </div>
               </div>
 
-              <div className="col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-4 xl:col-span-3">
-                {organizerCardData.map((user: any) => (
-                  <UserCard item={user} key={user._id} />
-                ))}
-              </div>
+              {/* {userType !== 'user' && ( */}
+                <div className={`col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-4 xl:col-span-3`}>
+                  {organizerCardData.map((user: any) => (
+                    <UserCard item={user} key={user._id} />
+                  ))}
+                </div>
+              {/* )} */}
             </div>
           </div>
         </div>
