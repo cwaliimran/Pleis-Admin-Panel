@@ -190,9 +190,7 @@ type PromotionModalProps = {
 };
 
 const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = false, selectedCompany }: PromotionModalProps) => {
-
-
-  console.log("selectedData", selectedData);
+  console.log('selectedData', selectedData);
 
   const [deleting, setDeleting] = useState(false);
   const [updateScope, setUpdateScope] = useState<string | null>(null);
@@ -331,12 +329,25 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       daysOfWeek: recurringDetails?.daysOfWeek || [],
     };
 
+    // Helper to convert 12-hour time (e.g., "03:21 PM") to 24-hour format (e.g., "15:21")
+    const convertTo24Hour = (dateStr: string): string => {
+      const timeMatch = dateStr?.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!timeMatch) return '';
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = timeMatch[2];
+      const period = timeMatch[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    };
+
     // type-specific
     if (promotionType === 'happyHour') {
-      const startTimeMatch = startDate?.match(/(\d{2}:\d{2})/);
-      const endTimeMatch = endDate?.match(/(\d{2}:\d{2})/);
-      mapped.timeStart = startTimeMatch ? startTimeMatch[1] : '';
-      mapped.timeEnd = endTimeMatch ? endTimeMatch[1] : '';
+      mapped.timeStart = convertTo24Hour(startDate) || '';
+      mapped.timeEnd = convertTo24Hour(endDate) || '';
       mapped.pointsMultiplier = String(pointsMultiplier || 1.5);
     }
     if (promotionType === 'buyMenuItemPromotion') {

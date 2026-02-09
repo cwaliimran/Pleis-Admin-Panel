@@ -1,15 +1,10 @@
 'use client';
 
 import { AppLoading } from '@/components/atoms/app-loading';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
-import BookingHistory from '@/sections/users/bookingHistory';
-import { organizerCardData } from '@/sections/users/data';
-import Loyalty from '@/sections/users/loyalty';
-import LoyaltyAndOrderTransaction from '@/sections/users/loyaltyAndOrderTransaction';
-import UserCard from '@/sections/users/userCard';
 import UserOverView from '@/sections/users/userOverview';
 import { useGetUserByIdQuery } from '@/store/Reducer/user-list';
 import { fDate, formatStr } from '@/utils/format-time';
@@ -18,8 +13,8 @@ import { Pencil } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
-import EditUserModal from './user-modal/custom-edit-user-modal';
 import UserAllTransactionView from '../transactions/user-all-transaction/user-all-transaction-view';
+import EditUserModal from './user-modal/custom-edit-user-modal';
 
 interface UserDetailPageProps {
   userDashboardType: string;
@@ -99,7 +94,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
           <div className="mt-10 h-full">
             <div className="grid grid-cols-12 md:gap-7">
               <div className="col-span-12 lg:col-span-8 xl:col-span-9">
-              {/* <div
+                {/* <div
                 className={` ${
                   userType === 'user' || userType === 'guest' || userType === 'staff' ? 'col-span-12' : 'col-span-12 lg:col-span-8 xl:col-span-9'
                 } `}
@@ -239,49 +234,27 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                   {/* ---------------- BOOKING & LOYALTY ---------------- */}
                   {active === 'booking&loyalty' && (
                     <>
-                      <Card className="dark:bg-secondary col-span-12 mt-4 shadow-lg">
-                        <CardHeader>
-                          <CardTitle>Booking History</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="rounded-lg border">
-                            <BookingHistory />
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="dark:bg-secondary mt-4 shadow-lg">
-                        <CardHeader>
-                          <CardTitle>Ordering Transactions</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="rounded-lg border">
-                            <LoyaltyAndOrderTransaction />
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="dark:bg-secondary mt-4 shadow-lg">
-                        <CardHeader>
-                          <CardTitle>Loyalty</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="rounded-lg border">
-                            <Loyalty />
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <UserAllTransactionView title="Booking History" domainType="ticketingorders" userId={id} />
+                      <UserAllTransactionView title="Ordering Transactions" domainType="menuorders" userId={id} />
+                      <UserAllTransactionView title="Loyalty Rewards" domainType="loyaltyrewardsorders" userId={id} />
                     </>
                   )}
                 </div>
               </div>
 
               {/* {userType !== 'user' && ( */}
-                <div className={`col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-4 xl:col-span-3`}>
-                  {organizerCardData.map((user: any) => (
-                    <UserCard item={user} key={user._id} />
-                  ))}
-                </div>
+              <div className={`col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-4 xl:col-span-3`}>
+                <Card className="dark:bg-secondary">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold">Total Purchases</h3>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center text-4xl font-bold">{apiData?.totalPurchases?.toFixed(0) || 0}</div>
+                  </CardHeader>
+                </Card>
+              </div>
               {/* )} */}
             </div>
           </div>

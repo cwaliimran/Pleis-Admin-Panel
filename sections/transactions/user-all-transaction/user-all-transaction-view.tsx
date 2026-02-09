@@ -8,9 +8,11 @@ import TicketingTransactionTable from './user-all-transaction-table';
 
 interface UserAllTransactionViewProps {
   userId?: string | string[];
+  title?: string;
+  domainType?: string;
 }
 
-const UserAllTransactionView = ({ userId }: UserAllTransactionViewProps) => {
+const UserAllTransactionView = ({ userId, title, domainType }: UserAllTransactionViewProps) => {
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -34,7 +36,7 @@ const UserAllTransactionView = ({ userId }: UserAllTransactionViewProps) => {
     isGlobal: false,
     user: userId || undefined,
     // walletType: 'globalWallet',
-    // domainType: 'ticketingorders',
+    domainType: domainType || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -69,6 +71,7 @@ const UserAllTransactionView = ({ userId }: UserAllTransactionViewProps) => {
     <div>
       <TicketingTransactionTable
         data={localData}
+        title={title || 'Transactions'}
         meta={meta}
         loading={isLoading || isFetching}
         // handleEdit={handleEdit}

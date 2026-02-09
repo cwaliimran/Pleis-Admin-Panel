@@ -143,6 +143,10 @@ type GlobalPromotionModalProps = {
 
 const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: GlobalPromotionModalProps) => {
   const [deleting, setDeleting] = useState(false);
+  const [updateScope, setUpdateScope] = useState<string | null>(null);
+
+  // Check if this is a child of a recurring promotion
+  const isRecurringChild = isEdit && selectedData?.recurringMeta?.parentPromotion !== null;
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
   const [addPromotion, { isLoading: addLoading }] = useAddPromotionMutation();
@@ -228,12 +232,25 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
       daysOfWeek: recurringDetails?.daysOfWeek || [],
     };
 
+    // Helper to convert 12-hour time (e.g., "03:21 PM") to 24-hour format (e.g., "15:21")
+    const convertTo24Hour = (dateStr: string): string => {
+      const timeMatch = dateStr?.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!timeMatch) return '';
+      let hours = parseInt(timeMatch[1], 10);
+      const minutes = timeMatch[2];
+      const period = timeMatch[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+      }
+      return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    };
+
     // type-specific
     if (promotionType === 'globalHappyHourPromotion') {
-      const startTimeMatch = startDate?.match(/(\d{2}:\d{2})/);
-      const endTimeMatch = endDate?.match(/(\d{2}:\d{2})/);
-      mapped.timeStart = startTimeMatch ? startTimeMatch[1] : '';
-      mapped.timeEnd = endTimeMatch ? endTimeMatch[1] : '';
+      mapped.timeStart = convertTo24Hour(startDate) || '';
+      mapped.timeEnd = convertTo24Hour(endDate) || '';
       mapped.pointsMultiplier = String(pointsMultiplier || 1.5);
     }
     if (promotionType === 'globalClaimPromotion') {
@@ -301,8 +318,13 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
     return base;
   };
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: any, scope?: string) => {
     let uploadedFileKey: string | null = null;
+
+    // Set the scope for loading state tracking
+    if (scope) {
+      setUpdateScope(scope);
+    }
 
     try {
       // Check if start date is in the past (only for new promotions)
@@ -351,7 +373,7 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
         payload.status = selectedData.status;
       }
 
-      const response = isEdit ? await updatePromotion(payload).unwrap() : await addPromotion(payload).unwrap();
+      const response = isEdit ? await updatePromotion({ ...payload, ...(scope && { scope }) }).unwrap() : await addPromotion(payload).unwrap();
 
       if (response?.error) {
         showError(getErrorMessage(response.error));
@@ -360,6 +382,7 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
 
       showSuccess(response?.message || (isEdit ? 'Global promotion updated' : 'Global promotion created'));
       methods.reset(defaultValues);
+      setUpdateScope(null);
       onClose();
     } catch (err: any) {
       if (uploadedFileKey) {
@@ -367,6 +390,7 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
         await deleteFileFromAzure(uploadedFileKey).finally(() => setDeleting(false));
       }
       showError(getErrorMessage(err));
+      setUpdateScope(null);
     }
   };
 
@@ -387,7 +411,7 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
           </DialogHeader>
 
           <div className="w-full">
-            <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
+            <FormProvider methods={methods} onSubmit={methods.handleSubmit((data) => handleSubmit(data))}>
               <div className="mt-7 flex w-full flex-col gap-4">
                 {/* IMAGE */}
                 <RHFUploadAvatar name="photo" label="Promotion Image" />
@@ -524,23 +548,67 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
 
               {/* SUBMIT */}
               <div className="mt-5 flex items-center justify-end gap-2">
-                <div className="flex w-full items-center justify-center gap-3">
-                  <Button type="button" variant="outline" onClick={handleClose} className="px-7">
+                <div className="flex w-full flex-col items-center justify-center gap-3 md:flex-row">
+                  <Button type="button" variant="outline" onClick={handleClose} className="w-full px-7 md:w-auto">
                     Cancel
                   </Button>
 
-                  {addLoading || updateLoading || imageUploading || deleting ? (
-                    <Button disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
-                      <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
-                    </Button>
+                  {isEdit && isRecurringChild ? (
+                    // Two buttons for recurring child promotions
+                    <>
+                      {updateLoading && updateScope === 'single' ? (
+                        <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
+                          <ButtonLoading title="Updating" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          className="bg-primary hover:bg-primary-dark w-full cursor-pointer px-4 py-2 text-white md:w-auto"
+                          disabled={!isDirty || (updateLoading && updateScope === 'future') || imageUploading || deleting}
+                          onClick={() => {
+                            setUpdateScope('single');
+                            methods.handleSubmit((data) => handleSubmit(data, 'single'))();
+                          }}
+                        >
+                          Update This Promotion
+                        </Button>
+                      )}
+
+                      {updateLoading && updateScope === 'future' ? (
+                        <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
+                          <ButtonLoading title="Updating" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          className="bg-primary hover:bg-primary-dark w-full cursor-pointer px-4 py-2 text-white md:w-auto"
+                          disabled={!isDirty || (updateLoading && updateScope === 'single') || imageUploading || deleting}
+                          onClick={() => {
+                            setUpdateScope('future');
+                            methods.handleSubmit((data) => handleSubmit(data, 'future'))();
+                          }}
+                        >
+                          Update All Further
+                        </Button>
+                      )}
+                    </>
                   ) : (
-                    <Button
-                      type="submit"
-                      className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
-                      disabled={isEdit ? !isDirty : false}
-                    >
-                      {isEdit ? 'Update Global Promotion' : 'Create Global Promotion'}
-                    </Button>
+                    // Single button for non-recurring or parent promotions
+                    <>
+                      {addLoading || updateLoading || imageUploading || deleting ? (
+                        <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
+                          <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          className="bg-primary hover:bg-primary-dark w-full cursor-pointer px-4 py-2 text-white md:w-auto"
+                          disabled={isEdit ? !isDirty : false}
+                        >
+                          {isEdit ? 'Update Global Promotion' : 'Create Global Promotion'}
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

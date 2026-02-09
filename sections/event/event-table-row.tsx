@@ -44,9 +44,9 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
       </TableCell>
 
       <TableCell className="text-left">
-        <div className="flex items-center justify-start gap-2">
+        <div className="flex items-center justify-start gap-2 capitalize">
           {item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url && (
-            <Avatar className="h-6 w-6 !rounded">
+            <Avatar className="h-6 w-6 rounded!">
               <ImageWithFallback
                 url={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
                 alt={item?.basicInfo?.organization?.basicInfo?.name}
