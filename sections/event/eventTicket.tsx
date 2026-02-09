@@ -5,7 +5,7 @@ import { useGeteventTicketsAnalyticsByIdQuery } from '@/store/Reducer/events';
 import { useUpdateTicketingMutation } from '@/store/Reducer/ticketing-api';
 import { Dot, Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { VisitorInterest } from '../invoices';
+import { MostViewedEvent } from '../invoices';
 import TicketingModal from '../ticketing-view/ticketing-modal';
 import EventLoading from './components/event-loading';
 
@@ -65,8 +65,7 @@ const EventTicket = ({ event }: { event: any }) => {
                   {ticketTypeStats.length > 0 ? (
                     ticketTypeStats.map((ticket: any, index: number) => {
                       const totalTickets = ticket.totalCreated || 0;
-                      const paidPercentage = totalTickets > 0 ? ((ticket.paid?.count || 0) / totalTickets) * 100 : 0;
-                      const unpaidPercentage = totalTickets > 0 ? ((ticket.unpaid?.count || 0) / totalTickets) * 100 : 0;
+                      const soldPercentage = totalTickets > 0 ? ((ticket.sold || 0) / totalTickets) * 100 : 0;
 
                       return (
                         <div key={ticket.ticketId || index}>
@@ -76,25 +75,15 @@ const EventTicket = ({ event }: { event: any }) => {
                           </p>
                           <div className="mt-2 flex items-start justify-between gap-4">
                             <div className="flex flex-1 flex-col">
-                              <h1 className="mb-1 font-semibold">Paid Tickets</h1>
-                              <h1 className="text-end text-sm">{paidPercentage.toFixed(1)}%</h1>
+                              <div className="mb-1 flex items-center justify-between">
+                                <h1 className="font-semibold">Tickets Sold</h1>
+                                <h1 className="text-sm">{soldPercentage.toFixed(0)}%</h1>
+                              </div>
                               <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                                <div className="bg-primary h-full transition-all duration-500" style={{ width: `${paidPercentage}%` }} />
+                                <div className="bg-primary h-full transition-all duration-500" style={{ width: `${soldPercentage}%` }} />
                               </div>
                               <h1 className="text-start text-sm">
-                                {ticket.paid?.count ?? 0} (${ticket.paid?.amount ?? 0})
-                              </h1>
-                            </div>
-                          </div>
-                          <div className="mt-2 flex items-start justify-between gap-4">
-                            <div className="flex flex-1 flex-col">
-                              <h1 className="mb-1 font-semibold">Free Tickets</h1>
-                              <h1 className="text-end text-sm">{unpaidPercentage.toFixed(1)}%</h1>
-                              <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
-                                <div className="bg-primary h-full transition-all duration-500" style={{ width: `${unpaidPercentage}%` }} />
-                              </div>
-                              <h1 className="text-start text-sm">
-                                {ticket.unpaid?.count ?? 0} (${ticket.unpaid?.amount ?? 0})
+                                {ticket.sold || 0} / {totalTickets}
                               </h1>
                             </div>
                           </div>
@@ -153,31 +142,17 @@ const EventTicket = ({ event }: { event: any }) => {
               {/* revenue chart of paid and free tickets */}
               <Card className="dark:bg-[#171717]">
                 <CardHeader>
-                  <CardTitle>Revenue over time</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
-                      <h1 className="text-md leading-6">Paid Tickets</h1>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7B7E91]" />
-                      <h1 className="text-md leading-6 text-[#7B7E91]">Free Tickets</h1>
-                    </div>
-                  </div>
+                  <CardTitle>Ticket Sales Over Time</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <VisitorInterest
-                    chartData={ticketPerformanceWeekly.map((item: any) => ({
-                      month: item.day,
-                      males: item.value ?? item.paid ?? 0,
-                      females: item.free ?? 0,
-                    }))}
-                    chartConfig={{
-                      males: { label: 'Paid Tickets', color: '#2563EB' },
-                      females: { label: 'Free Tickets', color: '#7B7E91' },
-                    }}
-                  />
-                </CardContent>
+                <MostViewedEvent
+                  chartData={ticketPerformanceWeekly.map((item: any) => ({
+                    month: item.day,
+                    search: item.value ?? 0,
+                  }))}
+                  chartConfig={{
+                    search: { label: 'Tickets Sold', color: '#2563EB' },
+                  }}
+                />
               </Card>
 
               {/* sale by ticket type */}

@@ -254,7 +254,7 @@ const EventDetailsPage = () => {
                               className="h-6 w-6 rounded-full"
                             />
 
-                            <span className="text-sm font-medium text-gray-800 dark:text-white">
+                            <span className="text-sm font-medium text-gray-800 dark:text-white capitalize">
                               {event?.basicInfo?.organization?.basicInfo?.name || 'Unknown Organizer'}
                             </span>
                           </div>
