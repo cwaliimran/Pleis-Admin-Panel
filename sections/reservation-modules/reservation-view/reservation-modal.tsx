@@ -21,43 +21,17 @@ import * as Yup from 'yup';
 // Import types and utilities
 import { convertTimeFormat } from '@/utils/format-time';
 import { DateTimeSlot, EventData, EventDateRange, ReservationFormValues, ReservationModalProps, ValidationErrors } from './types';
-import { formatDateForInput, isDateInRange, isTimeInEventRange, parseEventDateTime, sortTimeSlots, timeToMinutes, validateNoOverlap } from './utils';
-
-// Helper function to format date to European format (dd/mm/yyyy)
-const formatDateToEuropean = (dateString: string | Date): string => {
-  if (!dateString) return '';
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-  if (isNaN(date.getTime())) return String(dateString);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-};
-
-// Helper function to format datetime string to European format with time
-const formatDateTimeToEuropean = (dateTimeString: string): string => {
-  if (!dateTimeString) return '';
-  const date = new Date(dateTimeString);
-  if (isNaN(date.getTime())) return dateTimeString;
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-};
-
-// ============================================
-// CONSTANTS (inline as requested)
-// ============================================
-// const RESERVATION_TYPE_OPTIONS = [
-//   { value: 'regular', label: 'Regular' },
-//   { value: 'vip', label: 'VIP' },
-//   { value: 'outdoor', label: 'Outdoor' },
-//   { value: 'private', label: 'Private' },
-//   { value: 'bar', label: 'Bar' },
-//   { value: 'window', label: 'Window' },
-// ];
+import {
+  formatDateForInput,
+  formatDateTimeToEuropean,
+  formatDateToEuropean,
+  isDateInRange,
+  isTimeInEventRange,
+  parseEventDateTime,
+  sortTimeSlots,
+  timeToMinutes,
+  validateNoOverlap,
+} from './utils';
 
 const CONDITION_OPTIONS = [
   { label: 'Fixed Price - User pays full amount', value: 'fixedPrice' },
@@ -98,6 +72,10 @@ const schema = Yup.object().shape({
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Max capacity is required')
     .min(1, 'Must be at least 1'),
+  bonusPoints: Yup.number()
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .required('Bonus points is required')
+    .min(0, 'Must be at least 0'),
   conditionType: Yup.string().required('Condition type is required'),
   amount: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? null : value))
@@ -130,6 +108,7 @@ const defaultValues: ReservationFormValues = {
   reservationType: '',
   availableReservations: 0,
   maxCapacityPerReservation: 0,
+  bonusPoints: 0,
   conditionType: 'fixedPrice',
   amount: '',
   customText: '',
@@ -475,6 +454,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         reservationType: selectedData?.reservationType || '',
         availableReservations: selectedData?.availableReservations || 0,
         maxCapacityPerReservation: selectedData?.maxCapacityPerReservation || 0,
+        bonusPoints: selectedData?.bonusPoints || 0,
         conditionType: selectedData?.conditionType || 'fixedPrice',
         amount: selectedData?.amount != null ? selectedData.amount : '',
         customText: selectedData?.customText || '',
@@ -552,26 +532,28 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
             return;
           }
 
+          // Final validation using the same isTimeInEventRange function for consistency
           if (eventDateRange) {
-            const eventStart = eventDateRange.startTimeMinutes;
-            const eventEnd = eventDateRange.endTimeMinutes;
-
             for (const dateSlot of dateTimeSlots) {
               for (const timeSlot of dateSlot.timeSlots) {
-                const start = timeToMinutes(timeSlot.startTime);
-                const end = timeToMinutes(timeSlot.endTime);
-
-                if (start < eventStart) {
-                  showError(`Start time cannot be before event start (${eventDateRange.startTime})`);
+                // Validate start time
+                const startValidation = isTimeInEventRange(timeSlot.startTime, dateSlot.date, eventDateRange);
+                if (!startValidation.valid) {
+                  showError(`Invalid start time on ${dateSlot.date}: ${startValidation.reason}`);
                   return;
                 }
 
-                if (end > eventEnd) {
-                  showError(`End time cannot be after event end (${eventDateRange.endTime})`);
+                // Validate end time
+                const endValidation = isTimeInEventRange(timeSlot.endTime, dateSlot.date, eventDateRange);
+                if (!endValidation.valid) {
+                  showError(`Invalid end time on ${dateSlot.date}: ${endValidation.reason}`);
                   return;
                 }
 
-                if (start >= end) {
+                // Validate time order
+                const startMinutes = timeToMinutes(timeSlot.startTime);
+                const endMinutes = timeToMinutes(timeSlot.endTime);
+                if (startMinutes >= endMinutes) {
                   showError(`Start time must be before end time on ${dateSlot.date}`);
                   return;
                 }
@@ -585,6 +567,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         reservationType: formData.reservationType,
         availableReservations: Number(formData.availableReservations),
         maxCapacityPerReservation: Number(formData.maxCapacityPerReservation),
+        bonusPoints: Number(formData.bonusPoints),
         organizationId: organizationId,
         conditionType: formData.conditionType,
         taxPercentage: formData.taxPercentage,
@@ -759,6 +742,11 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                     <div>
                       <RHFTextField name="maxCapacityPerReservation" label="Max Capacity" type="number" placeholder="8" min="1" />
                       <p className="mt-1 text-xs text-gray-500">Max people per reservation</p>
+                    </div>
+
+                    <div>
+                      <RHFTextField name="bonusPoints" label="Bonus Points" type="number" placeholder="0" min="0" />
+                      <p className="mt-1 text-xs text-gray-500">Points awarded for this reservation</p>
                     </div>
                   </div>
                 </div>

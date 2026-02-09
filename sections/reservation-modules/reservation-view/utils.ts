@@ -1,5 +1,41 @@
 import { EventDateRange } from './types';
 
+// ============================================
+// DATE FORMATTING HELPERS
+// ============================================
+
+/**
+ * Formats date to European format (dd/mm/yyyy)
+ */
+export const formatDateToEuropean = (dateString: string | Date): string => {
+  if (!dateString) return '';
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  if (isNaN(date.getTime())) return String(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+/**
+ * Formats datetime string to European format with time (dd/mm/yyyy HH:mm)
+ */
+export const formatDateTimeToEuropean = (dateTimeString: string): string => {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  if (isNaN(date.getTime())) return dateTimeString;
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
+// ============================================
+// DATE/TIME PARSING & VALIDATION
+// ============================================
+
 /**
  * Parses event datetime string to Date object
  * Format: "2025-11-13 01:49 PM"
@@ -83,18 +119,62 @@ export const isDateInRange = (dateStr: string, startDate: Date, endDate: Date): 
 };
 
 /**
- * CRITICAL: Validates if a time is within event range with EXACT minute precision
- * This checks both date AND time, including minutes
+ * Determines if a time (in minutes) falls within a daily operating window.
+ * Handles both same-day windows (e.g., 9:00 AM to 5:00 PM) and cross-midnight windows (e.g., 10:00 PM to 2:00 AM).
+ *
+ * @param timeMinutes - The time to check (in minutes from midnight)
+ * @param windowStartMinutes - The window start time (in minutes from midnight)
+ * @param windowEndMinutes - The window end time (in minutes from midnight)
+ * @returns true if the time is within the window
+ */
+export const isTimeInDailyWindow = (timeMinutes: number, windowStartMinutes: number, windowEndMinutes: number): boolean => {
+  // Same-day window: start <= end (e.g., 09:00 to 17:00)
+  if (windowStartMinutes <= windowEndMinutes) {
+    return timeMinutes >= windowStartMinutes && timeMinutes <= windowEndMinutes;
+  }
+
+  // Cross-midnight window: start > end (e.g., 22:00 to 02:00)
+  // Valid times are: >= start OR <= end
+  return timeMinutes >= windowStartMinutes || timeMinutes <= windowEndMinutes;
+};
+
+/**
+ * Converts minutes since midnight to a readable time string for error messages
+ */
+export const minutesToTimeString = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  return `${String(displayHours).padStart(2, '0')}:${String(mins).padStart(2, '0')} ${period}`;
+};
+
+/**
+ * CRITICAL: Validates if a time is within the event's operating window.
+ *
+ * For multi-day events, the start and end TIMES define a DAILY OPERATING WINDOW
+ * that applies to EVERY day within the event range.
+ *
+ * Example: Event from "2026-02-01 12:00 AM" to "2026-02-04 09:00 AM"
+ * - Daily window: 12:00 AM to 09:00 AM
+ * - On ANY date within the event (Feb 1-4), only times from 12:00 AM to 09:00 AM are valid
+ * - 02:00 PM on Feb 3 would be INVALID (outside the daily window)
+ *
+ * Special boundary handling:
+ * - On START date: time must be >= event start time (within the daily window constraint)
+ * - On END date: time must be <= event end time (within the daily window constraint)
  */
 export const isTimeInEventRange = (time24: string, dateStr: string, eventDateRange: EventDateRange): { valid: boolean; reason?: string } => {
+  // Don't validate empty fields
   if (!time24 || !dateStr) {
-    return { valid: true }; // Don't validate empty fields
+    return { valid: true };
   }
 
   if (!eventDateRange) {
     return { valid: true };
   }
 
+  // Parse the selected date (set to midnight for date comparison)
   const selectedDate = new Date(dateStr);
   selectedDate.setHours(0, 0, 0, 0);
 
@@ -104,41 +184,105 @@ export const isTimeInEventRange = (time24: string, dateStr: string, eventDateRan
   const eventEndDate = new Date(eventDateRange.endDate);
   eventEndDate.setHours(0, 0, 0, 0);
 
+  // STEP 1: Check if date is within event range
+  if (selectedDate < eventStartDate || selectedDate > eventEndDate) {
+    return {
+      valid: false,
+      reason: 'Date is outside event range',
+    };
+  }
+
   const selectedTimeMinutes = timeToMinutes(time24);
   const eventStartMinutes = eventDateRange.startTimeMinutes;
   const eventEndMinutes = eventDateRange.endTimeMinutes;
 
   const isSameAsStartDate = selectedDate.getTime() === eventStartDate.getTime();
   const isSameAsEndDate = selectedDate.getTime() === eventEndDate.getTime();
+  const isSingleDayEvent = eventStartDate.getTime() === eventEndDate.getTime();
 
-  // CASE 1: Selected date is the event START date
-  if (isSameAsStartDate) {
-    // Time must be >= event start time (including exact minutes)
+  // Determine if it's a same-day window or cross-midnight window
+  const isSameDayWindow = eventStartMinutes <= eventEndMinutes;
+
+  // STEP 2: Single day event (same start and end date)
+  if (isSingleDayEvent) {
     if (selectedTimeMinutes < eventStartMinutes) {
       return {
         valid: false,
-        reason: `Time must be ${eventDateRange.startTime} or later on this date`,
+        reason: `Time must be ${eventDateRange.startTime} or later`,
       };
     }
-  }
-
-  // CASE 2: Selected date is the event END date
-  if (isSameAsEndDate) {
-    // Time must be <= event end time (including exact minutes)
     if (selectedTimeMinutes > eventEndMinutes) {
       return {
         valid: false,
-        reason: `Time must be ${eventDateRange.endTime} or earlier on this date`,
+        reason: `Time must be ${eventDateRange.endTime} or earlier`,
       };
     }
+    return { valid: true };
   }
 
-  // CASE 3: Date is outside event range
-  if (selectedDate < eventStartDate || selectedDate > eventEndDate) {
-    return {
-      valid: false,
-      reason: 'Date is outside event range',
-    };
+  // STEP 3: Multi-day event validation
+  // The daily window is defined by the event's start and end TIMES
+
+  if (isSameDayWindow) {
+    // Same-day window (e.g., 12:00 AM to 09:00 AM or 09:00 AM to 05:00 PM)
+    // Valid times: startTime <= time <= endTime
+
+    // Check if time is within the daily window
+    const isInDailyWindow = selectedTimeMinutes >= eventStartMinutes && selectedTimeMinutes <= eventEndMinutes;
+
+    if (!isInDailyWindow) {
+      return {
+        valid: false,
+        reason: `Time must be between ${eventDateRange.startTime} and ${eventDateRange.endTime} (event operating hours)`,
+      };
+    }
+
+    // Additional boundary checks for start/end dates
+    if (isSameAsStartDate) {
+      if (selectedTimeMinutes < eventStartMinutes) {
+        return {
+          valid: false,
+          reason: `Time must be ${eventDateRange.startTime} or later on the event start date`,
+        };
+      }
+    }
+
+    if (isSameAsEndDate) {
+      if (selectedTimeMinutes > eventEndMinutes) {
+        return {
+          valid: false,
+          reason: `Time must be ${eventDateRange.endTime} or earlier on the event end date`,
+        };
+      }
+    }
+  } else {
+    // Cross-midnight window (e.g., 10:00 PM to 02:00 AM)
+    // Valid times: time >= startTime OR time <= endTime
+
+    const isInDailyWindow = selectedTimeMinutes >= eventStartMinutes || selectedTimeMinutes <= eventEndMinutes;
+
+    if (!isInDailyWindow) {
+      return {
+        valid: false,
+        reason: `Time must be ${eventDateRange.startTime} or later, OR ${eventDateRange.endTime} or earlier (event operating hours)`,
+      };
+    }
+
+    // For start date with cross-midnight: time must be >= start time (before midnight portion)
+    if (isSameAsStartDate && selectedTimeMinutes < eventStartMinutes && selectedTimeMinutes > eventEndMinutes) {
+      return {
+        valid: false,
+        reason: `On the start date, time must be ${eventDateRange.startTime} or later`,
+      };
+    }
+
+    // For end date with cross-midnight: time must be <= end time (after midnight portion)
+    if (isSameAsEndDate && selectedTimeMinutes > eventEndMinutes && selectedTimeMinutes < eventStartMinutes) {
+      return {
+        valid: false,
+        reason: `On the end date, time must be ${eventDateRange.endTime} or earlier`,
+      };
+    }
   }
 
   return { valid: true };
