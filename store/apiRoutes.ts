@@ -269,6 +269,10 @@ export const API_ROUTES = {
   ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
 
   ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,
+  ORGANIZER_LOYALTY_TRANSACTIONS: `/organizer/transactions`,
+
+  LOYALTY_TRANSACTIONS: (isAdmin: boolean) => (isAdmin ? '/admin/transactions' : '/organizer/transactions'),
+
   // ADMIN_LOYALTY_TRANSACTIONS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/transactions' : '/admin/transactions'),
 
   ORGANIZER_PROMO_CODES: `/organizer/promo-codes`,
@@ -354,6 +358,10 @@ export const API_ROUTES = {
   ADMIN_USER_LIST: `/admin/users`,
   ADMIN_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,
   ADMIN_PENDING_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,
+
+  ORGANIZER_USER_LIST: `/organizer/users`,
+  ORGANIZER_USER_LIST_BY_ID: (id: string) => `/organizer/users/${id}`,
+  ORGANIZER_PENDING_USER_LIST_BY_ID: (id: string) => `/organizer/users/${id}`,
 };
 
 export default API_ROUTES;

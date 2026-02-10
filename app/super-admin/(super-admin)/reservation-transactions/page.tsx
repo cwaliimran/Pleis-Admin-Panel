@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <ReservationTransactionView />
+      <ReservationTransactionView userType="super-admin" />
     </div>
   );
 };

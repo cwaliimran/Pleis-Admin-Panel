@@ -1,16 +1,17 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetLoyaltyTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import OrderingTransactionTable from './ordering-transaction-table';
 
 interface LoyaltyTransactionViewProps {
-  global?: boolean;
+  userType?: string;
 }
 
-const OrderingTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
+const OrderingTransactionView = ({ userType }: LoyaltyTransactionViewProps) => {
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -21,9 +22,9 @@ const OrderingTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
-  // const [selectedRecord, setSelectedRecord] = useState<any>(null);
-
   const { companyId: selectedCompany } = useCompanySelectionState();
+
+  const { organizerOrganizationIds } = useCompanySelection();
 
   const {
     data: apiData,
@@ -38,7 +39,8 @@ const OrderingTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
     companyOrganizer: selectedCompany || undefined,
-    isGlobal: global || false,
+    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
+    // isGlobal: global || false,
     // walletType: 'globalWallet',
     domainType: 'menuorders',
   });

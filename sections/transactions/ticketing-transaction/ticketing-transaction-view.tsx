@@ -5,12 +5,14 @@ import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import TicketingTransactionTable from './ticketing-transaction-table';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 interface LoyaltyTransactionViewProps {
   global?: boolean;
+  userType: 'super-admin' | 'organizer';
 }
 
-const TicketingTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
+const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewProps) => {
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -21,6 +23,8 @@ const TicketingTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
   // const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
   const { companyId: selectedCompany } = useCompanySelectionState();
+
+  const { organizerOrganizationIds } = useCompanySelection();
 
   const {
     data: apiData,
@@ -33,8 +37,8 @@ const TicketingTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
+    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     isGlobal: global || false,
-    // walletType: 'globalWallet',
     domainType: 'ticketingorders',
   });
 

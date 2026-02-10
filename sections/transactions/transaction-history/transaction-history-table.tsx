@@ -40,11 +40,11 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  status = '',
-  onStatusChange = () => {},
-  startDate,
-  endDate,
-  onDateChange = () => {},
+  // status = '',
+  // onStatusChange = () => {},
+  // startDate,
+  // endDate,
+  // onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -87,46 +87,46 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
+                        {/* <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
                           Select Date
-                        </label>
+                        </label> */}
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateRangeFilter={{
-                              startDate: {
-                                id: 'start-date',
-                                placeholder: 'Select start date',
-                                value: startDate,
-                                onChange: (newStartDate) => onDateChange(newStartDate, endDate),
-                              },
-                              endDate: {
-                                id: 'end-date',
-                                placeholder: 'Select end date',
-                                value: endDate,
-                                onChange: (newEndDate) => onDateChange(startDate, newEndDate),
-                              },
-                            }}
+                            // dateRangeFilter={{
+                            //   startDate: {
+                            //     id: 'start-date',
+                            //     placeholder: 'Select start date',
+                            //     value: startDate,
+                            //     onChange: (newStartDate) => onDateChange(newStartDate, endDate),
+                            //   },
+                            //   endDate: {
+                            //     id: 'end-date',
+                            //     placeholder: 'Select end date',
+                            //     value: endDate,
+                            //     onChange: (newEndDate) => onDateChange(startDate, newEndDate),
+                            //   },
+                            // }}
                             searchFilter={{
                               placeholder: 'Search Transactions...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            selectFilters={[
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'earn', label: 'Earn' },
-                                  { value: 'redeem', label: 'Redeem' },
-                                  { value: 'adjustment', label: 'Adjustment' },
-                                ],
-                              },
-                            ]}
+                            // selectFilters={[
+                            //   {
+                            //     id: 'sheet-revenue',
+                            //     label: 'Status',
+                            //     placeholder: 'Select by Status',
+                            //     value: status,
+                            //     onChange: onStatusChange,
+                            //     options: [
+                            //       { value: 'all', label: 'All' },
+                            //       { value: 'earn', label: 'Earn' },
+                            //       { value: 'redeem', label: 'Redeem' },
+                            //       { value: 'adjustment', label: 'Adjustment' },
+                            //     ],
+                            //   },
+                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,

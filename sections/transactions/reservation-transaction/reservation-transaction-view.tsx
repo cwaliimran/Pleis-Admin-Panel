@@ -1,12 +1,13 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetLoyaltyTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import ReservationTransactionTable from './reservation-transaction-table';
 
-const ReservationTransactionView = () => {
+const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'organizer' }) => {
   // Pagination and filter state
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -14,9 +15,9 @@ const ReservationTransactionView = () => {
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
-  // const [selectedRecord, setSelectedRecord] = useState<any>(null);
-
   const { companyId: selectedCompany } = useCompanySelectionState();
+
+  const { organizerOrganizationIds } = useCompanySelection();
 
   const {
     data: apiData,
@@ -29,8 +30,7 @@ const ReservationTransactionView = () => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
-    // isGlobal: global || false,
-    // walletType: 'globalWallet',
+    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     domainType: 'userreservations',
   });
 

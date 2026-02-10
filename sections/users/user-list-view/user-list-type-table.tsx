@@ -23,6 +23,7 @@ const USERHEADLABEL = [
   { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'region', label: 'Region', align: 'left' },
+  { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'action', label: 'Action', align: 'left' },
 ];
 

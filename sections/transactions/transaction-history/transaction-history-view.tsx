@@ -12,13 +12,15 @@ import InvoiceCard from '@/sections/invoices/notificationCard';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { ChevronDownIcon, Download } from 'lucide-react';
+import { ChevronDownIcon, Download, Loader2 } from 'lucide-react';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useExportTransactions } from './use-export-transactions';
 
 interface LoyaltyTransactionViewProps {
-  global?: boolean;
+  userType: 'super-admin' | 'organizer';
 }
 
-const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
+const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const openModal = useBoolean();
 
   const [page, setPage] = useState(1);
@@ -34,6 +36,16 @@ const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const { companyId: selectedCompany } = useCompanySelectionState();
 
+  const { organizerOrganizationIds } = useCompanySelection();
+
+  const { isExporting, handleExportCSV } = useExportTransactions({
+    startDate,
+    endDate,
+    companyOrganizer: selectedCompany || undefined,
+    organizerOrganizationIds,
+    userType,
+  });
+
   const {
     data: apiData,
     isLoading,
@@ -46,7 +58,8 @@ const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
     companyOrganizer: selectedCompany || undefined,
-    isGlobal: global || false,
+    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
+    isAdmin: userType === 'super-admin',
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -142,9 +155,9 @@ const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
         </div>
 
         {/* Export Button */}
-        <Button variant="default" className="bg-primary flex items-center gap-2 text-white">
-          <Download className="h-4 w-4" />
-          Export to CSV
+        <Button variant="default" className="bg-primary flex items-center gap-2 text-white" onClick={handleExportCSV} disabled={isExporting}>
+          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          {isExporting ? 'Exporting...' : 'Export to CSV'}
         </Button>
       </div>
 

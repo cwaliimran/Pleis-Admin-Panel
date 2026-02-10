@@ -4,22 +4,11 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
-// import { Eye } from 'lucide-react';
 import { FC } from 'react';
-import { TableRowProps } from './types';
 import { getBadgeLabel, getBadgeVariant, getDomainType } from '../helpers';
+import { TableRowProps } from './types';
 
 const TransactionHistoryTableRow: FC<TableRowProps> = ({ item }) => {
-  // const getLabel = (type: string) => {
-  //   switch (type) {
-  //     case 'eventTicketPurchase':
-  //       return 'Event Ticket Purchase';
-  //     case 'reservations':
-  //       return 'Reservations';
-  //     default:
-  //       return '-';
-  //   }
-  // };
 
   return (
     <>
@@ -71,7 +60,8 @@ const TransactionHistoryTableRow: FC<TableRowProps> = ({ item }) => {
           })()}
         </TableCell>
 
-        <TableCell className="text-left">{item?.closingBalance ? `€${item.closingBalance}` : 'N/A'}</TableCell>
+        <TableCell className="text-left">{item?.closingBalance ? `€${item.closingBalance.toFixed(2)}` : 'N/A'}</TableCell>
+
         <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
 
         <TableCell className="text-center">

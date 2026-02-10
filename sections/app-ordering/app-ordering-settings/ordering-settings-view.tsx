@@ -17,6 +17,8 @@ import { InfoBox } from './info-box';
 import { RadioOption } from './radio-option';
 import { StatusFlow } from './status-flow';
 import { ToggleSwitch } from './toggle-switch';
+import { RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
 
 // Validation Schema
 const schema = Yup.object().shape({
@@ -73,17 +75,18 @@ const defaultFormValues: FormValues = {
   },
 };
 
-export const OrderingSettingsView: React.FC = () => {
+export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType }) => {
   const { companyId: selectedCompanyId } = useCompanySelectionState();
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
   const {
     data: apiData,
     isLoading,
     refetch,
   } = useGetUserByIdQuery(
-    { id: selectedCompanyId || '' },
+    { id: userType === 'organizer' ? user?.basicInfo?._id : selectedCompanyId },
     {
-      skip: !selectedCompanyId,
+      skip: userType === 'super-admin' && !selectedCompanyId,
     }
   );
 
@@ -179,7 +182,7 @@ export const OrderingSettingsView: React.FC = () => {
   // Build payload with only changed fields
   const buildPartialPayload = (data: FormValues) => {
     const payload: any = {
-      id: selectedCompanyId,
+      id: userType === 'organizer' ? user?.basicInfo?._id : selectedCompanyId,
       companyDetails: {
         inAppOrderingSettings: {},
       },
@@ -211,7 +214,7 @@ export const OrderingSettingsView: React.FC = () => {
 
   // Submit handler
   const handleSubmit = async (data: FormValues) => {
-    if (!selectedCompanyId) {
+    if (userType === 'super-admin' && !selectedCompanyId) {
       showError('Please select a company first');
       return;
     }
@@ -249,7 +252,7 @@ export const OrderingSettingsView: React.FC = () => {
     }
   };
 
-  if (!selectedCompanyId) {
+  if (userType === 'super-admin' && !selectedCompanyId) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

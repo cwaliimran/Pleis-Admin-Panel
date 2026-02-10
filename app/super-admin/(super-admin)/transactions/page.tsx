@@ -18,7 +18,7 @@ const Page = () => {
       />
 
       <CompanyGuard>
-        <LoyaltyTransactionView global={false} />
+        <LoyaltyTransactionView global={false} userType="super-admin"/>
       </CompanyGuard>
     </div>
   );

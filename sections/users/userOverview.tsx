@@ -142,7 +142,7 @@ const UserOverView: React.FC<{
           {userType === 'user' && <BadgeListCard title="VENUE TYPE" items={apiData?.interests?.venueTypes} />}
 
           {/* WALLET INFORMATION */}
-          {(userType === 'manager' || userType === 'organizer' || userType === 'staff') && (
+          {(userType === 'manager' || userType === 'organizer') && (
             <Card className="dark:bg-secondary mt-4 gap-y-0 shadow-lg">
               <CardHeader className="">
                 <h3 className="mb-2 text-lg font-semibold text-slate-500">Wallet Information</h3>
