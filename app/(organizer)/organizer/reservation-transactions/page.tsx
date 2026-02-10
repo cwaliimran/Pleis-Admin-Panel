@@ -1,6 +1,5 @@
 import Header from '@/app/common/header/header';
-import CompanyGuard from '@/components/guards/CompanyGuard';
-import OrderingTransactionView from '@/sections/transactions/ordering-transaction/ordering-transaction-view';
+import ReservationTransactionView from '@/sections/transactions/reservation-transaction/reservation-transaction-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -12,14 +11,12 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Dashboard', href: '/organizer' },
           { name: 'Reservation Transactions', href: '' },
         ]}
       />
 
-      <CompanyGuard>
-        <OrderingTransactionView userType="super-admin" />
-      </CompanyGuard>
+      <ReservationTransactionView userType="organizer" />
     </div>
   );
 };

@@ -7,12 +7,14 @@ import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import LoyaltyTransactionTable from './loyalty-transaction-table';
 import TransactionModal from './transactions-modal';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 interface LoyaltyTransactionViewProps {
   global?: boolean;
+  userType?: string;
 }
 
-const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
+const LoyaltyTransactionView = ({ global, userType }: LoyaltyTransactionViewProps) => {
   const openModal = useBoolean();
 
   // Pagination and filter state
@@ -26,6 +28,8 @@ const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
 
   const { companyId: selectedCompany } = useCompanySelectionState();
 
+  const { organizerOrganizationIds } = useCompanySelection();
+
   const {
     data: apiData,
     isLoading,
@@ -37,6 +41,7 @@ const LoyaltyTransactionView = ({ global }: LoyaltyTransactionViewProps) => {
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
+    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     isGlobal: global || false,
     walletType: 'companyLoyalty',
   });

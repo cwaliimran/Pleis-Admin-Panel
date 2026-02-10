@@ -36,7 +36,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
   const [active, setActive] = React.useState('overview');
   const [activeTransactionTab] = React.useState('all');
 
-  const { data: apiData = {}, isLoading } = useGetUserByIdQuery({ id });
+  const { data: apiData = {}, isLoading, refetch } = useGetUserByIdQuery({ id });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -145,7 +145,20 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                             {apiData?.basicInfo?.firstName || '-'} {apiData?.basicInfo?.lastName || '-'}
                           </h2>
 
-                          {userType === 'staff' && <p className="text-sm text-gray-500 dark:text-gray-400">Linked Organization: -</p>}
+                          {userType === 'staff' && (
+                            <>
+                              <div className="flex flex-wrap gap-1">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Linked Organization:</p>
+
+                                {apiData?.organizations.map((org: any, index: number) => (
+                                  <p key={org?._id} className="text-sm text-gray-500 dark:text-gray-400">
+                                    {org?.basicInfo?.name || '-'}
+                                    {index < apiData?.organizations.length - 1 && ','}
+                                  </p>
+                                ))}
+                              </div>
+                            </>
+                          )}
 
                           {/* More Info */}
                           <div className="mt-4">
@@ -242,20 +255,20 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                 </div>
               </div>
 
-              {/* {userType !== 'user' && ( */}
-              <div className={`col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-4 xl:col-span-3`}>
-                <Card className="dark:bg-secondary">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold">Total Purchases</h3>
+              {userType === 'user' && (
+                <div className={`col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-4 xl:col-span-3`}>
+                  <Card className="dark:bg-secondary">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold">Total Purchases</h3>
+                        </div>
                       </div>
-                    </div>
-                    <div className="mt-2 flex items-center text-4xl font-bold">{apiData?.totalPurchases?.toFixed(0) || 0}</div>
-                  </CardHeader>
-                </Card>
-              </div>
-              {/* )} */}
+                      <div className="mt-2 flex items-center text-4xl font-bold">{apiData?.totalPurchases?.toFixed(0) || 0}</div>
+                    </CardHeader>
+                  </Card>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -266,19 +279,9 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
         onClose={() => openModal.onFalse()}
         selectedId={selectedId}
         userData={apiData}
-        // onUpdateSuccess={(updatedUser) => {
-        //   setVenueTypes((prev) =>
-        //     prev.map((item) =>
-        //       item.basicInfo?._id === selectedId
-        //         ? { ...item, ...updatedUser }
-        //         : item
-        //     )
-        //   );
-        //   showSuccess('User updated successfully');
-        //   openModal.onFalse();
-        // }}
         isLoading={false}
         userType={userDashboardType}
+        onUpdateSuccess={() => refetch()}
       />
     </div>
   );

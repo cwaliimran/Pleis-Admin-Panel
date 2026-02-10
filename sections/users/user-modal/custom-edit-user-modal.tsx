@@ -81,15 +81,7 @@ interface EditUserModalProps {
   userType?: string;
 }
 
-const EditUserModal: React.FC<EditUserModalProps> = ({
-  open,
-  onClose,
-  selectedId,
-  userData,
-  // onUpdateSuccess,
-  isLoading,
-  userType,
-}) => {
+const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, selectedId, userData, onUpdateSuccess, isLoading, userType }) => {
   const [imageUploading, setImageUploading] = useState(false);
   const [currentRole, setCurrentRole] = useState<RoleKey>(userData?.accountState?.userType || 'manager');
 
@@ -377,6 +369,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       if (response?.message) {
         showSuccess(response?.message || 'Updated successfully');
       }
+      onUpdateSuccess?.(response);
     } catch (error) {
       console.log('Update failed:', error);
       showError(getErrorMessage(error));

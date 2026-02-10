@@ -13,12 +13,13 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { ChevronDownIcon, Download } from 'lucide-react';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 interface LoyaltyTransactionViewProps {
-  global?: boolean;
+  userType: 'super-admin' | 'organizer';
 }
 
-const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
+const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const openModal = useBoolean();
 
   const [page, setPage] = useState(1);
@@ -34,6 +35,8 @@ const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const { companyId: selectedCompany } = useCompanySelectionState();
 
+  const { organizerOrganizationIds } = useCompanySelection();
+
   const {
     data: apiData,
     isLoading,
@@ -46,7 +49,8 @@ const TransactionHistoryView = ({ global }: LoyaltyTransactionViewProps) => {
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
     companyOrganizer: selectedCompany || undefined,
-    isGlobal: global || false,
+    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
+    isAdmin: userType === 'super-admin',
   });
 
   const [localData, setLocalData] = useState<any[]>([]);

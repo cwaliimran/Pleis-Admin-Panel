@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import LoyaltyTransactionView from '@/sections/transactions/loyalty-transaction/loyalty-transaction-view';
 // import TransactionsView from '@/sections/reservation-modules/reservation-transactions/transactions-view';
 import { Metadata } from 'next';
 
@@ -17,6 +18,7 @@ const Page = () => {
       />
 
       {/* <TransactionsView /> */}
+      <LoyaltyTransactionView global={false} userType="organizer" />
     </div>
   );
 };
