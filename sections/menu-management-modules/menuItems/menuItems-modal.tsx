@@ -82,17 +82,17 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   category: Yup.string().required('Item category is required'),
   basePrice: Yup.string()
     .required('Base price is required')
-    .test('is-integer', 'Base price must be a whole number', (value) => {
+    .test('is-decimal', 'Base price must be a valid number', (value) => {
       if (!value) return true;
       const num = Number(value);
-      return !isNaN(num) && Number.isInteger(num) && num >= 1;
+      return !isNaN(num) && num >= 0;
     }),
   discountPrice: Yup.string()
     .optional()
-    .test('is-integer', 'Discount price must be a whole number', (value) => {
+    .test('is-decimal', 'Discount price must be a valid number', (value) => {
       if (!value || value === '') return true;
       const num = Number(value);
-      return !isNaN(num) && Number.isInteger(num);
+      return !isNaN(num);
     })
     .test('min-value', 'Discount price must be at least 0', (value) => {
       if (!value || value === '') return true;
@@ -377,7 +377,7 @@ const MenuItemModal = ({
 
                   <RHFTextField name="type" label="Type" placeholder="Enter Type" />
 
-                  <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" step="1" min="1" />
+                  <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" step="0.01" min="0" />
 
                   {showDiscountPrice && (
                     <RHFTextField
@@ -385,7 +385,7 @@ const MenuItemModal = ({
                       label="Discount Price (Optional)"
                       type="number"
                       placeholder="Enter Discount Price"
-                      step="1"
+                      step="0.01"
                       min="0"
                     />
                   )}

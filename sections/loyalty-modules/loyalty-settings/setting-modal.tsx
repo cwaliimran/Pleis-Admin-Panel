@@ -56,7 +56,6 @@ const schema = Yup.object().shape({
   pointValuePercentage: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Point value percentage is required')
-    .integer('Only whole numbers are allowed')
     .min(0, 'Must be at least 0%')
     .max(20, 'Cannot exceed 20%')
     .default(0),
@@ -330,23 +329,24 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                 <div>
                   <Label className="mb-3 block text-sm font-medium">Point Value Percentage</Label>
                   <div className="mb-4 flex items-center gap-2">
-                    <span className="text-2xl font-semibold">{pointValue}%</span>
+                    <span className="text-2xl font-semibold">{Number(pointValue).toFixed(1)}%</span>
                   </div>
                   <div>
                     <Slider
                       min={0}
                       max={20}
-                      step={1}
+                      step={0.1}
                       value={[pointValue]}
                       onValueChange={(val) => {
-                        setPointValue(val[0]);
-                        setValue('pointValuePercentage', val[0], { shouldValidate: true, shouldDirty: true });
+                        const rounded = Math.round(val[0] * 10) / 10;
+                        setPointValue(rounded);
+                        setValue('pointValuePercentage', rounded, { shouldValidate: true, shouldDirty: true });
                       }}
                     />
                   </div>
                   <p className="text-muted-foreground mt-3 text-xs">
-                    Each euro spent returns between <span className="font-medium">{pointValue}%</span> -{' '}
-                    <span className="font-medium">{pointValue * 2}%</span> of its value back in loyalty points.
+                    Each euro spent returns between <span className="font-medium">{Number(pointValue).toFixed(1)}%</span> -{' '}
+                    <span className="font-medium">{Number(pointValue * 2).toFixed(1)}%</span> of its value back in loyalty points.
                   </p>
                 </div>
 
