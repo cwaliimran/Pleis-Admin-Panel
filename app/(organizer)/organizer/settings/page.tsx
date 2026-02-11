@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import SettingsView from '@/sections/loyalty-modules/loyalty-settings/settings-view';
+import OrganizerSettingsView from '@/sections/loyalty-modules/organizer-loyalty-settings/organizer-settings-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <SettingsView />
+      <OrganizerSettingsView />
     </div>
   );
 };

@@ -43,6 +43,7 @@ export const API_ROUTES = {
 
   ORGANIZER_GENERAL_ORGANIZATIONS: `/organizer/general/organizations`,
   ORGANIZER_GENERAL_EVENTS: `/organizer/general/events`,
+  ORGANIZER_GENERAL_CATEGORIES: `/organizer/general/categories`,
   ORGANIZER_GENERAL_MENU: `/organizer/general/menu`,
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
 
@@ -253,6 +254,7 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) =>
     isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
 
+  ORGANIZER_PRESET: `/organizer/menu/presets`,
   ADMIN_PRESET: `/admin/menu/presets`,
   ADMIN_PRESET_BY_ID: (id: string) => `/admin/menu/presets/${id}`,
 
@@ -292,9 +294,9 @@ export const API_ROUTES = {
   ORGANIZER_MENU_BY_COMPANY_ORGANIZER: (id: string) => `/organizer/menu/names/by-company-organizer/${id}`,
 
   ADMIN_MENU_ITEMS: `/admin/menu/items`,
-  ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
   ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
+  ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,
 
   ORGANIZER_MENU_ITEMS: `/organizer/menu-management/items`,
   ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
@@ -352,8 +354,12 @@ export const API_ROUTES = {
   STREAKS: `/admin/loyalty/streaks`,
   STREAKS_BY_ID: (id: string) => `/admin/loyalty/streaks/${id}`,
 
+  ORGNIZER_STREAKS: `/organizer/loyalty/streaks`,
+  ORGNIZER_STREAKS_BY_ID: (id: string) => `/organizer/loyalty/streaks/${id}`,
+
   // USER_STREAKS: `/admin/loyalty/users-streaks`,
   ADMIN_USER_STREAKS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/users-streaks' : '/admin/loyalty/users-streaks'),
+  ORGANIZER_USER_STREAKS: `/organizer/loyalty/users-streaks`,
 
   ADMIN_USER_LIST: `/admin/users`,
   ADMIN_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,
