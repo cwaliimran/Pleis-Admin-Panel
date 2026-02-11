@@ -12,8 +12,9 @@ import InvoiceCard from '@/sections/invoices/notificationCard';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { ChevronDownIcon, Download } from 'lucide-react';
+import { ChevronDownIcon, Download, Loader2 } from 'lucide-react';
 import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useExportTransactions } from './use-export-transactions';
 
 interface LoyaltyTransactionViewProps {
   userType: 'super-admin' | 'organizer';
@@ -36,6 +37,14 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const { companyId: selectedCompany } = useCompanySelectionState();
 
   const { organizerOrganizationIds } = useCompanySelection();
+
+  const { isExporting, handleExportCSV } = useExportTransactions({
+    startDate,
+    endDate,
+    companyOrganizer: selectedCompany || undefined,
+    organizerOrganizationIds,
+    userType,
+  });
 
   const {
     data: apiData,
@@ -146,9 +155,9 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
         </div>
 
         {/* Export Button */}
-        <Button variant="default" className="bg-primary flex items-center gap-2 text-white">
-          <Download className="h-4 w-4" />
-          Export to CSV
+        <Button variant="default" className="bg-primary flex items-center gap-2 text-white" onClick={handleExportCSV} disabled={isExporting}>
+          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          {isExporting ? 'Exporting...' : 'Export to CSV'}
         </Button>
       </div>
 
