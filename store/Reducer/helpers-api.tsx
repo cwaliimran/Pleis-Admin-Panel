@@ -56,7 +56,24 @@ export const helpersApi = createApi({
         meta: res.meta,
       }),
     }),
+
+    getAllOrganizerCategories: builder.query({
+      query: ({ search, page, limit }) => ({
+        url: API_ROUTES.ORGANIZER_GENERAL_CATEGORIES,
+        method: 'GET',
+        params: {
+          keyword: search,
+          page: page + 1,
+          limit,
+        },
+      }),
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+    }),
   }),
 });
 
-export const { useGetEventByMultipleOrganizationQuery, useGetAllByOrganizationQuery, useGetAllEventsQuery } = helpersApi;
+export const { useGetEventByMultipleOrganizationQuery, useGetAllByOrganizationQuery, useGetAllEventsQuery, useGetAllOrganizerCategoriesQuery } =
+  helpersApi;

@@ -17,7 +17,7 @@ const Page = () => {
         ]}
       />
 
-      <MenuItemView />
+      <MenuItemView userType="organizer" />
     </div>
   );
 };

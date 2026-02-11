@@ -33,7 +33,7 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/app-ordering/order-management',
   '/super-admin/app-ordering/order-settings',
   '/super-admin/app-ordering/menu-management',
-  '/super-admin/app-ordering/order-transactions'
+  '/super-admin/app-ordering/order-transactions',
 ] as const;
 
 /**

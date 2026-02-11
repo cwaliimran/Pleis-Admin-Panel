@@ -54,6 +54,7 @@ type MenuItemModalProps = {
   isEdit?: boolean;
   selectedData?: any;
   menuManagementView?: boolean;
+  userType?: any;
   showDiscountPrice?: boolean;
   onSuccess?: () => void;
 };
@@ -82,17 +83,17 @@ const schema: Yup.ObjectSchema<MenuItemFormValues> = Yup.object({
   category: Yup.string().required('Item category is required'),
   basePrice: Yup.string()
     .required('Base price is required')
-    .test('is-decimal', 'Base price must be a valid number', (value) => {
+    .test('is-integer', 'Base price must be a whole number', (value) => {
       if (!value) return true;
       const num = Number(value);
-      return !isNaN(num) && num >= 0;
+      return !isNaN(num) && Number.isInteger(num) && num >= 1;
     }),
   discountPrice: Yup.string()
     .optional()
-    .test('is-decimal', 'Discount price must be a valid number', (value) => {
+    .test('is-integer', 'Discount price must be a whole number', (value) => {
       if (!value || value === '') return true;
       const num = Number(value);
-      return !isNaN(num);
+      return !isNaN(num) && Number.isInteger(num);
     })
     .test('min-value', 'Discount price must be at least 0', (value) => {
       if (!value || value === '') return true;
@@ -116,6 +117,7 @@ const MenuItemModal = ({
   open,
   onClose,
   isEdit = false,
+  userType,
   selectedData,
   menuManagementView,
   showDiscountPrice = false,
@@ -129,6 +131,8 @@ const MenuItemModal = ({
   const [updateMenuItem, { isLoading: updateMenuItemLoading }] = useUpdateMenuItemMutation();
 
   const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
+
+  console.log('userType', userType);
 
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema),
@@ -377,7 +381,7 @@ const MenuItemModal = ({
 
                   <RHFTextField name="type" label="Type" placeholder="Enter Type" />
 
-                  <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" step="0.01" min="0" />
+                  <RHFTextField name="basePrice" label="Base Price" type="number" placeholder="Enter Base Price" step="1" min="1" />
 
                   {showDiscountPrice && (
                     <RHFTextField
@@ -385,7 +389,7 @@ const MenuItemModal = ({
                       label="Discount Price (Optional)"
                       type="number"
                       placeholder="Enter Discount Price"
-                      step="0.01"
+                      step="1"
                       min="0"
                     />
                   )}

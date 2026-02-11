@@ -6,7 +6,6 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { RHFMultiSelectCount } from '@/components/rhf/rhf-multiselect-count';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { useSidebar } from '@/components/ui/sidebar';
-import NavigationSearch from './navigation-search';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetOrganizationByCompanyQuery, useGetOrganizationsOnOrganizerSideQuery } from '@/store/Reducer/organization';
@@ -19,8 +18,9 @@ import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import Profile from '../profile';
 import { CompanySelectionStorage } from './company-selection-storage';
+import NavigationSearch from './navigation-search';
 import { RouteConfig } from './route-config';
-import { CompanyOption, OrganizerOrganization, OrganizationOption, StoredCompany, StoredOrganization } from './types';
+import { CompanyOption, OrganizationOption, OrganizerOrganization, StoredCompany, StoredOrganization } from './types';
 
 interface HeaderProps {
   links?: {
@@ -47,6 +47,61 @@ const Header: FC<HeaderProps> = ({ links }) => {
   const pathname = usePathname();
   const previousCompanyRef = useRef<string | null>(null);
 
+  // Organizer routes where dropdown should be shown
+  const ORGANIZER_DROPDOWN_ROUTES = [
+    '/organizer/organization/organization-list',
+    '/organizer/organizer/venue',
+    '/organizer/events/event-list',
+    '/organizer/highlight',
+    '/organizer/highlight',
+    '/organizer/reviews',
+    '/organizer/qr-codes',
+    '/organizer/updates',
+
+    '/organizer/menu-list',
+    '/organizer/menuItems',
+
+    '/organizer/loyalty',
+    '/organizer/rewards',
+    '/organizer/streaks',
+    '/organizer/members',
+    '/organizer/challenges',
+    '/organizer/promotions',
+    '/organizer/referrals',
+    '/organizer/referrals/analytics',
+    '/organizer/transactions',
+    // '/organizer/settings',
+
+    '/organizer/ticketing',
+    '/organizer/giveaways',
+    '/organizer/ticketing-transactions',
+
+    '/organizer/reservation',
+    '/organizer/calendar',
+    '/organizer/analytics',
+    '/organizer/reservation-transactions',
+    
+    '/organizer/app-ordering/order-management',
+    '/organizer/app-ordering/menu-management',
+    '/organizer/app-ordering/order-analytics',
+    '/organizer/app-ordering/order-transactions',
+    '/organizer/app-ordering/order-settings',
+    
+    '/organizer/subscription',
+    '/organizer/user/user-list',
+    '/organizer/analytics',
+    '/organizer/analytics',
+    '/organizer/transactions-history',
+    '/organizer/bundles',
+    '/organizer/promo-code',
+    '/organizer/marketing-requests',
+  ];
+
+  // Helper to check if dropdown should be shown for organizer
+  const shouldShowOrganizerDropdown = (pathname: string) => {
+    return ORGANIZER_DROPDOWN_ROUTES.some((route) => pathname.startsWith(route));
+  };
+
   // Get route requirements
   const routeRequirements = useMemo(() => RouteConfig.getRouteRequirements(pathname || ''), [pathname]);
 
@@ -70,6 +125,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
   const isOrganizer = user?.role === 'organizer';
   const shouldShowCompanyDropdown = isAdmin && routeRequirements.requiresCompany;
   const shouldShowOrganizationDropdown = isAdmin && routeRequirements.requiresOrganization && Boolean(companyId);
+  const showOrganizerDropdown = isOrganizer && shouldShowOrganizerDropdown(pathname || '');
 
   // Fetch company list
   const {
@@ -101,7 +157,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
   const { data: organizerOrganizationsResponse } = useGetOrganizationsOnOrganizerSideQuery(
     {},
     {
-      skip: !isOrganizer,
+      skip: !showOrganizerDropdown,
     }
   );
 
@@ -213,7 +269,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
 
   // Handle organizer organizations changes
   useEffect(() => {
-    if (!isOrganizer) return;
+    if (!showOrganizerDropdown) return;
     if (selectedOrganizerOrganizations === undefined) return;
 
     const organizationsToSave: OrganizerOrganization[] = selectedOrganizerOrganizations
@@ -224,7 +280,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
       .filter(Boolean);
 
     CompanySelectionStorage.setOrganizerOrganizations(organizationsToSave.length > 0 ? organizationsToSave : null);
-  }, [selectedOrganizerOrganizations, organizerOrganizationOptions, isOrganizer]);
+  }, [selectedOrganizerOrganizations, organizerOrganizationOptions, showOrganizerDropdown]);
 
   return (
     <div className="mt-4 flex flex-col-reverse justify-between gap-4 px-3 sm:px-5 md:my-8 md:items-center md:gap-6 lg:flex-row">
@@ -280,7 +336,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
             )}
           </div>
 
-          {isOrganizer && (
+          {showOrganizerDropdown && (
             <div className="w-full rounded-md bg-white md:w-60 dark:bg-[#171717]">
               <RHFMultiSelectCount name="organizerOrganizations" placeholder="Select Organizations" options={organizerOrganizationOptions} />
             </div>

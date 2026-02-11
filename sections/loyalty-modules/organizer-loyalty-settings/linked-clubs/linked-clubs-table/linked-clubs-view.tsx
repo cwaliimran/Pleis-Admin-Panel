@@ -1,19 +1,19 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
-import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useDeleteMenuItemMutation, useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
+import { useDeleteVenueMutation, useGetVenuesQuery } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
-import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import MenuItemModal from './menuItems-modal';
-import MenuItemTable from './menuItems-table';
+import LinkedClubsTable from './linked-clubs-table';
 
-const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) => {
+interface Props {
+  tableName?: string;
+}
+
+const LinkedClubsView = ({ tableName }: Props) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -26,23 +26,15 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const [deleteMenuItem, { isLoading: deleteLoading }] = useDeleteMenuItemMutation();
+  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
 
-  const { companyId: selectedCompany } = useCompanySelectionState();
-
-  const {
-    data: apiData,
-    isLoading,
-    isFetching,
-  } = useGetMenuItemsQuery({
+  const { data: apiData, isLoading } = useGetVenuesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -68,38 +60,31 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
     }
   }, [apiData, page, limit]);
 
-  const handleCreateNew = () => {
-    setSelectedRecord(null);
-    setSelectedId(null);
-    editModal.onFalse();
-    openModal.onTrue();
-  };
-
   // ------------ EDIT FUNCTION FOR STATIC ------------
-  // const handleEdit = (id: string) => {
-  //   console.log('id', id);
-  //   openModal.onTrue();
-  //   editModal.onTrue();
-  // };
+  const handleEdit = (id: string) => {
+    console.log('id', id);
+    openModal.onTrue();
+    editModal.onTrue();
+  };
 
   // ------------ EDIT FUNCTION FOR API VERSION ------------
-  const handleEdit = (id: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
+  // const handleEdit = (id: string) => {
+  //   const selectedData = localData?.find((item: any) => item?._id === id);
 
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Reward not found');
-    }
-  };
+  //   if (selectedData) {
+  //     setSelectedId(id);
+  //     setSelectedRecord(selectedData);
+  //     editModal.onTrue();
+  //     openModal.onTrue();
+  //   } else {
+  //     showError('Reward not found');
+  //   }
+  // };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No menu item selected');
+        showError('No challenge selected');
         return;
       }
 
@@ -112,7 +97,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteMenuItem(selectedId).unwrap();
+      const response = await deleteVenue(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -131,19 +116,11 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-            <Plus />
-            Create Menu Item
-          </Button>
-        </div>
-      </div>
-
-      <MenuItemTable
+      <LinkedClubsTable
         data={localData}
+        tableName={tableName}
         meta={meta}
-        loading={isLoading || isFetching}
+        loading={isLoading}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -176,12 +153,10 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
         }}
       />
 
-      {openModal.value && <MenuItemModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} userType={userType}/>}
-
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Menu Item"
-        content="Are you sure you want to delete this menu item?"
+        title={`Remove ${tableName === 'Incoming Requests' ? 'Incoming Request' : 'Club'}`}
+        content={`Are you sure you want to remove this ${tableName === 'Incoming Requests' ? 'incoming request' : 'club'}?`}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -193,4 +168,4 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   );
 };
 
-export default MenuItemView;
+export default LinkedClubsView;
