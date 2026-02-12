@@ -267,8 +267,10 @@ export const API_ROUTES = {
   // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,
 
   ADMIN_LOYALTY_CHALLENGE: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/challanges' : '/admin/loyalty/challenges'),
-  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) =>
-    isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
+  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) => isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
+
+  ORGANIZER_LOYALTY_CHALLENGE: `/organizer/loyalty/challenges`,
+  ORGANIZER_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/organizer/loyalty/challenges/${id}`,
 
   ORGANIZER_PRESET: `/organizer/menu/presets`,
   ADMIN_PRESET: `/admin/menu/presets`,
