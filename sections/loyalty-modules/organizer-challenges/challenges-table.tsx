@@ -12,22 +12,60 @@ import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import LoyaltyMembersTableRow from './members-table-row';
+import ChallengesTableRow from './challenges-table-row';
 import { SamplePageProps } from './types';
 
-const LoyaltyMembersTable: FC<SamplePageProps> = ({
+const HEAD_LABEL = [
+  { id: 'image', label: 'Image', align: 'left' },
+  {
+    id: 'name',
+    label: 'Name',
+    align: 'left',
+    sortable: true,
+    sortKey: 'title',
+  },
+  {
+    id: 'rewardType',
+    label: 'Reward Type',
+    sortable: true,
+    sortKey: 'reward.rewardType',
+  },
+  {
+    id: 'reward',
+    label: 'Reward',
+    sortable: true,
+    sortKey: 'reward.rewardType',
+  },
+  {
+    id: 'taskType',
+    label: 'Task Type',
+    align: 'left',
+    sortable: true,
+    sortKey: 'taskType',
+  },
+  { id: 'taskParameters', label: 'Task Parameters', align: 'left' },
+  { id: 'claimLimit', label: 'Claim Limit', align: 'left' },
+  { id: 'endTime', label: 'End Time', align: 'left' },
+  { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'left' },
+];
+
+const ChallengesTable: FC<SamplePageProps> = ({
   data = [],
   meta,
-  global,
-  usertype,
   loading,
-  handleGiftModal,
   handleDelete,
   handleEdit,
   onPageChange,
   limit = 10,
+  // filters states bellow
   search = '',
   onSearch = () => {},
+  status = '',
+  onStatusChange = () => {},
+  // date,
+  // onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -35,18 +73,6 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
-
-  const HEAD_LABEL = [
-    { id: 'image', label: 'Image', align: 'left' },
-    { id: 'username', label: 'Username', align: 'left' },
-    ...(global ? [{ id: 'globalStatus', label: 'Global Status', align: 'left' }] : []),
-    { id: 'totalPoints', label: 'Points Earned', align: 'left' },
-    { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
-    { id: 'level', label: "Level", align: 'left' },
-    { id: 'status', label: 'Status', align: 'left' },
-    { id: 'region', label: 'Region', align: 'left' },
-    { id: 'action', label: 'Action', align: 'center' },
-  ];
 
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
@@ -63,7 +89,7 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Members List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Challenges List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -82,14 +108,37 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
+                        {/* <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
+                          Select Date
+                        </label> */}
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                            // dateFilter={{
+                            //   id: 'organization-date',
+                            //   placeholder: 'Select date',
+                            //   value: date,
+                            //   onChange: onDateChange,
+                            // }}
                             searchFilter={{
-                              placeholder: 'Search members...',
+                              placeholder: 'Search challenges...',
                               value: search,
                               onChange: onSearch,
                             }}
+                            selectFilters={[
+                              {
+                                id: 'sheet-revenue',
+                                label: 'Status',
+                                placeholder: 'Select by status',
+                                value: status,
+                                onChange: onStatusChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'active', label: 'Active' },
+                                  { value: 'inactive', label: 'Inactive' },
+                                ],
+                              },
+                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -111,15 +160,7 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <LoyaltyMembersTableRow
-                    key={item?._id || idx}
-                    item={item}
-                    global={global}
-                    userType={usertype}
-                    handleDelete={handleDelete}
-                    handleGiftModal={handleGiftModal}
-                    handleEdit={handleEdit}
-                  />
+                  <ChallengesTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -138,4 +179,4 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
   );
 };
 
-export default LoyaltyMembersTable;
+export default ChallengesTable;

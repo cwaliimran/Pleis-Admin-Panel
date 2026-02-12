@@ -8,26 +8,27 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import LoyaltyMembersTableRow from './members-table-row';
+import RewardsTableRow from './rewards-table-row';
 import { SamplePageProps } from './types';
 
-const LoyaltyMembersTable: FC<SamplePageProps> = ({
+const RewardsTable: FC<SamplePageProps> = ({
   data = [],
   meta,
-  global,
-  usertype,
   loading,
-  handleGiftModal,
   handleDelete,
   handleEdit,
   onPageChange,
   limit = 10,
+  // filters states bellow
   search = '',
   onSearch = () => {},
+  status = '',
+  onStatusChange = () => {},
+  date,
+  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -37,20 +38,17 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
   const [sheetLocation] = useState<string[]>([]);
 
   const HEAD_LABEL = [
-    { id: 'image', label: 'Image', align: 'left' },
-    { id: 'username', label: 'Username', align: 'left' },
-    ...(global ? [{ id: 'globalStatus', label: 'Global Status', align: 'left' }] : []),
-    { id: 'totalPoints', label: 'Points Earned', align: 'left' },
-    { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
-    { id: 'level', label: "Level", align: 'left' },
-    { id: 'status', label: 'Status', align: 'left' },
-    { id: 'region', label: 'Region', align: 'left' },
-    { id: 'action', label: 'Action', align: 'center' },
+    { id: 'photo', label: 'Photo', align: 'left' },
+    { id: 'name', label: 'Name', align: 'left' },
+    { id: 'description', label: 'Description' },
+    { id: 'type', label: 'Type', align: 'left' },
+    { id: 'creationMethod', label: 'Creation Method', align: 'left' },
+    { id: 'pointValue', label: 'Point Value', align: 'left' },
+    { id: 'limit', label: 'Limit', align: 'left' },
+    { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
+    { id: 'percentOff', label: '% Off', align: 'left' },
+    { id: 'actions', label: 'Actions', align: 'left' },
   ];
-
-  const { sortedData, sortConfig, handleSort } = useTableSort({
-    data: data || [],
-  });
 
   const methods = useForm({
     defaultValues: {
@@ -63,7 +61,7 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Members List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Rewards List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -82,14 +80,37 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
+                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
+                          Select Date
+                        </label>
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                            dateFilter={{
+                              id: 'organization-date',
+                              placeholder: 'Select date',
+                              value: date,
+                              onChange: onDateChange,
+                            }}
                             searchFilter={{
-                              placeholder: 'Search members...',
+                              placeholder: 'Search rewards...',
                               value: search,
                               onChange: onSearch,
                             }}
+                            selectFilters={[
+                              {
+                                id: 'sheet-revenue',
+                                label: 'Status',
+                                placeholder: 'Select by status',
+                                value: status,
+                                onChange: onStatusChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'active', label: 'Active' },
+                                  { value: 'inactive', label: 'Inactive' },
+                                ],
+                              },
+                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,
@@ -107,19 +128,11 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
 
           <div className="min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
+              <TableHeadCustom headLabel={HEAD_LABEL} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item, idx) => (
-                  <LoyaltyMembersTableRow
-                    key={item?._id || idx}
-                    item={item}
-                    global={global}
-                    userType={usertype}
-                    handleDelete={handleDelete}
-                    handleGiftModal={handleGiftModal}
-                    handleEdit={handleEdit}
-                  />
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
+                {data?.map((item, idx) => (
+                  <RewardsTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>
@@ -138,4 +151,4 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
   );
 };
 
-export default LoyaltyMembersTable;
+export default RewardsTable;

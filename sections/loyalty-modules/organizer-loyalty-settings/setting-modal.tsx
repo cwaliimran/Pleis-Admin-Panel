@@ -143,7 +143,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
         coverImage: isValidImage(companyDetails?.coverImage),
         title: loyaltySettings?.title || '',
         description: companyDetails?.description || '',
-        category: companyDetails?.category || '',
+        category: companyDetails?.category?._id || '',
         model: loyaltySettings?.model || 'essential',
         pointValuePercentage: loyaltySettings?.pointValuePercentage ?? 0,
       };

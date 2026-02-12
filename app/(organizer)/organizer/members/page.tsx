@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import UserListView from '@/sections/users/userListView';
+import LoyaltyMembersView from '@/sections/loyalty-modules/members/members-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,8 +16,7 @@ const Page = () => {
         ]}
       />
 
-      {/* <MembersView /> */}
-      <UserListView usertype="organizer" memberPage={true} />
+      <LoyaltyMembersView usertype="organizer" global={false} />
     </div>
   );
 };

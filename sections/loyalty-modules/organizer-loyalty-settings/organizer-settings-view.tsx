@@ -31,8 +31,8 @@ const OrganizerSettingsView = () => {
   const logo = companyDetails?.logo || '';
   const title = loyaltySettings?.title || 'Club Name';
   const description = companyDetails?.description || 'No description available';
-  // const category = companyDetails?.category?.title || '';
-  const category = companyDetails?.category || '';
+  const category = companyDetails?.category?.title || '';
+  // const category = companyDetails?.category || '';
   const model = loyaltySettings?.model || '';
   const pointValue = loyaltySettings?.pointValuePercentage || 0;
 

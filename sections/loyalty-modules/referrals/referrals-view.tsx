@@ -10,7 +10,6 @@ import RefferralModal from './referrals-modal';
 import ReferralsTable from './referrals-table';
 
 interface ReferralsViewProps {
-  // userType: 'super-admin' | 'organizer';
   global?: boolean;
 }
 

@@ -57,8 +57,6 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
     defaultValues,
   });
 
-  console.log('referralSettingData', referralSettingData);
-
   const { reset, handleSubmit, control } = methods;
 
   const [addSetting, { isLoading: isAdding }] = useAddGlobalReferralSettingMutation();

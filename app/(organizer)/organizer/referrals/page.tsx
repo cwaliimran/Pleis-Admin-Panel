@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <ReferralsView />
+      <ReferralsView global={false} />
     </div>
   );
 };

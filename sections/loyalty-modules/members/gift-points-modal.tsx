@@ -21,6 +21,7 @@ interface GiftPointsModalProps {
   onClose: () => void;
   companyOrganizer: string;
   userId: string;
+  usertype?: string;
 }
 
 const schema = Yup.object().shape({
@@ -38,7 +39,7 @@ const defaultValues: GiftPointsFormValues = {
   notes: '',
 };
 
-const GiftPointsModal = ({ open, onClose, companyOrganizer, userId }: GiftPointsModalProps) => {
+const GiftPointsModal = ({ open, onClose, companyOrganizer, userId, usertype }: GiftPointsModalProps) => {
   const [sendGiftToMember, { isLoading: giftSending }] = useSendGiftToMemberMutation();
 
   const methods: UseFormReturn<GiftPointsFormValues> = useForm<GiftPointsFormValues>({
@@ -50,7 +51,7 @@ const GiftPointsModal = ({ open, onClose, companyOrganizer, userId }: GiftPoints
   const { reset, formState } = methods;
 
   const handleSubmit = async (formData: GiftPointsFormValues) => {
-    if (!companyOrganizer) {
+    if (usertype === 'super-admin' && !companyOrganizer) {
       showError('Company organizer is missing.');
       return;
     }
@@ -62,7 +63,8 @@ const GiftPointsModal = ({ open, onClose, companyOrganizer, userId }: GiftPoints
 
     try {
       const payload = {
-        companyOrganizer,
+        // companyOrganizer,
+        companyOrganizer: usertype === 'super-admin' ? companyOrganizer : undefined,
         user: userId,
         points: Number(formData.points),
         notes: formData.notes || '',

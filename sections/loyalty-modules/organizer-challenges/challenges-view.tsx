@@ -3,26 +3,24 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useDeleteRewardMutation, useGetRewardsQuery } from '@/store/Reducer/rewards-api';
+import { useDeleteChallengeMutation, useGetChallengesQuery } from '@/store/Reducer/challenges-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import GlobalRewardFormModal from './global-rewards-modal';
-import RewardsCalculator from './rewards-calculator';
-import RewardFormModal from './rewards-modal';
-import RewardsTable from './rewards-table';
+import ChallengeModal from './challenges-modal';
+import ChallengesTable from './challenges-table';
+import { useAuth } from '@/hooks/useAuth';
 
-type RewardsViewProps = {
-  global: boolean;
-};
+const OrganizerChallengesView = () => {
+  const { user } = useAuth();
 
-const RewardsView = ({ global }: RewardsViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+
+  const selectedCompany = user?.basicInfo?._id || '';
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -34,22 +32,18 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const { companyId } = useCompanySelectionState();
-
-  const [deleteReward, { isLoading: deleteLoading }] = useDeleteRewardMutation();
+  const [deleteChallenge, { isLoading: deleteLoading }] = useDeleteChallengeMutation();
 
   const {
     data: apiData,
     isLoading,
     isFetching,
-  } = useGetRewardsQuery({
+  } = useGetChallengesQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: companyId || undefined,
-    isGlobal: global,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -98,6 +92,11 @@ const RewardsView = ({ global }: RewardsViewProps) => {
 
   const handleDelete = useCallback(
     (id: string) => {
+      if (!id) {
+        showError('No challenge selected');
+        return;
+      }
+
       setSelectedId(id);
       deleteModal.onTrue();
     },
@@ -107,12 +106,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      // const response = await deleteReward(selectedId).unwrap();
-
-      const response = await deleteReward({
-        id: selectedId,
-        isGlobal: global,
-      }).unwrap();
+      const response = await deleteChallenge({ id: selectedId }).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -129,28 +123,20 @@ const RewardsView = ({ global }: RewardsViewProps) => {
     }
   };
 
-  const closeModal = () => {
-    openModal.onFalse();
-    editModal.onFalse();
-  };
-
   return (
     <div>
       <div>
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
-            Create Reward
+            Create Challenges
           </Button>
         </div>
       </div>
 
-      {!global && <RewardsCalculator companyOrganizer={companyId} />}
-
-      <RewardsTable
+      <ChallengesTable
         data={localData}
         meta={meta}
-        global={global}
         loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
@@ -184,32 +170,20 @@ const RewardsView = ({ global }: RewardsViewProps) => {
         }}
       />
 
-      {openModal.value && !global && (
-        <RewardFormModal
-          global={global}
+      {openModal.value && (
+        <ChallengeModal
           open={openModal.value}
-          onClose={closeModal}
+          onClose={openModal.onFalse}
           isEdit={editModal.value}
           selectedData={selectedRecord}
-          selectedCompany={companyId || null}
-        />
-      )}
-
-      {openModal.value && global && (
-        <GlobalRewardFormModal
-          global={global}
-          open={openModal.value}
-          onClose={closeModal}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          selectedCompany={companyId || null}
+          selectedCompany={selectedCompany}
         />
       )}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title={`Delete ${global ? 'Global ' : ''}Reward`}
-        content={`Are you sure you want to delete this ${global ? 'global ' : ''}reward?`}
+        title={`Delete Challenge`}
+        content={`Are you sure you want to delete this challenge?`}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -221,4 +195,4 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   );
 };
 
-export default RewardsView;
+export default OrganizerChallengesView;

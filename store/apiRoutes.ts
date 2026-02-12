@@ -44,7 +44,10 @@ export const API_ROUTES = {
   ORGANIZER_GENERAL_ORGANIZATIONS: `/organizer/general/organizations`,
   ORGANIZER_GENERAL_EVENTS: `/organizer/general/events`,
   ORGANIZER_GENERAL_CATEGORIES: `/organizer/general/categories`,
+  ORGANIZER_GENERAL_TIERS: `/organizer/general/tiers`,
   ORGANIZER_GENERAL_MENU: `/organizer/general/menu`,
+  ORGANIZER_GENERAL_MENU_ITEM: `/organizer/general/menu-item`,
+  ORGANIZER_GENERAL_TICKETS: `/organizer/general/ticketing`,
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
 
   USER_LIST: `/users`,
@@ -222,6 +225,10 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_REWARDS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/reward' : '/admin/loyalty/rewards'),
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/reward/${id}` : `/admin/loyalty/rewards/${id}`),
 
+  ORGANIZER_POINT_CAL: `/organizer/loyalty/points-calculator`,
+  ORGANIZER_LOYALTY_REWARDS: `/organizer/loyalty/rewards`,
+  ORGANIZER_LOYALTY_REWARDS_BY_ID: (id: string) => `/organizer/loyalty/rewards/${id}`,
+
   ADMIN_GLOBAL_REFERRALS_SETTING: `/admin/global-loyalty/referrals`,
   ADMIN_GLOBAL_REFERRALS_SETTING_RESET: `/admin/global-loyalty/referrals/reset`,
   ADMIN_GLOBAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/global-loyalty/referrals/${id}`,
@@ -230,11 +237,20 @@ export const API_ROUTES = {
   ADMIN_LOCAL_REFERRALS_SETTING_RESET: `/admin/loyalty/referral/reset`,
   ADMIN_LOCAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/loyalty/referral/${id}`,
 
+  ORGANIZER_LOCAL_REFERRALS_SETTING: `/organizer/loyalty/referral`,
+  ORGANIZER_LOCAL_REFERRALS_SETTING_RESET: `/organizer/loyalty/referral/reset`,
+  ORGANIZER_LOCAL_REFERRALS_SETTING_BY_ID: (id: string) => `/organizer/loyalty/referral/${id}`,
+
+  ORGANIZER_REFERRALS: `/organizer/loyalty/referral/user`,
   ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referral/user'),
+
   ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
 
   ADMIN_LOYALTY_MEMBERS: `/admin/loyalty/club-members`,
   ADMIN_LOYALTY_MEMBERS_GIFT: `/admin/loyalty/club-members/gift-points`,
+
+  ORGANIZER_LOYALTY_MEMBERS: `/organizer/loyalty/club-members`,
+  ORGANIZER_LOYALTY_MEMBERS_GIFT: `/organizer/loyalty/club-members/gift-points`,
 
   // ADMIN_LOYALTY_PROMOTION: `/admin/loyalty/promotions`,
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
@@ -251,8 +267,10 @@ export const API_ROUTES = {
   // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,
 
   ADMIN_LOYALTY_CHALLENGE: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/challanges' : '/admin/loyalty/challenges'),
-  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) =>
-    isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
+  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) => isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
+
+  ORGANIZER_LOYALTY_CHALLENGE: `/organizer/loyalty/challenges`,
+  ORGANIZER_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/organizer/loyalty/challenges/${id}`,
 
   ORGANIZER_PRESET: `/organizer/menu/presets`,
   ADMIN_PRESET: `/admin/menu/presets`,

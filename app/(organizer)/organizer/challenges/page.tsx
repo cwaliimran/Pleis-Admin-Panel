@@ -1,7 +1,5 @@
 import Header from '@/app/common/header/header';
-import ChallengesView from '@/sections/loyalty-modules/challenges/challenges-view';
-// import ChallengesView from '@/sections/challenges/challenges-view';
-// import ChallengesView from '@/sections/challenges-old/challenges-view';
+import OrganizerChallengesView from '@/sections/loyalty-modules/organizer-challenges/challenges-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -18,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <ChallengesView />
+      <OrganizerChallengesView />
     </div>
   );
 };

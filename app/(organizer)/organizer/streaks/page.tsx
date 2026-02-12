@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <StreaksView global={false} />
+      <StreaksView global={false} userType="organizer" />
     </div>
   );
 };
