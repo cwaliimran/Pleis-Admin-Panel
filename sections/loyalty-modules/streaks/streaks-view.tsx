@@ -19,9 +19,10 @@ import StreaksTable from './streaks-table';
 
 interface StreaksViewProps {
   global?: boolean;
+  userType?: 'organizer' | 'super-admin';
 }
 
-const StreaksView = ({ global }: StreaksViewProps) => {
+const StreaksView = ({ global, userType }: StreaksViewProps) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -48,7 +49,7 @@ const StreaksView = ({ global }: StreaksViewProps) => {
   } = useGetStreaksQuery(
     {
       page: page - 1,
-      search,
+      search: '',
       limit,
       status: status === 'all' ? '' : status,
       companyOrganizer: selectedCompany || undefined,
@@ -230,6 +231,7 @@ const StreaksView = ({ global }: StreaksViewProps) => {
           isEdit={editModal.value}
           selectedData={selectedRecord}
           selectedCompany={selectedCompany}
+          userType={userType}
         />
       )}
 

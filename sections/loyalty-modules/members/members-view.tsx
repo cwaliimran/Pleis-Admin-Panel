@@ -108,7 +108,13 @@ const LoyaltyMembersView = ({ global, usertype }: PromotionsViewProps) => {
       />
 
       {openGiftModal.value && (
-        <GiftPointsModal open={openGiftModal.value} onClose={openGiftModal.onFalse} companyOrganizer={companyId || ''} userId={selectedId || ''} />
+        <GiftPointsModal
+          open={openGiftModal.value}
+          onClose={openGiftModal.onFalse}
+          companyOrganizer={companyId || ''}
+          userId={selectedId || ''}
+          usertype={usertype}
+        />
       )}
     </div>
   );

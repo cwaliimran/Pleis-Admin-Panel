@@ -40,9 +40,11 @@ const LoyaltyMembersTableRow: FC<TableRowProps> = ({ item, global, userType, han
 
         {global && <TableCell className="text-left capitalize">{item?.user?.globalStatus || 'N/A'}</TableCell>}
 
-        <TableCell className="text-left capitalize">{item?.points || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.points === 0 ? '0' : item?.points || 'N/A'}</TableCell>
 
-        <TableCell className="text-left capitalize">{item?.user?.revenue || 'N/A'}</TableCell>
+        <TableCell className="text-left capitalize">{item?.user?.revenue === 0 ? '0' : item?.user?.revenue || 'N/A'}</TableCell>
+
+        <TableCell className="text-left capitalize">{item?.level?.title || 'N/A'}</TableCell>
 
         <TableCell className="text-left">
           <CustomBadge variant={getStatusVariant(item.status)}>{item.status}</CustomBadge>

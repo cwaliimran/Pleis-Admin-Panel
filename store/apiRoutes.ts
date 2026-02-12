@@ -230,11 +230,20 @@ export const API_ROUTES = {
   ADMIN_LOCAL_REFERRALS_SETTING_RESET: `/admin/loyalty/referral/reset`,
   ADMIN_LOCAL_REFERRALS_SETTING_BY_ID: (id: string) => `/admin/loyalty/referral/${id}`,
 
+  ORGANIZER_LOCAL_REFERRALS_SETTING: `/organizer/loyalty/referral`,
+  ORGANIZER_LOCAL_REFERRALS_SETTING_RESET: `/organizer/loyalty/referral/reset`,
+  ORGANIZER_LOCAL_REFERRALS_SETTING_BY_ID: (id: string) => `/organizer/loyalty/referral/${id}`,
+
+  ORGANIZER_REFERRALS: `/organizer/loyalty/referral/user`,
   ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referral/user'),
+
   ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
 
   ADMIN_LOYALTY_MEMBERS: `/admin/loyalty/club-members`,
   ADMIN_LOYALTY_MEMBERS_GIFT: `/admin/loyalty/club-members/gift-points`,
+
+  ORGANIZER_LOYALTY_MEMBERS: `/organizer/loyalty/club-members`,
+  ORGANIZER_LOYALTY_MEMBERS_GIFT: `/organizer/loyalty/club-members/gift-points`,
 
   // ADMIN_LOYALTY_PROMOTION: `/admin/loyalty/promotions`,
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
@@ -354,8 +363,12 @@ export const API_ROUTES = {
   STREAKS: `/admin/loyalty/streaks`,
   STREAKS_BY_ID: (id: string) => `/admin/loyalty/streaks/${id}`,
 
+  ORGNIZER_STREAKS: `/organizer/loyalty/streaks`,
+  ORGNIZER_STREAKS_BY_ID: (id: string) => `/organizer/loyalty/streaks/${id}`,
+
   // USER_STREAKS: `/admin/loyalty/users-streaks`,
   ADMIN_USER_STREAKS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/users-streaks' : '/admin/loyalty/users-streaks'),
+  ORGANIZER_USER_STREAKS: `/organizer/loyalty/users-streaks`,
 
   ADMIN_USER_LIST: `/admin/users`,
   ADMIN_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,

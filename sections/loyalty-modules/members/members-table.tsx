@@ -42,6 +42,7 @@ const LoyaltyMembersTable: FC<SamplePageProps> = ({
     ...(global ? [{ id: 'globalStatus', label: 'Global Status', align: 'left' }] : []),
     { id: 'totalPoints', label: 'Points Earned', align: 'left' },
     { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
+    { id: 'level', label: "Level", align: 'left' },
     { id: 'status', label: 'Status', align: 'left' },
     { id: 'region', label: 'Region', align: 'left' },
     { id: 'action', label: 'Action', align: 'center' },

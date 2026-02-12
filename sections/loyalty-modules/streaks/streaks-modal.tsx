@@ -23,6 +23,7 @@ type StreakModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
+  userType?: 'organizer' | 'super-admin';
   selectedCompany?: any;
 };
 
@@ -52,7 +53,7 @@ const defaultValues: StreakFormValues = {
   status: 'active',
 };
 
-const StreaksModal = ({ open, onClose, isEdit = false, selectedData, selectedCompany }: StreakModalProps) => {
+const StreaksModal = ({ open, onClose, isEdit = false, selectedData, selectedCompany, userType }: StreakModalProps) => {
   const [addStreakRule, { isLoading: addStreakLoading }] = useAddStreakMutation();
   const [updateStreakRule, { isLoading: updateStreakLoading }] = useUpdateStreakMutation();
 
@@ -87,7 +88,7 @@ const StreaksModal = ({ open, onClose, isEdit = false, selectedData, selectedCom
   const handleSubmit = async (formData: StreakFormValues) => {
     try {
       // Validate company is selected
-      if (!selectedCompany) {
+      if (userType === 'super-admin' && !selectedCompany) {
         showError('Please select a company first');
         return;
       }
@@ -96,7 +97,8 @@ const StreaksModal = ({ open, onClose, isEdit = false, selectedData, selectedCom
       const payload: any = {
         visits: Number(formData.visits),
         points: Number(formData.points),
-        companyOrganizer: selectedCompany,
+        // companyOrganizer: selectedCompany,
+        companyOrganizer: userType === 'super-admin' ? selectedCompany : undefined,
       };
 
       // Add fields for edit mode

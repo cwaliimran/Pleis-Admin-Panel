@@ -18,7 +18,7 @@ const Page = () => {
       />
 
       <CompanyGuard>
-        <StreaksView global={false} />
+        <StreaksView global={false} userType="super-admin" />
       </CompanyGuard>
     </div>
   );
