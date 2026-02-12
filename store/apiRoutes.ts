@@ -44,7 +44,10 @@ export const API_ROUTES = {
   ORGANIZER_GENERAL_ORGANIZATIONS: `/organizer/general/organizations`,
   ORGANIZER_GENERAL_EVENTS: `/organizer/general/events`,
   ORGANIZER_GENERAL_CATEGORIES: `/organizer/general/categories`,
+  ORGANIZER_GENERAL_TIERS: `/organizer/general/tiers`,
   ORGANIZER_GENERAL_MENU: `/organizer/general/menu`,
+  ORGANIZER_GENERAL_MENU_ITEM: `/organizer/general/menu-item`,
+  ORGANIZER_GENERAL_TICKETS: `/organizer/general/ticketing`,
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
 
   USER_LIST: `/users`,
@@ -221,6 +224,10 @@ export const API_ROUTES = {
   ADMIN_POINT_CAL: `/admin/loyalty/points-calculator`,
   ADMIN_LOYALTY_REWARDS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/reward' : '/admin/loyalty/rewards'),
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/reward/${id}` : `/admin/loyalty/rewards/${id}`),
+
+  ORGANIZER_POINT_CAL: `/organizer/loyalty/points-calculator`,
+  ORGANIZER_LOYALTY_REWARDS: `/organizer/loyalty/rewards`,
+  ORGANIZER_LOYALTY_REWARDS_BY_ID: (id: string) => `/organizer/loyalty/rewards/${id}`,
 
   ADMIN_GLOBAL_REFERRALS_SETTING: `/admin/global-loyalty/referrals`,
   ADMIN_GLOBAL_REFERRALS_SETTING_RESET: `/admin/global-loyalty/referrals/reset`,

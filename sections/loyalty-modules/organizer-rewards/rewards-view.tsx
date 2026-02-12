@@ -3,23 +3,17 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteRewardMutation, useGetRewardsQuery } from '@/store/Reducer/rewards-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import GlobalRewardFormModal from './global-rewards-modal';
 import RewardsCalculator from './rewards-calculator';
 import RewardFormModal from './rewards-modal';
 import RewardsTable from './rewards-table';
 
-type RewardsViewProps = {
-  global: boolean;
-};
-
-const RewardsView = ({ global }: RewardsViewProps) => {
+const OrganizerRewardsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
@@ -34,8 +28,6 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
-  const { companyId } = useCompanySelectionState();
-
   const [deleteReward, { isLoading: deleteLoading }] = useDeleteRewardMutation();
 
   const {
@@ -48,8 +40,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    companyOrganizer: companyId || undefined,
-    isGlobal: global,
+    // companyOrganizer: companyId || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -107,12 +98,7 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   // DELETE CALL
   const onDelete = async () => {
     try {
-      // const response = await deleteReward(selectedId).unwrap();
-
-      const response = await deleteReward({
-        id: selectedId,
-        isGlobal: global,
-      }).unwrap();
+      const response = await deleteReward({ id: selectedId }).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -145,12 +131,11 @@ const RewardsView = ({ global }: RewardsViewProps) => {
         </div>
       </div>
 
-      {!global && <RewardsCalculator companyOrganizer={companyId} />}
+      <RewardsCalculator />
 
       <RewardsTable
         data={localData}
         meta={meta}
-        global={global}
         loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
@@ -184,32 +169,12 @@ const RewardsView = ({ global }: RewardsViewProps) => {
         }}
       />
 
-      {openModal.value && !global && (
-        <RewardFormModal
-          global={global}
-          open={openModal.value}
-          onClose={closeModal}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          selectedCompany={companyId || null}
-        />
-      )}
-
-      {openModal.value && global && (
-        <GlobalRewardFormModal
-          global={global}
-          open={openModal.value}
-          onClose={closeModal}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          selectedCompany={companyId || null}
-        />
-      )}
+      {openModal.value && <RewardFormModal open={openModal.value} onClose={closeModal} isEdit={editModal.value} selectedData={selectedRecord} />}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title={`Delete ${global ? 'Global ' : ''}Reward`}
-        content={`Are you sure you want to delete this ${global ? 'global ' : ''}reward?`}
+        title={`Delete Reward`}
+        content={`Are you sure you want to delete this reward?`}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -221,4 +186,4 @@ const RewardsView = ({ global }: RewardsViewProps) => {
   );
 };
 
-export default RewardsView;
+export default OrganizerRewardsView;

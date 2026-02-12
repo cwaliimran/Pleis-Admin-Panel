@@ -62,7 +62,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/organizer/menuItems',
 
     '/organizer/loyalty',
-    '/organizer/rewards',
+    // '/organizer/rewards',
     // '/organizer/streaks',
     // '/organizer/members',
     '/organizer/challenges',
