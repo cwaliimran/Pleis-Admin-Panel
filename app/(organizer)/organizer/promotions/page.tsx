@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import PromotionsView from '@/sections/loyalty-modules/promotions/promotions-view';
+import OrganizerPromotionsView from '@/sections/loyalty-modules/organizer-promotions/promotions-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <PromotionsView />
+      <OrganizerPromotionsView />
     </div>
   );
 };

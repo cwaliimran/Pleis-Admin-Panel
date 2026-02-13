@@ -49,6 +49,7 @@ export const API_ROUTES = {
   ORGANIZER_GENERAL_MENU_ITEM: `/organizer/general/menu-item`,
   ORGANIZER_GENERAL_TICKETS: `/organizer/general/ticketing`,
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
+  ORGANIZER_GENERAL_REWARDS: `/organizer/general/loyalty/rewards`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -255,13 +256,15 @@ export const API_ROUTES = {
   // ADMIN_LOYALTY_PROMOTION: `/admin/loyalty/promotions`,
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
 
-  ADMIN_LOYALTY_PROMOTION: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/promotions' : '/admin/loyalty/promotions'),
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean) =>isGlobal ? `/admin/global-loyalty/promotions/${id}` : `/admin/loyalty/promotions/${id}`,
 
-  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean, scope?: string) =>
-    isGlobal
-      ? `/admin/global-loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`
-      : `/admin/loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`,
+  ADMIN_LOYALTY_PROMOTION: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/promotions' : '/admin/loyalty/promotions'),
+  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean, scope?: string) => isGlobal ? `/admin/global-loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}` : `/admin/loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`,
+
+
+  ORGANIZER_LOYALTY_PROMOTION: `/organizer/loyalty/promotions`,
+  ORGANIZER_LOYALTY_PROMOTION_BY_ID: (id: string, scope?: string) => `/organizer/loyalty/promotions/${id}?scope=${scope || ''}`,
+
 
   // ADMIN_LOYALTY_CHALLENGE: `/admin/loyalty/challenges`,
   // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,

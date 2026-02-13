@@ -10,11 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useAddChallengeMutation, useUpdateChallengeMutation } from '@/store/Reducer/challenges-api';
-import { useGetEventsByOrganizationQuery } from '@/store/Reducer/events';
-import { useGetAllOrganizerMenuItemQuery, useGetAllOrganizerMenuQuery, useGetAllOrganizerTiersQuery } from '@/store/Reducer/helpers-api';
-import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
-import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
-import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
+import {
+  useGetAllByOrganizationQuery,
+  useGetAllEventsQuery,
+  useGetAllOrganizerMenuItemQuery,
+  useGetAllOrganizerMenuQuery,
+  useGetAllOrganizerTicketQuery,
+  useGetAllOrganizerTiersQuery,
+} from '@/store/Reducer/helpers-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { fDate, formatStr } from '@/utils/format-time';
@@ -23,8 +26,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import RewardCalculatorFields from '../rewards/reward-calculation-fields';
 import type { EventOption, OrganizationOption, TicketOption } from './special-ticket-types';
+import RewardCalculatorFields from '../organizer-rewards/reward-calculation-fields';
 
 const defaultValues: any = {
   photo: null,
@@ -173,13 +176,14 @@ type ChallengeModalProps = {
   companyOrganizer?: string;
   onSubmit?: (data: any) => void;
   selectedCompany?: any;
+  user?: any;
 };
 
-const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = false, selectedCompany }: ChallengeModalProps) => {
+const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = false, selectedCompany, user }: ChallengeModalProps) => {
   const [deleting, setDeleting] = useState(false);
   const isInitializingEdit = useRef(false);
 
-  console.log('selectedCompany', selectedCompany);
+  console.log('user', user);
 
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [addChallenge, { isLoading: addChallengeLoading }] = useAddChallengeMutation();
@@ -247,24 +251,17 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     { skip: !selectedMenuId || rewardType !== 'menuItem' }
   );
 
-  const { data: companyList, isLoading: isLoadingCompanies } = useGetCompanyListQuery(
-    {},
-    {
-      skip: !shouldShowSpecialTicketFields,
-    }
-  );
+  // Removed useGetCompanyListQuery. Company data comes from user prop.
 
   // Organization --------------------------------
   const {
     data: organizationResponse,
     isLoading: isLoadingOrganizations,
     isFetching: isOrganizationFetching,
-  } = useGetOrganizationByCompanyQuery(
+  } = useGetAllByOrganizationQuery(
+    { page: 0, search: '', limit: '100' },
     {
-      companyOrganizer: selectedCompany || undefined,
-    },
-    {
-      skip: !shouldShowOrganizationDropdown || !selectedCompany,
+      skip: !shouldShowOrganizationDropdown,
     }
   );
 
@@ -273,10 +270,8 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     data: eventData,
     isLoading: isLoadingEvents,
     isFetching: isEventFetching,
-  } = useGetEventsByOrganizationQuery(
-    {
-      organization: organizationId || undefined,
-    },
+  } = useGetAllEventsQuery(
+    { page: 0, search: '', limit: '100', organization: organizationId || undefined },
     {
       skip: !shouldShowEventDropdown || !organizationId,
     }
@@ -287,10 +282,8 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     data: ticketData,
     isLoading: isTicketsLoading,
     isFetching: isTicketsFetching,
-  } = useGetTicketingByEventQuery(
-    {
-      eventId: eventId || undefined,
-    },
+  } = useGetAllOrganizerTicketQuery(
+    { page: 0, search: '', limit: '100', event: eventId || undefined },
     {
       skip: !shouldShowTicketDropdown || !eventId,
     }
@@ -324,24 +317,23 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
   // OPTIONS MAPPING - Special Ticket Feature
   // Get the selected company name for display in the disabled field
   const selectedCompanyName = useMemo(() => {
-    if (!selectedCompany || !companyList) return 'Selected Company';
-    const company = companyList.find((c: any) => c._id === selectedCompany);
-    return company?.companyDetails?.name || 'Selected Company';
-  }, [companyList, selectedCompany]);
+    if (!user?.basicInfo) return 'Selected Company';
+    return user.basicInfo.companyDetails?.name || 'Selected Company';
+  }, [user]);
 
   const organizationOptions = useMemo<OrganizationOption[]>(
     () =>
       organizationResponse?.data?.map((organization: any) => ({
-        label: organization?.basicInfo?.name || 'Unknown Organization',
+        label: organization?.name || 'Unknown Organization',
         value: organization?._id,
-        companyId: selectedCompany || '',
+        companyId: user?.basicInfo?._id || '',
       })) || [],
-    [organizationResponse, selectedCompany]
+    [organizationResponse, user]
   );
 
   const eventOptions = useMemo<EventOption[]>(
     () =>
-      (eventData || []).map((event: any) => ({
+      (eventData?.data || []).map((event: any) => ({
         value: event?._id?.toString(),
         label: event?.basicInfo?.title || 'No Title',
       })),
@@ -358,12 +350,12 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
     [ticketData]
   );
 
-  // Auto-set companyId when specialTicket is selected (using selectedCompany)
+  // Auto-set companyId when specialTicket is selected (using user prop)
   useEffect(() => {
-    if (rewardType === 'specialTicket' && selectedCompany && !isInitializingEdit.current) {
-      setValue('companyId', selectedCompany);
+    if (rewardType === 'specialTicket' && user?.basicInfo?._id && !isInitializingEdit.current) {
+      setValue('companyId', user.basicInfo._id);
     }
-  }, [rewardType, selectedCompany, setValue]);
+  }, [rewardType, user, setValue]);
 
   // CASCADING DROPDOWN LOGIC - Clear dependent fields when parent changes
   useEffect(() => {
@@ -757,25 +749,21 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 {rewardType === 'specialTicket' && (
                   <div className="space-y-4">
                     <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-1">
-                      {/* Company Field - Disabled, shows selected company */}
+                      {/* Company Field - Disabled, shows selected company (from user prop) */}
                       <div className="space-y-2">
                         <label className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Company</label>
-                        {isLoadingCompanies ? (
-                          <Skeleton className="h-10 w-full rounded-md" />
-                        ) : (
-                          <input
-                            type="text"
-                            value={selectedCompanyName}
-                            disabled
-                            aria-label="Company"
-                            title="Company (auto-selected)"
-                            className="border-input bg-muted text-muted-foreground flex h-10 w-full cursor-not-allowed rounded-md border px-3 py-2 text-sm opacity-70"
-                          />
-                        )}
+                        <input
+                          type="text"
+                          value={selectedCompanyName}
+                          disabled
+                          aria-label="Company"
+                          title="Company (auto-selected)"
+                          className="border-input bg-muted text-muted-foreground flex h-10 w-full cursor-not-allowed rounded-md border px-3 py-2 text-sm opacity-70"
+                        />
                       </div>
 
                       {/* Organization Dropdown - Shows immediately since company is pre-selected */}
-                      {selectedCompany && (
+                      {user?.basicInfo?._id && (
                         <>
                           {isLoadingOrganizations || isOrganizationFetching ? (
                             <div className="space-y-2">
@@ -894,8 +882,7 @@ const ChallengeModal = ({ open, onClose, isEdit = false, selectedData, global = 
                 )}
               </div>
 
-              {!global && <RewardCalculatorFields companyOrganizer={selectedCompany} />}
-              {/* <RewardCalculatorFields /> */}
+              <RewardCalculatorFields />
 
               <div className="mt-5 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center gap-3">
