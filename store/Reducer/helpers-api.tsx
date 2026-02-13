@@ -36,9 +36,14 @@ export const helpersApi = createApi({
 
     // GET ALL ORGANIZATIONS -------------------------
     getAllByOrganization: builder.query({
-      query: () => ({
+      query: ({ search, page, limit }) => ({
         url: API_ROUTES.ORGANIZER_GENERAL_ORGANIZATIONS,
         method: 'GET',
+        params: {
+          keyword: search,
+          page: page + 1,
+          limit,
+        },
       }),
       transformResponse: (res) => ({
         data: res.data,
@@ -48,9 +53,15 @@ export const helpersApi = createApi({
 
     // GET ALL EVENTS -------------------------
     getAllEvents: builder.query({
-      query: () => ({
+      query: ({ search, page, limit, organization }) => ({
         url: API_ROUTES.ORGANIZER_GENERAL_EVENTS,
         method: 'GET',
+        params: {
+          keyword: search,
+          page: page + 1,
+          limit,
+          organization,
+        },
       }),
       transformResponse: (res) => ({
         data: res.data,
@@ -144,6 +155,23 @@ export const helpersApi = createApi({
         meta: res.meta,
       }),
     }),
+
+    // GET ALL REWARDS -------------------------
+    getAllCompanyRewards: builder.query({
+      query: ({ search, page, limit }) => ({
+        url: API_ROUTES.ORGANIZER_GENERAL_REWARDS,
+        method: 'GET',
+        params: {
+          keyword: search,
+          page: page + 1,
+          limit,
+        },
+      }),
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+    }),
   }),
 });
 
@@ -156,6 +184,7 @@ export const {
   useGetAllOrganizerTiersQuery,
   useGetAllOrganizerMenuQuery,
   useGetAllOrganizerMenuItemQuery,
+  useGetAllCompanyRewardsQuery,
 } = helpersApi;
 
 // import { createApi } from '@reduxjs/toolkit/query/react';

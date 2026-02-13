@@ -1,9 +1,10 @@
 import Header from '@/app/common/header/header';
-import OrganizerPromotionsView from '@/sections/loyalty-modules/organizer-promotions/promotions-view';
+import CompanyGuard from '@/components/guards/CompanyGuard';
+import TicketingView from '@/sections/ticketing-view/ticketing-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Promotions - Pleis',
+  title: 'Ticketing - Pleis',
 };
 
 const Page = () => {
@@ -12,11 +13,13 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer' },
-          { name: 'Promotions', href: '' },
+          { name: 'Ticketing', href: '' },
         ]}
       />
 
-      <OrganizerPromotionsView />
+      <CompanyGuard>
+        <TicketingView />
+      </CompanyGuard>
     </div>
   );
 };

@@ -15,6 +15,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TicketingModal from './ticketing-modal';
 import TicketingTable from './ticketing-table';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 const defaultValues = {
   title: '',
@@ -36,7 +37,10 @@ const TicketingView = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
 
-  const { companyId: selectedOrganization, organizationId } = useCompanySelectionState();
+  const { organizationId } = useCompanySelectionState();
+
+  const { organizerOrganizationIds } = useCompanySelection();
+  console.log('organizerOrganizationIds', organizerOrganizationIds);
 
   const [deleteTicketing, { isLoading: deleteTicketingLoading }] = useDeleteTicketingMutation();
 
@@ -52,10 +56,10 @@ const TicketingView = () => {
       limit,
       status: status === 'all' ? undefined : status,
       date: date ? formatDate(date) : undefined,
-      organization: organizationId || undefined,
+      organization: organizationId || organizerOrganizationIds || undefined,
     },
     {
-      skip: !selectedOrganization || !organizationId,
+      skip: !organizationId && !organizerOrganizationIds,
     }
   );
 

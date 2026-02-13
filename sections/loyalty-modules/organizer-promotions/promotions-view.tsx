@@ -1,26 +1,25 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import PromotionConfirmDialog from '@/components/comfirm-dialog/promotion-confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeleteChallengeMutation, useGetChallengesQuery } from '@/store/Reducer/challenges-api';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useDeletePromotionMutation, useGetPromotionQuery } from '@/store/Reducer/promotion-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import ChallengeModal from './challenges-modal';
-import ChallengesTable from './challenges-table';
-import { useAuth } from '@/hooks/useAuth';
+import PromotionsModal from './promotions-modal';
+import PromotionsTable from './promotions-table';
 
-const OrganizerChallengesView = () => {
-  const { user } = useAuth();
-
+const OrganizerPromotionsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
-
-  const selectedCompany = user?.basicInfo?._id || '';
+  
+  const recurringDeleteModal = useBoolean();
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -31,14 +30,17 @@ const OrganizerChallengesView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [deleteScope, setDeleteScope] = useState<string | null>(null);
 
-  const [deleteChallenge, { isLoading: deleteLoading }] = useDeleteChallengeMutation();
+  const { companyId: selectedCompany } = useCompanySelectionState();
+
+  const [deletePromotion, { isLoading: deleteLoading }] = useDeletePromotionMutation();
 
   const {
     data: apiData,
     isLoading,
     isFetching,
-  } = useGetChallengesQuery({
+  } = useGetPromotionQuery({
     page: page - 1,
     search,
     limit,
@@ -86,27 +88,36 @@ const OrganizerChallengesView = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Reward not found');
+      showError('Promotion not found');
     }
   };
 
   const handleDelete = useCallback(
-    (id: string) => {
-      if (!id) {
-        showError('No challenge selected');
+    (data: any) => {
+      if (!data) {
+        showError('No promotion selected');
         return;
       }
 
-      setSelectedId(id);
-      deleteModal.onTrue();
+      if (data?.recurringMeta?.parentPromotion === null) {
+        setSelectedId(data?._id);
+        deleteModal.onTrue();
+      } else {
+        setSelectedId(data?._id);
+        recurringDeleteModal.onTrue();
+      }
     },
-    [deleteModal]
+    [recurringDeleteModal, deleteModal]
   );
 
   // DELETE CALL
-  const onDelete = async () => {
+  const onDelete = async (scope?: string) => {
     try {
-      const response = await deleteChallenge({ id: selectedId }).unwrap();
+      if (scope) {
+        setDeleteScope(scope);
+      }
+
+      const response = await deletePromotion({ id: selectedId, ...(scope && { scope }) }).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -117,24 +128,25 @@ const OrganizerChallengesView = () => {
       showSuccess(response?.message || 'Deleted successfully');
 
       setSelectedId(null);
+      setDeleteScope(null);
       deleteModal.onFalse();
+      recurringDeleteModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
+      setDeleteScope(null);
     }
   };
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-            <Plus />
-            Create Challenges
-          </Button>
-        </div>
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+        <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+          <Plus />
+          Create Promotion
+        </Button>
       </div>
 
-      <ChallengesTable
+      <PromotionsTable
         data={localData}
         meta={meta}
         loading={isLoading || isFetching}
@@ -171,20 +183,20 @@ const OrganizerChallengesView = () => {
       />
 
       {openModal.value && (
-        <ChallengeModal
+        <PromotionsModal
           open={openModal.value}
           onClose={openModal.onFalse}
           isEdit={editModal.value}
           selectedData={selectedRecord}
           selectedCompany={selectedCompany}
-          user={user}
+          global={false}
         />
       )}
 
       <ConfirmDialog
         open={deleteModal.value}
-        title={`Delete Challenge`}
-        content={`Are you sure you want to delete this challenge?`}
+        title={`Delete Promotion`}
+        content={`Are you sure you want to delete this promotion?`}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
@@ -192,8 +204,20 @@ const OrganizerChallengesView = () => {
         onConfirm={onDelete}
         isLoading={deleteLoading}
       />
+
+      {recurringDeleteModal.value && (
+        <PromotionConfirmDialog
+          open={recurringDeleteModal.value}
+          title="Delete Promotion"
+          content="Are you sure you want to delete this promotion?"
+          onClose={recurringDeleteModal.onFalse}
+          onConfirm={onDelete}
+          isLoading={deleteLoading && deleteScope === 'single'}
+          isLoadingForAllEventsDelete={deleteLoading && deleteScope === 'future'}
+        />
+      )}
     </div>
   );
 };
 
-export default OrganizerChallengesView;
+export default OrganizerPromotionsView;
