@@ -135,8 +135,8 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
 
   // Load initial data from API
   useEffect(() => {
-    if (apiData?.data?.basicInfo?.inAppOrderingSettings) {
-      const settings = apiData?.data?.basicInfo?.inAppOrderingSettings;
+    if (apiData?.data?.inAppOrderingSettings) {
+      const settings = apiData.data.inAppOrderingSettings;
 
       const mappedData: FormValues = {
         paymentMethods: {
@@ -197,9 +197,7 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
   const buildPartialPayload = (data: FormValues) => {
     const payload: any = {
       id: organizationId || undefined,
-      companyDetails: {
-        inAppOrderingSettings: {},
-      },
+      inAppOrderingSettings: {},
     };
 
     // Check if any payment method fields are dirty
@@ -212,7 +210,7 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
       dirtyFields.paymentMethods?.payLater?.chargeOnDelivery;
 
     if (paymentMethodsDirty) {
-      payload.companyDetails.inAppOrderingSettings.paymentMethods = data.paymentMethods;
+      payload.inAppOrderingSettings.paymentMethods = data.paymentMethods;
     }
 
     // Check if any delivery method fields are dirty
@@ -220,7 +218,7 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
       dirtyFields.deliveryMethods?.counterPickup || dirtyFields.deliveryMethods?.tableDelivery || dirtyFields.deliveryMethods?.toGo;
 
     if (deliveryMethodsDirty) {
-      payload.companyDetails.inAppOrderingSettings.deliveryMethods = data.deliveryMethods;
+      payload.inAppOrderingSettings.deliveryMethods = data.deliveryMethods;
     }
 
     return payload;
@@ -242,8 +240,9 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
     try {
       const payload = buildPartialPayload(data);
 
+
       // Only proceed if there are changes
-      if (!payload.companyDetails.inAppOrderingSettings.paymentMethods && !payload.companyDetails.inAppOrderingSettings.deliveryMethods) {
+      if (!payload.inAppOrderingSettings.paymentMethods && !payload.inAppOrderingSettings.deliveryMethods) {
         showError('No changes to save');
         return;
       }
