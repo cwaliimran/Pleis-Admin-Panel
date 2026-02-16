@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useGetAllCompanyPresetsQuery, useGetAllOrganizerMenuQuery } from '@/store/Reducer/helpers-api';
 import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
 import { useAddMenuItemMutation, useUpdateMenuItemMutation } from '@/store/Reducer/menu-items-api';
 import { useGetMenuByCompanyQuery } from '@/store/Reducer/menu-list-api';
@@ -132,21 +133,43 @@ const MenuItemModal = ({
 
   const selectedCompany = JSON.parse(localStorage.getItem('selectedCompany') || 'null');
 
-  console.log('userType', userType);
-
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema),
     defaultValues,
   });
 
-  const { data: presetData, isLoading: presetLoading } = useGetPresetMenuQuery({
-    page: 0,
-    search: '',
-    limit: '10000',
-    status: '',
-    date: undefined,
-  });
+  // PRESET DATA --------------------------------
+  const { data: presetData, isLoading: presetLoading } = useGetPresetMenuQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '10000',
+      status: '',
+      date: undefined,
+    },
+    {
+      skip: userType === 'organizer',
+    }
+  );
 
+  const { data: orgPresetData, isLoading: orgPresetLoading } = useGetAllCompanyPresetsQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '100',
+    },
+    {
+      skip: userType === 'super-admin',
+    }
+  );
+
+  const presetOptions =
+    (userType === 'organizer' ? orgPresetData?.data : presetData?.data)?.map((preset: any) => ({
+      label: preset?.title,
+      value: preset?._id,
+    })) || [];
+
+  // ITEM CATEGORY DATA --------------------------------
   const { data: itemCategoryData, isLoading: itemCategoryLoading } = useGetItemsCategoryQuery({
     page: 0,
     search: '',
@@ -156,24 +179,35 @@ const MenuItemModal = ({
     companyOrganizer: selectedCompany?.value || undefined,
   });
 
-  const { data: menuData, isLoading: menuLoading } = useGetMenuByCompanyQuery({
-    companyOrganizer: selectedCompany?.value || undefined,
-  });
-
-  const presetOptions =
-    presetData?.data?.map((preset: any) => ({
-      label: preset?.title,
-      value: preset?._id,
-    })) || [];
-
   const itemCategoryOptions =
     itemCategoryData?.data?.map((category: any) => ({
       label: category?.title,
       value: category?._id,
     })) || [];
 
+  // MENU DATA --------------------------------
+  const { data: menuData, isLoading: menuLoading } = useGetMenuByCompanyQuery(
+    {
+      companyOrganizer: selectedCompany?.value || undefined,
+    },
+    {
+      skip: userType === 'organizer',
+    }
+  );
+
+  const { data: orgMenuData, isLoading: orgMenuLoading } = useGetAllOrganizerMenuQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '100',
+    },
+    {
+      skip: userType === 'super-admin',
+    }
+  );
+
   const menuOptions =
-    menuData?.data?.map((menu: any) => ({
+    (userType === 'organizer' ? orgMenuData?.data : menuData?.data)?.map((menu: any) => ({
       label: menu?.title,
       value: menu?._id,
     })) || [];
@@ -211,8 +245,10 @@ const MenuItemModal = ({
   }, [isEdit, selectedData, reset]);
 
   useEffect(() => {
-    if (selectedPreset && presetData?.data) {
-      const selectedPresetData = presetData.data.find((preset: any) => preset._id === selectedPreset);
+    // Use correct preset data based on userType
+    const presetSource = userType === 'organizer' ? orgPresetData?.data : presetData?.data;
+    if (selectedPreset && presetSource) {
+      const selectedPresetData = presetSource.find((preset: any) => preset._id === selectedPreset);
       if (selectedPresetData) {
         setValue('title', selectedPresetData.title || '');
         setValue('basePrice', selectedPresetData.basePrice || '');
@@ -334,7 +370,7 @@ const MenuItemModal = ({
               <div className="mt-0 flex w-full flex-col gap-4">
                 <RHFUploadAvatar
                   name="image"
-                  label="Profile Image"
+                  label="Image"
                   initialImage={(() => {
                     const img = selectedData?.image;
                     if (!img || img === noImageUrl || img === noImageUrlDev || img.toLowerCase().includes('noimage.png')) {
@@ -347,7 +383,7 @@ const MenuItemModal = ({
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                   {!menuManagementView && (
                     <div className="col-span-2">
-                      {presetLoading ? (
+                      {presetLoading || orgPresetLoading ? (
                         <FieldSkeleton />
                       ) : (
                         <>
@@ -356,7 +392,7 @@ const MenuItemModal = ({
                             name="preset"
                             placeholder="Select Preset"
                             options={presetOptions}
-                            isLoading={presetLoading}
+                            isLoading={presetLoading || orgPresetLoading}
                             showNone={false}
                           />
                         </>
@@ -408,7 +444,7 @@ const MenuItemModal = ({
                   />
 
                   {/* <div className="col-span-2"> */}
-                  {menuLoading ? (
+                  {menuLoading || orgMenuLoading ? (
                     <FieldSkeleton />
                   ) : (
                     <RHFCustomDropdown
@@ -416,7 +452,7 @@ const MenuItemModal = ({
                       label="Select Menu"
                       placeholder="Select Menu"
                       options={menuOptions}
-                      isLoading={menuLoading}
+                      isLoading={menuLoading || orgMenuLoading}
                       showNone={false}
                     />
                   )}

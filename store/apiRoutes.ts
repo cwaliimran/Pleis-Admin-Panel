@@ -50,6 +50,7 @@ export const API_ROUTES = {
   ORGANIZER_GENERAL_TICKETS: `/organizer/general/ticketing`,
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
   ORGANIZER_GENERAL_REWARDS: `/organizer/general/loyalty/rewards`,
+  ORGANIZER_GENERAL_PRESETS: `/organizer/general/presets`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -283,6 +284,9 @@ export const API_ROUTES = {
 
   ADMIN_MENU_CATEGORIES: `/admin/menu/categories`,
   ADMIN_MENU_CATEGORIES_BY_ID: (id: string) => `/admin/menu/categories/${id}`,
+
+  ORGANIZER_MENU_CATEGORIES: `/organizer/menu/categories`,
+  ORGANIZER_MENU_CATEGORIES_BY_ID: (id: string) => `/organizer/menu/categories/${id}`,
 
   ADMIN_THIRD_PARTY: `/admin/third-party`,
   ADMIN_THIRD_PARTY_BY_ID: (id: string) => `/admin/third-party/${id}`,

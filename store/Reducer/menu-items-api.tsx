@@ -13,7 +13,7 @@ export const menuItemsApi = createApi({
      * ───────────────────────────────────────────── */
 
     getMenuItems: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, organization }) => {
         const params: any = {
           keyword: search,
           status,
@@ -23,6 +23,7 @@ export const menuItemsApi = createApi({
 
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+        if (organization) params.organization = organization;
 
         return {
           url: '',
@@ -31,6 +32,7 @@ export const menuItemsApi = createApi({
           roleBasedRouting: {
             adminRoute: API_ROUTES.ADMIN_MENU_ITEMS,
             organizerRoute: API_ROUTES.ORGANIZER_MENU_ITEMS,
+            organizerOnlyParams: ['organization'],
           },
         };
       },

@@ -172,6 +172,23 @@ export const helpersApi = createApi({
         meta: res.meta,
       }),
     }),
+
+    // GET ALL PRESET -------------------------
+    getAllCompanyPresets: builder.query({
+      query: ({ search, page, limit }) => ({
+        url: API_ROUTES.ORGANIZER_GENERAL_PRESETS,
+        method: 'GET',
+        params: {
+          keyword: search,
+          page: page + 1,
+          limit,
+        },
+      }),
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+    }),
   }),
 });
 
@@ -185,6 +202,7 @@ export const {
   useGetAllOrganizerMenuQuery,
   useGetAllOrganizerMenuItemQuery,
   useGetAllCompanyRewardsQuery,
+  useGetAllCompanyPresetsQuery,
 } = helpersApi;
 
 // import { createApi } from '@reduxjs/toolkit/query/react';
