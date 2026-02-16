@@ -207,16 +207,23 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
     }
   }, [selectedEventId, setValue, rewardType]);
 
-  // Prefill image when menu item is selected
+  // Prefill image, name, and description when menu item is selected
   useEffect(() => {
     if (selectedMenuItem && menuItemsData?.data && rewardType === 'buyMenuItemReward') {
       const menuItem = menuItemsData.data.find((item: any) => item._id === selectedMenuItem);
-      if (menuItem?.image) {
-        const img = menuItem.image;
-        // Check if image is not a placeholder
-        if (img && img !== noImageUrl && img !== noImageUrlDev && !img.toLowerCase().includes('noimage.png')) {
-          setValue('image', img);
+      if (menuItem) {
+        // Prefill image
+        if (
+          menuItem.image &&
+          menuItem.image !== noImageUrl &&
+          menuItem.image !== noImageUrlDev &&
+          !menuItem.image.toLowerCase().includes('noimage.png')
+        ) {
+          setValue('image', menuItem.image);
         }
+        // Prefill name and description
+        setValue('title', menuItem.title || '');
+        setValue('description', menuItem.description || '');
       }
     }
   }, [selectedMenuItem, menuItemsData, rewardType, setValue]);

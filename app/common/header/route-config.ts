@@ -47,6 +47,7 @@ const ORGANIZATION_REQUIRED_ROUTES = [
   '/super-admin/bundles',
   '/super-admin/app-ordering/order-management',
   '/super-admin/app-ordering/menu-management',
+  '/super-admin/app-ordering/order-settings',
 ] as const;
 
 export class RouteConfig {

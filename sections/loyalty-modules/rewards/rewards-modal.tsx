@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useGetEventsByCompanyOrganizerQuery } from '@/store/Reducer/events';
 import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
@@ -141,7 +141,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     {
       page: 0,
       search: '',
-      limit: '10000',
+      limit: '100',
       status: '',
       date: undefined,
     },
@@ -154,7 +154,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     {
       page: 0,
       search: '',
-      limit: '10000',
+      limit: '100',
       status: '',
       date: undefined,
     },
@@ -163,17 +163,19 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     }
   );
 
-  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery({
+  const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByCompanyOrganizerQuery({
     page: 0,
     search: '',
-    limit: '10000',
-    status: '',
+    limit: '100',
+    companyOrganizer: selectedCompany || undefined,
   });
+
+  console.log('eventData', eventData);
 
   const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery({
     page: 0,
     search: '',
-    limit: '10000',
+    limit: '100',
     status: '',
     date: undefined,
     companyOrganizer: selectedCompany || undefined,
@@ -203,7 +205,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     })) || [];
 
   const eventOptions =
-    eventData?.data?.map((preset: any) => ({
+    eventData?.map((preset: any) => ({
       label: preset?.basicInfo?.title,
       value: preset?._id,
     })) || [];
@@ -233,16 +235,23 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
     }
   }, [selectedEventId, setValue, rewardType]);
 
-  // Prefill image when menu item is selected
+  // Prefill image, name, and description when menu item is selected
   useEffect(() => {
     if (selectedMenuItem && menuItemsData?.data && rewardType === 'buyMenuItemReward') {
       const menuItem = menuItemsData.data.find((item: any) => item._id === selectedMenuItem);
-      if (menuItem?.image) {
-        const img = menuItem.image;
-        // Check if image is not a placeholder
-        if (img && img !== noImageUrl && img !== noImageUrlDev && !img.toLowerCase().includes('noimage.png')) {
-          setValue('image', img);
+      if (menuItem) {
+        // Prefill image
+        if (
+          menuItem.image &&
+          menuItem.image !== noImageUrl &&
+          menuItem.image !== noImageUrlDev &&
+          !menuItem.image.toLowerCase().includes('noimage.png')
+        ) {
+          setValue('image', menuItem.image);
         }
+        // Prefill name and description
+        setValue('title', menuItem.title || '');
+        setValue('description', menuItem.description || '');
       }
     }
   }, [selectedMenuItem, menuItemsData, rewardType, setValue]);

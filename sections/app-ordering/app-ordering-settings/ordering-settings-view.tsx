@@ -5,7 +5,7 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetUserByIdQuery, useUpdateUserForUserListMutation } from '@/store/Reducer/user-list';
+import { useGetOrganizationByIdQuery, useUpdateOrganizationMutation } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -17,8 +17,6 @@ import { InfoBox } from './info-box';
 import { RadioOption } from './radio-option';
 import { StatusFlow } from './status-flow';
 import { ToggleSwitch } from './toggle-switch';
-import { RootState } from '@/store/store';
-import { useSelector } from 'react-redux';
 
 // Validation Schema
 const schema = Yup.object().shape({
@@ -76,21 +74,37 @@ const defaultFormValues: FormValues = {
 };
 
 export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType }) => {
-  const { companyId: selectedCompanyId } = useCompanySelectionState();
-  const { user } = useSelector((state: RootState) => state.userSlice);
+  const { companyId: selectedCompanyId, organizationId } = useCompanySelectionState();
+
+  // const {
+  //   data: apiData,
+  //   isLoading,
+  //   refetch,
+  // } = useGetUserByIdQuery(
+  //   { id: userType === 'organizer' ? user?.basicInfo?._id : selectedCompanyId },
+  //   {
+  //     skip: userType === 'super-admin' && !selectedCompanyId,
+  //   }
+  // );
 
   const {
     data: apiData,
     isLoading,
     refetch,
-  } = useGetUserByIdQuery(
-    { id: userType === 'organizer' ? user?.basicInfo?._id : selectedCompanyId },
+  } = useGetOrganizationByIdQuery(
     {
-      skip: userType === 'super-admin' && !selectedCompanyId,
+      id: organizationId,
+    },
+    {
+      skip: !organizationId,
     }
   );
 
-  const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
+  console.log('apiData', apiData?.data);
+
+  // const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
+
+  const [updateUser, { isLoading: updateUserLoading }] = useUpdateOrganizationMutation();
 
   const methods = useForm<FormValues>({
     resolver: yupResolver(schema) as any,
@@ -121,8 +135,8 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
 
   // Load initial data from API
   useEffect(() => {
-    if (apiData?.basicInfo?.companyDetails?.inAppOrderingSettings) {
-      const settings = apiData.basicInfo.companyDetails.inAppOrderingSettings;
+    if (apiData?.data?.basicInfo?.inAppOrderingSettings) {
+      const settings = apiData?.data?.basicInfo?.inAppOrderingSettings;
 
       const mappedData: FormValues = {
         paymentMethods: {
@@ -182,7 +196,7 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
   // Build payload with only changed fields
   const buildPartialPayload = (data: FormValues) => {
     const payload: any = {
-      id: userType === 'organizer' ? user?.basicInfo?._id : selectedCompanyId,
+      id: organizationId || undefined,
       companyDetails: {
         inAppOrderingSettings: {},
       },
@@ -233,6 +247,8 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
         showError('No changes to save');
         return;
       }
+
+      console.log('payload', payload);
 
       const response = await updateUser(payload).unwrap();
 

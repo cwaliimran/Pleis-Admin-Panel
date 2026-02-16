@@ -25,6 +25,7 @@ interface TicketingModalProps {
   selectedData?: any;
   selectedOrganization?: any;
   event?: any;
+  eventList?: any[];
 }
 
 const FeatureSection: React.FC<{
@@ -156,7 +157,7 @@ const schema = Yup.object().shape({
   }),
 });
 
-const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization, event }) => {
+const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode, selectedData, selectedOrganization, event, eventList }) => {
   const [addTicketing, { isLoading: addTicketingLoading }] = useAddTicketingMutation();
   const [updateTicketing, { isLoading: updateTicketingLoading }] = useUpdateTicketingMutation();
 
@@ -175,24 +176,30 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
 
   const { handleSubmit, formState, watch, setValue, reset } = methods;
 
-  // If event prop is provided, use it directly, else fetch events by organization
-  const shouldUseEventProp = !!event;
-  // const eventData = shouldUseEventProp ? [event] : undefined;
+  // Determine event data source: eventList > event > API
+  const hasEventList = Array.isArray(eventList) && eventList.length > 0;
+  const shouldUseEventProp = !!event && !hasEventList;
   const isLoadingEvents = false;
 
-  // Only call API if event prop is not provided
+  // Only call API if neither eventList nor event prop is provided
   const apiEvents = useGetEventsByOrganizationQuery(
     {
       organization: selectedOrganization,
     },
     {
-      skip: shouldUseEventProp || !selectedOrganization,
+      skip: hasEventList || shouldUseEventProp || !selectedOrganization,
     }
   );
-  // Use API data if event prop is not provided
-  const allEventData = React.useMemo(() => (shouldUseEventProp ? [event] : apiEvents.data || []), [shouldUseEventProp, event, apiEvents.data]);
-  const eventOptions = allEventData.map((v: any) => ({
-    value: v?._id.toString(),
+
+  // Compose allEventData based on priority: eventList > event > API
+  const allEventData = React.useMemo(() => {
+    if (hasEventList) return eventList;
+    if (shouldUseEventProp) return [event];
+    return apiEvents.data || [];
+  }, [hasEventList, eventList, shouldUseEventProp, event, apiEvents.data]);
+
+  const eventOptions = allEventData?.map((v: any) => ({
+    value: v?._id?.toString?.() ?? '',
     label: v?.basicInfo?.title || 'No Title',
   }));
 
@@ -206,8 +213,10 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   React.useEffect(() => {
     if (editMode && selectedData) {
       const formData = transformApiDataToForm(selectedData);
-      // If event prop is provided, override event field with event._id
-      if (shouldUseEventProp && event?._id) {
+      // If eventList or event prop is provided, override event field with event._id
+      if (hasEventList && Array.isArray(eventList) && eventList.length > 0 && formData.event) {
+        // keep formData.event as is (should match one of eventList)
+      } else if (shouldUseEventProp && event?._id) {
         formData.event = event._id;
       }
       reset({ ...defaultValues, ...formData });
@@ -216,15 +225,17 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
         setTimeSlotConfig(formData.features.timeSlotConfig);
       }
     } else {
-      // If event prop is provided, set event field to event._id
-      if (shouldUseEventProp && event?._id) {
+      // If eventList or event prop is provided, set event field accordingly
+      if (hasEventList && Array.isArray(eventList) && eventList.length > 0) {
+        reset({ ...defaultValues });
+      } else if (shouldUseEventProp && event?._id) {
         reset({ ...defaultValues, event: event._id });
       } else {
         reset(defaultValues);
       }
       setTimeSlotConfig(null);
     }
-  }, [editMode, selectedData, reset, shouldUseEventProp, event]);
+  }, [editMode, selectedData, reset, shouldUseEventProp, event, hasEventList, eventList]);
   const isDirty = formState.isDirty;
 
   const timeslotEnabled = watch('features.timeslot');
@@ -378,8 +389,8 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                           placeholder="Select Event"
                           options={eventOptions}
                           isLoading={isLoadingEvents}
-                          showNone={!shouldUseEventProp}
-                          disabled={shouldUseEventProp}
+                          showNone={!hasEventList && !shouldUseEventProp}
+                          disabled={hasEventList ? false : shouldUseEventProp}
                         />
                       </div>
                     </div>
@@ -498,12 +509,24 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                           </p>
                           <button
                             type="button"
-                            onClick={() => setShowTimeSlotModal(true)}
-                            className="cursor-pointer text-sm text-blue-600 hover:underline"
+                            onClick={() => {
+                              if (!selectedEventId) {
+                                window.alert('Please select an event before configuring time slots.');
+                                return;
+                              }
+                              setShowTimeSlotModal(true);
+                            }}
+                            className={`text-sm text-blue-600 ${!selectedEventId ? 'pointer-events-auto cursor-not-allowed opacity-50' : 'cursor-pointer hover:underline'}`}
+                            disabled={!selectedEventId}
                           >
                             Configure Time Slots →
                           </button>
-                          {timeSlotConfig && Array.isArray(timeSlotConfig) && timeSlotConfig.length > 0 && (
+                          {!selectedEventId && (
+                            <div className="mt-2 text-xs text-red-600 dark:text-red-700">
+                              Please select an event to enable time slot configuration.
+                            </div>
+                          )}
+                          {timeSlotConfig && Array.isArray(timeSlotConfig) && timeSlotConfig.length > 0 && selectedEventId && (
                             <div className="mt-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
                               <p className="text-sm text-green-700 dark:text-green-300">
                                 ✓ Time slots configured: {timeSlotConfig.reduce((total, dts) => total + dts.timeSlots.length, 0)} slots across{' '}

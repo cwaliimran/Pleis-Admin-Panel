@@ -12,6 +12,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import MenuItemModal from './menuItems-modal';
 import MenuItemTable from './menuItems-table';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) => {
   const openModal = useBoolean();
@@ -32,6 +33,8 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
 
   const { companyId: selectedCompany } = useCompanySelectionState();
 
+  const { organizerOrganizationIds } = useCompanySelection();
+
   const {
     data: apiData,
     isLoading,
@@ -43,6 +46,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
+    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -176,7 +180,15 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
         }}
       />
 
-      {openModal.value && <MenuItemModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} userType={userType}/>}
+      {openModal.value && (
+        <MenuItemModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          userType={userType}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}

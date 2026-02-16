@@ -52,8 +52,8 @@ const schema = Yup.object().shape({
   discountValue: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Sale price is required')
-    .integer('Sale price must be a whole number')
-    .min(1, 'Sale price must be at least 1')
+    .min(0.01, 'Sale price must be at least 0.01')
+    .test('decimal-places', 'Sale price can have up to 2 decimal places', (value) => value === undefined || /^\d+(\.\d{1,2})?$/.test(String(value)))
     .test('less-than-base', 'Sale price must be less than original price', function (value) {
       const { menuItemId } = this.parent;
       const menuItems = this.options.context?.menuItems || [];
@@ -232,7 +232,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
                     </div>
                   </div>
 
-                  <RHFTextField name="discountValue" label="Sale Price (€)" placeholder="0" type="number" step="1" min="1" />
+                  <RHFTextField name="discountValue" label="Sale Price (€)" placeholder="0.00" type="number" step="0.01" min="0.01" />
                 </div>
 
                 {/* Sale Discount Preview */}

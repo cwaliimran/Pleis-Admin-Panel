@@ -50,6 +50,7 @@ export const API_ROUTES = {
   ORGANIZER_GENERAL_TICKETS: `/organizer/general/ticketing`,
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
   ORGANIZER_GENERAL_REWARDS: `/organizer/general/loyalty/rewards`,
+  ORGANIZER_GENERAL_PRESETS: `/organizer/general/presets`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -173,6 +174,7 @@ export const API_ROUTES = {
   DELETE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
 
   ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
+  ADMIN_EVENTS_BY_COMPANY_ORGANIZER: (companyOrganizerId: string) => `/admin/events/companyOrganizer/${companyOrganizerId}`,
 
   ADMIN_EVENTS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/analytics`,
   ADMIN_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/tickets-analytics`,
@@ -259,18 +261,20 @@ export const API_ROUTES = {
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean) =>isGlobal ? `/admin/global-loyalty/promotions/${id}` : `/admin/loyalty/promotions/${id}`,
 
   ADMIN_LOYALTY_PROMOTION: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/promotions' : '/admin/loyalty/promotions'),
-  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean, scope?: string) => isGlobal ? `/admin/global-loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}` : `/admin/loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`,
-
+  ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string, isGlobal: boolean, scope?: string) =>
+    isGlobal
+      ? `/admin/global-loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`
+      : `/admin/loyalty/promotions/${id}${scope ? `?scope=${scope}` : ''}`,
 
   ORGANIZER_LOYALTY_PROMOTION: `/organizer/loyalty/promotions`,
   ORGANIZER_LOYALTY_PROMOTION_BY_ID: (id: string, scope?: string) => `/organizer/loyalty/promotions/${id}?scope=${scope || ''}`,
-
 
   // ADMIN_LOYALTY_CHALLENGE: `/admin/loyalty/challenges`,
   // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,
 
   ADMIN_LOYALTY_CHALLENGE: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/challanges' : '/admin/loyalty/challenges'),
-  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) => isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
+  ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) =>
+    isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
 
   ORGANIZER_LOYALTY_CHALLENGE: `/organizer/loyalty/challenges`,
   ORGANIZER_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/organizer/loyalty/challenges/${id}`,
@@ -281,6 +285,9 @@ export const API_ROUTES = {
 
   ADMIN_MENU_CATEGORIES: `/admin/menu/categories`,
   ADMIN_MENU_CATEGORIES_BY_ID: (id: string) => `/admin/menu/categories/${id}`,
+
+  ORGANIZER_MENU_CATEGORIES: `/organizer/menu/categories`,
+  ORGANIZER_MENU_CATEGORIES_BY_ID: (id: string) => `/organizer/menu/categories/${id}`,
 
   ADMIN_THIRD_PARTY: `/admin/third-party`,
   ADMIN_THIRD_PARTY_BY_ID: (id: string) => `/admin/third-party/${id}`,
@@ -358,6 +365,11 @@ export const API_ROUTES = {
   TICKETING_BY_ID: (id: string) => `/admin/ticketing/${id}`,
   TICKETING_BY_ORGANIZATION: (id: string) => `/admin/ticketing/organization/${id}`,
   TICKETING_BY_EVENT: (id: string) => `/admin/events/${id}/ticketings`,
+
+  ORGANIZER_TICKETING: `/organizer/ticketing`,
+  ORGANIZER_TICKETING_BY_ID: (id: string) => `/organizer/ticketing/${id}`,
+  ORGANIZER_TICKETING_BY_ORGANIZATION: (id: string) => `/organizer/ticketing/organization/${id}`,
+  ORGANIZER_TICKETING_BY_EVENT: (id: string) => `/organizer/events/${id}/ticketings`,
 
   TAGS: `/admin/tags`,
   TAGS_BY_ID: (id: string) => `/admin/tags/${id}`,

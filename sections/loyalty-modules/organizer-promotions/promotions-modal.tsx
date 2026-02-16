@@ -403,7 +403,6 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
   const handleSubmit = async (formData: any, scope?: string) => {
     let uploadedFileKey: string | null = null;
 
-    // Set the scope for loading state tracking
     if (scope) {
       setUpdateScope(scope);
     }
@@ -422,21 +421,21 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       }
 
       // Check happyHour time logic
-      if (formData.promotionType === 'happyHour') {
-        const start = formData.timeStart;
-        const end = formData.timeEnd;
-        if (start && end) {
-          // Compare as HH:mm
-          const [startH, startM] = start.split(':').map(Number);
-          const [endH, endM] = end.split(':').map(Number);
-          const startMinutes = startH * 60 + startM;
-          const endMinutes = endH * 60 + endM;
-          if (endMinutes <= startMinutes) {
-            showError('End time must be after start time');
-            return;
-          }
-        }
-      }
+      // if (formData.promotionType === 'happyHour') {
+      //   const start = formData.timeStart;
+      //   const end = formData.timeEnd;
+      //   if (start && end) {
+      //     // Compare as HH:mm
+      //     const [startH, startM] = start.split(':').map(Number);
+      //     const [endH, endM] = end.split(':').map(Number);
+      //     const startMinutes = startH * 60 + startM;
+      //     const endMinutes = endH * 60 + endM;
+      //     if (endMinutes <= startMinutes) {
+      //       showError('End time must be after start time');
+      //       return;
+      //     }
+      //   }
+      // }
 
       if (formData.photo instanceof FileList && formData.photo.length > 0) {
         uploadedFileKey = await uploadImage(formData.photo[0]);
