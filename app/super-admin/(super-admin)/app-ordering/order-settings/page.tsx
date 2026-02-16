@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import { OrderingSettingsView } from '@/sections/app-ordering/app-ordering-settings';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <OrderingSettingsView userType="super-admin" />
+      <CompanyGuard>
+        <OrderingSettingsView userType="super-admin" />
+      </CompanyGuard>
     </div>
   );
 };
