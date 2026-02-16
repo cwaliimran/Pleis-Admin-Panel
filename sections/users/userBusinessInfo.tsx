@@ -14,14 +14,6 @@ const UserBusinessInfo = ({ organizationData }: BusinessInfoProps) => {
     return null;
   };
 
-  const getFullAddress = () => {
-    if (!location) return 'N/A';
-
-    const parts = [location?.addressLine1, location?.addressLine2, location?.city, location?.state, location?.postalCode, location?.country];
-
-    return parts.filter(Boolean).join(', ') || 'N/A';
-  };
-
   return (
     <Card className="mt-4 gap-1 dark:bg-[#171717]">
       <CardHeader>
@@ -63,7 +55,8 @@ const UserBusinessInfo = ({ organizationData }: BusinessInfoProps) => {
 
         <div className="flex flex-wrap gap-2 sm:flex-nowrap">
           <p className="font-bold text-slate-500">Full Address:</p>
-          <p className="text-gray-800 dark:text-white">{getFullAddress()}</p>
+          {/* <p className="text-gray-800 dark:text-white">{getFullAddress()}</p> */}
+          <p className="text-gray-800 dark:text-white">{location?.fullAddress || 'N/A'}</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
