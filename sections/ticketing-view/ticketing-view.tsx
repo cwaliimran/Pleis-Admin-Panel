@@ -1,5 +1,6 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
@@ -15,17 +16,19 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TicketingModal from './ticketing-modal';
 import TicketingTable from './ticketing-table';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 
 const defaultValues = {
   title: '',
   status: 'active',
 };
 
-const TicketingView = () => {
+const TicketingView = ({ userType }: { userType: 'organizer' | 'super-admin' }) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+
+  console.log("userType", userType);
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -40,9 +43,20 @@ const TicketingView = () => {
   const { organizationId } = useCompanySelectionState();
 
   const { organizerOrganizationIds } = useCompanySelection();
-  console.log('organizerOrganizationIds', organizerOrganizationIds);
 
   const [deleteTicketing, { isLoading: deleteTicketingLoading }] = useDeleteTicketingMutation();
+
+  // Events --------------------------------
+  const {
+    data: eventData,
+    isLoading: isLoadingEvents,
+    isFetching: isFetchingEvents,
+  } = useGetAllEventsQuery(
+    { page: 0, search: '', limit: '1', organization: organizerOrganizationIds || undefined },
+    {
+      skip: userType === 'super-admin',
+    }
+  );
 
   const {
     data: apiData,
@@ -145,13 +159,18 @@ const TicketingView = () => {
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+      <div className="mt-3 flex w-full items-center justify-end md:mt-0">
+        {isLoadingEvents || isFetchingEvents ? (
+          <Button className="bg-primary cursor-not-allowed rounded-4xl py-2 text-white" disabled>
+            <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent align-middle" />
+            Loading...
+          </Button>
+        ) : (
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
             Create Ticket
           </Button>
-        </div>
+        )}
       </div>
 
       <TicketingTable
@@ -197,6 +216,7 @@ const TicketingView = () => {
           editMode={editModal.value}
           selectedData={selectedVenueType}
           selectedOrganization={organizationId}
+          eventList={eventData?.data}
         />
       )}
 

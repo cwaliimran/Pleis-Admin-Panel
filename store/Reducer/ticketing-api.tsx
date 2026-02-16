@@ -18,6 +18,7 @@ export const ticketingApi = createApi({
 
         if (date) params.date = date;
         if (search) params.keyword = search;
+        if (organization) params.organizations = organization;
 
         return {
           url: '',
@@ -25,7 +26,8 @@ export const ticketingApi = createApi({
           params,
           roleBasedRouting: {
             adminRoute: API_ROUTES.TICKETING_BY_ORGANIZATION(organization),
-            organizerRoute: API_ROUTES.ORGANIZER_TICKETING_BY_ORGANIZATION(organization),
+            organizerRoute: API_ROUTES.ORGANIZER_TICKETING,
+            organizerOnlyParams: ['organizations'],
           },
         };
       },

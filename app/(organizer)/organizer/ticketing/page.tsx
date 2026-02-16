@@ -18,7 +18,7 @@ const Page = () => {
       />
 
       <CompanyGuard>
-        <TicketingView />
+        <TicketingView userType="organizer" />
       </CompanyGuard>
     </div>
   );
