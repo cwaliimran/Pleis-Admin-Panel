@@ -240,7 +240,6 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
     try {
       const payload = buildPartialPayload(data);
 
-
       // Only proceed if there are changes
       if (!payload.inAppOrderingSettings.paymentMethods && !payload.inAppOrderingSettings.deliveryMethods) {
         showError('No changes to save');

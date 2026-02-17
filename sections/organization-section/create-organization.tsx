@@ -222,11 +222,6 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
 
             <div className="flex justify-end">
               <Pencil width={22} className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
-              {/* <Trash2
-                width={22}
-                className="ml-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
-                onClick={deleteModal.onTrue}
-              /> */}
             </div>
 
             <div className="mt-2 items-center gap-2 pt-0 md:mt-0 md:flex">

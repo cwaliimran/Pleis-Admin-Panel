@@ -44,9 +44,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
   const [coverImageUploading, setCoverImageUploading] = useState(false);
 
-  const { data, isLoading, refetch } = useGetOrganizationByIdQuery({
-    id: organizationId?.id,
-  });
+  const { data, isLoading, refetch } = useGetOrganizationByIdQuery({ id: organizationId?.id });
 
   const [updateOrganization] = useUpdateOrganizationMutation();
 
