@@ -81,7 +81,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/organizer/analytics',
     '/organizer/reservation-transactions',
     
-    '/organizer/app-ordering/order-management',
+    // '/organizer/app-ordering/order-management',
     '/organizer/app-ordering/menu-management',
     '/organizer/app-ordering/order-analytics',
     '/organizer/app-ordering/order-transactions',

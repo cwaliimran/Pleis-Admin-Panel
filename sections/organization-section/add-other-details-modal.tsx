@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { useGetCategoriesQuery } from '@/store/Reducer/categories';
 import { useUpdateOrganizationMutation } from '@/store/Reducer/organization';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -190,13 +189,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
     status: '',
   });
 
-  const { data: venueData, isLoading: venueLoading } = useGetVenuesQuery({
-    page: 0,
-    search: '',
-    limit: '100',
-    status: '',
-    date: undefined,
-  });
+  // No longer fetching venues from API; using venueList prop only
 
   const { data: categoryData } = useGetCategoriesQuery({
     page: 0,
@@ -208,7 +201,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
 
   // Memoized Options
   const tagOptions = useMemo(() => buildTagOptions(tagData), [tagData]);
-  const venueOptions = useMemo(() => buildVenueOptions(venueList, venueData), [venueList, venueData]);
+  const venueOptions = useMemo(() => buildVenueOptions(venueList, undefined), [venueList]);
   const categoryOptions = useMemo(() => buildCategoryOptions(categoryData), [categoryData]);
 
   // Form Setup
@@ -239,8 +232,8 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
 
   // Auto-populate location when venue changes
   useEffect(() => {
-    if (watchVenue && venueData?.data) {
-      const selectedVenue = venueData.data.find((v: any) => v._id === watchVenue);
+    if (watchVenue && venueList) {
+      const selectedVenue = venueList.find((v: any) => v._id === watchVenue);
 
       if (selectedVenue?.location) {
         setValue('location.address', selectedVenue.location.fullAddress || '', {
@@ -265,7 +258,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
         });
       }
     }
-  }, [watchVenue, venueData, setValue]);
+  }, [watchVenue, venueList, setValue]);
 
   // Form Submit Handler
   const onSubmit = handleSubmit(async (formData) => {
@@ -395,14 +388,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
               </div>
 
               <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
-                <RHFCustomDropdown
-                  name="venue"
-                  label="Venue"
-                  placeholder="Select Venue"
-                  options={venueOptions}
-                  isLoading={venueLoading}
-                  showNone={false}
-                />
+                <RHFCustomDropdown name="venue" label="Venue" placeholder="Select Venue" options={venueOptions} isLoading={false} showNone={false} />
 
                 <RHFCustomCombobox
                   name="tags"

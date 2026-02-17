@@ -55,7 +55,7 @@ export const venueApi = createApi({
           roleBasedRouting: {
             adminRoute: API_ROUTES.ADMIN_VENUES_BY_COMPANY_ORGANIZER,
             organizerRoute: API_ROUTES.ORGANIZER_VENUES,
-            adminOnlyParams: ['companyOrganizer'],
+            // adminOnlyParams: ['companyOrganizer'],
           },
         };
       },

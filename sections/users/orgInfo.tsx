@@ -69,6 +69,7 @@ const OrgInfo = ({ organizationData }: any) => {
               </div>
             </CardHeader>
           </Card>
+
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -77,12 +78,12 @@ const OrgInfo = ({ organizationData }: any) => {
                   Add Venue
                 </Button>
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                {/* <PartyPopper /> */}
-                <p className="mt-2 text-lg capitalize">{organizationData?.venue?.title || '-'}</p>
+              <div className="flex items-center gap-2">
+                <p className="mt-1 text-lg capitalize">{organizationData?.venue?.title || '-'}</p>
               </div>
             </CardHeader>
           </Card>
+
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">CATEGORIES</h1>

@@ -47,7 +47,7 @@ export const TAB_CONFIG = [
 export const ACTIVE_ORDER_SUB_TABS = [
   { id: 'new-order' as const, label: 'New Order' },
   { id: 'in-progress' as const, label: 'In Progress' },
-  { id: 'completed' as const, label: 'Completed' },
+  { id: 'completed' as const, label: 'Waiting For Payment' },
 ];
 
 export const DELIVERY_FILTER_BUTTONS = [
