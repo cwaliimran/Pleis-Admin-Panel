@@ -39,7 +39,7 @@ export const venueApi = createApi({
     }),
 
     getVenuesByCompany: builder.query({
-      query: ({ page, status, limit, companyOrganizer }) => {
+      query: ({ page, status, limit, companyOrganizer, organization }) => {
         const params: any = {
           status,
           page: page + 1,
@@ -47,16 +47,17 @@ export const venueApi = createApi({
         };
 
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+        if (organization) params.organization = organization;
 
         return {
-          url: '',
+          url: API_ROUTES.ADMIN_VENUES_BY_COMPANY_ORGANIZER,
           method: 'GET',
           params,
-          roleBasedRouting: {
-            adminRoute: API_ROUTES.ADMIN_VENUES_BY_COMPANY_ORGANIZER,
-            organizerRoute: API_ROUTES.ORGANIZER_VENUES,
-            adminOnlyParams: ['companyOrganizer'],
-          },
+          // roleBasedRouting: {
+          //   adminRoute: API_ROUTES.ADMIN_VENUES_BY_COMPANY_ORGANIZER,
+          //   organizerRoute: API_ROUTES.ORGANIZER_VENUES,
+          //   // adminOnlyParams: ['companyOrganizer'],
+          // },
         };
       },
       transformResponse: (res) => ({

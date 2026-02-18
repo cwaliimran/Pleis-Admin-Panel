@@ -12,7 +12,7 @@ import { useGetUserListQuery } from '@/store/Reducer/user-list';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
-import { showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -23,9 +23,146 @@ interface OrganizationModalProps {
   open: boolean;
   onClose: () => void;
   organization?: any;
-  userType?: any;
+  userType?: string;
   onSuccess: (org: any) => void;
 }
+
+type OrganizationFormValues = {
+  image: any;
+  name: string;
+  user?: string;
+  phone: string;
+  phoneCode: string;
+  website: string;
+  instagram: string;
+  facebook: string;
+  youtube: string;
+  tiktok: string;
+};
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+
+const URL_REGEX = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
+const PHONE_REGEX = /^\+?[1-9]\d{1,14}$/;
+
+// ============================================================
+// VALIDATION SCHEMA
+// ============================================================
+
+const createValidationSchema = (userType?: string, isEdit?: boolean) => {
+  const baseSchema = {
+    image: Yup.mixed().nullable().optional(),
+    name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
+    phone: Yup.string().matches(PHONE_REGEX, 'Invalid phone number').required('Phone number is required'),
+    phoneCode: Yup.string().default(''),
+    website: Yup.string().nullable().optional().matches(URL_REGEX, {
+      message: 'Website link must be a valid URL',
+      excludeEmptyString: true,
+    }),
+    instagram: Yup.string().nullable().optional().matches(URL_REGEX, {
+      message: 'Instagram link must be a valid URL',
+      excludeEmptyString: true,
+    }),
+    facebook: Yup.string().nullable().optional().matches(URL_REGEX, {
+      message: 'Facebook link must be a valid URL',
+      excludeEmptyString: true,
+    }),
+    youtube: Yup.string().nullable().optional().matches(URL_REGEX, {
+      message: 'YouTube link must be a valid URL',
+      excludeEmptyString: true,
+    }),
+    tiktok: Yup.string().nullable().optional().matches(URL_REGEX, {
+      message: 'Tiktok link must be a valid URL',
+      excludeEmptyString: true,
+    }),
+  };
+
+  // Add user field validation only for non-organizer user types AND only in create mode
+  if (userType !== 'organizer' && !isEdit) {
+    return Yup.object().shape({
+      ...baseSchema,
+      user: Yup.string().required('User is required').trim().min(2, 'User must be at least 2 characters'),
+    });
+  }
+
+  // For edit mode or organizer user type, user field is optional
+  if (userType !== 'organizer') {
+    return Yup.object().shape({
+      ...baseSchema,
+      user: Yup.string().optional(),
+    });
+  }
+
+  return Yup.object().shape(baseSchema);
+};
+
+const getInitialImage = (organization?: any): string | null => {
+  const img = organization?.basicInfo?.media?.logo;
+  if (img && img !== noImageUrl && img !== noImageUrlDev) {
+    return img;
+  }
+  return null;
+};
+
+const buildCreatePayload = (formData: OrganizationFormValues, logoKey: string | null, userType?: string): any => {
+  const payload: any = {
+    basicInfo: {
+      name: formData.name,
+      website: formData.website || '',
+      phoneNumber: {
+        code: formData.phoneCode || '',
+        number: formData.phone || '',
+      },
+      socialLinks: {
+        youtube: formData.youtube || '',
+        facebook: formData.facebook || '',
+        instagram: formData.instagram || '',
+        tiktok: formData.tiktok || '',
+      },
+    },
+  };
+
+  if (userType !== 'organizer' && formData.user) {
+    payload.basicInfo.user = formData.user;
+  }
+
+  if (logoKey) {
+    payload.basicInfo.media = { logo: logoKey };
+  }
+
+  return payload;
+};
+
+const buildUpdatePayload = (formData: OrganizationFormValues, logoKey: string | null, userType?: string): any => {
+  const payload: any = {
+    basicInfo: {
+      name: formData.name,
+      website: formData.website || '',
+      phoneNumber: {
+        code: formData.phoneCode || '',
+        number: formData.phone || '',
+      },
+      socialLinks: {
+        youtube: formData.youtube || '',
+        facebook: formData.facebook || '',
+        instagram: formData.instagram || '',
+        tiktok: formData.tiktok || '',
+      },
+    },
+  };
+
+  if (userType !== 'organizer' && formData.user) {
+    payload.basicInfo.user = formData.user;
+  }
+
+  if (logoKey) {
+    payload.basicInfo.media = { logo: logoKey };
+  }
+
+  return payload;
+};
 
 const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }: OrganizationModalProps) => {
   const isEdit = !!organization;
@@ -34,70 +171,40 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   const [addOrganization, { isLoading: isAdding }] = useAddOrganizationMutation();
   const [updateOrganization, { isLoading: isUpdating }] = useUpdateOrganizationMutation();
 
-  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery({
-    page: 0,
-    search: '',
-    limit: 100,
-    userType: 'organizer',
-    status: undefined,
-    date: undefined,
-  });
+  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery(
+    {
+      page: 0,
+      search: '',
+      limit: 100,
+      userType: 'organizer',
+      status: undefined,
+      date: undefined,
+    },
+    {
+      skip: userType === 'organizer',
+    }
+  );
 
-  const userOptions =
-    apiData?.data?.map((user: any) => ({
-      label: `${user?.basicInfo?.companyDetails?.name || ''}`,
-      value: user?.basicInfo?._id,
-    })) || [];
+  const userOptions = useMemo(
+    () =>
+      apiData?.data?.map((user: any) => ({
+        label: `${user?.basicInfo?.companyDetails?.name || ''}`,
+        value: user?.basicInfo?._id,
+      })) || [],
+    [apiData]
+  );
 
   const isLoading = isAdding || isUpdating;
 
-  // Define Yup schema with conditional user validation
-  const urlRegex = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
+  const schema = useMemo(() => createValidationSchema(userType, isEdit), [userType, isEdit]);
 
-  const schema = Yup.object().shape({
-    image: Yup.mixed().nullable().optional(),
-    name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
-    ...(userType !== 'organizer' && {
-      user: Yup.string().required('User is required').trim().min(2, 'User must be at least 2 characters'),
-      // user: Yup.string().optional(),
-    }),
-    website: Yup.string().nullable().optional().matches(urlRegex, {
-      message: 'Website link must be a valid URL',
-      excludeEmptyString: true,
-    }),
-
-    phone: Yup.string()
-      .matches(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
-      .required('Phone number is required'),
-    phoneCode: Yup.string(),
-
-    instagram: Yup.string().nullable().optional().matches(urlRegex, {
-      message: 'Instagram link must be a valid URL',
-      excludeEmptyString: true,
-    }),
-    facebook: Yup.string().nullable().optional().matches(urlRegex, {
-      message: 'Facebook link must be a valid URL',
-      excludeEmptyString: true,
-    }),
-    youtube: Yup.string().nullable().optional().matches(urlRegex, {
-      message: 'YouTube link must be a valid URL',
-      excludeEmptyString: true,
-    }),
-    tiktok: Yup.string().nullable().optional().matches(urlRegex, {
-      message: 'Tiktok link must be a valid URL',
-      excludeEmptyString: true,
-    }),
-  });
-
-  // Define default values
-  const defaultValues = useMemo(
+  const defaultValues = useMemo<OrganizationFormValues>(
     () => ({
       image: null,
       name: organization?.basicInfo?.name || '',
       ...(userType !== 'organizer' && {
         user: organization?.basicInfo?.user || '',
       }),
-      // phone: organization?.basicInfo?.phone || '',
       phone: organization?.basicInfo?.phoneNumber?.number || '',
       phoneCode: organization?.basicInfo?.phoneNumber?.code || '',
       website: organization?.basicInfo?.website || '',
@@ -109,125 +216,64 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
     [organization, userType]
   );
 
-  // Use `any` to bypass TypeScript strict checking
-  const methods = useForm<any>({
-    resolver: yupResolver(schema),
+  const methods = useForm<OrganizationFormValues>({
+    resolver: yupResolver(schema) as any,
     defaultValues,
+    mode: 'onChange',
   });
 
-  const { handleSubmit, setValue, control, reset } = methods;
+  const {
+    handleSubmit,
+    setValue,
+    control,
+    reset,
+    formState: { isDirty },
+  } = methods;
 
   useEffect(() => {
-    reset(defaultValues);
-  }, [defaultValues, reset]);
+    if (open) {
+      reset(defaultValues);
+    }
+  }, [open, defaultValues, reset]);
 
   const handleClose = () => {
-    reset();
+    reset(defaultValues);
     onClose();
+  };
+
+  const handleImageUpload = async (image: any, existingLogoKey: string | null): Promise<string | null> => {
+    if (!image) return existingLogoKey;
+
+    const file = image instanceof FileList ? image[0] : Array.isArray(image) ? image[0] : null;
+
+    if (!file) return existingLogoKey;
+
+    setImageUploading(true);
+    try {
+      return await uploadFileToAzure(file);
+    } finally {
+      setImageUploading(false);
+    }
   };
 
   const onSubmit = handleSubmit(async (formData) => {
     let uploadedFileKey: string | null = null;
 
     try {
-      let logoKey = isEdit ? organization?.basicInfo?.media?.logo || null : null;
+      const existingLogoKey = isEdit ? organization?.basicInfo?.media?.logo || null : null;
+      const logoKey = await handleImageUpload(formData.image, existingLogoKey);
 
-      // Handle image upload
-      if (formData.image && (formData.image instanceof FileList || Array.isArray(formData.image))) {
-        const file = formData.image[0];
-        if (file) {
-          setImageUploading(true);
-          try {
-            uploadedFileKey = await uploadFileToAzure(file);
-            logoKey = uploadedFileKey;
-          } finally {
-            setImageUploading(false);
-          }
-        }
+      if (formData.image && logoKey !== existingLogoKey) {
+        uploadedFileKey = logoKey;
       }
-
-      const payload: any = {
-        basicInfo: {},
-      };
-
-      // Add fields to payload only if they have changed
-      if (formData.name !== organization?.basicInfo?.name) {
-        payload.basicInfo.name = formData.name;
-      }
-
-      if (formData.phone || formData.phoneCode) {
-        payload.basicInfo.phoneNumber = {
-          code: formData.phoneCode || '',
-          number: formData.phone || '',
-        };
-      }
-
-      if (formData.website !== (organization?.basicInfo?.website || '')) {
-        payload.basicInfo.website = formData.website || '';
-      }
-
-      if (userType !== 'organizer' && formData.user !== organization?.basicInfo?.user) {
-        payload.basicInfo.user = formData.user;
-      }
-
-      // Check and add social links only if they have changed
-      const socialLinks: any = {};
-      if (formData.youtube !== (organization?.basicInfo?.socialLinks?.youtube || '')) {
-        socialLinks.youtube = formData.youtube || '';
-      }
-      if (formData.facebook !== (organization?.basicInfo?.socialLinks?.facebook || '')) {
-        socialLinks.facebook = formData.facebook || '';
-      }
-      if (formData.instagram !== (organization?.basicInfo?.socialLinks?.instagram || '')) {
-        socialLinks.instagram = formData.instagram || '';
-      }
-      if (formData.tiktok !== (organization?.basicInfo?.socialLinks?.tiktok || '')) {
-        socialLinks.tiktok = formData.tiktok || '';
-      }
-      if (Object.keys(socialLinks).length > 0) {
-        payload.basicInfo.socialLinks = socialLinks;
-      }
-
-      // Only include media if a new logo was uploaded
-      if (uploadedFileKey && logoKey !== organization?.basicInfo?.media?.logo) {
-        payload.basicInfo.media = { logo: logoKey };
-      }
-
-      // If no fields have changed for update, skip the API call
-      if (isEdit && Object.keys(payload.basicInfo).length === 0) {
-        handleClose();
-        return;
-      }
-
-      console.log('payload', payload);
 
       let response;
 
       if (isEdit) {
+        const payload = buildUpdatePayload(formData, logoKey || existingLogoKey, userType);
         response = await updateOrganization({ id: organization._id, ...payload }).unwrap();
       } else {
-        payload.basicInfo = {
-          name: formData.name,
-          website: formData.website || '',
-          phoneNumber: {
-            code: formData.phoneCode || '',
-            number: formData.phone || '',
-          },
-          ...(userType !== 'organizer' && { user: formData.user }),
-          socialLinks: {
-            youtube: formData.youtube || '',
-            facebook: formData.facebook || '',
-            instagram: formData.instagram || '',
-            tiktok: formData.tiktok || '',
-          },
-        };
-
-        if (logoKey) {
-          payload.basicInfo.media = { logo: logoKey };
-        }
-
-        console.log('payload for create ', payload);
-
+        const payload = buildCreatePayload(formData, logoKey, userType);
         response = await addOrganization(payload).unwrap();
       }
 
@@ -239,17 +285,16 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
         onSuccess(response.data);
       }
 
-      if (response?.message) {
-        showSuccess(response?.message || `${isEdit ? 'Organization updated' : 'Organization created'} successfully`);
-      }
+      showSuccess(response?.message || `Organization ${isEdit ? 'updated' : 'created'} successfully`);
 
       handleClose();
     } catch (error) {
       setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log(`Failed to ${isEdit ? 'update' : 'create'} organization:`, errorMessage);
+      showError(errorMessage);
+
+      // Rollback uploaded image on error
       if (uploadedFileKey) {
-        console.log('Rolling back uploaded image:', uploadedFileKey);
         await deleteFileFromAzure(uploadedFileKey);
       }
     }
@@ -270,17 +315,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
             <FormProvider methods={methods} onSubmit={onSubmit}>
               <div className="mt-4 flex w-full flex-col gap-4">
                 <div className="space-y-2">
-                  <RHFUploadAvatar
-                    name="image"
-                    label="Organization Icon"
-                    initialImage={(() => {
-                      const img = organization?.basicInfo?.media?.logo;
-                      if (img && img !== noImageUrl && img !== noImageUrlDev) {
-                        return img;
-                      }
-                      return null;
-                    })()}
-                  />
+                  <RHFUploadAvatar name="image" label="Organization Icon" initialImage={getInitialImage(organization)} />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -358,7 +393,6 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
 
                   <RHFTextField name="website" label="Website Link" placeholder="Enter Website Link" />
 
-                  {/* SINGLE LINE FIELDS */}
                   <div className="col-span-2 space-y-4">
                     <RHFTextField name="instagram" label="Instagram Link" placeholder="Enter Instagram Link" />
 
@@ -380,7 +414,11 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                       <ButtonLoading title="Saving" />
                     </Button>
                   ) : (
-                    <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-7 py-2 text-white">
+                    <Button
+                      type="submit"
+                      className="bg-primary hover:bg-primary-dark cursor-pointer px-7 py-2 text-white"
+                      disabled={isEdit ? !isDirty : false}
+                    >
                       Save
                     </Button>
                   )}

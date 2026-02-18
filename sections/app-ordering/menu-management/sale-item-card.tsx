@@ -1,17 +1,22 @@
 'use client';
 
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { cn } from '@/lib/utils';
+import { useDeleteSaleItemMutation } from '@/store/Reducer/menu-management-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
+import { Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import React from 'react';
+import React, { useState } from 'react';
+import EditSaleModal from './modals/edit-sale-modal';
 import { SaleItem } from './types';
 
 interface SaleItemCardProps {
   sale: SaleItem;
+  menuItems?: any[];
+  menuItemLoading?: boolean;
 }
 
-/**
- * Renders images in a bento grid layout (1, 2, or max 3 images)
- */
 const ImageGrid: React.FC<{ images: string[]; title: string }> = ({ images, title }) => {
   const displayImages = images.slice(0, 3);
   const count = displayImages.length;
@@ -59,18 +64,17 @@ const ImageGrid: React.FC<{ images: string[]; title: string }> = ({ images, titl
   );
 };
 
-export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
+export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale, menuItems, menuItemLoading }) => {
   const images = sale.menuItems.map((item) => item.image).filter(Boolean);
-  console.log('sale', sale);
-
-  // Calculate discount display
-  // const discountDisplay = sale.discountType === 'percentage' ? `${sale.discountValue}% OFF` : `€${sale.discountValue.toFixed(2)} OFF`;
+  const [deleteSaleItem, { isLoading: isDeleting }] = useDeleteSaleItemMutation();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Calculate time remaining
   const now = new Date();
   const endDate = sale.endDateTime;
   const isActive = sale.status === 'active' && endDate > now;
-  // const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
   // Format dates
   const formatDate = (date: Date) => {
@@ -82,10 +86,41 @@ export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-GB', {
+    return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
     });
+  };
+
+  // Show confirm dialog
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  // Show edit modal
+  const handleEditClick = () => {
+    setShowEditModal(true);
+  };
+
+  // Confirmed delete
+  const handleDeleteConfirm = async () => {
+    setError(null);
+    try {
+      const response = await deleteSaleItem(sale.id).unwrap();
+
+      if (response?.error) {
+        const errorMessage = getErrorMessage(response.error);
+        showError(errorMessage);
+        return;
+      }
+
+      showSuccess(response?.message || 'Deleted successfully');
+
+      setShowDeleteModal(false);
+    } catch (error: any) {
+      showError(getErrorMessage(error));
+    }
   };
 
   return (
@@ -99,18 +134,10 @@ export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
       <div className="relative shrink-0">
         <ImageGrid images={images} title={sale.title} />
 
-        {/* Badges */}
-        {/* <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-          <span className="rounded-md bg-pink-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase shadow-lg">
-            €{(sale.totalPriceBeforeDiscount - sale.totalPrice).toFixed(2)}
-          </span>
-          {!isActive && <span className="rounded-md bg-gray-500 px-3 py-1 text-xs font-bold tracking-wide text-white uppercase">Inactive</span>}
-        </div> */}
-
         {/* Item count badge */}
         <div className="absolute right-3 bottom-3">
           <span className="rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white">
-            {sale.itemCount} item{sale.itemCount !== 1 ? 's' : ''}
+            {sale?.itemCount} item{sale?.itemCount !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
@@ -119,12 +146,37 @@ export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
       <div className="flex grow flex-col p-5">
         {/* Header */}
         <div className="mb-3 flex items-start justify-between">
-          <div className="flex-1">
-            <div className="mb-1 text-lg font-bold text-gray-900 dark:text-gray-100">{sale.title}</div>
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">{sale.menuItems.map((item) => item.title).join(', ')}</div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              <span className="truncate text-lg font-bold text-gray-900 dark:text-gray-100">{sale?.title}</span>
+            </div>
+            <div className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">
+              {sale?.menuItems.map((item) => item.title).join(', ')}
+            </div>
+          </div>
+          <div className="ml-3 flex items-center gap-2">
+            <button
+              title="Edit Sale"
+              onClick={handleEditClick}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-blue-100 transition hover:bg-blue-200 disabled:opacity-50 dark:bg-blue-900/30 dark:hover:bg-blue-900/60"
+              aria-label="Edit Sale"
+            >
+              <Pencil className="h-5 w-5 text-blue-600" />
+            </button>
+            <button
+              title="Delete Sale"
+              onClick={handleDeleteClick}
+              disabled={isDeleting}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-100 transition hover:bg-red-200 disabled:opacity-50 dark:bg-red-900/30 dark:hover:bg-red-900/60"
+              aria-label="Delete Sale"
+            >
+              <Trash2 className="h-5 w-5 text-red-600" />
+            </button>
           </div>
         </div>
 
+        {/* Error message */}
+        {error && <div className="mb-2 text-xs text-red-600 dark:text-red-400">{error}</div>}
         {/* Price */}
         <div className="mb-4 flex items-center gap-3">
           <span className="text-2xl font-bold text-pink-600 dark:text-pink-400">€{sale.totalPrice.toFixed(2)}</span>
@@ -163,6 +215,27 @@ export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale }) => {
           )} */}
         </div>
       </div>
+
+      {/* Edit Sale Modal */}
+      <EditSaleModal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        sale={sale}
+        menuItems={menuItems}
+        menuItemLoading={menuItemLoading}
+      />
+
+      <ConfirmDialog
+        open={showDeleteModal}
+        title="Delete Sale"
+        content="Are you sure you want to delete this sale?"
+        onClose={() => {
+          setShowDeleteModal(false);
+          setError(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

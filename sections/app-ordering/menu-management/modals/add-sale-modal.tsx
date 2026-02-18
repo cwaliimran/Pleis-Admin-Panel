@@ -34,6 +34,7 @@ interface AddSaleModalProps {
   menuItems?: MenuItem[];
   menuItemLoading?: boolean;
   companyId?: string | null;
+  userType: 'super-admin' | 'organizer';
 }
 
 type AddSaleFormValues = {
@@ -101,7 +102,7 @@ const formatDateTimeToAPI = (date: Date | string, time: string): string => {
   return `${year}-${month}-${day} ${formattedTime}`;
 };
 
-export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, menuItems = [], menuItemLoading = false, companyId }) => {
+export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, menuItems = [], menuItemLoading = false, companyId, userType }) => {
   const [addSale, { isLoading: addSaleLoading }] = useAddMenuManagementSaleMutation();
 
   const methods = useForm<AddSaleFormValues>({
@@ -154,7 +155,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
 
   const handleSubmit = async (formData: AddSaleFormValues) => {
     try {
-      if (!companyId) {
+      if (userType === 'super-admin' && !companyId) {
         showError('Company ID is required');
         return;
       }
@@ -166,7 +167,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({ isOpen, onClose, men
         menuItems: [formData.menuItemId],
         startDateTime: formatDateTimeToAPI(formData.startDate, formData.startTime),
         endDateTime: formatDateTimeToAPI(formData.endDate, formData.endTime),
-        creator: companyId,
+        creator: userType === 'super-admin' ? companyId : undefined,
       };
 
       const response = await addSale(payload).unwrap();

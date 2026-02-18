@@ -1,10 +1,16 @@
 import React from 'react';
 
+function normalizeUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `https://${url}`;
+}
+
 export default function SocialLinks({ organizationData }: any) {
-  const facebook = organizationData?.basicInfo?.socialLinks?.facebook || '';
-  const instagram = organizationData?.basicInfo?.socialLinks?.instagram || '';
-  const youtube = organizationData?.basicInfo?.socialLinks?.youtube || '';
-  const tiktok = organizationData?.basicInfo?.socialLinks?.tiktok || '';
+  const facebook = normalizeUrl(organizationData?.basicInfo?.socialLinks?.facebook || '');
+  const instagram = normalizeUrl(organizationData?.basicInfo?.socialLinks?.instagram || '');
+  const youtube = normalizeUrl(organizationData?.basicInfo?.socialLinks?.youtube || '');
+  const tiktok = normalizeUrl(organizationData?.basicInfo?.socialLinks?.tiktok || '');
 
   return (
     <div className="mb-3 flex gap-2">

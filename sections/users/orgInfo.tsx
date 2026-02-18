@@ -10,19 +10,39 @@ import { MapPin, Pencil, Shirt, UserPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import AddOtherDetailsModal from '../organization-section/add-other-details-modal';
 import VenueTypeModalV2 from '../venue/venueTypeModal';
+import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
 
-const OrgInfo = ({ organizationData }: any) => {
+const OrgInfo = ({ organizationData, userType }: any) => {
+  // SUPER ADMIN VENUES OF THE ORGANIZATION
   const { data: venueData } = useGetVenuesByCompanyQuery(
     {
       page: 0,
       status: undefined,
       limit: 100,
-      companyOrganizer: organizationData?.creator?._id || '',
+      // companyOrganizer: organizationData?.creator?._id || '',
+      organization: organizationData?._id || '',
     },
     {
-      skip: !organizationData?.creator?._id,
+      skip: userType === 'organizer',
     }
   );
+
+  console.log('Venue Data:', venueData?.data);
+
+  // ORGANIZER VENUES OF THE ORGANIZATION
+  const { data: OrgVenues } = useGetAllCompanyVenueQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '100',
+      organization: organizationData?._id || '',
+    },
+    {
+      skip: userType === 'super-admin',
+    }
+  );
+
+  console.log('OrgVenues', OrgVenues?.data);
 
   const openModal = useBoolean();
   const openVenueModal = useBoolean();
@@ -69,6 +89,7 @@ const OrgInfo = ({ organizationData }: any) => {
               </div>
             </CardHeader>
           </Card>
+
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -77,12 +98,12 @@ const OrgInfo = ({ organizationData }: any) => {
                   Add Venue
                 </Button>
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                {/* <PartyPopper /> */}
-                <p className="mt-2 text-lg capitalize">{organizationData?.venue?.title || '-'}</p>
+              <div className="flex items-center gap-2">
+                <p className="mt-1 text-lg capitalize">{organizationData?.venue?.title || '-'}</p>
               </div>
             </CardHeader>
           </Card>
+
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">CATEGORIES</h1>
@@ -163,7 +184,12 @@ const OrgInfo = ({ organizationData }: any) => {
         />
       )}
 
-      <AddOtherDetailsModal open={openModal.value} onClose={CloseModal} newOrganization={organizationData} venueList={venueData?.data || []} />
+      <AddOtherDetailsModal
+        open={openModal.value}
+        onClose={CloseModal}
+        newOrganization={organizationData}
+        venueList={userType === 'super-admin' ? venueData?.data : OrgVenues?.data || []}
+      />
     </>
   );
 };

@@ -51,6 +51,7 @@ export const API_ROUTES = {
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
   ORGANIZER_GENERAL_REWARDS: `/organizer/general/loyalty/rewards`,
   ORGANIZER_GENERAL_PRESETS: `/organizer/general/presets`,
+  ORGANIZER_GENERAL_VENUE: `/organizer/general/venue`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,
@@ -107,6 +108,7 @@ export const API_ROUTES = {
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
   ADMIN_ORGANIZATION_NOTIFICATIONS_BY_ID: (id: string) => `/admin/organizations/${id}/notifications`,
+  ORGANIZER_ORGANIZATION_NOTIFICATIONS_BY_ID: (id: string) => `/organizer/organizations/${id}/notifications`,
 
   ADMIN_NOTIFICATIONS: `/admin/notifications`,
   ADMIN_NOTIFICATIONS_GET_ALL: `/admin/notifications/all`,
@@ -117,18 +119,32 @@ export const API_ROUTES = {
 
   ADMIN_ORDER_MANAGEMENT_GET: `/admin/in-app-ordering/ordermanagement`,
   ADMIN_ORDER_MANAGEMENT_UPDATE: (id: string) => `/admin/in-app-ordering/ordermanagement/${id}`,
-
-  ADMIN_MENU_MANAGEMENT_GET: `/admin/in-app-ordering/menu-management`,
-  ADMIN_MENU_MANAGEMENT_CREATE_SALE: `/admin/in-app-ordering/menu-management/sale`,
-  ADMIN_MENU_MANAGEMENT_CATEGORIES: `/admin/in-app-ordering/menu-management/menu-item-categories`,
-  ADMIN_GET_MENU_ITEMS_BY_ORG: `/admin/in-app-ordering/menu-management/menu-items`,
-  ADMIN_ADD_LIMITED_TIME_ITEMS: `/admin/in-app-ordering/menu-management/limited-time`,
-  ADMIN_GET_SALE_ITEMS: `/admin/in-app-ordering/menu-management/sale`,
-  // ADMIN_MENU_MANAGEMENT_LIMITED_TIME: `/admin/in-app-ordering/menu-management/limited-time`,
-  // ADMIN_MENU_MANAGEMENT_UPDATE: (id: string) => `/admin/menu/items/${id}`,
-
   ADMIN_ORDER_MANAGEMENT_STATUS: `/admin/in-app-ordering/ordermanagement/update`,
   ADMIN_ORDER_MANAGEMENT_STATUS_BY_ID: (id: string) => `/admin/in-app-ordering/ordermanagement/update/${id}`,
+
+  ORGANIZER_ORDER_MANAGEMENT_GET: `/organizer/in-app-ordering/ordermanagement`,
+  ORGANIZER_ORDER_MANAGEMENT_UPDATE: (id: string) => `/organizer/in-app-ordering/ordermanagement/${id}`,
+  ORGANIZER_ORDER_MANAGEMENT_STATUS: `/organizer/in-app-ordering/ordermanagement/update`,
+  ORGANIZER_ORDER_MANAGEMENT_STATUS_BY_ID: (id: string) => `/organizer/in-app-ordering/ordermanagement/update/${id}`,
+
+  ADMIN_MENU_MANAGEMENT_GET: `/admin/in-app-ordering/menu-management`,
+  ADMIN_MENU_MANAGEMENT_CATEGORIES: `/admin/in-app-ordering/menu-management/menu-item-categories`,
+  ADMIN_GET_MENU_ITEMS_BY_ORG: `/admin/in-app-ordering/menu-management/menu-items`,
+  ADMIN_MENU_MANAGEMENT_CREATE_SALE: `/admin/in-app-ordering/menu-management/sale`,
+  ADMIN_ADD_LIMITED_TIME_ITEMS: `/admin/in-app-ordering/menu-management/limited-time`,
+  ADMIN_GET_SALE_ITEMS: `/admin/in-app-ordering/menu-management/sale`,
+  ADMIN_DELETE_SALE_ITEM_BY_ID: (id: string) => `/admin/in-app-ordering/menu-management/sale/${id}`,
+
+  ORGANIZER_MENU_MANAGEMENT_GET: `/organizer/in-app-ordering/menu-management`,
+  ORGANIZER_MENU_MANAGEMENT_CATEGORIES: `/organizer/in-app-ordering/menu-management/menu-item-categories`,
+  ORGANIZER_GET_MENU_ITEMS_BY_ORG: `/organizer/in-app-ordering/menu-management/menu-items`,
+  ORGANIZER_MENU_MANAGEMENT_CREATE_SALE: `/organizer/in-app-ordering/menu-management/sale`,
+  ORGANIZER_ADD_LIMITED_TIME_ITEMS: `/organizer/in-app-ordering/menu-management/limited-time`,
+  ORGANIZER_GET_SALE_ITEMS: `/organizer/in-app-ordering/menu-management/sale`,
+  ORGANIZER_DELETE_SALE_ITEM_BY_ID: (id: string) => `/organizer/in-app-ordering/menu-management/sale/${id}`,
+
+  // ADMIN_MENU_MANAGEMENT_LIMITED_TIME: `/admin/in-app-ordering/menu-management/limited-time`,
+  // ADMIN_MENU_MANAGEMENT_UPDATE: (id: string) => `/admin/menu/items/${id}`,
 
   ADMIN_UPDATES: `/admin/updates`,
   ADMIN_UPDATES_BY_ID: (id: string) => `/admin/updates/${id}`,
@@ -183,6 +199,7 @@ export const API_ROUTES = {
 
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_COMPANY_ORGANIZER: `/admin/venues/title`,
+  ORGANIZER_VENUES_BY_COMPANY_ORGANIZER: `/organizer/venues/title`,
   ADMIN_VENUES_BY_ID: (id: string) => `/admin/venues/${id}`,
 
   ORGANIZER_VENUES: `/organizer/venues`,

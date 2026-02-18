@@ -44,9 +44,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
   const [coverImageUploading, setCoverImageUploading] = useState(false);
 
-  const { data, isLoading, refetch } = useGetOrganizationByIdQuery({
-    id: organizationId?.id,
-  });
+  const { data, isLoading, refetch } = useGetOrganizationByIdQuery({ id: organizationId?.id });
 
   const [updateOrganization] = useUpdateOrganizationMutation();
 
@@ -305,7 +303,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
               </Card>
 
               <div className="mt-4 rounded-lg">
-                {active === 'info' && <UserInfo organizationData={organizationData} />}
+                {active === 'info' && <UserInfo organizationData={organizationData} userType={userType}/>}
 
                 {active === 'events' && <UserEvents organizationData={organizationData} />}
 
@@ -328,7 +326,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                       <h3 className="text-lg font-bold">Total Revenue</h3>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center text-4xl font-bold">{organizationData?.revenue !== 0 ? organizationData?.revenue : 0}</div>
+                  <div className="mt-2 flex items-center text-3xl font-bold">{organizationData?.revenue !== 0 ? organizationData?.revenue : 0}</div>
                 </CardHeader>
               </Card>
 
@@ -339,7 +337,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                       <h3 className="text-lg font-bold">Views</h3>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center text-4xl font-bold">{organizationData?.views !== 0 ? organizationData?.views : 0}</div>
+                  <div className="mt-2 flex items-center text-3xl font-bold">{organizationData?.views !== 0 ? organizationData?.views : 0}</div>
                 </CardHeader>
               </Card>
 
@@ -350,7 +348,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                       <h3 className="text-lg font-bold">Total Tickets Sold</h3>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center text-4xl font-bold">
+                  <div className="mt-2 flex items-center text-3xl font-bold">
                     {organizationData?.ticketsSold !== 0 ? organizationData?.ticketsSold : 0}
                   </div>
                 </CardHeader>
@@ -360,10 +358,10 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-bold">Orgainizer Events</h3>
+                      <h3 className="text-lg font-bold">Organizer Events</h3>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center text-4xl font-bold">{organizationData?.events !== 0 ? organizationData?.events : 0}</div>
+                  <div className="mt-2 flex items-center text-3xl font-bold">{organizationData?.events !== 0 ? organizationData?.events : 0}</div>
                 </CardHeader>
               </Card>
 

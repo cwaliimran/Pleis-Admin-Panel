@@ -19,6 +19,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { UserInfo } from '../users';
 import OrganizationModal from './create-edit-organization-modal';
+import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
 
 const defaultValues = {
   image: null,
@@ -39,17 +40,47 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
   const [coverImageUploading, setCoverImageUploading] = useState(false);
 
   // Fetch venues by company when we have a creator ID
+  // const { data: venueData } = useGetVenuesByCompanyQuery(
+  //   {
+  //     page: 0,
+  //     status: undefined,
+  //     limit: 100,
+  //     companyOrganizer: creatorId,
+  //   },
+  //   {
+  //     skip: !creatorId,
+  //   }
+  // );
+
+  // SUPER ADMIN VENUE API
   const { data: venueData } = useGetVenuesByCompanyQuery(
     {
       page: 0,
       status: undefined,
       limit: 100,
-      companyOrganizer: creatorId,
+      organization: newOrganization?._id || '',
     },
     {
-      skip: !creatorId,
+      skip: userType === 'organizer',
     }
   );
+
+  console.log('Venue Data:', venueData?.data);
+
+  // ORGANIZER VENUE API
+  const { data: OrgVenues } = useGetAllCompanyVenueQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '100',
+      organization: newOrganization?._id || '',
+    },
+    {
+      skip: userType === 'super-admin' || !newOrganization?._id,
+    }
+  );
+
+  console.log('Org Venues:', OrgVenues?.data);
 
   const CloseModal = () => {
     methods.reset(defaultValues);
@@ -222,11 +253,6 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
 
             <div className="flex justify-end">
               <Pencil width={22} className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
-              {/* <Trash2
-                width={22}
-                className="ml-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
-                onClick={deleteModal.onTrue}
-              /> */}
             </div>
 
             <div className="mt-2 items-center gap-2 pt-0 md:mt-0 md:flex">

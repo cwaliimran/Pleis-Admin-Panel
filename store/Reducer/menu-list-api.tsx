@@ -42,9 +42,9 @@ export const menuListApi = createApi({
       query: ({ companyOrganizer }) => ({
         url: API_ROUTES.ADMIN_MENU_BY_COMPANY_ORGANIZER(companyOrganizer),
         method: 'GET',
-        roleBasedRouting: {
-          adminOnly: true,
-        },
+        // roleBasedRouting: {
+        //   adminOnly: true,
+        // },
       }),
       transformResponse: (res) => ({
         data: res.data,
