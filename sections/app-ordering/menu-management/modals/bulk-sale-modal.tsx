@@ -33,6 +33,7 @@ interface BulkSaleModalProps {
   menuItems?: MenuItem[];
   menuItemLoading?: boolean;
   companyId: string | null;
+  userType: 'super-admin' | 'organizer';
 }
 
 type BulkSaleFormValues = {
@@ -100,7 +101,7 @@ const formatDateTimeToAPI = (date: Date | string, time: string): string => {
   return `${year}-${month}-${day} ${formattedTime}`;
 };
 
-export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, menuItems = [], menuItemLoading = false, companyId }) => {
+export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, menuItems = [], menuItemLoading = false, companyId, userType }) => {
   const [addSale, { isLoading: addSaleLoading }] = useAddMenuManagementSaleMutation();
 
   const methods = useForm<BulkSaleFormValues>({
@@ -131,7 +132,7 @@ export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, m
 
   const handleSubmit = async (formData: BulkSaleFormValues) => {
     try {
-      if (!companyId) {
+      if (userType === 'super-admin' && !companyId) {
         showError('Company ID is required');
         return;
       }
@@ -143,7 +144,7 @@ export const BulkSaleModal: React.FC<BulkSaleModalProps> = ({ isOpen, onClose, m
         menuItems: formData.selectedMenuItems,
         startDateTime: formatDateTimeToAPI(formData.startDate, formData.startTime),
         endDateTime: formatDateTimeToAPI(formData.endDate, formData.endTime),
-        creator: companyId,
+        creator: userType === 'super-admin' ? companyId : undefined,
       };
 
       const response = await addSale(payload).unwrap();

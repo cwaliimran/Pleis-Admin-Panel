@@ -128,12 +128,21 @@ export const API_ROUTES = {
   ORGANIZER_ORDER_MANAGEMENT_STATUS_BY_ID: (id: string) => `/organizer/in-app-ordering/ordermanagement/update/${id}`,
 
   ADMIN_MENU_MANAGEMENT_GET: `/admin/in-app-ordering/menu-management`,
-  ADMIN_MENU_MANAGEMENT_CREATE_SALE: `/admin/in-app-ordering/menu-management/sale`,
   ADMIN_MENU_MANAGEMENT_CATEGORIES: `/admin/in-app-ordering/menu-management/menu-item-categories`,
   ADMIN_GET_MENU_ITEMS_BY_ORG: `/admin/in-app-ordering/menu-management/menu-items`,
+  ADMIN_MENU_MANAGEMENT_CREATE_SALE: `/admin/in-app-ordering/menu-management/sale`,
   ADMIN_ADD_LIMITED_TIME_ITEMS: `/admin/in-app-ordering/menu-management/limited-time`,
   ADMIN_GET_SALE_ITEMS: `/admin/in-app-ordering/menu-management/sale`,
   ADMIN_DELETE_SALE_ITEM_BY_ID: (id: string) => `/admin/in-app-ordering/menu-management/sale/${id}`,
+
+  ORGANIZER_MENU_MANAGEMENT_GET: `/organizer/in-app-ordering/menu-management`,
+  ORGANIZER_MENU_MANAGEMENT_CATEGORIES: `/organizer/in-app-ordering/menu-management/menu-item-categories`,
+  ORGANIZER_GET_MENU_ITEMS_BY_ORG: `/organizer/in-app-ordering/menu-management/menu-items`,
+  ORGANIZER_MENU_MANAGEMENT_CREATE_SALE: `/organizer/in-app-ordering/menu-management/sale`,
+  ORGANIZER_ADD_LIMITED_TIME_ITEMS: `/organizer/in-app-ordering/menu-management/limited-time`,
+  ORGANIZER_GET_SALE_ITEMS: `/organizer/in-app-ordering/menu-management/sale`,
+  ORGANIZER_DELETE_SALE_ITEM_BY_ID: (id: string) => `/organizer/in-app-ordering/menu-management/sale/${id}`,
+
   // ADMIN_MENU_MANAGEMENT_LIMITED_TIME: `/admin/in-app-ordering/menu-management/limited-time`,
   // ADMIN_MENU_MANAGEMENT_UPDATE: (id: string) => `/admin/menu/items/${id}`,
 
