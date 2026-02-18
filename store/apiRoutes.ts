@@ -133,6 +133,7 @@ export const API_ROUTES = {
   ADMIN_GET_MENU_ITEMS_BY_ORG: `/admin/in-app-ordering/menu-management/menu-items`,
   ADMIN_ADD_LIMITED_TIME_ITEMS: `/admin/in-app-ordering/menu-management/limited-time`,
   ADMIN_GET_SALE_ITEMS: `/admin/in-app-ordering/menu-management/sale`,
+  ADMIN_DELETE_SALE_ITEM_BY_ID: (id: string) => `/admin/in-app-ordering/menu-management/sale/${id}`,
   // ADMIN_MENU_MANAGEMENT_LIMITED_TIME: `/admin/in-app-ordering/menu-management/limited-time`,
   // ADMIN_MENU_MANAGEMENT_UPDATE: (id: string) => `/admin/menu/items/${id}`,
 

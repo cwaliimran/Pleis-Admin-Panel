@@ -448,7 +448,7 @@ export const MenuManagementView: React.FC = () => {
             </div>
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               {previewSales.map((sale) => (
-                <SaleItemCard key={sale.id} sale={sale} />
+                <SaleItemCard key={sale.id} sale={sale} menuItems={allMenuItemsData?.data} menuItemLoading={allMenuItemsLoading} />
               ))}
             </div>
             {/* Divider between sales and menu items */}
@@ -472,7 +472,7 @@ export const MenuManagementView: React.FC = () => {
             ) : (
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {saleItems.map((sale) => (
-                  <SaleItemCard key={sale.id} sale={sale} />
+                  <SaleItemCard key={sale.id} sale={sale} menuItems={allMenuItemsData?.data} menuItemLoading={allMenuItemsLoading} />
                 ))}
               </div>
             )}
