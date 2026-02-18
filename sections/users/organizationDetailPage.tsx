@@ -303,7 +303,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
               </Card>
 
               <div className="mt-4 rounded-lg">
-                {active === 'info' && <UserInfo organizationData={organizationData} />}
+                {active === 'info' && <UserInfo organizationData={organizationData} userType={userType}/>}
 
                 {active === 'events' && <UserEvents organizationData={organizationData} />}
 

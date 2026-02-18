@@ -51,6 +51,7 @@ export const API_ROUTES = {
   ORGANIZER_GENERAL_MENU_ITEM_CATEGORIES: `/organizer/general/menu-item-categories`,
   ORGANIZER_GENERAL_REWARDS: `/organizer/general/loyalty/rewards`,
   ORGANIZER_GENERAL_PRESETS: `/organizer/general/presets`,
+  ORGANIZER_GENERAL_VENUE: `/organizer/general/venue`,
 
   USER_LIST: `/users`,
   USER_LIST_BY_ID: (id: string) => `/users/${id}`,

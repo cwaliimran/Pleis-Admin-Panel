@@ -154,6 +154,60 @@ export const getRemovedGalleryItems = (initialGallery: string[], currentExisting
 // FORM DEFAULT VALUES BUILDER
 // ============================================================
 
+// export const buildFormDefaultValues = (organization: any, initialGalleryMedia: string[]): FormValues => {
+//   if (!organization?.otherInfo) {
+//     return {
+//       description: '',
+//       minAge: '',
+//       tags: [],
+//       categories: [],
+//       galleryImages: [],
+//       existingGallery: [],
+//       venue: '',
+//       monday: { from: '00:00', to: '00:00', isOpen: 'false' },
+//       tuesday: { from: '00:00', to: '00:00', isOpen: 'false' },
+//       wednesday: { from: '00:00', to: '00:00', isOpen: 'false' },
+//       thursday: { from: '00:00', to: '00:00', isOpen: 'false' },
+//       friday: { from: '00:00', to: '00:00', isOpen: 'false' },
+//       saturday: { from: '00:00', to: '00:00', isOpen: 'false' },
+//       sunday: { from: '00:00', to: '00:00', isOpen: 'false' },
+//       status: 'active',
+//       location: {
+//         address: '',
+//         city: '',
+//         postalCode: '',
+//         country: '',
+//         coordinates: [0, 0],
+//       },
+//     };
+//   }
+
+//   return {
+//     description: organization.otherInfo.description || '',
+//     minAge: String(organization.otherInfo.minAge ?? ''),
+//     tags: organization.otherInfo.tags?.map((tag: any) => tag.id) || [],
+//     categories: organization.otherInfo.categories?.map((cat: any) => cat._id) || [],
+//     galleryImages: [],
+//     existingGallery: initialGalleryMedia,
+//     venue: organization.venue?._id || '',
+//     monday: getOperatingHoursFromData(organization, 'monday'),
+//     tuesday: getOperatingHoursFromData(organization, 'tuesday'),
+//     wednesday: getOperatingHoursFromData(organization, 'wednesday'),
+//     thursday: getOperatingHoursFromData(organization, 'thursday'),
+//     friday: getOperatingHoursFromData(organization, 'friday'),
+//     saturday: getOperatingHoursFromData(organization, 'saturday'),
+//     sunday: getOperatingHoursFromData(organization, 'sunday'),
+//     status: organization.status || 'active',
+//     location: {
+//       address: organization.location?.fullAddress || '',
+//       city: organization.location?.city || '',
+//       postalCode: organization.location?.postalCode || '',
+//       country: organization.location?.country || '',
+//       coordinates: organization.location?.coordinates || [0, 0],
+//     },
+//   };
+// };
+
 export const buildFormDefaultValues = (organization: any, initialGalleryMedia: string[]): FormValues => {
   if (!organization?.otherInfo) {
     return {
@@ -182,6 +236,11 @@ export const buildFormDefaultValues = (organization: any, initialGalleryMedia: s
     };
   }
 
+  // Location priority:
+  // 1. organization.location (already saved location)
+  // 2. organization.venue.location (fallback from populated venue object)
+  const location = organization.location?.fullAddress ? organization.location : organization.venue?.location;
+
   return {
     description: organization.otherInfo.description || '',
     minAge: String(organization.otherInfo.minAge ?? ''),
@@ -199,11 +258,11 @@ export const buildFormDefaultValues = (organization: any, initialGalleryMedia: s
     sunday: getOperatingHoursFromData(organization, 'sunday'),
     status: organization.status || 'active',
     location: {
-      address: organization.location?.fullAddress || '',
-      city: organization.location?.city || '',
-      postalCode: organization.location?.postalCode || '',
-      country: organization.location?.country || '',
-      coordinates: organization.location?.coordinates || [0, 0],
+      address: location?.fullAddress || '',
+      city: location?.city || '',
+      postalCode: location?.postalCode || '',
+      country: location?.country || '',
+      coordinates: location?.coordinates || [0, 0],
     },
   };
 };
@@ -221,8 +280,8 @@ export const buildTagOptions = (tagData: any) =>
 export const buildVenueOptions = (venueList: any[], venueData: any) =>
   (venueList && venueList.length > 0
     ? venueList.map((venue: any) => ({
-        label: venue?.venueTitle,
-        value: venue?.venueId,
+        label: venue?.title,
+        value: venue?._id,
       }))
     : venueData?.data?.map((venue: any) => ({
         label: venue?.title,
