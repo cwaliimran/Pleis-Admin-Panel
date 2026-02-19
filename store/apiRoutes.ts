@@ -319,10 +319,16 @@ export const API_ROUTES = {
   ADMIN_THIRD_PARTY_BY_ID: (id: string) => `/admin/third-party/${id}`,
 
   ADMIN_RESERVATION: `/admin/reservations`,
-  ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
   ADMIN_RESERVATION_BY_ID: (id: string) => `/admin/reservations/${id}`,
   ADMIN_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/admin/reservations/updateStatus/${id}/${status}`,
+  ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
   ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
+
+  ORGANIZER_RESERVATION: `/organizer/reservations`,
+  ORGANIZER_RESERVATION_BY_ID: (id: string) => `/organizer/reservations/${id}`,
+  ORGANIZER_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/organizer/reservations/updateStatus/${id}/${status}`,
+  ORGANIZER_USERS_RESERVATION: `/organizer/reservations/users`,
+  ORGANIZER_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/organizer/reservations/${userId}/${id}`,
 
   ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,
   ORGANIZER_LOYALTY_TRANSACTIONS: `/organizer/transactions`,
