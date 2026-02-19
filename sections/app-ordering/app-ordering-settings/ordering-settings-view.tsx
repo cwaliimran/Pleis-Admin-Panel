@@ -17,6 +17,8 @@ import { InfoBox } from './info-box';
 import { RadioOption } from './radio-option';
 import { StatusFlow } from './status-flow';
 import { ToggleSwitch } from './toggle-switch';
+import { useOrganizerOrganization } from '@/hooks/useOrganizerOrganization';
+import { OrganizationGuard } from '@/components/guards/organization-guard';
 
 // Validation Schema
 const schema = Yup.object().shape({
@@ -73,8 +75,17 @@ const defaultFormValues: FormValues = {
   },
 };
 
-export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType }) => {
+export const OrderingSettingsView: React.FC<{ userType: 'organizer' | 'super-admin' }> = ({ userType }) => {
   const { companyId: selectedCompanyId, organizationId } = useCompanySelectionState();
+
+  const {
+    organizationId: OrganizerOrgId,
+    isOrgRequired,
+    OrganizationDropdown,
+  } = useOrganizerOrganization({
+    userType,
+    storageKey: 'ordering-settings-organization',
+  });
 
   // const {
   //   data: apiData,
@@ -93,14 +104,12 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
     refetch,
   } = useGetOrganizationByIdQuery(
     {
-      id: organizationId,
+      id: userType === 'organizer' ? OrganizerOrgId : organizationId,
     },
     {
-      skip: !organizationId,
+      skip: (userType === 'super-admin' && !selectedCompanyId) || (!OrganizerOrgId && !organizationId),
     }
   );
-
-  console.log('apiData', apiData?.data);
 
   // const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
 
@@ -196,7 +205,7 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
   // Build payload with only changed fields
   const buildPartialPayload = (data: FormValues) => {
     const payload: any = {
-      id: organizationId || undefined,
+      id: organizationId || OrganizerOrgId || undefined,
       inAppOrderingSettings: {},
     };
 
@@ -287,258 +296,282 @@ export const OrderingSettingsView: React.FC<{ userType: string }> = ({ userType 
   }
 
   return (
-    <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
-      <section className="min-h-screen">
-        <div className="mx-auto max-w-full rounded-2xl dark:bg-black">
-          {/* Payment Methods Section */}
-          <div className="mb-6 rounded-2xl bg-white px-7 py-7 shadow-sm dark:bg-[#222121]">
-            <div className="mb-6 flex items-center gap-4 border-b-2 border-gray-100 pb-5 dark:border-gray-800">
-              <div className="flex-1">
-                <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-gray-100">Payment Methods</h2>
-                <p className="text-[15px] leading-relaxed text-gray-500 dark:text-gray-500">
-                  Choose which payment options are available to customers when placing orders
-                </p>
-              </div>
-            </div>
-
-            {/* Instant Payment */}
-            <div className="border-b border-gray-100 py-6 dark:border-gray-800">
-              <div className="mb-3 flex items-start justify-between">
-                <div className="flex-1 pr-5">
-                  <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Instant Payment</h3>
-                  <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                    Customers pay immediately when placing their order. Payment is captured before the order is sent to staff.
-                  </p>
-                </div>
-                <ToggleSwitch
-                  checked={instantPayment}
-                  onChange={(val) => setValue('paymentMethods.instantPayment', val, { shouldDirty: true })}
-                  disabled={isLoading || updateUserLoading}
-                />
-              </div>
-              <InfoBox
-                variant="info"
-                title="Recommended for most venues"
-                description="Instant payment reduces no-shows and ensures guaranteed revenue. Payment is processed securely before order preparation begins."
-              />
-            </div>
-
-            {/* Pay Later */}
-            <div className="border-b border-gray-100 py-6 dark:border-gray-800">
-              <div className="mb-3 flex items-start justify-between">
-                <div className="flex-1 pr-5">
-                  <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Pay Later</h3>
-                  <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                    Allow customers to order now and pay after the order is prepared or delivered. Payment is captured at a later stage in the order
-                    workflow.
-                  </p>
-                </div>
-                <ToggleSwitch
-                  checked={payLaterAllow}
-                  onChange={(val) => setValue('paymentMethods.payLater.allow', val, { shouldDirty: true })}
-                  disabled={isLoading || updateUserLoading}
-                />
-              </div>
-
-              {payLaterAllow && (
-                <div className="mt-5">
-                  <div className="rounded-xl bg-gray-50 p-5 dark:bg-[#1a1a1a]">
-                    <div className="mb-3 flex items-start justify-between">
-                      <div className="flex-1 pr-5">
-                        <h4 className="mb-1.5 text-base font-bold text-gray-900 dark:text-gray-100">Enable Order Acceptance</h4>
-                        <p className="text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
-                          Staff must accept orders before preparation begins. Enables &quot;Sent&quot; → &quot;Accepted&quot; workflow.
-                        </p>
-                      </div>
-                      <ToggleSwitch
-                        checked={enableOrderAcceptance}
-                        onChange={(val) => setValue('paymentMethods.payLater.enableOrderAcceptance', val, { shouldDirty: true })}
-                        disabled={isLoading || updateUserLoading}
-                      />
-                    </div>
-
-                    {enableOrderAcceptance && (
-                      <div className="mt-4 flex flex-col gap-3">
-                        <RadioOption
-                          value="acceptance"
-                          label="Charge on Acceptance"
-                          description="Payment is captured when staff accepts the order and begins preparation."
-                          selected={chargeOnAcceptance}
-                          onSelect={() => handlePaymentTimingChange('acceptance')}
-                        />
-                        <RadioOption
-                          value="delivery"
-                          label="Charge on Delivery"
-                          description="Payment is captured after the order is fully completed and delivered to the customer."
-                          selected={chargeOnDelivery}
-                          onSelect={() => handlePaymentTimingChange('delivery')}
-                        />
-                      </div>
-                    )}
-
-                    <StatusFlow
-                      title={enableOrderAcceptance ? 'Order Status Flow with Acceptance:' : 'Order Status Flow without Acceptance:'}
-                      steps={enableOrderAcceptance ? ORDER_FLOW_WITH_ACCEPTANCE : ORDER_FLOW_WITHOUT_ACCEPTANCE}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <InfoBox
-                variant="warning"
-                title="Important"
-                description="Pay later orders may have a higher cancellation rate. Consider enabling order acceptance to confirm availability before preparation."
-              />
-            </div>
-
-            {/* Cash Payment */}
-            <div className="py-6">
-              <div className="mb-3 flex items-start justify-between">
-                <div className="flex-1 pr-5">
-                  <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Cash Payment</h3>
-                  <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                    Allow customers to pay with cash upon pickup or delivery. Staff marks the order as paid after receiving payment.
-                  </p>
-                </div>
-                <ToggleSwitch
-                  checked={cashPayment}
-                  onChange={(val) => setValue('paymentMethods.cashPayment', val, { shouldDirty: true })}
-                  disabled={isLoading || updateUserLoading}
-                />
-              </div>
-              <InfoBox
-                variant="info"
-                title="Cash handling workflow"
-                description='Orders are marked as "Waiting for Payment" after delivery. Staff confirms payment receipt in the app to complete the order.'
-              />
-            </div>
-
-            {/* Save Button */}
-            <div className="mt-6 flex justify-end border-t border-gray-100 pt-6 dark:border-gray-800">
-              {updateUserLoading ? (
-                <Button type="button" disabled className="h-10 cursor-not-allowed gap-2 font-semibold">
-                  <ButtonLoading title="Saving" />
-                </Button>
-              ) : (
-                <Button type="submit" className="h-10 gap-2 font-semibold" disabled={!isDirty}>
-                  Save Payment Settings
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Delivery Methods Section */}
-          <div className="rounded-2xl bg-white p-8 shadow-sm dark:bg-[#222121]">
-            <div className="mb-6 flex items-center justify-between gap-4 border-b-2 border-gray-100 pb-5 dark:border-gray-800">
+    <>
+      <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
+        <section className="">
+          <div className="mx-auto max-w-full rounded-2xl dark:bg-black">
+            {/* Payment Methods Section */}
+            <div className="mb-3 rounded-2xl bg-white px-7 py-7 shadow-sm dark:bg-[#222121]">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
-                  <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-gray-100">Delivery Methods</h2>
+                  <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-gray-100">Payment Methods</h2>
                   <p className="text-[15px] leading-relaxed text-gray-500 dark:text-gray-500">
-                    Select which delivery options customers can choose when placing orders
+                    Choose which payment options are available to customers when placing orders
                   </p>
                 </div>
+
+                <div>{OrganizationDropdown}</div>
               </div>
-              {/* <Button variant="outline" onClick={handleReset} className="gap-2 font-semibold" disabled>
+            </div>
+          </div>
+        </section>
+
+        <OrganizationGuard isOrgRequired={isOrgRequired} message="Please select an organization to view settings">
+          <section className="min-h-screen">
+            <div className="mx-auto max-w-full rounded-2xl dark:bg-black">
+              {/* Payment Methods Section */}
+              <div className="mb-6 rounded-2xl bg-white px-7 py-7 shadow-sm dark:bg-[#222121]">
+                {/* <div className="mb-6 flex items-center gap-4 border-b-2 border-gray-100 pb-5 dark:border-gray-800">
+                  <div className="flex-1">
+                    <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-gray-100">Payment Methods</h2>
+                    <p className="text-[15px] leading-relaxed text-gray-500 dark:text-gray-500">
+                      Choose which payment options are available to customers when placing orders
+                    </p>
+                  </div>
+
+                  <div>{OrganizationDropdown}</div>
+                </div> */}
+
+                {/* Instant Payment */}
+                <div className="border-b border-gray-100 py-6 dark:border-gray-800">
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex-1 pr-5">
+                      <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Instant Payment</h3>
+                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                        Customers pay immediately when placing their order. Payment is captured before the order is sent to staff.
+                      </p>
+                    </div>
+                    <ToggleSwitch
+                      checked={instantPayment}
+                      onChange={(val) => setValue('paymentMethods.instantPayment', val, { shouldDirty: true })}
+                      disabled={isLoading || updateUserLoading}
+                    />
+                  </div>
+                  <InfoBox
+                    variant="info"
+                    title="Recommended for most venues"
+                    description="Instant payment reduces no-shows and ensures guaranteed revenue. Payment is processed securely before order preparation begins."
+                  />
+                </div>
+
+                {/* Pay Later */}
+                <div className="border-b border-gray-100 py-6 dark:border-gray-800">
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex-1 pr-5">
+                      <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Pay Later</h3>
+                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                        Allow customers to order now and pay after the order is prepared or delivered. Payment is captured at a later stage in the
+                        order workflow.
+                      </p>
+                    </div>
+                    <ToggleSwitch
+                      checked={payLaterAllow}
+                      onChange={(val) => setValue('paymentMethods.payLater.allow', val, { shouldDirty: true })}
+                      disabled={isLoading || updateUserLoading}
+                    />
+                  </div>
+
+                  {payLaterAllow && (
+                    <div className="mt-5">
+                      <div className="rounded-xl bg-gray-50 p-5 dark:bg-[#1a1a1a]">
+                        <div className="mb-3 flex items-start justify-between">
+                          <div className="flex-1 pr-5">
+                            <h4 className="mb-1.5 text-base font-bold text-gray-900 dark:text-gray-100">Enable Order Acceptance</h4>
+                            <p className="text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
+                              Staff must accept orders before preparation begins. Enables &quot;Sent&quot; → &quot;Accepted&quot; workflow.
+                            </p>
+                          </div>
+                          <ToggleSwitch
+                            checked={enableOrderAcceptance}
+                            onChange={(val) => setValue('paymentMethods.payLater.enableOrderAcceptance', val, { shouldDirty: true })}
+                            disabled={isLoading || updateUserLoading}
+                          />
+                        </div>
+
+                        {enableOrderAcceptance && (
+                          <div className="mt-4 flex flex-col gap-3">
+                            <RadioOption
+                              value="acceptance"
+                              label="Charge on Acceptance"
+                              description="Payment is captured when staff accepts the order and begins preparation."
+                              selected={chargeOnAcceptance}
+                              onSelect={() => handlePaymentTimingChange('acceptance')}
+                            />
+                            <RadioOption
+                              value="delivery"
+                              label="Charge on Delivery"
+                              description="Payment is captured after the order is fully completed and delivered to the customer."
+                              selected={chargeOnDelivery}
+                              onSelect={() => handlePaymentTimingChange('delivery')}
+                            />
+                          </div>
+                        )}
+
+                        <StatusFlow
+                          title={enableOrderAcceptance ? 'Order Status Flow with Acceptance:' : 'Order Status Flow without Acceptance:'}
+                          steps={enableOrderAcceptance ? ORDER_FLOW_WITH_ACCEPTANCE : ORDER_FLOW_WITHOUT_ACCEPTANCE}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <InfoBox
+                    variant="warning"
+                    title="Important"
+                    description="Pay later orders may have a higher cancellation rate. Consider enabling order acceptance to confirm availability before preparation."
+                  />
+                </div>
+
+                {/* Cash Payment */}
+                <div className="py-6">
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex-1 pr-5">
+                      <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Cash Payment</h3>
+                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                        Allow customers to pay with cash upon pickup or delivery. Staff marks the order as paid after receiving payment.
+                      </p>
+                    </div>
+                    <ToggleSwitch
+                      checked={cashPayment}
+                      onChange={(val) => setValue('paymentMethods.cashPayment', val, { shouldDirty: true })}
+                      disabled={isLoading || updateUserLoading}
+                    />
+                  </div>
+                  <InfoBox
+                    variant="info"
+                    title="Cash handling workflow"
+                    description='Orders are marked as "Waiting for Payment" after delivery. Staff confirms payment receipt in the app to complete the order.'
+                  />
+                </div>
+
+                {/* Save Button */}
+                <div className="mt-6 flex justify-end border-t border-gray-100 pt-6 dark:border-gray-800">
+                  {updateUserLoading ? (
+                    <Button type="button" disabled className="h-10 cursor-not-allowed gap-2 font-semibold">
+                      <ButtonLoading title="Saving" />
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="h-10 gap-2 font-semibold" disabled={!isDirty}>
+                      Save Payment Settings
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Delivery Methods Section */}
+              <div className="rounded-2xl bg-white p-8 shadow-sm dark:bg-[#222121]">
+                <div className="mb-6 flex items-center justify-between gap-4 border-b-2 border-gray-100 pb-5 dark:border-gray-800">
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <h2 className="mb-1 text-2xl font-bold text-gray-900 dark:text-gray-100">Delivery Methods</h2>
+                      <p className="text-[15px] leading-relaxed text-gray-500 dark:text-gray-500">
+                        Select which delivery options customers can choose when placing orders
+                      </p>
+                    </div>
+                  </div>
+                  {/* <Button variant="outline" onClick={handleReset} className="gap-2 font-semibold" disabled>
                 <RotateCcw className="h-4 w-4" />
                 Reset to Default
               </Button> */}
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {/* Counter Pickup */}
-              <div
-                className={`rounded-xl border-2 p-5 transition-all ${
-                  counterPickup
-                    ? 'border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-950/30'
-                    : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#1a1a1a]'
-                }`}
-              >
-                <div className="mb-3 flex items-start justify-between">
-                  <div>
-                    <div className="mb-2 text-3xl">🥡</div>
-                    <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Counter Pickup</h3>
-                  </div>
-                  <ToggleSwitch
-                    checked={counterPickup}
-                    onChange={(val) => handleDeliveryMethodToggle('counterPickup', val)}
-                    disabled={isLoading || updateUserLoading}
-                  />
                 </div>
-                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                  Customers receive an order number and collect items at the counter when ready.
-                </p>
-              </div>
 
-              {/* Table Delivery */}
-              <div
-                className={`rounded-xl border-2 p-5 transition-all ${
-                  tableDelivery
-                    ? 'border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-950/30'
-                    : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#1a1a1a]'
-                }`}
-              >
-                <div className="mb-3 flex items-start justify-between">
-                  <div>
-                    <div className="mb-2 text-3xl">🍽️</div>
-                    <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Table Delivery</h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {/* Counter Pickup */}
+                  <div
+                    className={`rounded-xl border-2 p-5 transition-all ${
+                      counterPickup
+                        ? 'border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-950/30'
+                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#1a1a1a]'
+                    }`}
+                  >
+                    <div className="mb-3 flex items-start justify-between">
+                      <div>
+                        <div className="mb-2 text-3xl">🥡</div>
+                        <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Counter Pickup</h3>
+                      </div>
+                      <ToggleSwitch
+                        checked={counterPickup}
+                        onChange={(val) => handleDeliveryMethodToggle('counterPickup', val)}
+                        disabled={isLoading || updateUserLoading}
+                      />
+                    </div>
+                    <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                      Customers receive an order number and collect items at the counter when ready.
+                    </p>
                   </div>
-                  <ToggleSwitch
-                    checked={tableDelivery}
-                    onChange={(val) => handleDeliveryMethodToggle('tableDelivery', val)}
-                    disabled={isLoading || updateUserLoading}
-                  />
-                </div>
-                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                  Customers enter their table number. Staff delivers orders directly to the table.
-                </p>
-              </div>
 
-              {/* To Go */}
-              <div
-                className={`rounded-xl border-2 p-5 transition-all ${
-                  toGo
-                    ? 'border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-950/30'
-                    : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#1a1a1a]'
-                }`}
-              >
-                <div className="mb-3 flex items-start justify-between">
-                  <div>
-                    <div className="mb-2 text-3xl">🛍️</div>
-                    <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">To Go</h3>
+                  {/* Table Delivery */}
+                  <div
+                    className={`rounded-xl border-2 p-5 transition-all ${
+                      tableDelivery
+                        ? 'border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-950/30'
+                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#1a1a1a]'
+                    }`}
+                  >
+                    <div className="mb-3 flex items-start justify-between">
+                      <div>
+                        <div className="mb-2 text-3xl">🍽️</div>
+                        <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">Table Delivery</h3>
+                      </div>
+                      <ToggleSwitch
+                        checked={tableDelivery}
+                        onChange={(val) => handleDeliveryMethodToggle('tableDelivery', val)}
+                        disabled={isLoading || updateUserLoading}
+                      />
+                    </div>
+                    <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                      Customers enter their table number. Staff delivers orders directly to the table.
+                    </p>
                   </div>
-                  <ToggleSwitch
-                    checked={toGo}
-                    onChange={(val) => handleDeliveryMethodToggle('toGo', val)}
-                    disabled={isLoading || updateUserLoading}
-                  />
+
+                  {/* To Go */}
+                  <div
+                    className={`rounded-xl border-2 p-5 transition-all ${
+                      toGo
+                        ? 'border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-950/30'
+                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#1a1a1a]'
+                    }`}
+                  >
+                    <div className="mb-3 flex items-start justify-between">
+                      <div>
+                        <div className="mb-2 text-3xl">🛍️</div>
+                        <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">To Go</h3>
+                      </div>
+                      <ToggleSwitch
+                        checked={toGo}
+                        onChange={(val) => handleDeliveryMethodToggle('toGo', val)}
+                        disabled={isLoading || updateUserLoading}
+                      />
+                    </div>
+                    <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                      Similar to counter pickup but specifically marked for takeaway orders. Packaged for transport.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                  Similar to counter pickup but specifically marked for takeaway orders. Packaged for transport.
-                </p>
+
+                <InfoBox
+                  variant="warning"
+                  title="At least one delivery method required"
+                  description="You must enable at least one delivery method for customers to place orders. If all methods are disabled, ordering will be unavailable."
+                />
+
+                {/* Save Button */}
+                <div className="mt-6 flex justify-end border-t border-gray-100 pt-6 dark:border-gray-800">
+                  {updateUserLoading ? (
+                    <Button type="button" disabled className="h-10 cursor-not-allowed gap-2 font-semibold">
+                      <ButtonLoading title="Saving" />
+                    </Button>
+                  ) : (
+                    <Button type="submit" className="h-10 gap-2 font-semibold" disabled={!isDirty}>
+                      Save Delivery Settings
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-
-            <InfoBox
-              variant="warning"
-              title="At least one delivery method required"
-              description="You must enable at least one delivery method for customers to place orders. If all methods are disabled, ordering will be unavailable."
-            />
-
-            {/* Save Button */}
-            <div className="mt-6 flex justify-end border-t border-gray-100 pt-6 dark:border-gray-800">
-              {updateUserLoading ? (
-                <Button type="button" disabled className="h-10 cursor-not-allowed gap-2 font-semibold">
-                  <ButtonLoading title="Saving" />
-                </Button>
-              ) : (
-                <Button type="submit" className="h-10 gap-2 font-semibold" disabled={!isDirty}>
-                  Save Delivery Settings
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-    </FormProvider>
+          </section>
+        </OrganizationGuard>
+      </FormProvider>
+    </>
   );
 };

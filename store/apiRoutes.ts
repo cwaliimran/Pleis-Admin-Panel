@@ -247,6 +247,9 @@ export const API_ROUTES = {
   ADMIN_HIGHLIGHT_LIST: `/admin/highlights`,
   ADMIN_HIGHLIGHT_LIST_BY_ID: (id: string) => `/admin/highlights/${id}`,
 
+  ORGANIZER_HIGHLIGHT_LIST: `/organizer/highlights`,
+  ORGANIZER_HIGHLIGHT_LIST_BY_ID: (id: string) => `/organizer/highlights/${id}`,
+
   CATEGORIES: `/admin/categories`,
   CATEGORIES_BY_ID: (id: string) => `/admin/categories/${id}`,
 

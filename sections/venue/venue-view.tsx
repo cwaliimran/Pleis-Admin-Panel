@@ -12,6 +12,7 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import VenueTypeModalV2 from './venueTypeModal';
 import VenueTypeTable from './venueTypeTable';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 const VenueView = () => {
   const openModal = useBoolean();
@@ -51,6 +52,7 @@ const VenueView = () => {
     }
   };
 
+  const { organizationId } = useCompanySelectionState();
   const { organizerOrganizationIds } = useCompanySelection();
 
   const {
@@ -64,6 +66,7 @@ const VenueView = () => {
     organization: organizerOrganizationIds || undefined,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    organizationId, // Refreshing purpose
   });
 
   // Local state for venue types and meta
