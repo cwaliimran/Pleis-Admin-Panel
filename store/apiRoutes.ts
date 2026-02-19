@@ -182,20 +182,29 @@ export const API_ROUTES = {
 
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
-  // ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}?scope=future`,
-
-  UPDATE_ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
   UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
-
   DELETE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
-
-  ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
-  ADMIN_EVENTS_BY_COMPANY_ORGANIZER: (companyOrganizerId: string) => `/admin/events/companyOrganizer/${companyOrganizerId}`,
 
   ADMIN_EVENTS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/analytics`,
   ADMIN_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/tickets-analytics`,
   ADMIN_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/admin/events/${id}/notifications`,
   ADMIN_EVENTS_FEEDBACK_BY_ID: (id: string) => `/admin/events/${id}/ratting`,
+  ADMIN_EVENTS_BY_COMPANY_ORGANIZER: (companyOrganizerId: string) => `/admin/events/companyOrganizer/${companyOrganizerId}`,
+  ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
+
+  ORGANIZER_EVENTS: `/organizer/events`,
+  ORGANIZER_EVENTS_BY_ID: (id: string) => `/organizer/events/${id}`,
+  UPDATE_ORGANIZER_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/organizer/events/${id}?scope=${scope}`,
+  DELETE_ORGANIZER_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/organizer/events/${id}?scope=${scope}`,
+
+  ORGANIZER_EVENTS_ANALYTICS_BY_ID: (id: string) => `/organizer/events/${id}/analytics`,
+  ORGANIZER_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/organizer/events/${id}/tickets-analytics`,
+  ORGANIZER_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/organizer/events/${id}/notifications`,
+  ORGANIZER_EVENTS_FEEDBACK_BY_ID: (id: string) => `/organizer/events/${id}/ratting`,
+  ORGANIZER_EVENTS_BY_COMPANY_ORGANIZER: (companyOrganizerId: string) => `/organizer/events/companyOrganizer/${companyOrganizerId}`,
+  ORGANIZER_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/organizer/events/organization/${organizationId}`,
+
+  UPDATE_ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
 
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_COMPANY_ORGANIZER: `/admin/venues/title`,

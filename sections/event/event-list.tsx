@@ -1,9 +1,11 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import EventConfirmDialog from '@/components/comfirm-dialog/event-confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { EventTable } from '@/sections/event';
 import { useDeleteeventMutation, useGeteventsQuery } from '@/store/Reducer/events';
 import { formatDate } from '@/utils/format-time';
@@ -25,6 +27,9 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingAllEvents, setIsDeletingAllEvents] = useState(false);
 
+  const { organizationId } = useCompanySelectionState();
+  const { organizerOrganizationIds } = useCompanySelection();
+
   // Separate state for better control
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -45,7 +50,9 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     status: status === 'all' ? undefined : status,
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
-    ...(organization ? { organization } : {}),
+    // ...(organization ? { organization } : {}),
+    organization: userType === 'organizer' ? organizerOrganizationIds : organization || undefined,
+    organizationId, // This param is just to recall header data fetching when organization changes
   });
 
   const handleDelete = (data: any) => {

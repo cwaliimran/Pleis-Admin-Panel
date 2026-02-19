@@ -52,6 +52,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/organizer/organization/organization-list',
     '/organizer/organizer/venue',
     '/organizer/events/event-list',
+    '/organizer/events',
     '/organizer/highlight',
     '/organizer/highlight',
     '/organizer/reviews',
@@ -80,13 +81,13 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/organizer/calendar',
     '/organizer/analytics',
     '/organizer/reservation-transactions',
-    
+
     // '/organizer/app-ordering/order-management',
     // '/organizer/app-ordering/menu-management',
     '/organizer/app-ordering/order-analytics',
     '/organizer/app-ordering/order-transactions',
     '/organizer/app-ordering/order-settings',
-    
+
     '/organizer/subscription',
     '/organizer/user/user-list',
     '/organizer/analytics',
@@ -133,7 +134,10 @@ const Header: FC<HeaderProps> = ({ links }) => {
     isLoading: isLoadingCompanies,
     isFetching,
   } = useGetCompanyListQuery(
-    {},
+    {
+      page: 0,
+      limit: '100',
+    },
     {
       skip: !shouldShowCompanyDropdown,
     }
