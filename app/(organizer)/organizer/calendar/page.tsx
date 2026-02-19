@@ -12,13 +12,13 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Dashboard', href: '/organizer' },
           { name: 'Reservation', href: '' },
         ]}
       />
 
       <CompanyGuard>
-        <ReservationCalendar userType="super-admin" />
+        <ReservationCalendar userType="organizer" />
       </CompanyGuard>
     </div>
   );

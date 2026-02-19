@@ -101,8 +101,13 @@ export const API_ROUTES = {
 
   ADMIN_RESERVATION_CALENDAR: `/admin/reservations/calendar`,
   ADMIN_RESERVATION_COPY: `/admin/reservations/copy`,
-  ADMIN_RESERVATION_CHANGE_TIMING: `/admin/reservations/change-timing`,
   ADMIN_RESERVATION_COPY_SLOTS: `/admin/reservations/copy-slots`,
+  ADMIN_RESERVATION_CHANGE_TIMING: `/admin/reservations/change-timing`,
+
+  ORGANIZER_RESERVATION_CALENDAR: `/organizer/reservations/calendar`,
+  ORGANIZER_RESERVATION_COPY: `/organizer/reservations/copy`,
+  ORGANIZER_RESERVATION_COPY_SLOTS: `/organizer/reservations/copy-slots`,
+  ORGANIZER_RESERVATION_CHANGE_TIMING: `/organizer/reservations/change-timing`,
 
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
