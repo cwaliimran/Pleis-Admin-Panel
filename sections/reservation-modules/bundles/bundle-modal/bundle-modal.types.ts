@@ -52,4 +52,5 @@ export type BundleModalProps = {
   selectedData?: any;
   companyId?: string | null;
   organizationId?: string | null;
+  userType?: 'organizer' | 'super-admin';
 };

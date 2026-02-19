@@ -12,13 +12,13 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Dashboard', href: '/organizer' },
           { name: 'Bundles', href: '' },
         ]}
       />
 
       <CompanyGuard>
-        <BundlesView userType="super-admin" />
+        <BundlesView userType="organizer" />
       </CompanyGuard>
     </div>
   );

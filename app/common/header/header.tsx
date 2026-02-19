@@ -78,7 +78,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/organizer/ticketing-transactions',
 
     // '/organizer/reservation',
-    '/organizer/calendar',
+    // '/organizer/calendar',
     '/organizer/analytics',
     '/organizer/reservation-transactions',
 
@@ -93,7 +93,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
     '/organizer/analytics',
     '/organizer/analytics',
     '/organizer/transactions-history',
-    '/organizer/bundles',
+    // '/organizer/bundles',
     '/organizer/promo-code',
     '/organizer/marketing-requests',
   ];

@@ -222,6 +222,9 @@ export const API_ROUTES = {
   ADMIN_BUNDLES: `/admin/bundles`,
   ADMIN_BUNDLES_BY_ID: (id: string) => `/admin/bundles/${id}`,
 
+  ORGANIZER_BUNDLES: `/organizer/bundles`,
+  ORGANIZER_BUNDLES_BY_ID: (id: string) => `/organizer/bundles/${id}`,
+
   CREATE_MARKETING_REQUEST: `/organizer/marketing`,
   MARKETING_REQUEST: (userType: string) => (userType === 'super-admin' ? '/admin/marketing' : '/organizer/marketing'),
 
@@ -249,8 +252,8 @@ export const API_ROUTES = {
 
   LOYALTY_LISTINGS: `/admin/loyalty/listings`,
   ADMIN_REQUEST_LOYALTY_CLUBS: `/admin/loyalty/club-collaborations`,
-  ADMIN_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/admin/loyalty/club-collaborations/${id}`,
   GET_ADMIN_REQUEST_LOYALTY_CLUBS: (companyOrganizer: string) => `/admin/loyalty/club-collaborations/${companyOrganizer}`,
+  ADMIN_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/admin/loyalty/club-collaborations/${id}`,
 
   // ADMIN_LOYALTY_REWARDS: `/admin/loyalty/rewards`,
   // ADMIN_LOYALTY_REWARDS_BY_ID: (id: string) => `/admin/loyalty/rewards/${id}`,
@@ -362,9 +365,10 @@ export const API_ROUTES = {
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
   ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
   ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,
+  ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
+  // ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
 
   ORGANIZER_MENU_ITEMS: `/organizer/menu-management/items`,
-  ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
   ORGANIZER_MENU_ITEMS_BY_ID: (id: string) => `/organizer/menu/items/${id}`,
   ORGANIZER_MENU_ITEMS_BY_MENU_ID: (id: string) => `/organizer/menu/items/menu/${id}`,
 

@@ -382,7 +382,7 @@ const EventDetailsPage = () => {
 
                   {active === 'tickets' && <EventTicket event={event} />}
 
-                  {active === 'reservations' && <EventReservation event={event} />}
+                  {active === 'reservations' && <EventReservation event={event} userType={userType} />}
 
                   {active === 'notifications' && <EventNotification id={id} />}
 
