@@ -38,4 +38,5 @@ export interface TableRowProps {
 export interface ClubsViewProps {
   title: string;
   type: string;
+  selectedCompanyId?: string | null;
 }

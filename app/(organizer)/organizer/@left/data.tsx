@@ -61,11 +61,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.organizer.events.list,
         icon: CalendarDays,
       },
-      {
-        title: 'Highlights',
-        url: paths.organizer.hightLight.default,
-        icon: CalendarDays,
-      },
+      // {
+      //   title: 'Highlights',
+      //   url: paths.organizer.hightLight.default,
+      //   icon: CalendarDays,
+      // },
       {
         title: 'Reviews',
         url: paths.organizer.reviews,

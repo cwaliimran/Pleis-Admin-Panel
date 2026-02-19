@@ -40,7 +40,6 @@ const OrganizerRewardsView = () => {
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
-    // companyOrganizer: companyId || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);

@@ -49,14 +49,17 @@ const Header: FC<HeaderProps> = ({ links }) => {
 
   // Organizer routes where dropdown should be shown
   const ORGANIZER_DROPDOWN_ROUTES = [
+    '/organizer/organization',
     '/organizer/organization/organization-list',
-    '/organizer/organizer/venue',
-    '/organizer/events/event-list',
+
+    '/organizer/venue',
+    '/organizer/venue-list',
+
     '/organizer/events',
-    '/organizer/highlight',
-    '/organizer/highlight',
-    '/organizer/reviews',
-    '/organizer/qr-codes',
+    '/organizer/events/event-list',
+
+    // '/organizer/reviews',
+    // '/organizer/qr-codes',
     '/organizer/updates',
 
     '/organizer/menu-list',
@@ -86,16 +89,15 @@ const Header: FC<HeaderProps> = ({ links }) => {
     // '/organizer/app-ordering/menu-management',
     '/organizer/app-ordering/order-analytics',
     '/organizer/app-ordering/order-transactions',
-    '/organizer/app-ordering/order-settings',
+    // '/organizer/app-ordering/order-settings',
 
     '/organizer/subscription',
-    '/organizer/user/user-list',
-    '/organizer/analytics',
+    // '/organizer/user/user-list',
     '/organizer/analytics',
     '/organizer/transactions-history',
     // '/organizer/bundles',
-    '/organizer/promo-code',
-    '/organizer/marketing-requests',
+    // '/organizer/promo-code',
+    // '/organizer/marketing-requests',
   ];
 
   // Helper to check if dropdown should be shown for organizer

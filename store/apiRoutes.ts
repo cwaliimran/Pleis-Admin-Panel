@@ -247,6 +247,9 @@ export const API_ROUTES = {
   ADMIN_HIGHLIGHT_LIST: `/admin/highlights`,
   ADMIN_HIGHLIGHT_LIST_BY_ID: (id: string) => `/admin/highlights/${id}`,
 
+  ORGANIZER_HIGHLIGHT_LIST: `/organizer/highlights`,
+  ORGANIZER_HIGHLIGHT_LIST_BY_ID: (id: string) => `/organizer/highlights/${id}`,
+
   CATEGORIES: `/admin/categories`,
   CATEGORIES_BY_ID: (id: string) => `/admin/categories/${id}`,
 
@@ -254,6 +257,11 @@ export const API_ROUTES = {
   ADMIN_REQUEST_LOYALTY_CLUBS: `/admin/loyalty/club-collaborations`,
   GET_ADMIN_REQUEST_LOYALTY_CLUBS: (companyOrganizer: string) => `/admin/loyalty/club-collaborations/${companyOrganizer}`,
   ADMIN_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/admin/loyalty/club-collaborations/${id}`,
+
+  ORGANIZER_LOYALTY_LISTINGS: `/organizer/loyalty/listings`,
+  ORGANIZER_REQUEST_LOYALTY_CLUBS: `/organizer/loyalty/club-collaborations`,
+  GET_ORGANIZER_REQUEST_LOYALTY_CLUBS: (companyOrganizer: string) => `/organizer/loyalty/club-collaborations/${companyOrganizer}`,
+  ORGANIZER_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/organizer/loyalty/club-collaborations/${id}`,
 
   // ADMIN_LOYALTY_REWARDS: `/admin/loyalty/rewards`,
   // ADMIN_LOYALTY_REWARDS_BY_ID: (id: string) => `/admin/loyalty/rewards/${id}`,

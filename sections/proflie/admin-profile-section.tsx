@@ -87,9 +87,18 @@ const AdminProfileSection = () => {
         payload.email = formData.email;
       }
       if (dirtyFields.phone || dirtyFields.phoneCode) {
+        const rawPhone = (formData.phone || '').trim();
+        const rawPhoneCode = (formData.phoneCode || '').trim();
+
+        const onlyDigits = (value: string) => value.replace(/\D/g, '');
+        const phoneDigits = onlyDigits(rawPhone);
+        const phoneCodeDigits = onlyDigits(rawPhoneCode);
+
+        const separatedNumber = phoneDigits.startsWith(phoneCodeDigits) ? phoneDigits.slice(phoneCodeDigits.length) : phoneDigits;
+
         payload.phoneNumber = {
-          code: formData.phoneCode || '',
-          number: formData.phone.replace(formData.phoneCode || '', ''),
+          code: phoneCodeDigits ? `+${phoneCodeDigits}` : '',
+          number: separatedNumber,
         };
       }
       if (selectedFile) {
@@ -220,7 +229,7 @@ const AdminProfileSection = () => {
                         inputProps={{
                           required: true,
                           'aria-invalid': fieldState.invalid,
-                          readOnly: true, // Added readOnly attribute
+                          // readOnly: true, // Added readOnly attribute
                         }}
                         containerClass="w-full"
                         dropdownStyle={{

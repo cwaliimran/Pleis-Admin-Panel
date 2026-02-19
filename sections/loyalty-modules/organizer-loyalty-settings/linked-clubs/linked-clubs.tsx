@@ -124,8 +124,8 @@ const LinkedClubs = ({ selectedCompanyId }: Props) => {
           </div>
         )}
 
-        <ClubsView title="Currently Linked Clubs" type="accepted" />
-        <ClubsView title="Incoming Requests" type="pending" />
+        <ClubsView title="Currently Linked Clubs" type="accepted" selectedCompanyId={selectedCompanyId} />
+        <ClubsView title="Incoming Requests" type="pending" selectedCompanyId={selectedCompanyId} />
       </div>
     </>
   );
