@@ -101,8 +101,13 @@ export const API_ROUTES = {
 
   ADMIN_RESERVATION_CALENDAR: `/admin/reservations/calendar`,
   ADMIN_RESERVATION_COPY: `/admin/reservations/copy`,
-  ADMIN_RESERVATION_CHANGE_TIMING: `/admin/reservations/change-timing`,
   ADMIN_RESERVATION_COPY_SLOTS: `/admin/reservations/copy-slots`,
+  ADMIN_RESERVATION_CHANGE_TIMING: `/admin/reservations/change-timing`,
+
+  ORGANIZER_RESERVATION_CALENDAR: `/organizer/reservations/calendar`,
+  ORGANIZER_RESERVATION_COPY: `/organizer/reservations/copy`,
+  ORGANIZER_RESERVATION_COPY_SLOTS: `/organizer/reservations/copy-slots`,
+  ORGANIZER_RESERVATION_CHANGE_TIMING: `/organizer/reservations/change-timing`,
 
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
@@ -182,20 +187,29 @@ export const API_ROUTES = {
 
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
-  // ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}?scope=future`,
-
-  UPDATE_ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
   UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
-
   DELETE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
-
-  ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
-  ADMIN_EVENTS_BY_COMPANY_ORGANIZER: (companyOrganizerId: string) => `/admin/events/companyOrganizer/${companyOrganizerId}`,
 
   ADMIN_EVENTS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/analytics`,
   ADMIN_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/tickets-analytics`,
   ADMIN_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/admin/events/${id}/notifications`,
   ADMIN_EVENTS_FEEDBACK_BY_ID: (id: string) => `/admin/events/${id}/ratting`,
+  ADMIN_EVENTS_BY_COMPANY_ORGANIZER: (companyOrganizerId: string) => `/admin/events/companyOrganizer/${companyOrganizerId}`,
+  ADMIN_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/admin/events/organization/${organizationId}`,
+
+  ORGANIZER_EVENTS: `/organizer/events`,
+  ORGANIZER_EVENTS_BY_ID: (id: string) => `/organizer/events/${id}`,
+  UPDATE_ORGANIZER_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/organizer/events/${id}?scope=${scope}`,
+  DELETE_ORGANIZER_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/organizer/events/${id}?scope=${scope}`,
+
+  ORGANIZER_EVENTS_ANALYTICS_BY_ID: (id: string) => `/organizer/events/${id}/analytics`,
+  ORGANIZER_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/organizer/events/${id}/tickets-analytics`,
+  ORGANIZER_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/organizer/events/${id}/notifications`,
+  ORGANIZER_EVENTS_FEEDBACK_BY_ID: (id: string) => `/organizer/events/${id}/ratting`,
+  ORGANIZER_EVENTS_BY_COMPANY_ORGANIZER: (companyOrganizerId: string) => `/organizer/events/companyOrganizer/${companyOrganizerId}`,
+  ORGANIZER_EVENTS_BY_ORGANIZATION: (organizationId: string) => `/organizer/events/organization/${organizationId}`,
+
+  UPDATE_ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
 
   ADMIN_VENUES: `/admin/venues`,
   ADMIN_VENUES_BY_COMPANY_ORGANIZER: `/admin/venues/title`,
@@ -207,6 +221,9 @@ export const API_ROUTES = {
 
   ADMIN_BUNDLES: `/admin/bundles`,
   ADMIN_BUNDLES_BY_ID: (id: string) => `/admin/bundles/${id}`,
+
+  ORGANIZER_BUNDLES: `/organizer/bundles`,
+  ORGANIZER_BUNDLES_BY_ID: (id: string) => `/organizer/bundles/${id}`,
 
   CREATE_MARKETING_REQUEST: `/organizer/marketing`,
   MARKETING_REQUEST: (userType: string) => (userType === 'super-admin' ? '/admin/marketing' : '/organizer/marketing'),
@@ -235,8 +252,13 @@ export const API_ROUTES = {
 
   LOYALTY_LISTINGS: `/admin/loyalty/listings`,
   ADMIN_REQUEST_LOYALTY_CLUBS: `/admin/loyalty/club-collaborations`,
-  ADMIN_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/admin/loyalty/club-collaborations/${id}`,
   GET_ADMIN_REQUEST_LOYALTY_CLUBS: (companyOrganizer: string) => `/admin/loyalty/club-collaborations/${companyOrganizer}`,
+  ADMIN_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/admin/loyalty/club-collaborations/${id}`,
+
+  ORGANIZER_LOYALTY_LISTINGS: `/organizer/loyalty/listings`,
+  ORGANIZER_REQUEST_LOYALTY_CLUBS: `/organizer/loyalty/club-collaborations`,
+  GET_ORGANIZER_REQUEST_LOYALTY_CLUBS: (companyOrganizer: string) => `/organizer/loyalty/club-collaborations/${companyOrganizer}`,
+  ORGANIZER_REQUEST_LOYALTY_CLUBS_BY_ID: (id: string) => `/organizer/loyalty/club-collaborations/${id}`,
 
   // ADMIN_LOYALTY_REWARDS: `/admin/loyalty/rewards`,
   // ADMIN_LOYALTY_REWARDS_BY_ID: (id: string) => `/admin/loyalty/rewards/${id}`,
@@ -310,10 +332,16 @@ export const API_ROUTES = {
   ADMIN_THIRD_PARTY_BY_ID: (id: string) => `/admin/third-party/${id}`,
 
   ADMIN_RESERVATION: `/admin/reservations`,
-  ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
   ADMIN_RESERVATION_BY_ID: (id: string) => `/admin/reservations/${id}`,
   ADMIN_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/admin/reservations/updateStatus/${id}/${status}`,
+  ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
   ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
+
+  ORGANIZER_RESERVATION: `/organizer/reservations`,
+  ORGANIZER_RESERVATION_BY_ID: (id: string) => `/organizer/reservations/${id}`,
+  ORGANIZER_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/organizer/reservations/updateStatus/${id}/${status}`,
+  ORGANIZER_USERS_RESERVATION: `/organizer/reservations/users`,
+  ORGANIZER_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/organizer/reservations/${userId}/${id}`,
 
   ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,
   ORGANIZER_LOYALTY_TRANSACTIONS: `/organizer/transactions`,
@@ -342,9 +370,10 @@ export const API_ROUTES = {
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
   ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
   ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,
+  ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
+  // ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
 
   ORGANIZER_MENU_ITEMS: `/organizer/menu-management/items`,
-  ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
   ORGANIZER_MENU_ITEMS_BY_ID: (id: string) => `/organizer/menu/items/${id}`,
   ORGANIZER_MENU_ITEMS_BY_MENU_ID: (id: string) => `/organizer/menu/items/menu/${id}`,
 

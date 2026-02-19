@@ -18,7 +18,7 @@ const Page = () => {
       />
 
       <CompanyGuard>
-        <ReservationView />
+        <ReservationView userType="super-admin" />
       </CompanyGuard>
     </div>
   );

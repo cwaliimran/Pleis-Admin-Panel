@@ -1,10 +1,10 @@
 import Header from '@/app/common/header/header';
 import CompanyGuard from '@/components/guards/CompanyGuard';
-import BundlesView from '@/sections/reservation-modules/bundles/bundles-view';
+import ReservationCalendar from '@/sections/reservation-modules/reservation-calendar/reservation-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Bundles - Pleis',
+  title: 'Calendar - Pleis',
 };
 
 const Page = () => {
@@ -12,13 +12,13 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header
         links={[
-          { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Bundles', href: '' },
+          { name: 'Dashboard', href: '/organizer' },
+          { name: 'Reservation', href: '' },
         ]}
       />
 
       <CompanyGuard>
-        <BundlesView userType="super-admin" />
+        <ReservationCalendar userType="organizer" />
       </CompanyGuard>
     </div>
   );

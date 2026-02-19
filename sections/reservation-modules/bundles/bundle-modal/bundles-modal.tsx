@@ -23,7 +23,7 @@ import { calculateDiscount, calculateOriginalPrice, formatDateTimeForAPI, parseD
 import PricingSection from './pricing-section';
 import { bundleSchema, defaultValues } from './schema';
 
-const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, organizationId }: BundleModalProps) => {
+const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, organizationId, userType }: BundleModalProps) => {
   const [activeTab, setActiveTab] = useState<'tickets' | 'reservations' | 'preorders'>('tickets');
   const isInitializingEdit = useRef(false);
 
@@ -49,6 +49,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, o
   const bundlePrice = watch('price');
   const event = watch('event');
 
+  // EVENTS -----------------------------------
   const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
     {
       organization: organizationId,
@@ -63,6 +64,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, o
     label: v?.basicInfo?.title || 'No Title',
   }));
 
+  // TICKETS -----------------------------------
   const {
     data: ticketData,
     isLoading: isTicketsLoading,
@@ -76,6 +78,15 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, o
     }
   );
 
+  const ticketsData: TicketData[] = ticketData?.data || [];
+
+  const ticketOptions = ticketsData.map((ticket) => ({
+    label: `${ticket?.title} - €${ticket?.amount}`,
+    value: ticket?._id,
+    price: ticket?.amount,
+  }));
+
+  // RESERVATIONS -----------------------------------
   const {
     data: reservationsDataResponse,
     isLoading: isReservationsLoading,
@@ -83,9 +94,26 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, o
   } = useGetReservationsQuery({
     page: 0,
     limit: 10000,
-    companyOrganizer: companyId || undefined,
+    companyOrganizer: userType === 'super-admin' ? companyId : undefined,
+    organizationsId: userType === 'organizer' ? organizationId : undefined,
   });
 
+  // Map Reservation[] to ReservationData[] and provide default for amount
+  const reservationsData: ReservationData[] = (reservationsDataResponse?.data || []).map((r: any) => ({
+    _id: r._id,
+    reservationType: r.reservationType,
+    amount: r.amount ?? 0,
+    maxCapacityPerReservation: r.maxCapacityPerReservation,
+  }));
+
+  const reservationOptions = reservationsData.map((reservation) => ({
+    label: `${reservation?.reservationType} - €${reservation?.amount} (Capacity: ${reservation?.maxCapacityPerReservation})`,
+    value: reservation?._id,
+    price: reservation?.amount,
+    capacity: reservation?.maxCapacityPerReservation,
+  }));
+
+  // MENU ITEMS -----------------------------------
   const {
     data: menuItemsDataResponse,
     isLoading: isMenuItemsLoading,
@@ -96,28 +124,7 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, o
     companyOrganizer: companyId || undefined,
   });
 
-  const ticketsData: TicketData[] = ticketData?.data || [];
-  // Map Reservation[] to ReservationData[] and provide default for amount
-  const reservationsData: ReservationData[] = (reservationsDataResponse?.data || []).map((r) => ({
-    _id: r._id,
-    reservationType: r.reservationType,
-    amount: r.amount ?? 0,
-    maxCapacityPerReservation: r.maxCapacityPerReservation,
-  }));
   const menuItemsData: MenuItemData[] = menuItemsDataResponse?.data || [];
-
-  const ticketOptions = ticketsData.map((ticket) => ({
-    label: `${ticket?.title} - €${ticket?.amount}`,
-    value: ticket?._id,
-    price: ticket?.amount,
-  }));
-
-  const reservationOptions = reservationsData.map((reservation) => ({
-    label: `${reservation?.reservationType} - €${reservation?.amount} (Capacity: ${reservation?.maxCapacityPerReservation})`,
-    value: reservation?._id,
-    price: reservation?.amount,
-    capacity: reservation?.maxCapacityPerReservation,
-  }));
 
   const menuItemOptions = menuItemsData.map((menuItem) => ({
     label: `${menuItem?.title} - €${menuItem?.price}`,
@@ -306,8 +313,6 @@ const BundleModal = ({ open, onClose, isEdit = false, selectedData, companyId, o
       }
 
       const payload = transformToPayload(formData);
-
-      console.log('payload', payload);
 
       const response = isEdit ? await updateBundle(payload).unwrap() : await addBundle(payload).unwrap();
 

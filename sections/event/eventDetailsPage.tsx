@@ -164,8 +164,7 @@ const EventDetailsPage = () => {
                           <Image
                             src={event?.basicInfo?.media || ''}
                             alt="Event preview"
-                            className="rounded-lg object-cover"
-                            // sizes="(max-width: 768px) 100vw, 40vw"
+                            className="max-h-88 rounded-lg object-cover"
                             priority
                             height={400}
                             width={400}
@@ -254,7 +253,7 @@ const EventDetailsPage = () => {
                               className="h-6 w-6 rounded-full"
                             />
 
-                            <span className="text-sm font-medium text-gray-800 dark:text-white capitalize">
+                            <span className="text-sm font-medium text-gray-800 capitalize dark:text-white">
                               {event?.basicInfo?.organization?.basicInfo?.name || 'Unknown Organizer'}
                             </span>
                           </div>
@@ -383,7 +382,7 @@ const EventDetailsPage = () => {
 
                   {active === 'tickets' && <EventTicket event={event} />}
 
-                  {active === 'reservations' && <EventReservation event={event} />}
+                  {active === 'reservations' && <EventReservation event={event} userType={userType} />}
 
                   {active === 'notifications' && <EventNotification id={id} />}
 

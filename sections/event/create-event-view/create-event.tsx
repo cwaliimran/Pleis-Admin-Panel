@@ -9,11 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { useGetCategoriesQuery } from '@/store/Reducer/categories';
-import {
-  useAddeventMutation,
-  useGeteventByIdQuery,
-  useUpdateeventMutation,
-} from '@/store/Reducer/events';
+import { useAddeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
 import { useGetVenuesQuery } from '@/store/Reducer/venue';
@@ -91,29 +87,23 @@ const CreateEventView = (props: any) => {
 
   const { data: event = {} } = useGeteventByIdQuery(id ?? skipToken);
 
-  const { data: { data: organizations = [] } = {}, isLoading: orgLoading } =
-    useGetOrganizationQuery({
-      page: 0,
-      limit: 10000,
-    });
-
-  const {
-    data: { data: categoriesData = [] } = {},
-    isLoading: categoriesLoading,
-  } = useGetCategoriesQuery({
+  const { data: { data: organizations = [] } = {}, isLoading: orgLoading } = useGetOrganizationQuery({
     page: 0,
     limit: 10000,
   });
 
-  const { data: { data: tagsd = [] } = {}, isLoading: tagsLoading } =
-    useGetTagsQuery({
-      page: 0,
-      limit: 10000,
-    });
+  const { data: { data: categoriesData = [] } = {}, isLoading: categoriesLoading } = useGetCategoriesQuery({
+    page: 0,
+    limit: 10000,
+  });
+
+  const { data: { data: tagsd = [] } = {}, isLoading: tagsLoading } = useGetTagsQuery({
+    page: 0,
+    limit: 10000,
+  });
   // const [addVenue] = useAddVenueMutation();
   const [addEvent, { isLoading: isAddingEvent }] = useAddeventMutation();
-  const [updateEvent, { isLoading: isUpdatingEvent }] =
-    useUpdateeventMutation();
+  const [updateEvent, { isLoading: isUpdatingEvent }] = useUpdateeventMutation();
 
   const defaultValues: EventFormValues = {
     image: null,
@@ -170,14 +160,10 @@ const CreateEventView = (props: any) => {
     eventType: Yup.string().oneOf(['oneTime', 'slots']),
     recurring: Yup.boolean(),
     recurringType: Yup.string().oneOf(['weekly', 'monthly', 'daily']),
-    recurringInterval: Yup.mixed().test(
-      'is-valid',
-      'Recurring interval must be at least 1',
-      (value) => {
-        if (value === '' || value === null || value === undefined) return true;
-        return typeof value === 'number' && value >= 1;
-      }
-    ),
+    recurringInterval: Yup.mixed().test('is-valid', 'Recurring interval must be at least 1', (value) => {
+      if (value === '' || value === null || value === undefined) return true;
+      return typeof value === 'number' && value >= 1;
+    }),
     recurringDays: Yup.array().of(Yup.string()),
     recurringEnd: Yup.string().oneOf(['never', 'onDate', 'afterOccurrences']),
     recurringEndDate: Yup.date().nullable(), // 👈 already correct
@@ -214,23 +200,17 @@ const CreateEventView = (props: any) => {
   } = watch();
 
   // Conditional venue API call based on organization selection
-  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } =
-    useGetVenuesQuery(
-      organization
-        ? { page: 0, limit: 1000, organization: organization }
-        : { page: 0, limit: 1000 },
-      {
-        skip: !organization,
-      }
-    );
+  const { data: { data: venues = [] } = {}, isLoading: venuesLoading } = useGetVenuesQuery(
+    organization ? { page: 0, limit: 1000, organization: organization } : { page: 0, limit: 1000 },
+    {
+      skip: !organization,
+    }
+  );
 
   // Clear venue when organization changes
   const prevOrganizationRef = useRef(organization);
   useEffect(() => {
-    if (
-      prevOrganizationRef.current &&
-      prevOrganizationRef.current !== organization
-    ) {
+    if (prevOrganizationRef.current && prevOrganizationRef.current !== organization) {
       // Clear venue field when organization changes to a different organization
       setValue('venue', '');
     }
@@ -268,9 +248,7 @@ const CreateEventView = (props: any) => {
   };
 
   const toggleRecurringDay = (day: string) => {
-    const newDays = recurringDays.includes(day)
-      ? recurringDays.filter((d) => d !== day)
-      : [...recurringDays, day];
+    const newDays = recurringDays.includes(day) ? recurringDays.filter((d) => d !== day) : [...recurringDays, day];
     setValue('recurringDays', newDays);
   };
 
@@ -289,13 +267,7 @@ const CreateEventView = (props: any) => {
     }
     if (step === 2) {
       // Validate required fields for step 2
-      const hasBasicFields = [
-        watch('fromDate'),
-        watch('endDate'),
-        watch('fromTime'),
-        watch('endTime'),
-        eventType,
-      ].every(Boolean);
+      const hasBasicFields = [watch('fromDate'), watch('endDate'), watch('fromTime'), watch('endTime'), eventType].every(Boolean);
 
       // Recurring event validation
       if (recurring) {
@@ -382,21 +354,15 @@ const CreateEventView = (props: any) => {
         },
         schedule: {
           type: data.eventType, // "oneTime"
-          startDateTime: data.fromDate
-            ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}`
-            : '', // "2025-09-03 16:35"
-          endDateTime: data.endDate
-            ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}`
-            : '', // "2025-09-03 16:37"
+          startDateTime: data.fromDate ? `${fDate(data.fromDate, formatStr.paramCase.db)} ${convertTimeFormat(data.fromTime)}` : '', // "2025-09-03 16:35"
+          endDateTime: data.endDate ? `${fDate(data.endDate, formatStr.paramCase.db)} ${convertTimeFormat(data.endTime)}` : '', // "2025-09-03 16:37"
           ...(data.recurring
             ? {
                 recurringDetails: {
                   isEnabled: data.recurring, // true
                   frequency: data.recurringType, // "weekly"
                   interval: data.recurringInterval, // 1
-                  daysOfWeek: data.recurringDays.map((day: string) =>
-                    day.substring(0, 3).toLowerCase()
-                  ), // ["mon", "tue", "wed"]
+                  daysOfWeek: data.recurringDays.map((day: string) => day.substring(0, 3).toLowerCase()), // ["mon", "tue", "wed"]
                   endType: data.recurringEnd, // "never"
                   endDate: data.recurringEndDate, // null
                   occurrences: data.recurringEndCount, // 1
@@ -430,24 +396,10 @@ const CreateEventView = (props: any) => {
 
   const setEditValues = () => {
     if (!event) return;
-    const fromDate_ = event?.schedule?.startDateTime
-      ? new Date(event.schedule.startDateTime)
-      : null;
-    const fromTime_ = event?.schedule?.startDateTime
-      ? convertTimeFormat(
-          event.schedule.startDateTime.split(' ').slice(1).join(' '),
-          true
-        )
-      : '';
-    const endDate_ = event?.schedule?.endDateTime
-      ? new Date(event.schedule.endDateTime)
-      : null;
-    const endTime_ = event?.schedule?.endDateTime
-      ? convertTimeFormat(
-          event.schedule.endDateTime.split(' ').slice(1).join(' '),
-          true
-        )
-      : '';
+    const fromDate_ = event?.schedule?.startDateTime ? new Date(event.schedule.startDateTime) : null;
+    const fromTime_ = event?.schedule?.startDateTime ? convertTimeFormat(event.schedule.startDateTime.split(' ').slice(1).join(' '), true) : '';
+    const endDate_ = event?.schedule?.endDateTime ? new Date(event.schedule.endDateTime) : null;
+    const endTime_ = event?.schedule?.endDateTime ? convertTimeFormat(event.schedule.endDateTime.split(' ').slice(1).join(' '), true) : '';
 
     reset({
       image: event?.basicInfo?.mediaInfo?.url || null, // from basicInfo.mediaInfo
@@ -458,8 +410,7 @@ const CreateEventView = (props: any) => {
       description: event?.basicInfo?.description || '',
 
       venue: event?.basicInfo?.venue?._id || '',
-      categories:
-        event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
+      categories: event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
       tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
 
       eventType: event?.schedule?.type || 'oneTime',
@@ -483,9 +434,7 @@ const CreateEventView = (props: any) => {
       partnerOrganizerInput: '',
 
       organization: event?.basicInfo?.organization?._id || '',
-      partnerOrganizers: event?.basicInfo?.partnerOrganizers
-        ? event.basicInfo.partnerOrganizers.map((org: any) => org._id)
-        : [],
+      partnerOrganizers: event?.basicInfo?.partnerOrganizers ? event.basicInfo.partnerOrganizers.map((org: any) => org._id) : [],
     });
   };
 
@@ -505,17 +454,11 @@ const CreateEventView = (props: any) => {
             <CardContent className="dark:bg-secondary p-2 md:p-8">
               {/* Header */}
               <div className="mb-8">
-                <h1 className="text-foreground mb-6 text-2xl font-bold">
-                  {title} Event
-                </h1>
+                <h1 className="text-foreground mb-6 text-2xl font-bold">{title} Event</h1>
                 {/* Step text above progress bar */}
                 <div className="mb-6 w-full">
                   <div className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                    {step === 1
-                      ? 'Step 1: Basic Info'
-                      : step === 2
-                        ? 'Step 2: Schedule Date and Time'
-                        : ' Step 3: Add Ticketing'}
+                    {step === 1 ? 'Step 1: Basic Info' : step === 2 ? 'Step 2: Schedule Date and Time' : ' Step 3: Add Ticketing'}
                   </div>
                   {/* <div className="relative w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                     <div
@@ -528,21 +471,14 @@ const CreateEventView = (props: any) => {
                   <div className="relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-800">
                     <div
                       className={`h-2 rounded-full bg-blue-700 transition-all duration-300 ${
-                        step === 1
-                          ? 'w-[33%]'
-                          : step === 2
-                            ? 'w-[66%]'
-                            : 'w-full'
+                        step === 1 ? 'w-[33%]' : step === 2 ? 'w-[66%]' : 'w-full'
                       }`}
                     />
                   </div>
                 </div>
               </div>
 
-              <FormProvider
-                methods={methods}
-                onSubmit={methods.handleSubmit(onSubmit)}
-              >
+              <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmit)}>
                 {step === 1 && (
                   <div className="space-y-8">
                     {/* Image upload and basic info */}
@@ -557,31 +493,16 @@ const CreateEventView = (props: any) => {
                               <label className="relative flex h-80 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-gray-300 bg-[#F8F6F7] transition-colors hover:border-gray-400 dark:border-zinc-700 dark:bg-[#171717] dark:hover:border-zinc-500">
                                 {mediaUrl ? (
                                   mediaType === 'video' ? (
-                                    <video
-                                      src={mediaUrl}
-                                      controls
-                                      className="h-full w-full object-cover"
-                                    />
+                                    <video src={mediaUrl} controls className="h-full w-full object-cover" />
                                   ) : (
-                                    <Image
-                                      src={mediaUrl}
-                                      alt="Preview"
-                                      priority
-                                      className="h-full w-full object-cover"
-                                      height={300}
-                                      width={300}
-                                    />
+                                    <Image src={mediaUrl} alt="Preview" priority className="h-full w-full object-cover" height={300} width={300} />
                                   )
                                 ) : (
                                   <div className="flex flex-row text-gray-400">
                                     <span className="mr-2 text-3xl"> + </span>
                                     <div className="flex flex-col">
-                                      <span className="text-[22.9px] font-semibold">
-                                        Add photo
-                                      </span>
-                                      <span className="align-middle text-[22.9px] font-semibold">
-                                        or video
-                                      </span>
+                                      <span className="text-[22.9px] font-semibold">Add photo</span>
+                                      <span className="align-middle text-[22.9px] font-semibold">or video</span>
                                     </div>
                                   </div>
                                 )}
@@ -597,12 +518,7 @@ const CreateEventView = (props: any) => {
                                       reader.onloadend = () => {
                                         const result = reader.result as string;
                                         setValue('mediaUrl', result);
-                                        setValue(
-                                          'mediaType',
-                                          file.type.startsWith('video/')
-                                            ? 'video'
-                                            : 'image'
-                                        );
+                                        setValue('mediaType', file.type.startsWith('video/') ? 'video' : 'image');
                                       };
                                       reader.readAsDataURL(file);
                                       field.onChange(file);
@@ -653,9 +569,7 @@ const CreateEventView = (props: any) => {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-                        Organization
-                      </label>
+                      <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">Organization</label>
 
                       {orgLoading ? (
                         <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -691,9 +605,7 @@ const CreateEventView = (props: any) => {
                     </div>
 
                     <div>
-                      <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-                        VENUE
-                      </label>
+                      <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">VENUE</label>
 
                       {venuesLoading ? (
                         <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -718,11 +630,7 @@ const CreateEventView = (props: any) => {
 
                           <RHFCustomDropdown
                             name="venue"
-                            placeholder={
-                              !organization
-                                ? 'Select organization first'
-                                : 'Suggested Venue'
-                            }
+                            placeholder={!organization ? 'Select organization first' : 'Suggested Venue'}
                             className="sm:max-w-[120px] lg:max-w-[440px]"
                             triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
                             contentClassName="rounded-xl shadow-md"
@@ -746,9 +654,7 @@ const CreateEventView = (props: any) => {
                       )}
 
                       <div className="mt-8">
-                        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-                          Category
-                        </label>
+                        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">Category</label>
 
                         {categoriesLoading ? (
                           <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -816,9 +722,7 @@ const CreateEventView = (props: any) => {
 
                     {/* Tags */}
                     <div>
-                      <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">
-                        TAGS
-                      </label>
+                      <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">TAGS</label>
 
                       {tagsLoading ? (
                         <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
@@ -895,11 +799,7 @@ const CreateEventView = (props: any) => {
                             contentClassName="rounded-xl shadow-md"
                             disabled={!organization}
                             options={organizations
-                              ?.filter(
-                                (org: any) =>
-                                  org._id !== organization &&
-                                  !partnerOrganizers?.includes(org._id)
-                              )
+                              ?.filter((org: any) => org._id !== organization && !partnerOrganizers?.includes(org._id))
                               ?.map((org: any) => ({
                                 value: org?._id,
                                 label: org?.basicInfo?.name,
@@ -921,12 +821,8 @@ const CreateEventView = (props: any) => {
                       {partnerOrganizers?.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {partnerOrganizers?.map((po: string) => (
-                            <Badge
-                              key={po}
-                              className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black"
-                            >
-                              {organizations?.find((org: any) => org._id === po)
-                                ?.basicInfo?.name || po}
+                            <Badge key={po} className="bg-secondary flex items-center gap-1 text-sm text-white dark:bg-white dark:text-black">
+                              {organizations?.find((org: any) => org._id === po)?.basicInfo?.name || po}
                               <button
                                 title="Remove Organizer"
                                 type="button"
@@ -976,9 +872,7 @@ const CreateEventView = (props: any) => {
                           variant="outline"
                           onClick={() => setValue('eventType', 'oneTime')}
                           className={`border-2 ${
-                            eventType === 'oneTime'
-                              ? 'border-blue-700 text-blue-700'
-                              : 'border-gray-300 dark:border-zinc-700'
+                            eventType === 'oneTime' ? 'border-blue-700 text-blue-700' : 'border-gray-300 dark:border-zinc-700'
                           } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
                         >
                           One time
@@ -988,9 +882,7 @@ const CreateEventView = (props: any) => {
                           variant="outline"
                           onClick={() => setValue('eventType', 'slots')}
                           className={`border-2 ${
-                            eventType === 'slots'
-                              ? 'border-blue-700 text-blue-700'
-                              : 'border-gray-300 dark:border-zinc-700'
+                            eventType === 'slots' ? 'border-blue-700 text-blue-700' : 'border-gray-300 dark:border-zinc-700'
                           } cursor-pointer rounded-2xl bg-transparent px-6 py-2 font-semibold`}
                         >
                           Slots
@@ -1002,9 +894,7 @@ const CreateEventView = (props: any) => {
 
                     {/* Date and time */}
                     <div className="space-y-6">
-                      <h3 className="text-lg font-medium">
-                        Set up your event date and time
-                      </h3>
+                      <h3 className="text-lg font-medium">Set up your event date and time</h3>
 
                       {/* Start Date and Time row */}
                       <div className="w-full md:w-[60%]">
@@ -1015,10 +905,7 @@ const CreateEventView = (props: any) => {
                               START DATE
                             </label>
 
-                            <RHFDate
-                              name="fromDate"
-                              className="h-10 w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600"
-                            />
+                            <RHFDate name="fromDate" className="h-10 w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600" />
                           </div>
                           <div className="space-y-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-white">
@@ -1030,9 +917,7 @@ const CreateEventView = (props: any) => {
                               type="time"
                               step="1800"
                               value={watch('fromTime') || '12:00'}
-                              onChange={(e) =>
-                                setValue('fromTime', e.target.value)
-                              }
+                              onChange={(e) => setValue('fromTime', e.target.value)}
                               className="w-36 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 text-[15px] focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
                             />
                           </div>
@@ -1062,9 +947,7 @@ const CreateEventView = (props: any) => {
                               type="time"
                               step="1800"
                               value={watch('endTime') || '13:00'}
-                              onChange={(e) =>
-                                setValue('endTime', e.target.value)
-                              }
+                              onChange={(e) => setValue('endTime', e.target.value)}
                               className="w-36 cursor-pointer rounded-4xl border border-gray-200 bg-[#F8F6F7] px-3 py-2 text-[15px] focus:border-blue-600 dark:border-zinc-700 dark:bg-transparent"
                             />
                           </div>
@@ -1084,14 +967,10 @@ const CreateEventView = (props: any) => {
                             <input
                               type="checkbox"
                               checked={recurring}
-                              onChange={(e) =>
-                                setValue('recurring', e.target.checked)
-                              }
+                              onChange={(e) => setValue('recurring', e.target.checked)}
                               className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                             />
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Enable
-                            </span>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable</span>
                           </label>
                         </div>
 
@@ -1113,56 +992,35 @@ const CreateEventView = (props: any) => {
                         <>
                           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div className="items-center justify-start gap-2 md:flex">
-                              <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-white">
-                                RECURRING INTERVAL
-                              </label>
+                              <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-white">RECURRING INTERVAL</label>
                               <div className="flex items-center gap-2">
                                 <input
                                   title="Set Recurring Interval"
                                   type="number"
                                   value={watch('recurringInterval')}
-                                  onChange={(e) =>
-                                    setValue(
-                                      'recurringInterval',
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : 0
-                                    )
-                                  }
+                                  onChange={(e) => setValue('recurringInterval', e.target.value ? Number(e.target.value) : 0)}
                                   className="w-16 rounded-2xl border border-gray-200 px-3 py-2 focus:border-blue-600 focus:outline-none"
                                   min="1"
                                 />
                                 <span className="text-sm text-gray-600 dark:text-white">
-                                  {watch('recurringType') === 'weekly'
-                                    ? 'Weeks'
-                                    : watch('recurringType') === 'monthly'
-                                      ? 'Months'
-                                      : 'Days'}
+                                  {watch('recurringType') === 'weekly' ? 'Weeks' : watch('recurringType') === 'monthly' ? 'Months' : 'Days'}
                                 </span>
                               </div>
                             </div>
                           </div>
 
                           <div className="space-y-2">
-                            <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-white">
-                              RECURRING DAY
-                            </label>
+                            <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-white">RECURRING DAY</label>
                             <div className="flex flex-wrap gap-2">
                               {weekDays.map((day) => (
                                 <Button
                                   key={day.value}
                                   type="button"
-                                  variant={
-                                    recurringDays.includes(day.value)
-                                      ? 'default'
-                                      : 'outline'
-                                  }
+                                  variant={recurringDays.includes(day.value) ? 'default' : 'outline'}
                                   size="sm"
                                   onClick={() => toggleRecurringDay(day.value)}
                                   className={`h-8 w-12 cursor-pointer text-xs ${
-                                    recurringDays.includes(day.value)
-                                      ? 'bg-blue-600 text-white'
-                                      : 'text-gray-600 dark:text-white'
+                                    recurringDays.includes(day.value) ? 'bg-blue-600 text-white' : 'text-gray-600 dark:text-white'
                                   }`}
                                 >
                                   {day.label}
@@ -1172,9 +1030,7 @@ const CreateEventView = (props: any) => {
                           </div>
 
                           <div className="space-y-4">
-                            <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-white">
-                              RECURRING ENDS
-                            </label>
+                            <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-white">RECURRING ENDS</label>
                             <div className="mt-2 flex flex-col gap-3">
                               {/* Never */}
                               <div className="flex w-full items-center gap-3">
@@ -1184,12 +1040,7 @@ const CreateEventView = (props: any) => {
                                     name="recurringEnd"
                                     value="never"
                                     checked={recurringEnd === 'never'}
-                                    onChange={(e) =>
-                                      setValue(
-                                        'recurringEnd',
-                                        e.target.value as any
-                                      )
-                                    }
+                                    onChange={(e) => setValue('recurringEnd', e.target.value as any)}
                                     className="h-4 w-4 cursor-pointer rounded-2xl text-blue-600"
                                   />
                                   <span className="text-sm">Never</span>
@@ -1203,12 +1054,7 @@ const CreateEventView = (props: any) => {
                                     name="recurringEnd"
                                     value="onDate"
                                     checked={recurringEnd === 'onDate'}
-                                    onChange={(e) =>
-                                      setValue(
-                                        'recurringEnd',
-                                        e.target.value as any
-                                      )
-                                    }
+                                    onChange={(e) => setValue('recurringEnd', e.target.value as any)}
                                     className="h-4 w-4 cursor-pointer rounded-2xl text-blue-600"
                                   />
                                   <span className="text-sm">On Day</span>
@@ -1229,15 +1075,8 @@ const CreateEventView = (props: any) => {
                                     type="radio"
                                     name="recurringEnd"
                                     value="afterOccurrences"
-                                    checked={
-                                      recurringEnd === 'afterOccurrences'
-                                    }
-                                    onChange={(e) =>
-                                      setValue(
-                                        'recurringEnd',
-                                        e.target.value as any
-                                      )
-                                    }
+                                    checked={recurringEnd === 'afterOccurrences'}
+                                    onChange={(e) => setValue('recurringEnd', e.target.value as any)}
                                     className="h-4 w-4 cursor-pointer rounded-2xl text-blue-600"
                                   />
                                   <span className="text-sm">After</span>
@@ -1248,18 +1087,11 @@ const CreateEventView = (props: any) => {
                                       title="Set Recurring Count"
                                       type="number"
                                       value={watch('recurringEndCount')}
-                                      onChange={(e) =>
-                                        setValue(
-                                          'recurringEndCount',
-                                          Number.parseInt(e.target.value)
-                                        )
-                                      }
+                                      onChange={(e) => setValue('recurringEndCount', Number.parseInt(e.target.value))}
                                       className="w-10 focus:border-blue-600 focus:outline-none"
                                       min="1"
                                     />
-                                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                                      recurrings
-                                    </span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-300">recurrings</span>
                                   </div>
                                 )}
                               </div>
@@ -1294,41 +1126,23 @@ const CreateEventView = (props: any) => {
                   <div>
                     <div className="w-full items-center justify-start md:flex">
                       <div className="flex flex-wrap gap-4">
-                        {[
-                          'Resend to Unopened Users',
-                          'Include Names on Tickets',
-                        ].map((item, index) => (
-                          <div
-                            key={index}
-                            className="flex w-full items-center gap-2 sm:w-auto"
-                          >
-                            <Input
-                              type="checkbox"
-                              className="h-4 w-4 cursor-pointer"
-                            />
-                            <span className="text-foreground text-sm">
-                              {item}
-                            </span>
+                        {['Resend to Unopened Users', 'Include Names on Tickets'].map((item, index) => (
+                          <div key={index} className="flex w-full items-center gap-2 sm:w-auto">
+                            <Input type="checkbox" className="h-4 w-4 cursor-pointer" />
+                            <span className="text-foreground text-sm">{item}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                    <h1 className="my-5 text-[16px] leading-5 font-medium">
-                      General Information
-                    </h1>
+                    <h1 className="my-5 text-[16px] leading-5 font-medium">General Information</h1>
                     <div className="flex flex-wrap items-center gap-2 md:gap-4">
                       {['Paid', 'Free', 'Donation'].map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex w-full items-center gap-2 sm:w-auto"
-                        >
+                        <div key={index} className="flex w-full items-center gap-2 sm:w-auto">
                           <Button
                             variant={'outline'}
                             onClick={() => setVersion(index + 1)}
                             className={`cursor-pointer px-10 py-5 transition-all md:max-w-[140px] md:min-w-[140px] ${
-                              version === index + 1
-                                ? 'border-primary dark:border-primary border'
-                                : ''
+                              version === index + 1 ? 'border-primary dark:border-primary border' : ''
                             }`}
                           >
                             {item}
@@ -1363,9 +1177,7 @@ const CreateEventView = (props: any) => {
                       </div>
                       <div className="col-span-12 md:col-span-4">
                         <div className="space-y-2">
-                          <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
-                            AVAILABLE QUANTITY
-                          </label>
+                          <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">AVAILABLE QUANTITY</label>
                           <RHFTextField
                             name="quantity"
                             placeholder="100"
@@ -1375,9 +1187,7 @@ const CreateEventView = (props: any) => {
                         </div>
                         <div className="mt-3 flex items-end gap-4">
                           <div className="space-y-2">
-                            <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
-                              PRICE
-                            </label>
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">PRICE</label>
                             <RHFTextField
                               name="price"
                               placeholder="0.00"
@@ -1399,9 +1209,7 @@ const CreateEventView = (props: any) => {
                       </div>
                     </div>
                     <Separator className="my-4 md:my-8" />
-                    <h1 className="my-5 text-[16px] leading-5 font-medium">
-                      Set up sale start date and time
-                    </h1>
+                    <h1 className="my-5 text-[16px] leading-5 font-medium">Set up sale start date and time</h1>
                     <div className="w-full md:w-[60%]">
                       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div className="space-y-2">
@@ -1409,10 +1217,7 @@ const CreateEventView = (props: any) => {
                             <CalendarIcon className="h-4 w-4" />
                             START DATE
                           </label>
-                          <RHFDate
-                            name="fromDate_"
-                            className="w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600"
-                          />
+                          <RHFDate name="fromDate_" className="w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600" />
                         </div>
                         <div className="space-y-2">
                           <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
@@ -1440,10 +1245,7 @@ const CreateEventView = (props: any) => {
                             <CalendarIcon className="h-4 w-4" />
                             END DATE
                           </label>
-                          <RHFDate
-                            name="endDate_"
-                            className="w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600"
-                          />
+                          <RHFDate name="endDate_" className="w-full cursor-pointer rounded-4xl border-gray-200 focus:border-blue-600" />
                         </div>
                         <div className="space-y-2">
                           <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
@@ -1463,9 +1265,7 @@ const CreateEventView = (props: any) => {
                         </div>
                       </div>
                       <div className="mt-6 w-full space-y-2 md:w-[60%]">
-                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
-                          TICKET OPTIONS
-                        </label>
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">TICKET OPTIONS</label>
                         <RHFSelectField
                           name="ticketOptions"
                           placeholder="Select Ticket Options"
@@ -1480,24 +1280,16 @@ const CreateEventView = (props: any) => {
                     </div>
                     <Separator className="my-4 md:my-8" />
 
-                    <Button
-                      type="button"
-                      className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2"
-                    >
+                    <Button type="button" className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2">
                       <Plus className="h-4 w-4" /> Add Date
                     </Button>
 
                     <h1 className="text-foreground my-5 text-[14px] leading-5 font-medium">
-                      <span className="text-primary cursor-pointer">
-                        + Create a section
-                      </span>{' '}
-                      if you want to sell multiple ticket types that share the
+                      <span className="text-primary cursor-pointer">+ Create a section</span> if you want to sell multiple ticket types that share the
                       same inventory.
                     </h1>
                     <div className="mt-6 w-full space-y-2 md:w-[60%]">
-                      <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
-                        CHOOSE A SECTION
-                      </label>
+                      <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">CHOOSE A SECTION</label>
                       <RHFSelectField
                         name="time"
                         options={[
@@ -1513,15 +1305,11 @@ const CreateEventView = (props: any) => {
                     </div>
                     <Separator className="my-4 md:my-8" />
                     <div className="my-6 flex items-center-safe gap-2">
-                      <h1 className="my-5 flex-wrap text-[16px] leading-5 font-medium">
-                        Advanced settings
-                      </h1>
+                      <h1 className="my-5 flex-wrap text-[16px] leading-5 font-medium">Advanced settings</h1>
                       <ChevronDown className="h-4 w-4 cursor-pointer" />
                     </div>
                     <div className="mt-6 w-full space-y-2 md:w-[60%]">
-                      <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
-                        TICKETS PER ORDER
-                      </label>
+                      <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">TICKETS PER ORDER</label>
                       <div className="items-center gap-3 md:flex">
                         <RHFTextField
                           name="minQuantity"
@@ -1536,9 +1324,7 @@ const CreateEventView = (props: any) => {
                           className="mt-3 rounded-4xl border border-gray-200 bg-[#F8F6F7] px-4 text-sm font-medium md:mt-0"
                         />
                       </div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">
-                        SALES CHANNEL
-                      </label>
+                      <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-white">SALES CHANNEL</label>
                       <RHFSelectField
                         name="salesChannel"
                         placeholder="Select Sales Channel"
@@ -1552,25 +1338,17 @@ const CreateEventView = (props: any) => {
                     </div>
                     <Separator className="my-4 md:my-8" />
                     <div className="flex flex-wrap gap-3">
-                      <Button
-                        type="button"
-                        className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2"
-                      >
+                      <Button type="button" className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2">
                         <Plus className="h-4 w-4" /> Add tickets
                       </Button>
 
-                      <Button
-                        type="button"
-                        className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2"
-                      >
+                      <Button type="button" className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2">
                         <Plus className="h-4 w-4" />
                         Import Tickets
                       </Button>
                     </div>
                     <Separator className="my-4 md:my-8" />
-                    <h1 className="text-primary my-5 cursor-pointer flex-wrap text-[16px] leading-5 font-medium">
-                      + Add package
-                    </h1>
+                    <h1 className="text-primary my-5 cursor-pointer flex-wrap text-[16px] leading-5 font-medium">+ Add package</h1>
 
                     <div className="mt-22 flex flex-wrap items-center justify-end gap-2">
                       <Button

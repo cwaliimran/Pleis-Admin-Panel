@@ -134,9 +134,13 @@ export const userListApi = createApi({
     }),
 
     getCompanyList: builder.query({
-      query: () => ({
+      query: ({  page, limit }) => ({
         url: API_ROUTES.LOYALTY_LISTINGS,
         method: 'GET',
+        params: {
+          page: page + 1,
+          limit,
+        },
       }),
       transformResponse: (res) => res.data,
       providesTags: ['companyList'],

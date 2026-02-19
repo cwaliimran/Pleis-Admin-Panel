@@ -310,7 +310,7 @@ const StepTwo = ({
                 <Button
                   type="button"
                   disabled
-                  className="bg-secondary hover:bg-secondary cursor-not-allowed rounded-4xl py-2 text-white md:mt-2 md:min-w-22.5"
+                  className="bg-primary hover:bg-primary cursor-not-allowed rounded-4xl py-2 text-white md:mt-2 md:min-w-22.5"
                 >
                   <ButtonLoading title="Updating" />
                 </Button>
@@ -319,7 +319,7 @@ const StepTwo = ({
                   type="button"
                   onClick={handleUpdateAll}
                   disabled={!isStepValid(2) || !hasChanges || updateSingleLoading}
-                  className="bg-secondary hover:bg-secondary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-30"
+                  className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-30"
                 >
                   Update For All
                 </Button>

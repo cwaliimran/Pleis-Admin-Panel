@@ -81,10 +81,6 @@ export const menuItemsApi = createApi({
       invalidatesTags: ['menu-item'],
     }),
 
-    /* ─────────────────────────────────────────────
-     * Existing endpoints (unchanged)
-     * ───────────────────────────────────────────── */
-
     getMenuMinifyData: builder.query({
       query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
@@ -97,9 +93,14 @@ export const menuItemsApi = createApi({
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         return {
-          url: API_ROUTES.ADMIN_MENU_ITEMS_MINIFY_DATA,
+          url: '',
           method: 'GET',
           params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_MENU_ITEMS_MINIFY_DATA,
+            organizerRoute: API_ROUTES.ORGANIZER_MENU_ITEMS_MINIFY_DATA,
+            // organizerOnlyParams: ['organization'],
+          },
         };
       },
       transformResponse: (res) => ({
@@ -108,6 +109,9 @@ export const menuItemsApi = createApi({
       }),
     }),
 
+    /* ─────────────────────────────────────────────
+     * Existing endpoints (unchanged)
+     * ───────────────────────────────────────────── */
     getMenuItemByMenuId: builder.query({
       query: ({ menuId }) => ({
         url: API_ROUTES.ADMIN_MENU_ITEMS_BY_MENU_ID(menuId),

@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import CreateEventView from '@/sections/event/create-event-view/create-event';
+import { CreateEventView } from '@/sections/event/eventV2';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,8 @@ const Page = () => {
         ]}
       />
 
-      <CreateEventView userType="organizer" title={'Create'} />
+      {/* <CreateEventView userType="organizer" title={'Create'} /> */}
+      <CreateEventView title="Create" userType="organizer" />
     </>
   );
 };

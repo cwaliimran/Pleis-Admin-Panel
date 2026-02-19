@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import ClubsTable from './clubs-table';
 import { ClubsViewProps } from './types';
 
-const ClubsView = ({ title, type }: ClubsViewProps) => {
+const ClubsView = ({ title, type, selectedCompanyId }: ClubsViewProps) => {
   const confirmModal = useBoolean();
   const rejectModal = useBoolean();
   const unLinkClub = useBoolean();
@@ -38,7 +38,7 @@ const ClubsView = ({ title, type }: ClubsViewProps) => {
     page: page - 1,
     limit: 10000,
     status: type ? type : undefined,
-    companyOrganizer: companyId || undefined,
+    companyOrganizer: selectedCompanyId || companyId || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
