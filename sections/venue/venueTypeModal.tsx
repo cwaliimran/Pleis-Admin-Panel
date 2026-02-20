@@ -28,6 +28,7 @@ interface VenueTypeModalProps {
   selectedVenueData?: any;
   selectedId?: string | null;
   orgId?: string | null;
+  onSuccess?: () => void;
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -49,7 +50,7 @@ const defaultValues = {
   },
 };
 
-const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData, selectedId, orgId }: VenueTypeModalProps) => {
+const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData, selectedId, orgId, onSuccess }: VenueTypeModalProps) => {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [imageUploading, setImageUploading] = React.useState(false);
 
@@ -258,6 +259,8 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
       if (response?.message) {
         showSuccess(response?.message || (isEditMode ? 'Venue updated successfully' : 'Venue created successfully'));
       }
+
+      onSuccess?.();
 
       handleClose();
     } catch (error) {

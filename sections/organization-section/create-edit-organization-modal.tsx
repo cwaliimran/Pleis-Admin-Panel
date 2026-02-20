@@ -14,6 +14,7 @@ import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
@@ -167,6 +168,8 @@ const buildUpdatePayload = (formData: OrganizationFormValues, logoKey: string | 
 const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }: OrganizationModalProps) => {
   const isEdit = !!organization;
 
+  const router = useRouter();
+
   const [imageUploading, setImageUploading] = useState(false);
   const [addOrganization, { isLoading: isAdding }] = useAddOrganizationMutation();
   const [updateOrganization, { isLoading: isUpdating }] = useUpdateOrganizationMutation();
@@ -288,6 +291,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       showSuccess(response?.message || `Organization ${isEdit ? 'updated' : 'created'} successfully`);
 
       handleClose();
+
+      router.push(`/${userType}/organization/${response?.data?._id}`);
     } catch (error) {
       setImageUploading(false);
       const errorMessage = getErrorMessage(error);
