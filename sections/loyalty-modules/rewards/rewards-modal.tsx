@@ -4,6 +4,7 @@ import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import FieldSkeleton from '@/components/ui/field-skeleton';
@@ -136,6 +137,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
   const selectedMenuId = watch('menu');
   const selectedMenuItem = watch('menuItem');
   const selectedEventId = watch('event');
+  const selectedTicketId = watch('ticket');
 
   const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
     {
@@ -227,6 +229,9 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
       label: ticket?.title,
       value: ticket?._id,
     })) || [];
+
+  const selectedTicketData = (ticketData?.data || []).find((ticket: any) => ticket?._id === selectedTicketId);
+  const selectedTicketDateTimeSlots = selectedTicketData?.timingSlots?.enabled ? selectedTicketData?.timingSlots?.dateTimeSlots || [] : [];
 
   // Clear ticket when event changes (but not during edit mode initialization)
   useEffect(() => {
@@ -547,14 +552,45 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
                         {isTicketsLoading || isTicketsFetching ? (
                           <FieldSkeleton />
                         ) : (
-                          <RHFCustomDropdown
-                            name="ticket"
-                            label="Select Ticket"
-                            placeholder="Choose ticket"
-                            options={ticketOptions}
-                            isLoading={isTicketsLoading}
-                            showNone={false}
-                          />
+                          <>
+                            <RHFCustomDropdown
+                              name="ticket"
+                              label="Select Ticket"
+                              placeholder="Choose ticket"
+                              options={ticketOptions}
+                              isLoading={isTicketsLoading}
+                              showNone={false}
+                            />
+
+                            {selectedTicketDateTimeSlots.length > 0 && (
+                              <div className="">
+                                <p className="mb-2 text-xs font-medium text-gray-700 dark:text-gray-300">Available ticket slots</p>
+
+                                <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
+                                  {selectedTicketDateTimeSlots.map((dateSlot: any) => (
+                                    <div
+                                      key={dateSlot?.date}
+                                      className="rounded-md border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800/50"
+                                    >
+                                      <div className="mb-2">
+                                        <Badge variant="secondary" className="border border-gray-400 dark:border-gray-600 text-[11px] bg-gray-100 dark:bg-gray-700">
+                                          {fDate(dateSlot?.date, formatStr.split.date)}
+                                        </Badge>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {(dateSlot?.timeSlots || []).map((slot: any) => (
+                                          <Badge key={slot?._id || `${slot?.startTime}-${slot?.endTime}`} variant="outline" className="text-[11px]">
+                                            {slot?.startTime} - {slot?.endTime}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     )}
