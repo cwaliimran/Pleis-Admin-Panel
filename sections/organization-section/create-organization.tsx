@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useBoolean } from '@/hooks/useBoolean';
+// import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
 import { useUpdateOrganizationMutation } from '@/store/Reducer/organization';
 import { useGetVenuesByCompanyQuery } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
@@ -19,7 +20,6 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { UserInfo } from '../users';
 import OrganizationModal from './create-edit-organization-modal';
-import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
 
 const defaultValues = {
   image: null,
@@ -39,19 +39,6 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
   const [orgId, setOrgId] = useState<string | null>(null);
   const [coverImageUploading, setCoverImageUploading] = useState(false);
 
-  // Fetch venues by company when we have a creator ID
-  // const { data: venueData } = useGetVenuesByCompanyQuery(
-  //   {
-  //     page: 0,
-  //     status: undefined,
-  //     limit: 100,
-  //     companyOrganizer: creatorId,
-  //   },
-  //   {
-  //     skip: !creatorId,
-  //   }
-  // );
-
   // SUPER ADMIN VENUE API
   const { data: venueData } = useGetVenuesByCompanyQuery(
     {
@@ -61,26 +48,26 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
       organization: newOrganization?._id || '',
     },
     {
-      skip: userType === 'organizer',
+      skip: userType === 'organizer' || !newOrganization?._id,
     }
   );
 
   console.log('Venue Data:', venueData?.data);
 
   // ORGANIZER VENUE API
-  const { data: OrgVenues } = useGetAllCompanyVenueQuery(
-    {
-      page: 0,
-      search: '',
-      limit: '100',
-      organization: newOrganization?._id || '',
-    },
-    {
-      skip: userType === 'super-admin' || !newOrganization?._id,
-    }
-  );
+  // const { data: OrgVenues } = useGetAllCompanyVenueQuery(
+  //   {
+  //     page: 0,
+  //     search: '',
+  //     limit: '100',
+  //     organization: newOrganization?._id || '',
+  //   },
+  //   {
+  //     skip: userType === 'super-admin' || !newOrganization?._id,
+  //   }
+  // );
 
-  console.log('Org Venues:', OrgVenues?.data);
+  // console.log('Org Venues:', OrgVenues?.data);
 
   const CloseModal = () => {
     methods.reset(defaultValues);

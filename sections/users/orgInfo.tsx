@@ -11,10 +11,11 @@ import { useForm } from 'react-hook-form';
 import AddOtherDetailsModal from '../organization-section/add-other-details-modal';
 import VenueTypeModalV2 from '../venue/venueTypeModal';
 import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
+import { showError } from '@/utils/toast';
 
 const OrgInfo = ({ organizationData, userType }: any) => {
   // SUPER ADMIN VENUES OF THE ORGANIZATION
-  const { data: venueData } = useGetVenuesByCompanyQuery(
+  const { data: venueData, refetch: refetchVenueData } = useGetVenuesByCompanyQuery(
     {
       page: 0,
       status: undefined,
@@ -30,7 +31,7 @@ const OrgInfo = ({ organizationData, userType }: any) => {
   console.log('Venue Data:', venueData?.data);
 
   // ORGANIZER VENUES OF THE ORGANIZATION
-  const { data: OrgVenues } = useGetAllCompanyVenueQuery(
+  const { data: OrgVenues, refetch: refetchOrgVenues } = useGetAllCompanyVenueQuery(
     {
       page: 0,
       search: '',
@@ -62,10 +63,33 @@ const OrgInfo = ({ organizationData, userType }: any) => {
     openVenueModal.onFalse();
   };
 
+  const showVenueRequiredToast = () => {
+    showError('Please create a venue first!');
+  };
+
+  const venueList = userType === 'organizer' ? OrgVenues?.data : venueData?.data;
+
+  const handleEditClick = () => {
+    if (!venueList || venueList.length === 0) {
+      showVenueRequiredToast();
+      return;
+    }
+    openModal.onTrue();
+  };
+
+  const handleVenueCreateSuccess = () => {
+    if (userType === 'organizer') {
+      refetchOrgVenues();
+      return;
+    }
+
+    refetchVenueData();
+  };
+
   return (
     <>
       <div className="flex w-full justify-end">
-        <Pencil width={22} className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
+        <Pencil width={22} className="mr-2 cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={handleEditClick} />
       </div>
 
       <div className="mt-4 grid grid-cols-12 gap-4">
@@ -181,15 +205,11 @@ const OrgInfo = ({ organizationData, userType }: any) => {
           selectedVenueData={null}
           selectedId={null}
           orgId={organizationData?._id || null}
+          onSuccess={handleVenueCreateSuccess}
         />
       )}
 
-      <AddOtherDetailsModal
-        open={openModal.value}
-        onClose={CloseModal}
-        newOrganization={organizationData}
-        venueList={userType === 'super-admin' ? venueData?.data : OrgVenues?.data || []}
-      />
+      <AddOtherDetailsModal open={openModal.value} onClose={CloseModal} newOrganization={organizationData} venueList={venueList || []} />
     </>
   );
 };

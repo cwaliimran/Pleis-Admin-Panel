@@ -206,7 +206,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
                     {coverImageUploading && (
                       <div className="bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-lg bg-black">
-                        <ButtonLoading title="Uploading..." />
+                        <ButtonLoading title="Uploading" />
                       </div>
                     )}
                   </div>
@@ -257,6 +257,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                     )}
                   </div>
                 </div>
+
                 <div className="flex justify-end">
                   <Pencil className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
                   <Trash2
@@ -264,6 +265,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                     onClick={() => handleDelete(organizationData?._id)}
                   />
                 </div>
+
                 <div className="flex items-center gap-2">
                   <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl">{organizationData?.basicInfo?.name || '-'}</h1>
                   <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>-</Badge>
@@ -303,7 +305,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
               </Card>
 
               <div className="mt-4 rounded-lg">
-                {active === 'info' && <UserInfo organizationData={organizationData} userType={userType}/>}
+                {active === 'info' && <UserInfo organizationData={organizationData} userType={userType} />}
 
                 {active === 'events' && <UserEvents organizationData={organizationData} />}
 

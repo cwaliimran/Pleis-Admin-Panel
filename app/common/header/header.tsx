@@ -49,8 +49,8 @@ const Header: FC<HeaderProps> = ({ links }) => {
 
   // Organizer routes where dropdown should be shown
   const ORGANIZER_DROPDOWN_ROUTES = [
-    '/organizer/organization',
-    '/organizer/organization/organization-list',
+    // '/organizer/organization',
+    // '/organizer/organization/organization-list',
 
     '/organizer/venue',
     '/organizer/venue-list',

@@ -175,13 +175,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ open, onClose, initialExist
 
 const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganization, onClose, open, venueList }) => {
   const router = useRouter();
-  const [imageUploading, setImageUploading] = useState(false);
+
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  
   const [updateOrganization, { isLoading }] = useUpdateOrganizationMutation();
-
-  console.log('Venue List In Add Other Modal:', venueList);
-
-  console.log('newOrganization', newOrganization);
 
   const initialGalleryMedia = useMemo<string[]>(() => newOrganization?.otherInfo?.galleryMedia || [], [newOrganization?.otherInfo?.galleryMedia]);
 
