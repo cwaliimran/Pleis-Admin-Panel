@@ -98,6 +98,13 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                 {order.paymentMethod === 'applePay' ? 'Apple Pay' : order.paymentMethod === 'googlePay' ? 'Google Pay' : order.paymentMethod}
               </span>
             </div>
+            {/* Payment Status */}
+            <span className={cn('inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold', paymentStatusConfig?.className)}>
+              {/* {order.paymentStatus === 'paid' && '✓'}
+              {order.paymentStatus === 'pending' && '⏳'}
+              {order.paymentStatus === 'failed' && '✗'} */}
+              <span>{paymentStatusConfig?.label}</span>
+            </span>
           </div>
         </div>
 
@@ -181,9 +188,9 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                     <span
                       className={cn('inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold', paymentStatusConfig?.className)}
                     >
-                      {order.paymentStatus === 'paid' && '✓'}
+                      {/* {order.paymentStatus === 'paid' && '✓'}
                       {order.paymentStatus === 'pending' && '⏳'}
-                      {order.paymentStatus === 'failed' && '✗'}
+                      {order.paymentStatus === 'failed' && '✗'} */}
                       <span className="capitalize">{paymentStatusConfig?.label}</span>
                     </span>
                   </div>
@@ -261,10 +268,18 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                     >
                       ✗ Cancel
                     </Button>
+                    {order.paymentStatus !== 'paid' && (
+                      <Button
+                        onClick={(e) => handleAction(e, () => onMarkPaid(order))}
+                        className="col-span-2 h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
+                      >
+                        ✓ Mark as Paid
+                      </Button>
+                    )}
                   </>
                 )}
 
-                {/* Completed Status - Show Mark as Paid if not paid yet */}
+                {/* Completed Status */}
                 {order.status === 'completed' && order.paymentStatus !== 'paid' && (
                   <>
                     {/* Show delivery item buttons only if there are undelivered items */}

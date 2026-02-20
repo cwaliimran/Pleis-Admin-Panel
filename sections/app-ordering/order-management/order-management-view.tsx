@@ -195,14 +195,14 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
 
   // Pagination state
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit] = useState(15);
 
   const { companyId, organizationId: adminOrganizationId } = useCompanySelectionState();
 
   // Determine which organizationId to use based on user type
   const organizationId = isOrganizer ? selectedOrganizerOrganizationId : adminOrganizationId;
 
-  // Ordering status query
+  // Ordering status queryx
   const {
     data: orderingStatusData,
     isLoading: statusLoading,
@@ -478,10 +478,17 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
 
   const handleDeliverOrder = async (order: Order) => {
     try {
-      const response = await updateAppOrdering({
+      const payload: any = {
         id: order.id,
         status: 'completed',
-      }).unwrap();
+      };
+
+      // If payment method is not cash, mark all items as delivered
+      if (order.paymentMethod !== 'cash') {
+        payload.deliveredall = true;
+      }
+
+      const response = await updateAppOrdering(payload).unwrap();
 
       if (response?.error) {
         showError(getErrorMessage(response.error));
@@ -784,7 +791,7 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
             <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-gray-100">Select an Organization</h3>
             <p className="text-sm text-gray-500 dark:text-gray-500">Please select an organization from the dropdown above to view orders</p>
           </div>
-        ) : isLoading && filteredOrders.length === 0 ? (
+        ) : isLoading ? (
           <OrderSkeletonGrid count={6} />
         ) : filteredOrders.length === 0 ? (
           <div className="py-16 text-center">
