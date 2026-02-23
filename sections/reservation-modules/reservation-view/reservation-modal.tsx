@@ -198,6 +198,9 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
     const errors: ValidationErrors = {};
     let isValid = true;
 
+    // Determine if the linked event has a cross-midnight operating window
+    const isCrossMidnightWindow = eventDateRange.startTimeMinutes > eventDateRange.endTimeMinutes;
+
     // Check for duplicate dates
     const dateCount = new Map<string, number>();
     dateTimeSlots.forEach((slot) => {
@@ -240,7 +243,9 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         const startMinutes = timeToMinutes(timeSlot.startTime);
         const endMinutes = timeToMinutes(timeSlot.endTime);
 
-        if (startMinutes >= endMinutes) {
+        // For normal same-day windows we enforce start < end.
+        // For cross-midnight event windows we allow ranges like 23:00–01:00.
+        if (!isCrossMidnightWindow && startMinutes >= endMinutes) {
           errors[`time-${dateIndex}-${timeIndex}-order`] = 'Start time must be before end time';
           isValid = false;
         }
@@ -404,7 +409,10 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         const startMinutes = timeToMinutes(timeSlot.startTime);
         const endMinutes = timeToMinutes(timeSlot.endTime);
 
-        if (startMinutes >= endMinutes) {
+        // Determine if the linked event has a cross-midnight operating window
+        const isCrossMidnightWindow = eventDateRange.startTimeMinutes > eventDateRange.endTimeMinutes;
+
+        if (!isCrossMidnightWindow && startMinutes >= endMinutes) {
           newErrors[`time-${dateIndex}-${timeIndex}-order`] = 'Start time must be before end time';
           if (field === 'endTime') {
             showError('End time must be after start time');
@@ -534,6 +542,8 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
 
           // Final validation using the same isTimeInEventRange function for consistency
           if (eventDateRange) {
+            const isCrossMidnightWindow = eventDateRange.startTimeMinutes > eventDateRange.endTimeMinutes;
+
             for (const dateSlot of dateTimeSlots) {
               for (const timeSlot of dateSlot.timeSlots) {
                 // Validate start time
@@ -553,7 +563,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                 // Validate time order
                 const startMinutes = timeToMinutes(timeSlot.startTime);
                 const endMinutes = timeToMinutes(timeSlot.endTime);
-                if (startMinutes >= endMinutes) {
+                if (!isCrossMidnightWindow && startMinutes >= endMinutes) {
                   showError(`Start time must be before end time on ${dateSlot.date}`);
                   return;
                 }
