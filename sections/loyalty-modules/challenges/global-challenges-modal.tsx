@@ -1,10 +1,11 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFCheckbox, RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -44,6 +45,8 @@ const defaultValues: any = {
   organizationId: '',
   eventId: '',
   ticketId: '',
+  timeSlot: '',
+  isFastTrack: false,
   taskType: 'globalVisit',
   taskValue: '' as any,
   taskMenuItem: '',
@@ -130,6 +133,8 @@ const schema = Yup.object().shape({
       then: (schema) => schema.required('Ticket is required for special tickets'),
       otherwise: (schema) => schema.default(''),
     }),
+  timeSlot: Yup.string().default(''),
+  isFastTrack: Yup.boolean().default(false),
 
   taskType: Yup.string()
     .oneOf(['globalVisit', 'globalEarnPoints', 'globalReferUsers'] as const)
@@ -199,6 +204,8 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
   const companyId = watch('companyId');
   const organizationId = watch('organizationId');
   const eventId = watch('eventId');
+  const ticketId = watch('ticketId');
+  const selectedTimeSlotId = watch('timeSlot');
 
   // Determine when to show special ticket dropdowns
   const shouldShowCompanyDropdown = rewardType === 'specialTicket';
@@ -379,6 +386,14 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
     [ticketData]
   );
 
+  const selectedTicketData = useMemo(() => {
+    return (ticketData?.data || []).find((ticket: any) => ticket?._id === ticketId);
+  }, [ticketData, ticketId]);
+
+  const selectedTicketDateTimeSlots = selectedTicketData?.timingSlots?.enabled ? selectedTicketData?.timingSlots?.dateTimeSlots || [] : [];
+  const fastTrackEnabled = selectedTicketData?.fastTrackEntry?.enabled;
+  const fastTrackQuantity = selectedTicketData?.fastTrackEntry?.quantity ?? 0;
+
   // CASCADING DROPDOWN LOGIC - Clear dependent fields when parent changes
   useEffect(() => {
     if (!isInitializingEdit.current && rewardType === 'specialTicket') {
@@ -386,6 +401,8 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
       setValue('organizationId', '');
       setValue('eventId', '');
       setValue('ticketId', '');
+      setValue('timeSlot', '');
+      setValue('isFastTrack', false);
     }
   }, [companyId, setValue, rewardType]);
 
@@ -394,6 +411,8 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
       // Clear event and ticket when organization changes
       setValue('eventId', '');
       setValue('ticketId', '');
+      setValue('timeSlot', '');
+      setValue('isFastTrack', false);
     }
   }, [organizationId, setValue, rewardType]);
 
@@ -401,8 +420,17 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
     if (!isInitializingEdit.current && rewardType === 'specialTicket') {
       // Clear ticket when event changes
       setValue('ticketId', '');
+      setValue('timeSlot', '');
+      setValue('isFastTrack', false);
     }
   }, [eventId, setValue, rewardType]);
+
+  useEffect(() => {
+    if (!isInitializingEdit.current && rewardType === 'specialTicket') {
+      setValue('timeSlot', '');
+      setValue('isFastTrack', false);
+    }
+  }, [ticketId, setValue, rewardType]);
 
   // Clear special ticket fields when reward type changes
   useEffect(() => {
@@ -411,6 +439,8 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
       setValue('organizationId', '');
       setValue('eventId', '');
       setValue('ticketId', '');
+      setValue('timeSlot', '');
+      setValue('isFastTrack', false);
     }
   }, [rewardType, setValue]);
 
@@ -475,6 +505,8 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
               ? reward.specialTicket.ticket
               : reward?.specialTicket?.ticket?._id || ''
             : '',
+        timeSlot: reward?.rewardType === 'specialTicket' ? reward?.specialTicket?.timeSlot || '' : '',
+        isFastTrack: reward?.rewardType === 'specialTicket' ? !!reward?.specialTicket?.isFastTrack : false,
       };
 
       reset(mappedValues);
@@ -620,6 +652,8 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
             organization: data.organizationId,
             event: data.eventId,
             ticket: data.ticketId,
+            ...(data.timeSlot ? { timeSlot: data.timeSlot } : {}),
+            isFastTrack: !!data.isFastTrack,
           },
         };
         break;
@@ -632,6 +666,23 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
   const handleSubmit = async (formData: ChallengesFormValues) => {
     let uploadedFileKey: string | null = null;
     let challengeImageFile: string | null = null;
+
+    const claimLimitNumber = formData.claimLimit ? Number(formData.claimLimit) : undefined;
+    if (formData.rewardType === 'specialTicket' && formData.isFastTrack) {
+      if (!selectedTicketData?.fastTrackEntry?.enabled) {
+        showError('Selected ticket does not support Fast Track');
+        return;
+      }
+      const maxFastTrackQty = selectedTicketData.fastTrackEntry?.quantity ?? 0;
+      if (claimLimitNumber == null) {
+        showError('Claim limit is required when Fast Track is enabled');
+        return;
+      }
+      if (claimLimitNumber > maxFastTrackQty) {
+        showError(`Claim limit must be less than or equal to ${maxFastTrackQty} for Fast Track`);
+        return;
+      }
+    }
 
     try {
       if (formData?.customRewardImage instanceof FileList && formData?.customRewardImage.length > 0) {
@@ -704,7 +755,7 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-[630px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-157.5!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Global Challenge' : 'Create Global Challenge'}</DialogTitle>
@@ -863,14 +914,73 @@ const GlobalChallengeModal = ({ open, onClose, isEdit = false, selectedData, glo
                               <Skeleton className="h-8" />
                             </div>
                           ) : (
-                            <RHFCustomDropdown
-                              name="ticketId"
-                              label="Ticket"
-                              placeholder="Select Ticket"
-                              options={ticketOptions}
-                              isLoading={isTicketsLoading}
-                              showNone={false}
-                            />
+                            <>
+                              <RHFCustomDropdown
+                                name="ticketId"
+                                label="Ticket"
+                                placeholder="Select Ticket"
+                                options={ticketOptions}
+                                isLoading={isTicketsLoading}
+                                showNone={false}
+                              />
+
+                              {selectedTicketDateTimeSlots?.length > 0 && (
+                                <div className="md:col-span-2">
+                                  <p className="mb-2 text-xs font-medium text-gray-700 dark:text-gray-300">Available ticket slots</p>
+
+                                  <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
+                                    {selectedTicketDateTimeSlots.map((dateSlot: any) => (
+                                      <div
+                                        key={dateSlot?.date}
+                                        className="rounded-md border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800/50"
+                                      >
+                                        <div className="mb-2">
+                                          <Badge
+                                            variant="secondary"
+                                            className="border border-gray-400 bg-gray-100 text-[11px] dark:border-gray-600 dark:bg-gray-700"
+                                          >
+                                            {fDate(dateSlot?.date, formatStr.split.date)}
+                                          </Badge>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {(dateSlot?.timeSlots || []).map((slot: any) => {
+                                            const isSelected = selectedTimeSlotId === slot?._id;
+                                            return (
+                                              <Badge
+                                                key={slot?._id || `${slot?.startTime}-${slot?.endTime}`}
+                                                variant={isSelected ? 'default' : 'outline'}
+                                                className={`cursor-pointer text-[11px] ${isSelected ? 'bg-primary text-white' : ''}`}
+                                                onClick={() =>
+                                                  setValue('timeSlot', slot?._id || '', {
+                                                    shouldDirty: true,
+                                                    shouldTouch: true,
+                                                    shouldValidate: true,
+                                                  })
+                                                }
+                                              >
+                                                {slot?.startTime} - {slot?.endTime}
+                                              </Badge>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {fastTrackEnabled && (
+                                <div className="md:col-span-2">
+                                  <RHFCheckbox
+                                    name="isFastTrack"
+                                    label="Fast Track"
+                                    description={`Limit claims to Fast Track capacity (max ${fastTrackQuantity}).`}
+                                    className="mt-2"
+                                  />
+                                </div>
+                              )}
+                            </>
                           )}
                         </>
                       )}

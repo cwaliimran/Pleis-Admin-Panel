@@ -126,8 +126,6 @@ const MenuItemModal = ({
 }: MenuItemModalProps) => {
   const [deleting, setDeleting] = useState(false);
 
-  console.log('selectedData', selectedData);
-
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
   const [addMenuItem, { isLoading: addMenuItemLoading }] = useAddMenuItemMutation();
@@ -150,7 +148,7 @@ const MenuItemModal = ({
       date: undefined,
     },
     {
-      skip: userType === 'organizer' || menuManagementView,
+      skip: userType === 'organizer',
     }
   );
 
@@ -161,7 +159,7 @@ const MenuItemModal = ({
       limit: '100',
     },
     {
-      skip: userType === 'super-admin' || menuManagementView,
+      skip: userType === 'super-admin',
     }
   );
 
@@ -381,7 +379,7 @@ const MenuItemModal = ({
                 />
 
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  {!menuManagementView && (
+                  {/* {!menuManagementView && (
                     <div className="col-span-2">
                       {presetLoading || orgPresetLoading ? (
                         <FieldSkeleton />
@@ -398,7 +396,24 @@ const MenuItemModal = ({
                         </>
                       )}
                     </div>
-                  )}
+                  )} */}
+
+                  <div className="col-span-2">
+                    {presetLoading || orgPresetLoading ? (
+                      <FieldSkeleton />
+                    ) : (
+                      <>
+                        <h4 className="mb-2 text-sm font-semibold">Presets</h4>
+                        <RHFCustomDropdown
+                          name="preset"
+                          placeholder="Select Preset"
+                          options={presetOptions}
+                          isLoading={presetLoading || orgPresetLoading}
+                          showNone={false}
+                        />
+                      </>
+                    )}
+                  </div>
 
                   <RHFTextField name="title" label="Name" placeholder="Enter Name" />
 

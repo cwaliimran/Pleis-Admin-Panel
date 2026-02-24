@@ -395,10 +395,14 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
       description: data.description,
       startDate: fDate(data.startDate, formatStr.paramCase.db),
       endDate: fDate(data.endDate, formatStr.paramCase.db),
-      claimLimit: data.claimLimit,
       tierLimit: data.tierLimit,
       promotionType: data.promotionType,
     };
+
+    // Only include claimLimit for non-productSale promotion types
+    if (data.promotionType !== 'productSale') {
+      base.claimLimit = data.claimLimit;
+    }
 
     if (!global) {
       base.companyOrganizer = selectedCompany;
@@ -572,10 +576,12 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                   <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
                 </div>
 
-                {/* CLAIM LIMIT */}
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField name="claimLimit" label="Claim Limit" placeholder="Enter claim limit" type="number" />
-                </div>
+                {/* CLAIM LIMIT (excluded for Product Sale) */}
+                {promotionType !== 'productSale' && (
+                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    <RHFTextField name="claimLimit" label="Claim Limit" placeholder="Enter claim limit" type="number" />
+                  </div>
+                )}
 
                 {/* RECURRING TOGGLE */}
                 <RHFSelectField

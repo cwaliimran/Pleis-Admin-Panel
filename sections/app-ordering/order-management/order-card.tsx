@@ -8,6 +8,7 @@ import {
 } from './constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { showError } from '@/utils/toast';
 
 interface OrderCardProps {
   order: Order;
@@ -69,6 +70,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
 
   // Check if there are undelivered items
   const hasUndeliveredItems = order.items.some((item) => !item.isDelivered);
+  const hasSingleItem = order.items.length === 1;
 
   return (
     <div
@@ -100,9 +102,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
             </div>
             {/* Payment Status */}
             <span className={cn('inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold', paymentStatusConfig?.className)}>
-              {/* {order.paymentStatus === 'paid' && '✓'}
-              {order.paymentStatus === 'pending' && '⏳'}
-              {order.paymentStatus === 'failed' && '✗'} */}
               <span>{paymentStatusConfig?.label}</span>
             </span>
           </div>
@@ -188,9 +187,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                     <span
                       className={cn('inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold', paymentStatusConfig?.className)}
                     >
-                      {/* {order.paymentStatus === 'paid' && '✓'}
-                      {order.paymentStatus === 'pending' && '⏳'}
-                      {order.paymentStatus === 'failed' && '✗'} */}
                       <span className="capitalize">{paymentStatusConfig?.label}</span>
                     </span>
                   </div>
@@ -236,14 +232,14 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                   <>
                     <Button
                       onClick={(e) => handleAction(e, () => onAccept(order))}
-                      className="h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
+                      className="h-12 cursor-pointer bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-700"
                     >
                       ✓ Accept
                     </Button>
                     <Button
                       onClick={(e) => handleAction(e, () => onCancel(order))}
                       variant="destructive"
-                      className="h-12 font-bold transition-transform active:scale-95"
+                      className="h-12 cursor-pointer bg-red-600 font-bold text-white transition-transform hover:bg-red-700 active:scale-95 dark:bg-red-600 dark:hover:bg-red-700"
                       disabled={!canCancel}
                     >
                       ✗ Decline
@@ -251,27 +247,54 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                   </>
                 )}
 
-                {/* Confirmed Status - Show Delivered/Cancel */}
+                {/* Confirmed Status - Show Delivered/Cancel + Mark Items / Mark All */}
                 {order.status === 'confirmed' && (
                   <>
                     <Button
-                      onClick={(e) => handleAction(e, () => onDeliver(order))}
-                      className="h-12 bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-500 dark:hover:bg-green-600"
+                      onClick={(e) =>
+                        handleAction(e, () => {
+                          if (hasUndeliveredItems) {
+                            showError('Mark all items as delivered first.');
+                            return;
+                          }
+                          onDeliver(order);
+                        })
+                      }
+                      className="h-12 cursor-pointer bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-600 dark:hover:bg-green-700"
                     >
                       ✓ Delivered
                     </Button>
                     <Button
                       onClick={(e) => handleAction(e, () => onCancel(order))}
                       variant="destructive"
-                      className="h-12 font-bold transition-transform active:scale-95"
+                      className="h-12 cursor-pointer bg-red-600 font-bold text-white transition-transform hover:bg-red-700 active:scale-95 dark:bg-red-600 dark:hover:bg-red-700"
                       disabled={!canCancel}
                     >
                       ✗ Cancel
                     </Button>
+                    {/* Mark Items (only when >1 item) / Mark All (always when undelivered items exist) */}
+                    {hasUndeliveredItems && (
+                      <>
+                        {!hasSingleItem && (
+                          <Button
+                            onClick={(e) => handleAction(e, () => onDeliverSelected(order))}
+                            className="h-12 cursor-pointer bg-gray-700 font-bold text-white transition-transform hover:bg-gray-600 active:scale-95 dark:bg-gray-700 dark:hover:bg-gray-600"
+                          >
+                            ✓ Mark Items
+                          </Button>
+                        )}
+                        <Button
+                          onClick={(e) => handleAction(e, () => onDeliverAll(order))}
+                          className="h-12 cursor-pointer bg-amber-600 font-bold text-white transition-transform hover:bg-amber-700 active:scale-95 dark:bg-amber-600 dark:hover:bg-amber-700"
+                        >
+                          ✓ Mark All
+                        </Button>
+                      </>
+                    )}
                     {order.paymentStatus !== 'paid' && (
                       <Button
                         onClick={(e) => handleAction(e, () => onMarkPaid(order))}
-                        className="col-span-2 h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
+                        className="col-span-2 h-12 cursor-pointer bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-700"
                       >
                         ✓ Mark as Paid
                       </Button>
@@ -279,62 +302,21 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                   </>
                 )}
 
-                {/* Completed Status */}
+                {/* Completed Status - Unpaid: Primary \"Mark as Paid\" CTA */}
                 {order.status === 'completed' && order.paymentStatus !== 'paid' && (
-                  <>
-                    {/* Show delivery item buttons only if there are undelivered items */}
-                    {hasUndeliveredItems && (
-                      <>
-                        <Button
-                          onClick={(e) => handleAction(e, () => onDeliverSelected(order))}
-                          className="h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
-                        >
-                          ✓ Mark Items
-                        </Button>
-                        <Button
-                          onClick={(e) => handleAction(e, () => onDeliverAll(order))}
-                          className="h-12 bg-orange-600 font-bold text-white transition-transform hover:bg-orange-700 active:scale-95 dark:bg-orange-500 dark:hover:bg-orange-600"
-                        >
-                          ✓ Mark All
-                        </Button>
-                      </>
-                    )}
-                    <Button
-                      onClick={(e) => handleAction(e, () => onMarkPaid(order))}
-                      className={cn(
-                        'h-12 bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-500 dark:hover:bg-green-600',
-                        hasUndeliveredItems ? 'col-span-2' : 'col-span-2'
-                      )}
-                    >
-                      ✓ Mark as Paid
-                    </Button>
-                  </>
+                  <Button
+                    onClick={(e) => handleAction(e, () => onMarkPaid(order))}
+                    className="col-span-2 h-12 cursor-pointer bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-700"
+                  >
+                    ✓ Mark as Paid
+                  </Button>
                 )}
 
-                {/* Completed Status - Paid - Show delivery buttons if there are undelivered items */}
+                {/* Completed Status - Paid - Show "Order Completed & Paid" when no undelivered items */}
                 {order.status === 'completed' && order.paymentStatus === 'paid' && (
-                  <>
-                    {hasUndeliveredItems ? (
-                      <>
-                        <Button
-                          onClick={(e) => handleAction(e, () => onDeliverSelected(order))}
-                          className="h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
-                        >
-                          ✓ Mark Items
-                        </Button>
-                        <Button
-                          onClick={(e) => handleAction(e, () => onDeliverAll(order))}
-                          className="h-12 bg-orange-600 font-bold text-white transition-transform hover:bg-orange-700 active:scale-95 dark:bg-orange-500 dark:hover:bg-orange-600"
-                        >
-                          ✓ Mark All
-                        </Button>
-                      </>
-                    ) : (
-                      <div className="col-span-2 rounded-lg bg-green-50 p-3 text-center dark:bg-green-900/20">
-                        <span className="text-sm font-semibold text-green-700 dark:text-green-400">✓ Order Completed & Paid</span>
-                      </div>
-                    )}
-                  </>
+                  <div className="col-span-2 rounded-lg bg-green-50 p-3 text-center dark:bg-green-900/20">
+                    <span className="text-sm font-semibold text-green-700 dark:text-green-400">✓ Order Completed & Paid</span>
+                  </div>
                 )}
               </div>
             )}
@@ -344,14 +326,14 @@ export const OrderCard: React.FC<OrderCardProps> = ({
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <Button
                   onClick={(e) => handleAction(e, () => onAccept(order))}
-                  className="h-12 bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-500 dark:hover:bg-blue-600"
+                  className="h-12 cursor-pointer bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   ✓ Accept Preorder
                 </Button>
                 <Button
                   onClick={(e) => handleAction(e, () => onCancel(order))}
                   variant="destructive"
-                  className="h-12 font-bold transition-transform active:scale-95"
+                  className="h-12 cursor-pointer bg-red-600 font-bold text-white transition-transform hover:bg-red-700 active:scale-95 dark:bg-red-600 dark:hover:bg-red-700"
                   disabled={!canCancel}
                 >
                   ✗ Cancel

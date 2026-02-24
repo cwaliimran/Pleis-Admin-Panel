@@ -6,7 +6,11 @@ import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
 import { useGetVenuesByCompanyQuery } from '@/store/Reducer/venue';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { MapPin, Pencil, Shirt, UserPlus } from 'lucide-react';
+import {
+  MapPin,
+  Pencil,
+  //  Shirt, UserPlus
+} from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import AddOtherDetailsModal from '../organization-section/add-other-details-modal';
 import VenueTypeModalV2 from '../venue/venueTypeModal';
@@ -97,20 +101,15 @@ const OrgInfo = ({ organizationData, userType }: any) => {
           <Card className="dark:bg-secondary shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">DESCRIPTION</h1>
-              <p className="mt-2">{organizationData?.otherInfo?.description || ''}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <Badge className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
-                  {organizationData?.otherInfo?.minAge || ''}
-                </Badge>
+              <p className="mt-2">{organizationData?.otherInfo?.description || '-'}</p>
 
-                <Badge className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
-                  <Shirt className="mr-2 h-5! w-5!" />-
-                </Badge>
-
-                <Badge className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
-                  <UserPlus className="mr-2 h-5! w-5!" />0
-                </Badge>
-              </div>
+              {organizationData?.otherInfo?.minAge !== 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Badge className="text-md h-8 rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
+                    {organizationData?.otherInfo?.minAge || 'N/A'}
+                  </Badge>
+                </div>
+              )}
             </CardHeader>
           </Card>
 
@@ -164,13 +163,18 @@ const OrgInfo = ({ organizationData, userType }: any) => {
           <Card className="dark:bg-secondary shadow-lg">
             <CardHeader className="flex w-full flex-col gap-2">
               <h1 className="font-semibold text-slate-500">LOCATION PIN</h1>
+
               <div className="mt-2 flex items-center gap-2">
                 <span className="capitalize">{organizationData?.venue?.title || '-'}</span>
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <MapPin />
-                <span>{organizationData?.location?.fullAddress || '-'}</span>
-              </div>
+
+              {organizationData?.location?.fullAddress && (
+                <div className="mt-2 flex items-center gap-2">
+                  <MapPin />
+                  <span>{organizationData?.location?.fullAddress || '-'}</span>
+                </div>
+              )}
+
               <div className="mt-3 w-full">
                 <div className="h-[250px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
                   {organizationData?.location?.coordinates?.length === 2 ? (

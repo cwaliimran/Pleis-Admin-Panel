@@ -99,6 +99,10 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [showInitialSkeleton, setShowInitialSkeleton] = useState(true);
+  const [showTabSwitchSkeleton, setShowTabSwitchSkeleton] = useState(false);
+  const [isTabSwitchPendingFetch, setIsTabSwitchPendingFetch] = useState(false);
+  const isFirstTabRender = React.useRef(true);
 
   // Ref for content container to scroll to top
   const contentRef = React.useRef<HTMLDivElement>(null);
@@ -642,11 +646,50 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
     setExpandedOrderId(null);
   }, [activeTab, activeOrderSubTab, deliveryFilter, debouncedSearchQuery]);
 
+  // Show skeleton when user switches tabs/sub-tabs/filters
+  useEffect(() => {
+    if (isFirstTabRender.current) {
+      isFirstTabRender.current = false;
+      return;
+    }
+
+    setIsTabSwitchPendingFetch(true);
+    setShowTabSwitchSkeleton(false);
+  }, [activeTab, activeOrderSubTab, deliveryFilter]);
+
   // Reset page when organization changes
   useEffect(() => {
     setPage(1);
     setExpandedOrderId(null);
   }, [organizationId]);
+
+  // Hide initial skeleton once first load completes
+  useEffect(() => {
+    if (showInitialSkeleton && !ordersLoading && !ordersFetching) {
+      setShowInitialSkeleton(false);
+    }
+  }, [showInitialSkeleton, ordersLoading, ordersFetching]);
+
+  // After a tab switch, show skeleton only if an actual fetch starts
+  useEffect(() => {
+    if (!isTabSwitchPendingFetch) return;
+
+    if (ordersFetching) {
+      setShowTabSwitchSkeleton(true);
+      return;
+    }
+
+    // Cached tab switch (no API hit)
+    setIsTabSwitchPendingFetch(false);
+  }, [isTabSwitchPendingFetch, ordersFetching]);
+
+  // Hide tab-switch skeleton once tab data request settles
+  useEffect(() => {
+    if (showTabSwitchSkeleton && !ordersFetching) {
+      setShowTabSwitchSkeleton(false);
+      setIsTabSwitchPendingFetch(false);
+    }
+  }, [showTabSwitchSkeleton, ordersFetching]);
 
   // Modal content based on action type
   const getModalContent = () => {
@@ -724,7 +767,7 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
 
   const modalContent = getModalContent();
 
-  const isLoading = ordersLoading || ordersFetching;
+  const showSkeletonLoading = showInitialSkeleton || showTabSwitchSkeleton;
   const isOrganizerOrgLoading = isLoadingOrganizerOrganizations || isFetchingOrganizerOrganizations;
 
   return (
@@ -791,8 +834,8 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
             <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-gray-100">Select an Organization</h3>
             <p className="text-sm text-gray-500 dark:text-gray-500">Please select an organization from the dropdown above to view orders</p>
           </div>
-        ) : isLoading ? (
-          <OrderSkeletonGrid count={6} />
+        ) : showSkeletonLoading ? (
+          <OrderSkeletonGrid count={9} />
         ) : filteredOrders.length === 0 ? (
           <div className="py-16 text-center">
             <div className="mb-4 text-6xl opacity-30">📦</div>
@@ -821,7 +864,7 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
         )}
 
         {/* Pagination Controls */}
-        {!isLoading && filteredOrders.length > 0 && (
+        {!showSkeletonLoading && filteredOrders.length > 0 && (
           <div className="mt-6 flex items-center justify-center gap-4">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
