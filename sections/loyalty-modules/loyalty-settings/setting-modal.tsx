@@ -322,7 +322,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                       ))}
                     </RadioGroup>
                   )}
-                  <p className="text-muted-foreground mt-3 text-xs">To switch your business model, please reach out to the admin team for support.</p>
+                  {/* <p className="text-muted-foreground mt-3 text-xs">To switch your business model, please reach out to the admin team for support.</p> */}
                 </div>
 
                 {/* Point Value Percentage */}

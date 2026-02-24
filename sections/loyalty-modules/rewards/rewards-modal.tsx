@@ -13,9 +13,9 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetEventsByCompanyOrganizerQuery } from '@/store/Reducer/events';
 import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
 import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
-import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useAddRewardMutation, useUpdateRewardMutation } from '@/store/Reducer/rewards-api';
+import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
@@ -411,7 +411,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, 
         payload.id = selectedData?._id;
       }
 
-      console.log("payload", payload);
+      console.log('payload', payload);
 
       const response = isEdit && selectedData ? await updateReward(payload).unwrap() : await addReward(payload).unwrap();
 

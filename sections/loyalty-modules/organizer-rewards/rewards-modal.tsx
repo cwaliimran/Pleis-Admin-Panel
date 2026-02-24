@@ -1,9 +1,10 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFCheckbox, RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import FieldSkeleton from '@/components/ui/field-skeleton';
@@ -41,6 +42,8 @@ type RewardFormValues = {
   menuItem: string;
   event: string;
   ticket: string;
+  timeSlot: string;
+  isFastTrack: boolean;
   endDate: string | Date;
   status: string;
   companyOrganizer: string;
@@ -96,6 +99,8 @@ const schema = yup.object({
   endDate: yup.mixed<string | Date>().required('End date is required'),
   status: yup.string(),
   companyOrganizer: yup.string(),
+  timeSlot: yup.string(),
+  isFastTrack: yup.boolean(),
 });
 
 const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }: RewardFormModalProps) => {
@@ -120,6 +125,8 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
     description: '',
     event: '',
     ticket: '',
+    timeSlot: '',
+    isFastTrack: false,
     endDate: '',
     status: '',
     companyOrganizer: '',
@@ -137,6 +144,8 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
   const selectedMenuId = watch('menu');
   const selectedMenuItem = watch('menuItem');
   const selectedEventId = watch('event');
+  const selectedTicketId = watch('ticket');
+  const selectedTimeSlotId = watch('timeSlot');
 
   // Events ----------------------------------
   const { data: { data: eventData } = {}, isLoading: isLoadingEvents } = useGetAllEventsQuery({ page: 0, search: '', limit: '100' });
@@ -162,6 +171,11 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
       label: ticket?.title,
       value: ticket?._id,
     })) || [];
+
+  const selectedTicketData = (ticketData?.data || []).find((ticket: any) => ticket?._id === selectedTicketId);
+  const selectedTicketDateTimeSlots = selectedTicketData?.timingSlots?.enabled ? selectedTicketData?.timingSlots?.dateTimeSlots || [] : [];
+  const fastTrackEnabled = selectedTicketData?.fastTrackEntry?.enabled;
+  const fastTrackQuantity = selectedTicketData?.fastTrackEntry?.quantity ?? 0;
 
   // Menus ----------------------------------
   const { data: menuData, isLoading: menuLoading } = useGetAllOrganizerMenuQuery({
@@ -204,8 +218,15 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
   useEffect(() => {
     if (rewardType === 'ticketReward' && !isInitializingEdit.current) {
       setValue('ticket', '');
+      setValue('timeSlot', '');
     }
   }, [selectedEventId, setValue, rewardType]);
+
+  useEffect(() => {
+    if (rewardType === 'ticketReward' && !isInitializingEdit.current) {
+      setValue('timeSlot', '');
+    }
+  }, [selectedTicketId, setValue, rewardType]);
 
   // Prefill image, name, and description when menu item is selected
   useEffect(() => {
@@ -248,6 +269,8 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
         menuItem: selectedData.menuItem?._id || '',
         event: selectedData.event?._id || selectedData.event || '',
         ticket: selectedData.ticket?._id || selectedData.ticket || '',
+        timeSlot: selectedData.timeSlot || '',
+        isFastTrack: !!selectedData.isFastTrack,
         endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
@@ -261,6 +284,23 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
   }, [isEdit, selectedData, open, reset, global]);
 
   const handleSubmit = async (formData: any) => {
+    const claimLimitNumber = formData.claimLimit ? Number(formData.claimLimit) : undefined;
+    if (formData.isFastTrack) {
+      if (!selectedTicketData?.fastTrackEntry?.enabled) {
+        showError('Selected ticket does not support Fast Track');
+        return;
+      }
+      const maxFastTrackQty = selectedTicketData.fastTrackEntry?.quantity ?? 0;
+      if (claimLimitNumber == null) {
+        showError('Claim limit is required when Fast Track is enabled');
+        return;
+      }
+      if (claimLimitNumber > maxFastTrackQty) {
+        showError(`Claim limit must be less than or equal to ${maxFastTrackQty} for Fast Track`);
+        return;
+      }
+    }
+
     let uploadedFileKey: string | null = null;
 
     if (!formData?.endDate) {
@@ -286,7 +326,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
         description: formData.description || '',
         sortingType: formData.sortingType,
         minPointsRequiredToClaim: Number(formData.minPointsRequiredToClaim),
-        claimLimit: formData.claimLimit ? Number(formData.claimLimit) : undefined,
+        claimLimit: claimLimitNumber,
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
         endDate: fDate(formData.endDate, formatStr.paramCase.db),
@@ -312,6 +352,10 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
       if (formData.rewardType === 'ticketReward') {
         payload.event = formData.event;
         payload.ticket = formData.ticket;
+        if (formData.timeSlot) {
+          payload.timeSlot = formData.timeSlot;
+        }
+        payload.isFastTrack = !!formData.isFastTrack;
       }
 
       // Add edit-specific fields
@@ -502,14 +546,65 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
                         {isTicketsLoading || isTicketsFetching ? (
                           <FieldSkeleton />
                         ) : (
-                          <RHFCustomDropdown
-                            name="ticket"
-                            label="Select Ticket"
-                            placeholder="Choose ticket"
-                            options={ticketOptions}
-                            isLoading={isTicketsLoading}
-                            showNone={false}
-                          />
+                          <>
+                            <RHFCustomDropdown
+                              name="ticket"
+                              label="Select Ticket"
+                              placeholder="Choose ticket"
+                              options={ticketOptions}
+                              isLoading={isTicketsLoading}
+                              showNone={false}
+                            />
+
+                            {selectedTicketDateTimeSlots?.length > 0 && (
+                              <div className="">
+                                <p className="mb-2 text-xs font-medium text-gray-700 dark:text-gray-300">Available ticket slots</p>
+
+                                <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
+                                  {selectedTicketDateTimeSlots.map((dateSlot: any) => (
+                                    <div
+                                      key={dateSlot?.date}
+                                      className="rounded-md border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800/50"
+                                    >
+                                      <div className="mb-2">
+                                        <Badge
+                                          variant="secondary"
+                                          className="border border-gray-400 bg-gray-100 text-[11px] dark:border-gray-600 dark:bg-gray-700"
+                                        >
+                                          {fDate(dateSlot?.date, formatStr.split.date)}
+                                        </Badge>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {(dateSlot?.timeSlots || []).map((slot: any) => {
+                                          const isSelected = selectedTimeSlotId === slot?._id;
+                                          return (
+                                            <Badge
+                                              key={slot?._id || `${slot?.startTime}-${slot?.endTime}`}
+                                              variant={isSelected ? 'default' : 'outline'}
+                                              className={`cursor-pointer text-[11px] ${isSelected ? 'bg-primary text-white' : ''}`}
+                                              onClick={() => setValue('timeSlot', slot?._id || '')}
+                                            >
+                                              {slot?.startTime} - {slot?.endTime}
+                                            </Badge>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {fastTrackEnabled && (
+                              <RHFCheckbox
+                                name="isFastTrack"
+                                label="Fast Track"
+                                description={`Limit claims to Fast Track capacity (max ${fastTrackQuantity}).`}
+                                className="mt-2"
+                              />
+                            )}
+                          </>
                         )}
                       </>
                     )}
