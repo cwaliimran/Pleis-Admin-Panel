@@ -62,47 +62,63 @@ const STATUS_OPTIONS = [
 // ============================================
 // SCHEMA VALIDATION
 // ============================================
-const schema = Yup.object().shape({
-  reservationType: Yup.string().required('Reservation type is required'),
-  availableReservations: Yup.number()
-    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
-    .required('Number of available reservations is required')
-    .min(1, 'Must be at least 1'),
-  maxCapacityPerReservation: Yup.number()
-    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
-    .required('Max capacity is required')
-    .min(1, 'Must be at least 1'),
-  bonusPoints: Yup.number()
-    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
-    .required('Bonus points is required')
-    .min(0, 'Must be at least 0'),
-  conditionType: Yup.string().required('Condition type is required'),
-  amount: Yup.number()
-    .transform((value, originalValue) => (originalValue === '' ? null : value))
-    .nullable()
-    .when('conditionType', {
-      is: (val: string) => ['fixedPrice', 'minimumSpendOnLocation', 'prepayOption'].includes(val),
-      then: (schema) => schema.required('Amount is required for this condition').min(1, 'Must be at least 1'),
-      otherwise: (schema) => schema.nullable(),
+const schema = Yup.object()
+  .shape({
+    reservationType: Yup.string().required('Reservation type is required'),
+    availableReservations: Yup.number()
+      .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+      .required('Number of available reservations is required')
+      .min(1, 'Must be at least 1'),
+    maxCapacityPerReservation: Yup.number()
+      .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+      .required('Max capacity is required')
+      .min(1, 'Must be at least 1'),
+    bonusPoints: Yup.number()
+      .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+      .required('Bonus points is required')
+      .min(0, 'Must be at least 0'),
+    conditionType: Yup.string().required('Condition type is required'),
+    amount: Yup.number()
+      .transform((value, originalValue) => (originalValue === '' ? null : value))
+      .nullable()
+      .when('conditionType', {
+        is: (val: string) => ['fixedPrice', 'prepayOption'].includes(val),
+        then: (schema) => schema.required('Amount is required for this condition').min(1, 'Must be at least 1'),
+        otherwise: (schema) => schema.nullable(),
+      }),
+    customText: Yup.string().when('conditionType', {
+      is: (val: string) => val === 'customText',
+      then: (schema) => schema.required('Custom text is required'),
+      otherwise: (schema) => schema.notRequired(),
     }),
-  customText: Yup.string().when('conditionType', {
-    is: (val: string) => val === 'customText' || val === 'minimumSpendOnLocation',
-    then: (schema) => schema.required('Custom text is required'),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  ticketType: Yup.string().when('conditionType', {
-    is: 'ticketRequirement',
-    then: (schema) => schema.required('Ticket type is required'),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  taxPercentage: Yup.string().required('Tax percentage is required'),
-  needsConfirmation: Yup.boolean(),
-  allowPreOrderMenuItems: Yup.boolean(),
-  ticketRequirement: Yup.boolean(),
-  optionalEventId: Yup.string().notRequired(),
-  timingSlotsEnabled: Yup.boolean(),
-  status: Yup.string().oneOf(['active', 'inactive'] as const),
-}) as Yup.ObjectSchema<ReservationFormValues>;
+    ticketType: Yup.string().when('conditionType', {
+      is: 'ticketRequirement',
+      then: (schema) => schema.required('Ticket type is required'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+    taxPercentage: Yup.string().required('Tax percentage is required'),
+    needsConfirmation: Yup.boolean(),
+    allowPreOrderMenuItems: Yup.boolean(),
+    ticketRequirement: Yup.boolean(),
+    optionalEventId: Yup.string().notRequired(),
+    timingSlotsEnabled: Yup.boolean(),
+    status: Yup.string().oneOf(['active', 'inactive'] as const),
+  })
+  .test('minimum-spend-either-or', 'Provide Minimum Spend Amount or Custom Requirement Text', function (values) {
+    if (!values || values.conditionType !== 'minimumSpendOnLocation') return true;
+
+    const amountValue = values.amount;
+    const numericAmount = typeof amountValue === 'number' ? amountValue : Number(amountValue);
+    const hasAmount = amountValue != null && !Number.isNaN(numericAmount) && numericAmount >= 1;
+    const hasCustomText = Boolean(values.customText?.trim());
+
+    if (hasAmount || hasCustomText) return true;
+
+    return this.createError({
+      path: 'customText',
+      message: 'Add Minimum Spend Amount or Custom Requirement Text',
+    });
+  }) as Yup.ObjectSchema<ReservationFormValues>;
 
 const defaultValues: ReservationFormValues = {
   reservationType: '',
@@ -593,11 +609,21 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
           payload.amount = Number(formData.amount);
           break;
         case 'minimumSpendOnLocation':
-          payload.amount = Number(formData.amount);
-          payload.customText = formData.customText;
+          if (formData.amount !== '' && formData.amount != null) {
+            payload.amount = Number(formData.amount);
+          }
+          if (formData.customText?.trim()) {
+            payload.customText = formData.customText.trim();
+          } else {
+            payload.customText = [];
+          }
           break;
         case 'customText':
-          payload.customText = formData.customText;
+          if (formData.customText?.trim()) {
+            payload.customText = formData.customText.trim();
+          } else {
+            payload.customText = [];
+          }
           break;
       }
 

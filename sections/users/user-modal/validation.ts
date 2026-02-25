@@ -35,31 +35,10 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
           .max(11, 'VAT must be at most 11 digits'),
         bankAccountNumber: Yup.string()
           .required('Bank Account Number is required')
-          .transform((value) => (typeof value === 'string' ? value.replace(/\s+/g, '') : value))
+          .trim()
           .min(5, 'Bank Account Number must be at least 5 characters')
           .max(34, 'Bank Account Number must be at most 34 characters')
-          .matches(/^[A-Za-z0-9]+$/, 'Bank Account Number must be alphanumeric')
-          .test('iban-or-numeric', 'Invalid Bank Account Number', function (value) {
-            if (!value) return false;
-            // IBAN detection: starts with 2 letters, then 2 digits
-            const isIBAN = /^[A-Za-z]{2}\d{2}/.test(value);
-            if (isIBAN) {
-              // Mod-97 check for IBAN
-              // Rearrange: move first 4 chars to end
-              const rearranged = value.slice(4) + value.slice(0, 4);
-              // Replace letters with numbers (A=10, B=11, ..., Z=35)
-              const converted = rearranged.replace(/[A-Za-z]/g, (char) => (char.toUpperCase().charCodeAt(0) - 55).toString());
-              // Mod-97 check
-              let remainder = converted;
-              while (remainder.length > 2) {
-                remainder = (parseInt(remainder.slice(0, 9), 10) % 97).toString() + remainder.slice(9);
-              }
-              return parseInt(remainder, 10) % 97 === 1;
-            } else {
-              // Non-IBAN: must be numeric
-              return /^\d+$/.test(value);
-            }
-          }),
+          .matches(/^[A-Za-z0-9\s-]+$/, 'Bank Account Number can only contain letters, numbers, spaces, and hyphens'),
         representativeName: Yup.string()
           .required('Representative Name is required')
           .matches(/^[A-Za-z\s]+$/, 'Representative Name must only contain letters and spaces')

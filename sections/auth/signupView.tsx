@@ -113,24 +113,10 @@ const schema = Yup.object().shape({
     .max(11, 'VAT must be at most 11 digits'),
   bankAccountNumber: Yup.string()
     .required('Bank account number is required')
-    .transform((value) => (typeof value === 'string' ? value.replace(/\s+/g, '') : value))
+    .trim()
     .min(5, 'Bank account number must be at least 5 characters')
     .max(34, 'Bank account number must be at most 34 characters')
-    .matches(/^[A-Za-z0-9]+$/, 'Bank account number must be alphanumeric')
-    .test('iban-or-numeric', 'Invalid bank account number', function (value) {
-      if (!value) return false;
-      const isIBAN = /^[A-Za-z]{2}\d{2}/.test(value);
-      if (isIBAN) {
-        const rearranged = value.slice(4) + value.slice(0, 4);
-        const converted = rearranged.replace(/[A-Za-z]/g, (char) => (char.toUpperCase().charCodeAt(0) - 55).toString());
-        let remainder = converted;
-        while (remainder.length > 2) {
-          remainder = (parseInt(remainder.slice(0, 9), 10) % 97).toString() + remainder.slice(9);
-        }
-        return parseInt(remainder, 10) % 97 === 1;
-      }
-      return /^\d+$/.test(value);
-    }),
+    .matches(/^[A-Za-z0-9\s-]+$/, 'Bank account number can only contain letters, numbers, spaces, and hyphens'),
   representativeFullName: Yup.string()
     .required('Representative full name is required')
     .matches(/^[A-Za-z\s]+$/, 'Representative name must only contain letters and spaces')
