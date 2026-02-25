@@ -9,7 +9,6 @@ import { getBadgeLabel, getBadgeVariant, getDomainType } from '../helpers';
 import { TableRowProps } from './types';
 
 const TransactionHistoryTableRow: FC<TableRowProps> = ({ item }) => {
-
   return (
     <>
       <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
@@ -25,7 +24,7 @@ const TransactionHistoryTableRow: FC<TableRowProps> = ({ item }) => {
 
         <TableCell className="text-left capitalize">{item?.points?.total || 'N/A'}</TableCell>
 
-        <TableCell className="text-left capitalize">{item?.points?.percentage || 'N/A'} %</TableCell>
+        <TableCell className="text-left capitalize">{item?.points?.percentage ? `${item.points.percentage} %` : 'N/A'}</TableCell>
 
         <TableCell className="text-left capitalize">
           {(() => {
