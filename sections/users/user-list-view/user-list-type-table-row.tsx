@@ -82,7 +82,7 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
           </TableCell>
         )}
 
-        <TableCell className={`text-left text-sm`}>{!memberPage ? item?.basicInfo?.username || '-' : 'johndoe123'}</TableCell>
+        {userType !== 'organizer' && <TableCell className={`text-left text-sm`}>{!memberPage ? item?.basicInfo?.username || '-' : ''}</TableCell>}
 
         {memberPage ? null : (
           <TableCell className="text-left text-sm capitalize">

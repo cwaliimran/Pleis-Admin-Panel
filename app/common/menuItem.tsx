@@ -27,7 +27,6 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
 
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
-  console.log('hoveredItem', hoveredItem);
 
   const toggleSubMenu = useCallback((itemKey: string) => {
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
@@ -49,11 +48,12 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
         const itemKey = `${parentKey}-${item.title}-${idx}`;
         const hasChildren = item.items && item.items.length > 0;
         const isActive = item.url && pathname === item.url;
+        const isHovered = isCollapsed && hoveredItem === itemKey;
 
         const ButtonContent = (
           <div
             className={`sidebar-nav-item hover:bg-muted flex w-full items-center justify-between gap-2 rounded px-3 py-1 text-sm transition-colors duration-100 ${
-              isActive ? 'bg-muted font-medium' : ''
+              isActive ? 'bg-muted font-medium' : isHovered ? 'bg-muted' : ''
             } cursor-pointer`}
           >
             <div className="flex items-center gap-2">

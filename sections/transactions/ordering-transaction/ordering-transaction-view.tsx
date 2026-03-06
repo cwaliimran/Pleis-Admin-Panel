@@ -2,7 +2,7 @@
 
 import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetLoyaltyTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
+import { useGetTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import OrderingTransactionTable from './ordering-transaction-table';
@@ -30,7 +30,7 @@ const OrderingTransactionView = ({ userType }: LoyaltyTransactionViewProps) => {
     data: apiData,
     isLoading,
     isFetching,
-  } = useGetLoyaltyTransactionsQuery({
+  } = useGetTransactionsQuery({
     page: page - 1,
     search,
     limit,
@@ -42,7 +42,8 @@ const OrderingTransactionView = ({ userType }: LoyaltyTransactionViewProps) => {
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     // isGlobal: global || false,
     // walletType: 'globalWallet',
-    domainType: 'menuorders',
+    // domainType: 'menuorders',
+    orderType: 'menuorders',
   });
 
   const [localData, setLocalData] = useState<any[]>([]);

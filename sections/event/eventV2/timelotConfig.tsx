@@ -1,5 +1,6 @@
 'use client';
 
+import Time24hInput from '@/components/common/time-24h-input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { showError } from '@/utils/toast';
@@ -41,12 +42,50 @@ interface TimeSlotConfigModalProps {
 
 // Convert 24-hour time to 12-hour format with padded hours
 const convertTo12Hour = (time24: string): string => {
+  if (!time24 || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(time24)) {
+    return '';
+  }
+
   const [hours, minutes] = time24.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
   const hours12 = hours % 12 || 12;
   // Pad hours with leading zero
   return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
 };
+
+const convertTo24Hour = (time12: string): string => {
+  if (!time12) return '';
+
+  const parts = time12.trim().split(/\s+/);
+  if (parts.length < 2) return '';
+
+  const [time, periodRaw] = [parts[0], parts[1]];
+  const [hoursStr, minutesStr] = time.split(':');
+  const period = periodRaw.toUpperCase();
+
+  const hoursNum = Number(hoursStr);
+  const minutesNum = Number(minutesStr);
+
+  if (!Number.isFinite(hoursNum) || !Number.isFinite(minutesNum) || minutesNum < 0 || minutesNum > 59) {
+    return '';
+  }
+
+  let hours = hoursNum;
+
+  if (period === 'PM' && hours !== 12) {
+    hours += 12;
+  } else if (period === 'AM' && hours === 12) {
+    hours = 0;
+  }
+
+  if (hours < 0 || hours > 23) {
+    return '';
+  }
+
+  return `${String(hours).padStart(2, '0')}:${String(minutesNum).padStart(2, '0')}`;
+};
+
+const isValidTime24 = (time: string): boolean => /^([01]\d|2[0-3]):([0-5]\d)$/.test(time);
 
 const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose, onSave, totalQuantity = 0, eventData, initialConfig }) => {
   const [dateTimeSlots, setDateTimeSlots] = React.useState<DateTimeSlot[]>([]);
@@ -111,6 +150,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
   // Convert time string to minutes
   const timeToMinutes = (time: string): number => {
+    if (!isValidTime24(time)) return NaN;
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
   };
@@ -124,6 +164,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
   // Check if time is within event boundaries
   const isTimeWithinEvent = (time: string): boolean => {
+    if (!isValidTime24(time)) return false;
     const minutes = timeToMinutes(time);
     return minutes >= eventStartMinutes && minutes <= eventEndMinutes;
   };
@@ -159,16 +200,14 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
       // Handle format like "2025-11-13 02:00 PM"
       const parts = dateTimeStr.split(' ');
       if (parts.length >= 3) {
-        return `${parts[1]} ${parts[2]}`; // "02:00 PM"
+        return convertTo24Hour(`${parts[1]} ${parts[2]}`);
       }
 
       // Handle ISO format
       const date = new Date(dateTimeStr);
       const hours = date.getHours();
       const minutes = date.getMinutes();
-      const period = hours >= 12 ? 'PM' : 'AM';
-      const hours12 = hours % 12 || 12;
-      return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${period}`;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     } catch (error) {
       console.log('error', error);
       return '';
@@ -278,6 +317,10 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
               if (slot.id === slotId) {
                 // Validate time changes
                 if (field === 'startTime' && typeof value === 'string') {
+                  if (!isValidTime24(value)) {
+                    return { ...slot, [field]: value };
+                  }
+
                   if (!isTimeWithinEvent(value)) {
                     showError(
                       `Start time must be between ${extractTime(eventData?.schedule?.startDateTime || '')} and ${extractTime(eventData?.schedule?.endDateTime || '')}`
@@ -291,6 +334,10 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                 }
 
                 if (field === 'endTime' && typeof value === 'string') {
+                  if (!isValidTime24(value)) {
+                    return { ...slot, [field]: value };
+                  }
+
                   if (!isTimeWithinEvent(value)) {
                     showError(
                       `End time must be between ${extractTime(eventData?.schedule?.startDateTime || '')} and ${extractTime(eventData?.schedule?.endDateTime || '')}`
@@ -341,6 +388,11 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
           return;
         }
 
+        if (!isValidTime24(slot.startTime) || !isValidTime24(slot.endTime)) {
+          showError('All time slots must be in HH:mm format');
+          return;
+        }
+
         // Validate times are within event boundaries
         if (!isTimeWithinEvent(slot.startTime)) {
           showError(
@@ -380,6 +432,15 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
         endTime: convertTo12Hour(slot.endTime),
       })),
     }));
+
+    for (const dts of apiFormat) {
+      for (const slot of dts.timeSlots) {
+        if (!slot.startTime || !slot.endTime) {
+          showError('Invalid time slots found. Please review all slot times.');
+          return;
+        }
+      }
+    }
 
     onSave(apiFormat);
     onClose();
@@ -493,24 +554,22 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">#{index + 1}</span>
 
                         <div className="relative flex-1">
-                          <input
-                            title="start time"
-                            type="time"
+                          <Time24hInput
                             value={slot.startTime}
-                            onChange={(e) => updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                            onChange={(value) => updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', value)}
+                            placeholder="HH:mm"
+                            className="w-full"
                           />
                         </div>
 
                         <span className="text-sm text-gray-500">to</span>
 
                         <div className="relative flex-1">
-                          <input
-                            title="end time"
-                            type="time"
+                          <Time24hInput
                             value={slot.endTime}
-                            onChange={(e) => updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                            onChange={(value) => updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', value)}
+                            placeholder="HH:mm"
+                            className="w-full"
                           />
                         </div>
 

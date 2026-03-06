@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import React, { useState } from 'react';
 import UpdateReservationModal from '../reservation-calendar/components/change-request-modal';
+import { normalizeTimeTo24 } from './helpers';
 import { UserReservation } from './reservation-types';
 import UserReservationCardSkelton from './user-reservation-card-skelton';
 
@@ -218,7 +219,8 @@ const UserReservationsList: React.FC<UserReservationsListProps> = ({ reservation
                 <div className="text-right">
                   <div className="text-sm text-gray-600 dark:text-gray-300">{request?.timingSlots?.dateTimeSlots[0].date}</div>
                   <div className="text-sm font-semibold">
-                    {request?.timingSlots?.dateTimeSlots[0].timeSlots[0]?.startTime} {request?.timingSlots?.dateTimeSlots[0].timeSlots[0]?.endTime}
+                    {normalizeTimeTo24(request?.timingSlots?.dateTimeSlots[0].timeSlots[0]?.startTime || '')} -{' '}
+                    {normalizeTimeTo24(request?.timingSlots?.dateTimeSlots[0].timeSlots[0]?.endTime || '')}
                   </div>
                 </div>
               </div>

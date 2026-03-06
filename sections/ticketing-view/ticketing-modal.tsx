@@ -1,6 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
@@ -129,7 +130,12 @@ const schema = Yup.object().shape({
     earlyBirdEnabled: Yup.boolean(),
     earlyBirdDate: Yup.string().when('earlyBirdEnabled', {
       is: true,
-      then: (s) => s.required('Early bird date required'),
+      then: (s) =>
+        s
+          .required('Early bird date and time required')
+          .test('earlyBirdDateTime', 'Early bird date and time required', (value) =>
+            Boolean(value && /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):([0-5]\d)$/.test(value))
+          ),
     }),
     earlyBirdPrice: Yup.string().when('earlyBirdEnabled', {
       is: true,
@@ -138,7 +144,12 @@ const schema = Yup.object().shape({
     lastMinuteEnabled: Yup.boolean(),
     lastMinuteDate: Yup.string().when('lastMinuteEnabled', {
       is: true,
-      then: (s) => s.required('Last minute date required'),
+      then: (s) =>
+        s
+          .required('Last minute date and time required')
+          .test('lastMinuteDateTime', 'Last minute date and time required', (value) =>
+            Boolean(value && /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):([0-5]\d)$/.test(value))
+          ),
     }),
     lastMinutePrice: Yup.string().when('lastMinuteEnabled', {
       is: true,
@@ -248,9 +259,47 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   const transferEnabled = watch('features.transfer');
   const baseQuantity = watch('quantity');
   const publishType = watch('publishSettings.publishType');
+  const earlyBirdDateTimeValue = watch('features.earlyBirdDate') || '';
+  const lastMinuteDateTimeValue = watch('features.lastMinuteDate') || '';
 
   const [showTimeSlotModal, setShowTimeSlotModal] = React.useState(false);
   const [timeSlotConfig, setTimeSlotConfig] = React.useState<any>(null);
+
+  const getDatePart = React.useCallback((dateTimeValue: string): string => {
+    if (!dateTimeValue) return '';
+    const [datePart = ''] = dateTimeValue.split('T');
+    return datePart;
+  }, []);
+
+  const getTimePart = React.useCallback((dateTimeValue: string): string => {
+    if (!dateTimeValue || !dateTimeValue.includes('T')) return '';
+    const [, timePart = ''] = dateTimeValue.split('T');
+    return timePart.slice(0, 5);
+  }, []);
+
+  const updateSplitDateTime = React.useCallback(
+    (fieldName: 'features.earlyBirdDate' | 'features.lastMinuteDate', part: 'date' | 'time', nextValue: string) => {
+      const currentValue = watch(fieldName) || '';
+      const currentDate = getDatePart(currentValue);
+      const currentTime = getTimePart(currentValue);
+
+      const nextDate = part === 'date' ? nextValue : currentDate;
+      const nextTime = part === 'time' ? nextValue : currentTime;
+
+      let combined = '';
+      if (nextDate && nextTime) {
+        combined = `${nextDate}T${nextTime}`;
+      } else if (nextDate) {
+        combined = `${nextDate}T00:00`;
+      }
+
+      setValue(fieldName, combined, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+    [getDatePart, getTimePart, setValue, watch]
+  );
 
   // const handleTimeSlotSave = (config: any) => {
   //   setTimeSlotConfig(config);
@@ -657,13 +706,31 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
 
                             {earlyBirdEnabled && (
                               <div className="mt-3 ml-6 grid gap-3 md:grid-cols-2">
-                                <RHFTextField
-                                  name="features.earlyBirdDate"
-                                  label="End Date/Time"
-                                  type="datetime-local"
-                                  disabled={isLoading}
-                                  required={earlyBirdEnabled}
-                                />
+                                <div>
+                                  <p className="mb-0.5 text-sm font-medium">End Date</p>
+                                  <input
+                                    type="date"
+                                    title="Early bird end date"
+                                    value={getDatePart(earlyBirdDateTimeValue)}
+                                    onChange={(e) => updateSplitDateTime('features.earlyBirdDate', 'date', e.target.value)}
+                                    disabled={isLoading}
+                                    className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <p className="mb-0.5 text-sm font-medium">End Time</p>
+                                  <Time24hInput
+                                    value={getTimePart(earlyBirdDateTimeValue)}
+                                    onChange={(value) => updateSplitDateTime('features.earlyBirdDate', 'time', value)}
+                                    placeholder="HH:mm"
+                                    disabled={isLoading}
+                                  />
+                                </div>
+                                {formState.errors.features?.earlyBirdDate && (
+                                  <p className="text-xs text-red-500 md:col-span-2">
+                                    {String(formState.errors.features?.earlyBirdDate?.message || '')}
+                                  </p>
+                                )}
                                 <RHFTextField
                                   name="features.earlyBirdPrice"
                                   label="Discounted Price (€)"
@@ -705,13 +772,31 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
 
                             {lastMinuteEnabled && (
                               <div className="mt-3 ml-6 grid gap-3 md:grid-cols-2">
-                                <RHFTextField
-                                  name="features.lastMinuteDate"
-                                  label="Start Date/Time"
-                                  type="datetime-local"
-                                  disabled={isLoading}
-                                  required={lastMinuteEnabled}
-                                />
+                                <div>
+                                  <p className="mb-0.5 text-sm font-medium">Start Date</p>
+                                  <input
+                                    type="date"
+                                    title="Last minute start date"
+                                    value={getDatePart(lastMinuteDateTimeValue)}
+                                    onChange={(e) => updateSplitDateTime('features.lastMinuteDate', 'date', e.target.value)}
+                                    disabled={isLoading}
+                                    className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <p className="mb-0.5 text-sm font-medium">Start Time</p>
+                                  <Time24hInput
+                                    value={getTimePart(lastMinuteDateTimeValue)}
+                                    onChange={(value) => updateSplitDateTime('features.lastMinuteDate', 'time', value)}
+                                    placeholder="HH:mm"
+                                    disabled={isLoading}
+                                  />
+                                </div>
+                                {formState.errors.features?.lastMinuteDate && (
+                                  <p className="text-xs text-red-500 md:col-span-2">
+                                    {String(formState.errors.features?.lastMinuteDate?.message || '')}
+                                  </p>
+                                )}
                                 <RHFTextField
                                   name="features.lastMinutePrice"
                                   label="Discounted Price (€)"

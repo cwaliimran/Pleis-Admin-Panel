@@ -1,20 +1,21 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetLoyaltyTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
+import InvoiceCard from '@/sections/invoices/notificationCard';
+import { transactionHistoryData } from '@/sections/loyalty/data';
+import { useGetTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { fDate, formatDate, formatStr } from '@/utils/format-time';
+import { ChevronDownIcon, Download, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import TransactionHistoryTable from './transaction-history-table';
 import TransactionModal from './transactions-modal';
-import { transactionHistoryData } from '@/sections/loyalty/data';
-import InvoiceCard from '@/sections/invoices/notificationCard';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
-import { ChevronDownIcon, Download, Loader2 } from 'lucide-react';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import { useExportTransactions } from './use-export-transactions';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LoyaltyTransactionViewProps {
   userType: 'super-admin' | 'organizer';
@@ -22,6 +23,8 @@ interface LoyaltyTransactionViewProps {
 
 const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const openModal = useBoolean();
+
+  const { user } = useAuth();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -50,14 +53,15 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     data: apiData,
     isLoading,
     isFetching,
-  } = useGetLoyaltyTransactionsQuery({
+  } = useGetTransactionsQuery({
     page: page - 1,
     search,
     limit,
     type: status === 'all' ? '' : status,
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
-    companyOrganizer: selectedCompany || undefined,
+    // companyOrganizer: selectedCompany || undefined,
+    companyOrganizer: userType === 'organizer' ? user?.basicInfo?._id : selectedCompany || undefined,
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     isAdmin: userType === 'super-admin',
   });

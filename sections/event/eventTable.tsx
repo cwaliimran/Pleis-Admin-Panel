@@ -59,11 +59,6 @@ const headLabel = [
     align: 'left',
   },
   {
-    id: 'region',
-    label: 'Region',
-    align: 'left',
-  },
-  {
     id: 'status',
     label: 'Status',
     align: 'left',

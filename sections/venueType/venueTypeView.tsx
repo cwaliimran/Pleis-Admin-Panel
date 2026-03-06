@@ -218,7 +218,6 @@ const VenueTypeView = () => {
     } catch (error) {
       setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save venue type:', errorMessage);
       showError(errorMessage);
     }
   });
@@ -240,7 +239,6 @@ const VenueTypeView = () => {
       deleteModal.onFalse();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete venue type:', errorMessage);
       showError(errorMessage);
     }
   };

@@ -47,6 +47,7 @@ const RewardsTable: FC<SamplePageProps> = ({
     { id: 'limit', label: 'Limit', align: 'left' },
     { id: 'tierLimit', label: 'Tier Limit', align: 'left' },
     { id: 'percentOff', label: '% Off', align: 'left' },
+    { id: 'isPromotionOnly', label: 'Promotion Only', align: 'left' },
     { id: 'actions', label: 'Actions', align: 'left' },
   ];
 

@@ -1,12 +1,14 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
@@ -15,6 +17,7 @@ import { useGetRewardsQuery } from '@/store/Reducer/rewards-api';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { fDate, formatStr } from '@/utils/format-time';
+import { to24HourTime } from '@/utils/time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -232,25 +235,25 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
       daysOfWeek: recurringDetails?.daysOfWeek || [],
     };
 
-    // Helper to convert 12-hour time (e.g., "03:21 PM") to 24-hour format (e.g., "15:21")
-    const convertTo24Hour = (dateStr: string): string => {
-      const timeMatch = dateStr?.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (!timeMatch) return '';
-      let hours = parseInt(timeMatch[1], 10);
-      const minutes = timeMatch[2];
-      const period = timeMatch[3].toUpperCase();
-      if (period === 'PM' && hours !== 12) {
-        hours += 12;
-      } else if (period === 'AM' && hours === 12) {
-        hours = 0;
+    const extractTime24 = (dateValue: string): string => {
+      if (!dateValue) return '';
+
+      const timeMatch = dateValue.match(/(\d{1,2}:\d{2}\s*(?:AM|PM))/i);
+      if (timeMatch?.[1]) {
+        const normalized12h = timeMatch[1].replace(/\s+/g, ' ').trim().toUpperCase();
+        return to24HourTime(normalized12h) || '';
       }
-      return `${hours.toString().padStart(2, '0')}:${minutes}`;
+
+      const parsed = new Date(dateValue);
+      if (Number.isNaN(parsed.getTime())) return '';
+
+      return `${String(parsed.getHours()).padStart(2, '0')}:${String(parsed.getMinutes()).padStart(2, '0')}`;
     };
 
     // type-specific
     if (promotionType === 'globalHappyHourPromotion') {
-      mapped.timeStart = convertTo24Hour(startDate) || '';
-      mapped.timeEnd = convertTo24Hour(endDate) || '';
+      mapped.timeStart = extractTime24(startDate) || '';
+      mapped.timeEnd = extractTime24(endDate) || '';
       mapped.pointsMultiplier = String(pointsMultiplier || 1.5);
     }
     if (promotionType === 'globalClaimPromotion') {
@@ -320,10 +323,12 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
 
   const handleSubmit = async (formData: any, scope?: string) => {
     let uploadedFileKey: string | null = null;
+    const shouldForceFutureScope = isEdit && !scope && selectedData?.recurringDetails == null && formData?.recurringEnabled === 'true';
+    const effectiveScope = shouldForceFutureScope ? 'future' : scope;
 
     // Set the scope for loading state tracking
-    if (scope) {
-      setUpdateScope(scope);
+    if (effectiveScope) {
+      setUpdateScope(effectiveScope);
     }
 
     try {
@@ -373,7 +378,9 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
         payload.status = selectedData.status;
       }
 
-      const response = isEdit ? await updatePromotion({ ...payload, ...(scope && { scope }) }).unwrap() : await addPromotion(payload).unwrap();
+      const response = isEdit
+        ? await updatePromotion({ ...payload, ...(effectiveScope && { scope: effectiveScope }) }).unwrap()
+        : await addPromotion(payload).unwrap();
 
       if (response?.error) {
         showError(getErrorMessage(response.error));
@@ -529,8 +536,32 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
                 {/* GLOBAL HAPPY HOUR */}
                 {promotionType === 'globalHappyHourPromotion' && (
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                    <RHFTextField name="timeStart" label="Promotion Time Start" placeholder="17:00" type="time" />
-                    <RHFTextField name="timeEnd" label="Promotion Time End" placeholder="20:00" type="time" />
+                    <FormField
+                      control={methods.control}
+                      name="timeStart"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Promotion Time Start</FormLabel>
+                          <FormControl>
+                            <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="17:00" title="Promotion Time Start" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={methods.control}
+                      name="timeEnd"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Promotion Time End</FormLabel>
+                          <FormControl>
+                            <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="20:00" title="Promotion Time End" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <RHFSelectField
                       name="pointsMultiplier"
                       label="Points Multiplier"

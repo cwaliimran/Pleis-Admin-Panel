@@ -25,6 +25,7 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/ticketing',
   '/super-admin/bundles',
   '/super-admin/reservation',
+  '/super-admin/res-transactions',
   '/super-admin/calendar',
   '/super-admin/streaks',
   '/super-admin/updates',

@@ -1,6 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 // Import types and utilities
-import { convertTimeFormat } from '@/utils/format-time';
+import { to12HourTime, to24HourTime } from '@/utils/time';
 import { DateTimeSlot, EventData, EventDateRange, ReservationFormValues, ReservationModalProps, ValidationErrors } from './types';
 import {
   formatDateForInput,
@@ -126,6 +127,15 @@ const defaultValues: ReservationFormValues = {
   status: 'active',
 };
 
+const cloneDateTimeSlots = (slots: DateTimeSlot[]): DateTimeSlot[] =>
+  slots.map((dateSlot) => ({
+    date: dateSlot.date || '',
+    timeSlots: (dateSlot.timeSlots || []).map((timeSlot) => ({
+      startTime: timeSlot.startTime || '',
+      endTime: timeSlot.endTime || '',
+    })),
+  }));
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -134,6 +144,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
   const [updateReservation, { isLoading: updateLoading }] = useUpdateReservationMutation();
 
   const [dateTimeSlots, setDateTimeSlots] = useState<DateTimeSlot[]>([]);
+  const [initialDateTimeSlots, setInitialDateTimeSlots] = useState<DateTimeSlot[]>([]);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
   const { data: eventData, isLoading: isLoadingEvents } = useGetEventsByOrganizationQuery(
@@ -153,6 +164,12 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
   const timingSlotsEnabled = watch('timingSlotsEnabled');
   const selectedEventId = watch('optionalEventId');
   const ticketRequirement = watch('ticketRequirement');
+
+  const hasTimingSlotsChanged = useMemo(() => {
+    if (!isEdit) return false;
+
+    return JSON.stringify(cloneDateTimeSlots(dateTimeSlots)) !== JSON.stringify(cloneDateTimeSlots(initialDateTimeSlots));
+  }, [isEdit, dateTimeSlots, initialDateTimeSlots]);
 
   const eventOptions = useMemo(() => {
     if (!eventData || !Array.isArray(eventData)) return [];
@@ -178,18 +195,15 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
     const startTime24 = `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`;
     const endTime24 = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
 
-    const startTime12 = convertTimeFormat(startTime24, false);
-    const endTime12 = convertTimeFormat(endTime24, false);
-
     return {
       startDate,
       endDate,
       minDate: formatDateForInput(startDate),
       maxDate: formatDateForInput(endDate),
-      startTime: startTime12,
-      endTime: endTime12,
-      startTimeMinutes: timeToMinutes(startTime12),
-      endTimeMinutes: timeToMinutes(endTime12),
+      startTime: startTime24,
+      endTime: endTime24,
+      startTimeMinutes: timeToMinutes(startTime24),
+      endTimeMinutes: timeToMinutes(endTime24),
     };
   }, [selectedEvent]);
 
@@ -486,11 +500,14 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
           ...dateSlot,
           timeSlots: dateSlot.timeSlots.map((timeSlot: any) => ({
             ...timeSlot,
-            startTime: timeSlot.startTime ? convertTimeFormat(timeSlot.startTime, true) : '',
-            endTime: timeSlot.endTime ? convertTimeFormat(timeSlot.endTime, true) : '',
+            startTime: timeSlot.startTime ? to24HourTime(timeSlot.startTime) : '',
+            endTime: timeSlot.endTime ? to24HourTime(timeSlot.endTime) : '',
           })),
         }));
-        setDateTimeSlots(convertedSlots);
+        setDateTimeSlots(cloneDateTimeSlots(convertedSlots));
+        setInitialDateTimeSlots(cloneDateTimeSlots(convertedSlots));
+      } else {
+        setInitialDateTimeSlots([]);
       }
 
       reset(mappedData);
@@ -502,6 +519,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         reset(defaultValues);
       }
       setDateTimeSlots([]);
+      setInitialDateTimeSlots([]);
       setValidationErrors({});
     }
   }, [open, isEdit, selectedData, reset, event]);
@@ -646,8 +664,8 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
       const formattedDateTimeSlots = dateTimeSlots.map((dateSlot) => ({
         date: dateSlot.date,
         timeSlots: sortTimeSlots(dateSlot.timeSlots).map((timeSlot) => ({
-          startTime: convertTimeFormat(timeSlot.startTime, false),
-          endTime: convertTimeFormat(timeSlot.endTime, false),
+          startTime: to12HourTime(timeSlot.startTime),
+          endTime: to12HourTime(timeSlot.endTime),
         })),
       }));
 
@@ -679,6 +697,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
 
       methods.reset(defaultValues);
       setDateTimeSlots([]);
+      setInitialDateTimeSlots([]);
       setValidationErrors({});
       onClose();
     } catch (error) {
@@ -690,6 +709,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
   const handleClose = () => {
     reset(defaultValues);
     setDateTimeSlots([]);
+    setInitialDateTimeSlots([]);
     setValidationErrors({});
     isInitialEditLoadRef.current = false;
     onClose();
@@ -1016,19 +1036,17 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                                 <div key={timeIndex} className="space-y-1">
                                   <div className="flex items-center gap-2">
                                     <div className="flex flex-1 items-center gap-2">
-                                      <input
-                                        type="time"
+                                      <Time24hInput
                                         title="Start time"
                                         value={timeSlot.startTime}
-                                        onChange={(e) => updateTimeSlot(dateIndex, timeIndex, 'startTime', e.target.value)}
+                                        onChange={(timeValue) => updateTimeSlot(dateIndex, timeIndex, 'startTime', timeValue)}
                                         className="flex-1 rounded-md border p-2 dark:bg-gray-700"
                                       />
                                       <span className="text-sm">to</span>
-                                      <input
-                                        type="time"
+                                      <Time24hInput
                                         title="End time"
                                         value={timeSlot.endTime}
-                                        onChange={(e) => updateTimeSlot(dateIndex, timeIndex, 'endTime', e.target.value)}
+                                        onChange={(timeValue) => updateTimeSlot(dateIndex, timeIndex, 'endTime', timeValue)}
                                         className="flex-1 rounded-md border p-2 dark:bg-gray-700"
                                       />
                                     </div>
@@ -1045,7 +1063,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                                   <div className="ml-1 space-y-1">
                                     {timeSlot.startTime && timeSlot.endTime && (
                                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                                        Selected: {convertTimeFormat(timeSlot.startTime, false)} - {convertTimeFormat(timeSlot.endTime, false)}
+                                        Selected: {timeSlot.startTime} - {timeSlot.endTime}
                                       </p>
                                     )}
                                     {Object.keys(validationErrors)
@@ -1127,7 +1145,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                   <Button
                     type="submit"
                     className="bg-primary hover:bg-primary-dark cursor-pointer px-6 text-white"
-                    disabled={isEdit ? !formState.isDirty : false}
+                    disabled={isEdit ? !(formState.isDirty || hasTimingSlotsChanged) : false}
                   >
                     {isEdit ? 'Update Reservation' : 'Create Reservation'}
                   </Button>

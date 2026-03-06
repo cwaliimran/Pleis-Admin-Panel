@@ -64,6 +64,8 @@ const RewardsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
 
       <TableCell className="text-left">{item?.percentOff}%</TableCell>
 
+      <TableCell className="text-left">{item?.isPromotionOnly ? 'Yes' : 'No'}</TableCell>
+
       {/* Action menu */}
       <TableCell className="text-end">
         <div className="flex gap-2">

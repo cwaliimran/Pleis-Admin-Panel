@@ -1,17 +1,18 @@
 import { Clock, Phone, Users } from 'lucide-react';
 import { useMemo } from 'react';
+import { normalizeTimeTo24 } from '../../reservation-view/helpers';
 import { ActiveBookingsProps, CalendarReservation } from './types';
 
 /**
  * Parse time string (e.g., "05:00 PM") to minutes since midnight
  */
 const parseTimeToMinutes = (timeStr: string): number => {
-  if (!timeStr) return 0;
-  const [time, period] = timeStr.split(' ');
-  const [hours, minutes] = time.split(':').map(Number);
-  let hour24 = hours;
-  if (period === 'PM' && hours !== 12) hour24 += 12;
-  if (period === 'AM' && hours === 12) hour24 = 0;
+  const normalized = normalizeTimeTo24(timeStr);
+  if (!normalized) return 0;
+
+  const [hourStr, minuteStr] = normalized.split(':');
+  const hour24 = Number(hourStr);
+  const minutes = Number(minuteStr);
   return hour24 * 60 + minutes;
 };
 
@@ -73,6 +74,8 @@ export const ActiveBookings: React.FC<ActiveBookingsProps> = ({ bookings }) => {
       <div className="max-h-80 space-y-4 overflow-y-auto">
         {activeBookings.map((booking: CalendarReservation) => {
           const timeSlot = booking.timingSlots?.dateTimeSlots?.[0]?.timeSlots?.[0];
+          const startTime = normalizeTimeTo24(timeSlot?.startTime || '');
+          const endTime = normalizeTimeTo24(timeSlot?.endTime || '');
           const customerName = `${booking.user?.firstName || ''} ${booking.user?.lastName || ''}`.trim();
           const phone = booking.user?.phoneNumber ? `${booking.user.phoneNumber.code}${booking.user.phoneNumber.number}` : '';
 
@@ -89,7 +92,7 @@ export const ActiveBookings: React.FC<ActiveBookingsProps> = ({ bookings }) => {
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{customerName || 'Unknown Customer'}</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {booking.reservation?.reservationType} · {timeSlot?.startTime} - {timeSlot?.endTime}
+                      {booking.reservation?.reservationType} · {startTime} - {endTime}
                     </p>
                   </div>
                 </div>

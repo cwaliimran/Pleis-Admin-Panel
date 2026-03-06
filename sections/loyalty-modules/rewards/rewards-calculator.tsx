@@ -11,16 +11,20 @@ interface CalculatorResponse {
   data?: {
     points?: number;
     totalSpend?: number;
+    reason?: string;
   };
   message?: string;
   points?: number;
   totalSpend?: number;
+  reason?: string;
 }
 
 const RewardsCalculator = ({ companyOrganizer }: { companyOrganizer: string | null }) => {
   const [itemPrice, setItemPrice] = useState<string>('');
   const [calculatedPoints, setCalculatedPoints] = useState<number | null>(null);
   const [totalSpend, setTotalSpend] = useState<number | null>(null);
+  const [apiMessage, setApiMessage] = useState<string | null>(null);
+  const [reason, setReason] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -36,6 +40,8 @@ const RewardsCalculator = ({ companyOrganizer }: { companyOrganizer: string | nu
     // Reset states
     setCalculatedPoints(null);
     setTotalSpend(null);
+    setApiMessage(null);
+    setReason(null);
     setError(null);
 
     if (!itemPrice) {
@@ -64,23 +70,31 @@ const RewardsCalculator = ({ companyOrganizer }: { companyOrganizer: string | nu
         }).unwrap()) as CalculatorResponse;
 
         // Extract points from response (handle different response structures)
-        const points = response?.data?.points || response?.points;
-        const spend = response?.data?.totalSpend || response?.totalSpend;
+        const points = response?.data?.points ?? response?.points;
+        const spend = response?.data?.totalSpend ?? response?.totalSpend;
+        const responseMessage = response?.message ?? null;
+        const responseReason = response?.data?.reason ?? response?.reason ?? null;
 
-        if (points && typeof points === 'number' && points >= 0) {
+        if (typeof points === 'number' && points >= 0) {
           setCalculatedPoints(points);
-          setTotalSpend(spend ?? null);
+          setTotalSpend(typeof spend === 'number' ? spend : null);
+          setApiMessage(responseMessage);
+          setReason(responseReason);
           setError(null);
         } else {
-          setError('Invalid response from server');
+          setError(responseMessage || 'Invalid response from server');
           setCalculatedPoints(null);
           setTotalSpend(null);
+          setApiMessage(null);
+          setReason(null);
         }
       } catch (error) {
         const errorMessage = getErrorMessage(error);
         setError(errorMessage || 'Failed to calculate reward points');
         setCalculatedPoints(null);
         setTotalSpend(null);
+        setApiMessage(null);
+        setReason(null);
       }
     }, 500);
 
@@ -96,6 +110,8 @@ const RewardsCalculator = ({ companyOrganizer }: { companyOrganizer: string | nu
     setItemPrice('');
     setCalculatedPoints(null);
     setTotalSpend(null);
+    setApiMessage(null);
+    setReason(null);
     setError(null);
 
     if (debounceTimer.current) {
@@ -152,6 +168,9 @@ const RewardsCalculator = ({ companyOrganizer }: { companyOrganizer: string | nu
       {/* Result Display */}
       {calculatedPoints !== null && !error && (
         <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+          {(apiMessage || reason) && (
+            <div className="mb-3 text-center">{reason && <p className="text-sm text-amber-700 dark:text-amber-300">Reason: {reason}</p>}</div>
+          )}
           <div className="flex items-center justify-center gap-8">
             <div className="text-center">
               <p className="mb-1 text-sm text-gray-600 dark:text-gray-400">Calculated Point Value:</p>

@@ -40,7 +40,7 @@ type SettingsModalProps = {
   selectedCompanyId: string;
   companyDetails: any;
   handleSuccess: () => void;
-  user: any;
+  // user: any;
 };
 
 const schema = Yup.object().shape({
@@ -71,7 +71,7 @@ const defaultValues: SettingsFormValues = {
   pointValuePercentage: 0,
 };
 
-const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handleSuccess, user }: SettingsModalProps) => {
+const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handleSuccess }: SettingsModalProps) => {
   const [deleting, setDeleting] = useState(false);
   const [pointValue, setPointValue] = useState(0);
 
@@ -290,42 +290,40 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
 
                 {/* Loyalty Model Selection */}
                 <div>
-                  {user?.accountState?.userType === 'admin' && (
-                    <>
-                      <Label className="mb-3 block text-sm font-medium">Loyalty Tier Model</Label>
-                      <RadioGroup
-                        value={selectedModel}
-                        onValueChange={(value) =>
-                          setValue('model', value as 'essential' | 'preferred' | 'premier', { shouldValidate: true, shouldDirty: true })
-                        }
-                        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-                      >
-                        {loyaltyModels.map((modelItem) => (
-                          <label key={modelItem.value} htmlFor={`modal-${modelItem.value}`} className="cursor-pointer">
-                            <Card
-                              className={`dark:bg-secondary cursor-pointer border transition ${
-                                selectedModel === modelItem.value ? 'border-primary shadow-lg dark:border-gray-300' : 'border-muted'
-                              }`}
-                            >
-                              <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                  <RadioGroupItem value={modelItem.value} id={`modal-${modelItem.value}`} className="mt-0.5" />
-                                  <span className="text-lg">{modelItem.title}</span>
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <p className="text-muted-foreground text-xs">{modelItem.desc}</p>
-                              </CardContent>
-                            </Card>
-                          </label>
-                        ))}
-                      </RadioGroup>
-                    </>
-                  )}
+                  <>
+                    <Label className="mb-3 block text-sm font-medium">Loyalty Tier Model</Label>
+                    <RadioGroup
+                      value={selectedModel}
+                      onValueChange={(value) =>
+                        setValue('model', value as 'essential' | 'preferred' | 'premier', { shouldValidate: true, shouldDirty: true })
+                      }
+                      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                    >
+                      {loyaltyModels.map((modelItem) => (
+                        <label key={modelItem.value} htmlFor={`modal-${modelItem.value}`} className="cursor-pointer">
+                          <Card
+                            className={`dark:bg-secondary cursor-pointer border transition ${
+                              selectedModel === modelItem.value ? 'border-primary shadow-lg dark:border-gray-300' : 'border-muted'
+                            }`}
+                          >
+                            <CardHeader>
+                              <CardTitle className="flex items-center gap-2">
+                                <RadioGroupItem value={modelItem.value} id={`modal-${modelItem.value}`} className="mt-0.5" />
+                                <span className="text-lg">{modelItem.title}</span>
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-muted-foreground text-xs">{modelItem.desc}</p>
+                            </CardContent>
+                          </Card>
+                        </label>
+                      ))}
+                    </RadioGroup>
+                  </>
 
-                  {user?.accountState?.userType !== 'admin' && (
+                  {/* {user?.accountState?.userType !== 'admin' && (
                     <p className="text-muted-foreground text-xs">To switch your business model, please reach out to the admin team for support.</p>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Point Value Percentage */}

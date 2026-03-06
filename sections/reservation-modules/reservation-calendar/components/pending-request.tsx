@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { Check, Clock, LogIn, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { normalizeTimeTo24 } from '../../reservation-view/helpers';
 import UpdateReservationModal from './change-request-modal';
 import { CalendarReservation, PendingRequestsProps } from './types';
 
@@ -66,7 +67,8 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({ bookings, selectedSlo
         </div>
         {selectedSlot && (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            No bookings found for {selectedSlot.reservationType} ({selectedSlot.startTime} - {selectedSlot.endTime})
+            No bookings found for {selectedSlot.reservationType} ({normalizeTimeTo24(selectedSlot.startTime)} -{' '}
+            {normalizeTimeTo24(selectedSlot.endTime)})
           </p>
         )}
       </div>
@@ -131,8 +133,8 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({ bookings, selectedSlo
     const timeSlot = dateSlot?.timeSlots?.[0];
     return {
       date: dateSlot?.date || '',
-      startTime: timeSlot?.startTime || '',
-      endTime: timeSlot?.endTime || '',
+      startTime: normalizeTimeTo24(timeSlot?.startTime || ''),
+      endTime: normalizeTimeTo24(timeSlot?.endTime || ''),
     };
   };
 
@@ -286,7 +288,7 @@ const PendingRequests: React.FC<PendingRequestsProps> = ({ bookings, selectedSlo
           </div>
           {selectedSlot && (
             <span className="text-xs text-orange-700 dark:text-orange-200">
-              {selectedSlot.startTime} - {selectedSlot.endTime}
+              {normalizeTimeTo24(selectedSlot.startTime)} - {normalizeTimeTo24(selectedSlot.endTime)}
             </span>
           )}
         </div>

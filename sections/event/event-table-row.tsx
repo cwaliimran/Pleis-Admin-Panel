@@ -5,7 +5,8 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
-import { formatDateTime, getStatusVariant } from '@/utils/short-utils';
+import { fDate } from '@/utils/format-time';
+import { getStatusVariant } from '@/utils/short-utils';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FC } from 'react';
@@ -30,7 +31,7 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
   return (
     <TableRow className="h-14 w-full cursor-pointer transition-colors" onClick={handleNavigateToDetails}>
       <TableCell>
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden !rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl! bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.basicInfo?.media && item?.basicInfo?.media !== noImageUrl && item?.basicInfo?.media !== noImageUrlDev ? (
             <AvatarImage src={item?.basicInfo?.media} alt="Logo" className="h-full w-full cursor-pointer object-cover" />
           ) : (
@@ -52,11 +53,6 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
                 alt={item?.basicInfo?.organization?.basicInfo?.name}
                 className="h-full w-full object-cover"
               />
-              {/* <AvatarImage
-                src={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.url}
-                alt={item?.basicInfo?.organization?.basicInfo?.mediaInfo?.logo?.name}
-                className="object-cover w-full h-full"
-              /> */}
             </Avatar>
           )}
           <span>{item?.basicInfo?.organization?.basicInfo?.name || '-'}</span>
@@ -65,15 +61,13 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
 
       <TableCell className="text-left capitalize">{item?.basicInfo?.venue?.title || '-'}</TableCell>
 
-      <TableCell>{item?.schedule?.startDateTime ? formatDateTime(item.schedule.startDateTime) : '-'}</TableCell>
+      <TableCell className="text-left">{item?.schedule?.startDateTime ? fDate(item.schedule.startDateTime, 'DD/MM/YYYY HH:mm') : '-'}</TableCell>
 
-      <TableCell className="text-left">{item?.schedule?.endDateTime ? formatDateTime(item.schedule.endDateTime) : '-'}</TableCell>
+      <TableCell className="text-left">{item?.schedule?.endDateTime ? fDate(item.schedule.endDateTime, 'DD/MM/YYYY HH:mm') : '-'}</TableCell>
 
-      <TableCell>{item?.meta?.revenue ? item.meta.revenue : '-'}</TableCell>
+      <TableCell>{item?.meta?.revenue === 0 ? '0' : item?.meta?.revenue || 'N/A'}</TableCell>
 
-      <TableCell className="text-left">{item?.meta?.views ? item.meta.views : '-'}</TableCell>
-
-      <TableCell className="text-left">{item?.meta?.region || '-'}</TableCell>
+      <TableCell className="text-left">{item?.meta?.totalViews === 0 ? '0' : item?.meta?.totalViews || 'N/A'}</TableCell>
 
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge variant={getStatusVariant(item?.status)}>{item?.status}</CustomBadge>

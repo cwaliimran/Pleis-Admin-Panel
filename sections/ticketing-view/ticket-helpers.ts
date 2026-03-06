@@ -412,7 +412,7 @@ export const transformApiDataToForm = (apiData: any): Partial<FormData> => {
         apiData.timeSensitivePricing.earlyBird.endDate !== '' &&
         Number(apiData.timeSensitivePricing.earlyBird.discountedPrice) > 0
       ),
-      earlyBirdDate: apiData.timeSensitivePricing?.earlyBird?.endDate ? formatDateOnlyToLocal(apiData.timeSensitivePricing.earlyBird.endDate) : '',
+      earlyBirdDate: apiData.timeSensitivePricing?.earlyBird?.endDate ? formatAPIDateTimeToLocal(apiData.timeSensitivePricing.earlyBird.endDate) : '',
       earlyBirdPrice: apiData.timeSensitivePricing?.earlyBird?.discountedPrice?.toString() || '',
       lastMinuteEnabled: !!(
         apiData.timeSensitivePricing?.lastMinute &&
@@ -423,7 +423,7 @@ export const transformApiDataToForm = (apiData: any): Partial<FormData> => {
         Number(apiData.timeSensitivePricing.lastMinute.discountedPrice) > 0
       ),
       lastMinuteDate: apiData.timeSensitivePricing?.lastMinute?.startDate
-        ? formatDateOnlyToLocal(apiData.timeSensitivePricing.lastMinute.startDate)
+        ? formatAPIDateTimeToLocal(apiData.timeSensitivePricing.lastMinute.startDate)
         : '',
       lastMinutePrice: apiData.timeSensitivePricing?.lastMinute?.discountedPrice?.toString() || '',
       fasttrack: apiData.fastTrackEntry?.enabled || false,

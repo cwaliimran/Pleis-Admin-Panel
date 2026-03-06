@@ -3,8 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useGetUserByIdQuery } from '@/store/Reducer/user-list';
-import { Edit } from 'lucide-react';
+import { useGetUserByIdQuery, useUpdateUserMutation } from '@/store/Reducer/user-list';
+import { getErrorMessage } from '@/utils/api';
+import { showError } from '@/utils/toast';
+import { Edit, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import LinkedClubs from './linked-clubs/linked-clubs';
@@ -18,6 +20,28 @@ const OrganizerSettingsView = () => {
   const selectedCompanyId = user?.basicInfo?._id || '';
 
   const { data: apiData, isLoading, isFetching, refetch } = useGetUserByIdQuery({ id: selectedCompanyId || '' }, { skip: !selectedCompanyId });
+  const [updateUser, { isLoading: updateLoading }] = useUpdateUserMutation();
+  
+  // Loyalty enable toggle
+  const handleEnableLoyalty = async () => {
+    if (!selectedCompanyId) return;
+    try {
+      await updateUser({
+        id: selectedCompanyId,
+        body: {
+          companyDetails: {
+            loyaltySettings: {
+              ...loyaltySettings,
+              isEnabled: true,
+            },
+          },
+        },
+      }).unwrap();
+      refetch();
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
 
   const companyDetails = useMemo(() => {
     if (!apiData?.basicInfo?.companyDetails) return null;
@@ -101,9 +125,40 @@ const OrganizerSettingsView = () => {
                 </div>
               </div>
 
-              {/* Club Title & Category */}
+              {/* Club Title & Category & Loyalty Enable Toggle */}
               <div className="mb-4">
-                <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
+                <div className="mb-2 flex w-full items-center justify-between">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
+
+                  {/* Loyalty Enable Toggle */}
+                  {loyaltySettings && loyaltySettings.isEnabled === false && (
+                    <div className="flex items-center space-x-3 px-4">
+                      <label htmlFor="loyalty-enable" className="cursor-pointer text-gray-700 dark:text-white">
+                        Enable Loyalty Settings
+                      </label>
+
+                      {!updateLoading && (
+                        <>
+                          <input
+                            id="loyalty-enable"
+                            type="checkbox"
+                            checked={false}
+                            onChange={handleEnableLoyalty}
+                            className="peer sr-only"
+                            disabled={updateLoading}
+                          />
+
+                          <div
+                            className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${updateLoading ? 'cursor-not-allowed opacity-50' : 'bg-gray-200'}`}
+                            onClick={updateLoading ? undefined : handleEnableLoyalty}
+                          ></div>
+                        </>
+                      )}
+
+                      {updateLoading && <Loader2 className="ml-2 h-5 w-5 animate-spin text-gray-500" />}
+                    </div>
+                  )}
+                </div>
                 {category && (
                   <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 capitalize dark:bg-blue-900/30 dark:text-blue-300">
                     {category}
@@ -147,7 +202,7 @@ const OrganizerSettingsView = () => {
         <SettingsModal
           open={settingsModal.value}
           onClose={settingsModal.onFalse}
-          user={user}
+          // user={user}
           selectedCompanyId={selectedCompanyId}
           companyDetails={companyDetails}
           handleSuccess={handleSuccess}

@@ -52,8 +52,6 @@ const CreateOrganizationPage = ({ userType }: { userType: string }) => {
     }
   );
 
-  console.log('Venue Data:', venueData?.data);
-
   // ORGANIZER VENUE API
   // const { data: OrgVenues } = useGetAllCompanyVenueQuery(
   //   {

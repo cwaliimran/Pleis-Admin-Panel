@@ -47,6 +47,7 @@ type RewardFormValues = {
   endDate: string | Date;
   status: string;
   companyOrganizer: string;
+  isPromotionOnly: string;
 };
 
 type RewardFormModalProps = {
@@ -101,6 +102,7 @@ const schema = yup.object({
   companyOrganizer: yup.string(),
   timeSlot: yup.string(),
   isFastTrack: yup.boolean(),
+  isPromotionOnly: yup.string().required('Promotion Only is required'),
 });
 
 const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }: RewardFormModalProps) => {
@@ -130,6 +132,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
     endDate: '',
     status: '',
     companyOrganizer: '',
+    isPromotionOnly: 'No',
   };
 
   const methods = useForm({
@@ -274,6 +277,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
         endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
+        isPromotionOnly: selectedData.isPromotionOnly === true ? 'Yes' : 'No',
       });
 
       // Reset the flag after a short delay to allow form to settle
@@ -330,6 +334,7 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
         endDate: fDate(formData.endDate, formatStr.paramCase.db),
+        isPromotionOnly: formData.isPromotionOnly === 'Yes',
       };
 
       // Add main image if uploaded
@@ -645,6 +650,17 @@ const RewardFormModal = ({ open, onClose, isEdit, global = false, selectedData }
                   />
 
                   <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
+
+                  <RHFSelectField
+                    name="isPromotionOnly"
+                    label="Promotion Only"
+                    placeholder="Select Promotion Only"
+                    options={[
+                      { label: 'Yes', value: 'Yes' },
+                      { label: 'No', value: 'No' },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 {percentOff && Number(percentOff) > 0 && (

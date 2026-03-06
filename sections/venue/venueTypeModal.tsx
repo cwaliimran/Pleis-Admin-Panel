@@ -151,7 +151,6 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
         country: address.country || '',
         coordinates: [address.longitude || 0, address.latitude || 0],
       };
-      console.log('Setting location payload:', locationPayload);
       setValue('location', locationPayload, { shouldValidate: true });
     }
   };
@@ -266,7 +265,6 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
     } catch (error) {
       setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save venue:', errorMessage);
       showError(errorMessage);
     }
   });

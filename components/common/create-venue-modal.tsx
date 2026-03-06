@@ -198,7 +198,6 @@ const VenueTypeModal = ({ open, onClose, organizationsList }: VenueTypeModalProp
     } catch (error) {
       setImageUploading(false);
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to create venue:', errorMessage);
       showError(errorMessage);
     }
   });

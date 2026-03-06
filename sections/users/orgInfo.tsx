@@ -32,8 +32,6 @@ const OrgInfo = ({ organizationData, userType }: any) => {
     }
   );
 
-  console.log('Venue Data:', venueData?.data);
-
   // ORGANIZER VENUES OF THE ORGANIZATION
   const { data: OrgVenues, refetch: refetchOrgVenues } = useGetAllCompanyVenueQuery(
     {
@@ -46,8 +44,6 @@ const OrgInfo = ({ organizationData, userType }: any) => {
       skip: userType === 'super-admin',
     }
   );
-
-  console.log('OrgVenues', OrgVenues?.data);
 
   const openModal = useBoolean();
   const openVenueModal = useBoolean();

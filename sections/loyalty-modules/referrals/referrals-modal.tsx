@@ -7,16 +7,14 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import {
   useAddGlobalReferralSettingMutation,
   useAddLocalReferralSettingMutation,
-  useResetGlobalReferralSettingMutation,
-  useResetLocalReferralSettingMutation,
   useUpdateGlobalReferralSettingMutation,
   useUpdateLocalReferralSettingMutation,
 } from '@/store/Reducer/referrals-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useMemo } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 
 export type ReferralFormValues = {
@@ -58,16 +56,18 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
   });
 
   const { reset, handleSubmit, control } = methods;
+  const [activeAction, setActiveAction] = useState<'submit' | 'reset' | null>(null);
 
   const [addSetting, { isLoading: isAdding }] = useAddGlobalReferralSettingMutation();
   const [updateSetting, { isLoading: isUpdating }] = useUpdateGlobalReferralSettingMutation();
-  const [resetSetting, { isLoading: isResetting }] = useResetGlobalReferralSettingMutation();
 
   const [addLocalSetting, { isLoading: isAddingLocal }] = useAddLocalReferralSettingMutation();
   const [updateLocalSetting, { isLoading: isUpdatingLocal }] = useUpdateLocalReferralSettingMutation();
-  const [resetLocalSetting, { isLoading: isResettingLocal }] = useResetLocalReferralSettingMutation();
 
   const isEditMode = Boolean(referralSettingData?._id);
+  const isMutationLoading = isAddingLocal || isUpdatingLocal || isAdding || isUpdating;
+  const isSubmitLoading = isMutationLoading && activeAction === 'submit';
+  const isResetLoading = isMutationLoading && activeAction === 'reset';
 
   const mappedValues = useMemo<ReferralFormValues>(() => {
     if (!referralSettingData) return defaultValues;
@@ -88,6 +88,8 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
   }, [open, mappedValues, reset]);
 
   const onSubmit = async (values: ReferralFormValues) => {
+    setActiveAction('submit');
+
     const basePayload = {
       userPoints: values.userPoints,
       referrerPoints: values.referrerPoints,
@@ -132,12 +134,46 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
       reset();
     } catch (error) {
       showError(getErrorMessage(error));
+    } finally {
+      setActiveAction(null);
     }
   };
 
   const onResetCount = async () => {
+    setActiveAction('reset');
+
+    const resetValues: ReferralFormValues = {
+      userPoints: 0,
+      referrerPoints: 0,
+      minimumPurchases: 0,
+      referralLimit: 0,
+      status: methods.getValues('status') || 'inactive',
+    };
+
+    const basePayload = {
+      userPoints: resetValues.userPoints,
+      referrerPoints: resetValues.referrerPoints,
+      minimumPurchases: resetValues.minimumPurchases,
+      referralLimit: resetValues.referralLimit,
+      status: resetValues.status,
+      ...(global === false && { companyOrganizer: companyId || undefined }),
+    };
+
+    const finalPayload = isEditMode
+      ? {
+          ...basePayload,
+          id: referralSettingData?._id,
+        }
+      : basePayload;
+
     try {
-      const response = global ? await resetSetting({}).unwrap() : await resetLocalSetting({}).unwrap();
+      const response = isEditMode
+        ? global
+          ? await updateSetting(finalPayload).unwrap()
+          : await updateLocalSetting(finalPayload).unwrap()
+        : global
+          ? await addSetting(finalPayload).unwrap()
+          : await addLocalSetting(finalPayload).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -145,9 +181,13 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
         return;
       }
 
-      showSuccess(response?.message || 'Referral counts have been reset successfully.');
+      showSuccess(response?.message || 'Referral points have been reset successfully.');
+      onClose();
+      reset(resetValues);
     } catch (error) {
       showError(getErrorMessage(error));
+    } finally {
+      setActiveAction(null);
     }
   };
 
@@ -198,22 +238,27 @@ const ReferralModal = ({ open, onClose, referralSettingData, global, companyId }
               </div>
 
               <div className="mt-6 flex w-full items-center justify-between gap-2">
-                {isResettingLocal || isResetting ? (
+                {isResetLoading ? (
                   <Button type="button" disabled className="cursor-not-allowed bg-[#82181A] px-4 py-2 text-white hover:bg-[#82181A]/80">
                     <ButtonLoading title="Resetting" />
                   </Button>
                 ) : (
-                  <Button type="button" className="cursor-pointer bg-[#82181A] hover:bg-[#82181A]/80" onClick={onResetCount}>
+                  <Button
+                    type="button"
+                    disabled={isMutationLoading}
+                    className="cursor-pointer bg-[#82181A] hover:bg-[#82181A]/80"
+                    onClick={onResetCount}
+                  >
                     Reset Count
                   </Button>
                 )}
 
-                {isAddingLocal || isUpdatingLocal || isAdding || isUpdating ? (
+                {isSubmitLoading ? (
                   <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                     <ButtonLoading title={isEditMode ? 'Updating' : 'Creating'} />
                   </Button>
                 ) : (
-                  <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white">
+                  <Button type="submit" disabled={isMutationLoading} className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white">
                     {isEditMode ? 'Update' : 'Create'}
                   </Button>
                 )}

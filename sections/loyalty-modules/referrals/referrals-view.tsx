@@ -8,6 +8,7 @@ import { formatDate } from '@/utils/format-time';
 import { useEffect, useState } from 'react';
 import RefferralModal from './referrals-modal';
 import ReferralsTable from './referrals-table';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ReferralsViewProps {
   global?: boolean;
@@ -25,7 +26,13 @@ const ReferralsView = ({ global }: ReferralsViewProps) => {
 
   const { companyId } = useCompanySelectionState();
 
-  const { data: apiData, isLoading } = useGetReferralsQuery({
+  const { user } = useAuth();
+
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetReferralsQuery({
     page: page - 1,
     search,
     limit,
@@ -47,7 +54,8 @@ const ReferralsView = ({ global }: ReferralsViewProps) => {
   );
 
   // const setting = referralSettingData?.data?.[0] || {};
-  const setting = global ? referralSettingData?.data?.[0] : localReferralSettingData?.data?.[0] || {};
+  const setting = global ? referralSettingData?.data : localReferralSettingData?.data || {};
+  const modalCompanyId = user?.accountState?.userType !== 'admin' ? user?.basicInfo?._id || undefined : companyId;
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -95,7 +103,7 @@ const ReferralsView = ({ global }: ReferralsViewProps) => {
         data={localData}
         global={global}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -126,7 +134,7 @@ const ReferralsView = ({ global }: ReferralsViewProps) => {
         }}
       />
 
-      <RefferralModal open={openModal.value} onClose={openModal.onFalse} referralSettingData={setting} global={global} companyId={companyId} />
+      <RefferralModal open={openModal.value} onClose={openModal.onFalse} referralSettingData={setting} global={global} companyId={modalCompanyId} />
     </div>
   );
 };

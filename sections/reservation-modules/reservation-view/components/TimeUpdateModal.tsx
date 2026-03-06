@@ -1,7 +1,7 @@
+import Time24hInput from '@/components/common/time-24h-input';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { convert12To24, convert24To12 } from '../helpers';
+import { normalizeTimeTo24 } from '../helpers';
 import { ProcessedBooking } from '../types';
 
 interface TimeUpdateModalProps {
@@ -28,7 +28,7 @@ export default function TimeUpdateModal({
   isUpdating,
 }: TimeUpdateModalProps) {
   // Check if start and end time are the same
-  const isSameTime = !!(startTime && endTime && convert12To24(startTime) === convert12To24(endTime));
+  const isSameTime = !!(startTime && endTime && normalizeTimeTo24(startTime) === normalizeTimeTo24(endTime));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,20 +48,20 @@ export default function TimeUpdateModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="w-full space-y-2">
               <label className="text-sm font-medium">Start Time</label>
-              <Input
-                type="time"
-                value={convert12To24(startTime)}
-                onChange={(e) => onStartTimeChange(convert24To12(e.target.value))}
+              <Time24hInput
+                value={startTime}
+                onChange={onStartTimeChange}
+                placeholder="HH:mm"
                 className="w-full border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">End Time</label>
-              <Input
-                type="time"
-                value={convert12To24(endTime)}
-                onChange={(e) => onEndTimeChange(convert24To12(e.target.value))}
+              <Time24hInput
+                value={endTime}
+                onChange={onEndTimeChange}
+                placeholder="HH:mm"
                 className="w-full border-gray-300 bg-white dark:border-zinc-700 dark:bg-zinc-800"
               />
             </div>

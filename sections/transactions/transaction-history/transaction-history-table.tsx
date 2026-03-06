@@ -16,17 +16,25 @@ import TransactionHistoryTableRow from './transaction-history-table-row';
 import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
-  { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization.basicInfo.name' },
   { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.firstName' },
+  { id: 'email', label: 'Email', align: 'left', sortable: true, sortKey: 'user.email' },
+  { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization.name' },
   { id: 'transactionId', label: 'Transaction ID', align: 'left' },
-  { id: 'transactionType', label: 'Transaction Type', align: 'left' },
-  { id: 'points', label: 'Points', align: 'left' },
+  { id: 'orderNumber', label: 'Order No', align: 'left' },
+
+  { id: 'transactionType', label: 'Type', align: 'left' },
   { id: 'percentage', label: 'Percentage', align: 'left' },
-  { id: 'reference', label: 'Reference', align: 'left' },
-  { id: 'closingBalance', label: 'Closing Balance', align: 'left' },
+  { id: 'amount', label: 'Amount', align: 'left' },
+  { id: 'paymentStatus', label: 'Status', align: 'left' },
   { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
-  { id: 'status', label: 'Status', align: 'left' },
-  // { id: 'actions', label: 'Action', align: 'left' },
+
+  // { id: 'transactionType', label: 'Transaction Type', align: 'left' },
+  // { id: 'points', label: 'Points', align: 'left' },
+  // { id: 'percentage', label: 'Percentage', align: 'left' },
+  // { id: 'reference', label: 'Reference', align: 'left' },
+  // { id: 'closingBalance', label: 'Closing Balance', align: 'left' },
+  // { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
+  // { id: 'status', label: 'Status', align: 'left' },
 ];
 
 const TransactionHistoryTable: FC<SamplePageProps> = ({
@@ -40,11 +48,6 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
-  // status = '',
-  // onStatusChange = () => {},
-  // startDate,
-  // endDate,
-  // onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -87,46 +90,14 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
                     {/* Date Range Filters full width */}
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
-                        {/* <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
-                          Select Date
-                        </label> */}
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            // dateRangeFilter={{
-                            //   startDate: {
-                            //     id: 'start-date',
-                            //     placeholder: 'Select start date',
-                            //     value: startDate,
-                            //     onChange: (newStartDate) => onDateChange(newStartDate, endDate),
-                            //   },
-                            //   endDate: {
-                            //     id: 'end-date',
-                            //     placeholder: 'Select end date',
-                            //     value: endDate,
-                            //     onChange: (newEndDate) => onDateChange(startDate, newEndDate),
-                            //   },
-                            // }}
                             searchFilter={{
                               placeholder: 'Search Transactions...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            // selectFilters={[
-                            //   {
-                            //     id: 'sheet-revenue',
-                            //     label: 'Status',
-                            //     placeholder: 'Select by Status',
-                            //     value: status,
-                            //     onChange: onStatusChange,
-                            //     options: [
-                            //       { value: 'all', label: 'All' },
-                            //       { value: 'earn', label: 'Earn' },
-                            //       { value: 'redeem', label: 'Redeem' },
-                            //       { value: 'adjustment', label: 'Adjustment' },
-                            //     ],
-                            //   },
-                            // ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,

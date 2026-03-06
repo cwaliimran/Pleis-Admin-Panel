@@ -92,13 +92,11 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
       ) : (
         <div className="space-y-6 pb-12">
           <div className="mt-10 h-full">
-            <div className="grid grid-cols-12 md:gap-7">
+            <div className="grid grid-cols-12 md:gap-4">
               {/* <div className="col-span-12 lg:col-span-8 xl:col-span-9"> */}
               <div
                 className={` ${
-                  userType === 'user' || userType === 'guest' || userType === 'staff' || userType === 'organizer'
-                    ? 'col-span-12'
-                    : 'col-span-12 lg:col-span-8 xl:col-span-9'
+                  userType === 'manager' || userType === 'guest' || userType === 'staff' || userType === 'organizer' ? 'col-span-12' : 'col-span-12 lg:col-span-8 xl:col-span-9'
                 } `}
               >
                 {/* ---------------- UPPER PROFILE SECTION ---------------- */}
@@ -187,9 +185,9 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                                   </p>
                                 </>
                               )}
-                              {userType === 'staff' && (
+                              {userType === 'user' && (
                                 <p>
-                                  <span className="font-medium">Surname:</span> {apiData?.basicInfo?.gender || '-'}
+                                  <span className="font-medium">Surname:</span> {apiData?.basicInfo?.surname || '-'}
                                 </p>
                               )}
                             </div>

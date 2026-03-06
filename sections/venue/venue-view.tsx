@@ -141,7 +141,6 @@ const VenueView = () => {
       deleteModal.onFalse();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete venue:', errorMessage);
       showError(errorMessage);
     }
   };

@@ -1,6 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
@@ -12,6 +13,7 @@ import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
 import * as Yup from 'yup';
+import { normalizeTimeTo24 } from '../../reservation-view/helpers';
 
 interface UpdateReservationFormValues {
   firstName: string;
@@ -57,18 +59,15 @@ const schema = Yup.object().shape({
       const { startTime } = this.parent;
       if (!startTime || !value) return true;
 
-      // Convert "02:00 PM" format to comparable time
-      const parseTime = (timeStr: string) => {
-        const [time, period] = timeStr.split(' ');
-        let hours;
-        const [h, minutes] = time.split(':').map(Number);
-        hours = h;
-        if (period === 'PM' && hours !== 12) hours += 12;
-        if (period === 'AM' && hours === 12) hours = 0;
-        return hours * 60 + minutes;
-      };
+      const start = normalizeTimeTo24(startTime);
+      const end = normalizeTimeTo24(value);
 
-      return parseTime(value) > parseTime(startTime);
+      if (!start || !end) return false;
+
+      const [startH, startM] = start.split(':').map(Number);
+      const [endH, endM] = end.split(':').map(Number);
+
+      return endH * 60 + endM > startH * 60 + startM;
     }),
 });
 
@@ -113,19 +112,6 @@ const UpdateReservationModal = ({ open, onClose, selectedData, onSuccess }: Upda
   // ];
 
   // EDIT MODE DATA POPULATION
-  const convertTo24Hour = (timeStr: string) => {
-    if (!timeStr) return '';
-    const [time, period] = timeStr.split(' ');
-    let hours;
-    const [h, minutes] = time.split(':').map(Number);
-    hours = h;
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-    // Pad with leading zeros if needed
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${pad(hours)}:${pad(minutes)}`;
-  };
-
   useEffect(() => {
     if (open && selectedData) {
       // Extract time slot data
@@ -141,8 +127,8 @@ const UpdateReservationModal = ({ open, onClose, selectedData, onSuccess }: Upda
         notes: selectedData?.notes || '',
         partySize: selectedData?.partySize || 0,
         date: firstDateSlot?.date || '',
-        startTime: convertTo24Hour(firstTimeSlot?.startTime || ''),
-        endTime: convertTo24Hour(firstTimeSlot?.endTime || ''),
+        startTime: normalizeTimeTo24(firstTimeSlot?.startTime || ''),
+        endTime: normalizeTimeTo24(firstTimeSlot?.endTime || ''),
       };
 
       console.log('Mapped form data:', mappedData);
@@ -305,9 +291,29 @@ const UpdateReservationModal = ({ open, onClose, selectedData, onSuccess }: Upda
 
                 {/* Start Time & End Time */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField name="startTime" label="Start Time" placeholder="Select start time" type="time" />
+                  <Controller
+                    name="startTime"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <div>
+                        <p className="mb-0.5 text-sm font-medium">Start Time</p>
+                        <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" className="w-full" />
+                        {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
+                      </div>
+                    )}
+                  />
 
-                  <RHFTextField name="endTime" label="End Time" placeholder="Select end time" type="time" />
+                  <Controller
+                    name="endTime"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <div>
+                        <p className="mb-0.5 text-sm font-medium">End Time</p>
+                        <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" className="w-full" />
+                        {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
+                      </div>
+                    )}
+                  />
                 </div>
 
                 {/* Notes */}

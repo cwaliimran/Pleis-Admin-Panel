@@ -20,6 +20,7 @@ import TimeUpdateModal from './components/TimeUpdateModal';
 import {
   calculateAvgPartySize,
   calculateTotalCovers,
+  convert24To12,
   extractReservationTypes,
   formatTimeWithLeadingZero,
   generateTimeSlots,
@@ -36,8 +37,8 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
   // Time update modal state
   const [timeModalOpen, setTimeModalOpen] = useState<boolean>(false);
   const [selectedBooking, setSelectedBooking] = useState<ProcessedBooking | null>(null);
-  const [startTime, setStartTime] = useState<string>('10:00 AM');
-  const [endTime, setEndTime] = useState<string>('12:00 PM');
+  const [startTime, setStartTime] = useState<string>('10:00');
+  const [endTime, setEndTime] = useState<string>('12:00');
 
   // Multi-date picker state
   const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false);
@@ -106,8 +107,9 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
       return;
     }
 
-    // Format time with leading zeros (e.g., "2:30 AM" -> "02:30 AM")
+    // Keep UI in 24h, but convert to backend 12h format for API
     const formattedStartTime = formatTimeWithLeadingZero(targetStartTime);
+    const apiStartTime = convert24To12(formattedStartTime);
 
     // Format the target date
     const targetDate = format(selectedDate, 'yyyy-MM-dd');
@@ -117,7 +119,7 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
         data: {
           reservationIds,
           targetDate,
-          startTime: formattedStartTime,
+          startTime: apiStartTime,
           reservationType: type,
         },
       }).unwrap();
@@ -209,8 +211,8 @@ export default function ReservationGrid({ setClick, reservations, isLoading, sel
       await updateReservationsTiming({
         updatedData: {
           reservationIds,
-          startTime,
-          endTime,
+          startTime: convert24To12(startTime),
+          endTime: convert24To12(endTime),
         },
       }).unwrap();
 

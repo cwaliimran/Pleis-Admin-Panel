@@ -1,7 +1,8 @@
 import ImageWithFallback from '@/components/common/img-with-fallback';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { capitalizeFirst, formatDateTime } from '@/utils/short-utils';
+import { fDate } from '@/utils/format-time';
+import { capitalizeFirst } from '@/utils/short-utils';
 import { Calendar, Dot, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -248,14 +249,14 @@ const EventOverView = ({ event }: { event: any }) => {
                     <Calendar className="h-4 w-4" />
                     <p className="text-sm text-slate-500">START DATE</p>
                   </div>
-                  <p className="text-sm">{formatDateTime(event?.schedule?.startDateTime) || '-'}</p>
+                  <p className="text-sm">{event?.schedule?.startDateTime ? fDate(event.schedule.startDateTime, 'DD/MM/YYYY HH:mm') : '-'}</p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <p className="text-sm text-slate-500">END DATE</p>
                   </div>
-                  <p className="text-sm">{formatDateTime(event?.schedule?.endDateTime) || '-'}</p>
+                  <p className="text-sm">{event?.schedule?.endDateTime ? fDate(event.schedule.endDateTime, 'DD/MM/YYYY HH:mm') : '-'}</p>
                 </div>
               </div>
             </CardHeader>

@@ -1,0 +1,78 @@
+Organizer Subscription – Backend Calculation Flow
+
+1) Source Data and Inputs
+- Pricing config is fetched from organizer pricing API:
+  - modulePricing: ordering, loyalty, reservations, analytics
+  - bundleDiscounts: twoModules, threeModules
+  - multiOrgPricing: oneOrg..sixPlusOrgs (stored as payable %)
+  - yearlyDiscount.discountPercent
+  - commissions
+- User active subscription is fetched from organizer own-subscription API:
+  - subscriptionTypes, pricingPlan, numberOfOrganizations, totalSubscriptionAmount, monthlyPrice, startDate, endDate
+- UI selection inputs:
+  - selected modules, analytics toggle, org count, billing cycle
+
+2) Plan Type Resolution
+- Free plan if: no module selected AND analytics not selected.
+- Paid plan if: at least one module OR analytics is selected.
+- Paid existing user change type:
+  - upgrade: net additions (module/org/analytics)
+  - downgrade: net removals or billing-cycle-only shift
+  - no_change: config same as current
+  - free_plan: target selection is empty (no modules + no analytics)
+
+3) First-Time / Free-to-Paid Calculation Flow
+- Build base price:
+  - non-analytics modules sum + analytics (if selected)
+- Apply bundle discount:
+  - applies ONLY on non-analytics modules
+  - 2 modules => twoModules %
+  - 3+ modules => threeModules %
+- Add analytics price after bundle step (analytics gets NO bundle discount)
+- Apply multi-org pricing:
+  - find org payable % from multiOrgPricing
+  - pricePerOrg = subtotal * (orgPayable% / 100)
+  - totalMultiOrg = pricePerOrg * organizationCount
+- If yearly:
+  - yearlyBase = totalMultiOrg * 12
+  - yearlyDiscount applied on yearlyBase
+  - final = yearlyBase - yearlyDiscountAmount
+- If monthly:
+  - final = totalMultiOrg
+- Payload amount for first-time/free user = finalAmount
+
+4) Paid User Update Flow (Current Behavior)
+- Upgrade (immediate prorated charge):
+  - charge now uses proratedUpgrade.totalProratedAmount
+  - proration ratio = daysRemaining / totalDaysInPeriod
+  - for yearly subscriptions, yearly discount is included in prorated calculation
+  - bundle discount is NOT applied to newly added modules during prorated upgrade
+  - analytics remains no-bundle-discount
+- Downgrade or no_change:
+  - amount is taken from nextRecurring.displayAmount (future-cycle pricing result)
+- Downgrade to free:
+  - subscriptionTypes = ["free"], pricingPlan = monthly, numberOfOrganizations = 1, amount = 0
+
+5) Discount Rules Summary (Important)
+- Bundle discount:
+  - applies only to ordering/loyalty/reservations module subtotal
+  - does not apply to analytics
+  - in prorated upgrades, newly added modules do not receive bundle discount
+- Multi-org pricing:
+  - treated as payable percentage (not direct discount amount)
+  - final price scales by org count and selected payable % tier
+- Yearly discount:
+  - applied only when billing cycle is yearly
+  - applied after monthly-equivalent total is annualized (x12)
+
+6) API Update Payload Contract
+- PUT /organizer/subscriptions body:
+  - subscriptionTypes: string[]
+  - pricingPlan: "monthly" | "yearly"
+  - numberOfOrganizations: number
+  - totalSubscriptionAmount: number
+
+7) Edge Cases to Keep in Mind
+- For free plan transition, org count and billing cycle are force-normalized to 1 and monthly.
+- If no subscription response exists, UI treats it as non-free new subscription context until user selects.
+- Current UI hides Next Recurring component, but update amount logic still uses nextRecurring values internally for downgrade/no-change.

@@ -101,11 +101,18 @@ const StepThree: React.FC<StepThreeProps> = ({
       const eventEndTotalMinutes = eventEndHours * 60 + eventEndMinutes;
 
       // Convert slot times (12-hour format) to minutes
-      const convert12To24Minutes = (time12h: string): number => {
-        const [time, period] = time12h.split(' ');
+      const convert12To24Minutes = (time12h: string): number | null => {
+        if (!time12h || !time12h.includes(' ')) return null;
+
+        const [time, periodRaw] = time12h.split(' ');
+        const period = (periodRaw || '').toUpperCase();
         const [hoursStr, minutesStr] = time.split(':');
         let hours = Number(hoursStr);
         const minutes = Number(minutesStr);
+
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes) || minutes < 0 || minutes > 59) {
+          return null;
+        }
 
         if (period === 'PM' && hours !== 12) {
           hours += 12;
@@ -113,11 +120,19 @@ const StepThree: React.FC<StepThreeProps> = ({
           hours = 0;
         }
 
+        if (hours < 0 || hours > 23) {
+          return null;
+        }
+
         return hours * 60 + minutes;
       };
 
       const slotStartMinutes = convert12To24Minutes(slotStartTime);
       const slotEndMinutes = convert12To24Minutes(slotEndTime);
+
+      if (slotStartMinutes === null || slotEndMinutes === null) {
+        return false;
+      }
 
       // Check if slot times are within event boundaries
       if (slotStartMinutes < eventStartTotalMinutes || slotStartMinutes > eventEndTotalMinutes) {
@@ -150,16 +165,23 @@ const StepThree: React.FC<StepThreeProps> = ({
       date: dateSlot.date,
       timeSlots: dateSlot.timeSlots.map((slot: any) => {
         const convert12To24Hour = (time12h: string): string => {
-          const [time, period] = time12h.split(' ');
+          if (!time12h || !time12h.includes(' ')) return '';
+
+          const [time, periodRaw] = time12h.split(' ');
+          const period = (periodRaw || '').toUpperCase();
           const [hoursStr, minutesStr] = time.split(':');
           let hours = Number(hoursStr);
           const minutes = Number(minutesStr);
+
+          if (!Number.isFinite(hours) || !Number.isFinite(minutes) || minutes < 0 || minutes > 59) return '';
 
           if (period === 'PM' && hours !== 12) {
             hours += 12;
           } else if (period === 'AM' && hours === 12) {
             hours = 0;
           }
+
+          if (hours < 0 || hours > 23) return '';
 
           return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         };

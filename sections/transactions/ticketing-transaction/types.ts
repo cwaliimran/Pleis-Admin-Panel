@@ -19,8 +19,11 @@ export interface SamplePageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
-  date?: Date;
-  onDateChange?: (date: Date | undefined) => void;
+  // date?: Date;
+  startDate?: Date;
+  endDate?: Date;
+  // onDateChange?: (date: Date | undefined) => void;
+  onDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
   onResetFilters?: () => void;
 }
 

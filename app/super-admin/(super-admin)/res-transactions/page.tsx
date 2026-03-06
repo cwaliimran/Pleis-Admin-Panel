@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import ReservationTransactionView from '@/sections/transactions/reservation-transaction/reservation-transaction-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <ReservationTransactionView userType="super-admin" />
+      <CompanyGuard>
+        <ReservationTransactionView userType="super-admin" />
+      </CompanyGuard>
     </div>
   );
 };

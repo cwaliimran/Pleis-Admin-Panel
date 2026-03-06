@@ -1,6 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomCreatableDropdown from '@/components/rhf/rhf-custom-create-dropdown';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
@@ -8,6 +9,7 @@ import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import FieldSkeleton from '@/components/ui/field-skeleton';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGetAllCompanyPresetsQuery, useGetAllOrganizerMenuQuery } from '@/store/Reducer/helpers-api';
@@ -27,10 +29,22 @@ import * as Yup from 'yup';
 // Utility function to convert hh:mm A to HH:mm
 const parse12HourTo24Hour = (time: string | null | undefined): string => {
   if (!time) return '';
-  const [timePart, period] = time.split(' ');
-  const [hours, minutes] = timePart.split(':').map(Number);
-  const formattedHour = period === 'PM' && hours !== 12 ? hours + 12 : period === 'AM' && hours === 12 ? 0 : hours;
-  return `${formattedHour.toString().padStart(2, '0')}:${minutes?.toString().padStart(2, '0')}`;
+  const trimmed = time.trim();
+  if (!trimmed || trimmed.toLowerCase() === 'invalid date') return '';
+
+  const match = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return '';
+
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3].toUpperCase();
+
+  if (Number.isNaN(hours)) return '';
+
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+
+  return `${hours.toString().padStart(2, '0')}:${minutes}`;
 };
 
 type MenuItemFormValues = {
@@ -255,21 +269,29 @@ const MenuItemModal = ({
         setValue('image', selectedPresetData.imageInfo?.url || selectedPresetData.image || '');
       }
     }
-  }, [selectedPreset, presetData, setValue]);
+  }, [selectedPreset, presetData, orgPresetData, userType, setValue]);
 
-  const isValidTime = (time?: string) => {
-    if (!time) return false;
-    const [h, m] = time.split(':');
-    return !isNaN(Number(h)) && !isNaN(Number(m));
-  };
+  const isValidTime = (time?: string) => !!time && /^([01]\d|2[0-3]):([0-5]\d)$/.test(time);
 
   const handleSubmit = async (formData: any) => {
     let uploadedFileKey: string | null = null;
 
-    const hasValidStart = isValidTime(formData.startTime);
-    const hasValidEnd = isValidTime(formData.endTime);
+    const normalizedStartTime = isValidTime(formData.startTime) ? formData.startTime : '';
+    const normalizedEndTime = isValidTime(formData.endTime) ? formData.endTime : '';
+    const hasValidStart = !!normalizedStartTime;
+    const hasValidEnd = !!normalizedEndTime;
 
-    if (hasValidStart && hasValidEnd && formData.startTime === formData.endTime) {
+    if (Boolean(formData.startTime) !== Boolean(formData.endTime)) {
+      showError('Please select both start and end time, or leave both empty.');
+      return;
+    }
+
+    if ((formData.startTime && !hasValidStart) || (formData.endTime && !hasValidEnd)) {
+      showError('Invalid time format. Please use HH:mm.');
+      return;
+    }
+
+    if (hasValidStart && hasValidEnd && normalizedStartTime === normalizedEndTime) {
       showError('End time must be different from start time.');
       return;
     }
@@ -295,14 +317,9 @@ const MenuItemModal = ({
         payload.discountPrice = Number(formData.discountPrice);
       }
 
-      // only add times if valid
-      if (hasValidStart) {
-        payload.startTime = formatTimeTo12Hour(formData.startTime);
-      }
-
-      if (hasValidEnd) {
-        payload.endTime = formatTimeTo12Hour(formData.endTime);
-      }
+      // Optional time window: send both in 12-hour format or send nulls explicitly
+      payload.startTime = hasValidStart ? formatTimeTo12Hour(normalizedStartTime) : null;
+      payload.endTime = hasValidEnd ? formatTimeTo12Hour(normalizedEndTime) : null;
 
       if (uploadedFileKey) {
         payload.image = uploadedFileKey;
@@ -493,8 +510,32 @@ const MenuItemModal = ({
 
                 {/* Time Fields */}
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFTextField name="startTime" label="Start Time (Optional)" placeholder="Enter Start Time" type="time" />
-                  <RHFTextField name="endTime" label="End Time (Optional)" placeholder="Enter End Time" type="time" />
+                  <FormField
+                    control={methods.control}
+                    name="startTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Start Time (Optional)</FormLabel>
+                        <FormControl>
+                          <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" title="Start Time" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={methods.control}
+                    name="endTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>End Time (Optional)</FormLabel>
+                        <FormControl>
+                          <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" title="End Time" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
 

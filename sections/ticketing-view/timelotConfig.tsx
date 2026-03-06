@@ -1,5 +1,6 @@
 'use client';
 
+import Time24hInput from '@/components/common/time-24h-input';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -187,6 +188,10 @@ const CopySlotsModal: React.FC<CopySlotsModalProps> = ({ open, onClose, sourceDa
 };
 
 const convertTo12Hour = (time24: string): string => {
+  if (!time24 || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(time24)) {
+    return '';
+  }
+
   const [hours, minutes] = time24.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';
   const hours12 = hours % 12 || 12;
@@ -461,34 +466,115 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
   //   }
   // };
 
+  // const isTimeWithinEvent = (date: string, time: string) => {
+  //   if (!eventData?.schedule?.startDateTime || !eventData?.schedule?.endDateTime) return true;
+
+  //   try {
+  //     // Parse the event start and end times
+  //     const eventStartDate = new Date(eventData.schedule.startDateTime);
+  //     const eventEndDate = new Date(eventData.schedule.endDateTime);
+
+  //     // Get just the time portion from event times
+  //     const eventStartHours = eventStartDate.getHours();
+  //     const eventStartMinutes = eventStartDate.getMinutes();
+  //     const eventEndHours = eventEndDate.getHours();
+  //     const eventEndMinutes = eventEndDate.getMinutes();
+
+  //     // Parse the selected slot time
+  //     const [slotHours, slotMinutes] = time.split(':').map(Number);
+
+  //     // Convert times to minutes for easier comparison
+  //     const eventStartTotalMinutes = eventStartHours * 60 + eventStartMinutes;
+  //     const eventEndTotalMinutes = eventEndHours * 60 + eventEndMinutes;
+  //     const slotTotalMinutes = slotHours * 60 + slotMinutes;
+
+  //     // Check if slot time is within event time range
+  //     return slotTotalMinutes >= eventStartTotalMinutes && slotTotalMinutes <= eventEndTotalMinutes;
+  //   } catch (error) {
+  //     console.error('Error validating time:', error);
+  //     return true;
+  //   }
+  // };
+
   const isTimeWithinEvent = (date: string, time: string) => {
     if (!eventData?.schedule?.startDateTime || !eventData?.schedule?.endDateTime) return true;
 
     try {
-      // Parse the event start and end times
       const eventStartDate = new Date(eventData.schedule.startDateTime);
       const eventEndDate = new Date(eventData.schedule.endDateTime);
 
-      // Get just the time portion from event times
-      const eventStartHours = eventStartDate.getHours();
-      const eventStartMinutes = eventStartDate.getMinutes();
-      const eventEndHours = eventEndDate.getHours();
-      const eventEndMinutes = eventEndDate.getMinutes();
+      const eventStartMinutes = eventStartDate.getHours() * 60 + eventStartDate.getMinutes();
+      const eventEndMinutes = eventEndDate.getHours() * 60 + eventEndDate.getMinutes();
 
-      // Parse the selected slot time
       const [slotHours, slotMinutes] = time.split(':').map(Number);
-
-      // Convert times to minutes for easier comparison
-      const eventStartTotalMinutes = eventStartHours * 60 + eventStartMinutes;
-      const eventEndTotalMinutes = eventEndHours * 60 + eventEndMinutes;
       const slotTotalMinutes = slotHours * 60 + slotMinutes;
 
-      // Check if slot time is within event time range
-      return slotTotalMinutes >= eventStartTotalMinutes && slotTotalMinutes <= eventEndTotalMinutes;
+      // Detect cross-midnight event (e.g. 22:00 → 03:00)
+      const isCrossMidnight = eventEndMinutes < eventStartMinutes;
+
+      if (isCrossMidnight) {
+        // Valid if time is >= eventStart (e.g. >= 22:00)
+        // OR time is <= eventEnd (e.g. <= 03:00)
+        return slotTotalMinutes >= eventStartMinutes || slotTotalMinutes <= eventEndMinutes;
+      }
+
+      // Normal same-day range
+      return slotTotalMinutes >= eventStartMinutes && slotTotalMinutes <= eventEndMinutes;
     } catch (error) {
       console.error('Error validating time:', error);
       return true;
     }
+  };
+
+  /**
+   * Compares two HH:mm times, aware of cross-midnight events.
+   * Returns true if timeB is strictly after timeA.
+   *
+   * For cross-midnight events (eventEndMinutes < eventStartMinutes):
+   *   - Times >= eventStart are treated as "day 0" (e.g. 22:00, 23:00)
+   *   - Times <= eventEnd are treated as "day 1" (e.g. 00:00, 01:00, 02:00, 03:00)
+   *   So 23:00 → 02:00 is valid (day 0 night → day 1 early morning)
+   */
+  const isEndAfterStart = (startTime: string, endTime: string): boolean => {
+    if (!startTime || !endTime) return false;
+
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    if (!eventData?.schedule?.startDateTime || !eventData?.schedule?.endDateTime) {
+      // No event data: simple comparison
+      return endMinutes > startMinutes;
+    }
+
+    const eventStartDate = new Date(eventData.schedule.startDateTime);
+    const eventEndDate = new Date(eventData.schedule.endDateTime);
+    const eventStartMinutes = eventStartDate.getHours() * 60 + eventStartDate.getMinutes();
+    const eventEndMinutes = eventEndDate.getHours() * 60 + eventEndDate.getMinutes();
+
+    const isCrossMidnight = eventEndMinutes < eventStartMinutes;
+
+    if (!isCrossMidnight) {
+      // Normal same-day: simple numeric comparison
+      return endMinutes > startMinutes;
+    }
+
+    // Cross-midnight: assign a "virtual day" to each time
+    // If time >= eventStart → it's on day 0 (e.g. 22:00, 23:00)
+    // If time <= eventEnd   → it's on day 1 (e.g. 00:00, 02:00, 03:00)
+    const startDay = startMinutes >= eventStartMinutes ? 0 : 1;
+    const endDay = endMinutes >= eventStartMinutes ? 0 : 1;
+
+    if (startDay !== endDay) {
+      // start is day 0 (night), end is day 1 (early morning) → end is after start ✅
+      // start is day 1 (early morning), end is day 0 (night) → end is before start ❌
+      return endDay > startDay;
+    }
+
+    // Same virtual day → simple numeric comparison
+    return endMinutes > startMinutes;
   };
 
   const addTimeSlot = (date: string) => {
@@ -560,6 +646,34 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
       return;
     }
 
+    // Strict slot-level validation to prevent empty/invalid times reaching payload
+    for (const dts of dateTimeSlots) {
+      for (const slot of dts.timeSlots) {
+        if (!slot.startTime || !slot.endTime) {
+          showError('Please select both start and end time for all slots.');
+          return;
+        }
+
+        const isStartValid24 = /^([01]\d|2[0-3]):([0-5]\d)$/.test(slot.startTime);
+        const isEndValid24 = /^([01]\d|2[0-3]):([0-5]\d)$/.test(slot.endTime);
+
+        if (!isStartValid24 || !isEndValid24) {
+          showError('Invalid time format. Please use HH:mm for all slots.');
+          return;
+        }
+
+        if (!isTimeWithinEvent(dts.date, slot.startTime) || !isTimeWithinEvent(dts.date, slot.endTime)) {
+          showError('All slot times must be within the event time duration.');
+          return;
+        }
+
+        if (!isEndAfterStart(slot.startTime, slot.endTime)) {
+          showError('End time must be after start time.');
+          return;
+        }
+      }
+    }
+
     // Validate all slots are within event time
     if (eventData?.schedule?.startDateTime && eventData?.schedule?.endDateTime) {
       const eventStart = new Date(eventData.schedule.startDateTime);
@@ -598,6 +712,12 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
         endTime: convertTo12Hour(slot.endTime),
       })),
     }));
+
+    const hasInvalidConvertedTime = apiFormat.some((dts) => dts.timeSlots.some((slot) => !slot.startTime || !slot.endTime));
+    if (hasInvalidConvertedTime) {
+      showError('Invalid time detected. Please review all slots before saving.');
+      return;
+    }
 
     onSave(apiFormat);
     onClose();
@@ -715,14 +835,13 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
               {eventConstraints.minDate && eventConstraints.maxDate && (
                 <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                  Available dates: {fDate(eventConstraints.minDate, formatStr.split.date)} -{' '}
-                  {fDate(eventConstraints.maxDate, formatStr.split.date)}
+                  Available dates: {fDate(eventConstraints.minDate, formatStr.split.date)} - {fDate(eventConstraints.maxDate, formatStr.split.date)}
                 </p>
               )}
 
               {eventData?.schedule?.startDateTime && eventData?.schedule?.endDateTime && (
                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Time duration: {fDate(eventData.schedule.startDateTime, formatStr.time)} - {fDate(eventData.schedule.endDateTime, formatStr.time)}
+                  Time duration: {fDate(eventData.schedule.startDateTime, 'HH:mm')} - {fDate(eventData.schedule.endDateTime, 'HH:mm')}
                 </p>
               )}
 
@@ -825,20 +944,23 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           /> */}
 
-                          <input
+                          <Time24hInput
                             title="start time"
-                            type="time"
                             value={slot.startTime}
-                            onChange={(e) => {
-                              const newStartTime = e.target.value;
+                            onChange={(newStartTime) => {
+                              if (!newStartTime) {
+                                updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', '');
+                                return;
+                              }
+
+                              // Always keep what user typed in state.
+                              // This prevents UI/state mismatch and enables accurate save-time errors.
+                              updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', newStartTime);
 
                               // Validate if time is within event schedule
                               if (!isTimeWithinEvent(dateTimeSlot.date, newStartTime)) {
                                 showError('Start time must be within event time duration.');
-                                return;
                               }
-
-                              updateTimeSlot(dateTimeSlot.date, slot.id, 'startTime', newStartTime);
 
                               // Auto-clear end time if it's less than or equal to new start time
                               if (slot.endTime && slot.endTime <= newStartTime) {
@@ -875,31 +997,32 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           /> */}
 
-                          <input
+                          <Time24hInput
                             title="end time"
-                            type="time"
                             value={slot.endTime}
-                            min={slot.startTime || undefined}
-                            onChange={(e) => {
-                              const newEndTime = e.target.value;
+                            onChange={(newEndTime) => {
+                              if (!newEndTime) {
+                                updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', '');
+                                return;
+                              }
 
                               if (!slot.startTime) {
                                 showError('Please select a start time first');
                                 return;
                               }
 
-                              if (newEndTime <= slot.startTime) {
+                              // Always keep what user typed in state.
+                              updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', newEndTime);
+
+                              // AFTER (cross-midnight aware)
+                              if (!isEndAfterStart(slot.startTime, newEndTime)) {
                                 showError('End time must be after start time');
-                                return;
                               }
 
                               // Validate if time is within event schedule
                               if (!isTimeWithinEvent(dateTimeSlot.date, newEndTime)) {
                                 showError('End time must be within event time duration.');
-                                return;
                               }
-
-                              updateTimeSlot(dateTimeSlot.date, slot.id, 'endTime', newEndTime);
                             }}
                             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
                           />

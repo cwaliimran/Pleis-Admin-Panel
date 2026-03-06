@@ -23,8 +23,6 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({ open, onClose, editMode
     }
   };
 
-  console.log('selectedVenueType', selectedVenueType);
-
   // Get isDirty from formState
   const { formState } = methods;
   const isDirty = formState?.isDirty;

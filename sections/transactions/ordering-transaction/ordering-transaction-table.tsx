@@ -17,15 +17,13 @@ import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.firstName' },
-  { id: 'description', label: 'Description', align: 'left' },
   { id: 'organization', label: 'Organization', align: 'left' },
-  { id: 'publicId', label: 'Public ID', align: 'left' },
   { id: 'transactionId', label: 'Transaction ID', align: 'left' },
+  { id: 'orderNo', label: 'Order No', align: 'left' },
   { id: 'transactionType', label: 'Type', align: 'left' },
-  { id: 'objectType', label: 'Object Type', align: 'left' },
-  { id: 'points', label: 'Points', align: 'left' },
+  { id: 'transactionAmount', label: 'Amount', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left' },
   { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
-  // { id: 'status', label: 'Status', align: 'left' },
 ];
 
 const OrderingTransactionTable: FC<SamplePageProps> = ({

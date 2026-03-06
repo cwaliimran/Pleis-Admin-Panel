@@ -33,6 +33,7 @@ const HEAD_LABEL = [
   },
   { id: 'category', label: 'Category', align: 'left' },
   { id: 'conditionType', label: 'Condition Type', align: 'left' },
+  { id: 'points', label: 'Points', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },

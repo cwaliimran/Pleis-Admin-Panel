@@ -47,6 +47,7 @@ type RewardFormValues = {
   endDate: string | Date;
   status: string;
   companyOrganizer: string;
+  isPromotionOnly: string;
 };
 
 type RewardFormModalProps = {
@@ -101,6 +102,7 @@ const schema = yup.object({
   companyOrganizer: yup.string(),
   timeSlot: yup.string(),
   isFastTrack: yup.boolean(),
+  isPromotionOnly: yup.string().required('Promotion Only is required'),
 });
 
 const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selectedData, selectedCompany }: RewardFormModalProps) => {
@@ -130,6 +132,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
     endDate: '',
     status: '',
     companyOrganizer: '',
+    isPromotionOnly: 'No',
   };
 
   const methods = useForm({
@@ -291,6 +294,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
         endDate: selectedData.endDate ? new Date(selectedData.endDate) : ('' as string | Date),
         status: selectedData.status || '',
         companyOrganizer: selectedData.companyOrganizer || '',
+        isPromotionOnly: selectedData.isPromotionOnly === true ? 'Yes' : 'No',
       });
 
       // Reset the flag after a short delay to allow form to settle
@@ -352,6 +356,7 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
         percentOff: formData.percentOff ? Number(formData.percentOff) : 0,
         tierLimit: formData.tierLimit,
         endDate: fDate(formData.endDate, formatStr.paramCase.db),
+        isPromotionOnly: formData.isPromotionOnly === 'Yes',
       };
 
       // Only add companyOrganizer if not global
@@ -670,6 +675,17 @@ const GlobalRewardFormModal = ({ open, onClose, isEdit, global = false, selected
                   />
 
                   <RHFDate name="endDate" label="End Date" placeholder="Select End Date" />
+
+                  <RHFSelectField
+                    name="isPromotionOnly"
+                    label="Promotion Only"
+                    placeholder="Select Promotion Only"
+                    options={[
+                      { label: 'Yes', value: 'Yes' },
+                      { label: 'No', value: 'No' },
+                    ]}
+                    className="w-full"
+                  />
                 </div>
 
                 {percentOff && Number(percentOff) > 0 && (

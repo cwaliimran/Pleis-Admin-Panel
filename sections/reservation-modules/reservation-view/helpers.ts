@@ -1,8 +1,35 @@
 import { ProcessedBooking, ReservationData } from './types';
 
+const TIME_24H_REGEX = /^([01]?\d|2[0-3]):([0-5]\d)$/;
+const TIME_12H_REGEX = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+
+export const normalizeTimeTo24 = (timeStr: string): string => {
+  if (!timeStr) return '';
+
+  const raw = timeStr.trim();
+  const time24Match = raw.match(TIME_24H_REGEX);
+  if (time24Match) {
+    const hours = Number(time24Match[1]);
+    const minutes = Number(time24Match[2]);
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  }
+
+  const time12Match = raw.match(TIME_12H_REGEX);
+  if (!time12Match) return '';
+
+  let hours = Number(time12Match[1]);
+  const minutes = Number(time12Match[2]);
+  const period = time12Match[3].toUpperCase();
+
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
 /**
  * Generate time slots for the grid (24 hours in 15-minute intervals)
- * Returns array of time strings like "12:00 AM", "12:15 AM", etc.
+ * Returns array of time strings like "00:00", "00:15", etc.
  */
 export const generateTimeSlots = (): string[] => {
   const slots: string[] = [];
@@ -11,24 +38,19 @@ export const generateTimeSlots = (): string[] => {
     const totalMinutes = i * 15;
     const hour = Math.floor(totalMinutes / 60);
     const minute = totalMinutes % 60;
-    const ampm = hour < 12 ? 'AM' : 'PM';
-    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
-    const displayMinute = minute.toString().padStart(2, '0');
-    slots.push(`${displayHour}:${displayMinute} ${ampm}`);
+    slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
   }
   return slots;
 };
 
 /**
- * Convert time string (e.g., "09:00 PM") to grid index
- * Based on 24-hour grid starting from 12:00 AM
+ * Convert time string (e.g., "09:00 PM" or "21:00") to grid index
+ * Based on 24-hour grid starting from 00:00
  */
 export const getTimeIndex = (timeStr: string): number => {
-  const [time, period] = timeStr.split(' ');
-  const [hour, minute] = time.split(':').map(Number);
-  let hour24 = hour;
-  if (period === 'PM' && hour !== 12) hour24 += 12;
-  if (period === 'AM' && hour === 12) hour24 = 0;
+  const normalized = normalizeTimeTo24(timeStr);
+  if (!normalized) return -1;
+  const [hour24, minute] = normalized.split(':').map(Number);
   const totalMinutes = hour24 * 60 + minute;
   return Math.floor(totalMinutes / 15);
 };
@@ -81,9 +103,16 @@ export const processReservationsToBookings = (reservations: ReservationData[]): 
         const startIdx = getTimeIndex(timeSlot.startTime);
         const endIdx = getTimeIndex(timeSlot.endTime);
 
+        if (startIdx < 0 || endIdx < 0) {
+          return;
+        }
+
+        const normalizedStartTime = normalizeTimeTo24(timeSlot.startTime);
+        const normalizedEndTime = normalizeTimeTo24(timeSlot.endTime);
+
         typeBookings.get(reservationType)!.push({
-          startTime: timeSlot.startTime,
-          endTime: timeSlot.endTime,
+          startTime: normalizedStartTime,
+          endTime: normalizedEndTime,
           startIdx,
           endIdx,
           reservation,
@@ -224,23 +253,17 @@ export const calculateAvgPartySize = (reservations: ReservationData[]): string =
  * Convert 12-hour format (02:30 PM) to 24-hour format (14:30) for input elements
  */
 export const convert12To24 = (time12: string): string => {
-  if (!time12) return '';
-  const match = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return '';
-  let hours = parseInt(match[1], 10);
-  const minutes = match[2];
-  const period = match[3].toUpperCase();
-  if (period === 'PM' && hours !== 12) hours += 12;
-  if (period === 'AM' && hours === 12) hours = 0;
-  return `${hours.toString().padStart(2, '0')}:${minutes}`;
+  return normalizeTimeTo24(time12);
 };
 
 /**
  * Convert 24-hour format (14:30) to 12-hour format (02:30 PM) for display/API
  */
 export const convert24To12 = (time24: string): string => {
-  if (!time24) return '';
-  const [hoursStr, minutes] = time24.split(':');
+  const normalized = normalizeTimeTo24(time24);
+  if (!normalized) return '';
+
+  const [hoursStr, minutes] = normalized.split(':');
   let hours = parseInt(hoursStr, 10);
   const period = hours >= 12 ? 'PM' : 'AM';
   if (hours === 0) hours = 12;
@@ -252,11 +275,5 @@ export const convert24To12 = (time24: string): string => {
  * Format time to ensure leading zeros (e.g., "2:30 AM" -> "02:30 AM")
  */
 export const formatTimeWithLeadingZero = (time: string): string => {
-  if (!time) return '';
-  const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return time;
-  const hours = parseInt(match[1], 10);
-  const minutes = match[2];
-  const period = match[3].toUpperCase();
-  return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`;
+  return normalizeTimeTo24(time);
 };

@@ -17,8 +17,8 @@ import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
@@ -40,11 +40,13 @@ type LoginPageViewProps = {
 export default function LoginPageView({ userType }: LoginPageViewProps) {
   const open = useBoolean();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
 
   const [otp, setOtp] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOtpLoading, setIsOtpLoading] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [tempUser, setTempUser] = useState<any>(null);
 
   const [login, { isLoading }] = useLoginMutation();
@@ -74,6 +76,12 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
   );
 
   const { reset, handleSubmit } = methods;
+
+  useEffect(() => {
+    if (searchParams.get('verification') === 'success') {
+      setIsVerificationModalOpen(true);
+    }
+  }, [searchParams]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -356,6 +364,25 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
             />
             <Button onClick={handleConfirmOtp} className="w-full" disabled={isOtpLoading}>
               {isOtpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Verify OTP'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isVerificationModalOpen} onOpenChange={setIsVerificationModalOpen}>
+        <DialogContent aria-describedby={undefined} className="dark:bg-secondary sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="mb-3 text-center">Verification Pending</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-300">
+              Pleis team will contact you to verify your identity before proceeding.
+            </p>
+            <Button
+              onClick={() => setIsVerificationModalOpen(false)}
+              className={`h-10 w-full bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white`}
+            >
+              Okay
             </Button>
           </div>
         </DialogContent>

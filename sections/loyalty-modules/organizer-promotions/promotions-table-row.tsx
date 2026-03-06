@@ -74,11 +74,11 @@ const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
       </TableCell>
 
       <TableCell className="text-left">
-        {fDate(item?.startDate, item?.promotionType !== 'happyHour' ? formatStr.split.date : formatStr.split.dateTime)}
+        {fDate(item?.startDate, item?.promotionType !== 'happyHour' ? formatStr.split.date : 'DD/MM/YYYY HH:mm')}
       </TableCell>
 
       <TableCell className="text-left">
-        {fDate(item?.endDate, item?.promotionType !== 'happyHour' ? formatStr.split.date : formatStr.split.dateTime)}
+        {fDate(item?.endDate, item?.promotionType !== 'happyHour' ? formatStr.split.date : 'DD/MM/YYYY HH:mm')}
       </TableCell>
 
       <TableCell className="text-left">{item?.tierLimit?.title || '-'}</TableCell>

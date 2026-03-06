@@ -3,11 +3,11 @@
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { capitalizeFirstLetter, fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
-import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 
 const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   const getPromotionTypeLabel = (type: string) => {
@@ -74,11 +74,11 @@ const PromotionsTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
       </TableCell>
 
       <TableCell className="text-left">
-        {fDate(item?.startDate, item?.promotionType !== 'happyHour' ? formatStr.split.date : formatStr.split.dateTime)}
+        {fDate(item?.startDate, item?.promotionType !== 'happyHour' && item?.promotionType !== 'globalHappyHourPromotion' ? formatStr.split.date : 'DD/MM/YYYY HH:mm')}
       </TableCell>
 
       <TableCell className="text-left">
-        {fDate(item?.endDate, item?.promotionType !== 'happyHour' ? formatStr.split.date : formatStr.split.dateTime)}
+        {fDate(item?.endDate, item?.promotionType !== 'happyHour' && item?.promotionType !== 'globalHappyHourPromotion' ? formatStr.split.date : 'DD/MM/YYYY HH:mm')}
       </TableCell>
 
       <TableCell className="text-left">{item?.tierLimit?.title || '-'}</TableCell>

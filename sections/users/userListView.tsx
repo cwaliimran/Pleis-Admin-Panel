@@ -153,7 +153,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const onDelete = async () => {
     try {
       const payload = {
-        status: 'deleted',
+        status: 'suspended',
       };
 
       const response = await updateUser({ id: selectedId, ...payload }).unwrap();

@@ -5,6 +5,7 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 import { useDeleteTicketingMutation, useGetTicketingQuery } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
@@ -16,7 +17,6 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TicketingModal from './ticketing-modal';
 import TicketingTable from './ticketing-table';
-import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 
 const defaultValues = {
   title: '',
@@ -27,8 +27,6 @@ const TicketingView = ({ userType }: { userType: 'organizer' | 'super-admin' }) 
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
-
-  console.log("userType", userType);
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -145,7 +143,6 @@ const TicketingView = ({ userType }: { userType: 'organizer' | 'super-admin' }) 
       refetch();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to delete tag:', errorMessage);
       showError(errorMessage);
     }
   };

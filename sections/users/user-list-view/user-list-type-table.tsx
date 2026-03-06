@@ -13,20 +13,6 @@ import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import UserListTypeTableRow from './user-list-type-table-row';
 
-const USERHEADLABEL = [
-  { id: 'image', label: 'Image', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left' },
-  { id: 'username', label: 'Username', align: 'left' },
-  { id: 'role', label: 'Role', align: 'left' },
-  { id: 'globalStatus', label: 'Global Status', align: 'left' },
-  { id: 'totalPoints', label: 'Points Earned', align: 'left' },
-  { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'region', label: 'Region', align: 'left' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
-  { id: 'action', label: 'Action', align: 'left' },
-];
-
 const MEMBERHEADLABEL = [
   { id: 'image', label: 'Image', align: 'left' },
   { id: 'username', label: 'Username', align: 'left' },
@@ -94,6 +80,20 @@ const UserListTypeTable: FC<PageProps> = ({
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const USERHEADLABEL = [
+    { id: 'image', label: 'Image', align: 'left' },
+    { id: 'name', label: 'Name', align: 'left' },
+    ...(userType !== 'organizer' ? [{ id: 'username', label: 'Username', align: 'left' }] : []),
+    { id: 'role', label: 'Role', align: 'left' },
+    { id: 'globalStatus', label: 'Global Status', align: 'left' },
+    { id: 'totalPoints', label: 'Points Earned', align: 'left' },
+    { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
+    { id: 'status', label: 'Status', align: 'left' },
+    { id: 'region', label: 'Region', align: 'left' },
+    { id: 'createdAt', label: 'Created At', align: 'left' },
+    { id: 'action', label: 'Action', align: 'left' },
+  ];
 
   const methods = useForm({
     defaultValues: {

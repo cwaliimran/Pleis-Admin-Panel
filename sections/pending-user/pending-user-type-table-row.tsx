@@ -43,7 +43,7 @@ const SupplierTypeTableRow: FC<PageProps> = ({ item, handleDelete, handlePending
         <TableCell className="text-left text-sm">{item?.basicInfo?.organizationName || '-'}</TableCell>
 
         <TableCell className="text-left text-sm">
-          {item?.basicInfo?.phoneNumber?.code || ''}
+          {item?.basicInfo?.phoneNumber?.code || ''}{" "}
           {item?.basicInfo?.phoneNumber?.number || ''}
         </TableCell>
 
