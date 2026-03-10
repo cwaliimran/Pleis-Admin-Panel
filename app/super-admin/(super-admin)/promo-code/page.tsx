@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import PromoCodeView from '@/sections/promo-code/promo-code-view';
 import { Metadata } from 'next';
 
@@ -15,8 +16,9 @@ const Page = () => {
           { name: 'Promo Code', href: '' },
         ]}
       />
-
-      <PromoCodeView />
+      <CompanyGuard>
+        <PromoCodeView />
+      </CompanyGuard>
     </div>
   );
 };

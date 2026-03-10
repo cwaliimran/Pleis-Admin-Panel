@@ -1,0 +1,115 @@
+Subscription Calculation Rules (Current Implementation)
+
+1. Data Sources
+- Active user subscription comes from: GET /organizer/subscriptions/user -> data[0].subscription.
+- Pricing configuration comes from: GET /organizer/subscriptions -> data[0].
+- Pricing fields used:
+  - modulePricing: ordering, loyalty, reservations, analytics
+  - bundleDiscounts: twoModules, threeModules
+  - multiOrgPricing: oneOrg, twoOrgs, threeOrgs, fourOrgs, fiveOrgs, sixPlusOrgs
+  - yearlyDiscount.discountPercent
+  - commissions
+
+2. Plan Identity Rules
+- User considered free if subscriptionTypes includes "free".
+- Target selection considered free plan if:
+  - selectedModules.length === 0 AND includeAnalytics === false
+- Paid selection if at least one module or analytics is selected.
+
+3. Organization Count Rules
+- Standard buttons: 1,2,3,4,5,6+.
+- If 6+ selected, custom org input is enabled.
+- Minimum custom threshold for custom mode: 6.
+- Maximum allowed custom organizations: 1000.
+- Actual org count used in calculations:
+  - custom value (if >= 6)
+  - else 6 when custom mode selected
+  - else selected standard org count
+
+4. First-Time Create / Free-to-Paid Flow
+- Build module base:
+  - sum(selected non-analytics modules)
+- Bundle discount:
+  - 2 non-analytics modules => bundleDiscounts[2]
+  - 3+ non-analytics modules => bundleDiscounts[3]
+  - Applied ONLY to non-analytics module subtotal
+- Analytics pricing:
+  - Added after bundle discount
+  - Analytics gets NO bundle discount
+- Multi-org pricing:
+  - orgPricingPercent from multiOrgPricing table
+  - pricePerOrg = subtotalBeforeOrgs * (orgPricingPercent / 100)
+  - totalMultiOrgPrice = pricePerOrg * organizationCount
+- Yearly pricing:
+  - yearlyBase = totalMultiOrgPrice * 12
+  - yearlyDiscount applied on yearlyBase
+  - finalYearly = yearlyBase - yearlyDiscountAmount
+- Final amount sent:
+  - monthly => totalMultiOrgPrice
+  - yearly => finalYearly
+
+5. Update Flow Change Detection
+- Change analysis is run for paid users using analyzeSubscriptionChange().
+- Change types:
+  - upgrade
+  - downgrade
+  - no_change
+  - free_plan
+- Only pure additions are treated as upgrade in current logic.
+- Billing cycle change is treated as next recurring (future-cycle) change in current flow.
+
+6. Paid Upgrade Charging Rule (Immediate)
+- If changeType === upgrade and proratedUpgrade exists:
+  - charge now = proratedUpgrade.totalProratedAmount
+- Proration uses remaining period ratio:
+  - monthly: daysRemaining / totalDaysInCurrentPeriod
+  - yearly: daysRemaining / daysInYear(365/366)
+- Upgrade-specific discount behavior:
+  - newly added modules DO NOT receive bundle discount during proration
+  - multi-org rate is applied in prorated calculation
+  - yearly discount is included for yearly-plan upgrades
+
+7. Paid Downgrade / No-Change Charging Rule
+- If not upgrade and nextRecurring exists:
+  - amount sent = nextRecurring.displayAmount
+- nextRecurring is full-cycle pricing (all discounts applied for future cycle).
+- Billing cycle change is applied on next recurring (not immediate prorated charge).
+
+8. Downgrade to Free Rule
+- Triggered when selection becomes empty (no module + no analytics).
+- Payload is force-normalized to:
+  - subscriptionTypes: ["free"]
+  - pricingPlan: "monthly"
+  - numberOfOrganizations: 1
+  - totalSubscriptionAmount: 0
+
+9. Discount Applicability Matrix
+- Bundle discount:
+  - Applies: non-analytics modules (full-cycle pricing)
+  - Not applied: analytics
+  - Not applied: newly added modules in prorated upgrade
+- Multi-org pricing:
+  - Always applied via payable percent tier based on organization count
+- Yearly discount:
+  - Applies only when billingCycle === "yearly"
+  - Applied after annualization (monthly-equivalent * 12)
+
+10. API Update Payload Contract
+- PUT /organizer/subscriptions
+- Body fields:
+  - subscriptionTypes: string[]
+  - pricingPlan: "monthly" | "yearly"
+  - numberOfOrganizations: number
+  - totalSubscriptionAmount: number
+
+11. Current UI Control Rules Affecting Update
+- Billing Cycle section visibility:
+  - hidden for paid active users when no changes
+  - shown when paid user has changes OR user is not paid-active
+- Update button enabled state:
+  - paid active user: enabled only when has changes
+  - free/new user: enabled only if selection is not empty
+
+12. Important Existing Behavior Notes
+- Next Recurring UI card is hidden, but nextRecurring calculation is still used internally for amount in downgrade/no-change path.
+- Free card is shown only for free users; paid users see current subscription card in that section.

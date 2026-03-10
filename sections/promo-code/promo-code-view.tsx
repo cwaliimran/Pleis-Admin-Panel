@@ -11,6 +11,7 @@ import { Plus } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import PromoCodeTable from './promo-code-table';
 import PromoCodeModal from './promo-code-modal';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 const PromoCodeView = () => {
   const openModal = useBoolean();
@@ -23,6 +24,9 @@ const PromoCodeView = () => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+
+  const { companyId } = useCompanySelectionState();
+  console.log("companyId", companyId);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -39,6 +43,7 @@ const PromoCodeView = () => {
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    companyOrganizer: companyId || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -164,7 +169,13 @@ const PromoCodeView = () => {
       />
 
       {openModal.value && (
-        <PromoCodeModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
+        <PromoCodeModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          companyId={companyId}
+        />
       )}
 
       <ConfirmDialog

@@ -3,6 +3,7 @@ import { Calculator } from 'lucide-react';
 
 interface PriceBreakdownData {
   baseModulePrice: number;
+  nonAnalyticsPrice: number;
   selectedModulesCount: number;
   nonAnalyticsCount: number;
   bundleDiscountPercent: number;
@@ -27,7 +28,7 @@ interface PriceBreakdownBoxProps {
 
 export const PriceBreakdownBox: React.FC<PriceBreakdownBoxProps> = ({ breakdown }) => {
   return (
-    <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-sm dark:border-blue-800 dark:from-blue-950/40 dark:to-indigo-950/40">
+    <div className="rounded-xl border border-blue-200 bg-linear-to-br from-blue-50 to-indigo-50 p-6 shadow-sm dark:border-blue-800 dark:from-blue-950/40 dark:to-indigo-950/40">
       {/* Header */}
       <div className="mb-4 flex items-center gap-2">
         <Calculator className="h-5 w-5 text-blue-600 dark:text-blue-500" />
@@ -36,12 +37,12 @@ export const PriceBreakdownBox: React.FC<PriceBreakdownBoxProps> = ({ breakdown 
 
       {/* Breakdown Lines */}
       <div className="space-y-3">
-        {/* Base Module Price */}
+        {/* Base Module Price (excluding analytics) */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-700 dark:text-gray-300">
-            Base Module Price ({breakdown.selectedModulesCount} module{breakdown.selectedModulesCount > 1 ? 's' : ''}):
+            Selected Modules Price ({breakdown.nonAnalyticsCount} module{breakdown.nonAnalyticsCount > 1 ? 's' : ''}, excluding analytics):
           </span>
-          <span className="text-base font-medium text-gray-900 dark:text-gray-100">€{breakdown.baseModulePrice.toFixed(2)}</span>
+          <span className="text-base font-medium text-gray-900 dark:text-gray-100">€{breakdown.nonAnalyticsPrice.toFixed(2)}</span>
         </div>
 
         {/* Bundle Discount */}

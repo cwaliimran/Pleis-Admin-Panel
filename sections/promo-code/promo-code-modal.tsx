@@ -31,6 +31,7 @@ type PromoCodeModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: any;
+  companyId?: any;
 };
 
 const schema = Yup.object().shape({
@@ -84,7 +85,7 @@ const defaultValues: PromoCodeFormValues = {
   status: 'active',
 };
 
-const PromoCodeModal = ({ open, onClose, isEdit = false, selectedData }: PromoCodeModalProps) => {
+const PromoCodeModal = ({ open, onClose, isEdit = false, selectedData, companyId }: PromoCodeModalProps) => {
   const [addPromoCode, { isLoading: addLoading }] = useAddPromoCodeMutation();
   const [updatePromoCode, { isLoading: updateLoading }] = useUpdatePromoCodeMutation();
 
@@ -156,6 +157,10 @@ const PromoCodeModal = ({ open, onClose, isEdit = false, selectedData }: PromoCo
       if (isEdit && selectedData) {
         payload.status = formData.status;
         payload.id = selectedData._id;
+      }
+
+      if (companyId) {
+        payload.companyOrganizer = companyId;
       }
 
       const response = isEdit ? await updatePromoCode(payload).unwrap() : await addPromoCode(payload).unwrap();

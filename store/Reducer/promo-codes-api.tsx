@@ -9,7 +9,7 @@ export const promoCodesApi = createApi({
 
   endpoints: (builder) => ({
     getPromoCodes: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer }) => {
         const params: any = {
           keyword: search,
           status,
@@ -18,6 +18,7 @@ export const promoCodesApi = createApi({
         };
 
         if (date) params.date = date;
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         return {
           url: '',

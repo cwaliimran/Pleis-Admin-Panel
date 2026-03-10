@@ -31,6 +31,7 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/updates',
   '/super-admin/giveaways',
   '/super-admin/reviews',
+  '/super-admin/promo-code',
   '/super-admin/app-ordering/order-management',
   '/super-admin/app-ordering/order-settings',
   '/super-admin/app-ordering/menu-management',

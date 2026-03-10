@@ -1,0 +1,185 @@
+Work as a senior software engineer who has 10+ year of experince working on large scale project and has a strong problem solving mindset who think one step ahead.
+We are working on Next project with Shadcn and Tailwind Css. The module we are working on is subscription and we need to re-create this module logic from start. UI is ready we need to implemnet logic.
+I will explain you the full flow of this component should work, what's the payload and what are the usecases.
+
+When user come to this page we call an API where we get complete user details related to subscription. We have two object in response inactiveSubscription and subscription. When user is in free plan and get a subscription then subscription object get updated
+
+"subscription": {
+"subscriptionTypes": [
+"ordering",
+"loyalty"
+],
+"pricingPlan": "yearly",
+"numberOfOrganizations": 3,
+"totalSubscriptionAmount": 1093.5,
+"monthlyPrice": 91.13,
+"startDate": "2026-03-09T10:08:04.674Z",
+"endDate": "2027-03-09T10:08:04.674Z",
+"orderingCommission": 0,
+"ticketingCommission": 0,
+"reservationCommission": 0
+}
+
+When user has already a subscription and user upgrade and downgrade subscription then in that case inactiveSubscription get updated also in the next cycle when active subscription end then inactiveSubscription run as active subscription otherwise it is showing as "subscriptionTypes": ["free"]
+
+How to check user is in free plan:
+When user is in free plan then its subscription.subscriptionTypes include free its means user is in free plan.
+"subscription": {
+"subscriptionTypes": [
+"free",
+]}
+
+When user come to subscription page its see some data from which user selects its own things and get subscription for that things. We have Premium Modules, Advanced Analytics and Organizations.
+
+First-Time Create / Free-to-Paid Flow
+
+- Build module base:
+  - sum(selected non-analytics modules)
+- Bundle discount:
+  - 2 non-analytics modules => bundleDiscounts[2]
+  - 3+ non-analytics modules => bundleDiscounts[3]
+  - Applied ONLY to non-analytics module subtotal
+- Analytics pricing:
+  - Added after bundle discount
+  - Analytics gets NO bundle discount
+
+Response:
+"bundleDiscounts": {
+"twoModules": 10,
+"threeModules": 15,
+"\_id": "69a8099ad645cabb2231cee6"
+},
+
+After that calculation we get an base price for organization.
+Now we have discount percentage on organization selection we need to calculate the base price and add discount based on the number of organization user select.
+
+Response:
+"multiOrgPricing": {
+"oneOrg": 100,
+"twoOrgs": 95,
+"threeOrgs": 90,
+"fourOrgs": 85,
+"fiveOrgs": 80,
+"sixPlusOrgs": 75,
+"\_id": "69a8099ad645cabb2231cee7"
+},
+
+Then user can select monthly and yearly
+
+- Yearly pricing:
+- yearlyBase = totalMultiOrgPrice \* 12
+- yearlyDiscount applied on yearlyBase
+- finalYearly = yearlyBase - yearlyDiscountAmount
+- Final amount sent:
+  - monthly => totalMultiOrgPrice
+  - yearly => finalYearly
+
+Response:
+"yearlyDiscount": {
+"discountPercent": 25,
+"\_id": "69a8099ad645cabb2231cee8"
+},
+
+Downgrade to Free Rule (This will apply in next cycle)
+
+- Triggered when selection becomes empty (no module + no analytics).
+- Payload is force-normalized to:
+  - subscriptionTypes: ["free"]
+  - pricingPlan: "monthly"
+  - numberOfOrganizations: 1
+  - totalSubscriptionAmount: 0
+
+  API Update Payload Contract
+
+- PUT /organizer/subscriptions
+- Body fields:
+  - subscriptionTypes: string[]
+  - pricingPlan: "monthly" | "yearly"
+  - numberOfOrganizations: number
+  - totalSubscriptionAmount: number
+
+Update Flow Change Detection:
+
+- Change analysis should run for paid users.
+- Change types:
+  - upgrade
+  - downgrade
+  - no_change
+  - free_plan
+- Only pure additions are treated as upgrade in current logic.
+- If user downgrade something then it consider in next recurring there is nothing as refund in this project.
+
+Subscription Data Structure:
+
+This is how we get the subscription data when user come to this page
+
+{
+"message": "Subscriptions fetched successfully",
+"data": [
+{
+"\_id": "69a8099ad645cabb2231cee1",
+"modulePricing": [
+{
+"module": "ordering",
+"price": 20,
+"_id": "69a8099ad645cabb2231cee2"
+},
+{
+"module": "loyalty",
+"price": 30,
+"_id": "69a8099ad645cabb2231cee3"
+},
+{
+"module": "reservations",
+"price": 30,
+"_id": "69a8099ad645cabb2231cee4"
+},
+{
+"module": "analytics",
+"price": 20,
+"_id": "69a8099ad645cabb2231cee5"
+}
+],
+"bundleDiscounts": {
+"twoModules": 10,
+"threeModules": 15,
+"\_id": "69a8099ad645cabb2231cee6"
+},
+"multiOrgPricing": {
+"oneOrg": 100,
+"twoOrgs": 95,
+"threeOrgs": 90,
+"fourOrgs": 85,
+"fiveOrgs": 80,
+"sixPlusOrgs": 75,
+"\_id": "69a8099ad645cabb2231cee7"
+},
+"yearlyDiscount": {
+"discountPercent": 25,
+"\_id": "69a8099ad645cabb2231cee8"
+},
+"commissions": {
+"orderingCommission": 5,
+"ticketingCommission": 10,
+"reservationCommission": 10,
+"\_id": "69a8099ad645cabb2231cee9"
+},
+"createdAt": "2026-03-04T10:29:46.462Z",
+"updatedAt": "2026-03-04T10:29:46.462Z",
+"\_\_v": 0
+}
+],
+"meta": {
+"currentPage": 1,
+"totalPages": 1,
+"totalRecords": 1,
+"limit": 10,
+"subscriptionsCount": {
+"total": 1,
+"active": 0,
+"inactive": 0
+}
+}
+}
+
+Paid Upgrade Charging Rule (Important)

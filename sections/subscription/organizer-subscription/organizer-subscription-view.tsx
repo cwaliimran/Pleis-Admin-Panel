@@ -13,7 +13,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ConfirmationModal } from './ConfirmationModal';
 import { ANALYTICS_FEATURES, FREE_PLAN_FEATURES, ORGANIZATION_COUNTS } from './constants';
 import { CurrentSubscriptionBox } from './CurrentSubscriptionBox';
-import { InfoBanner } from './info-banner';
 import { ModuleCard } from './module-card';
 import { PriceBreakdownBox } from './PriceBreakdownBox';
 import { analyzeSubscriptionChange, calculatePriceBreakdown } from './subscriptionCalculator';
@@ -38,10 +37,22 @@ export const OrganizerSubscriptionView: React.FC = () => {
   // ============================================================================
   // API HOOKS
   // ============================================================================
-  const { data: organizerOwnSubData, isLoading: isOwnSubLoading } = useGetOrganizerOwnSubscriptionsQuery({});
+  const { data: organizerOwnSubData, isLoading: isOwnSubLoading } = useGetOrganizerOwnSubscriptionsQuery(
+    {},
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
+  );
   const userSubscriptionData: UserSubscriptionData | null = organizerOwnSubData?.data?.[0]?.subscription || null;
 
-  const { data: apiData, isLoading: isPricingLoading } = useGetOrganizerSubscriptionsQuery({});
+  const { data: apiData, isLoading: isPricingLoading } = useGetOrganizerSubscriptionsQuery(
+    {},
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
+  );
   const [updateOrganizerSubscription, { isLoading: isUpdating }] = useUpdateOrganizerSubscriptionMutation();
 
   const pricingData = apiData?.data?.[0] || null;
@@ -330,7 +341,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
         subscriptionTypes,
         pricingPlan: finalBillingCycle,
         numberOfOrganizations: finalOrgCount,
-        totalSubscriptionAmount: totalAmount,
+        totalSubscriptionAmount: Number(totalAmount.toFixed(2)),
       };
 
       const response = await updateOrganizerSubscription(payload).unwrap();
@@ -382,9 +393,12 @@ export const OrganizerSubscriptionView: React.FC = () => {
 
   const isButtonDisabled = isPaidActiveUser ? !hasUserMadeChanges : selectedModules.length === 0 && !includeAnalytics;
 
-  const isDowngradingToFree = useMemo(() => {
-    return hasActiveSubscription && selectedModules.length === 0 && !includeAnalytics && !isFreePlan;
-  }, [hasActiveSubscription, selectedModules, includeAnalytics, isFreePlan]);
+  const showDowngradeNoticeNearButton =
+    hasActiveSubscription &&
+    hasUserMadeChanges &&
+    (subscriptionAnalysis?.changeType === 'downgrade' || subscriptionAnalysis?.changeType === 'free_plan');
+
+  const downgradeEffectiveDate = subscriptionAnalysis?.nextRecurring?.startDate || userSubscriptionData?.endDate;
 
   // ============================================================================
   // LOADING STATE
@@ -419,46 +433,6 @@ export const OrganizerSubscriptionView: React.FC = () => {
 
       {/* Main Content */}
       <div className="space-y-6 rounded-b-2xl px-0 py-6">
-        {/* Free Plan User Banner */}
-        {isFreePlan && selectedModules.length > 0 && (
-          <InfoBanner
-            variant="info"
-            icon="ℹ️"
-            title="You're on the Free Plan"
-            description="Select premium modules below to upgrade your subscription and unlock advanced features."
-          />
-        )}
-
-        {/* Downgrade to Free Warning Banner - Only for Paid Users */}
-        {isDowngradingToFree && (
-          <InfoBanner
-            variant="warning"
-            icon="⚠️"
-            title="Switching to Free Plan"
-            description={`Your subscription will end on ${userSubscriptionData?.endDate ? new Date(userSubscriptionData.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'the end of your current period'}, and you'll be moved to the Free Plan.`}
-          />
-        )}
-
-        {/* No Subscription Banner (Not Free, No Paid) */}
-        {!userSubscriptionData && !isOwnSubLoading && (
-          <InfoBanner
-            variant="warning"
-            icon="⚠️"
-            title="No Active Subscription"
-            description="You don't have an active subscription yet. Please select modules below to get started, or contact your administrator for assistance."
-          />
-        )}
-
-        {/* Downgrade Notice Banner */}
-        {subscriptionAnalysis?.changeType === 'downgrade' && !isDowngradingToFree && subscriptionAnalysis.nextRecurring && (
-          <InfoBanner
-            variant="info"
-            icon="ℹ️"
-            title="Changes Will Take Effect Next Billing Cycle"
-            description={`Your changes will take effect on ${new Date(subscriptionAnalysis.nextRecurring.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Your current plan remains active until then.`}
-          />
-        )}
-
         {/* Free Tier / Current Subscription */}
         {isFreePlan ? (
           <div className="rounded-xl border-2 border-green-300 bg-linear-to-br from-green-50 to-emerald-50 p-6 shadow-lg dark:border-green-800 dark:from-green-950/40 dark:to-emerald-950/40">
@@ -569,7 +543,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
         {/* Organization Count */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#222121]">
           <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-gray-100">Number of Organizations</h3>
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">How many locations or venues will you manage?</p>
+          <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">How many organizations will you manage?</p>
 
           <div className="grid grid-cols-6 gap-3">
             {ORGANIZATION_COUNTS.map((count) => (
@@ -670,6 +644,22 @@ export const OrganizerSubscriptionView: React.FC = () => {
 
         {/* Subscribe/Update Button */}
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-[#222121]">
+          {showDowngradeNoticeNearButton && (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/30">
+              <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                These downgrade changes will apply in the next billing cycle
+                {downgradeEffectiveDate
+                  ? ` (${new Date(downgradeEffectiveDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })})`
+                  : ''}
+                .
+              </p>
+            </div>
+          )}
+
           <button
             type="button"
             disabled={isButtonDisabled || isUpdating}
@@ -679,7 +669,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
                 ? 'cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600'
                 : isUpdating
                   ? 'cursor-not-allowed bg-blue-600 text-white'
-                  : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl'
+                  : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg cursor-pointer hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl'
             }`}
           >
             {isUpdating ? (

@@ -101,7 +101,7 @@ const PendingUserView = () => {
     try {
       const response = await updateUser({
         id: selectedId,
-        status: 'rejected',
+        status: 'cancelled',
       }).unwrap();
 
       if (!response) {
