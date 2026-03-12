@@ -4,7 +4,7 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
-import { capitalizeFirstLetter, fDate, formatStr } from '@/utils/format-time';
+import { capitalizeFirstLetter, fDate } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
@@ -24,7 +24,7 @@ const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
       </TableCell>
 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
-      
+
       <TableCell className="text-left capitalize">{item?.organizationName || '-'}</TableCell>
 
       <TableCell className="text-left">
@@ -33,7 +33,7 @@ const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
 
       <TableCell className="text-left capitalize">{item?.eventTitle}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.createdAt, 'DD/MM/YYYY HH:mm')}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>
