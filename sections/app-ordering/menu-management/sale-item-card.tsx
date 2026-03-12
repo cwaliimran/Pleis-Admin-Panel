@@ -86,10 +86,10 @@ export const SaleItemCard: React.FC<SaleItemCardProps> = ({ sale, menuItems, men
   };
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString('en-GB', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true,
+      hour12: false,
     });
   };
 

@@ -3,7 +3,7 @@
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
-import { fDate, formatStr } from '@/utils/format-time';
+import { fDate } from '@/utils/format-time';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
@@ -29,7 +29,7 @@ const StreaksTableRow: FC<TableRowProps> = ({ item }) => {
       <TableCell className="text-left">{item?.longestStreak || 'N/A'}</TableCell>
       <TableCell className="text-left">{item?.points || 'N/A'}</TableCell>
       <TableCell className="text-left">{item?.visits || 'N/A'}</TableCell>
-      <TableCell className="text-left">{fDate(item?.lastVisitAt, formatStr.split.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.lastVisitAt, 'DD/MM/YYYY HH:mm')}</TableCell>
     </TableRow>
   );
 };

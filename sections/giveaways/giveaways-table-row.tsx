@@ -2,7 +2,7 @@
 
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { fDate, formatStr } from '@/utils/format-time';
+import { fDate } from '@/utils/format-time';
 import { List, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
@@ -37,9 +37,9 @@ const GiveawaysTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, 
 
       <TableCell className="text-left capitalize">{item?.totalParticipants}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.startDateTime, formatStr.split.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.startDateTime, 'DD/MM/YYYY HH:mm')}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.endDateTime, formatStr.split.dateTime)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.endDateTime, 'DD/MM/YYYY HH:mm')}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>

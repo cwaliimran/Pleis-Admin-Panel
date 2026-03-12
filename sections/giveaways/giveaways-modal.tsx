@@ -1,6 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,35 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TicketingModal from '../ticketing-view/ticketing-modal';
+
+const toLocalDateTimeInput = (value: Date) => {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  const hours = String(value.getHours()).padStart(2, '0');
+  const minutes = String(value.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const getDatePart = (dateTime?: string | Date) => {
+  if (!dateTime) return '';
+  const normalized = dateTime instanceof Date ? toLocalDateTimeInput(dateTime) : dateTime;
+  const [datePart] = normalized.split('T');
+  return datePart || '';
+};
+
+const getTimePart = (dateTime?: string | Date) => {
+  if (!dateTime) return '';
+  const normalized = dateTime instanceof Date ? toLocalDateTimeInput(dateTime) : dateTime;
+  const parts = normalized.split('T');
+  const timePart = parts[1] || '';
+  return timePart.slice(0, 5);
+};
+
+const updateSplitDateTime = (datePart: string, timePart: string) => {
+  if (!datePart || !timePart) return '';
+  return `${datePart}T${timePart}`;
+};
 
 const defaultValues = {
   title: '',
@@ -75,6 +105,8 @@ type GiveawayModalProps = {
 
 const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizationId, userType }: GiveawayModalProps) => {
   const [showTicketModal, setShowTicketModal] = useState(false);
+  const [endDatePart, setEndDatePart] = useState('');
+  const [endTimePart, setEndTimePart] = useState('');
   const isInitializingEdit = useRef(false);
 
   const [addGiveaway, { isLoading: addGiveawayLoading }] = useAddGiveawayMutation();
@@ -90,7 +122,7 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
     reset,
     watch,
     setValue,
-    formState: { isDirty },
+    formState: { isDirty, errors },
   } = methods;
 
   const ticketTypeOption = watch('ticketTypeOption');
@@ -181,12 +213,16 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
       };
 
       reset(mappedValues);
+      setEndDatePart(getDatePart(mappedValues.endDateTime));
+      setEndTimePart(getTimePart(mappedValues.endDateTime));
 
       setTimeout(() => {
         isInitializingEdit.current = false;
       }, 100);
     } else if (open && !isEdit) {
       reset(defaultValues);
+      setEndDatePart('');
+      setEndTimePart('');
     }
   }, [isEdit, selectedData, open, reset]);
 
@@ -330,8 +366,19 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
 
   const handleClose = () => {
     reset(defaultValues);
+    setEndDatePart('');
+    setEndTimePart('');
     isInitializingEdit.current = false;
     onClose();
+  };
+
+  const handleEndDateTimeChange = (datePart: string, timePart: string) => {
+    setEndDatePart(datePart);
+    setEndTimePart(timePart);
+    setValue('endDateTime', updateSplitDateTime(datePart, timePart), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   const handleAddTicket = () => {
@@ -474,8 +521,33 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                     </div>
                   </div>
 
-                  {/* End Date */}
-                  <RHFTextField name="endDateTime" label="End Date & Time" placeholder="Select end date" type="datetime-local" />
+                  {/* End Date & Time */}
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                      <label htmlFor="giveaway-end-date" className="mb-1 block text-sm font-medium">
+                        End Date
+                      </label>
+                      <input
+                        id="giveaway-end-date"
+                        type="date"
+                        title="End date"
+                        value={endDatePart}
+                        onChange={(e) => handleEndDateTimeChange(e.target.value, endTimePart)}
+                        className="h-10 w-full rounded-md border bg-white px-3 py-2 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-700 dark:bg-[#212121] dark:placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium">End Time</label>
+                      <Time24hInput
+                        title="End time"
+                        value={endTimePart}
+                        onChange={(value) => handleEndDateTimeChange(endDatePart, value)}
+                        placeholder="HH:mm"
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  {errors.endDateTime?.message && <p className="-mt-2 text-xs text-red-500">{String(errors.endDateTime.message)}</p>}
                   <p className="text-muted-foreground -mt-2 text-xs">Winners will be automatically selected when the giveaway ends</p>
 
                   {/* Info Banner */}

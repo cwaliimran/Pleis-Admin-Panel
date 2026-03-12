@@ -1,14 +1,18 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
+import { Calendar as UICalendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { cn } from '@/lib/utils';
 import {
   useAddNotificationMutation,
   useGetAllEventsQuery,
@@ -21,7 +25,8 @@ import { extractAddress } from '@/utils/format-google-address';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
-import { Calendar, Clock, Link2, MapPin, Users } from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar, CalendarIcon, Clock, Link2, MapPin, Users } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
@@ -30,6 +35,49 @@ import { NotificationFormValues, SendTiming } from './types';
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries: 'places'[] = ['places'];
+
+const toLocalDateTimeInput = (value: Date) => {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  const hours = String(value.getHours()).padStart(2, '0');
+  const minutes = String(value.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const getDatePart = (dateTime?: string | Date) => {
+  if (!dateTime) return '';
+  const normalized = dateTime instanceof Date ? toLocalDateTimeInput(dateTime) : dateTime;
+  const [datePart] = normalized.split('T');
+  return datePart || '';
+};
+
+const getTimePart = (dateTime?: string | Date) => {
+  if (!dateTime) return '';
+  const normalized = dateTime instanceof Date ? toLocalDateTimeInput(dateTime) : dateTime;
+  const parts = normalized.split('T');
+  const timePart = parts[1] || '';
+  return timePart.slice(0, 5);
+};
+
+const updateSplitDateTime = (datePart: string, timePart: string) => {
+  if (!datePart || !timePart) return '';
+  return `${datePart}T${timePart}`;
+};
+
+const parseDatePartToDate = (datePart?: string) => {
+  if (!datePart) return undefined;
+  const [year, month, day] = datePart.split('-').map(Number);
+  if (!year || !month || !day) return undefined;
+  return new Date(year, month - 1, day);
+};
+
+const formatDateForValue = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const schema = Yup.object().shape({
   title: Yup.string().required('Title is required').min(3, 'Title must be at least 3 characters'),
@@ -163,6 +211,8 @@ interface NotificationModalProps {
 export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onClose, isEdit = false, selectedData }) => {
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [deleting, setDeleting] = useState(false);
+  const [scheduledDatePart, setScheduledDatePart] = useState('');
+  const [scheduledTimePart, setScheduledTimePart] = useState('');
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const [addNotification, { isLoading: addLoading }] = useAddNotificationMutation();
@@ -216,6 +266,16 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
   const interestsEnabled = watch('interestsEnabled');
   const selectedInterests = watch('selectedInterests');
   const locationCoordinates = [watch('locationLat'), watch('locationLong')];
+  const scheduledDateTime = watch('scheduledDateTime');
+
+  const updateScheduledDateTime = (datePart: string, timePart: string) => {
+    setScheduledDatePart(datePart);
+    setScheduledTimePart(timePart);
+    setValue('scheduledDateTime', updateSplitDateTime(datePart, timePart), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  };
 
   // Map API data to dropdown options
   const organizationOptions =
@@ -259,10 +319,20 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
     if (isEdit && selectedData && open) {
       // Edit mode population logic here if needed
       reset(defaultValues);
+      setScheduledDatePart(getDatePart(defaultValues.scheduledDateTime));
+      setScheduledTimePart(getTimePart(defaultValues.scheduledDateTime));
     } else if (open && !isEdit) {
       reset(defaultValues);
+      setScheduledDatePart(getDatePart(defaultValues.scheduledDateTime));
+      setScheduledTimePart(getTimePart(defaultValues.scheduledDateTime));
     }
   }, [isEdit, selectedData, open, reset]);
+
+  useEffect(() => {
+    if (!open) return;
+    setScheduledDatePart(getDatePart(scheduledDateTime));
+    setScheduledTimePart(getTimePart(scheduledDateTime));
+  }, [open, scheduledDateTime]);
 
   const transformToPayload = (formData: NotificationFormValues) => {
     const payload: any = {
@@ -387,6 +457,8 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
 
   const handleClose = () => {
     reset(defaultValues);
+    setScheduledDatePart('');
+    setScheduledTimePart('');
     onClose();
   };
 
@@ -715,7 +787,52 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({ open, onCl
                     </label>
                   </div>
 
-                  {sendTiming === 'schedule' && <RHFTextField name="scheduledDateTime" type="datetime-local" label="Scheduled Date & Time" />}
+                  {sendTiming === 'schedule' && (
+                    <Controller
+                      name="scheduledDateTime"
+                      control={control}
+                      render={({ fieldState }) => {
+                        const selectedDate = parseDatePartToDate(scheduledDatePart);
+
+                        return (
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Date</label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className={cn('w-full justify-start text-left font-normal', !selectedDate && 'text-muted-foreground')}
+                                  >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {selectedDate ? format(selectedDate, 'PPP') : <span>Pick a date</span>}
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="dark:bg-secondary w-auto p-0" align="start">
+                                  <UICalendar
+                                    mode="single"
+                                    selected={selectedDate}
+                                    onSelect={(date) => updateScheduledDateTime(date ? formatDateForValue(date) : '', scheduledTimePart)}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                            <div>
+                              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Scheduled Time</label>
+                              <Time24hInput
+                                title="Scheduled time"
+                                value={scheduledTimePart}
+                                onChange={(value) => updateScheduledDateTime(scheduledDatePart, value)}
+                                placeholder="HH:mm"
+                                className="w-full"
+                              />
+                            </div>
+                            {fieldState.error && <p className="text-xs text-red-500 md:col-span-2">{fieldState.error.message}</p>}
+                          </div>
+                        );
+                      }}
+                    />
+                  )}
                 </div>
               </div>
 

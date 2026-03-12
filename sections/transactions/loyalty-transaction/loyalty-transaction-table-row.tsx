@@ -3,7 +3,7 @@
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { fDate, formatStr } from '@/utils/format-time';
+import { fDate } from '@/utils/format-time';
 import { Eye } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
@@ -69,7 +69,7 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
           })()}
         </TableCell>
 
-        <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.dateTime)}</TableCell>
+        <TableCell className="text-left">{fDate(item?.createdAt, 'DD/MM/YYYY HH:mm')}</TableCell>
 
         <TableCell className="text-center">
           <CustomBadge variant={getBadgeVariant(item?.type)}>{getBadgeLabel(item?.type)}</CustomBadge>

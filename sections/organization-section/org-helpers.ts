@@ -1,4 +1,5 @@
 import { uploadFileToAzure } from '@/utils/fileUpload';
+import { to12HourTime, to24HourTime } from '@/utils/time';
 import * as Yup from 'yup';
 
 import { ALLOWED_IMAGE_TYPES, DAYS_OF_WEEK, MAX_IMAGE_SIZE } from './constants';
@@ -9,10 +10,26 @@ import type { FormValues, OperatingHours } from './types';
 // ============================================================
 
 const operatingHoursSchema = Yup.object().shape({
-  from: Yup.string().required('Required'),
-  to: Yup.string().required('Required'),
+  from: Yup.string()
+    .required('Required')
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Must be in HH:mm format'),
+  to: Yup.string()
+    .required('Required')
+    .matches(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Must be in HH:mm format'),
   isOpen: Yup.string().required('Required'),
 });
+
+const normalizeTo24Hour = (value?: string): string => {
+  if (!value) return '00:00';
+
+  const trimmed = value.trim();
+  if (/^([01]\d|2[0-3]):([0-5]\d)$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  const converted = to24HourTime(trimmed.toUpperCase());
+  return converted || '00:00';
+};
 
 export const otherDetailsSchema = Yup.object().shape({
   description: Yup.string().required('Description is required').max(500, 'Description must be at most 500 characters'),
@@ -55,8 +72,8 @@ export const otherDetailsSchema = Yup.object().shape({
 // ============================================================
 
 export const getOperatingHoursFromData = (data: any, dayKey: string): OperatingHours => ({
-  from: data?.operatingHours?.[dayKey]?.from || '00:00',
-  to: data?.operatingHours?.[dayKey]?.to || '00:00',
+  from: normalizeTo24Hour(data?.operatingHours?.[dayKey]?.from),
+  to: normalizeTo24Hour(data?.operatingHours?.[dayKey]?.to),
   isOpen: data?.operatingHours?.[dayKey]?.isOpen ? 'true' : 'false',
 });
 
@@ -65,7 +82,14 @@ export const buildOperatingHoursPayload = (formData: FormValues) => {
 
   DAYS_OF_WEEK.forEach(({ dayKey }) => {
     const dayData = formData[dayKey] as OperatingHours;
-    result[dayKey] = dayData.isOpen === 'true' ? { ...dayData, isOpen: true } : { from: '00:00', to: '00:00', isOpen: false };
+    result[dayKey] =
+      dayData.isOpen === 'true'
+        ? {
+            from: to12HourTime(dayData.from),
+            to: to12HourTime(dayData.to),
+            isOpen: true,
+          }
+        : { from: '12:00 AM', to: '12:00 AM', isOpen: false };
   });
 
   return result;

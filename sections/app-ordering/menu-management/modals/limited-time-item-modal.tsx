@@ -1,7 +1,8 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
+import Time24hInput from '@/components/common/time-24h-input';
+import FormProvider, { RHFDate } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
@@ -255,13 +256,39 @@ export const LimitedTimeItemModal: React.FC<LimitedTimeItemModalProps> = ({
                   {/* Start Date and Time */}
                   <div className="grid grid-cols-2 gap-4">
                     <RHFDate name="startDate" label="Start Date" placeholder="Select start date" />
-                    <RHFTextField name="startTime" label="Start Time" placeholder="00:00" type="time" />
+                    <Controller
+                      name="startTime"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <div>
+                          <div className="mb-0.5 text-sm font-semibold">Start Time</div>
+                          <Time24hInput
+                            title="Start time"
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            placeholder="HH:mm"
+                            className="w-full"
+                          />
+                          {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
+                        </div>
+                      )}
+                    />
                   </div>
 
                   {/* End Date and Time */}
                   <div className="grid grid-cols-2 gap-4">
                     <RHFDate name="endDate" label="End Date" placeholder="Select end date" />
-                    <RHFTextField name="endTime" label="End Time" placeholder="00:00" type="time" />
+                    <Controller
+                      name="endTime"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <div>
+                          <div className="mb-0.5 text-sm font-semibold">End Time</div>
+                          <Time24hInput title="End time" value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" className="w-full" />
+                          {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
+                        </div>
+                      )}
+                    />
                   </div>
                 </div>
 

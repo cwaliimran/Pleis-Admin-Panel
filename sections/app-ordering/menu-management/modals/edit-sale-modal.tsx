@@ -1,4 +1,5 @@
 'use client';
+import Time24hInput from '@/components/common/time-24h-input';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import RHFDate from '@/components/rhf/rhf-date';
 import RHFSelectField from '@/components/rhf/rhf-select-field';
@@ -10,7 +11,7 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useEffect, useMemo } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { SaleItem } from '../types';
 
@@ -212,11 +213,37 @@ const EditSaleModal: React.FC<EditSaleModalProps> = ({ open, onClose, sale, menu
                   <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Sale Period</div>
                   <div className="grid grid-cols-2 gap-4">
                     <RHFDate name="startDate" label="Start Date" placeholder="Select start date" />
-                    <RHFTextField name="startTime" label="Start Time" placeholder="00:00" type="time" />
+                    <Controller
+                      name="startTime"
+                      control={methods.control}
+                      render={({ field, fieldState }) => (
+                        <div>
+                          <div className="mb-0.5 text-sm font-semibold">Start Time</div>
+                          <Time24hInput
+                            title="Start time"
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            placeholder="HH:mm"
+                            className="w-full"
+                          />
+                          {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
+                        </div>
+                      )}
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <RHFDate name="endDate" label="End Date" placeholder="Select end date" />
-                    <RHFTextField name="endTime" label="End Time" placeholder="00:00" type="time" />
+                    <Controller
+                      name="endTime"
+                      control={methods.control}
+                      render={({ field, fieldState }) => (
+                        <div>
+                          <div className="mb-0.5 text-sm font-semibold">End Time</div>
+                          <Time24hInput title="End time" value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" className="w-full" />
+                          {fieldState.error && <p className="mt-1 text-xs text-red-500">{fieldState.error.message}</p>}
+                        </div>
+                      )}
+                    />
                   </div>
                 </div>
 

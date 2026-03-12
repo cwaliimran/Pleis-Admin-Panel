@@ -1,3 +1,4 @@
+import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
@@ -14,7 +15,7 @@ import { Plus, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import { ALLOWED_IMAGE_TYPES, DAYS_OF_WEEK, MAX_IMAGE_SIZE, OPEN_CLOSED_OPTIONS, STATUS_OPTIONS } from './constants';
 import {
@@ -178,7 +179,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
 
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
-  
+
   const [updateOrganization, { isLoading }] = useUpdateOrganizationMutation();
 
   const initialGalleryMedia = useMemo<string[]>(() => newOrganization?.otherInfo?.galleryMedia || [], [newOrganization?.otherInfo?.galleryMedia]);
@@ -218,7 +219,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
     mode: 'onChange',
   });
 
-  const { handleSubmit, reset, setValue } = methods;
+  const { handleSubmit, reset, setValue, getValues } = methods;
 
   // Watchers
   const watchGalleryImages = useWatch({ control: methods.control, name: 'galleryImages' }) || [];
@@ -269,7 +270,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
 
     // Only auto-populate if location fields are currently empty
     // (avoids overwriting data on edit)
-    const currentAddress = methods.getValues('location.address');
+    const currentAddress = getValues('location.address');
     if (selectedVenue?.location && !currentAddress) {
       setValue('location.address', selectedVenue.location.fullAddress || '', {
         shouldValidate: true,
@@ -292,7 +293,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
         shouldDirty: true,
       });
     }
-  }, [watchVenue, venueList, setValue, open]); 
+  }, [watchVenue, venueList, setValue, getValues, open]);
 
   // Form Submit Handler
   const onSubmit = handleSubmit(async (formData) => {
@@ -469,10 +470,34 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
                         <tr key={dayInfo.dayKey} className="border-t dark:border-gray-700">
                           <td className="p-2 text-sm text-gray-700 dark:text-gray-300">{dayInfo.day}</td>
                           <td className="p-2">
-                            <RHFTextField type="time" name={`${dayInfo.dayKey}.from`} placeholder="09:00" className="w-full rounded border p-1" />
+                            <Controller
+                              name={`${dayInfo.dayKey}.from`}
+                              control={methods.control}
+                              render={({ field }) => (
+                                <Time24hInput
+                                  title={`${dayInfo.day} opening time`}
+                                  value={field.value || ''}
+                                  onChange={field.onChange}
+                                  placeholder="HH:mm"
+                                  className="w-full"
+                                />
+                              )}
+                            />
                           </td>
                           <td className="p-2">
-                            <RHFTextField type="time" name={`${dayInfo.dayKey}.to`} placeholder="23:00" className="w-full rounded border p-1" />
+                            <Controller
+                              name={`${dayInfo.dayKey}.to`}
+                              control={methods.control}
+                              render={({ field }) => (
+                                <Time24hInput
+                                  title={`${dayInfo.day} closing time`}
+                                  value={field.value || ''}
+                                  onChange={field.onChange}
+                                  placeholder="HH:mm"
+                                  className="w-full"
+                                />
+                              )}
+                            />
                           </td>
                           <td className="p-2">
                             <RHFSelectField name={`${dayInfo.dayKey}.isOpen`} className="w-full rounded border p-1" options={OPEN_CLOSED_OPTIONS} />

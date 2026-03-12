@@ -4,6 +4,14 @@ import { CurrentUrl } from '@/constant/constant';
 import { logout } from '../slice/userSlice';
 import { resetStore } from '../store';
 
+const getResolvedTimezone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
+};
+
 export const customFetchBaseQueryWithRoleRouting = () => {
   const baseQuery = fetchBaseQuery({
     baseUrl: CurrentUrl,
@@ -14,6 +22,9 @@ export const customFetchBaseQueryWithRoleRouting = () => {
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
+
+      headers.set('X-Timezone', getResolvedTimezone());
+
       return headers;
     },
   });
