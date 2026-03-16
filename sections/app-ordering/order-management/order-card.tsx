@@ -8,7 +8,6 @@ import {
 } from './constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { showError } from '@/utils/toast';
 
 interface OrderCardProps {
   order: Order;
@@ -28,7 +27,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
   onToggle,
   onAccept,
   onDeliver,
-  onDeliverAll,
+  // onDeliverAll,
   onDeliverSelected,
   onMarkPaid,
   onCancel,
@@ -70,7 +69,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
 
   // Check if there are undelivered items
   const hasUndeliveredItems = order.items.some((item) => !item.isDelivered);
-  const hasSingleItem = order.items.length === 1;
+  // const hasSingleItem = order.items.length === 1;
 
   return (
     <div
@@ -250,54 +249,50 @@ export const OrderCard: React.FC<OrderCardProps> = ({
                 {/* Confirmed Status - Show Delivered/Cancel + Mark Items / Mark All */}
                 {order.status === 'confirmed' && (
                   <>
-                    <Button
-                      onClick={(e) =>
-                        handleAction(e, () => {
-                          if (hasUndeliveredItems) {
-                            showError('Mark all items as delivered first.');
-                            return;
-                          }
-                          onDeliver(order);
-                        })
-                      }
+                    {hasUndeliveredItems && (
+                      <Button
+                        onClick={(e) => handleAction(e, () => onDeliverSelected(order))}
+                        className="h-12 cursor-pointer bg-gray-700 font-bold text-white transition-transform hover:bg-gray-600 active:scale-95 dark:bg-gray-700 dark:hover:bg-gray-600"
+                      >
+                        ✓ Mark Items
+                      </Button>
+                    )}
+
+                    {/* <Button
+                      onClick={(e) => handleAction(e, () => onDeliver(order))}
                       className="h-12 cursor-pointer bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-600 dark:hover:bg-green-700"
                     >
                       ✓ Delivered
-                    </Button>
+                    </Button> */}
+
                     <Button
-                      onClick={(e) => handleAction(e, () => onCancel(order))}
-                      variant="destructive"
-                      className="h-12 cursor-pointer bg-red-600 font-bold text-white transition-transform hover:bg-red-700 active:scale-95 dark:bg-red-600 dark:hover:bg-red-700"
-                      disabled={!canCancel}
+                      onClick={(e) => handleAction(e, () => onDeliver(order))}
+                      className={cn(
+                        'h-12 cursor-pointer bg-green-600 font-bold text-white transition-transform hover:bg-green-700 active:scale-95 dark:bg-green-600 dark:hover:bg-green-700',
+                        !hasUndeliveredItems && order.paymentStatus === 'paid' && 'col-span-2'
+                      )}
                     >
-                      ✗ Cancel
+                      ✓ Delivered
                     </Button>
-                    {/* Mark Items (only when >1 item) / Mark All (always when undelivered items exist) */}
-                    {hasUndeliveredItems && (
+
+                    {order.paymentStatus !== 'paid' && (
                       <>
-                        {!hasSingleItem && (
-                          <Button
-                            onClick={(e) => handleAction(e, () => onDeliverSelected(order))}
-                            className="h-12 cursor-pointer bg-gray-700 font-bold text-white transition-transform hover:bg-gray-600 active:scale-95 dark:bg-gray-700 dark:hover:bg-gray-600"
-                          >
-                            ✓ Mark Items
-                          </Button>
-                        )}
                         <Button
-                          onClick={(e) => handleAction(e, () => onDeliverAll(order))}
-                          className="h-12 cursor-pointer bg-amber-600 font-bold text-white transition-transform hover:bg-amber-700 active:scale-95 dark:bg-amber-600 dark:hover:bg-amber-700"
+                          onClick={(e) => handleAction(e, () => onCancel(order))}
+                          variant="destructive"
+                          className="h-12 cursor-pointer bg-red-600 font-bold text-white transition-transform hover:bg-red-700 active:scale-95 dark:bg-red-600 dark:hover:bg-red-700"
+                          disabled={!canCancel}
                         >
-                          ✓ Mark All
+                          ✗ Cancel
+                        </Button>
+
+                        <Button
+                          onClick={(e) => handleAction(e, () => onMarkPaid(order))}
+                          className="h-12 cursor-pointer bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-700"
+                        >
+                          ✓ Mark as Paid
                         </Button>
                       </>
-                    )}
-                    {order.paymentStatus !== 'paid' && (
-                      <Button
-                        onClick={(e) => handleAction(e, () => onMarkPaid(order))}
-                        className="col-span-2 h-12 cursor-pointer bg-blue-600 font-bold text-white transition-transform hover:bg-blue-700 active:scale-95 dark:bg-blue-600 dark:hover:bg-blue-700"
-                      >
-                        ✓ Mark as Paid
-                      </Button>
                     )}
                   </>
                 )}

@@ -485,12 +485,13 @@ export const OrderManagementView: React.FC<OrderManagementViewProps> = ({ userTy
       const payload: any = {
         id: order.id,
         status: 'completed',
+        deliveredall: true,
       };
 
       // If payment method is not cash, mark all items as delivered
-      if (order.paymentMethod !== 'cash') {
-        payload.deliveredall = true;
-      }
+      // if (order.paymentMethod !== 'cash') {
+      //   payload.deliveredall = true;
+      // }
 
       const response = await updateAppOrdering(payload).unwrap();
 
