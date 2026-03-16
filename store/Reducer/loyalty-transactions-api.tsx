@@ -9,7 +9,22 @@ export const loyaltyTransactionsApi = createApi({
 
   endpoints: (builder) => ({
     getLoyaltyTransactions: builder.query({
-      query: ({ search, page, type, date, limit, companyOrganizer, organization, isGlobal = false, walletType, domainType, startDate, endDate, user, isAdmin }) => {
+      query: ({
+        search,
+        page,
+        type,
+        date,
+        limit,
+        companyOrganizer,
+        organization,
+        isGlobal = false,
+        walletType,
+        domainType,
+        startDate,
+        endDate,
+        user,
+        isAdmin,
+      }) => {
         const params: any = {
           page: page + 1,
           limit,
@@ -27,7 +42,7 @@ export const loyaltyTransactionsApi = createApi({
         // if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (organization) params.organization = organization;
-        
+
         return {
           url: API_ROUTES.LOYALTY_TRANSACTIONS(isAdmin),
           method: 'GET',
@@ -42,7 +57,22 @@ export const loyaltyTransactionsApi = createApi({
     }),
 
     getTransactions: builder.query({
-      query: ({ search, page, type, date, limit, companyOrganizer, organization, isGlobal = false, walletType, orderType, startDate, endDate, user, isAdmin }) => {
+      query: ({
+        search,
+        page,
+        type,
+        date,
+        limit,
+        companyOrganizer,
+        organization,
+        isGlobal = false,
+        walletType,
+        orderType,
+        startDate,
+        endDate,
+        user,
+        isAdmin,
+      }) => {
         const params: any = {
           page: page + 1,
           limit,
@@ -60,7 +90,7 @@ export const loyaltyTransactionsApi = createApi({
         // if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
         if (!isGlobal && companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (organization) params.organization = organization;
-        
+
         return {
           url: API_ROUTES.TRANSACTIONS(isAdmin),
           method: 'GET',
@@ -69,11 +99,20 @@ export const loyaltyTransactionsApi = createApi({
       },
       transformResponse: (res) => ({
         data: res.data.transactions,
-        meta: res.meta,
+        meta: res.data.meta,
       }),
       providesTags: (result, error, arg) => (arg.isGlobal ? ['loyalty-transaction'] : ['loyalty-transaction']),
+    }),
+
+    getTransactionsById: builder.query({
+      query: ({ id, isAdmin }) => ({
+        url: API_ROUTES.TRANSACTIONS_BY_ID(isAdmin, id),
+        method: 'GET',
+      }),
+      transformResponse: (res) => res.data,
+      // providesTags: ['event'],
     }),
   }),
 });
 
-export const { useGetLoyaltyTransactionsQuery, useGetTransactionsQuery } = loyaltyTransactionsApi;
+export const { useGetLoyaltyTransactionsQuery, useGetTransactionsQuery, useGetTransactionsByIdQuery } = loyaltyTransactionsApi;

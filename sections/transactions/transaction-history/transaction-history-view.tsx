@@ -4,18 +4,18 @@ import { useCompanySelection } from '@/app/common/header/company-selection-stora
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import InvoiceCard from '@/sections/invoices/notificationCard';
 import { transactionHistoryData } from '@/sections/loyalty/data';
 import { useGetTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { fDate, formatDate, formatStr } from '@/utils/format-time';
 import { ChevronDownIcon, Download, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { TransactionDetailModal } from './modal';
 import TransactionHistoryTable from './transaction-history-table';
-import TransactionModal from './transactions-modal';
 import { useExportTransactions } from './use-export-transactions';
-import { useAuth } from '@/hooks/useAuth';
+import TransactionCard from '@/sections/invoices/transaction-card';
 
 interface LoyaltyTransactionViewProps {
   userType: 'super-admin' | 'organizer';
@@ -29,6 +29,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
+  const [type, setType] = useState<string>('');
   const [status, setStatus] = useState<string>('');
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -36,7 +37,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
   const { companyId: selectedCompany } = useCompanySelectionState();
 
   const { organizerOrganizationIds } = useCompanySelection();
@@ -60,6 +61,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     type: status === 'all' ? '' : status,
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
+    orderType: type === 'all' ? '' : type,
     // companyOrganizer: selectedCompany || undefined,
     companyOrganizer: userType === 'organizer' ? user?.basicInfo?._id : selectedCompany || undefined,
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
@@ -88,9 +90,14 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     }
   }, [apiData, page, limit]);
 
-  const handleEdit = (data: string) => {
-    setSelectedRecord(data);
+  const handleEdit = (data: any) => {
+    setSelectedTransactionId(data?._id || null);
     openModal.onTrue();
+  };
+
+  const handleCloseModal = () => {
+    openModal.onFalse();
+    setSelectedTransactionId(null);
   };
 
   return (
@@ -98,7 +105,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
       {/* --------------- LOYALTY TOP STATS ---------------*/}
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
         {transactionHistoryData?.map((card: any, index) => (
-          <InvoiceCard key={index} item={card} />
+          <TransactionCard key={index} item={card} />
         ))}
       </div>
 
@@ -174,6 +181,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
         limit={limit}
         search={search}
         status={status}
+        type={type}
         startDate={startDate}
         endDate={endDate}
         onPageChange={setPage}
@@ -189,6 +197,10 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
           setStatus(val);
           setPage(1);
         }}
+        onTypeChange={(val) => {
+          setType(val);
+          setPage(1);
+        }}
         onDateChange={(newStartDate, newEndDate) => {
           setStartDate(newStartDate);
           setEndDate(newEndDate);
@@ -196,6 +208,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
         }}
         onResetFilters={() => {
           setStatus('');
+          setType('');
           setSearch('');
           setStartDate(undefined);
           setEndDate(undefined);
@@ -203,7 +216,12 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
         }}
       />
 
-      <TransactionModal open={openModal.value} onClose={openModal.onFalse} selectedData={selectedRecord} />
+      <TransactionDetailModal
+        open={openModal.value}
+        onClose={handleCloseModal}
+        transactionId={selectedTransactionId}
+        isAdmin={userType === 'super-admin'}
+      />
     </div>
   );
 };

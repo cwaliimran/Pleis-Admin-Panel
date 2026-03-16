@@ -351,6 +351,7 @@ export const API_ROUTES = {
 
   LOYALTY_TRANSACTIONS: (isAdmin: boolean) => (isAdmin ? '/admin/transactions' : '/organizer/transactions'),
   TRANSACTIONS: (isAdmin: boolean) => (isAdmin ? '/webhooks/orders-transactions' : '/webhooks/orders-transactions'),
+  TRANSACTIONS_BY_ID: (isAdmin: boolean, id: string) => (isAdmin ? `/webhooks/orders-transactions/${id}` : `/webhooks/orders-transactions/${id}`),
 
   // ADMIN_LOYALTY_TRANSACTIONS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/transactions' : '/admin/transactions'),
 

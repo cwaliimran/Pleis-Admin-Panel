@@ -17,16 +17,16 @@ import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.firstName' },
-  { id: 'email', label: 'Email', align: 'left', sortable: true, sortKey: 'user.email' },
+  // { id: 'email', label: 'Email', align: 'left', sortable: true, sortKey: 'user.email' },
   { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization.name' },
   { id: 'transactionId', label: 'Transaction ID', align: 'left' },
   { id: 'orderNumber', label: 'Order No', align: 'left' },
-
   { id: 'transactionType', label: 'Type', align: 'left' },
   { id: 'percentage', label: 'Percentage', align: 'left' },
   { id: 'amount', label: 'Amount', align: 'left' },
   { id: 'paymentStatus', label: 'Status', align: 'left' },
   { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
+  { id: 'view', label: 'View', align: 'center' },
 
   // { id: 'transactionType', label: 'Transaction Type', align: 'left' },
   // { id: 'points', label: 'Points', align: 'left' },
@@ -49,6 +49,8 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
   search = '',
   onSearch = () => {},
   onResetFilters = () => {},
+  type = '',
+  onTypeChange = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -98,6 +100,22 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
                               value: search,
                               onChange: onSearch,
                             }}
+                            selectFilters={[
+                              {
+                                id: 'sheet-revenue',
+                                label: 'Type',
+                                placeholder: 'Select Type',
+                                value: type,
+                                onChange: onTypeChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'menuorders', label: 'Menu Orders' },
+                                  { value: 'userreservations', label: 'User Reservations' },
+                                  { value: 'ticketingbookings', label: 'Ticketing Bookings' },
+                                  { value: 'tickettransfer', label: 'Ticket Transfer' },
+                                ],
+                              },
+                            ]}
                             resetFilter={{
                               onReset: onResetFilters,
                               showResetButton: true,

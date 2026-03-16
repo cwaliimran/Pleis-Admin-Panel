@@ -44,7 +44,7 @@ export const useExportTransactions = ({ startDate, endDate, companyOrganizer, or
       const formattedEndDate = formatDate(endDate);
       if (formattedEndDate) params.append('endDate', formattedEndDate);
 
-      const url = `${CurrentUrl}admin/transactions/download${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `${CurrentUrl}/admin/transactions/download${params.toString() ? `?${params.toString()}` : ''}`;
 
       const response = await fetch(url, {
         method: 'GET',

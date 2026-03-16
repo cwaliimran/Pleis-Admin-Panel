@@ -19,6 +19,8 @@ export interface SamplePageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
+  type?: string;
+  onTypeChange?: (status: string) => void;
   // date?: Date;
   startDate?: Date;
   endDate?: Date;
