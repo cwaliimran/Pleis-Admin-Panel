@@ -105,11 +105,11 @@ const RHFCustomDropdown: FC<Props> = ({
                 }}
                 disabled={disabled}
               >
-                {/* <SelectTrigger className="h-[40px] w-full capitalize"> */}
-                <SelectTrigger className={cn('h-[40px] w-full capitalize', triggerClassName)}>
-                  <SelectValue placeholder={placeholder}>{selectedOption?.label || placeholder}</SelectValue>
+                <SelectTrigger className={cn('h-[40px] w-full min-w-fit capitalize', triggerClassName)}>
+                  <SelectValue placeholder={placeholder}>
+                    <span className="whitespace-nowrap">{selectedOption?.label || placeholder}</span>
+                  </SelectValue>
                 </SelectTrigger>
-                {/* <SelectContent className="max-h-[300px] w-full dark:bg-[#171717]"> */}
                 <SelectContent className={cn('max-h-[300px] w-full dark:bg-[#171717]', contentClassName)}>
                   <div className="relative px-3 pb-2">
                     <Search className="absolute top-2 left-6 h-4 w-4 opacity-50" />

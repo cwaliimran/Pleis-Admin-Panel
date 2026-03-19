@@ -310,7 +310,7 @@ const Header: FC<HeaderProps> = ({ links }) => {
         <FormProvider methods={methods} onSubmit={() => {}}>
           <div className="flex gap-3">
             {shouldShowCompanyDropdown && (
-              <div className="w-full rounded-md bg-white md:w-60 dark:bg-[#171717]">
+              <div className="w-full rounded-md bg-white md:w-auto md:min-w-50 dark:bg-[#171717]">
                 <RHFCustomDropdown
                   name="companyId"
                   placeholder="Select Company"
@@ -324,11 +324,11 @@ const Header: FC<HeaderProps> = ({ links }) => {
             {shouldShowOrganizationDropdown && (
               <>
                 {isLoadingOrganizations || isLoadingCompanies || isFetching || organizatonFetching ? (
-                  <div className="w-full space-y-2 md:md:w-60">
+                  <div className="w-full space-y-2 md:min-w-60">
                     <Skeleton className="h-8 flex-1 cursor-not-allowed rounded-xl border-gray-200 px-5" />
                   </div>
                 ) : (
-                  <div className="w-full rounded-md bg-white md:w-60 dark:bg-[#171717]">
+                  <div className="w-full rounded-md bg-white md:w-auto md:min-w-50 dark:bg-[#171717]">
                     <RHFCustomDropdown
                       name="organizationId"
                       placeholder="Select Organization"

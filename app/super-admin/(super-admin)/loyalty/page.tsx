@@ -1,9 +1,10 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import LoyaltyView from '@/sections/loyalty/loyalty-view/loyalty-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Global Loyalty Dashboard - Pleis',
+  title: 'Loyalty Dashboard - Pleis',
 };
 
 const Page = () => {
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <LoyaltyView global={false} userType="super-admin" />
+      <CompanyGuard>
+        <LoyaltyView global={false} userType="super-admin" />
+      </CompanyGuard>
     </div>
   );
 };

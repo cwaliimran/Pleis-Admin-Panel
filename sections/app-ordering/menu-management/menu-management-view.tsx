@@ -764,7 +764,7 @@ export const MenuManagementView: React.FC<MenuManagementViewProps> = ({ userType
           selectedData={editingItem}
           menuManagementView={true}
           userType={userType}
-          showDiscountPrice={true}
+          showDiscountPrice={false}
           onSuccess={() => {
             refetchMenu();
             refetchAllMenuItems();

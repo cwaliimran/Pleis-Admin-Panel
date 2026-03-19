@@ -7,5 +7,5 @@ interface OrganizerGuardProps {
 }
 
 export default function OrganizerGuard({ children }: OrganizerGuardProps) {
-  return <RouteGuard allowedRoles={['organizer']}>{children}</RouteGuard>;
+  return <RouteGuard allowedRoles={['organizer', 'manager']}>{children}</RouteGuard>;
 }

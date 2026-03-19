@@ -79,7 +79,7 @@ interface VisitorAgeProps {
 
 const VisitorAgeChart: FC<VisitorAgeProps> = ({
   data,
-  noHeaderTotal = true,
+  // noHeaderTotal = true,
   direction = "vertical",
   height = 280,
 }) => {
@@ -89,9 +89,9 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
 
   return (
     <div className={`w-full relative`} style={{ height }}>
-      {isVertical && noHeaderTotal && (
+      {/* {isVertical && noHeaderTotal && (
         <div className="absolute right-13 top-[-10px] z-10 text-sm">10K</div>
-      )}
+      )} */}
 
       <ResponsiveContainer width="100%" height="100%">
         <BarChart

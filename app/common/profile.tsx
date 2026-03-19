@@ -27,6 +27,8 @@ const Account = () => {
       router.push('/super-admin/admin-profile');
     } else if (user?.role === 'organizer') {
       router.push('/organizer/organizer-profile');
+    } else if (user?.role === 'manager') {
+      router.push('/organizer/manager-profile');
     }
   };
 

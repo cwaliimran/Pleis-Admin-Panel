@@ -1,12 +1,12 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
+// import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { cn } from '@/lib/utils';
 import { GenderDonutChart, InvoiceCard, MostViewedEvent, ViewsOverTime, VisitorAge, VisitorRegion } from '@/sections/invoices';
 import { LoyaltyCard, MostEngagedMembers } from '@/sections/loyalty';
@@ -20,19 +20,30 @@ import {
   TabData,
   tabsData,
 } from '@/sections/loyalty/data';
-import LoyaltyList from '@/sections/loyalty/loyaltyList';
+import GlobalLoyaltyTransactionDashboardWidget from '@/sections/transactions/global-loyalty-transaction/global-loyalty-transaction-dashboard-widget';
+import LoyaltyTransactionDashboardWidget from '@/sections/transactions/loyalty-transaction/loyalty-transaction-dashboard-widget';
 import RewardCard from '@/sections/loyalty/rewardCard';
-import { Settings2 } from 'lucide-react';
+// import { useGetLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
 const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }) => {
-  const openModal = useBoolean();
   const router = useRouter();
+  const openModal = useBoolean();
+
+  // const { companyId } = useCompanySelectionState();
 
   const [mainActive, setMainActive] = React.useState('overview');
-  const [activeTransactionTab, setActiveTransactionTab] = React.useState('all');
   const [activeDurationTab, setActiveDurationTab] = React.useState('monthly');
+
+  // const {
+  //   data: dashboardRaw = {} as any,
+  //   isLoading,
+  //   isFetching,
+  // } = useGetLoyaltyDashboardQuery({
+  //   // dateFilter: dateFilterMap[active] ?? 'all',
+  //   companyOrganizer: global ? undefined : companyId,
+  // });
 
   const activePercent = 75;
   const inactivePercent = 25;
@@ -66,21 +77,6 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </li>
               ))}
           </ul>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex w-full items-center gap-2 md:justify-end">
-          <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-3xl border border-gray-300 bg-white px-4 py-2 text-black">
-            <Settings2 className="h-5 w-5" />
-            <span className="whitespace-nowrap">Filter</span>
-          </Badge>
-          {/* <Button
-            className="bg-primary border-primary flex cursor-pointer items-center gap-2 rounded-3xl border px-4 py-2 text-white transition-colors"
-            onClick={openModal.onTrue}
-          >
-            <Plus />
-            Create Program
-          </Button> */}
         </div>
       </div>
 
@@ -288,6 +284,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </div>
               </div>
             </CardHeader>
+            
             <VisitorRegion
               chartData={[
                 { month: 'Jan', males: 186, females: 80, others: 50 },
@@ -675,78 +672,12 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-1 md:gap-4">
-        <Card className="dark:bg-secondary gap-0 shadow-md">
-          <CardHeader>
-            <div className="mb-3 flex flex-col items-center gap-4 md:flex-row md:justify-between">
-              <div className="w-full pl-4">
-                {/* Show select on small screens */}
-                <div className="block sm:hidden">
-                  <Select value={activeTransactionTab} onValueChange={setActiveTransactionTab}>
-                    <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
-                      <SelectValue placeholder="Select tab" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-secondary">
-                      <SelectItem className="py-3" value="all">
-                        All
-                      </SelectItem>
-                      <SelectItem className="py-3" value="transactions">
-                        Transactions
-                      </SelectItem>
-                      <SelectItem className="py-3" value="refunds">
-                        Refunds
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Show tabs on medium and larger screens */}
-                <div className="hidden sm:block">
-                  <Tabs value={activeTransactionTab} onValueChange={setActiveTransactionTab} defaultValue="all" className="w-full">
-                    <TabsList className="flex h-[2.8rem] items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
-                      <TabsTrigger
-                        value="all"
-                        className={cn(
-                          'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors',
-                          'data-[state=active]:font-semibold data-[state=active]:dark:bg-white data-[state=active]:dark:text-black'
-                        )}
-                      >
-                        All
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="transactions"
-                        className={cn(
-                          'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors',
-                          'data-[state=active]:font-semibold data-[state=active]:dark:bg-white data-[state=active]:dark:text-black'
-                        )}
-                      >
-                        Transactions
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="refunds"
-                        className={cn(
-                          'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors',
-                          'data-[state=active]:font-semibold data-[state=active]:dark:bg-white data-[state=active]:dark:text-black'
-                        )}
-                      >
-                        Refunds
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-              </div>
-
-              <Badge className="text-md flex cursor-pointer items-center gap-2 rounded-sm bg-white px-3 py-1 text-black shadow-md">
-                <Settings2 className="h-5 w-5" />
-                <span className="whitespace-nowrap">By Profile</span>
-              </Badge>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <LoyaltyList />
-          </CardContent>
-        </Card>
+      <div className="mt-4 grid grid-cols-1 md:gap-4">
+        {global ? (
+          <GlobalLoyaltyTransactionDashboardWidget global={global} />
+        ) : (
+          <LoyaltyTransactionDashboardWidget global={global} userType={userType} />
+        )}
       </div>
 
       <Dialog open={openModal.value} onOpenChange={openModal.onToggle}>

@@ -4,8 +4,7 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetStreaksQuery, useGetUserStreaksQuery } from '@/store/Reducer/streaks-api';
-import { useDeleteVenueMutation } from '@/store/Reducer/venue';
+import { useDeleteStreakMutation, useGetStreaksQuery, useGetUserStreaksQuery } from '@/store/Reducer/streaks-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
@@ -39,7 +38,7 @@ const StreaksView = ({ global, userType }: StreaksViewProps) => {
 
   const { companyId: selectedCompany } = useCompanySelectionState();
 
-  const [deleteVenue, { isLoading: deleteLoading }] = useDeleteVenueMutation();
+  const [deleteStreak, { isLoading: deleteLoading }] = useDeleteStreakMutation();
 
   // FETCH STREAK RULES --------------------------
   const {
@@ -104,44 +103,37 @@ const StreaksView = ({ global, userType }: StreaksViewProps) => {
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
   const handleEdit = (id: string) => {
-    console.log('id', id);
-    openModal.onTrue();
-    editModal.onTrue();
+    const selectedData = streakRuleData?.data?.find((item: any) => item?._id === id);
+
+    if (selectedData) {
+      setSelectedId(id);
+      setSelectedRecord(selectedData);
+      editModal.onTrue();
+      openModal.onTrue();
+    } else {
+      showError('Streak rule not found');
+    }
   };
-
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
-  // const handleEdit = (id: string) => {
-  //   const selectedData = localData?.find((item: any) => item?._id === id);
-
-  //   if (selectedData) {
-  //     setSelectedId(id);
-  //     setSelectedRecord(selectedData);
-  //     editModal.onTrue();
-  //     openModal.onTrue();
-  //   } else {
-  //     showError('Reward not found');
-  //   }
-  // };
 
   const handleDelete = useCallback(
     (id: string) => {
       if (!id) {
-        showError('No promotion selected');
+        showError('No streak rule selected');
         return;
       }
 
       setSelectedId(id);
+      setSelectedRecord(streakRuleData?.data?.find((item: any) => item?._id === id) || null);
       deleteModal.onTrue();
     },
-    [deleteModal]
+    [deleteModal, streakRuleData]
   );
 
   // DELETE CALL
   const onDelete = async () => {
     try {
-      const response = await deleteVenue(selectedId).unwrap();
+      const response = await deleteStreak(selectedId).unwrap();
 
       if (response?.error) {
         const errorMessage = getErrorMessage(response.error);
@@ -152,6 +144,7 @@ const StreaksView = ({ global, userType }: StreaksViewProps) => {
       showSuccess(response?.message || 'Deleted successfully');
 
       setSelectedId(null);
+      setSelectedRecord(null);
       deleteModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
@@ -177,7 +170,16 @@ const StreaksView = ({ global, userType }: StreaksViewProps) => {
             ) : streakRuleData?.data && streakRuleData.data.length > 0 ? (
               <>
                 {streakRuleData?.data.map((data: any, idx: number) => (
-                  <StreakRuleCard key={idx} visits={data?.visits} points={data?.points} global={global} />
+                  <StreakRuleCard
+                    key={data?._id || idx}
+                    id={data?._id}
+                    visits={data?.visits}
+                    points={data?.points}
+                    global={global}
+                    selected={selectedId === data?._id}
+                    onSelect={handleEdit}
+                    handleDelete={handleDelete}
+                  />
                 ))}
               </>
             ) : (
@@ -242,6 +244,7 @@ const StreaksView = ({ global, userType }: StreaksViewProps) => {
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
+          setSelectedRecord(null);
         }}
         onConfirm={onDelete}
         isLoading={deleteLoading}

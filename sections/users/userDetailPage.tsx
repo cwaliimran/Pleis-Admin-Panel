@@ -34,11 +34,37 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
   const userType = data.get('userType');
 
   const [active, setActive] = React.useState('overview');
-  const [activeTransactionTab] = React.useState('all');
 
   const { data: apiData = {}, isLoading, refetch } = useGetUserByIdQuery({ id });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const visibleTabs = React.useMemo(() => {
+    if (userType === 'guest' || userType === 'manager') {
+      return [];
+    }
+
+    if (userType === 'staff') {
+      return tabData.filter((tab) => tab.value === 'overview');
+    }
+
+    return tabData;
+  }, [userType]);
+
+  React.useEffect(() => {
+    if (visibleTabs.length === 0) {
+      return;
+    }
+
+    if (!visibleTabs.some((tab) => tab.value === active)) {
+      setActive(visibleTabs[0].value);
+    }
+  }, [active, visibleTabs]);
+
+  const showTabs = visibleTabs.length > 0;
+  const showOverview = showTabs && active === 'overview';
+  const showTransactions = showTabs && active === 'transactions';
+  const showBookingAndLoyalty = showTabs && active === 'booking&loyalty';
 
   const user = {
     id: '-',
@@ -96,11 +122,15 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
               {/* <div className="col-span-12 lg:col-span-8 xl:col-span-9"> */}
               <div
                 className={` ${
-                  userType === 'manager' || userType === 'guest' || userType === 'staff' || userType === 'organizer' ? 'col-span-12' : 'col-span-12 lg:col-span-8 xl:col-span-9'
+                  userType === 'manager' || userType === 'guest' || userType === 'staff' || userType === 'organizer'
+                    ? 'col-span-12'
+                    : 'col-span-12 lg:col-span-8 xl:col-span-9'
                 } `}
               >
                 {/* ---------------- UPPER PROFILE SECTION ---------------- */}
-                <Card className="dark:bg-secondary overflow-hidden rounded-xl bg-white pb-0 shadow-lg transition-all">
+                <Card
+                  className={`dark:bg-secondary overflow-hidden rounded-xl bg-white ${userType === 'manager' || userType === 'guest' ? 'pb-6' : 'pb-0'} shadow-lg transition-all`}
+                >
                   <CardContent>
                     <div>
                       <div className="flex flex-col gap-6 lg:flex-row">
@@ -195,57 +225,59 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                         </div>
                       </div>
 
-                      <div className="mt-5 w-full px-2 md:px-0">
-                        {/* Small screen dropdown */}
-                        <div className="mb-4 block sm:hidden">
-                          <Select value={activeTransactionTab} onValueChange={setActive}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select tab" />
-                            </SelectTrigger>
-                            <SelectContent className="dark:bg-secondary">
-                              {tabData.map((tab: any) => (
-                                <SelectItem key={tab.value} value={tab.value}>
-                                  {tab.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                      {showTabs && (
+                        <div className="mt-5 w-full px-2 md:px-0">
+                          {/* Small screen dropdown */}
+                          <div className="mb-4 block sm:hidden">
+                            <Select value={active} onValueChange={setActive}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select tab" />
+                              </SelectTrigger>
+                              <SelectContent className="dark:bg-secondary">
+                                {visibleTabs.map((tab) => (
+                                  <SelectItem key={tab.value} value={tab.value}>
+                                    {tab.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
 
-                        {/* Tabs for larger screens */}
-                        <Tabs value={active} onValueChange={setActive} className="hidden w-full sm:block">
-                          <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
-                            <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
-                              {tabData.map((tab: any) => (
-                                <TabsTrigger
-                                  key={tab.value}
-                                  value={tab.value}
-                                  className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
-                                    active === tab.value
-                                      ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
-                                      : 'text-muted-foreground'
-                                  }`}
-                                >
-                                  {tab.label}
-                                </TabsTrigger>
-                              ))}
-                            </div>
-                          </TabsList>
-                        </Tabs>
-                      </div>
+                          {/* Tabs for larger screens */}
+                          <Tabs value={active} onValueChange={setActive} className="hidden w-full sm:block">
+                            <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
+                              <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
+                                {visibleTabs.map((tab) => (
+                                  <TabsTrigger
+                                    key={tab.value}
+                                    value={tab.value}
+                                    className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
+                                      active === tab.value
+                                        ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
+                                        : 'text-muted-foreground'
+                                    }`}
+                                  >
+                                    {tab.label}
+                                  </TabsTrigger>
+                                ))}
+                              </div>
+                            </TabsList>
+                          </Tabs>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
 
                 <div className="rounded-lg">
                   {/* ---------------- OVERVIEW ---------------- */}
-                  {active === 'overview' && <UserOverView userType={userType} user={user} apiData={apiData} />}
+                  {showOverview && <UserOverView userType={userType} user={user} apiData={apiData} />}
 
                   {/* ---------------- TRANSACTION ---------------- */}
-                  {active === 'transactions' && <UserAllTransactionView userId={id} />}
+                  {showTransactions && <UserAllTransactionView userId={id} />}
 
                   {/* ---------------- BOOKING & LOYALTY ---------------- */}
-                  {active === 'booking&loyalty' && (
+                  {showBookingAndLoyalty && (
                     <>
                       <UserAllTransactionView title="Booking History" domainType="ticketingorders" userId={id} />
                       <UserAllTransactionView title="Ordering Transactions" domainType="menuorders" userId={id} />

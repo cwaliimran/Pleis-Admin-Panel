@@ -1,146 +1,241 @@
 'use client';
 
-import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Card, CardHeader } from '@/components/ui/card';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import {
-    EventPerformanceComparison,
-    FollowerCount,
-    GenderDonutChart,
-    InvoiceCard,
-    invoicesData,
-    MostViewedEvent,
-    TopPerformaningEvents,
-    TransactionHistory,
-    Trend,
-    ViewsOverTime,
-    VisitorAge,
-    VisitorInterest,
-    VisitorRegion,
+  EventPerformanceComparison,
+  FollowerCount,
+  GenderDonutChart,
+  Trend,
+  ViewsOverTime,
+  VisitorAge,
+  VisitorInterest,
+  VisitorRegion,
 } from '@/sections/invoices';
-import DashboardCard from '@/sections/invoices/dashboardCard';
-import { DashboardCardData } from '@/sections/invoices/data';
+import TransactionHistoryDashboardWidget from '@/sections/transactions/transaction-history/transaction-history-dashboard-widget';
+import { useGetDashboardQuery } from '@/store/Reducer/dashboard';
+import { useGetMarketingRequestQuery } from '@/store/Reducer/marketing-request-api';
+import { useRouter } from 'next/navigation';
 import React from 'react';
+import DashboardCard from './components/Dashboardcard';
+import DashboardSkeleton from './components/DashboardSkeleton';
+import DashboardStatsCard from './components/DashboardStatsCard';
+import MostViewedEvent from './components/Mostviewedevent';
+import TopPerformingOrganizers from './components/TopPerformingOrganizers';
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+interface StatItem {
+  key: string;
+  title: string;
+  value: number;
+  growth: number;
+  subFilters: { key: string; label: string }[];
+  selectedSubFilter: string;
+}
+
+interface MonthlyTicketRevenue {
+  month: string;
+  tickets: number;
+  revenue: number;
+}
+
+interface AgeDemographic {
+  ageGroup: string;
+  total: number;
+}
+
+interface GenderAnalytic {
+  name: string;
+  count: number;
+  percent: number;
+}
+
+interface RegionOverview {
+  region: string;
+  males: number;
+  females: number;
+  others: number;
+}
+
+interface UserGrowth {
+  month: string;
+  total: number;
+}
+
+interface InterestCategory {
+  category: string;
+  males: number;
+  females: number;
+  others: number;
+}
+
+interface SearchAnalytic {
+  month: string;
+  search: number;
+}
+
+interface OrganizerActivity {
+  month: string;
+  events: number;
+}
+
+interface TopOrganizer {
+  organizerName: string;
+  organizerLogo: string;
+  revenue: number;
+  engagement: number;
+}
+
+// ---------------------------------------------------------------------------
+// Gender chart colour map
+// ---------------------------------------------------------------------------
+const GENDER_COLORS: Record<string, string> = {
+  Males: '#2563EB',
+  Females: '#202C88',
+  Others: '#7DAEF4',
+};
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 const SuperAdminDashboardView = () => {
   const [active, setActive] = React.useState('all');
-  const [selectedOptions, setSelectedOptions] = React.useState<string[]>([]);
+  const router = useRouter();
+
+  // Map tab values to API dateFilter values
+  const dateFilterMap: Record<string, string> = {
+    today: 'today',
+    week: 'thisWeek',
+    month: 'thisMonth',
+    all: 'all',
+  };
+
+  const {
+    data: dashboardRaw = {} as any,
+    isLoading,
+    isFetching,
+  } = useGetDashboardQuery({
+    dateFilter: dateFilterMap[active] ?? 'all',
+  });
+
+  // ---- Marketing requests for bottom cards ----
+  const { data: marketingRaw = {} as any } = useGetMarketingRequestQuery({
+    page: 0,
+    search: '',
+    limit: 3,
+    userType: 'super-admin',
+  });
+  const marketingRequests = marketingRaw?.data ?? [];
+
+  // ---- Safely extract all sections from the API response ----
+  const dashboard = dashboardRaw?.data ?? dashboardRaw ?? {};
+
+  const stats: StatItem[] = dashboard.stats ?? [];
+  const organizersPerformanceComparison: MonthlyTicketRevenue[] = dashboard.organizersPerformanceComparison ?? [];
+
+  const usersDashboardAnalytics = dashboard.usersDashboardAnalytics ?? {};
+  const ageDemographics: AgeDemographic[] = usersDashboardAnalytics.ageDemographics ?? [];
+  const genderAnalytics: GenderAnalytic[] = usersDashboardAnalytics.genderAnalytics ?? [];
+  const regionOverview: RegionOverview[] = usersDashboardAnalytics.regionOverview ?? [];
+  const userGrowth: UserGrowth[] = usersDashboardAnalytics.userGrowth ?? [];
+
+  const interestPerCategory: InterestCategory[] = dashboard.interestPerCategory?.interestPerCategory ?? [];
+  const topSearchesAnalytics: SearchAnalytic[] = dashboard.topSearchesAnalytics ?? [];
+  const topPerformingOrganizers: TopOrganizer[] = dashboard.topPerformingOrganizers ?? [];
+  const organizerActivityOverTime: OrganizerActivity[] = dashboard.organizerActivityOverTime ?? [];
+
+  // ---- Filter regions with actual data (exclude all-zero regions) ----
+  const activeRegions = regionOverview.filter((r) => r.males > 0 || r.females > 0 || r.others > 0);
+
+  // ---- Derived data for Gender Analytics legend ----
+  const totalGenderCount = genderAnalytics.reduce((sum, g) => sum + g.count, 0);
+
+  // ---- Derived: find dominant age group ----
+  const dominantAge = ageDemographics.length ? ageDemographics.reduce((max, cur) => (cur.total > max.total ? cur : max), ageDemographics[0]) : null;
+  const dominantAgePercent =
+    dominantAge && totalGenderCount > 0 ? Math.round((dominantAge.total / ageDemographics.reduce((s, a) => s + a.total, 0)) * 100) : 0;
+
+  // ---- Loading state ----
+  if (isLoading || isFetching) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div>
       <div className="mx-1 mt-5 pb-8 md:mx-4">
+        {/* ---------------------------------------------------------------- */}
+        {/* Top-level date filter (wiring deferred — UI only for now)        */}
+        {/* ---------------------------------------------------------------- */}
         <div className="flex flex-col-reverse gap-2 md:flex-row md:items-center md:justify-end">
           <div className="flex flex-col-reverse justify-end gap-2 md:flex-row md:items-center">
-            <div className="flex items-center justify-end md:justify-center">
-              {/* <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
-                <Settings2 className="w-5 h-5" />
-
-                <span className="whitespace-nowrap">Filter (3)</span>
-
-                <X className="w-4 h-4 cursor-pointer " onClick={() => setActive('')} />
-              </Badge> */}
-            </div>
-            <Tabs
-              defaultValue="today"
-              className="hidden w-full justify-end md:block"
-            >
+            <Tabs value={active} onValueChange={setActive} className="hidden w-full justify-end md:block">
               <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
-                <TabsTrigger
-                  value="today"
-                  className={cn(
-                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                  )}
-                >
-                  Today
-                </TabsTrigger>
-                <TabsTrigger
-                  value="week"
-                  className={cn(
-                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                  )}
-                >
-                  Week
-                </TabsTrigger>
-                <TabsTrigger
-                  value="month"
-                  className={cn(
-                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                  )}
-                >
-                  Month
-                </TabsTrigger>
-                <TabsTrigger
-                  value="all"
-                  className={cn(
-                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                  )}
-                >
-                  All
-                </TabsTrigger>
+                {['today', 'week', 'month', 'all'].map((val) => (
+                  <TabsTrigger
+                    key={val}
+                    value={val}
+                    className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold capitalize transition-colors')}
+                  >
+                    {val === 'all' ? 'All' : val.charAt(0).toUpperCase() + val.slice(1)}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
             <div className="block md:hidden">
-              <Select>
+              <Select value={active} onValueChange={setActive}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select timeframe" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-secondary">
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">Week</SelectItem>
-                  <SelectItem value="month">Month</SelectItem>
-                  <SelectItem value="all">All</SelectItem>
+                  {['today', 'week', 'month', 'all'].map((val) => (
+                    <SelectItem key={val} value={val} className="capitalize">
+                      {val === 'all' ? 'All' : val.charAt(0).toUpperCase() + val.slice(1)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Stats Cards                                                      */}
+        {/* ---------------------------------------------------------------- */}
         <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-4 md:gap-y-4 lg:grid-cols-3 xl:grid-cols-4">
-          {invoicesData.map((item: any) => (
-            <InvoiceCard key={item?._id} item={item} />
+          {stats.map((stat) => (
+            <DashboardStatsCard key={stat.key} stat={stat} />
           ))}
         </div>
 
+        {/* ---------------------------------------------------------------- */}
+        {/* Organizer Performance Comparison                                 */}
+        {/* ---------------------------------------------------------------- */}
         <Card className="dark:bg-secondary mt-5 shadow-lg lg:mt-5">
           <CardHeader>
             <div className="items-center justify-between md:flex">
-              <h3 className="text-xl font-semibold">
-                Organizer Performance Comparison
-              </h3>
+              <h3 className="text-xl font-semibold">Organizer Performance Comparison</h3>
               <div className="flex flex-col md:items-center">
                 <div className="flex items-center">
-                  <div className="mr-2 h-2 w-2 rounded-full bg-black" />
+                  <div className="mr-2 h-2 w-2 rounded-full bg-black dark:bg-white" />
                   <h1 className="text-[14px] leading-6">Tickets Sold</h1>
                 </div>
                 <div className="mt-2 flex items-center">
-                  <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4] leading-10" />
+                  <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4]" />
                   <h1 className="text-[14px] text-[#7DAEF4]">Revenue</h1>
                 </div>
               </div>
             </div>
           </CardHeader>
           <EventPerformanceComparison
-            chartData={[
-              { month: 'January', desktop: 700, mobile: 80 },
-              { month: 'February', desktop: 305, mobile: 200 },
-              { month: 'March', desktop: 237, mobile: 120 },
-              { month: 'April', desktop: 73, mobile: 190 },
-              { month: 'May', desktop: 209, mobile: 130 },
-              { month: 'June', desktop: 214, mobile: 140 },
-              { month: 'July', desktop: 300, mobile: 200 },
-              { month: 'August', desktop: 400, mobile: 300 },
-              { month: 'September', desktop: 500, mobile: 400 },
-              { month: 'October', desktop: 600, mobile: 500 },
-            ]}
+            chartData={organizersPerformanceComparison.map((item) => ({
+              month: item.month,
+              desktop: item.tickets,
+              mobile: item.revenue,
+            }))}
             chartConfig={{
               desktop: { label: 'Tickets Sold', color: '#2563eb' },
               mobile: { label: 'Revenue', color: '#7DAEF4' },
@@ -148,177 +243,134 @@ const SuperAdminDashboardView = () => {
           />
         </Card>
 
+        {/* ---------------------------------------------------------------- */}
+        {/* Age Demographics · Region Overview · Gender Analytics            */}
+        {/* ---------------------------------------------------------------- */}
         <div className="mt-5 grid gap-4 md:grid-cols-2 md:gap-x-7 md:gap-y-4 lg:mt-5 lg:grid-cols-3">
-          <div>
-            <Card className="dark:bg-secondary max-h-full w-full shadow-md md:h-[450px]">
-              <CardHeader>
-                <div className="flex items-center justify-start">
-                  <h3 className="text-xl font-semibold">Age Demographics</h3>
-                </div>
-              </CardHeader>
-              <div className="flex-1">
-                <VisitorAge
-                  direction="vertical"
-                  data={[
-                    { ageGroup: '18', visitors: 120 },
-                    { ageGroup: '18-25', visitors: 120 },
-                    { ageGroup: '25-34', visitors: 200 },
-                    { ageGroup: '35-44', visitors: 150 },
-                    { ageGroup: '45-54', visitors: 90 },
-                    { ageGroup: '55+', visitors: 70 },
-                  ]}
-                />
+          {/* Age Demographics */}
+          <Card className="dark:bg-secondary max-h-full w-full shadow-md md:h-[450px]">
+            <CardHeader>
+              <h3 className="text-xl font-semibold">Age Demographics</h3>
+            </CardHeader>
+            <div className="flex-1">
+              <VisitorAge
+                direction="vertical"
+                data={ageDemographics.map((item) => ({
+                  ageGroup: item.ageGroup,
+                  visitors: item.total,
+                }))}
+              />
+              {dominantAge && (
                 <div className="mx-4 mt-4">
                   <p className="text-muted-foreground text-[12px] font-medium">
-                    <span className="text-xl font-bold text-black dark:text-white">
-                      66%
-                    </span>{' '}
-                    visitors are 45-55 years old
+                    <span className="text-xl font-bold text-black dark:text-white">{dominantAgePercent}%</span> visitors are {dominantAge.ageGroup}{' '}
+                    years old
                   </p>
                 </div>
-              </div>
-            </Card>
-          </div>
+              )}
+            </div>
+          </Card>
 
-          <div>
-            <Card className="dark:bg-secondary h-[450px] shadow-md">
-              <CardHeader>
-                <div className="items-start justify-between md:flex">
-                  <h3 className="text-xl font-semibold">Region Overview</h3>
-                  <div className="flex flex-col justify-start md:items-center md:justify-center">
-                    <div className="flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
-                      <h1 className="text-[14px] leading-6">Males</h1>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88] leading-10" />
-                      <h1 className="text-[14px] text-[#7DAEF4]">Females</h1>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4] leading-10" />
-                      <h1 className="text-[14px] text-[#7DAEF4]">Other</h1>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <VisitorRegion
-                chartData={[
-                  { month: 'Jan', males: 186, females: 80, others: 50 },
-                  { month: 'Feb', males: 305, females: 200, others: 100 },
-                  { month: 'Mar', males: 237, females: 120, others: 70 },
-                  { month: 'Apr', males: 73, females: 190, others: 60 },
-                  { month: 'May', males: 209, females: 130, others: 90 },
-                  { month: 'Jun', males: 214, females: 140, others: 80 },
-                ]}
-                chartConfig={{
-                  males: { label: 'Males', color: '#2563eb' },
-                  females: { label: 'Females', color: '#202C88' },
-                  others: { label: 'Others', color: '#7DAEF4' },
-                }}
-              />
-            </Card>
-          </div>
-          <div>
-            <Card className="dark:bg-secondary h-[450px] pb-0 shadow-md">
-              <CardHeader className="">
-                <div className="items-start justify-between lg:flex">
-                  <h3 className="text-xl font-semibold"> Gender Analytics</h3>
-                  <div className="mt-2 flex flex-col items-start rounded-md md:mt-0 md:gap-2 lg:gap-3">
-                    {[
-                      { label: 'Males', color: '#2563EB', value: '60% / 2000' },
-                      {
-                        label: 'Females',
-                        color: '#202C88',
-                        value: '20% / 2000',
-                      },
-                      { label: 'Other', color: '#7DAEF4', value: '20% / 2000' },
-                    ].map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex w-full items-center justify-between"
-                      >
-                        {/* <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                          <span className="text-[14px]" style={{ color: item.color }}>{item.label}</span>
-                        </div> */}
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`h-2 w-2 rounded-full bg-[${item.color}]`}
-                          />
-                          <span className={`text-[14px] text-[${item.color}]`}>
-                            {item.label}
-                          </span>
-                        </div>
-                        <span className="ml-1 text-[14px] text-gray-700 dark:text-white">
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <GenderDonutChart
-                  data={[
-                    { name: 'Males', value: 60 },
-                    { name: 'Females', value: 20 },
-                    { name: 'Others', value: 20 },
-                  ]}
-                  COLORS={['#2563EB', '#202C88', '#7DAEF4']}
-                />
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-        <div className="mt-5 grid grid-cols-12 gap-4">
-          <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-6 lg:col-span-7">
+          {/* Region Overview */}
+          <Card className="dark:bg-secondary h-[450px] shadow-md">
             <CardHeader>
-              <div className="items-center justify-between md:flex">
-                <div className="flex flex-col items-start">
-                  <h3 className="text-xl font-semibold">Trends</h3>
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
-                      <h1 className="text-[14px] leading-6">This Month</h1>
+              <div className="items-start justify-between md:flex">
+                <h3 className="text-xl font-semibold">Region Overview</h3>
+                <div className="flex flex-col justify-start md:items-center md:justify-center">
+                  {[
+                    { label: 'Males', color: '#2563EB' },
+                    { label: 'Females', color: '#202C88' },
+                    { label: 'Other', color: '#7DAEF4' },
+                  ].map((item) => (
+                    <div key={item.label} className="mt-2 flex items-center first:mt-0">
+                      <div className="mr-2 h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                      <h1 className="text-[14px]" style={{ color: item.color }}>
+                        {item.label}
+                      </h1>
                     </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7B7E91] leading-10" />
-                      <h1 className="text-[14px] text-[#7B7E91]">Last Month</h1>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2 md:mt-0">
-                  <Select defaultValue="totalSales">
-                    <SelectTrigger>
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-secondary">
-                      <SelectGroup className="w-auto">
-                        <SelectLabel>Sale</SelectLabel>
-                        <SelectItem value="totalSales">Total Sales</SelectItem>
-                        <SelectItem value="totalRevenue">
-                          Total Revenue
-                        </SelectItem>
-                        <SelectItem value="totalVisitors">
-                          Total Visitors
-                        </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  ))}
                 </div>
               </div>
             </CardHeader>
+            <VisitorRegion
+              chartData={activeRegions.map((item) => ({
+                month: item.region,
+                males: item.males,
+                females: item.females,
+                others: item.others,
+              }))}
+              chartConfig={{
+                males: { label: 'Males', color: '#2563eb' },
+                females: { label: 'Females', color: '#202C88' },
+                others: { label: 'Others', color: '#7DAEF4' },
+              }}
+            />
+          </Card>
+
+          {/* Gender Analytics */}
+          <Card className="dark:bg-secondary h-[450px] pb-0 shadow-md">
+            <CardHeader>
+              <div className="items-start justify-between lg:flex">
+                <h3 className="text-xl font-semibold">Gender Analytics</h3>
+                <div className="mt-2 flex flex-col items-start rounded-md md:mt-0 md:gap-2 lg:gap-3">
+                  {genderAnalytics.map((g) => (
+                    <div key={g.name} className="flex w-full items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: GENDER_COLORS[g.name] ?? '#A0AEC0' }} />
+                        <span className="text-[14px]" style={{ color: GENDER_COLORS[g.name] ?? '#A0AEC0' }}>
+                          {g.name}
+                        </span>
+                      </div>
+                      <span className="ml-1 text-[14px] text-gray-700 dark:text-white">
+                        {g.percent}% / {totalGenderCount}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <GenderDonutChart
+                data={genderAnalytics.map((g) => ({ name: g.name, value: g.count }))}
+                COLORS={genderAnalytics.map((g) => GENDER_COLORS[g.name] ?? '#A0AEC0')}
+              />
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Trends · Interest per Category                                   */}
+        {/* ---------------------------------------------------------------- */}
+        <div className="mt-5 grid grid-cols-12 gap-4">
+          {/* Trends — dropdown removed per requirement */}
+          <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-6 lg:col-span-7">
+            <CardHeader>
+              <div className="flex flex-col items-start">
+                <h3 className="text-xl font-semibold">Trends</h3>
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center">
+                    <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
+                    <h1 className="text-[14px] leading-6">This Month</h1>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    <div className="mr-2 h-2 w-2 rounded-full bg-[#7B7E91]" />
+                    <h1 className="text-[14px] text-[#7B7E91]">Last Month</h1>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            {/* Trends data not available in current API — kept as placeholder */}
             <Trend
               data={[
-                { month: 'Jan', current: 2400, previous: 2000 },
-                { month: 'Feb', current: 1398, previous: 1500 },
-                { month: 'Mar', current: 9800, previous: 6000 },
-                { month: 'Apr', current: 3908, previous: 3000 },
-                { month: 'May', current: 4800, previous: 3500 },
-                { month: 'Jun', current: 3800, previous: 3200 },
-                { month: 'Jul', current: 4300, previous: 3400 },
+                { month: 'Jan', current: 0, previous: 0 },
+                { month: 'Feb', current: 0, previous: 0 },
+                { month: 'Mar', current: 0, previous: 0 },
+                { month: 'Apr', current: 0, previous: 0 },
+                { month: 'May', current: 0, previous: 0 },
+                { month: 'Jun', current: 0, previous: 0 },
               ]}
             />
           </Card>
 
+          {/* Interest per Category */}
           <Card className="dark:bg-secondary col-span-12 shadow-lg md:col-span-6 md:h-[450px] lg:col-span-5">
             <CardHeader>
               <div className="justify-between md:flex md:items-center">
@@ -329,21 +381,18 @@ const SuperAdminDashboardView = () => {
                     <h1 className="text-[14px] leading-6">Males</h1>
                   </div>
                   <div className="mt-2 flex items-center">
-                    <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88] leading-10" />
+                    <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88]" />
                     <h1 className="text-[14px] text-[#202C88]">Females</h1>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <VisitorInterest
-              chartData={[
-                { month: 'January', males: 186, females: 80 },
-                { month: 'February', males: 305, females: 200 },
-                { month: 'March', males: 237, females: 120 },
-                { month: 'April', males: 73, females: 190 },
-                { month: 'May', males: 209, females: 130 },
-                { month: 'June', males: 214, females: 140 },
-              ]}
+              chartData={interestPerCategory.map((item) => ({
+                month: item.category,
+                males: item.males,
+                females: item.females,
+              }))}
               chartConfig={{
                 males: { label: 'Males', color: '#2563EB' },
                 females: { label: 'Females', color: '#202C88' },
@@ -351,13 +400,15 @@ const SuperAdminDashboardView = () => {
             />
           </Card>
         </div>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Organizer Activity Over Time · Top Searches                      */}
+        {/* ---------------------------------------------------------------- */}
         <div className="mt-5 grid grid-cols-12 gap-4">
           <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-6">
             <CardHeader>
-              <div className="lgitems-center justify-between lg:flex">
-                <h3 className="text-xl font-semibold">
-                  Organizer Activity Over Time
-                </h3>
+              <div className="justify-between lg:flex lg:items-center">
+                <h3 className="text-xl font-semibold">Organizer Activity Over Time</h3>
                 <div className="mt-2 flex flex-col lg:mt-0 lg:items-center">
                   <Select defaultValue="newEvent">
                     <SelectTrigger>
@@ -375,187 +426,87 @@ const SuperAdminDashboardView = () => {
               </div>
             </CardHeader>
             <ViewsOverTime
-              data={[
-                { month: 'Jan', views: 2400 },
-                { month: 'Feb', views: 1398 },
-                { month: 'Mar', views: 9800 },
-                { month: 'Apr', views: 3908 },
-                { month: 'May', views: 4800 },
-                { month: 'Jun', views: 3800 },
-                { month: 'Jul', views: 4300 },
-                { month: 'Aug', views: 5000 },
-                { month: 'Sep', views: 6000 },
-                { month: 'Oct', views: 7000 },
-                { month: 'Nov', views: 8000 },
-                { month: 'Dec', views: 9000 },
-              ]}
+              data={organizerActivityOverTime.map((item) => ({
+                month: item.month,
+                views: item.events,
+              }))}
             />
           </Card>
+
           <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-6">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold">Top Searches</h3>
-              </div>
+              <h3 className="text-xl font-semibold">Top Searches</h3>
             </CardHeader>
-
             <MostViewedEvent
-              chartData={[
-                { month: 'January', search: 189 },
-                { month: 'February', search: 305 },
-                { month: 'March', search: 237 },
-                { month: 'April', search: 73 },
-                { month: 'May', search: 209 },
-                { month: 'June', search: 214 },
-              ]}
+              chartData={topSearchesAnalytics.map((item) => ({
+                month: item.month,
+                search: item.search,
+              }))}
               chartConfig={{
                 search: { label: 'Search', color: '#2563EB' },
               }}
             />
           </Card>
         </div>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Growth of Registered Users · Top Performing Organizers           */}
+        {/* ---------------------------------------------------------------- */}
         <div className="mt-5 grid grid-cols-12 gap-4">
           <Card className="dark:bg-secondary col-span-12 h-[550px] shadow-lg md:col-span-6">
             <CardHeader>
-              <div className="justify-between md:items-center lg:flex">
-                <h3 className="text-xl font-semibold">
-                  Growth of Register Users
-                </h3>
-                <div className="mt-2 flex flex-col lg:mt-0 lg:items-center">
-                  <Select defaultValue="users">
-                    <SelectTrigger>
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup className="w-auto">
-                        <SelectLabel>Event</SelectLabel>
-                        <SelectItem value="users">Users</SelectItem>
-                        <SelectItem value="otherUsers">Other Users</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold">Growth of Registered Users</h3>
             </CardHeader>
             <FollowerCount
-              data={[
-                { month: 'Jan', followers: 1200 },
-                { month: 'Feb', followers: 1500 },
-                { month: 'Mar', followers: 1300 },
-                { month: 'Apr', followers: 1000 },
-                { month: 'May', followers: 1800 },
-                { month: 'Jun', followers: 2500 },
-                { month: 'Jul', followers: 3000 },
-                { month: 'Aug', followers: 3500 },
-                { month: 'Sep', followers: 4000 },
-                { month: 'Oct', followers: 4500 },
-                { month: 'Nov', followers: 5000 },
-                { month: 'Dec', followers: 5500 },
-              ]}
+              data={userGrowth.map((item) => ({
+                month: item.month,
+                followers: item.total,
+              }))}
             />
           </Card>
+
           <Card className="dark:bg-secondary col-span-12 h-[550px] shadow-lg md:col-span-6">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold">
-                  Top Performing Organizers
-                </h3>
-              </div>
+              <h3 className="text-xl font-semibold">Top Performing Organizers</h3>
             </CardHeader>
-            <TopPerformaningEvents />
+            <TopPerformingOrganizers data={topPerformingOrganizers} />
           </Card>
         </div>
-        <div className="mt-5 grid grid-cols-12">
-          <Card className="dark:bg-secondary col-span-12 shadow-lg">
-            <CardHeader>
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <h3 className="text-xl font-semibold">Transaction History</h3>
-                <div>
-                  <div className="w-full">
-                    {/* Show select on small screens */}
-                    <div className="block sm:hidden">
-                      <Select value={active} onValueChange={setActive}>
-                        <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
-                          <SelectValue placeholder="Select tab" />
-                        </SelectTrigger>
-                        <SelectContent className="dark:bg-secondary">
-                          <SelectItem value="all">All</SelectItem>
-                          <SelectItem value="transactions">
-                            Transactions
-                          </SelectItem>
-                          <SelectItem value="refunds">Refunds</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
 
-                    {/* Show tabs on medium and larger screens */}
-                    <div className="hidden sm:block">
-                      <Tabs
-                        value={active}
-                        onValueChange={setActive}
-                        defaultValue="all"
-                        className="w-full"
-                      >
-                        <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
-                          <TabsTrigger
-                            value="all"
-                            className={cn(
-                              'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                            )}
-                          >
-                            All
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="transactions"
-                            className={cn(
-                              'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                            )}
-                          >
-                            Transactions
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="refunds"
-                            className={cn(
-                              'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
-                            )}
-                          >
-                            Refunds
-                          </TabsTrigger>
-                        </TabsList>
-                      </Tabs>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end md:items-center">
-                  <FilterDropdown
-                    selectedOptions={selectedOptions}
-                    onSelectOption={setSelectedOptions}
-                    options={[
-                      { id: 'user', label: 'User' },
-                      { id: 'contact', label: 'Contact' },
-                      { id: 'invoice', label: 'Invoice' },
-                      { id: 'organizer', label: 'Organizer ' },
-                      { id: 'date', label: 'Date' },
-                      { id: 'total', label: 'Total' },
-                      { id: 'transactionType', label: 'Transaction Type' },
-                      { id: 'status', label: 'Status' },
-                    ]}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <TransactionHistory />
-          </Card>
+        {/* ---------------------------------------------------------------- */}
+        {/* Transaction History                                              */}
+        {/* ---------------------------------------------------------------- */}
+        <div className="mt-5 grid grid-cols-12">
+          <div className="col-span-12">
+            <TransactionHistoryDashboardWidget />
+          </div>
         </div>
-        <div className="mt-5 mb-5 grid grid-cols-12 gap-4">
-          {DashboardCardData.map((item: any, index) => (
-            <div
-              key={index}
-              className="col-span-12 md:col-span-12 lg:col-span-4"
-            >
-              <DashboardCard item={item} />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Marketing Requests Cards                                         */}
+        {/* ---------------------------------------------------------------- */}
+        {marketingRequests.length > 0 && (
+          <div className="mt-7 mb-3">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-xl font-semibold">Marketing Requests</h3>
+              <button
+                type="button"
+                title="View More"
+                onClick={() => router.push('/super-admin/marketing-requests')}
+                className="text-primary hover:text-primary/80 cursor-pointer text-sm font-semibold transition-colors"
+              >
+                View More →
+              </button>
             </div>
-          ))}
-        </div>
+            <div className="grid grid-cols-12 gap-4">
+              {marketingRequests.slice(0, 3).map((item: any) => (
+                <div key={item._id} className="col-span-12 lg:col-span-4">
+                  <DashboardCard item={item} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

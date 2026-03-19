@@ -185,6 +185,13 @@ export const API_ROUTES = {
   ADMIN_SUBSCRIPTION_PRICING: `/admin/subscriptions`,
   ADMIN_UPDATE_SUBSCRIPTION_PRICING_BY_ID: (id: string) => `/admin/subscriptions/${id}`,
 
+  ADMIN_DASHBOARD: `/admin/dashboard`,
+  ADMIN_LOYALTY_DASHBOARD: `/admin/loyalty/dashboard`,
+  
+  ORGANIZER_DASHBOARD: `/organizer/dashboard`,
+  ORGANIZER_LOYALTY_DASHBOARD: `/organizer/loyalty/dashboard`,
+
+  
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
   UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,

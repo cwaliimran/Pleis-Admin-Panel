@@ -58,12 +58,14 @@ import { helpSupportApi } from './Reducer/help-support-api';
 import { appOrderingApi } from './Reducer/app-ordering-api';
 import { menuManagementApi } from './Reducer/menu-management-api';
 import { reservationCalendarApi } from './Reducer/reservation-calendar-api';
+import { dashboardApi } from './Reducer/dashboard';
 
 export const resetStore = createAction('RESET_STORE');
 
 const appReducer = combineReducers({
   userSlice: userSlice.reducer,
   [userApi.reducerPath]: userApi.reducer,
+  [dashboardApi.reducerPath]: dashboardApi.reducer,
   [venueTypeApi.reducerPath]: venueTypeApi.reducer,
   [suppliersApi.reducerPath]: suppliersApi.reducer,
   [categoriesApi.reducerPath]: categoriesApi.reducer,
@@ -129,6 +131,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       userApi.middleware,
+      dashboardApi.middleware,
       venueTypeApi.middleware,
       suppliersApi.middleware,
       categoriesApi.middleware,
