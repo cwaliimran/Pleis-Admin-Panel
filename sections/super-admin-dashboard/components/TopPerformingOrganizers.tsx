@@ -23,7 +23,7 @@ interface TopPerformingOrganizersProps {
 // ---------------------------------------------------------------------------
 const headLabel = [
   { id: 'organizerName', label: 'Organizer Name' },
-  { id: 'revenue', label: 'Revenue ($)' },
+  { id: 'revenue', label: 'Revenue (€)' },
   { id: 'engagement', label: 'Engagement (%)' },
 ];
 
@@ -62,7 +62,7 @@ const OrganizerRow: FC<{ item: TopOrganizer }> = ({ item }) => (
         <span className="text-sm font-medium">{item.organizerName}</span>
       </div>
     </TableCell>
-    <TableCell className="text-center">${formatRevenue(item.revenue)}</TableCell>
+    <TableCell className="text-center">€{formatRevenue(item.revenue)}</TableCell>
     <TableCell className="text-center">
       <div className="flex items-center justify-center gap-2">
         {item.engagement}%
@@ -85,7 +85,7 @@ const TopPerformingOrganizers: FC<TopPerformingOrganizersProps> = ({ data }) => 
   }
 
   return (
-    <div className="m-4 rounded-lg border p-4">
+    <div className="mx-4 rounded-lg border p-4">
       <Table className="w-full">
         <TableHeadCustom headLabel={headLabel} />
         <TableBody>

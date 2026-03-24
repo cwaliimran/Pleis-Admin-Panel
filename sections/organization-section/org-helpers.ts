@@ -1,5 +1,5 @@
 import { uploadFileToAzure } from '@/utils/fileUpload';
-import { to12HourTime, to24HourTime } from '@/utils/time';
+import { to24HourTime } from '@/utils/time';
 import * as Yup from 'yup';
 
 import { ALLOWED_IMAGE_TYPES, DAYS_OF_WEEK, MAX_IMAGE_SIZE } from './constants';
@@ -85,11 +85,11 @@ export const buildOperatingHoursPayload = (formData: FormValues) => {
     result[dayKey] =
       dayData.isOpen === 'true'
         ? {
-            from: to12HourTime(dayData.from),
-            to: to12HourTime(dayData.to),
+            from: dayData.from,
+            to: dayData.to,
             isOpen: true,
           }
-        : { from: '12:00 AM', to: '12:00 AM', isOpen: false };
+        : { from: '00:00', to: '00:00', isOpen: false };
   });
 
   return result;

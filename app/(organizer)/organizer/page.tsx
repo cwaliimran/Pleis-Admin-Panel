@@ -1,5 +1,6 @@
 import Header from '@/app/common/header/header';
 import OrganizerDashboard from '@/sections/organizer/organizer-dashboard';
+// import SuperAdminDashboardView from '@/sections/super-admin-dashboard/super-admin-dashboard-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ const Page = () => {
       />
 
       <OrganizerDashboard />
+      {/* <SuperAdminDashboardView userType="organizer" /> */}
     </div>
   );
 };

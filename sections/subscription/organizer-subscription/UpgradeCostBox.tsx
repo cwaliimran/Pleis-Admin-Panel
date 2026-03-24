@@ -12,12 +12,7 @@ export const UpgradeCostBox: React.FC<UpgradeCostBoxProps> = ({ upgrade }) => {
   const hasOrgs = upgrade.orgsAdded > 0;
   const hasAnalytics = upgrade.analyticsAdded;
   const prorationRatio = upgrade.totalDays > 0 ? Math.min(1, Math.max(0, upgrade.daysRemaining / upgrade.totalDays)) : 1;
-  const compositionTotal = upgrade.moduleCost + upgrade.analyticsCost + upgrade.orgCost;
-  const orgRate = upgrade.multiOrgDiscountPercent / 100;
-  const baseForAddedOrgs = hasOrgs && orgRate > 0 ? upgrade.orgCost / orgRate : 0;
-  const orgTierDiscountAmount = hasOrgs ? Math.max(0, baseForAddedOrgs - upgrade.orgCost) : 0;
-  const perAddedOrgBase = hasOrgs && upgrade.orgsAdded > 0 ? baseForAddedOrgs / upgrade.orgsAdded : 0;
-  const perAddedOrgAfterDiscount = hasOrgs && upgrade.orgsAdded > 0 ? upgrade.orgCost / upgrade.orgsAdded : 0;
+  const addedPricePerOrg = upgrade.newBasePricePerOrg - upgrade.oldBasePricePerOrg;
 
   return (
     <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-6 shadow-sm dark:border-blue-800 dark:bg-blue-950/20">
@@ -102,45 +97,72 @@ export const UpgradeCostBox: React.FC<UpgradeCostBoxProps> = ({ upgrade }) => {
         <p className="mb-3 text-xs font-semibold tracking-wide text-blue-700 uppercase dark:text-blue-400">Calculation Summary</p>
 
         <div className="space-y-2 text-sm">
+          {/* Current base price per org */}
           <div className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-300">Base price (added organizations)</span>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{hasOrgs ? `€${baseForAddedOrgs.toFixed(2)}` : 'N/A'}</span>
+            <span className="text-gray-700 dark:text-gray-300">Current base price (per org)</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">€{upgrade.oldBasePricePerOrg.toFixed(2)}</span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-300">Discount</span>
-            <span className="font-medium text-green-600 dark:text-green-400">
-              {hasOrgs ? `-€${orgTierDiscountAmount.toFixed(2)}` : 'Included in plan pricing'}
+          {/* Added price per org */}
+          {addedPricePerOrg > 0 && (
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700 dark:text-gray-300">+ New additions (per org, no bundle discount)</span>
+              <span className="font-medium text-green-600 dark:text-green-400">+€{addedPricePerOrg.toFixed(2)}</span>
+            </div>
+          )}
+
+          {/* New base price per org */}
+          {addedPricePerOrg > 0 && (
+            <div className="flex items-center justify-between border-t border-blue-200 pt-2 dark:border-blue-800">
+              <span className="text-gray-700 dark:text-gray-300">New base price (per org)</span>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">€{upgrade.newBasePricePerOrg.toFixed(2)}</span>
+            </div>
+          )}
+
+          {/* New monthly total */}
+          <div className="flex items-center justify-between border-t border-blue-200 pt-2 dark:border-blue-800">
+            <span className="text-gray-700 dark:text-gray-300">
+              New monthly total ({upgrade.newOrganizationCount} org{upgrade.newOrganizationCount > 1 ? 's' : ''}
+              {upgrade.orgsAdded > 0 ? ` × ${upgrade.multiOrgDiscountPercent}%` : ''})
             </span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">€{upgrade.newMonthlyTotal.toFixed(2)}</span>
           </div>
 
+          {/* Current monthly total */}
           <div className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-300">After discount (added organizations)</span>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{hasOrgs ? `€${upgrade.orgCost.toFixed(2)}` : 'N/A'}</span>
+            <span className="text-gray-700 dark:text-gray-300">− Current monthly total</span>
+            <span className="font-medium text-red-600 dark:text-red-400">−€{upgrade.oldMonthlyTotal.toFixed(2)}</span>
           </div>
 
-          {hasOrgs && (
-            <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-              <span>Per added organization after discount ({upgrade.orgsAdded} added)</span>
-              <span>
-                €{perAddedOrgAfterDiscount.toFixed(2)}
-                {perAddedOrgBase > 0 ? ` (from €${perAddedOrgBase.toFixed(2)} base)` : ''}
-              </span>
-            </div>
-          )}
-
-          {(upgrade.moduleCost > 0 || upgrade.analyticsCost > 0) && (
-            <div className="flex items-center justify-between border-t border-blue-200 pt-2 text-gray-700 dark:border-blue-800 dark:text-gray-300">
-              <span>Other upgrade impact (modules/analytics)</span>
-              <span className="font-medium text-gray-900 dark:text-gray-100">€{(upgrade.moduleCost + upgrade.analyticsCost).toFixed(2)}</span>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between border-t border-blue-200 pt-2 text-sm dark:border-blue-800">
-            <span className="text-gray-700 dark:text-gray-300">After discount (total upgrade impact)</span>
-            <span className="font-semibold text-gray-900 dark:text-gray-100">€{compositionTotal.toFixed(2)}</span>
+          {/* Monthly difference */}
+          <div className="flex items-center justify-between border-t border-blue-200 pt-2 dark:border-blue-800">
+            <span className="font-medium text-gray-700 dark:text-gray-300">Monthly difference</span>
+            <span className="font-semibold text-gray-900 dark:text-gray-100">€{upgrade.monthlyDifference.toFixed(2)}</span>
           </div>
 
+          {/* Yearly-specific lines */}
+          {upgrade.yearlyDiscountPercent > 0 && (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-700 dark:text-gray-300">× 12 months</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">€{(upgrade.monthlyDifference * 12).toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-green-600 dark:text-green-400">Yearly discount ({upgrade.yearlyDiscountPercent}%)</span>
+                <span className="font-medium text-green-600 dark:text-green-400">
+                  −€{(upgrade.monthlyDifference * 12 * (upgrade.yearlyDiscountPercent / 100)).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between border-t border-blue-200 pt-2 dark:border-blue-800">
+                <span className="font-medium text-gray-700 dark:text-gray-300">Annual difference</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  €{(upgrade.monthlyDifference * 12 * (1 - upgrade.yearlyDiscountPercent / 100)).toFixed(2)}
+                </span>
+              </div>
+            </>
+          )}
+
+          {/* Proration */}
           <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
             <span>
               Proration ({upgrade.daysRemaining}/{upgrade.totalDays})

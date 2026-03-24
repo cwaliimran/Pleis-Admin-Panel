@@ -309,6 +309,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
       let totalAmount: number;
       let finalOrgCount: number;
       let finalBillingCycle: BillingCycle;
+      let priceForRemainingDays: number | undefined;
 
       // Handle free plan (downgrade or staying free)
       if (selectedModules.length === 0 && !includeAnalytics) {
@@ -327,8 +328,11 @@ export const OrganizerSubscriptionView: React.FC = () => {
           // Free user subscribing - use full calculated price
           totalAmount = priceBreakdown.finalAmount;
         } else if (subscriptionAnalysis?.changeType === 'upgrade' && subscriptionAnalysis.proratedUpgrade) {
-          // Paid user upgrading - use prorated amount
-          totalAmount = subscriptionAnalysis.proratedUpgrade.totalProratedAmount;
+          // Paid user upgrading - totalSubscriptionAmount is the new full monthly/yearly amount
+          // based on basePrice flow (not recalculated with fresh discounts)
+          // priceForRemainingDays is the prorated charge for the remaining period
+          totalAmount = subscriptionAnalysis.proratedUpgrade.newMonthlyTotal;
+          priceForRemainingDays = subscriptionAnalysis.proratedUpgrade.totalProratedAmount;
         } else if (subscriptionAnalysis?.nextRecurring) {
           // Downgrade or no change - use next recurring amount
           totalAmount = subscriptionAnalysis.nextRecurring.displayAmount;
@@ -337,12 +341,16 @@ export const OrganizerSubscriptionView: React.FC = () => {
         }
       }
 
-      const payload = {
+      const payload: Record<string, any> = {
         subscriptionTypes,
         pricingPlan: finalBillingCycle,
         numberOfOrganizations: finalOrgCount,
         totalSubscriptionAmount: Number(totalAmount.toFixed(2)),
       };
+
+      if (priceForRemainingDays !== undefined) {
+        payload.priceForRemainingDays = Number(priceForRemainingDays.toFixed(2));
+      }
 
       const response = await updateOrganizerSubscription(payload).unwrap();
 
@@ -669,7 +677,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
                 ? 'cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600'
                 : isUpdating
                   ? 'cursor-not-allowed bg-blue-600 text-white'
-                  : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg cursor-pointer hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl'
+                  : 'cursor-pointer bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl'
             }`}
           >
             {isUpdating ? (

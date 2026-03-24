@@ -11,7 +11,7 @@ const Page = () => {
     <div className="min-h-screen pb-12">
       <Header links={[{ name: 'Dashboard', href: '/super-admin' }, { name: 'Home' }]} />
 
-      <SuperAdminDashboardView />
+      <SuperAdminDashboardView userType="super-admin" />
     </div>
   );
 };

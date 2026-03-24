@@ -326,26 +326,33 @@ export const calculateMonthlyProratedUpgrade = (
   const orgsAdded = Math.max(0, newConfig.organizationCount - oldConfig.organizationCount);
   const analyticsAdded = !oldConfig.includeAnalytics && newConfig.includeAnalytics;
 
-  // Calculate old monthly total using actual old org count
-  const oldModulesWithBundle = calculateModulesPriceWithBundleDiscount(oldConfig.modules, pricing);
-  const oldAnalyticsPrice = oldConfig.includeAnalytics ? pricing.analytics : 0;
-  const oldSubtotalPerOrg = oldModulesWithBundle + oldAnalyticsPrice;
-  const oldMultiOrgMultiplier = getMultiOrgMultiplier(oldConfig.organizationCount, pricing.multiOrgPricing);
-  const oldMonthlyTotal = applyMultiOrgDiscount(oldSubtotalPerOrg, oldConfig.organizationCount, oldMultiOrgMultiplier);
+  // Use basePrice from current subscription (per-org price)
+  const oldBasePricePerOrg = oldConfig.basePrice || 0;
 
-  // Calculate new monthly total using actual new org count
-  // Rule: Added modules are charged without bundle discount during mid-cycle upgrades
-  const newModulesPrice = modulesAdded.reduce((sum, moduleId) => {
+  // Old monthly total: use the actual amount from API (not recalculated)
+  const oldMonthlyTotal = oldConfig.totalAmount;
+
+  // Calculate added module prices at full price (no bundle discount on updates)
+  const addedModulesPrice = modulesAdded.reduce((sum, moduleId) => {
     return sum + (pricing.modules[moduleId]?.price || 0);
   }, 0);
+  const addedAnalyticsPrice = analyticsAdded ? pricing.analytics : 0;
 
-  const newModulesWithOldBase = oldModulesWithBundle + newModulesPrice;
-  const newAnalyticsPrice = newConfig.includeAnalytics ? pricing.analytics : 0;
-  const newSubtotalPerOrg = newModulesWithOldBase + newAnalyticsPrice;
+  // New base price per org = old base + added modules + added analytics
+  const newBasePricePerOrg = oldBasePricePerOrg + addedModulesPrice + addedAnalyticsPrice;
+
+  // Calculate new monthly total
   const newMultiOrgMultiplier = getMultiOrgMultiplier(newConfig.organizationCount, pricing.multiOrgPricing);
-  const newMonthlyTotal = applyMultiOrgDiscount(newSubtotalPerOrg, newConfig.organizationCount, newMultiOrgMultiplier);
+  let newMonthlyTotal: number;
 
-  // Calculate difference
+  if (orgsAdded === 0) {
+    // Same orgs: new monthly = newBasePrice × orgCount (no multi-org discount)
+    newMonthlyTotal = newBasePricePerOrg * newConfig.organizationCount;
+  } else {
+    // Orgs changed: apply multi-org discount on new config
+    newMonthlyTotal = newBasePricePerOrg * newConfig.organizationCount * (newMultiOrgMultiplier / 100);
+  }
+
   const monthlyDifference = Math.max(0, newMonthlyTotal - oldMonthlyTotal);
 
   // Calculate prorated amount (clamped to avoid >100% charging)
@@ -353,11 +360,8 @@ export const calculateMonthlyProratedUpgrade = (
   const proratedAmount = monthlyDifference * prorationRatio;
 
   // Breakdown by component
-  const moduleCost =
-    newModulesPrice > 0 ? applyMultiOrgDiscount(newModulesPrice, newConfig.organizationCount, newMultiOrgMultiplier) * prorationRatio : 0;
-  const analyticsCost = analyticsAdded
-    ? applyMultiOrgDiscount(pricing.analytics, newConfig.organizationCount, newMultiOrgMultiplier) * prorationRatio
-    : 0;
+  const moduleCost = addedModulesPrice > 0 ? addedModulesPrice * newConfig.organizationCount * prorationRatio : 0;
+  const analyticsCost = analyticsAdded ? pricing.analytics * newConfig.organizationCount * prorationRatio : 0;
   const orgCost = Math.max(0, proratedAmount - moduleCost - analyticsCost);
 
   return {
@@ -367,7 +371,14 @@ export const calculateMonthlyProratedUpgrade = (
     daysRemaining,
     totalDays,
     upgradeDate: new Date(),
-    subscriptionEndDate: new Date(oldConfig.totalAmount), // Placeholder
+    subscriptionEndDate: new Date(),
+    oldBasePricePerOrg,
+    newBasePricePerOrg,
+    oldOrganizationCount: oldConfig.organizationCount,
+    newOrganizationCount: newConfig.organizationCount,
+    oldMonthlyTotal,
+    newMonthlyTotal,
+    monthlyDifference,
     moduleCost,
     orgCost,
     analyticsCost,
@@ -406,26 +417,36 @@ export const calculateYearlyProratedUpgrade = (
   const orgsAdded = Math.max(0, newConfig.organizationCount - oldConfig.organizationCount);
   const analyticsAdded = !oldConfig.includeAnalytics && newConfig.includeAnalytics;
 
-  // Calculate old monthly equivalent using actual old org count
-  const oldModulesWithBundle = calculateModulesPriceWithBundleDiscount(oldConfig.modules, pricing);
-  const oldAnalyticsPrice = oldConfig.includeAnalytics ? pricing.analytics : 0;
-  const oldSubtotalPerOrg = oldModulesWithBundle + oldAnalyticsPrice;
-  const oldMultiOrgMultiplier = getMultiOrgMultiplier(oldConfig.organizationCount, pricing.multiOrgPricing);
-  const oldMonthlyEquivalent = applyMultiOrgDiscount(oldSubtotalPerOrg, oldConfig.organizationCount, oldMultiOrgMultiplier);
+  // Use basePrice from current subscription (per-org price)
+  const oldBasePricePerOrg = oldConfig.basePrice || 0;
 
-  // Calculate new monthly equivalent
-  const newModulesPrice = modulesAdded.reduce((sum, moduleId) => {
+  // Old monthly equivalent: use the actual amount from API (not recalculated)
+  const oldMonthlyEquivalent = oldConfig.monthlyEquivalent;
+
+  // Calculate added prices at full price (no bundle discount on updates)
+  const addedModulesPrice = modulesAdded.reduce((sum, moduleId) => {
     return sum + (pricing.modules[moduleId]?.price || 0);
   }, 0);
+  const addedAnalyticsPrice = analyticsAdded ? pricing.analytics : 0;
 
-  const newModulesWithOldBase = oldModulesWithBundle + newModulesPrice;
-  const newAnalyticsPrice = newConfig.includeAnalytics ? pricing.analytics : 0;
-  const newSubtotalPerOrg = newModulesWithOldBase + newAnalyticsPrice;
+  // New base price per org
+  const newBasePricePerOrg = oldBasePricePerOrg + addedModulesPrice + addedAnalyticsPrice;
+
+  // Calculate new monthly equivalent
   const newMultiOrgMultiplier = getMultiOrgMultiplier(newConfig.organizationCount, pricing.multiOrgPricing);
-  const newMonthlyEquivalent = applyMultiOrgDiscount(newSubtotalPerOrg, newConfig.organizationCount, newMultiOrgMultiplier);
+  let newMonthlyEquivalent: number;
+
+  if (orgsAdded === 0) {
+    // Same orgs: new monthly = newBasePrice × orgCount (no multi-org discount)
+    newMonthlyEquivalent = newBasePricePerOrg * newConfig.organizationCount;
+  } else {
+    // Orgs changed: apply multi-org discount on new config
+    newMonthlyEquivalent = newBasePricePerOrg * newConfig.organizationCount * (newMultiOrgMultiplier / 100);
+  }
+
+  const monthlyDifference = Math.max(0, newMonthlyEquivalent - oldMonthlyEquivalent);
 
   // Calculate yearly difference
-  const monthlyDifference = Math.max(0, newMonthlyEquivalent - oldMonthlyEquivalent);
   const yearlyDifference = monthlyDifference * 12;
 
   // Apply yearly discount
@@ -435,17 +456,11 @@ export const calculateYearlyProratedUpgrade = (
   const prorationRatio = totalDays > 0 ? Math.min(1, Math.max(0, daysRemaining / totalDays)) : 1;
   const proratedAmount = yearlyDifferenceWithDiscount * prorationRatio;
 
-  // Breakdown by component (approximate)
+  // Breakdown by component
   const moduleCost =
-    applyMultiOrgDiscount(newModulesPrice, newConfig.organizationCount, newMultiOrgMultiplier) *
-    12 *
-    (1 - pricing.yearlyDiscount / 100) *
-    prorationRatio;
+    addedModulesPrice > 0 ? addedModulesPrice * newConfig.organizationCount * 12 * (1 - pricing.yearlyDiscount / 100) * prorationRatio : 0;
   const analyticsCost = analyticsAdded
-    ? applyMultiOrgDiscount(pricing.analytics, newConfig.organizationCount, newMultiOrgMultiplier) *
-      12 *
-      (1 - pricing.yearlyDiscount / 100) *
-      prorationRatio
+    ? pricing.analytics * newConfig.organizationCount * 12 * (1 - pricing.yearlyDiscount / 100) * prorationRatio
     : 0;
   const orgCost = Math.max(0, proratedAmount - moduleCost - analyticsCost);
 
@@ -457,6 +472,13 @@ export const calculateYearlyProratedUpgrade = (
     totalDays,
     upgradeDate: new Date(),
     subscriptionEndDate: new Date(),
+    oldBasePricePerOrg,
+    newBasePricePerOrg,
+    oldOrganizationCount: oldConfig.organizationCount,
+    newOrganizationCount: newConfig.organizationCount,
+    oldMonthlyTotal: oldMonthlyEquivalent,
+    newMonthlyTotal: newMonthlyEquivalent,
+    monthlyDifference,
     moduleCost,
     orgCost,
     analyticsCost,
@@ -611,6 +633,7 @@ export const analyzeSubscriptionChange = (
     billingCycle: userSubscriptionData.pricingPlan,
     totalAmount: userSubscriptionData.totalSubscriptionAmount,
     monthlyEquivalent: userSubscriptionData.monthlyPrice,
+    basePrice: userSubscriptionData.basePrice || 0,
   };
 
   // Determine change type

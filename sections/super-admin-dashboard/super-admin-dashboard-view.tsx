@@ -90,6 +90,16 @@ interface TopOrganizer {
   engagement: number;
 }
 
+interface TrendMonthData {
+  month: string;
+  total: number;
+}
+
+interface TrendYearData {
+  year: number;
+  data: TrendMonthData[];
+}
+
 // ---------------------------------------------------------------------------
 // Gender chart colour map
 // ---------------------------------------------------------------------------
@@ -99,12 +109,37 @@ const GENDER_COLORS: Record<string, string> = {
   Others: '#7DAEF4',
 };
 
+/**
+ * Merges current year and previous year trend data into the shape
+ * that the <Trend> component expects: { month, current, previous }
+ *
+ * The API returns an array sorted by year descending —
+ * index 0 = current year, index 1 = previous year.
+ */
+const mergeTrendData = (trendYears: TrendYearData[]): { month: string; current: number; previous: number }[] => {
+  const currentYearData = trendYears?.[0]?.data ?? [];
+  const previousYearData = trendYears?.[1]?.data ?? [];
+
+  // Build a lookup map for previous year keyed by month abbreviation
+  const previousMap = new Map<string, number>();
+  previousYearData.forEach((item) => {
+    previousMap.set(item.month, item.total);
+  });
+
+  return currentYearData.map((item) => ({
+    month: item.month,
+    current: item.total,
+    previous: previousMap.get(item.month) ?? 0,
+  }));
+};
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-const SuperAdminDashboardView = () => {
-  const [active, setActive] = React.useState('all');
+const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'organizer' }) => {
   const router = useRouter();
+  const [active, setActive] = React.useState('all');
+  const [trendType, setTrendType] = React.useState<'salesTrend' | 'revenueTrend'>('salesTrend');
 
   // Map tab values to API dateFilter values
   const dateFilterMap: Record<string, string> = {
@@ -123,12 +158,17 @@ const SuperAdminDashboardView = () => {
   });
 
   // ---- Marketing requests for bottom cards ----
-  const { data: marketingRaw = {} as any } = useGetMarketingRequestQuery({
-    page: 0,
-    search: '',
-    limit: 3,
-    userType: 'super-admin',
-  });
+  const { data: marketingRaw = {} as any } = useGetMarketingRequestQuery(
+    {
+      page: 0,
+      search: '',
+      limit: 3,
+      userType: 'super-admin',
+    },
+    {
+      skip: userType !== 'super-admin', // Only fetch if user is super-admin
+    }
+  );
   const marketingRequests = marketingRaw?.data ?? [];
 
   // ---- Safely extract all sections from the API response ----
@@ -147,6 +187,22 @@ const SuperAdminDashboardView = () => {
   const topSearchesAnalytics: SearchAnalytic[] = dashboard.topSearchesAnalytics ?? [];
   const topPerformingOrganizers: TopOrganizer[] = dashboard.topPerformingOrganizers ?? [];
   const organizerActivityOverTime: OrganizerActivity[] = dashboard.organizerActivityOverTime ?? [];
+
+  // ---- Trends data ----
+  const trends = dashboard.trends ?? {};
+  const salesTrendYears: TrendYearData[] = trends.salesTrend ?? [];
+  const revenueTrendYears: TrendYearData[] = trends.revenueTrend ?? [];
+
+  // Merge current + previous year based on selected dropdown
+  const trendChartData = React.useMemo(() => {
+    const source = trendType === 'salesTrend' ? salesTrendYears : revenueTrendYears;
+    return mergeTrendData(source);
+  }, [trendType, salesTrendYears, revenueTrendYears]);
+
+  // Derive year labels for the legend dynamically
+  const activeTrendSource = trendType === 'salesTrend' ? salesTrendYears : revenueTrendYears;
+  const currentYear = activeTrendSource?.[0]?.year;
+  const previousYear = activeTrendSource?.[1]?.year;
 
   // ---- Filter regions with actual data (exclude all-zero regions) ----
   const activeRegions = regionOverview.filter((r) => r.males > 0 || r.females > 0 || r.others > 0);
@@ -343,38 +399,45 @@ const SuperAdminDashboardView = () => {
           {/* Trends — dropdown removed per requirement */}
           <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-6 lg:col-span-7">
             <CardHeader>
-              <div className="flex flex-col items-start">
-                <h3 className="text-xl font-semibold">Trends</h3>
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center">
-                    <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
-                    <h1 className="text-[14px] leading-6">This Month</h1>
+              <div className="items-center justify-between md:flex">
+                <div className="flex flex-col items-start">
+                  <h3 className="text-xl font-semibold">Trends</h3>
+                  <div className="mt-1 flex flex-col">
+                    <div className="flex items-center">
+                      <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
+                      <h1 className="text-[14px] leading-6">{currentYear ?? 'Current Year'}</h1>
+                    </div>
+                    <div className="mt-1 flex items-center">
+                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7B7E91]" />
+                      <h1 className="text-[14px] text-[#7B7E91]">{previousYear ?? 'Previous Year'}</h1>
+                    </div>
                   </div>
-                  <div className="mt-2 flex items-center">
-                    <div className="mr-2 h-2 w-2 rounded-full bg-[#7B7E91]" />
-                    <h1 className="text-[14px] text-[#7B7E91]">Last Month</h1>
-                  </div>
+                </div>
+                <div className="mt-2 md:mt-0">
+                  <Select value={trendType} onValueChange={(val) => setTrendType(val as 'salesTrend' | 'revenueTrend')}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select trend" />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-secondary">
+                      <SelectGroup className="w-auto">
+                        <SelectLabel>Trend</SelectLabel>
+                        <SelectItem value="salesTrend">Total Sales</SelectItem>
+                        <SelectItem value="revenueTrend">Total Revenue</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardHeader>
-            {/* Trends data not available in current API — kept as placeholder */}
-            <Trend
-              data={[
-                { month: 'Jan', current: 0, previous: 0 },
-                { month: 'Feb', current: 0, previous: 0 },
-                { month: 'Mar', current: 0, previous: 0 },
-                { month: 'Apr', current: 0, previous: 0 },
-                { month: 'May', current: 0, previous: 0 },
-                { month: 'Jun', current: 0, previous: 0 },
-              ]}
-            />
+            <Trend data={trendChartData} />
           </Card>
 
           {/* Interest per Category */}
           <Card className="dark:bg-secondary col-span-12 shadow-lg md:col-span-6 md:h-[450px] lg:col-span-5">
             <CardHeader>
-              <div className="justify-between md:flex md:items-center">
+              <div className="justify-between md:flex md:items-start">
                 <h3 className="text-xl font-semibold">Interest per Category</h3>
+
                 <div className="flex flex-col md:items-center">
                   <div className="flex items-center">
                     <div className="mr-2 h-2 w-2 rounded-full bg-[#020617]" />
@@ -409,7 +472,7 @@ const SuperAdminDashboardView = () => {
             <CardHeader>
               <div className="justify-between lg:flex lg:items-center">
                 <h3 className="text-xl font-semibold">Organizer Activity Over Time</h3>
-                <div className="mt-2 flex flex-col lg:mt-0 lg:items-center">
+                {/* <div className="mt-2 flex flex-col lg:mt-0 lg:items-center">
                   <Select defaultValue="newEvent">
                     <SelectTrigger>
                       <SelectValue placeholder="" />
@@ -422,7 +485,7 @@ const SuperAdminDashboardView = () => {
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
               </div>
             </CardHeader>
             <ViewsOverTime
@@ -457,6 +520,7 @@ const SuperAdminDashboardView = () => {
             <CardHeader>
               <h3 className="text-xl font-semibold">Growth of Registered Users</h3>
             </CardHeader>
+
             <FollowerCount
               data={userGrowth.map((item) => ({
                 month: item.month,
@@ -485,27 +549,31 @@ const SuperAdminDashboardView = () => {
         {/* ---------------------------------------------------------------- */}
         {/* Marketing Requests Cards                                         */}
         {/* ---------------------------------------------------------------- */}
-        {marketingRequests.length > 0 && (
-          <div className="mt-7 mb-3">
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-xl font-semibold">Marketing Requests</h3>
-              <button
-                type="button"
-                title="View More"
-                onClick={() => router.push('/super-admin/marketing-requests')}
-                className="text-primary hover:text-primary/80 cursor-pointer text-sm font-semibold transition-colors"
-              >
-                View More →
-              </button>
-            </div>
-            <div className="grid grid-cols-12 gap-4">
-              {marketingRequests.slice(0, 3).map((item: any) => (
-                <div key={item._id} className="col-span-12 lg:col-span-4">
-                  <DashboardCard item={item} />
+        {userType === 'super-admin' && (
+          <>
+            {marketingRequests.length > 0 && (
+              <div className="mt-7 mb-3">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-xl font-semibold">Marketing Requests</h3>
+                  <button
+                    type="button"
+                    title="View More"
+                    onClick={() => router.push('/super-admin/marketing-requests')}
+                    className="text-primary hover:text-primary/80 cursor-pointer text-sm font-semibold transition-colors"
+                  >
+                    View More →
+                  </button>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div className="grid grid-cols-12 gap-4">
+                  {marketingRequests.slice(0, 3).map((item: any) => (
+                    <div key={item._id} className="col-span-12 lg:col-span-4">
+                      <DashboardCard item={item} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

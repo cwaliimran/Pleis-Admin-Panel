@@ -2,22 +2,30 @@
 
 import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Card, CardHeader } from '@/components/ui/card';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import {
-  EventPerformanceComparison,
-  FollowerCount,
-  GenderDonutChart,
-  InvoiceCard,
-  MostViewedEvent,
-  TopPerformaningEvents,
-  TransactionHistory,
-  Trend,
-  ViewsOverTime,
-  VisitorAge,
-  VisitorInterest,
-  VisitorRegion,
+    EventPerformanceComparison,
+    FollowerCount,
+    GenderDonutChart,
+    InvoiceCard,
+    MostViewedEvent,
+    TopPerformaningEvents,
+    TransactionHistory,
+    Trend,
+    ViewsOverTime,
+    VisitorAge,
+    VisitorInterest,
+    VisitorRegion,
 } from '@/sections/invoices';
 import { invoicesData2 } from '@/sections/invoices/data';
 import { useState } from 'react';
@@ -43,29 +51,40 @@ const OrganizerDashboard = () => {
                 />
               </Badge> */}
             </div>
-            <Tabs defaultValue="today" className="hidden w-full justify-end md:block">
+            <Tabs
+              defaultValue="today"
+              className="hidden w-full justify-end md:block"
+            >
               <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
                 <TabsTrigger
                   value="today"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
+                  className={cn(
+                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                  )}
                 >
                   Today
                 </TabsTrigger>
                 <TabsTrigger
                   value="week"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
+                  className={cn(
+                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                  )}
                 >
                   Week
                 </TabsTrigger>
                 <TabsTrigger
                   value="month"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
+                  className={cn(
+                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                  )}
                 >
                   Month
                 </TabsTrigger>
                 <TabsTrigger
                   value="all"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
+                  className={cn(
+                    'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                  )}
                 >
                   All
                 </TabsTrigger>
@@ -95,7 +114,9 @@ const OrganizerDashboard = () => {
         <Card className="dark:bg-secondary mt-5 shadow-lg lg:mt-10">
           <CardHeader>
             <div className="items-center justify-between lg:flex">
-              <h3 className="text-xl font-semibold">Event Performance Comparison</h3>
+              <h3 className="text-xl font-semibold">
+                Event Performance Comparison
+              </h3>
               <div className="flex flex-col lg:items-center">
                 <div className="flex items-center">
                   <div className="mr-2 h-2 w-2 rounded-full bg-black" />
@@ -129,7 +150,9 @@ const OrganizerDashboard = () => {
             <Card className="dark:bg-secondary h-[450px] w-full shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-start">
-                  <h3 className="text-xl font-semibold">Visitor Age Demographics</h3>
+                  <h3 className="text-xl font-semibold">
+                    Visitor Age Demographics
+                  </h3>
                 </div>
               </CardHeader>
               <div className="flex-1">
@@ -144,7 +167,8 @@ const OrganizerDashboard = () => {
                 />
                 <div className="mx-4 mt-4">
                   <p className="text-muted-foreground text-sm font-medium">
-                    <span className="text-xl font-bold text-black">66%</span> visitors are 45-55 years old
+                    <span className="text-xl font-bold text-black">66%</span>{' '}
+                    visitors are 45-55 years old
                   </p>
                 </div>
               </div>
@@ -156,7 +180,9 @@ const OrganizerDashboard = () => {
             <Card className="dark:bg-secondary h-[450px] shadow-lg">
               <CardHeader>
                 <div className="items-center justify-between md:flex">
-                  <h3 className="text-xl font-semibold">Visitor Region Overview</h3>
+                  <h3 className="text-xl font-semibold">
+                    Visitor Region Overview
+                  </h3>
                   <div className="flex flex-col md:items-center">
                     <div className="flex items-center">
                       <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
@@ -195,7 +221,9 @@ const OrganizerDashboard = () => {
             <Card className="dark:bg-secondary h-[450px] !pb-0 shadow-lg">
               <CardHeader>
                 <div className="items-center justify-between md:flex">
-                  <h3 className="text-xl font-semibold">Visitor Gender Analytics</h3>
+                  <h3 className="text-xl font-semibold">
+                    Visitor Gender Analytics
+                  </h3>
                   <div className="flex flex-col md:items-center">
                     <div className="flex items-center">
                       <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
@@ -250,8 +278,13 @@ const OrganizerDashboard = () => {
                     <SelectContent className="dark:bg-secondary">
                       <SelectGroup className="w-auto">
                         <SelectLabel>Sale</SelectLabel>
-                        <SelectItem value="salesTrend">Total Sales</SelectItem>
-                        <SelectItem value="revenueTrend">Total Revenue</SelectItem>
+                        <SelectItem value="totalSales">Total Sales</SelectItem>
+                        <SelectItem value="totalRevenue">
+                          Total Revenue
+                        </SelectItem>
+                        <SelectItem value="totalVisitors">
+                          Total Visitors
+                        </SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -436,23 +469,34 @@ const OrganizerDashboard = () => {
                 </div>
 
                 <div className="hidden w-full md:block">
-                  <Tabs value={active} onValueChange={setActive} defaultValue="all" className="w-full">
+                  <Tabs
+                    value={active}
+                    onValueChange={setActive}
+                    defaultValue="all"
+                    className="w-full"
+                  >
                     <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
                       <TabsTrigger
                         value="all"
-                        className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
+                        className={cn(
+                          'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                        )}
                       >
                         All
                       </TabsTrigger>
                       <TabsTrigger
                         value="transactions"
-                        className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
+                        className={cn(
+                          'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                        )}
                       >
                         Transactions
                       </TabsTrigger>
                       <TabsTrigger
                         value="refunds"
-                        className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
+                        className={cn(
+                          'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors'
+                        )}
                       >
                         Refunds
                       </TabsTrigger>

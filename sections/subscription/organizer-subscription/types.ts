@@ -68,6 +68,7 @@ export interface SubscriptionConfig {
   billingCycle: BillingCycle;
   totalAmount: number; // From API or calculated
   monthlyEquivalent: number; // For yearly plans
+  basePrice?: number; // Per-org base price from API
 }
 
 /**
@@ -81,6 +82,7 @@ export interface UserSubscriptionData {
   monthlyPrice: number;
   startDate: string;
   endDate: string;
+  basePrice: number;
   orderingCommission: number;
   ticketingCommission: number;
   reservationCommission: number;
@@ -100,6 +102,15 @@ export interface ProratedUpgradeCalculation {
   totalDays: number;
   upgradeDate: Date;
   subscriptionEndDate: Date;
+
+  // Base price flow
+  oldBasePricePerOrg: number;
+  newBasePricePerOrg: number;
+  oldOrganizationCount: number;
+  newOrganizationCount: number;
+  oldMonthlyTotal: number;
+  newMonthlyTotal: number;
+  monthlyDifference: number;
 
   // Cost breakdown
   moduleCost: number; // Cost for added modules (no bundle discount)
@@ -199,11 +210,6 @@ export interface DynamicPricing {
   yearlyDiscount: number;
   ticketingCommission: number;
 }
-
-
-
-
-
 
 // export type BillingCycle = 'monthly' | 'yearly';
 

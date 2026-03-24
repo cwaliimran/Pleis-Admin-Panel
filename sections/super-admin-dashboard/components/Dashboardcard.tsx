@@ -1,7 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { DollarSign } from 'lucide-react';
 import { FC } from 'react';
 
 // ---------------------------------------------------------------------------
@@ -66,9 +65,9 @@ const DashboardCard: FC<DashboardCardProps> = ({ item }) => {
 
         {/* Budget */}
         <div className="flex items-center gap-2">
-          <DollarSign size={16} className="text-muted-foreground" />
+          {/* <DollarSign size={16} className="text-muted-foreground" /> */}
           <span className="text-sm font-medium">
-            Budget: <span className="font-bold">${item.budget?.toLocaleString()}</span>
+            Budget: <span className="font-bold">€{item.budget?.toLocaleString()}</span>
           </span>
         </div>
 
