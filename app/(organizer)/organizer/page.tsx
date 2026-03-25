@@ -13,7 +13,7 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/organizer' },
-          { name: 'Events', href: '' },
+          { name: 'Home', href: '' },
         ]}
       />
 

@@ -5,9 +5,11 @@ import { useGetTransactionsQuery } from '@/store/Reducer/loyalty-transactions-ap
 import { useEffect, useState } from 'react';
 import { TransactionDetailModal } from './modal';
 import TransactionHistoryTable from './transaction-history-table';
+import { useAuth } from '@/hooks/useAuth';
 
-const TransactionHistoryDashboardWidget = () => {
+const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) => {
   const openModal = useBoolean();
+  const { user } = useAuth();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -27,6 +29,7 @@ const TransactionHistoryDashboardWidget = () => {
     limit,
     type: status === 'all' ? '' : status,
     orderType: type === 'all' ? '' : type,
+    companyOrganizer: userType === 'organizer' ? user?.basicInfo?._id : '',
     isAdmin: true,
   });
 

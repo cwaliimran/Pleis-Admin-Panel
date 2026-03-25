@@ -7,8 +7,6 @@ import { useBoolean } from '@/hooks/useBoolean';
 import { GenderDonutChart, ViewsOverTime, VisitorAge } from '@/sections/invoices';
 import ReservationStatsCard from '@/sections/invoices/ReservationCard';
 import { orderAnalyticsData } from '@/sections/loyalty/data';
-import ReservationList from '../ReservationTransactionList';
-import StaffConfirmationsLog from '../StaffConfirmation';
 import RevenueTrendsChart from '@/sections/invoices/revenueTrendsChart';
 import OrderTransactionList from './order-listing/OrderTransactionList';
 import MenuItemPerformanceTable from './order-listing/MenuItemPerformanceTable';
@@ -18,9 +16,9 @@ const OrderAnalyticsView = ({ userType }: { global: boolean; userType: string })
   const openModal = useBoolean();
   console.log('userType', userType);
 
-  const activePercent = 75;
-  const inactivePercent = 25;
-  const thirdPercent = 40;
+  // const activePercent = 75;
+  // const inactivePercent = 25;
+  // const thirdPercent = 40;
 
   // Data for Progress Bars (Sales Source Breakdown)
   const regularSalesPercent = 65;
@@ -28,9 +26,9 @@ const OrderAnalyticsView = ({ userType }: { global: boolean; userType: string })
   const upsellPercent = 10;
 
   const loyaltyOrderFrequency = 75; // 75% of high frequency orders are from loyalty
-  const nonLoyaltyOrderFrequency = 25;
+  // const nonLoyaltyOrderFrequency = 25;
   const loyaltyAvgSpend = 60; // Loyalty users spend 60% more than non-loyalty
-  const nonLoyaltyAvgSpend = 40;
+  // const nonLoyaltyAvgSpend = 40;
 
   return (
     <>

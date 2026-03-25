@@ -29,7 +29,7 @@ interface DashboardStatsCardProps {
 // ---------------------------------------------------------------------------
 
 /** Prefix monetary stats with € */
-const MONETARY_KEYS = new Set(['averageTicketPrice', 'averageRevenuePerUser', 'totalRevenue']);
+const MONETARY_KEYS = new Set(['averageTicketPrice', 'averageRevenuePerUser', 'totalRevenue','totalMobilePayments']);
 
 // ---------------------------------------------------------------------------
 // Component

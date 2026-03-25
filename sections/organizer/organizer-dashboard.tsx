@@ -1,6 +1,5 @@
 'use client';
 
-import FilterDropdown from '@/components/filter-dropdown/FilterDropdown';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,88 +8,107 @@ import {
   EventPerformanceComparison,
   FollowerCount,
   GenderDonutChart,
-  InvoiceCard,
   MostViewedEvent,
   TopPerformaningEvents,
-  TransactionHistory,
   Trend,
   ViewsOverTime,
   VisitorAge,
   VisitorInterest,
   VisitorRegion,
 } from '@/sections/invoices';
-import { invoicesData2 } from '@/sections/invoices/data';
+import { useGetDashboardQuery } from '@/store/Reducer/dashboard';
 import { useState } from 'react';
+import DashboardSkeleton from '../super-admin-dashboard/components/DashboardSkeleton';
+import DashboardStatsCard from '../super-admin-dashboard/components/DashboardStatsCard';
+import TransactionHistoryDashboardWidget from '../transactions/transaction-history/transaction-history-dashboard-widget';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+interface StatItem {
+  key: string;
+  title: string;
+  value: number;
+  growth: number;
+  subFilters: { key: string; label: string }[];
+  selectedSubFilter: string;
+}
 
 const OrganizerDashboard = () => {
   const [active, setActive] = useState('all');
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
+  const dateFilterMap: Record<string, string> = {
+    today: 'today',
+    week: 'thisWeek',
+    month: 'thisMonth',
+    all: 'all',
+  };
+
+  const {
+    data: dashboardRaw = {} as any,
+    isLoading,
+    isFetching,
+  } = useGetDashboardQuery({
+    dateFilter: dateFilterMap[active] ?? 'all',
+  });
+
+  // ---- Safely extract all sections from the API response ----
+  const dashboard = dashboardRaw?.data ?? dashboardRaw ?? {};
+
+  const stats: StatItem[] = dashboard.stats ?? [];
+
+  // ---- Loading state ----
+  if (isLoading || isFetching) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div>
       <div className="mx-1 mt-5 pb-12 md:mx-4">
+        {/* ---------------------------------------------------------------- */}
+        {/* Top-level date filter (wiring deferred — UI only for now)        */}
+        {/* ---------------------------------------------------------------- */}
         <div className="flex flex-col-reverse gap-2 md:flex-row md:items-center md:justify-end">
           <div className="flex flex-col-reverse justify-end gap-2 md:flex-row md:items-center">
-            <div className="flex items-center justify-end md:justify-center">
-              {/* <Badge className="bg-white text-black shadow-md px-5 py-1 rounded-2xl text-md flex items-center gap-2 w-fit">
-                <Settings2 className="w-5 h-5" />
-
-                <span className="whitespace-nowrap">Filter (3)</span>
-
-                <X
-                  className="w-4 h-4 cursor-pointer "
-                  onClick={() => setActive("")}
-                />
-              </Badge> */}
-            </div>
-            <Tabs defaultValue="today" className="hidden w-full justify-end md:block">
+            <Tabs value={active} onValueChange={setActive} className="hidden w-full justify-end md:block">
               <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
-                <TabsTrigger
-                  value="today"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                >
-                  Today
-                </TabsTrigger>
-                <TabsTrigger
-                  value="week"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                >
-                  Week
-                </TabsTrigger>
-                <TabsTrigger
-                  value="month"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                >
-                  Month
-                </TabsTrigger>
-                <TabsTrigger
-                  value="all"
-                  className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                >
-                  All
-                </TabsTrigger>
+                {['today', 'week', 'month', 'all'].map((val) => (
+                  <TabsTrigger
+                    key={val}
+                    value={val}
+                    className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold capitalize transition-colors')}
+                  >
+                    {val === 'all' ? 'All' : val.charAt(0).toUpperCase() + val.slice(1)}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
             <div className="block md:hidden">
-              <Select>
+              <Select value={active} onValueChange={setActive}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select timeframe" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-secondary">
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">Week</SelectItem>
-                  <SelectItem value="month">Month</SelectItem>
-                  <SelectItem value="all">All</SelectItem>
+                  {['today', 'week', 'month', 'all'].map((val) => (
+                    <SelectItem key={val} value={val} className="capitalize">
+                      {val === 'all' ? 'All' : val.charAt(0).toUpperCase() + val.slice(1)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
-          {invoicesData2.map((item: any) => (
-            <InvoiceCard key={item?._id} item={item} />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Stats Cards                                                      */}
+        {/* ---------------------------------------------------------------- */}
+        <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-x-4 md:gap-y-4 lg:grid-cols-3 xl:grid-cols-4">
+          {stats.map((stat) => (
+            <DashboardStatsCard key={stat.key} stat={stat} />
           ))}
         </div>
+
         {/* event performance comparsion */}
         <Card className="dark:bg-secondary mt-5 shadow-lg lg:mt-10">
           <CardHeader>
@@ -155,7 +173,7 @@ const OrganizerDashboard = () => {
             {/* Visitor Region Overview */}
             <Card className="dark:bg-secondary h-[450px] shadow-lg">
               <CardHeader>
-                <div className="items-center justify-between md:flex">
+                <div className="items-start justify-between md:flex">
                   <h3 className="text-xl font-semibold">Visitor Region Overview</h3>
                   <div className="flex flex-col md:items-center">
                     <div className="flex items-center">
@@ -194,7 +212,7 @@ const OrganizerDashboard = () => {
             {/* Visitor Gender Analytics */}
             <Card className="dark:bg-secondary h-[450px] !pb-0 shadow-lg">
               <CardHeader>
-                <div className="items-center justify-between md:flex">
+                <div className="items-start justify-between md:flex">
                   <h3 className="text-xl font-semibold">Visitor Gender Analytics</h3>
                   <div className="flex flex-col md:items-center">
                     <div className="flex items-center">
@@ -414,80 +432,15 @@ const OrganizerDashboard = () => {
             <TopPerformaningEvents />
           </Card>
         </div>
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Transaction History                                              */}
+        {/* ---------------------------------------------------------------- */}
         <div className="mt-5 grid grid-cols-12">
-          <Card className="dark:bg-secondary col-span-12 shadow-lg">
-            <CardHeader>
-              {/* <div className="flex md:justify-between md:items-center flex-col md:flex-row gap-4"> */}
-              <div className="grid grid-cols-3 items-center gap-4">
-                <h3 className="text-xl font-semibold">Transaction History</h3>
-
-                {/* Show select on small screens */}
-                <div className="block sm:hidden">
-                  <Select value={active} onValueChange={setActive}>
-                    <SelectTrigger className="w-full bg-[#EBEBEB] dark:bg-black dark:text-white">
-                      <SelectValue placeholder="Select tab" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-secondary">
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="transactions">Transactions</SelectItem>
-                      <SelectItem value="refunds">Refunds</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="hidden w-full md:block">
-                  <Tabs value={active} onValueChange={setActive} defaultValue="all" className="w-full">
-                    <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
-                      <TabsTrigger
-                        value="all"
-                        className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                      >
-                        All
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="transactions"
-                        className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                      >
-                        Transactions
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="refunds"
-                        className={cn('text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors')}
-                      >
-                        Refunds
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-
-                <div className="flex items-center justify-end">
-                  <FilterDropdown
-                    selectedOptions={selectedOptions}
-                    onSelectOption={setSelectedOptions}
-                    options={[
-                      { id: 'user', label: 'User' },
-                      { id: 'contact', label: 'Contact' },
-                      { id: 'invoice', label: 'Invoice' },
-                      { id: 'organizer', label: 'Organizer ' },
-                      { id: 'date', label: 'Date' },
-                      { id: 'total', label: 'Total' },
-                      { id: 'transactionType', label: 'Transaction Type' },
-                      { id: 'status', label: 'Status' },
-                    ]}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            <TransactionHistory />
-          </Card>
+          <div className="col-span-12">
+            <TransactionHistoryDashboardWidget userType="organizer" />
+          </div>
         </div>
-        {/* <div className='grid grid-cols-12 gap-4 mt-5'>
-                    {DashboardCardData.map((item: any, index) => (
-                        <div key={index} className='col-span-12 md:col-span-4  '>
-                            <DashboardCard item={item} />
-                        </div>
-                    ))}
-                </div> */}
       </div>
     </div>
   );

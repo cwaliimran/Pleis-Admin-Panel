@@ -166,7 +166,7 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
       userType: 'super-admin',
     },
     {
-      skip: userType !== 'super-admin', // Only fetch if user is super-admin
+      skip: userType !== 'super-admin',
     }
   );
   const marketingRequests = marketingRaw?.data ?? [];
@@ -472,20 +472,6 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
             <CardHeader>
               <div className="justify-between lg:flex lg:items-center">
                 <h3 className="text-xl font-semibold">Organizer Activity Over Time</h3>
-                {/* <div className="mt-2 flex flex-col lg:mt-0 lg:items-center">
-                  <Select defaultValue="newEvent">
-                    <SelectTrigger>
-                      <SelectValue placeholder="" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup className="w-auto">
-                        <SelectLabel>Event</SelectLabel>
-                        <SelectItem value="newEvent">New Event</SelectItem>
-                        <SelectItem value="otherEvent">Other Event</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div> */}
               </div>
             </CardHeader>
             <ViewsOverTime
@@ -542,7 +528,7 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
         {/* ---------------------------------------------------------------- */}
         <div className="mt-5 grid grid-cols-12">
           <div className="col-span-12">
-            <TransactionHistoryDashboardWidget />
+            <TransactionHistoryDashboardWidget userType="super-admin" />
           </div>
         </div>
 

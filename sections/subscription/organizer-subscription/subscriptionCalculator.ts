@@ -10,6 +10,7 @@
  */
 
 import {
+  BillingCycleChangeCalculation,
   DynamicPricing,
   ModuleId,
   NextRecurringCalculation,
@@ -489,6 +490,38 @@ export const calculateYearlyProratedUpgrade = (
 };
 
 // ============================================================================
+// BILLING CYCLE CHANGE CALCULATION
+// ============================================================================
+
+/**
+ * Calculate billing amount when billing cycle changes (monthly↔yearly).
+ * Treated as a FRESH subscription — full recalculation with all discounts
+ * (bundle, multi-org, yearly), same as free-to-paid flow.
+ * Takes effect on the NEXT recurring — no proration.
+ */
+export const calculateBillingCycleChange = (
+  oldConfig: SubscriptionConfig,
+  newConfig: Omit<SubscriptionConfig, 'totalAmount' | 'monthlyEquivalent'>,
+  pricing: DynamicPricing,
+  effectiveDate: string
+): BillingCycleChangeCalculation => {
+  const breakdown = calculatePriceBreakdown(
+    newConfig.modules,
+    newConfig.includeAnalytics,
+    newConfig.organizationCount,
+    newConfig.billingCycle,
+    pricing
+  );
+
+  return {
+    oldBillingCycle: oldConfig.billingCycle,
+    newBillingCycle: newConfig.billingCycle,
+    breakdown,
+    effectiveDate,
+  };
+};
+
+// ============================================================================
 // NEXT RECURRING CALCULATION
 // ============================================================================
 
@@ -616,9 +649,11 @@ export const analyzeSubscriptionChange = (
         monthlyEquivalent: 0,
       },
       proratedUpgrade: null,
+      billingCycleChange: null,
       nextRecurring: null,
       isSameDayEnd: false,
       isFreePlan: changeType === 'free_plan',
+      hasBillingCycleChanged: false,
       hasPriceDiscrepancy: false,
     };
   }
@@ -652,10 +687,13 @@ export const analyzeSubscriptionChange = (
   const daysRemaining = Math.max(0, Math.min(rawDaysRemaining, totalDays));
   const isSameDayEnd = daysRemaining === 1;
 
-  // Calculate prorated upgrade (only for upgrades)
+  // Detect billing cycle change
+  const hasBillingCycleChanged = currentConfig.billingCycle !== newConfig.billingCycle;
+
+  // Calculate prorated upgrade (only for upgrades WITH SAME billing cycle)
   let proratedUpgrade: ProratedUpgradeCalculation | null = null;
 
-  if (changeType === 'upgrade') {
+  if (changeType === 'upgrade' && !hasBillingCycleChanged) {
     if (currentConfig.billingCycle === 'yearly') {
       proratedUpgrade = calculateYearlyProratedUpgrade(currentConfig, newConfig, pricing, daysRemaining, totalDays);
     } else {
@@ -665,6 +703,15 @@ export const analyzeSubscriptionChange = (
     // Add actual dates
     proratedUpgrade.upgradeDate = currentDate;
     proratedUpgrade.subscriptionEndDate = subscriptionEndDate;
+  }
+
+  // Calculate billing cycle change (when billing cycle differs)
+  let billingCycleChange: BillingCycleChangeCalculation | null = null;
+
+  if (hasBillingCycleChanged && changeType !== 'free_plan') {
+    const effectiveDate = new Date(subscriptionEndDate);
+    effectiveDate.setDate(effectiveDate.getDate() + 1);
+    billingCycleChange = calculateBillingCycleChange(currentConfig, newConfig, pricing, effectiveDate.toISOString());
   }
 
   // Calculate next recurring (for all change types)
@@ -682,9 +729,11 @@ export const analyzeSubscriptionChange = (
       monthlyEquivalent: nextRecurring.monthlyTotal,
     },
     proratedUpgrade,
+    billingCycleChange,
     nextRecurring,
     isSameDayEnd,
     isFreePlan: changeType === 'free_plan',
+    hasBillingCycleChanged,
     hasPriceDiscrepancy: false, // Will be set by component comparing API vs calculated
   };
 };

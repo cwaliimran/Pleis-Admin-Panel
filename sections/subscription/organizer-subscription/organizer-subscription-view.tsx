@@ -10,13 +10,22 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { Check, Sparkles, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { BillingCycleChangeBox } from './BillingCycleChangeBox';
 import { ConfirmationModal } from './ConfirmationModal';
 import { ANALYTICS_FEATURES, FREE_PLAN_FEATURES, ORGANIZATION_COUNTS } from './constants';
 import { CurrentSubscriptionBox } from './CurrentSubscriptionBox';
 import { ModuleCard } from './module-card';
 import { PriceBreakdownBox } from './PriceBreakdownBox';
 import { analyzeSubscriptionChange, calculatePriceBreakdown } from './subscriptionCalculator';
-import { BillingCycle, DynamicPricing, ModuleConfig, ModuleId, SubscriptionChangeAnalysis, UserSubscriptionData } from './types';
+import {
+  BillingCycle,
+  DynamicPricing,
+  InactiveSubscriptionData,
+  ModuleConfig,
+  ModuleId,
+  SubscriptionChangeAnalysis,
+  UserSubscriptionData,
+} from './types';
 import { UpgradeCostBox } from './UpgradeCostBox';
 
 export const OrganizerSubscriptionView: React.FC = () => {
@@ -45,6 +54,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
     }
   );
   const userSubscriptionData: UserSubscriptionData | null = organizerOwnSubData?.data?.[0]?.subscription || null;
+  const inactiveSubscription: InactiveSubscriptionData | null = organizerOwnSubData?.data?.[0]?.inactiveSubscription || null;
 
   const { data: apiData, isLoading: isPricingLoading } = useGetOrganizerSubscriptionsQuery(
     {},
@@ -327,8 +337,11 @@ export const OrganizerSubscriptionView: React.FC = () => {
         if (isFreePlan && priceBreakdown) {
           // Free user subscribing - use full calculated price
           totalAmount = priceBreakdown.finalAmount;
+        } else if (subscriptionAnalysis?.hasBillingCycleChanged && subscriptionAnalysis.billingCycleChange) {
+          // Billing cycle changed - fresh calculation like free-to-paid (takes effect next recurring, no proration)
+          totalAmount = subscriptionAnalysis.billingCycleChange.breakdown.finalAmount;
         } else if (subscriptionAnalysis?.changeType === 'upgrade' && subscriptionAnalysis.proratedUpgrade) {
-          // Paid user upgrading - totalSubscriptionAmount is the new full monthly/yearly amount
+          // Paid user upgrading (same billing cycle) - totalSubscriptionAmount is the new full monthly/yearly amount
           // based on basePrice flow (not recalculated with fresh discounts)
           // priceForRemainingDays is the prorated charge for the remaining period
           totalAmount = subscriptionAnalysis.proratedUpgrade.newMonthlyTotal;
@@ -366,6 +379,8 @@ export const OrganizerSubscriptionView: React.FC = () => {
 
       showSuccess(response?.message || 'Subscription updated successfully!');
       setShowConfirmModal(false);
+      // Reset prefilled flag so the prefill effect re-runs with fresh API data
+      setIsPrefilled(false);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       showError(errorMessage);
@@ -476,6 +491,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
               endDate={userSubscriptionData.endDate}
               lockedInPrice={userSubscriptionData.totalSubscriptionAmount}
               calculatedPrice={subscriptionAnalysis.currentSubscription.totalAmount}
+              inactiveSubscription={inactiveSubscription}
             />
           )
         )}
@@ -643,10 +659,18 @@ export const OrganizerSubscriptionView: React.FC = () => {
         {/* Price Breakdown - ONLY for Free Users */}
         {priceBreakdown && isFreePlan && selectedModules.length > 0 && <PriceBreakdownBox breakdown={priceBreakdown} />}
 
-        {/* Prorated Upgrade - Only for Paid Users */}
+        {/* Billing Cycle Change - Only for Paid Users changing billing cycle */}
         {!isFreePlan &&
           hasActiveSubscription &&
           hasUserMadeChanges &&
+          subscriptionAnalysis?.hasBillingCycleChanged &&
+          subscriptionAnalysis.billingCycleChange && <BillingCycleChangeBox change={subscriptionAnalysis.billingCycleChange} />}
+
+        {/* Prorated Upgrade - Only for Paid Users upgrading with same billing cycle */}
+        {!isFreePlan &&
+          hasActiveSubscription &&
+          hasUserMadeChanges &&
+          !subscriptionAnalysis?.hasBillingCycleChanged &&
           subscriptionAnalysis?.changeType === 'upgrade' &&
           subscriptionAnalysis.proratedUpgrade && <UpgradeCostBox upgrade={subscriptionAnalysis.proratedUpgrade} />}
 

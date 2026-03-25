@@ -88,6 +88,20 @@ export interface UserSubscriptionData {
   reservationCommission: number;
 }
 
+export interface InactiveSubscriptionData {
+  subscriptionTypes: string[];
+  pricingPlan: 'monthly' | 'yearly';
+  numberOfOrganizations: number;
+  status: string;
+  totalSubscriptionAmount: number;
+  basePrice: number;
+  startDate: string;
+  endDate: string | null;
+  orderingCommission: number;
+  ticketingCommission: number;
+  reservationCommission: number;
+}
+
 /**
  * Breakdown of prorated upgrade costs
  */
@@ -162,6 +176,41 @@ export interface NextRecurringCalculation {
 }
 
 /**
+ * Billing cycle change calculation (takes effect next recurring).
+ * Treated as a fresh subscription — full recalculation with all discounts.
+ */
+export interface BillingCycleChangeCalculation {
+  // Billing cycle transition
+  oldBillingCycle: BillingCycle;
+  newBillingCycle: BillingCycle;
+
+  // Full fresh price breakdown (same shape as free-to-paid)
+  breakdown: {
+    baseModulePrice: number;
+    nonAnalyticsPrice: number;
+    selectedModulesCount: number;
+    nonAnalyticsCount: number;
+    bundleDiscountPercent: number;
+    bundleDiscountAmount: number;
+    priceAfterBundleDiscount: number;
+    analyticsPrice: number;
+    subtotalBeforeOrgs: number;
+    orgPricingPercent: number;
+    pricePerOrg: number;
+    numberOfOrganizations: number;
+    totalMultiOrgPrice: number;
+    billingCycle: BillingCycle;
+    monthlyTimesWelve: number;
+    yearlyDiscountPercent: number;
+    yearlyDiscountAmount: number;
+    finalAmount: number;
+  };
+
+  // When it takes effect
+  effectiveDate: string;
+}
+
+/**
  * Complete subscription change analysis
  */
 export interface SubscriptionChangeAnalysis {
@@ -173,8 +222,11 @@ export interface SubscriptionChangeAnalysis {
   // New subscription configuration
   newSubscription: SubscriptionConfig;
 
-  // Prorated upgrade costs (only for 'upgrade' type)
+  // Prorated upgrade costs (only for 'upgrade' type, same billing cycle)
   proratedUpgrade: ProratedUpgradeCalculation | null;
+
+  // Billing cycle change (only when billing cycle differs)
+  billingCycleChange: BillingCycleChangeCalculation | null;
 
   // Next recurring subscription (always present if user has active subscription)
   nextRecurring: NextRecurringCalculation | null;
@@ -182,6 +234,7 @@ export interface SubscriptionChangeAnalysis {
   // Special flags
   isSameDayEnd: boolean; // Upgrade happening on last day of subscription
   isFreePlan: boolean; // Downgrading to free plan
+  hasBillingCycleChanged: boolean; // Billing cycle changed (monthly↔yearly)
   hasPriceDiscrepancy: boolean; // Calculated price differs from API price
 }
 
