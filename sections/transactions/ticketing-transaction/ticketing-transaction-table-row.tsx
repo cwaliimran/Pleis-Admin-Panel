@@ -52,6 +52,8 @@ const TicketingTransactionTableRow: FC<TableRowProps> = ({ item }) => {
 
         <TableCell className="text-left">{item?.amount ? Number(item.amount).toFixed(1) : 'N/A'}</TableCell>
 
+        <TableCell className="text-left capitalize">{item?.paymentMethod || 'N/A'}</TableCell>
+ 
         <TableCell className="text-center capitalize">
           <CustomBadge
             variant={
@@ -67,7 +69,6 @@ const TicketingTransactionTableRow: FC<TableRowProps> = ({ item }) => {
             {item?.paymentStatus || 'N/A'}
           </CustomBadge>
         </TableCell>
-
         <TableCell className="text-left">{fDate(item?.createdAt, 'DD/MM/YYYY HH:mm')}</TableCell>
       </TableRow>
     </>

@@ -26,6 +26,8 @@ import RewardCard from '@/sections/loyalty/rewardCard';
 // import { useGetLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
 import { useRouter } from 'next/navigation';
 import React from 'react';
+import { useGetGlobalLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
+import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
 
 const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }) => {
   const router = useRouter();
@@ -36,22 +38,185 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
   const [mainActive, setMainActive] = React.useState('overview');
   const [activeDurationTab, setActiveDurationTab] = React.useState('monthly');
 
-  // const {
-  //   data: dashboardRaw = {} as any,
-  //   isLoading,
-  //   isFetching,
-  // } = useGetLoyaltyDashboardQuery({
-  //   // dateFilter: dateFilterMap[active] ?? 'all',
-  //   companyOrganizer: global ? undefined : companyId,
-  // });
+  // Map tab values to API dateFilter values
+  const dateFilterMap: Record<string, string> = {
+    daily: 'today',
+    weekly: 'thisWeek',
+    monthly: 'thisMonth',
+    yearly: 'thisYear',
+    all: 'all',
+  };
 
-  const activePercent = 75;
-  const inactivePercent = 25;
+  const {
+    data: dashboardRaw = {} as any,
+    isLoading,
+    isFetching,
+  } = useGetGlobalLoyaltyDashboardQuery({
+     dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
+  });
+
+  const membersActivity = Array.isArray(dashboardRaw?.data?.membersActivity) ? dashboardRaw.data.membersActivity : [];
+  const activeActivity = membersActivity.find((item: any) => String(item?.name || '').toLowerCase() === 'active');
+  const inactiveActivity = membersActivity.find((item: any) => String(item?.name || '').toLowerCase() === 'inactive');
+
+  const activePercent = Number(activeActivity?.percent ?? 0);
+  const inactivePercent = Number(inactiveActivity?.percent ?? 0);
+  const activeCount = Number(activeActivity?.count ?? 0);
+  const inactiveCount = Number(inactiveActivity?.count ?? 0);
+
+  const mappedStatsTitle: Record<string, string> = {
+    totalUsers: 'Total Members',
+    activeUsers: 'Active Members',
+    inactiveUsers: 'Inactive Members',
+    newUsers: 'New Members',
+  };
+
+  const dashboardStats = Array.isArray(dashboardRaw?.data?.stats) ? dashboardRaw.data.stats : [];
+
+  const midCardKeyTitleMap: Record<string, string> = {
+    totalUsers: 'Existing Members',
+    newUsers: 'New Members',
+  };
+
+  const loyaltyMidStatCards = (['totalUsers', 'newUsers'] as const)
+    .map((key) => {
+      const stat = dashboardStats.find((s: any) => s?.key === key);
+      if (!stat) return null;
+      const growthNumber = Number(stat?.growth ?? 0);
+      const growth =
+        key === 'newUsers'
+          ? undefined
+          : Number.isFinite(growthNumber)
+            ? `${growthNumber > 0 ? '+' : ''}${growthNumber.toFixed(2)}%`
+            : undefined;
+      return {
+        id: key,
+        title: midCardKeyTitleMap[key],
+        amount: Number(stat?.value ?? 0),
+        status: stat?.selectedSubFilter || 'all',
+        raise: growth,
+      };
+    })
+    .filter(Boolean);
+
+  const hideGrowthForKeys = new Set(['inactiveUsers', 'newUsers']);
+  const hideGrowthForTitles = new Set(['Inactive Members', 'New Members', 'New Members this Month']);
+  const rawAgeDemographics = Array.isArray(dashboardRaw?.data?.usersDashboardAnalytics?.ageDemographics)
+    ? dashboardRaw.data.usersDashboardAnalytics.ageDemographics
+    : [];
+  const ageDemographicsData = rawAgeDemographics.map((item: any) => ({
+    ageGroup: item?.ageGroup || '',
+    visitors: Number(item?.total ?? 0),
+  }));
+  const topAgeGroup = ageDemographicsData.reduce(
+    (max: { ageGroup: string; visitors: number }, cur: { ageGroup: string; visitors: number }) =>
+      cur.visitors > max.visitors ? cur : max,
+    { ageGroup: '', visitors: 0 }
+  );
+  const totalAgeVisitors = ageDemographicsData.reduce((sum: number, item: { visitors: number }) => sum + item.visitors, 0);
+  const topAgePercent =
+    totalAgeVisitors > 0 ? Math.round((topAgeGroup.visitors / totalAgeVisitors) * 100) : 0;
+
+  const regionOverviewData = Array.isArray(dashboardRaw?.data?.usersDashboardAnalytics?.regionOverview)
+    ? dashboardRaw.data.usersDashboardAnalytics.regionOverview.map((item: any) => ({
+        month: item?.region || '',
+        males: Number(item?.males ?? 0),
+        females: Number(item?.females ?? 0),
+        others: Number(item?.others ?? 0),
+      }))
+    : [];
+
+  const genderColorMap: Record<string, string> = {
+    Males: '#2563EB',
+    Females: '#202C88',
+    Others: '#7DAEF4',
+  };
+  const genderOrder = ['Males', 'Females', 'Others'];
+  const rawGenderAnalytics = Array.isArray(dashboardRaw?.data?.usersDashboardAnalytics?.genderAnalytics)
+    ? dashboardRaw.data.usersDashboardAnalytics.genderAnalytics
+    : [];
+  const genderAnalyticsData = genderOrder.map((name) => {
+    const matchedItem = rawGenderAnalytics.find((item: any) => String(item?.name || '').toLowerCase() === name.toLowerCase());
+
+    return {
+      name,
+      count: Number(matchedItem?.count ?? 0),
+      percent: Number(matchedItem?.percent ?? 0),
+      color: genderColorMap[name],
+    };
+  });
+  const genderDonutChartData = genderAnalyticsData.map((item) => ({
+    name: item.name,
+    value: item.count,
+  }));
+
+  const newUsersGrowthChartData = Array.isArray(dashboardRaw?.data?.newUsersDashboardAnalytics?.userGrowth)
+    ? dashboardRaw.data.newUsersDashboardAnalytics.userGrowth.map((item: any) => ({
+        month: item?.month || '',
+        views: Number(item?.total ?? 0),
+      }))
+    : [];
+
+  const globalLoyaltyWalletStats = dashboardRaw?.data?.globalloyaltyWalletStats;
+  const loyaltyPointsCards: LoyaltyPoints[] = globalLoyaltyWalletStats
+    ? [
+        {
+          id: 1,
+          name: 'Total points earned',
+          points: Number(globalLoyaltyWalletStats?.totalPointsEarned ?? 0),
+        },
+        {
+          id: 2,
+          name: 'Total points redeemed',
+          points: Number(globalLoyaltyWalletStats?.totalPointsRedeemed ?? 0),
+        },
+        {
+          id: 3,
+          name: 'Average points per user',
+          points: Number(globalLoyaltyWalletStats?.averagePointsPerUser ?? 0),
+        },
+        {
+          id: 4,
+          name: 'Total points activity',
+          points: Number(globalLoyaltyWalletStats?.totalPointsActivity ?? 0),
+        },
+        {
+          id: 5,
+          name: 'Total points balance',
+          points: Number(globalLoyaltyWalletStats?.totalPointsBalance ?? 0),
+        },
+      ]
+    : loyaltPointsDashboard;
+
+  const topStatCards =
+    dashboardStats?.length > 0
+      ? dashboardStats?.map((stat: any, index: number) => {
+          const growthNumber = Number(stat?.growth ?? 0);
+          const growth = Number.isFinite(growthNumber) ? `${growthNumber > 0 ? '+' : ''}${growthNumber?.toFixed(2)}%` : undefined;
+
+          return {
+            id: stat?.key || `loyalty-stat-${index}`,
+            title: mappedStatsTitle[stat?.key] || stat?.title || 'Members',
+            amount: Number(stat?.value ?? 0),
+            status: stat?.selectedSubFilter || 'all',
+            raise: hideGrowthForKeys.has(stat?.key) ? undefined : growth,
+          };
+        })
+      : loyaltyCardHeaderData.map((card: any) => ({
+          ...card,
+          raise: hideGrowthForTitles.has(card?.title) ? undefined : card?.raise,
+        }));
 
   const handleTabClick = (tab: TabData) => {
     setMainActive(tab.value);
     router.push(`/${userType}/${tab.link}`);
   };
+
+   // ---- Loading state ----
+     if (isLoading || isFetching) {
+       return <DashboardSkeleton />;
+     }
+   
 
   return (
     <>
@@ -151,7 +316,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
 
       {/* --------------- LOYALTY TOP STATS ---------------*/}
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
-        {loyaltyCardHeaderData?.map((card: any, index) => (
+        {topStatCards?.map((card: any, index: number) => (
           <InvoiceCard key={index} item={card} />
         ))}
       </div>
@@ -169,20 +334,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
 
             <ViewsOverTime
               height={330}
-              data={[
-                { month: 'Jan', views: 2400 },
-                { month: 'Feb', views: 1398 },
-                { month: 'Mar', views: 9800 },
-                { month: 'Apr', views: 3908 },
-                { month: 'May', views: 4800 },
-                { month: 'Jun', views: 3800 },
-                { month: 'Jul', views: 4300 },
-                { month: 'Aug', views: 5000 },
-                { month: 'Sep', views: 6000 },
-                { month: 'Oct', views: 7000 },
-                { month: 'Nov', views: 8000 },
-                { month: 'Dec', views: 9000 },
-              ]}
+              data={newUsersGrowthChartData}
             />
           </Card>
         </div>
@@ -206,9 +358,12 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${activePercent}%` }}></div>
+                    <div
+                      className="bg-primary h-full transition-all duration-500"
+                      style={{ width: `${Math.max(0, Math.min(100, activePercent))}%` }}
+                    ></div>
                   </div>
-                  <h4 className="text-md mb-2 font-medium">6000</h4>
+                  <h4 className="text-md mb-2 font-medium">{activeCount}</h4>
                 </div>
 
                 {/* Inactive Members */}
@@ -218,16 +373,19 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${inactivePercent}%` }}></div>
+                    <div
+                      className="bg-primary h-full transition-all duration-500"
+                      style={{ width: `${Math.max(0, Math.min(100, inactivePercent))}%` }}
+                    ></div>
                   </div>
-                  <h4 className="text-md mb-2 font-medium">2000</h4>
+                  <h4 className="text-md mb-2 font-medium">{inactiveCount}</h4>
                 </div>
               </div>
             </Card>
 
             {/* Loyalty Cards */}
             <div className="grid gap-5 md:grid-cols-2">
-              {loyaltyMidCardData?.slice(0, 2).map((card: any, index) => (
+              {(loyaltyMidStatCards.length > 0 ? loyaltyMidStatCards : loyaltyMidCardData?.slice(0, 2)).map((card: any, index: number) => (
                 <InvoiceCard key={index} item={card} />
               ))}
             </div>
@@ -243,20 +401,14 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               </div>
             </CardHeader>
             <div className="flex-1">
-              <VisitorAge
-                data={[
-                  { ageGroup: '18-24', visitors: 120 },
-                  { ageGroup: '25-34', visitors: 200 },
-                  { ageGroup: '35-44', visitors: 150 },
-                  { ageGroup: '45-54', visitors: 90 },
-                  { ageGroup: '55+', visitors: 70 },
-                ]}
-              />
-              <div className="mx-4 mt-4">
-                <p className="text-muted-foreground text-sm font-medium">
-                  <span className="text-xl font-bold text-black">66%</span> visitors are 45-55 years old
-                </p>
-              </div>
+              <VisitorAge data={ageDemographicsData} />
+              {topAgeGroup.ageGroup && (
+                <div className="mx-4 mt-4">
+                  <p className="text-muted-foreground text-sm font-medium">
+                    <span className="text-xl font-bold text-black dark:text-white">{topAgePercent}%</span> visitors are {topAgeGroup.ageGroup} years old
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -286,14 +438,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
             </CardHeader>
             
             <VisitorRegion
-              chartData={[
-                { month: 'Jan', males: 186, females: 80, others: 50 },
-                { month: 'Feb', males: 305, females: 200, others: 100 },
-                { month: 'Mar', males: 237, females: 120, others: 70 },
-                { month: 'April', males: 73, females: 190, others: 60 },
-                { month: 'May', males: 209, females: 130, others: 90 },
-                { month: 'June', males: 214, females: 140, others: 80 },
-              ]}
+              chartData={regionOverviewData}
               chartConfig={{
                 males: { label: 'Males', color: '#2563eb' },
                 females: { label: 'Females', color: '#202C88' },
@@ -311,34 +456,20 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 <h3 className="text-xl font-semibold"> Gender Analytics</h3>
 
                 <div className="flex flex-col items-end space-y-1">
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
-                    <h1 className="text-[13px]">
-                      Females <span className="font-semibold">(20% / 2000)</span>
-                    </h1>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#202C88] leading-10" />
-                    <h1 className="text-[13px] text-[#7DAEF4]">
-                      Males <span className="font-semibold">(20% / 2000)</span>
-                    </h1>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4] leading-10" />
-                    <h1 className="text-[13px] text-[#7DAEF4]">
-                      Others <span className="font-semibold">(10% / 1000)</span>
-                    </h1>
-                  </div>
+                  {genderAnalyticsData.map((item) => (
+                    <div key={item.name} className="flex items-center">
+                      <div className="mr-2 h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                      <h1 className={`text-[13px] ${item.name === 'Males' || item.name === 'Others' ? 'text-[#7DAEF4]' : ''}`}>
+                        {item.name} <span className="font-semibold">({item.percent}% / {item.count})</span>
+                      </h1>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardHeader>
             <GenderDonutChart
-              data={[
-                { name: 'Males', value: 400 },
-                { name: 'Females', value: 300 },
-                { name: 'Others', value: 100 },
-              ]}
-              COLORS={['#2563EB', '#202C88', '#7DAEF4']}
+              data={genderDonutChartData}
+              COLORS={genderOrder.map((item) => genderColorMap[item])}
             />
           </Card>
         </div>
@@ -348,7 +479,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
       <div className="grid-col-12 mt-5 grid">
         <h1 className="mx-2 my-5 text-xl font-semibold">Loyalty Points</h1>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-          {loyaltPointsDashboard?.map((item: LoyaltyPoints) => (
+          {loyaltyPointsCards?.map((item: LoyaltyPoints) => (
             <LoyaltyCard key={item.id} item={item} />
           ))}
         </div>
@@ -361,12 +492,12 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
           <Card className="dark:bg-secondary col-span-12 shadow-md md:col-span-6">
             <CardHeader>
               <h3 className="text-md mb-3 font-medium">Points activity over time</h3>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold">+10%</h3>
                 <h3 className="text-md font-[400] text-gray-400">
                   Last 90 Days <span className="ml-1 text-green-500">+10%</span>
                 </h3>
-              </div>
+              </div> */}
             </CardHeader>
             <ViewsOverTime
               height={350}

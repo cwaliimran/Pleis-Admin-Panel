@@ -17,6 +17,10 @@ const OrderingTransactionView = ({ userType }: LoyaltyTransactionViewProps) => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [minAmount, setMinAmount] = useState<string>('');
+  const [maxAmount, setMaxAmount] = useState<string>('');
   // const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -34,7 +38,10 @@ const OrderingTransactionView = ({ userType }: LoyaltyTransactionViewProps) => {
     page: page - 1,
     search,
     limit,
-    status: status === 'all' ? '' : status,
+    status: (paymentStatus === 'all' ? '' : paymentStatus) || (status === 'all' ? '' : status),
+    paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
+    startAmount: minAmount || undefined,
+    endAmount: maxAmount || undefined,
     // date: date ? formatDate(date) : undefined,
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
@@ -93,6 +100,26 @@ const OrderingTransactionView = ({ userType }: LoyaltyTransactionViewProps) => {
         search={search}
         limit={limit}
         page={page}
+        paymentStatus={paymentStatus}
+        onPaymentStatusChange={(val) => {
+          setPaymentStatus(val);
+          setPage(1);
+        }}
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={(val) => {
+          setPaymentMethod(val);
+          setPage(1);
+        }}
+        minAmount={minAmount}
+        onMinAmountChange={(val) => {
+          setMinAmount(val);
+          setPage(1);
+        }}
+        maxAmount={maxAmount}
+        onMaxAmountChange={(val) => {
+          setMaxAmount(val);
+          setPage(1);
+        }}
         status={status}
         onStatusChange={(val) => {
           setStatus(val);
@@ -112,6 +139,10 @@ const OrderingTransactionView = ({ userType }: LoyaltyTransactionViewProps) => {
         // }}
         onResetFilters={() => {
           setStatus('');
+          setPaymentStatus('');
+          setPaymentMethod('');
+          setMinAmount('');
+          setMaxAmount('');
           // setDate(undefined);
           setStartDate(undefined);
           setEndDate(undefined);

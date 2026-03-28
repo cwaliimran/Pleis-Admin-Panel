@@ -63,11 +63,15 @@ export const loyaltyTransactionsApi = createApi({
         type,
         date,
         limit,
+        status,
         companyOrganizer,
         organization,
         isGlobal = false,
         walletType,
         orderType,
+        paymentMethod,
+        startAmount,
+        endAmount,
         startDate,
         endDate,
         user,
@@ -79,11 +83,15 @@ export const loyaltyTransactionsApi = createApi({
         };
         if (search) (params as any).keyword = search;
         if (type) (params as any).type = type;
+        if (status) (params as any).status = status;
         if (date) (params as any).date = date;
         (params as any).walletType = walletType;
-
+         
+        if (paymentMethod) (params as any).paymentMethod = paymentMethod;
         if (startDate) (params as any).startDate = startDate;
         if (endDate) (params as any).endDate = endDate;
+        if (startAmount) (params as any).startAmount = startAmount;
+        if (endAmount) (params as any).endAmount = endAmount;
         if (orderType) (params as any).orderType = orderType;
         if (user) (params as any).user = user;
 

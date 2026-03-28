@@ -187,6 +187,7 @@ export const API_ROUTES = {
 
   ADMIN_DASHBOARD: `/admin/dashboard`,
   ADMIN_LOYALTY_DASHBOARD: `/admin/loyalty/dashboard`,
+  ADMIN_GLOBAL_LOYALTY_DASHBOARD: `/admin/global-loyalty/dashboard`,
   
   ORGANIZER_DASHBOARD: `/organizer/dashboard`,
   ORGANIZER_LOYALTY_DASHBOARD: `/organizer/loyalty/dashboard`,

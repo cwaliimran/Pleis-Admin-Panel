@@ -50,6 +50,8 @@ const ReservationTransactionTableRow: FC<TableRowProps> = ({ item }) => {
 
         <TableCell className="text-left">{item?.amount ? Number(item.amount).toFixed(1) : 'N/A'}</TableCell>
 
+          <TableCell className="text-left capitalize">{item?.paymentMethod || 'N/A'}</TableCell>
+
         <TableCell className="text-center capitalize">
           <CustomBadge
             variant={

@@ -17,7 +17,7 @@ import {
   VisitorRegion,
 } from '@/sections/invoices';
 import { useGetDashboardQuery } from '@/store/Reducer/dashboard';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import DashboardSkeleton from '../super-admin-dashboard/components/DashboardSkeleton';
 import DashboardStatsCard from '../super-admin-dashboard/components/DashboardStatsCard';
 import TransactionHistoryDashboardWidget from '../transactions/transaction-history/transaction-history-dashboard-widget';
@@ -36,6 +36,7 @@ interface StatItem {
 
 const OrganizerDashboard = () => {
   const [active, setActive] = useState('all');
+  const [trendType, setTrendType] = useState<'salesTrend' | 'revenueTrend'>('salesTrend');
 
   const dateFilterMap: Record<string, string> = {
     today: 'today',
@@ -56,6 +57,28 @@ const OrganizerDashboard = () => {
   const dashboard = dashboardRaw?.data ?? dashboardRaw ?? {};
 
   const stats: StatItem[] = dashboard.stats ?? [];
+
+  const GENDER_COLORS: Record<string, string> = { Males: '#2563EB', Females: '#202C88', Others: '#7DAEF4' };
+  const genderAnalytics: { name: string; count: number; percent: number }[] =
+    dashboard?.usersDashboardAnalyticsOrganizer?.genderAnalytics ?? [];
+  const totalGenderCount = genderAnalytics.reduce((sum: number, g: any) => sum + (g.count ?? 0), 0);
+
+  // ---- Trends ----
+  const trendRaw = dashboard?.trends?.[trendType] ?? [];
+  const currentYear = trendRaw[0]?.year;
+  const previousYear = trendRaw[1]?.year;
+  const trendChartData = useMemo(() => {
+    const currentData: any[] = trendRaw[0]?.data ?? [];
+    const previousData: any[] = trendRaw[1]?.data ?? [];
+    return currentData.map((item: any, i: number) => ({
+      month: item?.month,
+      current: item?.total ?? 0,
+      previous: previousData[i]?.total ?? 0,
+    }));
+  }, [trendRaw]);
+
+  const interestPerCategory: { category: string; males: number; females: number }[] =
+    dashboard?.interestPerCategory?.interestPerCategory ?? [];
 
   // ---- Loading state ----
   if (isLoading || isFetching) {
@@ -116,25 +139,22 @@ const OrganizerDashboard = () => {
               <h3 className="text-xl font-semibold">Event Performance Comparison</h3>
               <div className="flex flex-col lg:items-center">
                 <div className="flex items-center">
-                  <div className="mr-2 h-2 w-2 rounded-full bg-black" />
-                  <h1 className="text-[14px] leading-6">Tickets Sold</h1>
+                  <div className="mr-2 h-2 w-2 rounded-full bg-[#2563eb]" />
+                  <h1 className="text-[14px] leading-6 text-[#2563eb]">Tickets Sold</h1>
                 </div>
                 <div className="mt-2 flex items-center">
-                  <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4] leading-10" />
+                  <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4]" />
                   <h1 className="text-[14px] text-[#7DAEF4]">Revenue</h1>
                 </div>
               </div>
             </div>
           </CardHeader>
           <EventPerformanceComparison
-            chartData={[
-              { month: 'January', desktop: 186, mobile: 80 },
-              { month: 'February', desktop: 305, mobile: 200 },
-              { month: 'March', desktop: 237, mobile: 120 },
-              { month: 'April', desktop: 73, mobile: 190 },
-              { month: 'May', desktop: 209, mobile: 130 },
-              { month: 'June', desktop: 214, mobile: 140 },
-            ]}
+            chartData={(dashboard?.eventPerformanceComparision ?? []).map((item: any) => ({
+              month: item?.month,
+              desktop: item?.tickets,
+              mobile: item?.revenue,
+            }))}
             chartConfig={{
               desktop: { label: 'Tickets Sold', color: '#2563eb' },
               mobile: { label: 'Revenue', color: '#7DAEF4' },
@@ -152,13 +172,10 @@ const OrganizerDashboard = () => {
               </CardHeader>
               <div className="flex-1">
                 <VisitorAge
-                  data={[
-                    { ageGroup: '18-24', visitors: 120 },
-                    { ageGroup: '25-34', visitors: 200 },
-                    { ageGroup: '35-44', visitors: 150 },
-                    { ageGroup: '45-54', visitors: 90 },
-                    { ageGroup: '55+', visitors: 70 },
-                  ]}
+                  data={(dashboard?.usersDashboardAnalyticsOrganizer?.ageDemographics ?? []).map((item: any) => ({
+                    ageGroup: item?.ageGroup,
+                    visitors: item?.total,
+                  }))}
                 />
                 <div className="mx-4 mt-4">
                   <p className="text-muted-foreground text-sm font-medium">
@@ -171,35 +188,33 @@ const OrganizerDashboard = () => {
 
           <div>
             {/* Visitor Region Overview */}
-            <Card className="dark:bg-secondary h-[450px] shadow-lg">
+            <Card className="dark:bg-secondary h-[450px] shadow-md">
               <CardHeader>
                 <div className="items-start justify-between md:flex">
-                  <h3 className="text-xl font-semibold">Visitor Region Overview</h3>
-                  <div className="flex flex-col md:items-center">
-                    <div className="flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
-                      <h1 className="text-[14px] leading-6">Males</h1>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88] leading-10" />
-                      <h1 className="text-[14px] text-[#7DAEF4]">Females</h1>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4] leading-10" />
-                      <h1 className="text-md text-[#7DAEF4]">Females</h1>
-                    </div>
+                  <h3 className="text-xl font-semibold"> Visitor Region Overview</h3>
+                  <div className="flex flex-col justify-start md:items-center md:justify-center">
+                    {[
+                      { label: 'Males', color: '#2563EB' },
+                      { label: 'Females', color: '#202C88' },
+                      { label: 'Other', color: '#7DAEF4' },
+                    ].map((item) => (
+                      <div key={item.label} className="mt-2 flex items-center first:mt-0">
+                        <div className="mr-2 h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
+                        <h1 className="text-[14px]" style={{ color: item.color }}>
+                          {item.label}
+                        </h1>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardHeader>
               <VisitorRegion
-                chartData={[
-                  { month: 'January', males: 186, females: 80, others: 50 },
-                  { month: 'February', males: 305, females: 200, others: 100 },
-                  { month: 'March', males: 237, females: 120, others: 70 },
-                  { month: 'April', males: 73, females: 190, others: 60 },
-                  { month: 'May', males: 209, females: 130, others: 90 },
-                  { month: 'June', males: 214, females: 140, others: 80 },
-                ]}
+                chartData={dashboard?.usersDashboardAnalyticsOrganizer?.regionOverview?.map((item : any ) => ({
+                  month: item?.region,
+                  males: item?.males,
+                  females: item?.females,
+                  others: item?.others,
+                }))}
                 chartConfig={{
                   males: { label: 'Males', color: '#2563eb' },
                   females: { label: 'Females', color: '#202C88' },
@@ -212,62 +227,61 @@ const OrganizerDashboard = () => {
             {/* Visitor Gender Analytics */}
             <Card className="dark:bg-secondary h-[450px] !pb-0 shadow-lg">
               <CardHeader>
-                <div className="items-start justify-between md:flex">
-                  <h3 className="text-xl font-semibold">Visitor Gender Analytics</h3>
-                  <div className="flex flex-col md:items-center">
-                    <div className="flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
-                      <h1 className="text-[14px] leading-6">Males</h1>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88] leading-10" />
-                      <h1 className="text-[14px] text-[#7DAEF4]">Females</h1>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4] leading-10" />
-                      <h1 className="text-md text-[#7DAEF4]">Females</h1>
-                    </div>
+                <div className="items-start justify-between lg:flex">
+                  <h3 className="text-xl font-semibold">Gender Analytics</h3>
+                  <div className="mt-2 flex flex-col items-start rounded-md md:mt-0 md:gap-2 lg:gap-3">
+                    {genderAnalytics.map((g) => (
+                      <div key={g.name} className="flex w-full items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: GENDER_COLORS[g.name] ?? '#A0AEC0' }} />
+                          <span className="text-[14px]" style={{ color: GENDER_COLORS[g.name] ?? '#A0AEC0' }}>
+                            {g.name}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardHeader>
-              <GenderDonutChart
-                size={120}
-                data={[
-                  { name: 'Males', value: 400 },
-                  { name: 'Females', value: 300 },
-                  { name: 'Others', value: 100 },
-                ]}
-                COLORS={['#2563EB', '#202C88', '#7DAEF4']}
-              />
+              {totalGenderCount > 0 ? (
+                <GenderDonutChart
+                  data={genderAnalytics.map((g) => ({ name: g.name, value: g.count }))}
+                  COLORS={genderAnalytics.map((g) => GENDER_COLORS[g.name] ?? '#A0AEC0')}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center pb-6">
+                  <p className="text-muted-foreground text-sm">No data available</p>
+                </div>
+              )}
             </Card>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-12 gap-4">
           {/* Trends */}
-          <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-7">
+          <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-6 lg:col-span-7">
             <CardHeader>
               <div className="items-center justify-between md:flex">
                 <div className="flex flex-col items-start">
                   <h3 className="text-xl font-semibold">Trends</h3>
-                  <div className="flex flex-col items-center">
+                  <div className="mt-1 flex flex-col">
                     <div className="flex items-center">
                       <div className="mr-2 h-2 w-2 rounded-full bg-[#2563EB]" />
-                      <h1 className="text-[14px] leading-6">This Month</h1>
+                      <h1 className="text-[14px] leading-6">{currentYear ?? 'Current Year'}</h1>
                     </div>
-                    <div className="mt-2 flex items-center">
-                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7B7E91] leading-10" />
-                      <h1 className="text-[14px] text-[#7B7E91]">Last Month</h1>
+                    <div className="mt-1 flex items-center">
+                      <div className="mr-2 h-2 w-2 rounded-full bg-[#7B7E91]" />
+                      <h1 className="text-[14px] text-[#7B7E91]">{previousYear ?? 'Previous Year'}</h1>
                     </div>
                   </div>
                 </div>
                 <div className="mt-2 md:mt-0">
-                  <Select defaultValue="totalSales">
+                  <Select value={trendType} onValueChange={(val: any) => setTrendType(val as 'salesTrend' | 'revenueTrend')}>
                     <SelectTrigger>
-                      <SelectValue placeholder="" />
+                      <SelectValue placeholder="Select trend" />
                     </SelectTrigger>
                     <SelectContent className="dark:bg-secondary">
                       <SelectGroup className="w-auto">
-                        <SelectLabel>Sale</SelectLabel>
+                        <SelectLabel>Trend</SelectLabel>
                         <SelectItem value="salesTrend">Total Sales</SelectItem>
                         <SelectItem value="revenueTrend">Total Revenue</SelectItem>
                       </SelectGroup>
@@ -276,49 +290,43 @@ const OrganizerDashboard = () => {
                 </div>
               </div>
             </CardHeader>
-            <Trend
-              data={[
-                { month: 'Jan', current: 2400, previous: 2000 },
-                { month: 'Feb', current: 1398, previous: 1500 },
-                { month: 'Mar', current: 9800, previous: 6000 },
-                { month: 'Apr', current: 3908, previous: 3000 },
-                { month: 'May', current: 4800, previous: 3500 },
-                { month: 'Jun', current: 3800, previous: 3200 },
-                { month: 'Jul', current: 4300, previous: 3400 },
-              ]}
-            />
+            <Trend data={trendChartData} />
           </Card>
           {/* visitor interest */}
-          <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-5">
+          <Card className="dark:bg-secondary col-span-12 shadow-lg md:col-span-6 md:h-[450px] lg:col-span-5">
             <CardHeader>
-              <div className="justify-between md:flex md:items-center">
-                <h3 className="text-xl font-semibold">Visitor Interest</h3>
+              <div className="justify-between md:flex md:items-start">
+                <h3 className="text-xl font-semibold">Interest per Category</h3>
+
                 <div className="flex flex-col md:items-center">
                   <div className="flex items-center">
                     <div className="mr-2 h-2 w-2 rounded-full bg-[#020617]" />
                     <h1 className="text-[14px] leading-6">Males</h1>
                   </div>
                   <div className="mt-2 flex items-center">
-                    <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88] leading-10" />
+                    <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88]" />
                     <h1 className="text-[14px] text-[#202C88]">Females</h1>
                   </div>
                 </div>
               </div>
             </CardHeader>
-            <VisitorInterest
-              chartData={[
-                { month: 'January', males: 186, females: 80 },
-                { month: 'February', males: 305, females: 200 },
-                { month: 'March', males: 237, females: 120 },
-                { month: 'April', males: 73, females: 190 },
-                { month: 'May', males: 209, females: 130 },
-                { month: 'June', males: 214, females: 140 },
-              ]}
-              chartConfig={{
-                males: { label: 'Males', color: '#2563EB' },
-                females: { label: 'Females', color: '#202C88' },
-              }}
-            />
+            {interestPerCategory?.length > 0 ? (
+              <VisitorInterest
+                chartData={interestPerCategory?.map((item) => ({
+                  month: item?.category,
+                  males: item?.males,
+                  females: item?.females,
+                }))}
+                chartConfig={{
+                  males: { label: 'Males', color: '#2563EB' },
+                  females: { label: 'Females', color: '#202C88' },
+                }}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center pb-6">
+                <p className="text-muted-foreground text-sm">No data available</p>
+              </div>
+            )}
           </Card>
         </div>
         <div className="mt-5 grid grid-cols-12 gap-4">
@@ -326,9 +334,9 @@ const OrganizerDashboard = () => {
           <Card className="dark:bg-secondary col-span-12 h-[450px] shadow-lg md:col-span-6">
             <CardHeader>
               <div className="lgitems-center justify-between lg:flex">
-                <h3 className="text-xl font-semibold">Views Over Time</h3>
+                <h3 className="text-xl font-semibold">Event Views Over Time</h3>
                 <div className="mt-2 flex flex-col lg:mt-0 lg:items-center">
-                  <Select defaultValue="newEvent">
+                  {/* <Select defaultValue="newEvent">
                     <SelectTrigger>
                       <SelectValue placeholder="" />
                     </SelectTrigger>
@@ -339,25 +347,15 @@ const OrganizerDashboard = () => {
                         <SelectItem value="otherEvent">Other Event</SelectItem>
                       </SelectGroup>
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                 </div>
               </div>
             </CardHeader>
             <ViewsOverTime
-              data={[
-                { month: 'Jan', views: 2400 },
-                { month: 'Feb', views: 1398 },
-                { month: 'Mar', views: 9800 },
-                { month: 'Apr', views: 3908 },
-                { month: 'May', views: 4800 },
-                { month: 'Jun', views: 3800 },
-                { month: 'Jul', views: 4300 },
-                { month: 'Aug', views: 5000 },
-                { month: 'Sep', views: 6000 },
-                { month: 'Oct', views: 7000 },
-                { month: 'Nov', views: 8000 },
-                { month: 'Dec', views: 9000 },
-              ]}
+              data={(dashboard?.eventViewsOverTime ?? []).map((item: any) => ({
+                month: item?.month,
+                views: item?.events ?? 0,
+              }))}
             />
           </Card>
           {/* most viewed event */}
@@ -368,19 +366,21 @@ const OrganizerDashboard = () => {
               </div>
             </CardHeader>
 
-            <MostViewedEvent
-              chartData={[
-                { month: 'January', search: 189 },
-                { month: 'February', search: 305 },
-                { month: 'March', search: 237 },
-                { month: 'April', search: 73 },
-                { month: 'May', search: 209 },
-                { month: 'June', search: 214 },
-              ]}
-              chartConfig={{
-                search: { label: 'Search', color: '#2563EB' },
-              }}
-            />
+            {(dashboard?.topViewedEvents?.mostViewedEvents ?? []).length > 0 ? (
+              <MostViewedEvent
+                chartData={(dashboard?.topViewedEvents?.mostViewedEvents ?? []).map((item: any) => ({
+                  month: item?.title,
+                  search: item?.totalViews ?? 0,
+                }))}
+                chartConfig={{
+                  search: { label: 'Views', color: '#2563EB' },
+                }}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center pb-6">
+                <p className="text-muted-foreground text-sm">No data available</p>
+              </div>
+            )}
           </Card>
         </div>
         <div className="mt-5 grid grid-cols-12 gap-4">
@@ -390,7 +390,7 @@ const OrganizerDashboard = () => {
               <div className="justify-between md:items-center lg:flex">
                 <h3 className="text-xl font-semibold">Follower Count</h3>
                 <div className="mt-2 flex flex-col lg:mt-0 lg:items-center">
-                  <Select defaultValue="users">
+                  {/* <Select defaultValue="users">
                     <SelectTrigger>
                       <SelectValue placeholder="" />
                     </SelectTrigger>
@@ -401,25 +401,12 @@ const OrganizerDashboard = () => {
                         <SelectItem value="otherUsers">Other Users</SelectItem>
                       </SelectGroup>
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                 </div>
               </div>
             </CardHeader>
             <FollowerCount
-              data={[
-                { month: 'Jan', followers: 1200 },
-                { month: 'Feb', followers: 1500 },
-                { month: 'Mar', followers: 1300 },
-                { month: 'Apr', followers: 1000 },
-                { month: 'May', followers: 1800 },
-                { month: 'Jun', followers: 2500 },
-                { month: 'Jul', followers: 3000 },
-                { month: 'Aug', followers: 3500 },
-                { month: 'Sep', followers: 4000 },
-                { month: 'Oct', followers: 4500 },
-                { month: 'Nov', followers: 5000 },
-                { month: 'Dec', followers: 5500 },
-              ]}
+              data={dashboard?.followersOverTime ?? []}
             />
           </Card>
           {/* Top Performing Events */}
@@ -429,7 +416,7 @@ const OrganizerDashboard = () => {
                 <h3 className="text-xl font-semibold">Top Performing Events</h3>
               </div>
             </CardHeader>
-            <TopPerformaningEvents />
+            <TopPerformaningEvents data={dashboard?.topPerformingEvents ?? []} />
           </Card>
         </div>
 

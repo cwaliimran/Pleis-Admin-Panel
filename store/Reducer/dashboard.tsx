@@ -57,7 +57,37 @@ export const dashboardApi = createApi({
       }),
       providesTags: ['dashboard'],
     }),
+    
+    getGlobalLoyaltyDashboard: builder.query({
+      query: ({ dateFilter, companyOrganizer }) => {
+        const params: any = {
+          dateFilter,
+        };
+
+        if (companyOrganizer) {
+          params.companyOrganizer = companyOrganizer;
+        }
+
+        return {
+          url: '',
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_GLOBAL_LOYALTY_DASHBOARD,
+            // organizerRoute: API_ROUTES.ORGANIZER_GLOBAL_LOYALTY_DASHBOARD,
+          },
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+      providesTags: ['dashboard'],
+    }),
+
+
+
   }),
 });
 
-export const { useGetDashboardQuery, useGetLoyaltyDashboardQuery } = dashboardApi;
+export const { useGetDashboardQuery, useGetLoyaltyDashboardQuery, useGetGlobalLoyaltyDashboardQuery } = dashboardApi;

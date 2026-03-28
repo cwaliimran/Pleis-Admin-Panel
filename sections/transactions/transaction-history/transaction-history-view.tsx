@@ -31,6 +31,10 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const [search, setSearch] = useState('');
   const [type, setType] = useState<string>('');
   const [status, setStatus] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [minAmount, setMinAmount] = useState<string>('');
+  const [maxAmount, setMaxAmount] = useState<string>('');
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -49,7 +53,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     organizerOrganizationIds,
     userType,
   });
-
+  
   const {
     data: apiData,
     isLoading,
@@ -62,6 +66,10 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
     orderType: type === 'all' ? '' : type,
+    status: paymentStatus === 'all' ? '' : paymentStatus,
+    paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
+    startAmount: minAmount || undefined,
+    endAmount: maxAmount || undefined,
     // companyOrganizer: selectedCompany || undefined,
     companyOrganizer: userType === 'organizer' ? user?.basicInfo?._id : selectedCompany || undefined,
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
@@ -181,6 +189,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
         limit={limit}
         search={search}
         status={status}
+        paymentStatus={paymentStatus}
         type={type}
         startDate={startDate}
         endDate={endDate}
@@ -193,12 +202,34 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
           setSearch(val);
           setPage(1);
         }}
+
+        onPaymentStatusChange={(val) => {
+          setPaymentStatus(val);
+          setPage(1);
+        }}
+
         onStatusChange={(val) => {
           setStatus(val);
           setPage(1);
         }}
         onTypeChange={(val) => {
           setType(val);
+          setPage(1);
+        }}
+      
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={(val) => {
+          setPaymentMethod(val);
+          setPage(1);
+        }}
+        minAmount={minAmount}
+        onMinAmountChange={(val) => {
+          setMinAmount(val);
+          setPage(1);
+        }}
+        maxAmount={maxAmount}
+        onMaxAmountChange={(val) => {
+          setMaxAmount(val);
           setPage(1);
         }}
         onDateChange={(newStartDate, newEndDate) => {
@@ -210,6 +241,10 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
           setStatus('');
           setType('');
           setSearch('');
+          setPaymentStatus('');
+          setPaymentMethod('');
+          setMinAmount('');
+          setMaxAmount('');
           setStartDate(undefined);
           setEndDate(undefined);
           setPage(1);

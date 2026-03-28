@@ -9,6 +9,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { useTableSort } from '@/hooks/useTableSort';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -22,6 +24,7 @@ const HEAD_LABEL = [
   { id: 'orderNo', label: 'Order No', align: 'left' },
   { id: 'transactionType', label: 'Type', align: 'left' },
   { id: 'transactionAmount', label: 'Amount', align: 'left' },
+  { id: 'paymentMethod', label: 'Payment Method', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'timestamp', label: 'Timestamp', align: 'left', sortable: true, sortKey: 'createdAt' },
 ];
@@ -37,6 +40,14 @@ const OrderingTransactionTable: FC<SamplePageProps> = ({
   // filters states bellow
   search = '',
   onSearch = () => {},
+  paymentStatus = '',
+  onPaymentStatusChange = () => {},
+  paymentMethod = '',
+  onPaymentMethodChange = () => {},
+  minAmount = '',
+  onMinAmountChange = () => {},
+  maxAmount = '',
+  onMaxAmountChange = () => {},
   // status = '',
   // onStatusChange = () => {},
   // date,
@@ -113,19 +124,84 @@ const OrderingTransactionTable: FC<SamplePageProps> = ({
                             //   onChange: onDateChange,
                             // }}
                             searchFilter={{
-                              placeholder: 'Search Transactions...',
+                              placeholder: 'Search...',
                               value: search,
                               onChange: onSearch,
                             }}
-                            resetFilter={{
-                              onReset: onResetFilters,
-                              showResetButton: true,
-                            }}
+                            selectFilters={[
+                              {
+                                id: 'sheet-payment-status',
+                                label: 'Payment Status',
+                                placeholder: 'Select Payment Status',
+                                value: paymentStatus,
+                                onChange: onPaymentStatusChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'pending', label: 'Pending' },
+                                  { value: 'paid', label: 'Paid' },
+                                  { value: 'failed', label: 'Failed' },
+                                  { value: 'refunded', label: 'Refunded' },
+                                ],
+                              },
+                              {
+                                id: 'sheet-payment-method',
+                                label: 'Payment Method',
+                                placeholder: 'Select Payment Method',
+                                value: paymentMethod,
+                                onChange: onPaymentMethodChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'applePay', label: 'Apple Pay' },
+                                  { value: 'card', label: 'Card' },
+                                  { value: 'cash', label: 'Cash' },
+                                ],
+                              },
+                            ]}
                             filtersAlignment="left"
                           />
                         </div>
                       </div>
                     </div>
+
+                    <div className="-mt-4 flex w-full flex-col gap-2">
+                      <Label className="text-sm font-medium">Amount Range</Label>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <Input
+                            type="number"
+                            placeholder="Min"
+                            min={0}
+                            value={minAmount}
+                            onChange={(e) => onMinAmountChange(e.target.value)}
+                            className="h-10 w-full"
+                          />
+                        </div>
+                        <span className="text-muted-foreground text-sm">to</span>
+                        <div className="flex-1">
+                          <Input
+                            type="number"
+                            placeholder="Max"
+                            min={0}
+                            value={maxAmount}
+                            onChange={(e) => onMaxAmountChange(e.target.value)}
+                            className="h-10 w-full"
+                          />
+                        </div>
+                      </div>
+                      {minAmount && maxAmount && Number(minAmount) > Number(maxAmount) && (
+                        <p className="text-xs text-red-500">Max amount cannot be less than min amount</p>
+                      )}
+                    </div>
+
+                    {(search || paymentStatus || paymentMethod || minAmount || maxAmount || startDate || endDate) && (
+                      <button
+                        className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
+                        type="button"
+                        onClick={onResetFilters}
+                      >
+                        Reset
+                      </button>
+                    )}
                   </form>
                 </FormProvider>
               </SheetContent>

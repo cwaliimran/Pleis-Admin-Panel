@@ -16,6 +16,10 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
   const [search, setSearch] = useState('');
   const [type, setType] = useState<string>('');
   const [status, setStatus] = useState<string>('');
+  const [paymentStatus, setPaymentStatus] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [minAmount, setMinAmount] = useState<string>('');
+  const [maxAmount, setMaxAmount] = useState<string>('');
 
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
@@ -29,6 +33,10 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
     limit,
     type: status === 'all' ? '' : status,
     orderType: type === 'all' ? '' : type,
+    status: paymentStatus === 'all' ? '' : paymentStatus,
+    paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
+    startAmount: minAmount || undefined,
+    endAmount: maxAmount || undefined,
     companyOrganizer: userType === 'organizer' ? user?.basicInfo?._id : '',
     isAdmin: true,
   });
@@ -76,6 +84,8 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
         limit={limit}
         search={search}
         status={status}
+        paymentStatus={paymentStatus}
+        paymentMethod={paymentMethod}
         type={type}
         onPageChange={setPage}
         onLimitChange={(l) => {
@@ -90,6 +100,24 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
           setStatus(val);
           setPage(1);
         }}
+          onPaymentMethodChange={(val) => {
+          setPaymentMethod(val);
+          setPage(1);
+        }}
+         onPaymentStatusChange={(val) => {
+          setPaymentStatus(val);
+          setPage(1);
+        }}
+         minAmount={minAmount}
+        onMinAmountChange={(val) => {
+          setMinAmount(val);
+          setPage(1);
+        }}
+        maxAmount={maxAmount}
+        onMaxAmountChange={(val) => {
+          setMaxAmount(val);
+          setPage(1);
+        }}
         onTypeChange={(val) => {
           setType(val);
           setPage(1);
@@ -98,6 +126,10 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
           setStatus('');
           setType('');
           setSearch('');
+          setPaymentMethod('');
+          setPaymentStatus('');
+          setMinAmount('');
+          setMaxAmount('');
           setPage(1);
         }}
       />

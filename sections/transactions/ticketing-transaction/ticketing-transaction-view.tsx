@@ -17,6 +17,11 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [type, setType] = useState<string>('ticketingbookings');
+  const [paymentStatus, setPaymentStatus] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [minAmount, setMinAmount] = useState<string>('');
+  const [maxAmount, setMaxAmount] = useState<string>('');
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -24,6 +29,7 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
   const { companyId: selectedCompany } = useCompanySelectionState();
 
   const { organizerOrganizationIds } = useCompanySelection();
+
 
   const {
     data: apiData,
@@ -33,7 +39,10 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
     page: page - 1,
     search,
     limit,
-    status: status === 'all' ? '' : status,
+    status: paymentStatus === 'all' ? '' : paymentStatus,
+    paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
+    startAmount: minAmount || undefined,
+    endAmount: maxAmount || undefined,
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
 
@@ -41,7 +50,7 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     isGlobal: global || false,
     // domainType: 'ticketingorders',
-    orderType: 'ticketingbookings',
+   orderType: 'ticketingbookings',
     isAdmin: userType === 'super-admin',
   });
 
@@ -87,6 +96,31 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
         search={search}
         limit={limit}
         page={page}
+        type={type}
+        onTypeChange={(val) => {
+          setType(val);
+          setPage(1);
+        }}
+        paymentStatus={paymentStatus}
+        onPaymentStatusChange={(val) => {
+          setPaymentStatus(val);
+          setPage(1);
+        }}
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={(val) => {
+          setPaymentMethod(val);
+          setPage(1);
+        }}
+        minAmount={minAmount}
+        onMinAmountChange={(val) => {
+          setMinAmount(val);
+          setPage(1);
+        }}
+        maxAmount={maxAmount}
+        onMaxAmountChange={(val) => {
+          setMaxAmount(val);
+          setPage(1);
+        }}
         status={status}
         onStatusChange={(val) => {
           setStatus(val);
@@ -101,6 +135,11 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
         }}
         onResetFilters={() => {
           setStatus('');
+          setType('ticketingbookings');
+          setPaymentStatus('');
+          setPaymentMethod('');
+          setMinAmount('');
+          setMaxAmount('');
           setStartDate(undefined);
           setEndDate(undefined);
           setSearch('');

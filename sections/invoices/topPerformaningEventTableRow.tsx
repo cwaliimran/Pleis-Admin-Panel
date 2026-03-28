@@ -14,13 +14,12 @@ const TopPerformaningEventTableRow: FC<PageProps> = ({ item }) => {
             <TableCell>
                 <div className='flex items-center gap-3'>
                     <Avatar>
-                        <AvatarImage src="https://github.com/shadcn.png" className='cursor-pointer' />
+                        <AvatarImage src={item?.eventLogo} className='cursor-pointer' />
                     </Avatar>
-                    {item.organizerName}
+                    {item?.eventName}
                 </div>
             </TableCell>
-            <TableCell className="text-center">{item.revenue}</TableCell>
-            <TableCell className="text-center">{item.roi}%</TableCell>
+            <TableCell className="text-center">{item?.revenue}</TableCell>
             <TableCell className="text-center">
                 <div className="flex items-center justify-center gap-3">
                     {item.engagement}% <TrendingUp className="w-5 h-5 text-[#79D48B]" />

@@ -19,6 +19,16 @@ export interface SamplePageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
+  type?: string;
+  onTypeChange?: (status: string) => void;
+  paymentStatus?: string;
+  onPaymentStatusChange?: (value: string) => void;
+  paymentMethod?: string;
+  onPaymentMethodChange?: (value: string) => void;
+  minAmount?: string;
+  onMinAmountChange?: (value: string) => void;
+  maxAmount?: string;
+  onMaxAmountChange?: (value: string) => void;
   // date?: Date;
   startDate?: Date;
   endDate?: Date;

@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TrendingUp } from 'lucide-react';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import React, { FC } from 'react';
 
 interface InvoiceCardProps {
@@ -22,6 +22,10 @@ interface InvoiceCardProps {
   };
 }
 const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
+  const numericRaise = Number.parseFloat(item?.raise || '');
+  const isNegativeRaise =
+    item?.raise !== undefined && item?.raise !== 'gold' && (item?.raise.trim().startsWith('-') || (!Number.isNaN(numericRaise) && numericRaise < 0));
+
   return (
     <Card className="dark:bg-secondary rounded-[8px]">
       <CardHeader>
@@ -55,14 +59,18 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
             )}
           </div>
         </div>
-        {item.amount && (
+        {item.amount !== undefined && item.amount !== null && (
           <div className="mt-2 flex items-center justify-between">
             <p className="text-3xl font-bold">
-              {item?.raise === 'gold' ? 'Gold' : 0}
+              {item?.raise === 'gold' ? 'Gold' : item.amount}
             </p>
             {item.raise && item.raise !== 'gold' && (
-              <div className="flex items-center rounded-full bg-[#79D48B] px-3 py-1 text-xs font-semibold text-white">
-                <TrendingUp />
+              <div
+                className={`flex items-center rounded-full px-3 py-1 text-xs font-semibold text-white ${
+                  isNegativeRaise ? 'bg-red-500' : 'bg-[#79D48B]'
+                }`}
+              >
+                {isNegativeRaise ? <TrendingDown /> : <TrendingUp />}
                 <p>{item.raise}</p>
               </div>
             )}

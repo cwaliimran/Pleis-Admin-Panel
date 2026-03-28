@@ -52,6 +52,8 @@ const TransactionHistoryTableRow: FC<TableRowProps> = ({ handleEdit, item }) => 
 
         <TableCell className="text-left">{item?.amount ? Number(item.amount).toFixed(1) : 'N/A'}</TableCell>
 
+        <TableCell className="text-left capitalize">{item?.paymentMethod || 'N/A'}</TableCell>
+
         <TableCell className="text-center capitalize">
           <CustomBadge
             variant={
@@ -68,6 +70,7 @@ const TransactionHistoryTableRow: FC<TableRowProps> = ({ handleEdit, item }) => 
           </CustomBadge>
         </TableCell>
 
+       
         <TableCell className="text-left">{fDate(item?.createdAt, 'DD/MM/YYYY HH:mm')}</TableCell>
 
         <TableCell className="px-8">
