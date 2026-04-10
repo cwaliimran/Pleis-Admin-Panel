@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { OrganizerOrganization, StoredCompany, StoredOrganization } from './types';
 
 const STORAGE_KEYS = {
@@ -275,26 +276,46 @@ export class CompanySelectionStorage {
 }
 
 /**
- * React hook for company selection
+ * React hook for company selection (reactive – re-renders on changes)
  */
 export function useCompanySelection() {
-  if (!isClient()) {
-    return {
-      company: null,
-      organization: null,
-      companyId: null,
-      organizationId: null,
-      organizerOrganizations: [],
-      organizerOrganizationIds: [],
-    };
-  }
+  const [state, setState] = useState(() => {
+    if (!isClient()) {
+      return {
+        company: null as StoredCompany | null,
+        organization: null as StoredOrganization | null,
+        companyId: null as string | null,
+        organizationId: null as string | null,
+        organizerOrganizations: [] as OrganizerOrganization[],
+        organizerOrganizationIds: [] as string[],
+      };
+    }
 
-  return {
-    company: CompanySelectionStorage.getSelectedCompany(),
-    organization: CompanySelectionStorage.getSelectedOrganization(),
-    companyId: CompanySelectionStorage.getCompanyId(),
-    organizationId: CompanySelectionStorage.getOrganizationId(),
-    organizerOrganizations: CompanySelectionStorage.getOrganizerOrganizations(),
-    organizerOrganizationIds: CompanySelectionStorage.getOrganizerOrganizationIds(),
-  };
+    return {
+      company: CompanySelectionStorage.getSelectedCompany(),
+      organization: CompanySelectionStorage.getSelectedOrganization(),
+      companyId: CompanySelectionStorage.getCompanyId(),
+      organizationId: CompanySelectionStorage.getOrganizationId(),
+      organizerOrganizations: CompanySelectionStorage.getOrganizerOrganizations(),
+      organizerOrganizationIds: CompanySelectionStorage.getOrganizerOrganizationIds(),
+    };
+  });
+
+  useEffect(() => {
+    const refresh = () => {
+      setState({
+        company: CompanySelectionStorage.getSelectedCompany(),
+        organization: CompanySelectionStorage.getSelectedOrganization(),
+        companyId: CompanySelectionStorage.getCompanyId(),
+        organizationId: CompanySelectionStorage.getOrganizationId(),
+        organizerOrganizations: CompanySelectionStorage.getOrganizerOrganizations(),
+        organizerOrganizationIds: CompanySelectionStorage.getOrganizerOrganizationIds(),
+      });
+    };
+
+    const unsubscribe = CompanySelectionStorage.onSelectionChange(refresh);
+    return unsubscribe;
+  }, []);
+
+  return state;
 }

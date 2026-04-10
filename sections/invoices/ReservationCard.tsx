@@ -7,6 +7,7 @@ interface InvoiceCardProps {
   item: {
     id: string;
     title: string;
+    value: any;
     amount: number;
     status: string;
     raise?: string;
@@ -23,11 +24,11 @@ const ReservationStatsCard: FC<InvoiceCardProps> = ({ item }) => {
               {/* {item.title.length > 20
                 ? item.title.slice(0, 20) + "..."
                 : item.title} */}
-              {item.title}
+              {item?.title}
             </h3>
           </div>
           <div>
-            {item.menu && (
+            {item?.menu && (
               <Select defaultValue="all">
                 <SelectTrigger className="rounded-3xl">
                   <SelectValue placeholder="" />
@@ -47,9 +48,9 @@ const ReservationStatsCard: FC<InvoiceCardProps> = ({ item }) => {
             )}
           </div>
         </div>
-        {item.amount && (
+        {(item?.amount !== undefined || item?.value !== undefined) && (
           <div className="mt-2 flex items-center justify-between">
-            <p className="text-3xl font-bold">{item?.amount}</p>
+            <p className="text-3xl font-bold">{item?.value ?? item?.amount}</p>
 
             {item.raise && item.raise !== 'gold' && (
               <div className="flex items-center rounded-full bg-[#79D48B] px-3 py-1 text-xs font-semibold text-white">

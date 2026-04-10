@@ -40,6 +40,7 @@ interface RHFMultiSelectFieldProps {
   options: Option[];
   className?: string;
   disabled?: boolean;
+  maxSelections?: number;
 }
 
 const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
@@ -49,6 +50,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
   options,
   className,
   disabled,
+  maxSelections,
 }) => {
   const { control, watch, setValue } = useFormContext();
 
@@ -64,6 +66,10 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
         name={name}
         render={({ field }) => {
           const toggle = (val: string) => {
+            if (!selectedValues.includes(val) && maxSelections && selectedValues.length >= maxSelections) {
+              return;
+            }
+
             const next = selectedValues.includes(val)
               ? selectedValues.filter((v) => v !== val)
               : [...selectedValues, val];
@@ -114,15 +120,17 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                       <CommandGroup className="dark:bg-secondary w-full">
                         {options.map((opt) => {
                           const checked = selectedValues.includes(opt.value);
+                          const optionDisabled = !checked && !!maxSelections && selectedValues.length >= maxSelections;
                           return (
                             <CommandItem
                               key={opt.value}
                               value={opt.value}
                               onSelect={() => {
-                                // e.preventDefault()
-                                toggle(opt.value);
+                                if (!optionDisabled) {
+                                  toggle(opt.value);
+                                }
                               }}
-                              className="cursor-pointer"
+                              className={cn('cursor-pointer', optionDisabled && 'cursor-not-allowed opacity-60')}
                             >
                               <div className="mr-2">
                                 <Checkbox checked={checked} />

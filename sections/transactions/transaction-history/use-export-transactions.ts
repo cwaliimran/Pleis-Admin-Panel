@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { CurrentUrl } from '@/constant/constant';
+import { API_ROUTES } from '@/store/apiRoutes';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 
@@ -44,7 +45,10 @@ export const useExportTransactions = ({ startDate, endDate, companyOrganizer, or
       const formattedEndDate = formatDate(endDate);
       if (formattedEndDate) params.append('endDate', formattedEndDate);
 
-      const url = `${CurrentUrl}/admin/transactions/download${params.toString() ? `?${params.toString()}` : ''}`;
+      const downloadPath = API_ROUTES.TRANSACTIONS_DOWNLOAD(userType === 'super-admin');
+      const normalizedBaseUrl = (CurrentUrl || '').replace(/\/+$/, '');
+      const normalizedDownloadPath = downloadPath.replace(/^\/+/, '');
+      const url = `${normalizedBaseUrl}/${normalizedDownloadPath}${params.toString() ? `?${params.toString()}` : ''}`;
 
       const response = await fetch(url, {
         method: 'GET',

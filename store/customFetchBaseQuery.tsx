@@ -12,9 +12,24 @@ const getResolvedTimezone = (): string => {
   }
 };
 
+const serializeQueryParams = (params: Record<string, unknown>): string => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined) {
+      return;
+    }
+
+    searchParams.append(key, String(value));
+  });
+
+  return searchParams.toString().replace(/\+/g, '%20');
+};
+
 export const customFetchBaseQuery = () => {
   const baseQuery = fetchBaseQuery({
     baseUrl: CurrentUrl,
+    paramsSerializer: serializeQueryParams,
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as any;
       const token = state?.userSlice?.user?.token;

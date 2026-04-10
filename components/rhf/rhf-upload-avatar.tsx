@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import { Camera, X } from 'lucide-react';
-import Image from 'next/image';
 
 interface RHFUploadAvatarProps {
   name: string;
@@ -23,6 +22,7 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
   } = useFormContext();
 
   const [preview, setPreview] = useState<string | null>(initialImage);
+  const [imageError, setImageError] = useState(false);
   const watchedValue = useWatch({ control, name, defaultValue: initialImage });
 
   useEffect(() => {
@@ -31,20 +31,25 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
       if (watchedValue instanceof FileList && watchedValue[0] instanceof File) {
         const objectUrl = URL.createObjectURL(watchedValue[0]);
         setPreview(objectUrl);
+        setImageError(false);
         return () => URL.revokeObjectURL(objectUrl);
       } else if (typeof watchedValue === 'string') {
         setPreview(watchedValue);
+        setImageError(false);
       }
     } else if (initialImage && typeof initialImage === 'string') {
       setPreview(initialImage);
+      setImageError(false);
     } else {
       setPreview(null);
+      setImageError(false);
     }
   }, [watchedValue, initialImage]);
 
   const handleRemove = () => {
     setValue(name, null);
     setPreview(null);
+    setImageError(false);
   };
 
   return (
@@ -75,13 +80,13 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
                   htmlFor={`avatar-upload-${name}`}
                   className="flex h-full w-full cursor-pointer items-center justify-center"
                 >
-                  {preview ? (
-                    <Image
+                  {preview && !imageError ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       src={preview}
                       alt="Avatar"
                       className="h-full w-full object-cover"
-                      width={size}
-                      height={size}
+                      onError={() => setImageError(true)}
                     />
                   ) : (
                     <Camera className="h-6 w-6 text-gray-500 dark:text-gray-400" />
@@ -104,7 +109,7 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
                 />
 
                 {/* Remove Button */}
-                {preview && (
+                {preview && !imageError && (
                   <button
                     type="button"
                     title="Remove Avatar"

@@ -4,14 +4,18 @@ import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { useTableSort } from '@/hooks/useTableSort';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Settings2 } from 'lucide-react';
+import { fDate, formatStr } from '@/utils/format-time';
+import { ChevronDownIcon, Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import TransactionHistoryTableRow from './transaction-history-table-row';
@@ -58,16 +62,23 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
   onPaymentStatusChange = () => {},
   paymentMethod = '',
   onPaymentMethodChange = () => {},
+  userTier = '',
+  onUserTierChange = () => {},
   minAmount = '',
   onMinAmountChange = () => {},
   maxAmount = '',
   onMaxAmountChange = () => {},
+  startDate,
+  endDate,
+  onDateChange = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
+  const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
@@ -100,7 +111,59 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
                 </SheetHeader>
                 <FormProvider {...methods}>
                   <form className="flex flex-col gap-6 px-4 py-2">
-                    {/* Date Range Filters full width */}
+                    {/* Date Range */}
+                    <div className="flex w-full flex-col gap-3">
+                      <Label className="text-sm font-medium">Date Range</Label>
+                      <div className="flex w-full gap-2">
+                        <div className="flex-1">
+                          {/* <Label className="mb-1 block text-xs text-gray-500">Start Date</Label> */}
+                          <Popover open={startDatePickerOpen} onOpenChange={setStartDatePickerOpen}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-between font-normal">
+                                {startDate ? fDate(startDate, formatStr.split.date) : 'Start date'}
+                                <ChevronDownIcon className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={startDate}
+                                captionLayout="dropdown"
+                                disabled={endDate ? { after: endDate } : undefined}
+                                onSelect={(date) => {
+                                  onDateChange(date, endDate);
+                                  setStartDatePickerOpen(false);
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="flex-1">
+                          {/* <Label className="mb-1 block text-xs text-gray-500">End Date</Label> */}
+                          <Popover open={endDatePickerOpen} onOpenChange={setEndDatePickerOpen}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" className="w-full justify-between font-normal">
+                                {endDate ? fDate(endDate, formatStr.split.date) : 'End date'}
+                                <ChevronDownIcon className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={endDate}
+                                captionLayout="dropdown"
+                                disabled={startDate ? { before: startDate } : undefined}
+                                onSelect={(date) => {
+                                  onDateChange(startDate, date);
+                                  setEndDatePickerOpen(false);
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Other Filters */}
                     <div className="flex w-full flex-col gap-3" >
                       <div className="flex w-full flex-col gap-3">
                         <div className="w-full">
@@ -153,6 +216,21 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
                                   { value: 'cash', label: 'Cash' },
                                 ],
                               },
+                              {
+                                id: 'sheet-user-tier',
+                                label: 'User Status / Tier',
+                                placeholder: 'Select Tier',
+                                value: userTier,
+                                onChange: onUserTierChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'Blue', label: 'Blue' },
+                                  { value: 'Silver', label: 'Silver' },
+                                  { value: 'Gold', label: 'Gold' },
+                                  { value: 'Platinum', label: 'Platinum' },
+                                  { value: 'Black', label: 'Black' },
+                                ],
+                              },
                             ]}
                             filtersAlignment="left"
                           />
@@ -190,7 +268,7 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
                       )}
                     </div>
                     {/* Reset Button */}
-                    {(search || type || paymentStatus || paymentMethod || minAmount || maxAmount) && (
+                    {(search || type || paymentStatus || paymentMethod || userTier || minAmount || maxAmount || startDate || endDate) && (
                       <button
                         className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
                         type="button"
@@ -211,7 +289,7 @@ const TransactionHistoryTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <TransactionHistoryTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <TransactionHistoryTableRow key={`${item?._id ?? 'row'}-${idx}`} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>

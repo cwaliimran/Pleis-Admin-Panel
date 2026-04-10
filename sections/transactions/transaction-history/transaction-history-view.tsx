@@ -7,13 +7,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { transactionHistoryData } from '@/sections/loyalty/data';
-import { useGetTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
+import { useGetOrderTransactionsAnalyticsQuery, useGetTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { fDate, formatDate, formatStr } from '@/utils/format-time';
 import { ChevronDownIcon, Download, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TransactionDetailModal } from './modal';
 import TransactionHistoryTable from './transaction-history-table';
+import TransactionStatsSkeleton from './transaction-stats-skeleton';
 import { useExportTransactions } from './use-export-transactions';
 import TransactionCard from '@/sections/invoices/transaction-card';
 
@@ -33,6 +33,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const [status, setStatus] = useState<string>('');
   const [paymentStatus, setPaymentStatus] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [userTier, setUserTier] = useState<string>('');
   const [minAmount, setMinAmount] = useState<string>('');
   const [maxAmount, setMaxAmount] = useState<string>('');
 
@@ -42,9 +43,19 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
 
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
-  const { companyId: selectedCompany } = useCompanySelectionState();
+  const { companyId: selectedCompany, organizationId } = useCompanySelectionState();
 
   const { organizerOrganizationIds } = useCompanySelection();
+
+  const selectedOrganizations = useMemo(() => {
+    if (organizationId) return organizationId;
+    if (organizerOrganizationIds?.length) return organizerOrganizationIds.join(',');
+    return undefined;
+  }, [organizationId, organizerOrganizationIds]);
+
+  const companyOrganizerForAnalytics = userType === 'organizer' ? user?.basicInfo?._id : selectedCompany || undefined;
+  const hasValidAnalyticsSelection = Boolean(companyOrganizerForAnalytics || selectedOrganizations);
+  const shouldFetchAnalytics = userType === 'super-admin' || hasValidAnalyticsSelection;
 
   const { isExporting, handleExportCSV } = useExportTransactions({
     startDate,
@@ -53,28 +64,107 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     organizerOrganizationIds,
     userType,
   });
-  
+
+  const {
+    data: analyticsData,
+    isLoading: isAnalyticsLoading,
+    isFetching: isAnalyticsFetching,
+    error: analyticsError,
+  } = useGetOrderTransactionsAnalyticsQuery(
+    {
+      companyOrganizer: companyOrganizerForAnalytics,
+      organizations: selectedOrganizations,
+    },
+    {
+      skip: !shouldFetchAnalytics,
+    }
+  );
+
   const {
     data: apiData,
     isLoading,
     isFetching,
-  } = useGetTransactionsQuery({
-    page: page - 1,
-    search,
-    limit,
-    type: status === 'all' ? '' : status,
-    startDate: startDate ? formatDate(startDate) : undefined,
-    endDate: endDate ? formatDate(endDate) : undefined,
-    orderType: type === 'all' ? '' : type,
-    status: paymentStatus === 'all' ? '' : paymentStatus,
-    paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
-    startAmount: minAmount || undefined,
-    endAmount: maxAmount || undefined,
-    // companyOrganizer: selectedCompany || undefined,
-    companyOrganizer: userType === 'organizer' ? user?.basicInfo?._id : selectedCompany || undefined,
-    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
-    isAdmin: userType === 'super-admin',
-  });
+  } = useGetTransactionsQuery(
+    {
+      page: page - 1,
+      search,
+      limit,
+      type: status === 'all' ? '' : status,
+      startDate: startDate ? formatDate(startDate) : undefined,
+      endDate: endDate ? formatDate(endDate) : undefined,
+      orderType: type === 'all' ? '' : type,
+      status: paymentStatus === 'all' ? '' : paymentStatus,
+      paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
+      tier: !userTier || userTier.toLowerCase() === 'all' ? '' : userTier,
+      startAmount: minAmount || undefined,
+      endAmount: maxAmount || undefined,
+      companyOrganizer: userType === 'organizer' ? user?.basicInfo?._id : selectedCompany || undefined,
+      // Keep existing list behavior: organizer list sends selected organizer org IDs array.
+      organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
+      isAdmin: userType === 'super-admin',
+    },
+    {
+      // Ensure analytics API is requested and resolved before table API starts.
+      skip: !shouldFetchAnalytics || isAnalyticsLoading || isAnalyticsFetching,
+    }
+  );
+
+  useEffect(() => {
+    if (analyticsData) {
+      console.log('Order transactions analytics response:', analyticsData);
+    }
+  }, [analyticsData]);
+
+  const analyticsStats = analyticsData?.data || [];
+  const analyticsStatsByKey = useMemo(() => {
+    const statsMap = new Map<string, any>();
+    analyticsStats.forEach((item: any) => {
+      if (item?.key) {
+        statsMap.set(item.key, item);
+      }
+    });
+    return statsMap;
+  }, [analyticsStats]);
+
+  useEffect(() => {
+    setPage(1);
+    setLocalData([]);
+    setMeta({
+      currentPage: 1,
+      totalPages: 1,
+      totalRecords: 0,
+      limit,
+    });
+  }, [selectedCompany, organizationId]);
+
+  const analyticsCardConfig = useMemo(() => {
+    if (userType === 'organizer') {
+      return [
+        { key: 'totalTransactions', title: 'Total Transactions', isCurrency: false },
+        { key: 'totalAmount', title: 'Total Amount', isCurrency: true },
+        { key: 'organizerPayout', title: 'Organizer Payouts', isCurrency: true },
+        { key: 'serviceFee', title: 'Service Fees', isCurrency: true },
+      ];
+    }
+
+    return [
+      { key: 'totalTransactions', title: 'Total Transactions', isCurrency: false },
+      { key: 'totalAmount', title: 'Total Amount', isCurrency: true },
+      { key: 'organizerPayout', title: 'Organizer Payouts', isCurrency: true },
+      { key: 'totalCommission', title: 'Pleis Commision', isCurrency: true },
+    ];
+  }, [userType]);
+
+  const analyticsCards = useMemo(
+    () =>
+      analyticsCardConfig.map((config) => ({
+        title: config.title,
+        amount: Number(analyticsStatsByKey.get(config.key)?.value ?? 0),
+        raise: `${Number(analyticsStatsByKey.get(config.key)?.growth ?? 0)}%`,
+        isCurrency: config.isCurrency,
+      })),
+    [analyticsStatsByKey, analyticsCardConfig]
+  );
 
   const [localData, setLocalData] = useState<any[]>([]);
   const [meta, setMeta] = useState<any>({
@@ -84,18 +174,36 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     limit,
   });
 
+  const getTransactionUniqueKey = (item: any): string | undefined => {
+    if (item?._id) return `id:${item._id}`;
+    if (item?.transactionId) return `tx:${item.transactionId}`;
+    if (item?.orderData?.orderNumber) return `order:${item.orderData.orderNumber}`;
+    if (item?.orderNumber) return `order:${item.orderNumber}`;
+    return undefined;
+  };
+
   useEffect(() => {
-    if (apiData?.data) {
-      setLocalData(apiData.data);
-      setMeta(
-        apiData.meta || {
-          currentPage: page,
-          totalPages: 1,
-          totalRecords: 0,
-          limit,
-        }
-      );
-    }
+    const rawData = Array.isArray(apiData?.data) ? apiData.data : [];
+    const seen = new Set<string>();
+
+    const dedupedData = rawData.filter((item, index) => {
+      const key = getTransactionUniqueKey(item);
+      // Keep items without a stable identifier as-is to avoid accidental data loss.
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    setLocalData(dedupedData);
+    setMeta(
+      apiData?.meta || {
+        currentPage: page,
+        totalPages: 1,
+        totalRecords: 0,
+        limit,
+      }
+    );
   }, [apiData, page, limit]);
 
   const handleEdit = (data: any) => {
@@ -112,10 +220,16 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
     <div>
       {/* --------------- LOYALTY TOP STATS ---------------*/}
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
-        {transactionHistoryData?.map((card: any, index) => (
-          <TransactionCard key={index} item={card} />
-        ))}
+        {shouldFetchAnalytics && (isAnalyticsLoading || isAnalyticsFetching)
+          ? <TransactionStatsSkeleton count={analyticsCardConfig.length || 4} />
+          : analyticsCards?.map((card: any, index) => <TransactionCard key={index} item={card} />)}
       </div>
+
+      {shouldFetchAnalytics && analyticsError && (
+        <p className="mt-3 text-sm text-red-500">
+          Error: {(analyticsError as any)?.data?.message || (analyticsError as any)?.error || 'Failed to fetch analytics'}
+        </p>
+      )}
 
       {/* --------------- DATE FILTERS & EXPORT ---------------*/}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
@@ -216,10 +330,15 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
           setType(val);
           setPage(1);
         }}
-      
+
         paymentMethod={paymentMethod}
         onPaymentMethodChange={(val) => {
           setPaymentMethod(val);
+          setPage(1);
+        }}
+        userTier={userTier}
+        onUserTierChange={(val) => {
+          setUserTier(val);
           setPage(1);
         }}
         minAmount={minAmount}
@@ -243,6 +362,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
           setSearch('');
           setPaymentStatus('');
           setPaymentMethod('');
+          setUserTier('');
           setMinAmount('');
           setMaxAmount('');
           setStartDate(undefined);

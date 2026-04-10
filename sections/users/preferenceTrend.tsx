@@ -1,40 +1,53 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import React from 'react'
 import { VisitorAge } from '../invoices'
 
-const PreferenceTrend = () => {
+interface PreferenceTrendProps {
+    viewData?: Array<{
+        ageGroup: string;
+        visitors: number;
+    }>;
+    isLoading?: boolean;
+}
+
+const defaultViewData = [
+    { ageGroup: 'Mon', visitors: 0 },
+    { ageGroup: 'Tue', visitors: 0 },
+    { ageGroup: 'Wed', visitors: 0 },
+    { ageGroup: 'Thu', visitors: 0 },
+    { ageGroup: 'Fri', visitors: 0 },
+    { ageGroup: 'Sat', visitors: 0 },
+    { ageGroup: 'Sun', visitors: 0 },
+]
+
+const PreferenceTrend = ({ viewData = defaultViewData, isLoading = false }: PreferenceTrendProps) => {
+    const totalViews = viewData.reduce((sum, item) => sum + Number(item.visitors ?? 0), 0)
+    const topSlot = viewData.reduce(
+        (prev, curr) => (Number(curr.visitors ?? 0) > Number(prev.visitors ?? 0) ? curr : prev),
+        viewData[0] ?? { ageGroup: 'N/A', visitors: 0 }
+    )
+    const topSlotPercentage = totalViews > 0 ? Math.round((Number(topSlot.visitors ?? 0) / totalViews) * 100) : 0
+
     return (
             <Card className=' h-[450px] dark:bg-[#171717]'>
                 <CardHeader className='flex justify-between'>
                     <h1 className='text-2xl font-bold'>
-                        Preference Trends
+                        Views Over Time
                     </h1>
-                    <Select defaultValue='filter'>
-                        <SelectTrigger className='rounded-3xl  font-bold text-md'>
-                            <SelectValue placeholder="" />
-                        </SelectTrigger>
-                        <SelectContent >
-                            <SelectGroup className='w-auto rounded-2xl '>
-                                <SelectLabel>Filter</SelectLabel>
-                                <SelectItem value="filter">filter</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
                 </CardHeader>
                 <CardContent className='my-3'>
-                    <VisitorAge
-                        data={[
-                            { ageGroup: "18-24", visitors: 120 },
-                            { ageGroup: "25-34", visitors: 200 },
-                            { ageGroup: "35-44", visitors: 150 },
-                            { ageGroup: "45-54", visitors: 90 },
-                            { ageGroup: "55+", visitors: 70 }
-                        ]}
-                    />
+                    {isLoading ? (
+                        <Skeleton className='h-[280px] w-full rounded-lg' />
+                    ) : (
+                        <VisitorAge
+                            data={viewData}
+                            direction='horizontal'
+                        />
+                    )}
                      <div className="mx-4 mt-4">
                   <p className="text-[12px] text-muted-foreground font-medium">
-                    <span className="text-xl font-bold dark:text-white text-black">66%</span> visitors are 45-55 years old
+                    <span className="text-xl font-bold dark:text-white text-black">{topSlotPercentage}%</span> views came from {topSlot.ageGroup}
                   </p>
                 </div>
 

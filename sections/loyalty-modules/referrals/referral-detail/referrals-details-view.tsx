@@ -3,6 +3,9 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ViewsOverTime } from '@/sections/invoices';
 import ReferralsDetailPageTable from './referrals-detail-table';
+import { useReferralGlobalAnalyticsQuery, useReferralLoyaltyAnalyticsQuery } from '@/store/Reducer/referrals-api';
+import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 
 type StatCardProps = {
   title: string;
@@ -20,22 +23,20 @@ type ReferralAnalytics = {
   };
 };
 
-const dummyReferralAnalytics: ReferralAnalytics = {
-  totalCompleted: 120,
-  totalPointsGiven: 2400,
-  topReferrers: [
-    { username: 'Alice', count: 30 },
-    { username: 'Bob', count: 22 },
-    { username: 'Charlie', count: 18 },
-  ],
-  referralSettings: {
-    pointsPerReferral: 20,
-    maxReferralsPerUser: 50,
-    isActive: true,
-  },
-};
+const ReferralsDetailsView = ({ global = false }: { global?: boolean }) => {
 
-const ReferralsDetailsView = () => {
+  const { companyId } = useCompanySelectionState();
+  
+  const dashboardQuery = global ? 
+     useReferralGlobalAnalyticsQuery({},{ refetchOnMountOrArgChange: true }) :
+     useReferralLoyaltyAnalyticsQuery({ companyOrganizer: companyId }, { refetchOnMountOrArgChange: true });
+
+  const  { data : referralGlobalAnalytics= {} as any , isLoading, isFetching } = dashboardQuery;
+   
+  if (isLoading || isFetching) {
+      return <DashboardSkeleton />;
+    }
+
   return (
     <>
       {/* --------- REFERRALS HEADER --------- */}
@@ -44,10 +45,11 @@ const ReferralsDetailsView = () => {
           <CardTitle className="text-2xl font-bold">Referrals Analytics</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Total Referrals Completed" value={dummyReferralAnalytics.totalCompleted} />
-          <StatCard title="Total Points Given" value={dummyReferralAnalytics.totalPointsGiven} />
-          <StatCard title="Points Per Referral" value={dummyReferralAnalytics.referralSettings.pointsPerReferral} />
-          <StatCard title="Program Status" value={dummyReferralAnalytics.referralSettings.isActive ? 'Active' : 'Inactive'} />
+          {Array.isArray(referralGlobalAnalytics?.data?.stats)
+            ? referralGlobalAnalytics?.data?.stats?.map((stat: any, idx: number) => (
+                <StatCard key={idx} title={stat?.title} value={stat?.value} />
+              ))
+            : null}
         </CardContent>
       </Card>
 
@@ -61,13 +63,14 @@ const ReferralsDetailsView = () => {
             </CardHeader>
             <ViewsOverTime
               height={330}
-              data={[
-                { month: 'Jan', views: 5 },
-                { month: 'Feb', views: 8 },
-                { month: 'Mar', views: 15 },
-                { month: 'Apr', views: 12 },
-                { month: 'May', views: 20 },
-              ]}
+              data={
+                Array.isArray(referralGlobalAnalytics?.data?.referralsOverTime)
+                  ? referralGlobalAnalytics.data.referralsOverTime.map((item: any) => ({
+                      month: item.month,
+                      views: Number(item.points ?? 0),
+                    }))
+                  : []
+              }
             />
           </Card>
         </div>
@@ -80,12 +83,14 @@ const ReferralsDetailsView = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-4">
-                {dummyReferralAnalytics.topReferrers.map((user, i) => (
-                  <li key={i} className="flex justify-between border-b pb-1 text-sm">
-                    <span>{user.username}</span>
-                    <span className="font-semibold">{user.count}</span>
-                  </li>
-                ))}
+                {Array.isArray(referralGlobalAnalytics?.data?.topReferrers)
+                  ? referralGlobalAnalytics.data.topReferrers.map((user: any, i: number) => (
+                      <li key={i} className="flex justify-between border-b pb-1 text-sm">
+                        <span>{user.referrerUserName}</span>
+                        <span className="font-semibold">{user.totalReferrals}</span>
+                      </li>
+                    ))
+                  : null}
               </ul>
             </CardContent>
           </Card>
@@ -94,7 +99,7 @@ const ReferralsDetailsView = () => {
 
       {/* --------- REFERRAL LIST --------- */}
       <div className="mt-6">
-        <ReferralsDetailPageTable />
+        <ReferralsDetailPageTable global={global} companyId={companyId} />
       </div>
 
       {/* --------- CURRENT SETTINGS --------- */}
@@ -104,13 +109,13 @@ const ReferralsDetailsView = () => {
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
           <p>
-            <strong>Points Per Referral:</strong> {dummyReferralAnalytics.referralSettings.pointsPerReferral}
+            <strong>Points Per Referral:</strong> {referralGlobalAnalytics?.data?.referralSettings?.referrerPoints}
           </p>
           <p>
-            <strong>Max Referrals Per User:</strong> {dummyReferralAnalytics.referralSettings.maxReferralsPerUser}
+            <strong>Referral Limit:</strong> {referralGlobalAnalytics?.data?.referralSettings?.referralLimit}
           </p>
           <p>
-            <strong>Status:</strong> {dummyReferralAnalytics.referralSettings.isActive ? 'Active' : 'Inactive'}
+            <strong>Status:</strong> {referralGlobalAnalytics?.data?.referralSettings?.status}
           </p>
         </CardContent>
       </Card>

@@ -377,9 +377,7 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
                           {g.name}
                         </span>
                       </div>
-                      <span className="ml-1 text-[14px] text-gray-700 dark:text-white">
-                        {g.percent}% / {totalGenderCount}
-                      </span>
+                      <span className="ml-1 text-[14px] text-gray-700 dark:text-white">{g.percent}%</span>
                     </div>
                   ))}
                 </div>
@@ -447,18 +445,24 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
                     <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88]" />
                     <h1 className="text-[14px] text-[#202C88]">Females</h1>
                   </div>
+                  <div className="mt-2 flex items-center">
+                    <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4]" />
+                    <h1 className="text-[14px] text-[#7DAEF4]">Others</h1>
+                  </div>
                 </div>
               </div>
             </CardHeader>
             <VisitorInterest
               chartData={interestPerCategory.map((item) => ({
-                month: item.category,
-                males: item.males,
-                females: item.females,
+                category: item.category,
+                males: Number(item.males ?? 0),
+                females: Number(item.females ?? 0),
+                others: Number(item.others ?? 0),
               }))}
               chartConfig={{
                 males: { label: 'Males', color: '#2563EB' },
                 females: { label: 'Females', color: '#202C88' },
+                others: { label: 'Others', color: '#7DAEF4' },
               }}
             />
           </Card>

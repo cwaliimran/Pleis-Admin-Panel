@@ -4,10 +4,11 @@ import { FC } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface PageProps {
-  chartData: Array<{ month: string; males: number; females: number }>;
+  chartData: Array<{ month?: string; category?: string; males: number; females: number; others?: number }>;
   chartConfig: {
     males: { label: string; color: string };
     females: { label: string; color: string };
+    others?: { label: string; color: string };
   };
 }
 
@@ -32,11 +33,12 @@ const VisitorInterest: FC<PageProps> = ({ chartData, chartConfig }) => {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 70 }}>
           <CartesianGrid stroke="#ccc" strokeWidth={1} vertical={false} />
-          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={<VerticalAxisTick />} interval={0} />
+          <XAxis dataKey="category" axisLine={false} tickLine={false} tick={<VerticalAxisTick />} interval={0} />
           <YAxis axisLine={false} tickLine={false} />
           <Tooltip />
           <Bar dataKey="males" fill={chartConfig.males.color} radius={[10, 10, 0, 0]} name={chartConfig.males.label} barSize={13} />
           <Bar dataKey="females" fill={chartConfig.females.color} radius={[10, 10, 0, 0]} name={chartConfig.females.label} barSize={13} />
+          {chartConfig.others ? <Bar dataKey="others" fill={chartConfig.others.color} radius={[10, 10, 0, 0]} name={chartConfig.others.label} barSize={13} /> : null}
         </BarChart>
       </ResponsiveContainer>
     </div>

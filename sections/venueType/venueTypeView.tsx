@@ -20,6 +20,7 @@ const defaultValues = {
   image: null,
   // icon: null,
   title: '',
+  categories: [],
   status: 'active',
 };
 
@@ -78,6 +79,10 @@ const VenueTypeView = () => {
   const schema = Yup.object().shape({
     image: Yup.mixed().nullable(),
     title: Yup.string().required('Venue Type is required'),
+    categories: Yup.array()
+      .of(Yup.string())
+      .min(1, 'Please select at least 1 category')
+      .max(2, 'You can select up to 2 categories only'),
     status: Yup.string().oneOf(['active', 'inactive']),
   });
 
@@ -91,8 +96,17 @@ const VenueTypeView = () => {
   // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
+      const normalizedCategories = Array.isArray(selectedVenueType?.categories)
+        ? selectedVenueType.categories
+            .map((category: any) => (typeof category === 'string' ? category : category?._id || category?.id))
+            .filter(Boolean)
+        : selectedVenueType?.category
+          ? [typeof selectedVenueType.category === 'string' ? selectedVenueType.category : selectedVenueType.category?._id || selectedVenueType.category?.id].filter(Boolean)
+          : [];
+
       reset({
         title: selectedVenueType.title || '',
+        categories: normalizedCategories,
         status: selectedVenueType.status || '',
         image: selectedVenueType.image || null,
       });
@@ -145,6 +159,7 @@ const VenueTypeView = () => {
 
       const payload: any = {
         title: formData.title,
+        categories: formData.categories,
       };
       if (imageFileString) {
         payload.image = imageFileString;

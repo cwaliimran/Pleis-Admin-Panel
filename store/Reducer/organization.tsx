@@ -160,6 +160,23 @@ export const organizationApi = createApi({
         meta: res.meta,
       }),
     }),
+
+    getOrganizationAnalytics: builder.query({
+      query: ({ organizationId, dateFilter }: { organizationId: string; dateFilter?: string }) => {
+        const params: any = { organization: organizationId };
+        if (dateFilter) params.dateFilter = dateFilter;
+        return {
+          url: '',
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_ORGANIZATION_ANALYTICS,
+            organizerRoute: API_ROUTES.ORGANIZER_ORGANIZATION_ANALYTICS,
+          },
+        };
+      },
+      transformResponse: (res: any) => res?.data ?? {},
+    }),
   }),
 });
 
@@ -172,4 +189,5 @@ export const {
   useUpdateOrganizationMutation,
   useDeleteOrganizationMutation,
   useGetOrgNotificationsByIdQuery,
+  useGetOrganizationAnalyticsQuery,
 } = organizationApi;

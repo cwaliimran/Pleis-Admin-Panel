@@ -1,9 +1,11 @@
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
+import { useGetCategoriesQuery } from '@/store/Reducer/categories';
 import * as React from 'react';
 
 interface VenueTypeModalProps {
@@ -17,6 +19,26 @@ interface VenueTypeModalProps {
 }
 
 const VenueTypeModal: React.FC<VenueTypeModalProps> = ({ open, onClose, editMode, methods, onSubmit, isLoading, selectedVenueType }) => {
+  const { data: categoriesResponse, isLoading: categoriesLoading } = useGetCategoriesQuery(
+    {
+      page: 0,
+      limit: 200,
+      search: '',
+      status: '',
+      date: undefined,
+    },
+    { skip: !open }
+  );
+
+  const categoryOptions = React.useMemo(
+    () =>
+      (categoriesResponse?.data || []).map((category: any) => ({
+        label: category?.title || category?.name || 'Unnamed Category',
+        value: category?._id,
+      })),
+    [categoriesResponse?.data]
+  );
+
   const handleClose = () => {
     if (!isLoading) {
       onClose();
@@ -41,17 +63,11 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({ open, onClose, editMode
                 <RHFUploadAvatar
                   name="image"
                   label="Venue Type Icon"
-                  initialImage={(() => {
-                    if (!editMode) return null;
-                    const img =
-                      methods.getValues('image') && typeof methods.getValues('image') === 'string'
-                        ? methods.getValues('image')
-                        : selectedVenueType?.image;
-                    if (!img || img === noImageUrlDev || img === noImageUrl) {
-                      return null;
-                    }
-                    return img;
-                  })()}
+                  initialImage={
+                    editMode && selectedVenueType?.image && selectedVenueType.image !== noImageUrl && selectedVenueType.image !== noImageUrlDev
+                      ? selectedVenueType.image
+                      : null
+                  }
                 />
               </div>
 
@@ -64,6 +80,18 @@ const VenueTypeModal: React.FC<VenueTypeModalProps> = ({ open, onClose, editMode
                   disabled={isLoading}
                 />
                 {methods.formState.errors.title && <p className="text-sm text-red-500">{methods.formState.errors.title.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <RHFMultiSelectField
+                  name="categories"
+                  label="Categories"
+                  placeholder={categoriesLoading ? 'Loading categories...' : 'Select Categories'}
+                  options={categoryOptions}
+                  maxSelections={2}
+                  disabled={isLoading || categoriesLoading}
+                />
+                <p className="text-muted-foreground text-xs">Select at least 1 and up to 2 categories.</p>
               </div>
 
               {editMode && (

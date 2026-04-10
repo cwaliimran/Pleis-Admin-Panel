@@ -59,6 +59,7 @@ import { appOrderingApi } from './Reducer/app-ordering-api';
 import { menuManagementApi } from './Reducer/menu-management-api';
 import { reservationCalendarApi } from './Reducer/reservation-calendar-api';
 import { dashboardApi } from './Reducer/dashboard';
+import { ordersApi } from './Reducer/orders-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -117,6 +118,7 @@ const appReducer = combineReducers({
   [appOrderingApi.reducerPath]: appOrderingApi.reducer,
   [menuManagementApi.reducerPath]: menuManagementApi.reducer,
   [reservationCalendarApi.reducerPath]: reservationCalendarApi.reducer,
+  [ordersApi.reducerPath]: ordersApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -182,7 +184,8 @@ export const store = configureStore({
       appOrderingApi.middleware,
       menuManagementApi.middleware,
       reservationCalendarApi.middleware,
-      referralsApi.middleware
+      referralsApi.middleware,
+      ordersApi.middleware,
     ),
 });
 

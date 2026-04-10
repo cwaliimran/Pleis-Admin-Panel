@@ -67,8 +67,20 @@ import {
   XAxis,
   YAxis,
   ResponsiveContainer,
-  Tooltip,
+  Tooltip as RechartsTooltip,
 } from "recharts";
+// Custom tooltip for dark mode label visibility
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: '#fff', color: '#222', border: '1px solid #e5e7eb', borderRadius: 4, padding: 8, boxShadow: '0 2px 8px #0001' }}>
+        <div style={{ color: '#222', fontWeight: 600, marginBottom: 2, whiteSpace: 'pre-line' }}>{label}</div>
+        <div style={{ color: '#2563EB' }}>visitors : {payload[0].value}</div>
+      </div>
+    );
+  }
+  return null;
+};
 
 interface VisitorAgeProps {
   data: { ageGroup: string; visitors: number }[];
@@ -102,13 +114,27 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
         >
           {isVertical ? (
             <>
-              <XAxis type="number" domain={[0, maxValue]} hide />
+              <XAxis type="number" hide />
               <YAxis
                 type="category"
                 dataKey="ageGroup"
                 axisLine={false}
                 tickLine={false}
-                className="text-[12px] border border-red-500"
+                // width={140}
+                tick={({ x, y, payload }) => {
+                  const label = payload.value;
+                  const maxLen = 6;
+                  const showTooltip = label.length > maxLen;
+                  const display = showTooltip ? label.slice(0, maxLen) + '…' : label;
+                  return (
+                    <g>
+                      <title>{showTooltip ? label : undefined}</title>
+                      <text x={x} y={y + 4} textAnchor="end" fill="#cbd5e1" fontSize="12">
+                        {display}
+                      </text>
+                    </g>
+                  );
+                }}
               />
             </>
           ) : (
@@ -124,7 +150,7 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
             </>
           )}
 
-          <Tooltip cursor={false} />
+          <RechartsTooltip cursor={false} content={<CustomTooltip />} />
 
           <Bar
             dataKey="visitors"
@@ -132,6 +158,23 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
             barSize={28}
             radius={[5, 5, 5, 5]}
             background={{ fill: "#f1f5f9", radius: 5 }}
+            shape={(props: any) => {
+              // Ensure a minimum bar width for small values
+              const { x, y, width, height, fill } = props;
+              const minWidth = 10; // Minimum width in px
+              const adjustedWidth = width < minWidth && width > 0 ? minWidth : width;
+              return (
+                <rect
+                  x={x}
+                  y={y}
+                  width={adjustedWidth}
+                  height={height}
+                  fill={fill}
+                  rx={5}
+                  ry={5}
+                />
+              );
+            }}
           />
         </BarChart>
       </ResponsiveContainer>

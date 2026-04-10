@@ -118,6 +118,7 @@ export const API_ROUTES = {
   ADMIN_NOTIFICATIONS: `/admin/notifications`,
   ADMIN_NOTIFICATIONS_GET_ALL: `/admin/notifications/all`,
   ADMIN_NOTIFICATIONS_BY_ID: (id: string) => `/admin/notifications/${id}`,
+  ADMIN_NOTIFICATION_ANALYTICS: `/admin/notifications/notification-analytics`,
   ADMIN_GET_ALL_ORGANIZATIONS: `/admin/notifications/organizations`,
   ADMIN_GET_ALL_EVENTS: `/admin/notifications/events`,
   ADMIN_GET_ALL_INTEREST_TAGS: `/admin/notifications/tags`,
@@ -188,16 +189,17 @@ export const API_ROUTES = {
   ADMIN_DASHBOARD: `/admin/dashboard`,
   ADMIN_LOYALTY_DASHBOARD: `/admin/loyalty/dashboard`,
   ADMIN_GLOBAL_LOYALTY_DASHBOARD: `/admin/global-loyalty/dashboard`,
-  
+
   ORGANIZER_DASHBOARD: `/organizer/dashboard`,
   ORGANIZER_LOYALTY_DASHBOARD: `/organizer/loyalty/dashboard`,
 
-  
+
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
   UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
   DELETE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
 
+  ADMIN_EVENTS_ANALYTICS: `/admin/events-analytics`,
   ADMIN_EVENTS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/analytics`,
   ADMIN_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/admin/events/${id}/tickets-analytics`,
   ADMIN_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/admin/events/${id}/notifications`,
@@ -210,6 +212,7 @@ export const API_ROUTES = {
   UPDATE_ORGANIZER_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/organizer/events/${id}?scope=${scope}`,
   DELETE_ORGANIZER_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/organizer/events/${id}?scope=${scope}`,
 
+  ORGANIZER_EVENTS_ANALYTICS: `/organizer/events-analytics`,
   ORGANIZER_EVENTS_ANALYTICS_BY_ID: (id: string) => `/organizer/events/${id}/analytics`,
   ORGANIZER_EVENTS_TICKETS_ANALYTICS_BY_ID: (id: string) => `/organizer/events/${id}/tickets-analytics`,
   ORGANIZER_EVENTS_NOTIFICATIONS_BY_ID: (id: string) => `/organizer/events/${id}/notifications`,
@@ -299,11 +302,22 @@ export const API_ROUTES = {
 
   ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
 
+  ADMIN_GLOBAL_REFERRAL_ANALYTICS: '/admin/global-loyalty/referral-analytics',
+
+  ADMIN_LOYALTY_REFERRAL_ANALYTICS: '/admin/loyalty/referral-analytics',
+  ORGANIZER_LOYALTY_REFERRAL_ANALYTICS: '/organizer/loyalty/referral-analytics',
+
   ADMIN_LOYALTY_MEMBERS: `/admin/loyalty/club-members`,
   ADMIN_LOYALTY_MEMBERS_GIFT: `/admin/loyalty/club-members/gift-points`,
+  ADMIN_LOYALTY_MEMBERS_ANALYTICS: `/admin/loyalty/club-members-analytics`,
+  ADMIN_LOYALTY_MEMBERS_ANALYTICS_TRANSACTIONS: `/admin/loyalty/club-members-analytics/analytics-transsections`,
+  ADMIN_LOYALTY_MEMBERS_ANALYTICS_SUMMARY: `/admin/loyalty/club-members-analytics/summary`,
 
   ORGANIZER_LOYALTY_MEMBERS: `/organizer/loyalty/club-members`,
   ORGANIZER_LOYALTY_MEMBERS_GIFT: `/organizer/loyalty/club-members/gift-points`,
+  ORGANIZER_LOYALTY_MEMBERS_ANALYTICS: `/organizer/loyalty/club-members-analytics`,
+  ORGANIZER_LOYALTY_MEMBERS_ANALYTICS_TRANSACTIONS: `/organizer/loyalty/club-members-analytics/analytics-transsections`,
+  ORGANIZER_LOYALTY_MEMBERS_ANALYTICS_SUMMARY: `/organizer/loyalty/club-members-analytics/summary`,
 
   // ADMIN_LOYALTY_PROMOTION: `/admin/loyalty/promotions`,
   // ADMIN_LOYALTY_PROMOTION_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
@@ -348,6 +362,9 @@ export const API_ROUTES = {
   ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
   ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
 
+  ADMIN_RESERVATION_ANALYTICS: `admin/reservations-analytics`,
+  ORGANIZER_RESERVATION_ANALYTICS: `/organizer/reservations-analytics`,
+
   ORGANIZER_RESERVATION: `/organizer/reservations`,
   ORGANIZER_RESERVATION_BY_ID: (id: string) => `/organizer/reservations/${id}`,
   ORGANIZER_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/organizer/reservations/updateStatus/${id}/${status}`,
@@ -358,8 +375,13 @@ export const API_ROUTES = {
   ORGANIZER_LOYALTY_TRANSACTIONS: `/organizer/transactions`,
 
   LOYALTY_TRANSACTIONS: (isAdmin: boolean) => (isAdmin ? '/admin/transactions' : '/organizer/transactions'),
+  TRANSACTIONS_DOWNLOAD: (isAdmin: boolean) => (isAdmin ? '/admin/transactions/download' : '/organizer/transactions/download'),
   TRANSACTIONS: (isAdmin: boolean) => (isAdmin ? '/webhooks/orders-transactions' : '/webhooks/orders-transactions'),
   TRANSACTIONS_BY_ID: (isAdmin: boolean, id: string) => (isAdmin ? `/webhooks/orders-transactions/${id}` : `/webhooks/orders-transactions/${id}`),
+  TRANSACTIONS_ANALYTICS: '/webhooks/orders-transactions/analytics',
+
+  ORGANIZER_ORGANIZATION_ANALYTICS: `/organizer/organizations-analytics/`,
+  ADMIN_ORGANIZATION_ANALYTICS: `/admin/organizations-analytics/`,
 
   // ADMIN_LOYALTY_TRANSACTIONS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/transactions' : '/admin/transactions'),
 

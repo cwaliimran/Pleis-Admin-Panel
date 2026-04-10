@@ -2,6 +2,7 @@ import TableHeadCustom from "@/components/table/table-head-custom";
 import { Table, TableBody } from "@/components/ui/table";
 import React from "react";
 import { engagedMembers } from "./data";
+import { FC } from "react";
 import MostEngagedMemberTableRow from "./mostEngagedMemberTableRow";
 
 const headLabel = [
@@ -21,25 +22,24 @@ const headLabel = [
     align: "center",
   },
   {
-    id: "tier",
-    label: "TIER",
-    align: "center",
-  },
-  {
     id: "lifeTimeValue",
     label: "LIFETIME VALUE",
     align: "right",
   },
 ];
 
-const MostEngagedMembers = () => {
+interface PageProps {
+  data: any;
+}
+
+const MostEngagedMembers: FC<PageProps> = ({ data }) => {
   return (
     <>
       <div className="border rounded-lg m-4">
         <Table className="w-full">
           <TableHeadCustom headLabel={headLabel} />
           <TableBody>
-            {engagedMembers.map((item: any, index) => (
+            {data?.map((item: any, index: number) => (
               <MostEngagedMemberTableRow key={index} item={item} />
             ))}
           </TableBody>

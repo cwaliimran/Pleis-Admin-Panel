@@ -333,6 +333,16 @@ export interface TransactionDetailBase {
   organization: OrganizationInfo;
   companyOrganizer: CompanyOrganizerInfo;
   user: UserInfo;
+  userGlobal?: {
+    _id?: string;
+    title?: string;
+    type?: string;
+    level?: {
+      _id?: string;
+      title?: string;
+      type?: string;
+    };
+  };
   userOrders: any[];
   paymentStatus: string;
   transactionId: string;

@@ -33,6 +33,8 @@ export interface SelectFilter {
   options: FilterOption[];
   value?: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
+  disabledHint?: string;
 }
 
 export interface DateFilter {
@@ -301,29 +303,37 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
           {/* Select Filters */}
           {selectFilters.map((filter) => (
-            <Select
+            <div
               key={filter.id}
-              value={filter.value}
-              onValueChange={filter.onChange}
+              title={filter.disabled ? filter.disabledHint : undefined}
+              className="w-[180px]"
             >
-              <SelectTrigger className="w-[180px] cursor-pointer">
-                <SelectValue placeholder={filter.placeholder} />
-              </SelectTrigger>
-              <SelectContent className="dark:bg-secondary">
-                <SelectGroup>
-                  <SelectLabel>{filter.label}</SelectLabel>
-                  {filter.options.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      className="cursor-pointer"
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+              <Select
+                value={filter.value}
+                onValueChange={filter.onChange}
+                disabled={filter.disabled}
+              >
+                <SelectTrigger
+                  className={`w-full ${filter.disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                >
+                  <SelectValue placeholder={filter.placeholder} />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-secondary max-h-64 overflow-y-auto">
+                  <SelectGroup>
+                    <SelectLabel>{filter.label}</SelectLabel>
+                    {filter.options.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="cursor-pointer"
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
           ))}
         </div>
       )}

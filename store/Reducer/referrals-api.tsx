@@ -151,6 +151,38 @@ export const referralsApi = createApi({
       }),
       invalidatesTags: ['localReferral'],
     }),
+
+    referralGlobalAnalytics: builder.query({
+      query: () => ({
+        url: '',
+        method: 'GET',
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_GLOBAL_REFERRAL_ANALYTICS,
+        },
+      }),
+      transformResponse: (res) => ({
+        data: res.data,
+      }),
+    }),
+
+    referralLoyaltyAnalytics: builder.query({
+      query: ({ companyOrganizer }) => {
+        const params: any = {};
+          if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+          return {
+            url: '',
+            method: 'GET',
+            params,
+            roleBasedRouting: {
+              adminRoute: API_ROUTES.ADMIN_LOYALTY_REFERRAL_ANALYTICS,
+              organizerRoute: API_ROUTES.ORGANIZER_LOYALTY_REFERRAL_ANALYTICS,
+            },
+          };
+        },
+          transformResponse: (res) => ({
+            data: res.data,
+          }),
+        }),
   }),
 });
 
@@ -161,11 +193,13 @@ export const {
   useAddGlobalReferralSettingMutation,
   useResetGlobalReferralSettingMutation,
   useUpdateGlobalReferralSettingMutation,
+  useReferralGlobalAnalyticsQuery,
   // local
   useGetLocalReferralSettingQuery,
   useAddLocalReferralSettingMutation,
   useResetLocalReferralSettingMutation,
   useUpdateLocalReferralSettingMutation,
+  useReferralLoyaltyAnalyticsQuery,
 } = referralsApi;
 
 // import { createApi } from '@reduxjs/toolkit/query/react';

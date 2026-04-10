@@ -14,7 +14,7 @@ const LoyaltyMembersTableRow: FC<TableRowProps> = ({ item, global, userType, han
   const router = useRouter();
 
   const handleNavigate = () => {
-    const userId = item?._id;
+    const userId = item?.user?._id;
     if (!userId || !userType) return;
 
     if (userId) {
@@ -59,7 +59,9 @@ const LoyaltyMembersTableRow: FC<TableRowProps> = ({ item, global, userType, han
               title="Gift Points"
               onClick={(e) => {
                 e.stopPropagation();
-                handleGiftModal(item?._id);
+                const giftUserId = item?.user?._id;
+                if (!giftUserId) return;
+                handleGiftModal(giftUserId);
               }}
               className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
             >

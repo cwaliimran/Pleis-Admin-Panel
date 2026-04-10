@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import ReferralsDetailsView from '@/sections/loyalty-modules/referrals/referral-detail/referrals-details-view';
 import { Metadata } from 'next';
 
@@ -16,8 +17,9 @@ const Page = () => {
             { name: 'Referrals Analytics', href: '' },
           ]}
         />
-
-        <ReferralsDetailsView />
+      <CompanyGuard>
+        <ReferralsDetailsView global={false} />
+      </CompanyGuard>
       </div>
     </>
   );

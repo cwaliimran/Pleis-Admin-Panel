@@ -15,8 +15,19 @@ const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'o
   const [status, setStatus] = useState<string>('');
   const [paymentStatus, setPaymentStatus] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('');
-  const [minAmount, setMinAmount] = useState<string>('');
-  const [maxAmount, setMaxAmount] = useState<string>('');
+  const [minimalSpendRes, setMinimalSpendRes] = useState<string>('');
+  const [transactionStartDate, setTransactionStartDate] = useState<Date | undefined>(undefined);
+  const [transactionEndDate, setTransactionEndDate] = useState<Date | undefined>(undefined);
+  const [reservationStartDate, setReservationStartDate] = useState<Date | undefined>(undefined);
+  const [reservationEndDate, setReservationEndDate] = useState<Date | undefined>(undefined);
+  const [reservationDate, setReservationDate] = useState<Date | undefined>(undefined);
+  const [timeStart, setTimeStart] = useState('');
+  const [timeEnd, setTimeEnd] = useState('');
+  const [reservationTimeline, setReservationTimeline] = useState<string>('');
+  const [prepayOnly, setPrepayOnly] = useState(false);
+  const [ticketRequiredOnly, setTicketRequiredOnly] = useState(false);
+  const [cancelledOnly, setCancelledOnly] = useState(false);
+  const [noShowOnly, setNoShowOnly] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const { companyId: selectedCompany } = useCompanySelectionState();
@@ -33,9 +44,20 @@ const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'o
     limit,
     status: paymentStatus === 'all' ? '' : paymentStatus,
     paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
-    startAmount: minAmount || undefined,
-    endAmount: maxAmount || undefined,
-    date: date ? formatDate(date) : undefined,
+    resStartDate: reservationStartDate ? formatDate(reservationStartDate) : undefined,
+    resEndDate: reservationEndDate ? formatDate(reservationEndDate) : undefined,
+    resDate: reservationDate ? formatDate(reservationDate) : undefined,
+    resStartTime: timeStart || undefined,
+    resEndTime: timeEnd || undefined,
+    futureRes: reservationTimeline === 'future' ? true : undefined,
+    pastRes: reservationTimeline === 'past' ? true : undefined,
+    paidRes: paymentStatus === 'paid' ? true : undefined,
+    minimalSpendRes: minimalSpendRes || undefined,
+    prePay: prepayOnly || undefined,
+    ticketRequiredRes: ticketRequiredOnly || undefined,
+    cancelledRes: cancelledOnly || undefined,
+    noShowRes: noShowOnly || undefined,
+    date: transactionStartDate ? formatDate(transactionStartDate) : date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     // domainType: 'userreservations',
@@ -99,14 +121,9 @@ const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'o
           setPaymentMethod(val);
           setPage(1);
         }}
-        minAmount={minAmount}
-        onMinAmountChange={(val) => {
-          setMinAmount(val);
-          setPage(1);
-        }}
-        maxAmount={maxAmount}
-        onMaxAmountChange={(val) => {
-          setMaxAmount(val);
+        minimalSpendRes={minimalSpendRes}
+        onMinimalSpendResChange={(val) => {
+          setMinimalSpendRes(val);
           setPage(1);
         }}
         status={status}
@@ -119,12 +136,77 @@ const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'o
           setDate(val);
           setPage(1);
         }}
+        transactionStartDate={transactionStartDate}
+        transactionEndDate={transactionEndDate}
+        onTransactionDateRangeChange={(start, end) => {
+          setTransactionStartDate(start);
+          setTransactionEndDate(end);
+          setPage(1);
+        }}
+        reservationStartDate={reservationStartDate}
+        reservationEndDate={reservationEndDate}
+        onReservationDateRangeChange={(start, end) => {
+          setReservationStartDate(start);
+          setReservationEndDate(end);
+          setPage(1);
+        }}
+        reservationDate={reservationDate}
+        onReservationDateChange={(value) => {
+          setReservationDate(value);
+          setPage(1);
+        }}
+        timeStart={timeStart}
+        onTimeStartChange={(value) => {
+          setTimeStart(value);
+          setPage(1);
+        }}
+        timeEnd={timeEnd}
+        onTimeEndChange={(value) => {
+          setTimeEnd(value);
+          setPage(1);
+        }}
+        reservationTimeline={reservationTimeline}
+        onReservationTimelineChange={(value) => {
+          setReservationTimeline(value);
+          setPage(1);
+        }}
+        prepayOnly={prepayOnly}
+        onPrepayOnlyChange={(value) => {
+          setPrepayOnly(value);
+          setPage(1);
+        }}
+        ticketRequiredOnly={ticketRequiredOnly}
+        onTicketRequiredOnlyChange={(value) => {
+          setTicketRequiredOnly(value);
+          setPage(1);
+        }}
+        cancelledOnly={cancelledOnly}
+        onCancelledOnlyChange={(value) => {
+          setCancelledOnly(value);
+          setPage(1);
+        }}
+        noShowOnly={noShowOnly}
+        onNoShowOnlyChange={(value) => {
+          setNoShowOnly(value);
+          setPage(1);
+        }}
         onResetFilters={() => {
           setStatus('');
           setPaymentStatus('');
           setPaymentMethod('');
-          setMinAmount('');
-          setMaxAmount('');
+          setMinimalSpendRes('');
+          setTransactionStartDate(undefined);
+          setTransactionEndDate(undefined);
+          setReservationStartDate(undefined);
+          setReservationEndDate(undefined);
+          setReservationDate(undefined);
+          setTimeStart('');
+          setTimeEnd('');
+          setReservationTimeline('');
+          setPrepayOnly(false);
+          setTicketRequiredOnly(false);
+          setCancelledOnly(false);
+          setNoShowOnly(false);
           setDate(undefined);
           setSearch('');
           setPage(1);

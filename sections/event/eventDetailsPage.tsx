@@ -30,7 +30,8 @@ import { showError } from '@/utils/toast';
 import { getErrorMessage } from '@/utils/api';
 
 const EventDetailsPage = () => {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params.id;
   const router = useRouter();
 
   const deleteModal = useBoolean();
@@ -39,6 +40,7 @@ const EventDetailsPage = () => {
   const [preOrderLoading, setPreOrderLoading] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [active, setActive] = React.useState('overview');
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = React.useState(0);
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
 
   const [expanded, setExpanded] = useState(false);
@@ -50,6 +52,11 @@ const EventDetailsPage = () => {
   const [updateEvent] = useUpdateeventMutation();
   const { data: event = {}, isLoading, refetch } = useGeteventByIdQuery(id);
   const [deleteEvent, { isLoading: deleteEventLoading }] = useDeleteeventMutation();
+
+  const totalRevenue = Number(event?.meta?.revenue ?? event?.revenue ?? 0);
+  const totalTicketsSold = Number(event?.ticketingStats?.grandTotal?.count ?? event?.ticketingStats?.count ?? 0);
+  const totalTicketAmount = Number(event?.ticketingStats?.grandTotal?.amount ?? 0);
+  const totalViews = Number(event?.eventViews ?? event?.meta?.viewsCount ?? event?.viewsCount ?? 0);
 
   const [cloneEvent] = useCloneeventMutation();
   const userType = window?.location?.pathname?.split('/')[1];
@@ -143,6 +150,14 @@ const EventDetailsPage = () => {
       deleteModal.onFalse();
     } catch (error) {
       console.log('Failed to delete event', error);
+    }
+  };
+
+  const handleTabChange = (nextTab: string) => {
+    setActive(nextTab);
+
+    if (nextTab === 'analytics') {
+      setAnalyticsRefreshKey((currentKey) => currentKey + 1);
     }
   };
 
@@ -337,7 +352,7 @@ const EventDetailsPage = () => {
                     <div className="w-full px-2 md:px-0">
                       {/* Small screen dropdown */}
                       <div className="mb-4 block sm:hidden">
-                        <Select value={active} onValueChange={setActive}>
+                        <Select value={active} onValueChange={handleTabChange}>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select tab" />
                           </SelectTrigger>
@@ -352,13 +367,18 @@ const EventDetailsPage = () => {
                       </div>
 
                       {/* Tabs for larger screens */}
-                      <Tabs value={active} onValueChange={setActive} className="hidden w-full sm:block">
+                      <Tabs value={active} onValueChange={handleTabChange} className="hidden w-full sm:block">
                         <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
                           <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
                             {tabsData.map((tab: any) => (
                               <TabsTrigger
                                 key={tab.value}
                                 value={tab.value}
+                                onClick={() => {
+                                  if (tab.value === 'analytics' && active === 'analytics') {
+                                    setAnalyticsRefreshKey((currentKey) => currentKey + 1);
+                                  }
+                                }}
                                 className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
                                   active === tab.value
                                     ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
@@ -378,7 +398,7 @@ const EventDetailsPage = () => {
                 <div className="mt-4 rounded-lg">
                   {active === 'overview' && <EventOverView event={event} />}
 
-                  {active === 'analytics' && <EventAnalytics id={id} />}
+                  {active === 'analytics' && <EventAnalytics id={id} refreshKey={analyticsRefreshKey} />}
 
                   {active === 'tickets' && <EventTicket event={event} />}
 
@@ -409,7 +429,7 @@ const EventDetailsPage = () => {
                         <h3 className="text-lg font-bold">Total Revenue</h3>
                       </div>
                     </div>
-                    <div className="mt-2 flex items-center text-4xl font-bold">{event?.meta?.revenue}</div>
+                    <div className="mt-2 flex items-center text-4xl font-bold">€{totalRevenue.toLocaleString()}</div>
                   </CardHeader>
                 </Card>
 
@@ -422,9 +442,9 @@ const EventDetailsPage = () => {
                       </div>
                     </div>
                     <div className="mt-2 flex items-center text-4xl font-bold">
-                      0
-                      {event?.ticketingStats?.grandTotal?.count && (
-                        <sub className="ml-1 text-base font-medium">/ {event?.ticketingStats?.grandTotal?.amount}</sub>
+                      {totalTicketsSold.toLocaleString()}
+                      {totalTicketAmount > 0 && (
+                        <sub className="ml-1 text-base font-medium">/ {totalTicketAmount.toLocaleString()}</sub>
                       )}
                     </div>
                   </CardHeader>
@@ -438,7 +458,7 @@ const EventDetailsPage = () => {
                         <h3 className="text-lg font-bold">Views</h3>
                       </div>
                     </div>
-                    <div className="mt-2 flex items-center text-4xl font-bold">{event?.eventViews}</div>
+                    <div className="mt-2 flex items-center text-4xl font-bold">{totalViews.toLocaleString()}</div>
                   </CardHeader>
                 </Card>
 

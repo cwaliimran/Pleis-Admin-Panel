@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogOverlay, DialogTitle } from '@/components/
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useBoolean } from '@/hooks/useBoolean';
-// import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { cn } from '@/lib/utils';
 import { GenderDonutChart, InvoiceCard, MostViewedEvent, ViewsOverTime, VisitorAge, VisitorRegion } from '@/sections/invoices';
 import { LoyaltyCard, MostEngagedMembers } from '@/sections/loyalty';
@@ -23,37 +23,45 @@ import {
 import GlobalLoyaltyTransactionDashboardWidget from '@/sections/transactions/global-loyalty-transaction/global-loyalty-transaction-dashboard-widget';
 import LoyaltyTransactionDashboardWidget from '@/sections/transactions/loyalty-transaction/loyalty-transaction-dashboard-widget';
 import RewardCard from '@/sections/loyalty/rewardCard';
-// import { useGetLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
-import { useGetGlobalLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
+import { useGetGlobalLoyaltyDashboardQuery, useGetLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
 import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const openModal = useBoolean();
+  const shouldHideTiersTab = global || userType === 'organizer';
+  const visibleTabs = tabsData.filter((tab) => (shouldHideTiersTab ? tab.value !== 'tiers' : true));
 
-  // const { companyId } = useCompanySelectionState();
-
+  const { companyId } = useCompanySelectionState();
+  const { organizerOrganizationIds } = useCompanySelection();
+    
   const [mainActive, setMainActive] = React.useState('overview');
-  const [activeDurationTab, setActiveDurationTab] = React.useState('monthly');
+  const [activeDurationTab, setActiveDurationTab] = React.useState('all');
 
   // Map tab values to API dateFilter values
   const dateFilterMap: Record<string, string> = {
     daily: 'today',
     weekly: 'thisWeek',
     monthly: 'thisMonth',
-    yearly: 'thisYear',
+    // yearly: 'thisYear',
     all: 'all',
   };
 
-  const {
-    data: dashboardRaw = {} as any,
-    isLoading,
-    isFetching,
-  } = useGetGlobalLoyaltyDashboardQuery({
-     dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
-  });
+  const dashboardQuery = global
+    ? useGetGlobalLoyaltyDashboardQuery({
+        dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
+      },{refetchOnMountOrArgChange: true})
+    : useGetLoyaltyDashboardQuery({
+        dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
+        companyOrganizer: companyId,
+        organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
+      },{refetchOnMountOrArgChange: true});
+
+  const { data: dashboardRaw = {} as any, isLoading, isFetching } = dashboardQuery;
 
   const membersActivity = Array.isArray(dashboardRaw?.data?.membersActivity) ? dashboardRaw.data.membersActivity : [];
   const activeActivity = membersActivity.find((item: any) => String(item?.name || '').toLowerCase() === 'active');
@@ -157,6 +165,13 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
       }))
     : [];
 
+  const globalWalletPointsOverTime = Array.isArray(dashboardRaw?.data?.globalWalletPointsOverTime)
+    ? dashboardRaw.data.globalWalletPointsOverTime.map((item: any) => ({
+        month: item?.month || '',
+        views: Number(item?.points ?? 0),
+      }))
+    : [];
+
   const globalLoyaltyWalletStats = dashboardRaw?.data?.globalloyaltyWalletStats;
   const loyaltyPointsCards: LoyaltyPoints[] = globalLoyaltyWalletStats
     ? [
@@ -207,9 +222,40 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
           raise: hideGrowthForTitles.has(card?.title) ? undefined : card?.raise,
         }));
 
+  React.useEffect(() => {
+    if (!pathname) {
+      return;
+    }
+
+    if (pathname.endsWith('/loyalty')) {
+      setMainActive('overview');
+      return;
+    }
+
+    const matchedTab = tabsData
+      .filter((tab) => (shouldHideTiersTab ? tab.value !== 'tiers' : true))
+      .find((tab) => tab.link && pathname.endsWith(`/${tab.link}`));
+    if (matchedTab) {
+      setMainActive(matchedTab.value);
+    }
+  }, [pathname, shouldHideTiersTab]);
+
   const handleTabClick = (tab: TabData) => {
+    if (shouldHideTiersTab && tab.value === 'tiers') {
+      router.push(`/${userType}/loyalty`);
+      return;
+    }
+
     setMainActive(tab.value);
-    router.push(`/${userType}/${tab.link}`);
+
+    if (tab.value === 'overview') {
+      router.push(`/${userType}/loyalty`);
+      return;
+    }
+
+    if (tab.link) {
+      router.push(`/${userType}/${tab.link}`);
+    }
   };
 
    // ---- Loading state ----
@@ -218,6 +264,16 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
      }
    
 
+
+  // Map globalLoyaltyPointsPertWalletType to VisitorAge chart data
+  const pointsByWalletType = Array.isArray(dashboardRaw?.data?.globalLoyaltyPointsDistributed?.globalLoyaltyPointsPertWalletType)
+    ? dashboardRaw.data.globalLoyaltyPointsDistributed.globalLoyaltyPointsPertWalletType.map((item: any) => ({
+        ageGroup: item?.name || '',
+        visitors: Number(item?.count ?? 0),
+      }))
+    : [];
+
+
   return (
     <>
       <div className="mt-10 flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -225,9 +281,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
           className={`${global ? 'w-[50%]' : 'w-[90%]'} border-b border-gray-200 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400`}
         >
           <ul className="-mb-px flex flex-wrap">
-            {tabsData
-              .filter((tab) => (global ? tab.value !== 'tiers' : true))
-              .map((tab: TabData, index: number) => (
+            {visibleTabs.map((tab: TabData, index: number) => (
                 <li key={index} className="me-0">
                   <div
                     onClick={() => handleTabClick(tab)}
@@ -253,6 +307,9 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               <SelectValue placeholder="Select tab" />
             </SelectTrigger>
             <SelectContent className="dark:bg-secondary">
+               <SelectItem className="py-3" value="all">
+                All
+              </SelectItem>
               <SelectItem className="py-3" value="monthly">
                 Monthly
               </SelectItem>
@@ -262,9 +319,6 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               <SelectItem className="py-3" value="weekly">
                 Weekly
               </SelectItem>
-              <SelectItem className="py-3" value="yearly">
-                Yearly
-              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -273,6 +327,15 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
         <div className="hidden sm:block">
           <Tabs value={activeDurationTab} onValueChange={setActiveDurationTab} defaultValue="all" className="w-full">
             <TabsList className="flex h-[2.6rem] items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
+              <TabsTrigger
+                value="all"
+                className={cn(
+                  'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-normal transition-colors',
+                  'data-[state=active]:font-semibold data-[state=active]:dark:bg-white data-[state=active]:dark:text-black'
+                )}
+              >
+                All
+              </TabsTrigger>
               <TabsTrigger
                 value="monthly"
                 className={cn(
@@ -299,15 +362,6 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 )}
               >
                 Weekly
-              </TabsTrigger>
-              <TabsTrigger
-                value="yearly"
-                className={cn(
-                  'text-md relative z-10 cursor-pointer rounded-full px-4 py-2 font-normal transition-colors',
-                  'data-[state=active]:font-semibold data-[state=active]:dark:bg-white data-[state=active]:dark:text-black'
-                )}
-              >
-                Yearly
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -400,14 +454,22 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 <h3 className="text-xl font-semibold">Age Demographics</h3>
               </div>
             </CardHeader>
-            <div className="flex-1">
-              <VisitorAge data={ageDemographicsData} />
-              {topAgeGroup.ageGroup && (
-                <div className="mx-4 mt-4">
-                  <p className="text-muted-foreground text-sm font-medium">
-                    <span className="text-xl font-bold text-black dark:text-white">{topAgePercent}%</span> visitors are {topAgeGroup.ageGroup} years old
-                  </p>
+            <div className="flex-1 flex flex-col justify-center items-center h-full">
+              {ageDemographicsData?.length === 0 ? (
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
                 </div>
+              ) : (
+                <>
+                  <VisitorAge data={ageDemographicsData} />
+                  {topAgeGroup.ageGroup && (
+                    <div className="mx-4 mt-4">
+                      <p className="text-muted-foreground text-sm font-medium">
+                        <span className="text-xl font-bold text-black dark:text-white">{topAgePercent}%</span> visitors are {topAgeGroup.ageGroup} years old
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </Card>
@@ -436,15 +498,22 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </div>
               </div>
             </CardHeader>
-            
-            <VisitorRegion
-              chartData={regionOverviewData}
-              chartConfig={{
-                males: { label: 'Males', color: '#2563eb' },
-                females: { label: 'Females', color: '#202C88' },
-                others: { label: 'Others', color: '#7DAEF4' },
-              }}
-            />
+            <div className="flex-1 flex flex-col justify-center items-center h-full">
+              {regionOverviewData?.length === 0 ? (
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
+                </div>
+              ) : (
+                <VisitorRegion
+                  chartData={regionOverviewData}
+                  chartConfig={{
+                    males: { label: 'Males', color: '#2563eb' },
+                    females: { label: 'Females', color: '#202C88' },
+                    others: { label: 'Others', color: '#7DAEF4' },
+                  }}
+                />
+              )}
+            </div>
           </Card>
         </div>
 
@@ -467,10 +536,18 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </div>
               </div>
             </CardHeader>
-            <GenderDonutChart
-              data={genderDonutChartData}
-              COLORS={genderOrder.map((item) => genderColorMap[item])}
-            />
+            <div className="flex-1 flex flex-col justify-center items-center h-full">
+              {genderDonutChartData?.length === 0 ? (
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
+                </div>
+              ) : (
+                <GenderDonutChart
+                  data={genderDonutChartData}
+                  COLORS={genderOrder.map((item) => genderColorMap[item])}
+                />
+              )}
+            </div>
           </Card>
         </div>
       </div>
@@ -501,26 +578,13 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
             </CardHeader>
             <ViewsOverTime
               height={350}
-              data={[
-                { month: 'Jan', views: 2400 },
-                { month: 'Feb', views: 1398 },
-                { month: 'Mar', views: 9800 },
-                { month: 'Apr', views: 3908 },
-                { month: 'May', views: 4800 },
-                { month: 'Jun', views: 3800 },
-                { month: 'Jul', views: 4300 },
-                { month: 'Aug', views: 5000 },
-                { month: 'Sep', views: 6000 },
-                { month: 'Oct', views: 7000 },
-                { month: 'Nov', views: 8000 },
-                { month: 'Dec', views: 9000 },
-              ]}
+              data={globalWalletPointsOverTime}
             />
           </Card>
         </div>
 
         {/* --------------- Tier analytics --------------- */}
-        {!global && (
+        {/* {!global && (
           <div className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}>
             <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
               <CardHeader>
@@ -559,10 +623,10 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               />
             </Card>
           </div>
-        )}
+        )} */}
 
         {/* --------------- Points activity over time --------------- */}
-        <div className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}>
+        <div className={`col-span-12 ${'md:col-span-6'}`}>
           <Card className="dark:bg-secondary col-span-12 gap-0 shadow-md md:col-span-6">
             <CardHeader>
               <h3 className="text-md font-medium">Points distribution by activity type</h3>
@@ -571,55 +635,53 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
             <VisitorAge
               noHeaderTotal={false}
               height={370}
-              data={[
-                { ageGroup: 'Referral', visitors: 300 },
-                { ageGroup: 'Purchase', visitors: 250 },
-                { ageGroup: 'Socials', visitors: 150 },
-                { ageGroup: 'Birthday', visitors: 150 },
-                { ageGroup: 'Bonus', visitors: 280 },
-                { ageGroup: 'Product', visitors: 200 },
-                { ageGroup: 'Loyalty', visitors: 200 },
-              ]}
+              data={pointsByWalletType}
             />
           </Card>
         </div>
 
         {/* --------------- Status analytics --------------- */}
-        <div className={`col-span-12 ${global ? 'md:col-span-6' : 'md:col-span-4'}`}>
+        <div className={`col-span-12 ${'md:col-span-6'}`}>
           <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
             <CardHeader>
               <div className="mb-4 flex items-start justify-between">
                 <h3 className="text-xl font-semibold"> Status Analytics</h3>
 
                 <div className="flex flex-col items-end space-y-1">
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
-                    <h1 className="text-[13px]">
-                      Silver <span className="font-semibold">(20% / 2000)</span>
-                    </h1>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#202C88] leading-10" />
-                    <h1 className="text-[13px] text-[#7DAEF4]">
-                      Gold <span className="font-semibold">(20% / 2000)</span>
-                    </h1>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4] leading-10" />
-                    <h1 className="text-[13px] text-[#7DAEF4]">
-                      Platinum <span className="font-semibold">(10% / 1000)</span>
-                    </h1>
-                  </div>
+                  {Array.isArray(dashboardRaw?.data?.usersPerGlobalLevel?.globalLevelAnalytics) && dashboardRaw.data.usersPerGlobalLevel.globalLevelAnalytics.map((item: any, idx: number) => {
+                    const blueShades = [ '#2563EB',  '#202C88', '#6fa4f0', '#1E40AF', '#60A5FA', '#3B82F6', 
+                      '#1D4ED8', '#93C5FD', '#BFDBFE', '#DBEAFE'];
+                    const color = blueShades[idx % blueShades.length];
+                    return (
+                      <div className="flex items-center" key={item.name}>
+                        <div className="mr-2 h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
+                        <h1 className="text-[13px]">
+                          {item.name} <span className="font-semibold">({item.percent}% / {item.count})</span>
+                        </h1>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </CardHeader>
             <GenderDonutChart
-              data={[
-                { name: 'Silver', value: 400 },
-                { name: 'Gold', value: 300 },
-                { name: 'Platinum', value: 100 },
-              ]}
-              COLORS={['#2563EB', '#202C88', '#7DAEF4']}
+              data={
+                Array.isArray(dashboardRaw?.data?.usersPerGlobalLevel?.globalLevelAnalytics)
+                  ? dashboardRaw.data.usersPerGlobalLevel.globalLevelAnalytics.map((item: any) => ({
+                      name: item.name,
+                      value: item.count,
+                    }))
+                  : []
+              }
+              COLORS={
+                Array.isArray(dashboardRaw?.data?.usersPerGlobalLevel?.globalLevelAnalytics)
+                  ? dashboardRaw.data.usersPerGlobalLevel.globalLevelAnalytics.map((_ : any , idx : number) => {
+                      const blueShades = ['#2563EB', '#202C88','#7DAEF4', '#1E40AF', '#60A5FA', 
+                        '#3B82F6', '#1D4ED8', '#93C5FD', '#BFDBFE', '#DBEAFE' ];
+                      return blueShades[idx % blueShades.length];
+                    })
+                  : ['#2563EB', '#202C88', '#7DAEF4']
+              }
             />
           </Card>
         </div>
@@ -641,24 +703,32 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
 
       <div className="mt-3 grid gap-4 md:grid-cols-3">
         <div className="space-y-5">
-          {rewardData.map((item, index) => (
-            <RewardCard key={index} item={item} />
+          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.mostPopularRewards) 
+            && dashboardRaw.data.globalRewardsUsageStats.mostPopularRewards
+          ).map((item : any , index : number) => (
+            <RewardCard key={item.rewardId || index} item={item} />
           ))}
         </div>
-        <div className="space-y-5">
-          {rewardData.map((item, index) => (
-            <RewardCard key={index} item={item} />
+        <div className="space-y-5"> 
+          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.expiredRewards) 
+            && dashboardRaw.data.globalRewardsUsageStats.expiredRewards
+          ).map((item : any , index : number) => (
+            <RewardCard key={item.rewardId || index} item={item} />
           ))}
         </div>
-        <div className="space-y-5">
-          {rewardDataWithLimitedAvail.map((item, index) => (
-            <RewardCard key={index} item={item} />
+        <div className="space-y-5"> 
+          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.limitReward) 
+            ? dashboardRaw.data.globalRewardsUsageStats.limitReward.slice(0, 3)
+            : []
+          ).map((item : any , index : number) => (
+            <RewardCard key={index} item={item} type="limit" />
           ))}
         </div>
       </div>
 
       <div className="mt-5">
-        <Button variant={'outline'} className="cursor-pointer font-bold">
+        <Button variant={'outline'} className="cursor-pointer font-bold" 
+        onClick={() => { const path = global ? `/${userType}/global-rewards` : `/${userType}/rewards`; router.push(path)}}>
           See All
         </Button>
       </div>
@@ -679,9 +749,15 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 <h3 className="text-lg font-semibold sm:text-xl">Most Engaged Members</h3>
               </div>
             </CardHeader>
-            <MostEngagedMembers />
+            <MostEngagedMembers
+              data={
+                Array.isArray(dashboardRaw?.data?.usersPointsSummary?.mostEngagedMembers)
+                  ? dashboardRaw.data.usersPointsSummary.mostEngagedMembers
+                  : []
+              }
+            />
           </Card>
-        </div>
+        </div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 
         {/* --------------- Members with the Highest Points --------------- */}
         <div>
@@ -691,7 +767,13 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 <h3 className="text-lg font-semibold sm:text-xl">Members with the Highest Points</h3>
               </div>
             </CardHeader>
-            <MostEngagedMembers />
+            <MostEngagedMembers
+              data={
+                Array.isArray(dashboardRaw?.data?.usersPointsSummary?.highestPointsMembers)
+                  ? dashboardRaw.data.usersPointsSummary.highestPointsMembers
+                  : []
+              }
+            />
           </Card>
         </div>
 
@@ -702,20 +784,14 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               <h3 className="text-xl font-semibold">Total Spending by Members</h3>
             </CardHeader>
             <ViewsOverTime
-              data={[
-                { month: 'Jan', views: 2400 },
-                { month: 'Feb', views: 1398 },
-                { month: 'Mar', views: 9800 },
-                { month: 'Apr', views: 3908 },
-                { month: 'May', views: 4800 },
-                { month: 'Jun', views: 3800 },
-                { month: 'Jul', views: 4300 },
-                { month: 'Aug', views: 5000 },
-                { month: 'Sep', views: 6000 },
-                { month: 'Oct', views: 7000 },
-                { month: 'Nov', views: 8000 },
-                { month: 'Dec', views: 9000 },
-              ]}
+              data={
+                Array.isArray(dashboardRaw?.data?.globalWalletSpendingOverTime)
+                  ? dashboardRaw.data.globalWalletSpendingOverTime.map((item: any) => ({
+                      month: item.month,
+                      views: Number(item.values ?? 0),
+                    }))
+                  : []
+              }
             />
           </Card>
         </div>
@@ -726,17 +802,22 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
             <CardHeader>
               <h3 className="text-xl font-semibold">Most popular products or services</h3>
             </CardHeader>
-            <VisitorAge
-              data={[
-                { ageGroup: 'Coffee', visitors: 120 },
-                { ageGroup: 'Vodka', visitors: 200 },
-                { ageGroup: 'Item', visitors: 150 },
-                { ageGroup: 'Item', visitors: 90 },
-                { ageGroup: 'Item', visitors: 70 },
-                { ageGroup: 'Item', visitors: 70 },
-                { ageGroup: 'Item', visitors: 70 },
-              ]}
-            />
+            {Array.isArray(dashboardRaw?.data?.topOrderedMenuItems) && dashboardRaw.data.topOrderedMenuItems.length === 0 ? (
+              <div className="flex h-full w-full items-center justify-center py-10">
+                <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
+              </div>
+            ) : (
+              <VisitorAge
+                data={
+                  Array.isArray(dashboardRaw?.data?.topOrderedMenuItems)
+                    ? dashboardRaw.data.topOrderedMenuItems.map((item: any) => ({
+                        ageGroup: item.menuItemName,
+                        visitors: Number(item.quantity ?? 0),
+                      }))
+                    : []
+                }
+              />
+            )}
           </Card>
         </div>
 
@@ -750,27 +831,34 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 <div className="flex flex-col items-center">
                   <div className="flex items-center">
                     <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
-                    <h1 className="text-sm">Low Income</h1>
+                    <h1 className="text-sm text-[#2563EB]">Male</h1>
                   </div>
                   <div className="mt-2 flex items-center">
                     <div className="mr-2 h-3 w-3 rounded-full bg-[#202C88]" />
-                    <h1 className="text-sm text-[#7DAEF4]">High Income</h1>
+                    <h1 className="text-sm text-[#202C88]">Female</h1>
+                  </div>
+                  <div className="mt-2 flex items-center">
+                    <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4]" />
+                    <h1 className="text-sm text-[#7DAEF4]">Other</h1>
                   </div>
                 </div>
               </div>
             </CardHeader>
             <VisitorRegion
-              chartData={[
-                { month: 'January', males: 186, females: 80 },
-                { month: 'February', males: 305, females: 200 },
-                { month: 'March', males: 237, females: 120 },
-                { month: 'April', males: 73, females: 190 },
-                { month: 'May', males: 209, females: 130 },
-                { month: 'June', males: 214, females: 140 },
-              ]}
+              chartData={
+                Array.isArray(dashboardRaw?.data?.globalWalletSpendingByGenderOverTime)
+                  ? dashboardRaw.data.globalWalletSpendingByGenderOverTime.map((item: any) => ({
+                      month: item.month,
+                      males: Number(item.male ?? 0),
+                      females: Number(item.female ?? 0),
+                      others: Number(item.other ?? 0),
+                    }))
+                  : []
+              }
               chartConfig={{
-                males: { label: 'Males', color: '#2563eb' },
-                females: { label: 'Females', color: '#7DAEF4' },
+                males: { label: 'Males', color: '#2563EB' },
+                females: { label: 'Females', color: '#202C88' },
+                others: { label: 'Others', color: '#7DAEF4' },
               }}
             />
           </Card>
@@ -781,22 +869,22 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
           <Card className="dark:bg-secondary shadow-md">
             <CardHeader>
               <div className="flex items-start justify-between">
-                <h3 className="text-lg font-semibold">Spending breakdown by product type</h3>
+                <h3 className="text-lg font-semibold">Spending breakdown by payment status</h3>
               </div>
             </CardHeader>
             <MostViewedEvent
-              chartData={[
-                { month: 'Product', search: 189 },
-                { month: 'Product', search: 305 },
-                { month: 'Product', search: 237 },
-                { month: 'Product', search: 73 },
-                { month: 'Product', search: 209 },
-                { month: 'Product', search: 214 },
-                { month: 'Product', search: 314 },
-                { month: 'Product', search: 114 },
-              ]}
+              chartData={
+                Array.isArray(dashboardRaw?.data?.totalPriceByPaymentStatus)
+                  ? dashboardRaw.data.totalPriceByPaymentStatus.map((item: any) => ({
+                      month: item?.paymentStatus
+                        ? item?.paymentStatus?.charAt(0)?.toUpperCase() + item?.paymentStatus?.slice(1)
+                        : '',
+                      search: Number(item?.totalOrders ?? 0),
+                    }))
+                  : []
+              }
               chartConfig={{
-                search: { label: 'Category', color: '#2563EB' },
+                search: { label: 'Orders', color: '#2563EB' },
               }}
             />
           </Card>

@@ -12,9 +12,24 @@ const getResolvedTimezone = (): string => {
   }
 };
 
+const serializeQueryParams = (params: Record<string, unknown>): string => {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined) {
+      return;
+    }
+
+    searchParams.append(key, String(value));
+  });
+
+  return searchParams.toString().replace(/\+/g, '%20');
+};
+
 export const customFetchBaseQueryWithRoleRouting = () => {
   const baseQuery = fetchBaseQuery({
     baseUrl: CurrentUrl,
+    paramsSerializer: serializeQueryParams,
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as any;
       const token = state?.userSlice?.user?.token;
@@ -35,6 +50,7 @@ export const customFetchBaseQueryWithRoleRouting = () => {
       const state = api.getState() as any;
       const userRole = state?.userSlice?.user?.role;
       const isSuperAdmin = userRole === 'superAdmin' || userRole === 'admin';
+      // console.log('userRole detected:', userRole, 'isSuperAdmin:', isSuperAdmin);
 
       const { adminRoute, organizerRoute, adminOnlyParams = [], organizerOnlyParams = [] } = args.roleBasedRouting;
 

@@ -48,20 +48,18 @@ const InvoiceCard: FC<InvoiceCardProps> = ({ item }) => {
             )}
           </div>
         </div>
-        {item.amount && (
-          <div className="mt-2 flex items-center justify-between">
-            <p className="text-3xl font-bold">
-              {item?.amount}
-              {item.percent && '%'}
-            </p>
-            {item.raise && item.raise !== 'gold' && (
-              <div className="flex items-center rounded-full bg-[#79D48B] px-3 py-1 text-xs font-semibold text-white">
-                <TrendingUp />
-                <p>{item.raise}</p>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-3xl font-bold">
+            {item?.amount ?? 0}
+            {item.percent && '%'}
+          </p>
+          {item.raise && item.raise !== 'gold' && (
+            <div className="flex items-center rounded-full bg-[#79D48B] px-3 py-1 text-xs font-semibold text-white">
+              <TrendingUp />
+              <p>{item.raise}</p>
+            </div>
+          )}
+        </div>
       </CardHeader>
     </Card>
   );

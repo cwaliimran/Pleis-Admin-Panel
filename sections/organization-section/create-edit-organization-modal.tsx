@@ -31,6 +31,7 @@ interface OrganizationModalProps {
 type OrganizationFormValues = {
   image: any;
   name: string;
+  companyName?: string;
   user?: string;
   phone: string;
   phoneCode: string;
@@ -56,6 +57,7 @@ const createValidationSchema = (userType?: string, isEdit?: boolean) => {
   const baseSchema = {
     image: Yup.mixed().nullable().optional(),
     name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
+    companyName: Yup.string().optional(),
     phone: Yup.string().matches(PHONE_REGEX, 'Invalid phone number').required('Phone number is required'),
     phoneCode: Yup.string().default(''),
     website: Yup.string().nullable().optional().matches(URL_REGEX, {
@@ -107,6 +109,32 @@ const getInitialImage = (organization?: any): string | null => {
   return null;
 };
 
+const getCompanyName = (item?: any): string => {
+  return (
+    item?.companyDetails?.name ||
+    item?.basicInfo?.companyDetails?.name ||
+    item?.organizationDetails?.companyDetails?.name ||
+    item?.organizationDetails?.basicInfo?.companyDetails?.name ||
+    item?.creator?.companyDetails?.name ||
+    item?.creator?.basicInfo?.companyDetails?.name ||
+    ''
+  );
+};
+
+const getSelectedUserId = (organization?: any): string => {
+  const companyCreator = organization?.companyDetail?.creator || organization?.companyDetails?.creator;
+  const user = organization?.basicInfo?.user;
+
+  if (typeof companyCreator === 'string') return companyCreator;
+  if (companyCreator?._id) return companyCreator._id;
+  if (typeof user === 'string') return user;
+  if (user?._id) return user._id;
+  if (organization?.creator?._id) return organization.creator._id;
+  if (typeof organization?.creator === 'string') return organization.creator;
+
+  return '';
+};
+
 const buildCreatePayload = (formData: OrganizationFormValues, logoKey: string | null, userType?: string): any => {
   const payload: any = {
     basicInfo: {
@@ -137,6 +165,8 @@ const buildCreatePayload = (formData: OrganizationFormValues, logoKey: string | 
 };
 
 const buildUpdatePayload = (formData: OrganizationFormValues, logoKey: string | null, userType?: string): any => {
+  const isSuperAdmin = userType === 'super-admin';
+
   const payload: any = {
     basicInfo: {
       name: formData.name,
@@ -154,7 +184,17 @@ const buildUpdatePayload = (formData: OrganizationFormValues, logoKey: string | 
     },
   };
 
-  if (userType !== 'organizer' && formData.user) {
+  if (!isSuperAdmin && formData.companyName?.trim()) {
+    payload.companyDetails = {
+      name: formData.companyName.trim(),
+    };
+  }
+
+  if (isSuperAdmin && formData.user) {
+    payload.companyDetails = {
+      creator: formData.user,
+    };
+  } else if (userType !== 'organizer' && formData.user) {
     payload.basicInfo.user = formData.user;
   }
 
@@ -167,6 +207,7 @@ const buildUpdatePayload = (formData: OrganizationFormValues, logoKey: string | 
 
 const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }: OrganizationModalProps) => {
   const isEdit = !!organization;
+  const isSuperAdmin = userType === 'super-admin';
 
   const router = useRouter();
 
@@ -188,13 +229,29 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
     }
   );
 
+  const selectedCompanyId = getSelectedUserId(organization);
+  const selectedCompanyLabel = getCompanyName(organization) || 'Current Company';
+
   const userOptions = useMemo(
-    () =>
-      apiData?.data?.map((user: any) => ({
-        label: `${user?.basicInfo?.companyDetails?.name || ''}`,
-        value: user?.basicInfo?._id,
-      })) || [],
-    [apiData]
+    () => {
+      const mappedOptions =
+        apiData?.data
+          ?.map((user: any) => ({
+            label: getCompanyName(user),
+            value: user?._id || user?.basicInfo?._id,
+          }))
+          .filter((option: any) => option?.value) || [];
+
+      if (selectedCompanyId && !mappedOptions.some((option: any) => option.value === selectedCompanyId)) {
+        mappedOptions.unshift({
+          label: selectedCompanyLabel,
+          value: selectedCompanyId,
+        });
+      }
+
+      return mappedOptions;
+    },
+    [apiData, selectedCompanyId, selectedCompanyLabel]
   );
 
   const isLoading = isAdding || isUpdating;
@@ -205,8 +262,9 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
     () => ({
       image: null,
       name: organization?.basicInfo?.name || '',
+      companyName: getCompanyName(organization) || '',
       ...(userType !== 'organizer' && {
-        user: organization?.basicInfo?.user || '',
+        user: getSelectedUserId(organization),
       }),
       phone: organization?.basicInfo?.phoneNumber?.number || '',
       phoneCode: organization?.basicInfo?.phoneNumber?.code || '',
@@ -324,19 +382,27 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {isEdit && organization?.creator && (
-                    <div className="col-span-2">
-                      <p className="mb-0.5 text-sm font-medium">Company Name</p>
-                      <p className="text-muted-foreground text-sm">
-                        {organization.creator.firstName} {organization.creator.lastName}
-                      </p>
-                    </div>
-                  )}
-
                   {isEdit ? (
-                    <div className="col-span-2">
-                      <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
-                    </div>
+                    <>
+                      {!isSuperAdmin && (
+                        <div className="col-span-2">
+                          <RHFTextField name="companyName" label="Company Name" placeholder="Enter Company Name" />
+                        </div>
+                      )}
+                      <div className={isSuperAdmin ? '' : 'col-span-2'}>
+                        <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
+                      </div>
+                      {isSuperAdmin && (
+                        <RHFCustomDropdown
+                          name="user"
+                          label="Company Name"
+                          placeholder="Select Company"
+                          options={userOptions}
+                          isLoading={isUserLoading}
+                          showNone={false}
+                        />
+                      )}
+                    </>
                   ) : (
                     <>
                       <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />

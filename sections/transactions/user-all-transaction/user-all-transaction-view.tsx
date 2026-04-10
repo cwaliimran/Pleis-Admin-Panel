@@ -37,6 +37,8 @@ const UserAllTransactionView = ({ userId, title, domainType }: UserAllTransactio
     user: userId || undefined,
     // walletType: 'globalWallet',
     domainType: domainType || undefined,
+  }, {
+    refetchOnMountOrArgChange: true,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);

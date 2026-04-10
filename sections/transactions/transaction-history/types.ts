@@ -25,6 +25,8 @@ export interface SamplePageProps {
   onPaymentStatusChange?: (value: string) => void;
   paymentMethod?: string;
   onPaymentMethodChange?: (value: string) => void;
+  userTier?: string;
+  onUserTierChange?: (value: string) => void;
   minAmount?: string;
   onMinAmountChange?: (value: string) => void;
   maxAmount?: string;

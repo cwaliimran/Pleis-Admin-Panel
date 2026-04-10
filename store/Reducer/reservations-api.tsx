@@ -132,6 +132,63 @@ export const reservationsApi = createApi({
       }),
       invalidatesTags: ['userReservation'],
     }),
+
+
+    getReservationsAnalytics: builder.query({
+      query: ({organizations}) => {
+       const params: any = {};
+        if (organizations) {
+           params.organizations = organizations;
+         }
+        return {
+          url: '',
+          params,
+          method: 'GET',
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_RESERVATION_ANALYTICS,
+            organizerRoute: '/organizer/reservations-analytics',
+          },
+        };
+      },
+      transformResponse: (res: any) => ({
+        data: res.data,
+      }),
+    }),
+
+    getReservationTransactions: builder.query<any, { page: number; limit: number; organizations?: string[] }>({
+      query: ({ page, limit, organizations }) =>  {
+        const params: any = { page, limit };
+        if (organizations) {
+          params.organizations = organizations;
+        }
+        return {
+          url: `/admin/reservations-analytics/analytics-transsections`,
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: `/admin/reservations-analytics/analytics-transsections`,
+            organizerRoute: '/organizer/reservations-analytics/analytics-transsections',
+        },
+      }},
+    }),
+
+    getStaffChangeLogs: builder.query<any, { page?: number; limit?: number; organizations?: string[] }>({
+      query: ({ page = 1, limit = 10, organizations } = {}) => {
+          const params: any = { page, limit };
+        if (organizations) {
+          params.organizations = organizations;
+        }
+        return {    
+        url: `/admin/reservations-analytics/change-logs`,
+        method: 'GET',
+        params,
+        roleBasedRouting: {
+          adminRoute: `/admin/reservations-analytics/change-logs`,
+          organizerRoute: '/organizer/reservations-analytics/change-logs',
+        },
+      }},
+    }),
+
   }),
 });
 
@@ -143,6 +200,9 @@ export const {
   useUpdateUserReservationMutation,
   useUpdateReservationStatusMutation,
   useDeleteReservationMutation,
+  useGetReservationsAnalyticsQuery,
+  useGetReservationTransactionsQuery,
+  useGetStaffChangeLogsQuery,
 } = reservationsApi;
 
 // import { createApi } from '@reduxjs/toolkit/query/react';

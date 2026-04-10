@@ -23,8 +23,16 @@ export interface SamplePageProps {
   onTypeChange?: (status: string) => void;
   paymentStatus?: string;
   onPaymentStatusChange?: (value: string) => void;
+  validationStatus?: string;
+  onValidationStatusChange?: (value: string) => void;
   paymentMethod?: string;
   onPaymentMethodChange?: (value: string) => void;
+  event?: string;
+  onEventChange?: (value: string) => void;
+  transferredOrSentOnly?: boolean;
+  onTransferredOrSentOnlyChange?: (value: boolean) => void;
+  refundedOnly?: boolean;
+  onRefundedOnlyChange?: (value: boolean) => void;
   minAmount?: string;
   onMinAmountChange?: (value: string) => void;
   maxAmount?: string;

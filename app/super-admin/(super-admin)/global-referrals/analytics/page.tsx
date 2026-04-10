@@ -18,7 +18,7 @@ const Page = () => {
         />
 
         {/* <CreateEventView title="Create" userType="super-admin" /> */}
-        <ReferralsDetailsView />
+        <ReferralsDetailsView global={true} />
       </div>
     </>
   );

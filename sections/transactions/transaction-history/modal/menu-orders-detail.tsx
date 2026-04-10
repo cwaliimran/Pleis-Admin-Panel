@@ -58,7 +58,7 @@ const MenuItemRow: FC<{ item: MenuOrderItem }> = ({ item }) => {
 
 // ─── Menu Orders Detail ─────────────────────────────────────────
 
-const MenuOrdersDetail: FC<{ orderData: MenuOrderData }> = ({ orderData }) => {
+const MenuOrdersDetail: FC<{ orderData: MenuOrderData; userTier?: string }> = ({ orderData, userTier }) => {
   if (!orderData) return null;
 
   const breakdown = orderData.priceBreakdown;
@@ -79,6 +79,7 @@ const MenuOrdersDetail: FC<{ orderData: MenuOrderData }> = ({ orderData }) => {
           <InfoRow label="Status" value={<span className="capitalize">{orderData.status}</span>} />
           <InfoRow label="Order Type" value={<span className="capitalize">{orderData.orderType}</span>} />
           <InfoRow label="Pickup Type" value={<span className="capitalize">{orderData.pickupType}</span>} />
+          <InfoRow label="Tier Status" value={userTier ? <span className="capitalize">{userTier}</span> : undefined} />
           <InfoRow label="Payment Method" value={<span className="capitalize">{orderData.paymentMethod}</span>} />
           <InfoRow label="Paid At" value={orderData.paidAt ? fDate(orderData.paidAt, 'DD/MM/YYYY HH:mm') : undefined} />
           {orderData.notes && <InfoRow label="Notes" value={orderData.notes} />}

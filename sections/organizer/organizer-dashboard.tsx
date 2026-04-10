@@ -77,7 +77,7 @@ const OrganizerDashboard = () => {
     }));
   }, [trendRaw]);
 
-  const interestPerCategory: { category: string; males: number; females: number }[] =
+  const interestPerCategory: { category: string; males: number; females: number; others: number }[] =
     dashboard?.interestPerCategory?.interestPerCategory ?? [];
 
   // ---- Loading state ----
@@ -307,19 +307,25 @@ const OrganizerDashboard = () => {
                     <div className="mr-2 h-2 w-2 rounded-full bg-[#202C88]" />
                     <h1 className="text-[14px] text-[#202C88]">Females</h1>
                   </div>
+                  <div className="mt-2 flex items-center">
+                    <div className="mr-2 h-2 w-2 rounded-full bg-[#7DAEF4]" />
+                    <h1 className="text-[14px] text-[#7DAEF4]">Others</h1>
+                  </div>
                 </div>
               </div>
             </CardHeader>
             {interestPerCategory?.length > 0 ? (
               <VisitorInterest
                 chartData={interestPerCategory?.map((item) => ({
-                  month: item?.category,
-                  males: item?.males,
-                  females: item?.females,
+                  category: item?.category,
+                  males: Number(item?.males ?? 0),
+                  females: Number(item?.females ?? 0),
+                  others: Number(item?.others ?? 0),
                 }))}
                 chartConfig={{
                   males: { label: 'Males', color: '#2563EB' },
                   females: { label: 'Females', color: '#202C88' },
+                  others: { label: 'Others', color: '#7DAEF4' },
                 }}
               />
             ) : (

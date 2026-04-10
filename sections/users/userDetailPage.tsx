@@ -26,6 +26,12 @@ const tabData = [
   { value: 'booking&loyalty', label: 'Booking & Loyalty' },
 ];
 
+const bookingAndLoyaltyTabData = [
+  { value: 'ticketingorders', label: 'Booking History', title: 'Booking History' },
+  { value: 'menuorders', label: 'Ordering Transactions', title: 'Ordering Transactions' },
+  { value: 'loyaltyrewardsorders', label: 'Loyalty Rewards', title: 'Loyalty Rewards' },
+];
+
 const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
   const { id } = useParams();
 
@@ -34,6 +40,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
   const userType = data.get('userType');
 
   const [active, setActive] = React.useState('overview');
+  const [bookingAndLoyaltyActive, setBookingAndLoyaltyActive] = React.useState('ticketingorders');
 
   const { data: apiData = {}, isLoading, refetch } = useGetUserByIdQuery({ id });
 
@@ -65,6 +72,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
   const showOverview = showTabs && active === 'overview';
   const showTransactions = showTabs && active === 'transactions';
   const showBookingAndLoyalty = showTabs && active === 'booking&loyalty';
+  const activeBookingAndLoyaltyTab = bookingAndLoyaltyTabData.find((tab) => tab.value === bookingAndLoyaltyActive) ?? bookingAndLoyaltyTabData[0];
 
   const user = {
     id: '-',
@@ -278,11 +286,48 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
 
                   {/* ---------------- BOOKING & LOYALTY ---------------- */}
                   {showBookingAndLoyalty && (
-                    <>
-                      <UserAllTransactionView title="Booking History" domainType="ticketingorders" userId={id} />
-                      <UserAllTransactionView title="Ordering Transactions" domainType="menuorders" userId={id} />
-                      <UserAllTransactionView title="Loyalty Rewards" domainType="loyaltyrewardsorders" userId={id} />
-                    </>
+                    <div className="mt-4 space-y-4">
+                      <div className="block sm:hidden">
+                        <Select value={bookingAndLoyaltyActive} onValueChange={setBookingAndLoyaltyActive}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select booking or loyalty view" />
+                          </SelectTrigger>
+                          <SelectContent className="dark:bg-secondary">
+                            {bookingAndLoyaltyTabData.map((tab) => (
+                              <SelectItem key={tab.value} value={tab.value}>
+                                {tab.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Tabs value={bookingAndLoyaltyActive} onValueChange={setBookingAndLoyaltyActive} className="hidden w-full sm:block">
+                        <TabsList className="inline-flex items-center gap-2 bg-transparent p-1">
+                          <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
+                            {bookingAndLoyaltyTabData.map((tab) => (
+                              <TabsTrigger
+                                key={tab.value}
+                                value={tab.value}
+                                className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
+                                  bookingAndLoyaltyActive === tab.value
+                                    ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-["\"]'
+                                    : 'text-muted-foreground'
+                                }`}
+                              >
+                                {tab.label}
+                              </TabsTrigger>
+                            ))}
+                          </div>
+                        </TabsList>
+                      </Tabs>
+
+                      <UserAllTransactionView
+                        title={activeBookingAndLoyaltyTab.title}
+                        domainType={activeBookingAndLoyaltyTab.value}
+                        userId={id}
+                      />
+                    </div>
                   )}
                 </div>
               </div>

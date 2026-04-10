@@ -93,6 +93,17 @@ export const notificationsApi = createApi({
       }),
       invalidatesTags: ['notification'],
     }),
+
+    getNotificationAnalytics: builder.query({
+      query: ({ notificationId }) => ({
+        url: API_ROUTES.ADMIN_NOTIFICATION_ANALYTICS,
+        method: 'GET',
+        params: {
+          notification: notificationId,
+        },
+      }),
+      transformResponse: (res) => res?.data || {},
+    }),
   }),
 });
 
@@ -103,4 +114,5 @@ export const {
   useGetAllOrganizatonsQuery,
   useGetAllEventsQuery,
   useGetAllInterestTagsQuery,
+  useGetNotificationAnalyticsQuery,
 } = notificationsApi;

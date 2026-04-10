@@ -3,6 +3,7 @@
 import { AppLoading } from '@/components/atoms/app-loading';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import ButtonLoading from '@/components/common/button-loading';
+import { formatCompactNumber } from '@/utils/format-compact-number';
 import SocialLinks from '@/components/common/social-links';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader } from '@/components/ui/card';
@@ -53,6 +54,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
   const organizationData = data?.data;
 
   const [active, setActive] = useState('info');
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0);
   // const [activeTab, setActiveTab] = useState('basicInfo');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -179,6 +181,14 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
     refetch();
   };
 
+  const handleTabChange = (nextTab: string) => {
+    setActive(nextTab);
+
+    if (nextTab === 'analytics') {
+      setAnalyticsRefreshKey((currentKey) => currentKey + 1);
+    }
+  };
+
   return (
     <>
       {isLoading ? (
@@ -268,25 +278,32 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
                 <div className="flex items-center gap-2">
                   <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl">{organizationData?.basicInfo?.name || '-'}</h1>
-                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>-</Badge>
+                  {/* <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>30</Badge> */}
                 </div>
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Subscriptions</Badge>
                   <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>Hide</Badge>
-                </div>
+                </div> */}
                 <div className="flex items-center gap-2">
-                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0% Commission</Badge>
-                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Boost</Badge>
+                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>
+                    Followers: {organizationData?.followers !== 0 ? organizationData?.followers : 0}
+                  </Badge>
+                  {/* <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Boost</Badge> */}
                 </div>
 
                 <div className="mt-4 flex flex-col-reverse gap-4 md:items-end md:justify-between lg:flex-row">
-                  <Tabs value={active} onValueChange={setActive} className="w-full">
+                  <Tabs value={active} onValueChange={handleTabChange} className="w-full">
                     <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
                       <TabsList className="inline-flex items-end rounded-full bg-transparent">
                         {tabsData.map((tab: any) => (
                           <TabsTrigger
                             key={tab.value}
                             value={tab.value}
+                            onClick={() => {
+                              if (tab.value === 'analytics' && active === 'analytics') {
+                                setAnalyticsRefreshKey((currentKey) => currentKey + 1);
+                              }
+                            }}
                             className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
                               active === tab.value
                                 ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
@@ -311,7 +328,14 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
                 {active === 'loyalty' && <UserLoyalty />}
 
-                {active === 'analytics' && <Useranalytics />}
+                {active === 'analytics' && (
+                  <Useranalytics
+                    organizationData={organizationData}
+                    userType={userType}
+                    organizationId={organizationData?._id}
+                    refreshKey={analyticsRefreshKey}
+                  />
+                )}
 
                 {active === 'notifications' && <UserNotifications organizationId={organizationData?._id} />}
 
@@ -328,7 +352,9 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                       <h3 className="text-lg font-bold">Total Revenue</h3>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center text-3xl font-bold">{organizationData?.revenue !== 0 ? organizationData?.revenue : 0}</div>
+                  <div className="mt-2 flex items-center text-3xl font-bold">
+                    €{formatCompactNumber(Number(organizationData?.revenue ?? 0))}
+                  </div>
                 </CardHeader>
               </Card>
 

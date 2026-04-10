@@ -1,44 +1,47 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import React from 'react'
 import { MostViewedEvent } from '../invoices'
 
-const saleTrend = () => {
+interface SaleTrendProps {
+  chartData?: Array<{ month: string; value: number }>;
+  isLoading?: boolean;
+}
+
+const saleTrend = ({ chartData, isLoading }: SaleTrendProps) => {
+  const mappedData = (chartData ?? []).map((item) => ({
+    month: item.month,
+    search: item.value,
+  }));
+
     return (
         <div>
             <Card className='h-[450px] dark:bg-[#171717]'>
                 <CardHeader className='flex justify-between'>
                     <h1 className='text-2xl font-bold'>
-                        Sales Trends
+                        Sales Over Time
                     </h1>
-                    <Select defaultValue='filter'>
-                        <SelectTrigger className='rounded-3xl  font-bold text-md'>
-                            <SelectValue placeholder="" />
-                        </SelectTrigger>
-                        <SelectContent >
-                            <SelectGroup className='w-auto rounded-2xl '>
-                                <SelectLabel>Filter</SelectLabel>
-                                <SelectItem value="filter">filter</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
                 </CardHeader>
                 <CardContent>
+                  {isLoading ? (
+                    <div className="flex flex-col gap-3 pt-4">
+                      <Skeleton className="h-[260px] w-full rounded-lg" />
+                    </div>
+                  ) : (
                     <MostViewedEvent
-                        chartData={[
-                            { month: "January", search: 189 },
-                            { month: "February", search: 305 },
-                            { month: "March", search: 237 },
-                            { month: "April", search: 73 },
-                            { month: "May", search: 209 },
-                            { month: "June", search: 214 }
+                        chartData={mappedData.length > 0 ? mappedData : [
+                            { month: "Jan", search: 0 },
+                            { month: "Feb", search: 0 },
+                            { month: "Mar", search: 0 },
+                            { month: "Apr", search: 0 },
+                            { month: "May", search: 0 },
+                            { month: "Jun", search: 0 },
                         ]}
                         chartConfig={{
-                            search: { label: "Category", color: "#2563EB" },
+                            search: { label: "Sales", color: "#2563EB" },
                         }}
                     />
-                    
-
+                  )}
                 </CardContent>
             </Card>
         </div>

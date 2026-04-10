@@ -48,12 +48,112 @@ export const membersApi = createApi({
           organizerRoute: API_ROUTES.ORGANIZER_LOYALTY_MEMBERS_GIFT,
         },
       }),
-      // invalidatesTags: ['member'],
+      invalidatesTags: ['member'],
     }),
+
+    getMemberById: builder.query({
+      query: ({ memberId, companyOrganizer }) => {
+        const params: any = {};
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+
+        return {
+          url: `/${memberId}`,
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_LOYALTY_MEMBERS,
+            organizerRoute: API_ROUTES.ORGANIZER_LOYALTY_MEMBERS,
+            adminOnlyParams: ['companyOrganizer'],
+          },
+        };
+      },
+      providesTags: ['member'],
+    }),
+
+    getClubMembersAnalytics: builder.query({
+      query: ({ user, companyOrganizer }) => {
+        const params: any = {};
+        
+        if (user) params.user = user;
+        // Only add companyOrganizer if it's provided (for admin)
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+
+        return {
+          url: '',
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_LOYALTY_MEMBERS_ANALYTICS,
+            organizerRoute: API_ROUTES.ORGANIZER_LOYALTY_MEMBERS_ANALYTICS,
+          },
+        };
+      },
+      providesTags: ['member'],
+    }),
+
+    getClubMembersAnalyticsTransactions: builder.query({
+      query: ({ user, companyOrganizer, page = 1, limit = 10 }) => {
+        const params: any = { page, limit };
+
+        if (user) params.user = user;
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+
+        return {
+          url: '',
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_LOYALTY_MEMBERS_ANALYTICS_TRANSACTIONS,
+            organizerRoute: API_ROUTES.ORGANIZER_LOYALTY_MEMBERS_ANALYTICS_TRANSACTIONS,
+          },
+        };
+      },
+      transformResponse: (res: any) => ({
+        data: res?.data?.transactions || res?.data?.stats || res?.data || [],
+        meta: res?.data?.meta || res?.meta || {
+          totalPages: 1,
+          currentPage: 1,
+          totalRecords: 0,
+          limit: 10,
+        },
+      }),
+      providesTags: ['member'],
+    }),
+      getClubMembersAnalyticsSummary: builder.query({
+        query: ({ user, companyOrganizer }) => {
+          const params: any = {};
+
+          if (user) params.user = user;
+          if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+
+          return {
+            url: '',
+            method: 'GET',
+            params,
+            roleBasedRouting: {
+              adminRoute: API_ROUTES.ADMIN_LOYALTY_MEMBERS_ANALYTICS_SUMMARY,
+              organizerRoute: API_ROUTES.ORGANIZER_LOYALTY_MEMBERS_ANALYTICS_SUMMARY,
+            },
+          };
+        },
+        transformResponse: (res: any) => ({
+          data: res?.data || {},
+        }),
+        providesTags: ['member'],
+      }),
   }),
 });
 
-export const { useGetMembersQuery, useSendGiftToMemberMutation } = membersApi;
+export const {
+  useGetMembersQuery,
+  useSendGiftToMemberMutation,
+  useGetMemberByIdQuery,
+  useGetClubMembersAnalyticsQuery,
+  useGetClubMembersAnalyticsTransactionsQuery,
+} = membersApi;
+
+export const useGetClubMembersAnalyticsSummaryQuery =
+  membersApi.endpoints.getClubMembersAnalyticsSummary.useQuery;
 
 // import { createApi } from '@reduxjs/toolkit/query/react';
 // import API_ROUTES from '../apiRoutes';

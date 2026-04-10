@@ -18,12 +18,23 @@ interface TransactionDetailModalProps {
   isAdmin?: boolean;
 }
 
+const resolveUserTier = (transaction?: TransactionDetail): string | undefined => {
+  if (!transaction) return undefined;
+
+  const candidate =
+    (transaction as any)?.userGlobal?.title ||
+    (transaction as any)?.userGlobal?.level?.title ||
+    (transaction as any)?.userGlobal?.type ||
+    (transaction as any)?.userGlobal?.level?.type;
+
+  return typeof candidate === 'string' && candidate.trim() ? candidate : undefined;
+};
+
 const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose, transactionId, isAdmin = false }) => {
   const { data, isLoading, isFetching, isError } = useGetTransactionsByIdQuery({ id: transactionId!, isAdmin }, { skip: !transactionId || !open });
 
   //   const transaction = data as TransactionDetail | undefined;
   const transaction = !isLoading && !isFetching ? (data as TransactionDetail | undefined) : undefined;
-
   const handleClose = () => {
     onClose();
   };
@@ -83,9 +94,11 @@ const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose
 // ─── Type Router ────────────────────────────────────────────────
 
 const OrderTypeDetail: FC<{ transaction: TransactionDetail }> = ({ transaction }) => {
+  const resolvedUserTier = resolveUserTier(transaction);
+
   switch (transaction.orderType) {
     case 'menuorders':
-      return <MenuOrdersDetail orderData={transaction.orderData} />;
+      return <MenuOrdersDetail orderData={transaction.orderData} userTier={resolvedUserTier} />;
     case 'userreservations':
       return <UserReservationsDetail orderData={transaction.orderData} />;
     case 'tickettransfer':

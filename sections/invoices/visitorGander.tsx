@@ -33,7 +33,6 @@ const useIsMobile = (breakpoint = 1024) => {
 
 const renderCustomizedLabel = (props: any) => {
   const { cx, cy, midAngle, outerRadius, percent } = props;
-
   if (
     cx === undefined ||
     cy === undefined ||
@@ -44,22 +43,17 @@ const renderCustomizedLabel = (props: any) => {
     return null;
   }
 
-  // Increase radius to push label outside
-  const RADIAN = Math.PI / 180;
-
-  const offset = 0; // distance outside the pie
+  const RADIAN = Math.PI / 182;
+  const offset = 16;
   const radius = outerRadius + offset;
-
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
   const label = `${(percent * 100).toFixed(0)}%`;
-  const fontSize = 12;
-  const circleRadius = 27;
+  const fontSize = 11;
+  const circleRadius = 14;
   return (
     <g>
-      <circle cx={x} cy={y} r={circleRadius} fill="#f3f4f6" />
-
+      <circle cx={x} cy={y} r={circleRadius} fill="#fff" stroke="#d1d5db" strokeWidth={1.5} />
       <text
         x={x}
         y={y}

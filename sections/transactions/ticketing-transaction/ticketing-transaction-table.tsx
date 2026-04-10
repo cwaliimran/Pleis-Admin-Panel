@@ -5,6 +5,7 @@ import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
@@ -39,12 +40,20 @@ const TicketingTransactionTable: FC<SamplePageProps> = ({
   onPageChange,
   limit = 10,
   // filters states bellow
-  search = '',
-  onSearch = () => {},
+  type = 'all',
+  onTypeChange = () => {},
   paymentStatus = '',
   onPaymentStatusChange = () => {},
+  validationStatus = '',
+  onValidationStatusChange = () => {},
   paymentMethod = '',
   onPaymentMethodChange = () => {},
+  event = '',
+  onEventChange = () => {},
+  transferredOrSentOnly = false,
+  onTransferredOrSentOnlyChange = () => {},
+  refundedOnly = false,
+  onRefundedOnlyChange = () => {},
   minAmount = '',
   onMinAmountChange = () => {},
   maxAmount = '',
@@ -114,12 +123,20 @@ const TicketingTransactionTable: FC<SamplePageProps> = ({
                                 onChange: (newEndDate) => onDateChange(startDate, newEndDate),
                               },
                             }}
-                            searchFilter={{
-                              placeholder: 'Search...',
-                              value: search,
-                              onChange: onSearch,
-                            }}
                             selectFilters={[
+                              {
+                                id: 'sheet-transaction-type',
+                                label: 'Ticket Type',
+                                placeholder: 'Select Ticket Type',
+                                value: type,
+                                onChange: onTypeChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'earn', label: 'Earn' },
+                                  { value: 'redeem', label: 'Redeem' },
+                                  { value: 'adjustment', label: 'Adjustment' },
+                                ],
+                              },
                               {
                                 id: 'sheet-payment-status',
                                 label: 'Payment Status',
@@ -147,12 +164,49 @@ const TicketingTransactionTable: FC<SamplePageProps> = ({
                                   { value: 'cash', label: 'Cash' },
                                 ],
                               },
+                              {
+                                id: 'sheet-validation-status',
+                                label: 'Validation Status',
+                                placeholder: 'Select Validation Status',
+                                value: validationStatus,
+                                onChange: onValidationStatusChange,
+                                options: [
+                                  { value: 'all', label: 'All' },
+                                  { value: 'scanned', label: 'Scanned' },
+                                  { value: 'not-scanned', label: 'Not Scanned' },
+                                ],
+                              },
                             ]}
                             filtersAlignment="left"
                           />
                         </div>
                       </div>
                     </div>
+                              
+                                                  <div className="-mt-4 flex w-full flex-col gap-2">
+                                                    <Input
+                                                      type="text"
+                                                      placeholder="Search By Event / Ticket..."
+                                                      value={event}
+                                                      onChange={(e) => onEventChange(e.target.value)}
+                                                      className="h-10 w-full"
+                                                    />
+                                                  </div>
+
+                                                  <div className="-mt-2 flex w-full flex-col gap-3">
+                                                    <Label className="text-sm font-medium">Special Filters</Label>
+                                                    <label className="flex cursor-pointer items-center gap-3 text-sm">
+                                                      <Checkbox
+                                                        checked={transferredOrSentOnly}
+                                                        onCheckedChange={(checked) => onTransferredOrSentOnlyChange(Boolean(checked))}
+                                                      />
+                                                      <span>Transferred/Sent Tickets Only</span>
+                                                    </label>
+                                                    <label className="flex cursor-pointer items-center gap-3 text-sm">
+                                                      <Checkbox checked={refundedOnly} onCheckedChange={(checked) => onRefundedOnlyChange(Boolean(checked))} />
+                                                      <span>Refunded Tickets Only</span>
+                                                    </label>
+                                                  </div>
 
                     <div className="-mt-4 flex w-full flex-col gap-2">
                       <Label className="text-sm font-medium">Amount Range</Label>
@@ -184,7 +238,7 @@ const TicketingTransactionTable: FC<SamplePageProps> = ({
                       )}
                     </div>
 
-                    {(search || paymentStatus || paymentMethod || minAmount || maxAmount || startDate || endDate) && (
+                    {((type && type !== 'all') || paymentStatus || validationStatus || paymentMethod || event || transferredOrSentOnly || refundedOnly || minAmount || maxAmount || startDate || endDate) && (
                       <button
                         className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
                         type="button"
@@ -205,7 +259,7 @@ const TicketingTransactionTable: FC<SamplePageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item, idx) => (
-                  <TicketingTransactionTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <TicketingTransactionTableRow key={`${item?._id}-${idx}`} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>

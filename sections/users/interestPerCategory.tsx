@@ -1,8 +1,19 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import React from 'react'
 import { VisitorInterest } from '../invoices'
 
-const InterestPerCategory = () => {
+interface InterestPerCategoryProps {
+    data?: Array<{
+        category: string;
+        males: number;
+        females: number;
+        others?: number;
+    }>;
+    isLoading?: boolean;
+}
+
+const InterestPerCategory = ({ data = [], isLoading = false }: InterestPerCategoryProps) => {
     return (
         <Card className='shadow-lg  h-[450px] dark:bg-[#171717]'>
             <CardHeader>
@@ -26,20 +37,34 @@ const InterestPerCategory = () => {
                 </div>
             </CardHeader>
             {/* <CardContent className=''> */}
-                <VisitorInterest
-                    chartData={[
-                        { month: "January", males: 186, females: 80 },
-                        { month: "February", males: 305, females: 200 },
-                        { month: "March", males: 237, females: 120 },
-                        { month: "April", males: 73, females: 190 },
-                        { month: "May", males: 209, females: 130 },
-                        { month: "June", males: 214, females: 140 }
-                    ]}
-                    chartConfig={{
-                        males: { label: "Males", color: "#2563EB" },
-                        females: { label: "Females", color: "#202C88" },
-                    }}
-                />
+                {isLoading ? (
+                    <div className='px-4 pt-2'>
+                        <Skeleton className='h-[300px] w-full rounded-lg' />
+                    </div>
+                ) : (
+                    <VisitorInterest
+                        chartData={
+                            data.length > 0
+                                ? data.map((item) => ({
+                                      category: item.category,
+                                      males: Number(item.males ?? 0),
+                                      females: Number(item.females ?? 0),
+                                  }))
+                                : [
+                                      { category: 'Eat & Dining', males: 0, females: 0 },
+                                      { category: 'Nightlife', males: 0, females: 0 },
+                                      { category: 'Coffee & Drinks', males: 0, females: 0 },
+                                      { category: 'Art & Culture', males: 0, females: 0 },
+                                      { category: 'Experiences', males: 0, females: 0 },
+                                      { category: 'Theater & Shows', males: 0, females: 0 },
+                                  ]
+                        }
+                        chartConfig={{
+                            males: { label: 'Males', color: '#2563EB' },
+                            females: { label: 'Females', color: '#202C88' },
+                        }}
+                    />
+                )}
             {/* </CardContent> */}
         </Card>
     )

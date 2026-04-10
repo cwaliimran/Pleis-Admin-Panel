@@ -14,6 +14,7 @@ import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
@@ -42,6 +43,7 @@ const profileSchema = Yup.object({
 });
 
 const ManagerProfileSection = () => {
+  const router = useRouter();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.userSlice);
   const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserMutation();
@@ -181,6 +183,10 @@ const ManagerProfileSection = () => {
   return (
     <div className="mt-5 min-h-[87vh] md:mt-0 md:p-6">
       <div className="max-w-3xl md:mx-auto">
+        <Button type="button" variant="outline" onClick={() => router.back()} className="mb-4 h-10 w-fit px-5">
+          Back
+        </Button>
+
         <Card className="dark:bg-secondary border-gray-200 bg-white shadow-sm dark:border-none">
           <CardHeader>
             <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white">Manager Profile</CardTitle>

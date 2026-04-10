@@ -35,10 +35,28 @@ export { default as InterestPerCategory } from './interestPerCategory'
 
 export { default as VisitorGanderAnalytics } from './visitorGanderAnalytics'
 
+export { default as RegionOverview } from './regionOverview'
+
 export { default as userCard } from './userCard'
 
 export { default as UserTable } from './userTable'
 
 export { default as UserListTableRow } from './userListTableRow'
+
+export {
+	FollowerGenderDistributionChart,
+	FollowerInterestsChart,
+	FollowerLocationDistributionChart,
+	FollowersTagsChart,
+	PageViewTrendsChart,
+	RepeatPurchaseUsersChart,
+	TicketSalesGrowthChart,
+	VisitorRetentionTrendsChart,
+	mapGenderData,
+	mapInterestData,
+	mapLocationData,
+	mapTagData,
+	mapTimelineData,
+} from './organization-analytics'
 
 

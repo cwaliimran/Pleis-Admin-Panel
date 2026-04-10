@@ -9,8 +9,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { useTableSort } from '@/hooks/useTableSort';
+import { useGetCategoriesQuery } from '@/store/Reducer/categories';
 import { Settings2 } from 'lucide-react';
-import { FC, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { VenueTableRow } from '.';
 
@@ -22,6 +23,11 @@ const headLabel = [
     align: 'left',
     sortable: true,
     sortKey: 'title',
+  },
+  {
+    id: 'categories',
+    label: 'Categories',
+    align: 'left',
   },
   {
     id: 'createdAt',
@@ -92,6 +98,26 @@ const VenueTypeTable: FC<PageProps> = ({
       location: sheetLocation,
     },
   });
+
+  const { data: categoriesResponse } = useGetCategoriesQuery({
+    page: 0,
+    limit: 200,
+    search: '',
+    status: '',
+    date: undefined,
+  });
+
+  const categoryTitleMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    (categoriesResponse?.data || []).forEach((category: any) => {
+      const id = category?._id;
+      const title = category?.title || category?.name || '';
+      if (id && title) {
+        map[id] = title;
+      }
+    });
+    return map;
+  }, [categoriesResponse?.data]);
 
   return (
     <div>
@@ -183,7 +209,13 @@ const VenueTypeTable: FC<PageProps> = ({
 
               <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item: any, index: number) => (
-                  <VenueTableRow key={item._id || index} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                  <VenueTableRow
+                    key={item._id || index}
+                    item={item}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    categoryTitleMap={categoryTitleMap}
+                  />
                 ))}
               </TableBodyWrapper>
             </Table>

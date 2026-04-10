@@ -11,9 +11,25 @@ interface InvoiceCardProps {
     percent?: boolean;
     raise?: string;
     menu?: boolean;
+    isCurrency?: boolean;
   };
 }
 const TransactionCard: FC<InvoiceCardProps> = ({ item }) => {
+  const formatAmount = () => {
+    const value = Number(item?.amount ?? 0);
+
+    if (item?.isCurrency) {
+      return new Intl.NumberFormat('en-IE', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+        maximumFractionDigits: 2,
+      }).format(value);
+    }
+
+    return value.toLocaleString();
+  };
+
   return (
     <Card className="dark:bg-secondary rounded-xl">
       <CardHeader>
@@ -24,7 +40,7 @@ const TransactionCard: FC<InvoiceCardProps> = ({ item }) => {
         </div>
         <div className="mt-2 flex items-center justify-between">
           <p className="text-3xl font-bold">
-            {item?.amount}
+            {formatAmount()}
             {item.percent && '%'}
           </p>
           {item.raise && item.raise !== 'gold' && (

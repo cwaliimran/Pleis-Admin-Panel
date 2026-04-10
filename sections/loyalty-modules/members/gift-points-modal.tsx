@@ -22,6 +22,7 @@ interface GiftPointsModalProps {
   companyOrganizer: string;
   userId: string;
   usertype?: string;
+  onSuccess?: () => void | Promise<void>;
 }
 
 const schema = Yup.object().shape({
@@ -39,7 +40,7 @@ const defaultValues: GiftPointsFormValues = {
   notes: '',
 };
 
-const GiftPointsModal = ({ open, onClose, companyOrganizer, userId, usertype }: GiftPointsModalProps) => {
+const GiftPointsModal = ({ open, onClose, companyOrganizer, userId, usertype, onSuccess }: GiftPointsModalProps) => {
   const [sendGiftToMember, { isLoading: giftSending }] = useSendGiftToMemberMutation();
 
   const methods: UseFormReturn<GiftPointsFormValues> = useForm<GiftPointsFormValues>({
@@ -83,6 +84,8 @@ const GiftPointsModal = ({ open, onClose, companyOrganizer, userId, usertype }: 
       }
 
       showSuccess(response?.message || 'Points sent successfully');
+
+      await onSuccess?.();
 
       methods.reset(defaultValues);
       onClose();

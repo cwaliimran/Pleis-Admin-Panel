@@ -7,21 +7,32 @@ import { useBoolean } from '@/hooks/useBoolean';
 import { GenderDonutChart, ViewsOverTime, VisitorAge } from '@/sections/invoices';
 import ReservationStatsCard from '@/sections/invoices/ReservationCard';
 import VisitorRegionV2 from '@/sections/invoices/visitorRegionv2';
-import { reservationCardHeaderData } from '@/sections/loyalty/data';
+
 import ReservationList from '../ReservationTransactionList';
 import StaffConfirmationsLog from '../StaffConfirmation';
+import { useGetReservationsAnalyticsQuery } from '@/store/Reducer/reservations-api';
+import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
-const ReservationAnalyticsView = ({ userType }: { global: boolean; userType: string }) => {
+const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; userType: string }) => {
+
+  const { organizerOrganizationIds } = useCompanySelection();
+
+  const { data: dashboardRaw = {} as any, isLoading, isFetching } = useGetReservationsAnalyticsQuery({
+     organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
+  }, { refetchOnMountOrArgChange: true });
+
   const openModal = useBoolean();
-  console.log('userType', userType);
-  const activePercent = 75;
-  const inactivePercent = 25;
-  const thirdPercent = 40;
+  const userLevelStats = dashboardRaw?.data?.userLevelStats || [];
+
+  if (isLoading || isFetching) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <>
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
-        {reservationCardHeaderData?.map((card: any, index) => (
+        {dashboardRaw?.data?.stats?.map((card: any, index: number) => (
           <ReservationStatsCard key={index} item={card} />
         ))}
       </div>
@@ -32,29 +43,21 @@ const ReservationAnalyticsView = ({ userType }: { global: boolean; userType: str
           <Card className="dark:bg-secondary col-span-12 shadow-md md:col-span-6">
             <CardHeader>
               <h3 className="text-md mb-3 font-medium">Reservation Volume Over Time</h3>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold">+10%</h3>
                 <h3 className="text-md font-[400] text-gray-400">
                   Last 90 Days <span className="ml-1 text-green-500">+10%</span>
                 </h3>
-              </div>
+              </div> */}
             </CardHeader>
             <ViewsOverTime
               height={350}
-              data={[
-                { month: 'Jan', views: 2400 },
-                { month: 'Feb', views: 1398 },
-                { month: 'Mar', views: 9800 },
-                { month: 'Apr', views: 3908 },
-                { month: 'May', views: 4800 },
-                { month: 'Jun', views: 3800 },
-                { month: 'Jul', views: 4300 },
-                { month: 'Aug', views: 5000 },
-                { month: 'Sep', views: 6000 },
-                { month: 'Oct', views: 7000 },
-                { month: 'Nov', views: 8000 },
-                { month: 'Dec', views: 9000 },
-              ]}
+              data={
+                (dashboardRaw?.data?.reservationsOverTime || []).map((item: any) => ({
+                  month: item.month,
+                  views: item.value,
+                }))
+              }
             />
           </Card>
         </div>
@@ -87,14 +90,14 @@ const ReservationAnalyticsView = ({ userType }: { global: boolean; userType: str
             </CardHeader>
 
             <VisitorRegionV2
-              chartData={[
-                { month: 'January', fixed: 220, prepay: 150, minSpend: 80 },
-                { month: 'February', fixed: 300, prepay: 180, minSpend: 100 },
-                { month: 'March', fixed: 280, prepay: 210, minSpend: 120 },
-                { month: 'April', fixed: 260, prepay: 200, minSpend: 110 },
-                { month: 'May', fixed: 310, prepay: 240, minSpend: 140 },
-                { month: 'June', fixed: 350, prepay: 260, minSpend: 150 },
-              ]}
+              chartData={
+                dashboardRaw?.data?.revenueOverTime?.map((item: any) => ({
+                  month: item.month,
+                  fixed: item.fixedPrice,
+                  prepay: item.prepayOption,
+                  minSpend: item.minimumSpendOnLocation,
+                })) || []
+              }
               chartConfig={{
                 fixed: { label: 'Fixed', color: '#5585ec' },
                 prepay: { label: 'Prepay', color: '#2563EB' },
@@ -106,114 +109,92 @@ const ReservationAnalyticsView = ({ userType }: { global: boolean; userType: str
 
         {/* -------------- Member Activity -------------- */}
         <div className="col-span-12 md:col-span-5">
-          <Card className="dark:bg-secondary h-[450px] gap-0 shadow-md">
+          <Card className="dark:bg-secondary h-[500px] gap-0 shadow-md">
             <CardHeader>
               <div className="mb-4 flex items-start justify-between">
                 <h3 className="text-xl font-semibold">Reservation Type Breakdown</h3>
 
                 <div className="flex flex-col items-end space-y-1">
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#2563EB]" />
-                    <h1 className="text-[13px]">
-                      VIP table <span className="font-semibold">(20% / 2000)</span>
-                    </h1>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#202C88] leading-10" />
-                    <h1 className="text-[13px] text-[#7DAEF4]">
-                      Lounge <span className="font-semibold">(20% / 2000)</span>
-                    </h1>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="mr-2 h-3 w-3 rounded-full bg-[#7DAEF4] leading-10" />
-                    <h1 className="text-[13px] text-[#7DAEF4]">
-                      Standing Area <span className="font-semibold">(10% / 1000)</span>
-                    </h1>
-                  </div>
+                  {dashboardRaw?.data?.reservationTypes
+                    ?.filter((type: any) => type.percent >= 5)
+                    ?.slice(0, 5)
+                    ?.map((type: any, idx: number) => (
+                      <div className="flex items-center" key={type.reservationType}>
+                        <div
+                          className="mr-2 h-3 w-3 rounded-full"
+                          style={{ backgroundColor: ['#2563EB', '#202C88', '#7DAEF4', '#5585ec', '#A0C4FF'][idx % 5] }}
+                        />
+                        <h1 className={`text-[13px] ${idx > 0 ? 'text-[#7DAEF4]' : ''}`}>
+                          {type.reservationType}{' '}
+                          <span className="font-semibold">
+                            ({type.percent}% / {type.count})
+                          </span>
+                        </h1>
+                      </div>
+                    ))}
                 </div>
               </div>
             </CardHeader>
             <GenderDonutChart
-              data={[
-                { name: 'VIP table', value: 400 },
-                { name: 'Lounge', value: 300 },
-                { name: 'Standing Area', value: 100 },
-              ]}
-              COLORS={['#2563EB', '#202C88', '#7DAEF4']}
+              data={(() => {
+                const types = dashboardRaw?.data?.reservationTypes || [];
+                const significant = types.filter((t: any) => t.percent >= 5);
+                const other = types.filter((t: any) => t.percent < 5);
+                const chartData = significant.map((t: any) => ({ name: t.reservationType, value: t.count }));
+                if (other.length > 0) {
+                  const totalOther = other.reduce((sum: number, t: any) => sum + t.count, 0);
+                  chartData.push({ name: 'Other', value: totalOther });
+                }
+                return chartData;
+              })()}
+              COLORS={['#2563EB', '#202C88', '#7DAEF4', '#5585ec', '#A0C4FF', '#94A3B8']}
             />
           </Card>
         </div>
 
-        {/* -------------- Age Demographics -------------- */}
-        <div className="col-span-12 md:col-span-6">
-          <Card className="dark:bg-secondary h-[450px] w-full shadow-md">
-            <CardHeader>
-              <div className="flex items-center justify-start">
-                <h3 className="text-xl font-semibold">Timeslot Occupancy</h3>
-              </div>
-            </CardHeader>
-            <div className="flex-1">
+        {/* -------------- Timeslot Occupancy & Member Activity (Equal Height) -------------- */}
+        <div className="col-span-12 grid grid-cols-12 items-start gap-4">
+          <div className="col-span-12 md:col-span-6">
+            <Card className="dark:bg-secondary w-full shadow-md">
+              <CardHeader>
+                <div className="flex items-center justify-start">
+                  <h3 className="text-xl font-semibold">Timeslot Occupancy</h3>
+                </div>
+              </CardHeader>
               <VisitorAge
-                data={[
-                  { ageGroup: '5-6 PM', visitors: 120 },
-                  { ageGroup: '6-7 PM', visitors: 200 },
-                  { ageGroup: '7-8 PM', visitors: 150 },
-                  { ageGroup: '8-9 PM', visitors: 90 },
-                  { ageGroup: '9-10 PM', visitors: 70 },
-                  { ageGroup: '10-11 PM', visitors: 170 },
-                  { ageGroup: '11-12 PM', visitors: 140 },
-                ]}
+                data={
+                  (dashboardRaw?.data?.reservationsByHour || []).map((item: any) => ({
+                    ageGroup: item.time,
+                    visitors: item.count,
+                  }))
+                }
               />
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </div>
 
-        <div className="col-span-12 md:col-span-6">
-          <div className="flex h-full flex-col gap-3">
-            {/* Member Activity Card */}
-            <Card className="dark:bg-secondary h-full w-full shadow-md">
+          <div className="col-span-12 md:col-span-6">
+            <Card className="dark:bg-secondary w-full shadow-md">
               <CardHeader>
                 <div className="flex items-center justify-start">
                   <h3 className="text-xl font-semibold">Member Activity</h3>
                 </div>
               </CardHeader>
 
-              <div className="flex-1">
-                {/* SILVER */}
-                <div className="mx-4 mt-2 flex items-start justify-between gap-4">
-                  <h4 className="text-md mb-2 font-medium">Silver</h4>
-                  <h4 className="text-md mb-2 font-medium">{activePercent}%</h4>
-                </div>
-                <div className="mx-4 flex flex-1 flex-col">
-                  <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${activePercent}%` }}></div>
+              <div className="flex-1 pb-4">
+                {userLevelStats.map((level: any) => (
+                  <div key={level.levelName} className="mb-2">
+                    <div className="mx-4 mt-2 flex items-start justify-between gap-4">
+                      <h4 className="text-md mb-2 font-medium">{level.levelName}</h4>
+                      <h4 className="text-md mb-2 font-medium">{level.percent}%</h4>
+                    </div>
+                    <div className="mx-4 flex flex-1 flex-col">
+                      <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
+                        <div className="bg-primary h-full transition-all duration-500" style={{ width: `${level.percent}%` }} />
+                      </div>
+                      <h4 className="text-md mb-2 font-medium">{level.count}</h4>
+                    </div>
                   </div>
-                  <h4 className="text-md mb-2 font-medium">6000</h4>
-                </div>
-
-                {/* GOLD */}
-                <div className="mx-4 mt-2 flex items-start justify-between">
-                  <h4 className="text-md mb-2 font-medium">Gold</h4>
-                  <h4 className="text-md mb-2 font-medium">{inactivePercent}%</h4>
-                </div>
-                <div className="mx-4 flex flex-1 flex-col">
-                  <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${inactivePercent}%` }}></div>
-                  </div>
-                  <h4 className="text-md mb-2 font-medium">2000</h4>
-                </div>
-
-                {/* PLATINUM */}
-                <div className="mx-4 mt-2 flex items-start justify-between">
-                  <h4 className="text-md mb-2 font-medium">Platinum</h4>
-                  <h4 className="text-md mb-2 font-medium">{thirdPercent}%</h4>
-                </div>
-                <div className="mx-4 flex flex-1 flex-col">
-                  <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${thirdPercent}%` }}></div>
-                  </div>
-                  <h4 className="text-md mb-2 font-medium">2000</h4>
-                </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -229,7 +210,7 @@ const ReservationAnalyticsView = ({ userType }: { global: boolean; userType: str
           </CardHeader>
 
           <CardContent>
-            <ReservationList />
+            <ReservationList userType={userType} />
           </CardContent>
         </Card>
       </div>
@@ -243,7 +224,7 @@ const ReservationAnalyticsView = ({ userType }: { global: boolean; userType: str
           </CardHeader>
 
           <CardContent>
-            <StaffConfirmationsLog />
+            <StaffConfirmationsLog userType={userType} />
           </CardContent>
         </Card>
       </div>

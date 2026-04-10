@@ -39,7 +39,7 @@ const headLabel = [
   },
   { id: 'subscriptionType', label: 'Sub Type', align: 'left' },
   { id: 'subscriptionValidity', label: 'Sub End Date', align: 'left' },
-  { id: 'commission', label: 'Commission (%)', align: 'left' },
+  { id: 'commission', label: 'Commissions (%)', align: 'left' },
   { id: 'totalViews', label: 'T. Views', align: 'left' },
   { id: 'totalRevenue', label: 'Total Revenue', align: 'left' },
   { id: 'status', label: 'Status' },
@@ -104,6 +104,8 @@ const OrganizationTypeTable: FC<PageProps> = ({
       location: sheetLocation,
     },
   });
+
+  const visibleHeadLabel = userType === 'organizer' ? headLabel.filter((column) => column.id !== 'organizer') : headLabel;
 
   return (
     <div>
@@ -176,9 +178,9 @@ const OrganizationTypeTable: FC<PageProps> = ({
 
           <div className="rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={headLabel} sortConfig={sortConfig} onSort={handleSort} />
+              <TableHeadCustom headLabel={visibleHeadLabel} sortConfig={sortConfig} onSort={handleSort} />
 
-              <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
+              <TableBodyWrapper loading={loading} colSpan={visibleHeadLabel.length} dataLength={sortedData?.length || 0}>
                 {sortedData?.map((item: any, index: number) => (
                   <OrganizationTypeTableRow key={item._id || index} item={item} handleDelete={handleDelete} userType={userType} />
                 ))}

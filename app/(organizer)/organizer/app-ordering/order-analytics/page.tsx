@@ -1,0 +1,24 @@
+import Header from '@/app/common/header/header';
+import OrderAnalyticsView from '@/sections/loyalty/loyalty-view/order-analytics-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Order Analytics - Pleis',
+};
+
+const Page = () => {
+  return (
+    <div className="min-h-screen pb-12">
+      <Header
+        links={[
+          { name: 'Dashboard', href: '/organizer' },
+          { name: 'Order Analytics', href: '' },
+        ]}
+      />
+
+      <OrderAnalyticsView global={false} userType="organizer" />
+    </div>
+  );
+};
+
+export default Page;

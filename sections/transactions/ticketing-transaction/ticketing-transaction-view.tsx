@@ -1,6 +1,7 @@
 'use client';
 
 import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetTransactionsQuery } from '@/store/Reducer/loyalty-transactions-api';
 import { formatDate } from '@/utils/format-time';
@@ -17,11 +18,16 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
-  const [type, setType] = useState<string>('ticketingbookings');
+  const [type, setType] = useState<string>('all');
   const [paymentStatus, setPaymentStatus] = useState<string>('');
+  const [validationStatus, setValidationStatus] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const [event, setEvent] = useState<string>('');
+  const [transferredOrSentOnly, setTransferredOrSentOnly] = useState(false);
+  const [refundedOnly, setRefundedOnly] = useState(false);
   const [minAmount, setMinAmount] = useState<string>('');
   const [maxAmount, setMaxAmount] = useState<string>('');
+  const debouncedEvent = useDebounce(event, 300);
 
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -39,8 +45,14 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
     page: page - 1,
     search,
     limit,
+    type: type === 'all' ? undefined : type,
     status: paymentStatus === 'all' ? '' : paymentStatus,
+    validationStatus: validationStatus === 'all' ? '' : validationStatus,
     paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
+    event: debouncedEvent || undefined,
+    transfered: transferredOrSentOnly || undefined,
+    sent: transferredOrSentOnly || undefined,
+    refunded: refundedOnly || undefined,
     startAmount: minAmount || undefined,
     endAmount: maxAmount || undefined,
     startDate: startDate ? formatDate(startDate) : undefined,
@@ -106,9 +118,29 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
           setPaymentStatus(val);
           setPage(1);
         }}
+        validationStatus={validationStatus}
+        onValidationStatusChange={(val) => {
+          setValidationStatus(val);
+          setPage(1);
+        }}
         paymentMethod={paymentMethod}
         onPaymentMethodChange={(val) => {
           setPaymentMethod(val);
+          setPage(1);
+        }}
+        event={event}
+        onEventChange={(val) => {
+          setEvent(val);
+          setPage(1);
+        }}
+        transferredOrSentOnly={transferredOrSentOnly}
+        onTransferredOrSentOnlyChange={(value) => {
+          setTransferredOrSentOnly(value);
+          setPage(1);
+        }}
+        refundedOnly={refundedOnly}
+        onRefundedOnlyChange={(value) => {
+          setRefundedOnly(value);
           setPage(1);
         }}
         minAmount={minAmount}
@@ -135,9 +167,13 @@ const TicketingTransactionView = ({ global, userType }: LoyaltyTransactionViewPr
         }}
         onResetFilters={() => {
           setStatus('');
-          setType('ticketingbookings');
+          setType('all');
           setPaymentStatus('');
+          setValidationStatus('');
           setPaymentMethod('');
+          setEvent('');
+          setTransferredOrSentOnly(false);
+          setRefundedOnly(false);
           setMinAmount('');
           setMaxAmount('');
           setStartDate(undefined);

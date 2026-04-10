@@ -13,29 +13,27 @@ const MostEngagedMemberTableRow: FC<PageProps> = ({ item }) => {
           <div className="flex items-center gap-3">
             <Avatar>
               <AvatarImage
-                src="https://github.com/shadcn.png"
+                src={item?.user?.profileIcon || "https://github.com/shadcn.png"}
                 className="cursor-pointer"
               />
             </Avatar>
-            {item.name.length > 20 ? item.name.slice(0, 20) + "..." : item.name}
+            {(() => {
+              const firstName = item?.user?.firstName || '';
+              const lastName = item?.user?.lastName || '';
+              const fullName = (firstName + ' ' + lastName).trim();
+              return fullName.length > 20 ? fullName.slice(0, 20) + '...' : fullName;
+            })()}
           </div>
         </TableCell>
-        <TableCell className="text-center">{item.points}</TableCell>
+        <TableCell className="text-center">{item?.totalPoints}</TableCell>
         <TableCell className="text-center">
           <span
             className={`px-2 py-1 rounded-full text-xs bg-white text-black border border-gray-300`}
           >
-            {item.level}
+            {item.level?.name}
           </span>
         </TableCell>
-        <TableCell className="text-center">
-          <span
-            className={`px-2 py-1 rounded-full text-xs bg-white text-black border border-gray-300`}
-          >
-            {item.tier}
-          </span>
-        </TableCell>
-        <TableCell className="text-center">{item.lifeTimeValue}</TableCell>
+        <TableCell className="text-center">{item?.globalWallet?.lifetimePoints}</TableCell>
       </TableRow>
     </>
   );
