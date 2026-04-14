@@ -90,13 +90,13 @@ const LoyaltyTransactionDashboardWidget = ({ global = false, userType }: Loyalty
         search={search}
         limit={limit}
         page={page}
-        // status={status}
-        // onStatusChange={(val: any) => {
-        //   setStatus(val);
-        //   setPage(1);
-        // }}
-        // date={date}
-        onDateChange={(val: any) => {
+        status={status}
+        onStatusChange={(val) => {
+          setStatus(val);
+          setPage(1);
+        }}
+        date={date}
+        onDateChange={(val) => {
           setDate(val);
           setPage(1);
         }}

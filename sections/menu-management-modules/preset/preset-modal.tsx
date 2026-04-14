@@ -76,8 +76,6 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
     date: undefined,
   });
 
-  console.log('itemCategoryData', itemCategoryData?.data);
-
   const itemCategoryOptions =
     itemCategoryData?.data?.map((category: any) => ({
       label: category?.title,

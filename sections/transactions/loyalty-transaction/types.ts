@@ -52,6 +52,9 @@ export interface SamplePageProps {
   onDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
   onResetFilters?: () => void;
   isSuperAdmin?: boolean;
+  status?:any,
+  onStatusChange?: (status: string) => void
+  date?: Date;
 }
 
 export interface TableRowProps {

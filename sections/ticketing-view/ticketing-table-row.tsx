@@ -40,7 +40,7 @@ const TicketingTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) =>
           {item?.status === 'scheduled'
             ? 'Scheduled'
             : item?.status === 'active'
-              ? 'Published'
+              ? 'Active'
               : item?.status === 'inactive'
                 ? 'Inactive'
                 : item?.status}

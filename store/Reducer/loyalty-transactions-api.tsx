@@ -132,7 +132,8 @@ export const loyaltyTransactionsApi = createApi({
 
         if (paymentMethod) (params as any).paymentMethod = paymentMethod;
         if (tier && String(tier).toLowerCase() !== 'all') (params as any).globalStatusLevel = tier;
-        if (event) (params as any).event = event;
+        // if (event) (params as any).event = event;
+        if (event) (params as any).keyword = event;
         if (startDate) (params as any).startDate = startDate;
         if (endDate) (params as any).endDate = endDate;
         if (startAmount) (params as any).startAmount = startAmount;

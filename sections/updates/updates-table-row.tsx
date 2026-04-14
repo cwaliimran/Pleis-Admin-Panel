@@ -25,7 +25,7 @@ const UpdatesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
 
       <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.organizationName || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{item?.organization?.basicInfo?.name || '-'}</TableCell>
 
       <TableCell className="text-left">
         <TruncatedTextWithModal text={capitalizeFirstLetter(item?.description)} title="Description" />

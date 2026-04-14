@@ -21,7 +21,6 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({ item, onEdit, onTogg
   // Calculate if on sale
   const isOnSale = item.discountPrice > 0 && item.discountPrice < item.price;
   const displayPrice = isOnSale ? item.discountPrice : item.price;
-
   return (
     <>
       <div

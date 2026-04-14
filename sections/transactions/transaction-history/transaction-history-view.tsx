@@ -73,7 +73,7 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
   } = useGetOrderTransactionsAnalyticsQuery(
     {
       companyOrganizer: companyOrganizerForAnalytics,
-      organizations: selectedOrganizations,
+      organizations: userType === "organizer" && selectedOrganizations as any ,
     },
     {
       skip: !shouldFetchAnalytics,
@@ -111,7 +111,6 @@ const TransactionHistoryView = ({ userType }: LoyaltyTransactionViewProps) => {
 
   useEffect(() => {
     if (analyticsData) {
-      console.log('Order transactions analytics response:', analyticsData);
     }
   }, [analyticsData]);
 

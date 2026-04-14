@@ -30,7 +30,7 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({
     page: 0,
     search: '',
     limit: '10000',
-    status: '',
+    status: 'active',
     date: undefined,
   });
 

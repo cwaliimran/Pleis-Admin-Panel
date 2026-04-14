@@ -293,6 +293,7 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
     };
 
     // Recurring: only if enabled
+    console.log("data.recurringEnabled", data.recurringEnabled);
     if (data.recurringEnabled === 'true') {
       base.recurringDetails = {
         isEnabled: true,
@@ -302,6 +303,18 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
         endType: 'onDate',
         endDate: fDate(data.endDate, formatStr.paramCase.db),
       };
+    }
+    else {
+      if (isEdit) {
+        base.recurringDetails = {
+          isEnabled: false,
+          frequency: '',
+          interval: 1,
+          daysOfWeek: [],
+          endType: 'onDate',
+          endDate: fDate(data.endDate, formatStr.paramCase.db),
+        };
+      }
     }
 
     // Type-specific
@@ -322,9 +335,18 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
   };
 
   const handleSubmit = async (formData: any, scope?: string) => {
+
     let uploadedFileKey: string | null = null;
     const shouldForceFutureScope = isEdit && !scope && selectedData?.recurringDetails == null && formData?.recurringEnabled === 'true';
-    const effectiveScope = shouldForceFutureScope ? 'future' : scope;
+    let effectiveScope = shouldForceFutureScope ? 'future' : scope;
+
+    effectiveScope = effectiveScope
+
+    // if (isEdit) {
+    //   effectiveScope = 'future';
+    // }
+
+    // effectiveScope=
 
     // Set the scope for loading state tracking
     if (effectiveScope) {
@@ -587,7 +609,9 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
                   {isEdit && isRecurringChild ? (
                     // Two buttons for recurring child promotions
                     <>
-                      {updateLoading && updateScope === 'single' ? (
+
+
+                      {/* {updateLoading && updateScope === 'single' ? (
                         <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
                           <ButtonLoading title="Updating" />
                         </Button>
@@ -603,13 +627,14 @@ const GlobalPromotionModal = ({ open, onClose, isEdit = false, selectedData }: G
                         >
                           Update This Promotion
                         </Button>
-                      )}
+                      )} */}
 
                       {updateLoading && updateScope === 'future' ? (
                         <Button disabled className="bg-primary hover:bg-primary w-full cursor-not-allowed px-4 py-2 text-white md:w-auto">
                           <ButtonLoading title="Updating" />
                         </Button>
-                      ) : (
+                      ) 
+                      : (
                         <Button
                           type="button"
                           className="bg-primary hover:bg-primary-dark w-full cursor-pointer px-4 py-2 text-white md:w-auto"

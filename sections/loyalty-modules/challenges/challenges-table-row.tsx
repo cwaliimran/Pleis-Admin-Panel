@@ -31,6 +31,12 @@ const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
         return 'Refer Users Reward';
       case 'visit':
         return 'Visit Reward';
+      case 'globalVisit':
+        return 'Global Visit Reward';
+      case 'globalEarnPoints':
+        return 'Global Earn Points Reward';
+      case 'globalReferUsers':
+        return 'Global Refer Users Reward';
       default:
         return '-';
     }
@@ -72,7 +78,7 @@ const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
 
       <TableCell className="text-left">{getChallengesTypeLabel(item?.reward?.rewardType) || '-'}</TableCell>
 
-      <TableCell className="text-left">{item?.reward?.rewardMenuItem?.title || '-'}</TableCell>
+      {/* <TableCell className="text-left">{item?.reward?.rewardMenuItem?.title || '-'}</TableCell> */}
 
       <TableCell className="text-left">{getChallengesTypeLabel(item?.taskType) || '-'}</TableCell>
 

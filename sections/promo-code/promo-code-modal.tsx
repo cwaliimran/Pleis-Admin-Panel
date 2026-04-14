@@ -61,7 +61,11 @@ const schema = Yup.object().shape({
     .min(1, 'Must be at least 1')
     .nullable()
     .default(null),
-  expiryDate: Yup.string().required('Expiry date is required').default(''),
+  expiryDate: Yup.date()
+  .required('Expiry date is required')
+  .min(new Date(), 'Expiry date must be a future date')
+  .typeError('Invalid expiry date')
+  .default(null),
   maxUsage: Yup.number()
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Max usage is required')

@@ -86,7 +86,12 @@ const schema = Yup.object().shape({
   ticketTypeOption: Yup.string()
     .oneOf(['existing', 'new'] as const)
     .required('Ticket type option is required'),
-  endDateTime: Yup.string().required('End date & time is required'),
+  // endDateTime: Yup.string().required('End date & time is required'),
+  endDateTime: Yup.date()
+  .required('End date is required')
+  .min(new Date(), 'End date must be a future date')
+  .typeError('Invalid End date')
+  .default(null),
   status: Yup.string()
     .oneOf(['active', 'inactive'] as const)
     .default('active'),

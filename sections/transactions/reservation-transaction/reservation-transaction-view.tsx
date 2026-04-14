@@ -57,7 +57,11 @@ const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'o
     ticketRequiredRes: ticketRequiredOnly || undefined,
     cancelledRes: cancelledOnly || undefined,
     noShowRes: noShowOnly || undefined,
-    date: transactionStartDate ? formatDate(transactionStartDate) : date ? formatDate(date) : undefined,
+    // date: transactionStartDate ? formatDate(transactionStartDate) : date ? formatDate(date) : undefined,
+    // date: transactionStartDate ? formatDate(transactionStartDate) : date ? formatDate(date) : undefined,
+    date: date ? formatDate(date) : undefined,
+    startDate: transactionStartDate ? formatDate(transactionStartDate) : undefined,
+    endDate: transactionEndDate ? formatDate(transactionEndDate) : undefined,
     companyOrganizer: selectedCompany || undefined,
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     // domainType: 'userreservations',
@@ -139,6 +143,7 @@ const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'o
         transactionStartDate={transactionStartDate}
         transactionEndDate={transactionEndDate}
         onTransactionDateRangeChange={(start, end) => {
+          console.log({ start, end });
           setTransactionStartDate(start);
           setTransactionEndDate(end);
           setPage(1);

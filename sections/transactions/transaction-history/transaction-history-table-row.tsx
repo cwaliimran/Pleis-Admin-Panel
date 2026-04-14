@@ -48,7 +48,7 @@ const TransactionHistoryTableRow: FC<TableRowProps> = ({ handleEdit, item }) => 
 
         <TableCell className="text-left capitalize">{getLabel(item?.orderType)}</TableCell>
 
-        <TableCell className="text-left capitalize">{item?.percentage ? `${item.percentage} %` : 'N/A'}</TableCell>
+        <TableCell className="text-center capitalize">{item?.commission ? `${item.commission} %` : 'N/A'}</TableCell>
 
         <TableCell className="text-left">{item?.amount ? Number(item.amount).toFixed(1) : 'N/A'}</TableCell>
 
