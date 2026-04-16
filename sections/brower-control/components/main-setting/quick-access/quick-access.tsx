@@ -4,7 +4,7 @@
 /* eslint-disable @next/next/no-css-tags */
 'use client';
 
-import { GripVertical } from 'lucide-react';
+import { Edit, GripVertical } from 'lucide-react';
 import { useState } from 'react';
 
 import { CustomDndProvider } from '@/components/providers/DndProvider';
@@ -16,6 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Button } from '@/components/ui/button';
 
 interface PromoEvent {
   id: number;
@@ -51,9 +52,8 @@ function DraggablePromoItem({
     },
   });
 
-  const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-600 p-4 flex items-center justify-between border-l-4 border-l-blue-500 ${
-    isDragging ? 'opacity-50' : ''
-  } hover:shadow-sm transition-shadow`;
+  const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-600 p-4 flex items-center justify-between border-l-4 border-l-blue-500 ${isDragging ? 'opacity-50' : ''
+    } hover:shadow-sm transition-shadow border border-red-600`;
 
   if (isOverlay) {
     return (
@@ -73,9 +73,9 @@ function DraggablePromoItem({
   // Use CSS.Transform for proper drag and drop functionality
   const dragStyle = transform
     ? {
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-      }
+      transform: CSS.Transform.toString(transform),
+      transition: transition,
+    }
     : {};
 
   return (
@@ -93,6 +93,7 @@ function DraggablePromoItem({
           className="cursor-grab rounded p-1 hover:cursor-grabbing hover:bg-gray-100 hover:dark:bg-gray-700"
         >
           <GripVertical className="h-4 w-4 text-gray-400" />
+
         </div>
       </div>
     </div>
@@ -217,8 +218,8 @@ const QuickAccess = () => {
         activePromo ? (
           <DraggablePromoItem
             promo={activePromo}
-            onEdit={() => {}}
-            onDelete={() => {}}
+            onEdit={() => { }}
+            onDelete={() => { }}
             isOverlay={true}
           />
         ) : null
@@ -238,7 +239,7 @@ const QuickAccess = () => {
             items={displayedEvents.map((promo) => promo.id.toString())}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
+            <div className="space-y-2 ">
               {displayedEvents.map((promo) => (
                 <DraggablePromoItem
                   key={promo.id}

@@ -2,8 +2,13 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { Edit, GripVertical } from 'lucide-react';
 import { PromoEvent } from './types';
+import { Button } from '@/components/ui/button';
+import { useBoolean } from '@/hooks/useBoolean';
+import EditQuickAccessModal from './EditQuickAccessModal';
+import { Label } from '@/components/ui/label';
+import CustomBadge from '@/components/ui/custom-badge';
 
 interface DraggablePromoItemProps {
   promo: any;
@@ -30,6 +35,11 @@ export function DraggablePromoItem({
       promo,
     },
   });
+  const openModal = useBoolean();
+
+  const handleOpenQuickAccess = () => {
+    openModal.onTrue();
+  }
 
   const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-600 p-4 flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-sm transition-shadow 
   ${isDragging ? 'opacity-50' : ''} `;
@@ -52,21 +62,26 @@ export function DraggablePromoItem({
   // Use CSS.Transform for proper drag and drop functionality
   const dragStyle = transform
     ? {
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-      }
+      transform: CSS.Transform.toString(transform),
+      transition: transition,
+    }
     : {};
 
   return (
     // eslint-disable-next-line react/forbid-component-props
     <div ref={setNodeRef} className={className} style={dragStyle}>
       <div>
-        <h3 className="text-[14px] font-semibold text-gray-900 sm:text-[16px] dark:text-white">
+        <h3 className="text-[14px] font-semibold text-gray-900 sm:text-[16px] dark:text-white ">
           {promo?.title}
         </h3>
       </div>
 
-      <div className="flex items-center space-x-1 sm:space-x-2">
+      <div className="flex items-center space-x-1 sm:space-x-2 ">
+
+
+        <CustomBadge variant={promo?.status === 'active' ? 'success' : promo?.status === 'inactive' ? 'error' : 'default'}
+        >{promo?.status}</CustomBadge>
+
         <div
           {...attributes}
           {...listeners}
@@ -74,6 +89,19 @@ export function DraggablePromoItem({
         >
           <GripVertical className="h-4 w-4 text-gray-400" />
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-black dark:text-white "
+          onClick={handleOpenQuickAccess}
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+
+        <EditQuickAccessModal
+          isOpen={openModal.value}
+          onOpenChange={openModal.onFalse}
+          editingQuickAccess={promo} />
       </div>
     </div>
   );

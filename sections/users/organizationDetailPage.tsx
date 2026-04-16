@@ -17,7 +17,7 @@ import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Camera, Pencil, Trash2 } from 'lucide-react';
+import { Camera, Eye, EyeClosed, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -44,6 +44,8 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
   const deleteModal = useBoolean();
 
   const [coverImageUploading, setCoverImageUploading] = useState(false);
+
+  const [hidden, setHidden] = useState(true);
 
   const { data, isLoading, refetch } = useGetOrganizationByIdQuery({ id: organizationId?.id });
 
@@ -201,8 +203,8 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                 <div className="relative w-full">
                   <div className="relative h-72 rounded-lg bg-cover bg-center">
                     {organizationData?.basicInfo?.media?.cover &&
-                    organizationData?.basicInfo?.media?.cover !== noImageUrl &&
-                    organizationData?.basicInfo?.media?.cover !== noImageUrlDev ? (
+                      organizationData?.basicInfo?.media?.cover !== noImageUrl &&
+                      organizationData?.basicInfo?.media?.cover !== noImageUrlDev ? (
                       <Image
                         src={newOrganization?.basicInfo?.media?.cover || organizationData?.basicInfo?.media?.cover}
                         alt="Cover Image"
@@ -245,8 +247,8 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
                   <div className="absolute bottom-[-30] left-5">
                     {organizationData?.basicInfo?.media?.logo &&
-                    organizationData?.basicInfo?.media?.logo !== noImageUrl &&
-                    organizationData?.basicInfo?.media?.logo !== noImageUrlDev ? (
+                      organizationData?.basicInfo?.media?.logo !== noImageUrl &&
+                      organizationData?.basicInfo?.media?.logo !== noImageUrlDev ? (
                       <Image
                         src={organizationData?.basicInfo?.media?.logo}
                         alt="User Avatar"
@@ -277,21 +279,21 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl">{organizationData?.basicInfo?.name || '-'}</h1>
+                  <h1 className="mt-0 ml-2 pt-0 text-2xl font-bold capitalize md:text-3xl ">{organizationData?.basicInfo?.name || '-'}</h1>
                   {/* <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>30</Badge> */}
                 </div>
                 {/* <div className="flex items-center gap-2">
                   <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Subscriptions</Badge>
                   <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>Hide</Badge>
                 </div> */}
-                <div className="flex items-center gap-2">
-                  <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>
+                {/* <div className="flex items-center gap-2"> */}
+                {/* <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>
                     Followers: {organizationData?.followers !== 0 ? organizationData?.followers : 0}
-                  </Badge>
-                  {/* <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Boost</Badge> */}
-                </div>
+                  </Badge> */}
+                {/* <Badge className={`rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-black`}>0 Boost</Badge> */}
+                {/* </div> */}
 
-                <div className="mt-4 flex flex-col-reverse gap-4 md:items-end md:justify-between lg:flex-row">
+                <div className=" flex flex-col-reverse gap-4 md:items-end md:justify-between lg:flex-row">
                   <Tabs value={active} onValueChange={handleTabChange} className="w-full">
                     <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
                       <TabsList className="inline-flex items-end rounded-full bg-transparent">
@@ -304,11 +306,10 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                                 setAnalyticsRefreshKey((currentKey) => currentKey + 1);
                               }
                             }}
-                            className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${
-                              active === tab.value
-                                ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
-                                : 'text-muted-foreground'
-                            }`}
+                            className={`relative cursor-pointer rounded-full border-none px-4 py-2 text-sm font-semibold shadow-none! transition-all dark:bg-transparent! ${active === tab.value
+                              ? 'after:absolute after:bottom-0 after:left-1/2 after:h-1 after:w-3/4 after:-translate-x-1/2 after:rounded-full after:bg-[#71717A] after:content-[""]'
+                              : 'text-muted-foreground'
+                              }`}
                           >
                             {tab.label}
                           </TabsTrigger>
@@ -347,13 +348,20 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
             <div className="col-span-12 space-y-3 md:space-y-2 xl:col-span-3">
               <Card className="dark:bg-secondary">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between ">
                     <div>
                       <h3 className="text-lg font-bold">Total Revenue</h3>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center text-3xl font-bold">
-                    €{formatCompactNumber(Number(organizationData?.revenue ?? 0))}
+                  <div className='flex justify-between items-center'>
+                    <div className="mt-2 flex items-center text-3xl font-bold">
+                      {hidden ?
+                        '*****' :
+                        `€${formatCompactNumber(Number(organizationData?.revenue ?? 0))}`}
+                    </div>
+                    {hidden ?
+                      <EyeClosed className='cursor-pointer' onClick={() => setHidden(false)} /> :
+                      <Eye className='cursor-pointer' onClick={() => setHidden(true)} />}
                   </div>
                 </CardHeader>
               </Card>
@@ -373,7 +381,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-bold">Total Tickets Sold</h3>
+                      <h3 className="text-lg font-bold">Favorites/Likes</h3>
                     </div>
                   </div>
                   <div className="mt-2 flex items-center text-3xl font-bold">
@@ -386,7 +394,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-bold">Organizer Events</h3>
+                      <h3 className="text-lg font-bold">Events</h3>
                     </div>
                   </div>
                   <div className="mt-2 flex items-center text-3xl font-bold">{organizationData?.events !== 0 ? organizationData?.events : 0}</div>

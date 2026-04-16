@@ -219,13 +219,13 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
                                     <span className="font-medium">DOB:</span> {fDate(apiData?.basicInfo?.dob, formatStr.split.date) || '-'}
                                   </p>
                                   <p>
-                                    <span className="font-medium">Region:</span> {apiData?.basicInfo?.region || '-'}
+                                    <span className="font-medium">Region:</span> {apiData?.metadata?.timezone || '-'}
                                   </p>
                                 </>
                               )}
                               {userType === 'user' && (
                                 <p>
-                                  <span className="font-medium">Surname:</span> {apiData?.basicInfo?.surname || '-'}
+                                  <span className="font-medium">Surname:</span> {apiData?.basicInfo?.lastName || '-'}
                                 </p>
                               )}
                             </div>

@@ -118,14 +118,14 @@ const NavigationSearch: FC = () => {
           type="button"
           className={cn(
             'text-muted-foreground flex h-10 w-full items-center gap-2 rounded-full bg-white px-4 text-sm transition-colors',
-            'focus:ring-primary/20 hover:bg-gray-50 focus:ring-2 focus:outline-none',
+            'focus:ring-primary/20 hover:bg-gray-50 focus:ring-2 focus:outline-none ',
             'dark:bg-[#171717] dark:hover:bg-[#222]',
             'md:w-60 lg:w-70'
           )}
           onClick={() => setOpen(true)}
         >
           <Search className="h-4 w-4" />
-          <span className="flex-1 text-left">{searchValue || 'Search pages...'}</span>
+          <span className="flex-1 text-left overflow-hidden">{searchValue || 'Search pages...'}</span>
           <kbd className="bg-muted pointer-events-none hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex">
             <span className="text-xs">{isMac ? '⌘' : 'Ctrl+'}</span>K
           </kbd>
