@@ -423,6 +423,17 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
         endType: 'onDate',
         endDate: fDate(data.endDate, formatStr.paramCase.db),
       };
+    } else {
+      if (isEdit) {
+        base.recurringDetails = {
+          isEnabled: false,
+          frequency: '',
+          interval: 1,
+          daysOfWeek: [],
+          endType: 'onDate',
+          endDate: fDate(data.endDate, formatStr.paramCase.db),
+        };
+      }
     }
 
     // Type-specific
@@ -758,7 +769,8 @@ const PromotionModal = ({ open, onClose, isEdit = false, selectedData, global = 
                           disabled={!isDirty || (updateLoading && updateScope === 'future') || imageUploading || deleting}
                           onClick={() => {
                             setUpdateScope('single');
-                            methods.handleSubmit((data) => handleSubmit(data, 'single'))();
+                            // methods.handleSubmit((data) => handleSubmit(data, 'single'))();
+                            methods.handleSubmit((data) => handleSubmit(data, 'future'))();
                           }}
                         >
                           Update This Promotion

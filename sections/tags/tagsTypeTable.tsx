@@ -19,6 +19,7 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import TagsTypeTableRow from './tagsTypeTableRow';
+import { useGetTagTypeQuery } from '@/store/Reducer/tag-type-api';
 
 const headLabel = [
   {
@@ -33,7 +34,7 @@ const headLabel = [
     label: 'Tag Type',
     align: 'left',
     sortable: true,
-    sortKey: 'type',
+    sortKey: 'type.title',
   },
   {
     id: 'createdAt',
@@ -69,6 +70,8 @@ interface PageProps {
   onStatusChange?: (status: string) => void;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
+  tagType?: string;
+  onChangeTagType?: (tagType: string) => void;
   onResetFilters?: () => void;
 }
 
@@ -80,14 +83,16 @@ const TagsTypeTable: FC<PageProps> = ({
   handleEdit,
   onPageChange,
   // onLimitChange,
-  onSearch = () => {},
+  onSearch = () => { },
   search = '',
   // limit = 10,
   status = '',
-  onStatusChange = () => {},
+  onStatusChange = () => { },
   date,
-  onDateChange = () => {},
-  onResetFilters = () => {},
+  onDateChange = () => { },
+  tagType,
+  onChangeTagType = () => { },
+  onResetFilters = () => { },
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -95,9 +100,18 @@ const TagsTypeTable: FC<PageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
+
+  const { data: apiData, isLoading } = useGetTagTypeQuery({
+    page: 0,
+    limit: 200,
+    status: "active"
+  });
+
+
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
   });
+
 
   const methods = useForm({
     defaultValues: {
@@ -164,6 +178,14 @@ const TagsTypeTable: FC<PageProps> = ({
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
+                              },
+                              {
+                                id: 'sheet-revenue',
+                                label: 'Tag Type',
+                                placeholder: 'Select by Tag Type',
+                                value: tagType,
+                                onChange: onChangeTagType,
+                                options: apiData?.data?.map((item: any) => ({ value: item._id, label: item.name }))
                               },
                             ]}
                             resetFilter={{

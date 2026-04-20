@@ -1,3 +1,4 @@
+import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import {
@@ -6,9 +7,11 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { useUpdateQuickAccessMutation } from '@/store/Reducer/promo-section-api';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { FC, useEffect, useMemo } from 'react';
 import { useForm } from "react-hook-form";
+import toast from 'react-hot-toast';
 import * as Yup from "yup";
 
 interface PageProps {
@@ -21,8 +24,10 @@ interface PageProps {
 const EditQuickAccessModal: FC<PageProps> = ({ isOpen, onOpenChange, editingQuickAccess }) => {
 
     const defaultValues = useMemo(() => ({
-        status: editingQuickAccess?.status || 'active'
+        status: editingQuickAccess?.quickAction ? 'enabled' : 'disabled',
     }), [editingQuickAccess]);
+
+    const [updateQuickAccess, { isLoading }] = useUpdateQuickAccessMutation();
 
 
     const schema = Yup.object().shape({
@@ -38,8 +43,16 @@ const EditQuickAccessModal: FC<PageProps> = ({ isOpen, onOpenChange, editingQuic
         methods.reset(defaultValues);
     }, [defaultValues])
 
-    const onSubmit = (data: any) => {
-        console.log("data", data);
+    const onSubmit = async (data: any) => {
+        let response = await updateQuickAccess({
+            id: editingQuickAccess?._id,
+            quickAction: data.status === "enabled" ? true : false
+        });
+        if (!response?.error) {
+            toast.success("Quick Access Status Updated Successfully");
+            onOpenChange(false);
+            methods.reset(defaultValues);
+        }
     };
 
     const handleCancel = () => {
@@ -65,8 +78,8 @@ const EditQuickAccessModal: FC<PageProps> = ({ isOpen, onOpenChange, editingQuic
                                 label="Select Status"
                                 placeholder="Select Status"
                                 options={[
-                                    { label: 'Active', value: 'active' },
-                                    { label: 'Inactive', value: 'inactive' },
+                                    { label: 'Enabled', value: 'enabled' },
+                                    { label: 'Disabled', value: 'disabled' },
                                 ]}
                             />
 
@@ -76,11 +89,16 @@ const EditQuickAccessModal: FC<PageProps> = ({ isOpen, onOpenChange, editingQuic
                             <Button variant="outline" onClick={handleCancel} className="flex-1">
                                 Cancel
                             </Button>
-                            <Button
-                                className="flex-1 bg-blue-600 hover:bg-blue-700"
-                            >
-                                Update
-                            </Button>
+
+                            {isLoading ? (
+                                <Button type="button" className="bg-primary/80 cursor-not-allowed text-white">
+                                    <ButtonLoading title="Updating" />
+                                </Button>
+                            ) : (
+                                <Button type="submit" className="bg-primary hover:bg-primary/80 text-white">
+                                    Update
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </FormProvider>

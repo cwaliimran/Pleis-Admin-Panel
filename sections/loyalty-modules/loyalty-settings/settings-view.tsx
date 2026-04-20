@@ -189,6 +189,9 @@ const SettingsView = () => {
                 <div className="rounded-full bg-gray-100 px-4 py-2 text-sm dark:bg-gray-800">
                   <span className="font-medium text-gray-900 dark:text-white">0</span> Boost
                 </div>
+                <div className={`rounded-full  px-4 py-2 text-sm ${apiData?.accountState?.status === 'active' ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}>
+                  <span className="font-medium text-gray-900 dark:text-white">{apiData?.accountState?.status?.slice(0, 1)?.toUpperCase() + apiData?.accountState?.status?.slice(1)?.toLowerCase()}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -206,6 +209,7 @@ const SettingsView = () => {
           user={user}
           selectedCompanyId={selectedCompanyId}
           companyDetails={companyDetails}
+          status={apiData?.accountState?.status}
           handleSuccess={handleSuccess}
         />
       )}

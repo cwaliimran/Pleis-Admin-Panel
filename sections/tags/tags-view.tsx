@@ -31,6 +31,7 @@ const TagsView = () => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [tagType, setTagType] = useState('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
@@ -47,6 +48,7 @@ const TagsView = () => {
     page: page - 1,
     search,
     limit,
+    tagType,
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
   });
@@ -255,10 +257,16 @@ const TagsView = () => {
           setDate(val);
           setPage(1);
         }}
+        tagType={tagType}
+        onChangeTagType={(val) => {
+          setTagType(val);
+          setPage(1);
+        }}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setTagType('');
           setPage(1);
         }}
       />

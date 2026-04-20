@@ -146,6 +146,14 @@ export const promoSectionApi = createApi({
       }),
       providesTags: ['quick-access'],
     }),
+    updateQuickAccess: builder.mutation({
+      query: ({ id, ...updatedQuickAccess }) => ({
+        url: API_ROUTES.QUICK_ACCESS_BY_ID(id),
+        method: 'PUT',
+        body: updatedQuickAccess,
+      }),
+      invalidatesTags: ['quick-access'],
+    }),
 
     reorderQuickAccess: builder.mutation({
       query: (newQuickAccess) => ({
@@ -172,5 +180,6 @@ export const {
   useDeleteTopPicksSectionMutation,
 
   useGetQuickAccessQuery,
+  useUpdateQuickAccessMutation,
   useReorderQuickAccessMutation,
 } = promoSectionApi;

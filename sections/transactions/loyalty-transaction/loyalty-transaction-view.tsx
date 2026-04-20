@@ -110,7 +110,6 @@ const LoyaltyTransactionView = ({ global, userType }: LoyaltyTransactionViewProp
     setSelectedRecord(data);
     openModal.onTrue();
   };
-
   return (
     <div>
       <LoyaltyTransactionTable
@@ -209,6 +208,9 @@ const LoyaltyTransactionView = ({ global, userType }: LoyaltyTransactionViewProp
         startDate={startDate}
         endDate={endDate}
         onDateChange={(newStartDate, newEndDate) => {
+
+
+          
           setStartDate(newStartDate);
           setEndDate(newEndDate);
           setPage(1);

@@ -9,7 +9,7 @@ export const tagsApi = createApi({
 
   endpoints: (builder) => ({
     getTags: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit,tagType }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,6 +17,7 @@ export const tagsApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        if (tagType) (params as any).tagType = tagType;
         return {
           url: API_ROUTES.TAGS,
           method: 'GET',

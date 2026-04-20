@@ -72,7 +72,7 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
     page: 0,
     search: '',
     limit: '10000',
-    status: '',
+    status: 'active',
     date: undefined,
   });
 

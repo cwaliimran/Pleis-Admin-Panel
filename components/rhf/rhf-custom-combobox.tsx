@@ -31,10 +31,13 @@ export const RHFCustomCombobox = ({
   onChange,
   maxSelected, // Destructure maxSelected
 }: RHFCustomComboboxProps) => {
-  const { setValue, watch } = useFormContext();
+  const { setValue, watch, formState } = useFormContext();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const selectedValues = watch(name) || [];
+
+  const error = formState.errors[name as keyof typeof formState.errors];
+
 
   const handleSelect = (value: string) => {
     let newValues: string[];
@@ -76,11 +79,17 @@ export const RHFCustomCombobox = ({
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-full justify-between font-normal text-gray-600 dark:text-slate-400"
+              className={`w-full justify-between font-normal text-gray-600 dark:text-slate-400 border ${error?.message ? ' border-red-500!' : ''}`}
             >
               {selectedValues.length > 0 ? `${selectedValues.length} selected` : placeholder}
             </Button>
+
           </PopoverTrigger>
+          {error?.message && (
+            <Label className="text-red-500">
+              {error.message as string}
+            </Label>
+          )}
           <PopoverContent
             className="w-full border-gray-200 p-0 shadow-lg dark:border-[#272727]"
             style={{ width: 'var(--radix-popover-trigger-width)' }}

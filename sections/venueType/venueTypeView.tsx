@@ -35,6 +35,7 @@ const VenueTypeView = () => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [category,setCategory]=useState('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
@@ -49,6 +50,7 @@ const VenueTypeView = () => {
     search,
     limit,
     status,
+    category,
     date: date ? formatDate(date) : undefined,
   });
 
@@ -304,10 +306,16 @@ const VenueTypeView = () => {
           setDate(val);
           setPage(1);
         }}
+        category={category}
+        onCategoryChange={(val) => {
+          setCategory(val);
+          setPage(1);
+        }}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setCategory('');
           setPage(1);
         }}
       />

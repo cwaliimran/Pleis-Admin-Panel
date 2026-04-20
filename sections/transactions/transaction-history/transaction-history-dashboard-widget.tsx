@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { TransactionDetailModal } from './modal';
 import TransactionHistoryTable from './transaction-history-table';
 import { useAuth } from '@/hooks/useAuth';
+import { formatDate } from '@/utils/format-time';
 
 const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) => {
   const openModal = useBoolean();
@@ -20,6 +21,9 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
   const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [minAmount, setMinAmount] = useState<string>('');
   const [maxAmount, setMaxAmount] = useState<string>('');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [userTier, setUserTier] = useState<string>('');
 
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
@@ -31,7 +35,10 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
     page: page - 1,
     search,
     limit,
+    startDate: startDate ? formatDate(startDate) : undefined,
+    endDate: endDate ? formatDate(endDate) : undefined,
     type: status === 'all' ? '' : status,
+    tier: !userTier || userTier.toLowerCase() === 'all' ? '' : userTier,
     orderType: type === 'all' ? '' : type,
     status: paymentStatus === 'all' ? '' : paymentStatus,
     paymentMethod: paymentMethod === 'all' ? '' : paymentMethod,
@@ -100,15 +107,23 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
           setStatus(val);
           setPage(1);
         }}
-          onPaymentMethodChange={(val) => {
+        startDate={startDate}
+        endDate={endDate}
+        onDateChange={(newStartDate?: Date, newEndDate?: Date) => {
+          setStartDate(newStartDate);
+          setEndDate(newEndDate);
+          setPage(1);
+        }}
+
+        onPaymentMethodChange={(val) => {
           setPaymentMethod(val);
           setPage(1);
         }}
-         onPaymentStatusChange={(val) => {
+        onPaymentStatusChange={(val) => {
           setPaymentStatus(val);
           setPage(1);
         }}
-         minAmount={minAmount}
+        minAmount={minAmount}
         onMinAmountChange={(val) => {
           setMinAmount(val);
           setPage(1);
@@ -122,6 +137,11 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
           setType(val);
           setPage(1);
         }}
+        userTier={userTier}
+        onUserTierChange={(val) => {
+          setUserTier(val);
+          setPage(1);
+        }}
         onResetFilters={() => {
           setStatus('');
           setType('');
@@ -131,6 +151,9 @@ const TransactionHistoryDashboardWidget = ({ userType }: { userType: string }) =
           setMinAmount('');
           setMaxAmount('');
           setPage(1);
+          setStartDate(undefined);
+          setEndDate(undefined);
+          setUserTier('');
         }}
       />
 

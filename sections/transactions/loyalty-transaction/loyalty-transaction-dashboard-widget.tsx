@@ -22,6 +22,20 @@ const LoyaltyTransactionDashboardWidget = ({ global = false, userType }: Loyalty
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [direction, setDirection] = useState<string>('');
+  const [sourceEntity, setSourceEntity] = useState('');
+  const [startPoints, setStartPoints] = useState<string>('');
+  const [endPoints, setEndPoints] = useState<string>('');
+  const [startBalance, setStartBalance] = useState<string>('');
+  const [endBalance, setEndBalance] = useState<string>('');
+  const [referralOnly, setReferralOnly] = useState(false);
+  const [purchaseBasedOnly, setPurchaseBasedOnly] = useState(false);
+  const [streakBasedOnly, setStreakBasedOnly] = useState(false);
+  const [challengeBasedOnly, setChallengeBasedOnly] = useState(false);
+  const [promotionBasedOnly, setPromotionBasedOnly] = useState(false);
+  const [sourceType, setSourceType] = useState<string>('');
 
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
@@ -36,8 +50,22 @@ const LoyaltyTransactionDashboardWidget = ({ global = false, userType }: Loyalty
     page: page - 1,
     search,
     limit,
+    domainType: !sourceType || sourceType === 'all' ? undefined : sourceType,
+    type: direction !== "all" && direction || '',
+    sourceEntity: sourceEntity || undefined,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    startDate: startDate ? formatDate(startDate) : undefined,
+    endDate: endDate ? formatDate(endDate) : undefined,
+    startPoints: startPoints || undefined,
+    endPoints: endPoints || undefined,
+    endBalance: endBalance || undefined,
+    balance: startBalance || undefined,
+    referral: referralOnly || undefined,
+    purchaseBased: purchaseBasedOnly || undefined,
+    streakBased: streakBasedOnly || undefined,
+    challengeBased: challengeBasedOnly || undefined,
+    promotionBased: promotionBasedOnly || undefined,
     companyOrganizer: global ? undefined : selectedCompany || undefined,
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
     isGlobal: global,
@@ -96,14 +124,99 @@ const LoyaltyTransactionDashboardWidget = ({ global = false, userType }: Loyalty
           setPage(1);
         }}
         date={date}
-        onDateChange={(val) => {
-          setDate(val);
+        startDate={startDate}
+        endDate={endDate}
+
+        // onDateChange={(val) => {
+        //   setDate(val);
+        //   setPage(1);
+        // }}
+        startPoints={startPoints}
+        onStartPointsChange={(val) => {
+          setStartPoints(val);
           setPage(1);
         }}
+        endPoints={endPoints}
+        onEndPointsChange={(val) => {
+          setEndPoints(val);
+          setPage(1);
+        }}
+        sourceEntity={sourceEntity}
+        onSourceEntityChange={(val) => {
+          setSourceEntity(val);
+          setPage(1);
+        }}
+        onDateChange={(newStartDate?: Date, newEndDate?: Date) => {
+          setStartDate(newStartDate);
+          setEndDate(newEndDate);
+          setPage(1);
+        }}
+
+        referralOnly={referralOnly}
+        onReferralOnlyChange={(value) => {
+          setReferralOnly(value);
+          setPage(1);
+        }}
+
+        streakBasedOnly={streakBasedOnly}
+        onStreakBasedOnlyChange={(value) => {
+          setStreakBasedOnly(value);
+          setPage(1);
+        }}
+        challengeBasedOnly={challengeBasedOnly}
+        onChallengeBasedOnlyChange={(value) => {
+          setChallengeBasedOnly(value);
+          setPage(1);
+        }}
+        promotionBasedOnly={promotionBasedOnly}
+        onPromotionBasedOnlyChange={(value) => {
+          setPromotionBasedOnly(value);
+          setPage(1);
+        }}
+        purchaseBasedOnly={purchaseBasedOnly}
+        onPurchaseBasedOnlyChange={(value) => {
+          setPurchaseBasedOnly(value);
+          setPage(1);
+        }}
+        startBalance={startBalance}
+        onStartBalanceChange={(val) => {
+          setStartBalance(val);
+          setPage(1);
+        }}
+        endBalance={endBalance}
+        onEndBalanceChange={(endBalance) => {
+          setEndBalance(endBalance);
+          setPage(1);
+        }}
+        direction={direction}
+        onDirectionChange={(val) => {
+          setDirection(val);
+          setSourceType('');
+          setPage(1);
+        }}
+      
+        sourceType={sourceType}
+        onSourceTypeChange={(val) => {
+          setSourceType(val);
+          setPage(1);
+        }}
+
         onResetFilters={() => {
-          setStatus('');
-          setDate(undefined);
+          setSourceEntity('');
+          setDirection('');
+          setStartPoints('');
+          setEndPoints('');
+          setStartBalance('');
+          setEndBalance('');
+          setReferralOnly(false);
+          setPurchaseBasedOnly(false);
+          setStreakBasedOnly(false);
+          setChallengeBasedOnly(false);
+          setPromotionBasedOnly(false);
+          setStartDate(undefined);
+          setEndDate(undefined);
           setSearch('');
+          setSourceType('');
           setPage(1);
         }}
       />

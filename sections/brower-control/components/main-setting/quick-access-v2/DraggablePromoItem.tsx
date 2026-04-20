@@ -79,8 +79,8 @@ export function DraggablePromoItem({
       <div className="flex items-center space-x-1 sm:space-x-2 ">
 
 
-        <CustomBadge variant={promo?.status === 'active' ? 'success' : promo?.status === 'inactive' ? 'error' : 'default'}
-        >{promo?.status}</CustomBadge>
+        <CustomBadge variant={promo?.quickAction ? 'success' : 'error'}
+        >{promo?.quickAction ? 'Enabled' : 'Disabled'}</CustomBadge>
 
         <div
           {...attributes}

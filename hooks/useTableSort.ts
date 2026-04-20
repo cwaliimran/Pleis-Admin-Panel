@@ -51,8 +51,25 @@ export const useTableSort = <T extends Record<string, any>>({
     }
 
     return [...data].sort((a, b) => {
-      const aValue = getNestedValue(a, sortConfig.key!);
-      const bValue = getNestedValue(b, sortConfig.key!);
+      let aValue = getNestedValue(a, sortConfig.key!);
+      let bValue = getNestedValue(b, sortConfig.key!);
+
+      if (Array.isArray(aValue)) {
+        aValue = aValue[0];
+      }
+
+      if (Array.isArray(bValue)) {
+        bValue = bValue[0];
+      }
+
+      // If first index is object, take title (or any field you want)
+      if (typeof aValue === "object" && aValue !== null) {
+        aValue = aValue.title;
+      }
+
+      if (typeof bValue === "object" && bValue !== null) {
+        bValue = bValue.title;
+      }
 
       // Handle null/undefined values
       if (aValue == null && bValue == null) return 0;

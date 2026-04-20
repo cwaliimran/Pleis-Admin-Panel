@@ -45,8 +45,8 @@ const UpdatesTable: FC<SamplePageProps> = ({
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
-  // date,
-  // onDateChange = () => {},
+  date,
+  onDateChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -95,12 +95,12 @@ const UpdatesTable: FC<SamplePageProps> = ({
                         <div className="w-full">
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            // dateFilter={{
-                            //   id: 'organization-date',
-                            //   placeholder: 'Select date',
-                            //   value: date,
-                            //   onChange: onDateChange,
-                            // }}
+                            dateFilter={{
+                              id: 'organization-date',
+                              placeholder: 'Select date',
+                              value: date,
+                              onChange: onDateChange,
+                            }}
                             searchFilter={{
                               placeholder: 'Search by title, events...',
                               value: search,

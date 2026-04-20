@@ -42,7 +42,8 @@ export const loyaltyTransactionsApi = createApi({
           limit,
         };
         if (search) (params as any).keyword = search;
-        if (sourceEntity) (params as any).sourceEntity = sourceEntity;
+        // if (sourceEntity) (params as any).sourceEntity = sourceEntity;
+        if (sourceEntity) (params as any).entityId = sourceEntity;
         if (type) (params as any).type = type;
         if (date) (params as any).date = date;
         (params as any).walletType = walletType;

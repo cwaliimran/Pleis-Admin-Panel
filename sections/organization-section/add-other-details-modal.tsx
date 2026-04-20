@@ -395,7 +395,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
     setValue('galleryImages', newFiles, { shouldDirty: true });
     setGalleryOpen(false);
   };
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0" />

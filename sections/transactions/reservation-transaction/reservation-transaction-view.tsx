@@ -143,7 +143,6 @@ const ReservationTransactionView = ({ userType }: { userType: 'super-admin' | 'o
         transactionStartDate={transactionStartDate}
         transactionEndDate={transactionEndDate}
         onTransactionDateRangeChange={(start, end) => {
-          console.log({ start, end });
           setTransactionStartDate(start);
           setTransactionEndDate(end);
           setPage(1);

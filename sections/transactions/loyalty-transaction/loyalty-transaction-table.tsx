@@ -40,41 +40,41 @@ const LoyaltyTransactionTable: FC<SamplePageProps> = ({
   limit = 10,
   // filters states bellow
   search = '',
-  onSearch = () => {},
+  onSearch = () => { },
   sourceEntity = '',
-  onSourceEntityChange = () => {},
+  onSourceEntityChange = () => { },
   direction = '',
-  onDirectionChange = () => {},
+  onDirectionChange = () => { },
   sourceType = '',
-  onSourceTypeChange = () => {},
+  onSourceTypeChange = () => { },
   startPoints = '',
-  onStartPointsChange = () => {},
+  onStartPointsChange = () => { },
   endPoints = '',
-  onEndPointsChange = () => {},
+  onEndPointsChange = () => { },
   startBalance = '',
-  onStartBalanceChange = () => {},
+  onStartBalanceChange = () => { },
   endBalance = '',
-  onEndBalanceChange = () => {},
+  onEndBalanceChange = () => { },
   campaign = '',
-  onCampaignChange = () => {},
+  onCampaignChange = () => { },
   referralOnly = false,
-  onReferralOnlyChange = () => {},
+  onReferralOnlyChange = () => { },
   purchaseBasedOnly = false,
-  onPurchaseBasedOnlyChange = () => {},
+  onPurchaseBasedOnlyChange = () => { },
   manualAdjustmentsOnly = false,
-  onManualAdjustmentsOnlyChange = () => {},
+  onManualAdjustmentsOnlyChange = () => { },
   streakBasedOnly = false,
-  onStreakBasedOnlyChange = () => {},
+  onStreakBasedOnlyChange = () => { },
   challengeBasedOnly = false,
-  onChallengeBasedOnlyChange = () => {},
+  onChallengeBasedOnlyChange = () => { },
   promotionBasedOnly = false,
-  onPromotionBasedOnlyChange = () => {},
+  onPromotionBasedOnlyChange = () => { },
   rewardRedemptionOnly = false,
-  onRewardRedemptionOnlyChange = () => {},
+  onRewardRedemptionOnlyChange = () => { },
   startDate,
   endDate,
-  onDateChange = () => {},
-  onResetFilters = () => {},
+  onDateChange = () => { },
+  onResetFilters = () => { },
   isSuperAdmin = false,
 }) => {
   // Pagination logic
@@ -133,7 +133,7 @@ const LoyaltyTransactionTable: FC<SamplePageProps> = ({
                   <span className="whitespace-nowrap">Filter</span>
                 </Badge>
               </SheetTrigger>
-              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0">
+              <SheetContent aria-describedby={undefined} side="right" className="dark:bg-secondary p-0 overflow-y-scroll">
                 <SheetHeader className="mb-2 border-b pb-2">
                   <SheetTitle>Filters</SheetTitle>
                 </SheetHeader>
@@ -153,7 +153,9 @@ const LoyaltyTransactionTable: FC<SamplePageProps> = ({
                                 id: 'start-date',
                                 placeholder: 'Select start date',
                                 value: startDate,
-                                onChange: (newStartDate) => onDateChange(newStartDate, endDate),
+                                onChange: (newStartDate) =>{
+                                   onDateChange(newStartDate, endDate)
+                                },
                               },
                               endDate: {
                                 id: 'end-date',
@@ -191,6 +193,10 @@ const LoyaltyTransactionTable: FC<SamplePageProps> = ({
                                 options: [{ value: 'all', label: 'All' }, ...sourceTypeOptions],
                               },
                             ]}
+                            // resetFilter={{
+                            //   onReset: onResetFilters,
+                            //   showResetButton: true,
+                            // }}
                             filtersAlignment="left"
                           />
                         </div>

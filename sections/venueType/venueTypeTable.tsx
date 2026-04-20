@@ -28,6 +28,8 @@ const headLabel = [
     id: 'categories',
     label: 'Categories',
     align: 'left',
+    sortable: true,
+    sortKey: 'categories',
   },
   {
     id: 'createdAt',
@@ -63,6 +65,8 @@ interface PageProps {
   onStatusChange?: (status: string) => void;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
+  category?: string;
+  onCategoryChange?: (category: string) => void;
   onResetFilters?: () => void;
 }
 
@@ -78,6 +82,8 @@ const VenueTypeTable: FC<PageProps> = ({
   search = '',
   // limit = 10,
   status = '',
+  category='',
+  onCategoryChange = () => {},
   onStatusChange = () => {},
   date,
   onDateChange = () => {},
@@ -106,6 +112,7 @@ const VenueTypeTable: FC<PageProps> = ({
     status: '',
     date: undefined,
   });
+
 
   const categoryTitleMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -172,6 +179,17 @@ const VenueTypeTable: FC<PageProps> = ({
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
                               },
+                              {
+                                id:"category",
+                                label:"Category",
+                                placeholder:"Select by Category",
+                                value: category,
+                                onChange: onCategoryChange,
+                                options:categoriesResponse?.data.map((category: any) => ({
+                                  value: category._id,
+                                  label: categoryTitleMap[category._id],
+                                })) || [],
+                              }
                             ]}
                             resetFilter={{
                               onReset: onResetFilters,

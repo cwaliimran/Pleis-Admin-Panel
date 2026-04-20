@@ -434,6 +434,7 @@ export const API_ROUTES = {
   PINNED_CONTENT_BY_ID: (id: string) => `/admin/pinned-content/${id}`,
 
   QUICK_ACCESS: `/admin/categories`,
+  QUICK_ACCESS_BY_ID: (id: string) => `/admin/categories/${id}`,
   QUICK_ACCESS_REORDER: `/admin/categories/reorder`,
 
   BANNER_CONTROL: `/admin/banners`,

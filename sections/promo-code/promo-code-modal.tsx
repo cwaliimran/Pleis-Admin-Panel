@@ -179,7 +179,8 @@ const PromoCodeModal = ({ open, onClose, isEdit = false, selectedData, companyId
         return;
       }
 
-      showSuccess(response?.message || (isEdit ? 'Promo code updated successfully' : 'Promo code created successfully'));
+      // showSuccess(response?.message || (isEdit ? 'Promo code updated successfully' : 'Promo code created successfully'));
+      showSuccess(isEdit ? 'Promo code updated successfully' : 'Promo code created successfully');
 
       methods.reset(defaultValues);
       onClose();
