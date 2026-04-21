@@ -162,7 +162,7 @@ const TagsTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Tags...',
+                              placeholder: 'Search Tags,Tag Type...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -178,15 +178,7 @@ const TagsTypeTable: FC<PageProps> = ({
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
-                              },
-                              {
-                                id: 'sheet-revenue',
-                                label: 'Tag Type',
-                                placeholder: 'Select by Tag Type',
-                                value: tagType,
-                                onChange: onChangeTagType,
-                                options: apiData?.data?.map((item: any) => ({ value: item._id, label: item.name }))
-                              },
+                              }
                             ]}
                             resetFilter={{
                               onReset: onResetFilters,
