@@ -3,7 +3,7 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useDeleteCustomCategoryMutation, useGetCustomCategoriesQuery } from '@/store/Reducer/custom-categories-api';
+import { useDeleteCustomCategoryMutation, useGetCustomCategoriesQuery, useReorderCustomCategoryMutation } from '@/store/Reducer/custom-categories-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
@@ -13,6 +13,10 @@ import { DraggablePromoItemSkeleton } from '../promo-manager/DraggablePromoItemS
 import { CategoryCard } from './category-card';
 import CategoryModal from './category-modal';
 import type { Category } from './types';
+import { CustomDndProvider } from '@/components/providers/DndProvider';
+import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
+import { ReorderPayload } from '../promo-manager/types';
 
 type CustomCategoryProps = {
   heading?: string;
@@ -29,6 +33,7 @@ export function CategoryManagement({ heading, viewAll, fixLength }: CustomCatego
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [activeCategory, setActiveCategory] = useState<{} | null>(null);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -36,6 +41,8 @@ export function CategoryManagement({ heading, viewAll, fixLength }: CustomCatego
     page: 0,
     limit: 10,
   });
+
+  const [reorder] = useReorderCustomCategoryMutation();
 
   // console.log('apiData', apiData?.data);
 
@@ -99,6 +106,67 @@ export function CategoryManagement({ heading, viewAll, fixLength }: CustomCatego
     }
   }, [selectedId, deleteCategory, deleteModal]);
 
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+      const draggedCategory: any = categories.find((category: any) => category._id === active.id);
+
+      if (draggedCategory) {
+        setActiveCategory(draggedCategory);
+      }
+    },
+    [categories]
+  );
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveCategory(null);
+
+      if (!over || active.id === over.id) return;
+
+      const activeIndex = categories.findIndex((category: any) => category._id === active.id);
+      const overIndex = categories.findIndex((category: any) => category._id === over.id);
+
+      if (activeIndex === -1 || overIndex === -1) return;
+
+      const previousOrder = activeIndex + 1;
+      const newOrder = overIndex + 1;
+
+
+      const reorderedArray = arrayMove(categories, activeIndex, overIndex);
+      const updatedCategories = reorderedArray.map((category, index) => ({
+        ...category,
+        order: index + 1,
+      }));
+      setCategories(updatedCategories);
+
+      try {
+        const payload: ReorderPayload = {
+          movedId: (categories as any)?.[activeIndex]?._id,
+          previousOrder,
+          newOrder,
+        };
+
+        const response = await reorder(payload).unwrap();
+
+        if (response?.error) {
+          setCategories(categories);
+          showError(getErrorMessage(response.error));
+          return;
+        }
+
+        showSuccess(response?.message || 'Reordered successfully');
+      } catch (error) {
+        setCategories(categories);
+        showError(getErrorMessage(error));
+      }
+    },
+    [categories, reorder]
+  );
+
+
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -117,9 +185,25 @@ export function CategoryManagement({ heading, viewAll, fixLength }: CustomCatego
             <p className="text-gray-500 dark:text-gray-400">No custom categories available.</p>
           </div>
         ) : (
-          (fixLength ? categories.slice(0, 10) : categories).map((category: any) => (
-            <CategoryCard key={category?._id} category={category} onEdit={handleEditCategory} onDelete={handleDelete} />
-          ))
+          <CustomDndProvider
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            overlay={
+              activeCategory ? (
+                <CategoryCard
+                  category={activeCategory}
+                  onEdit={() => { }}
+                  onDelete={() => { }}
+                  isOverlay={true}
+                />
+              ) : null
+            }
+          >
+
+            {(fixLength ? categories.slice(0, 10) : categories).map((category: any) => (
+              <CategoryCard key={category?._id} category={category} onEdit={handleEditCategory} onDelete={handleDelete} />
+            ))}
+          </CustomDndProvider>
         )}
       </div>
 

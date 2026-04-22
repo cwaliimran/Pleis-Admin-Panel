@@ -55,7 +55,16 @@ export const customCategoriesApi = createApi({
       }),
       invalidatesTags: ['custom-category'],
     }),
+    reorderCustomCategory: builder.mutation({
+      query: (body) => ({
+        url: API_ROUTES.CUSTOM_CATEGORIES_REORDER,
+        method: 'POST',
+        body: body,
+      }),
+      invalidatesTags: ['custom-category'],
+    }),
   }),
+
 });
 
 export const {
@@ -63,4 +72,5 @@ export const {
   useAddCustomCategoryMutation,
   useUpdateCustomCategoryMutation,
   useDeleteCustomCategoryMutation,
+  useReorderCustomCategoryMutation,
 } = customCategoriesApi;

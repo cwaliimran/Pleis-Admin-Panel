@@ -430,12 +430,20 @@ export const API_ROUTES = {
   CUSTOM_CATEGORIES: `/admin/custom-categories`,
   CUSTOM_CATEGORIES_BY_ID: (id: string) => `/admin/custom-categories/${id}`,
 
+  CUSTOM_CATEGORIES_REORDER: `/admin/custom-categories/reorder`,
+
   PINNED_CONTENT: `/admin/pinned-content`,
   PINNED_CONTENT_BY_ID: (id: string) => `/admin/pinned-content/${id}`,
+
+  EVENTS_BASE_VENU_TYPE: (id: string) => `/admin/events/venue-type/${id}`,
+
+  ORGANIZATIONS_BASE_VENU_TYPE: (id: string) => `/admin/organizations/venue-type/${id}`,
 
   QUICK_ACCESS: `/admin/categories`,
   QUICK_ACCESS_BY_ID: (id: string) => `/admin/categories/${id}`,
   QUICK_ACCESS_REORDER: `/admin/categories/reorder`,
+
+  PINNED_CONTENT_REORDER: `/admin/pinned-content/reorder`,
 
   BANNER_CONTROL: `/admin/banners`,
   BANNER_CONTROL_BY_ID: (id: string) => `/admin/banners/${id}`,

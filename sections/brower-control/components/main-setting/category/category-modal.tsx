@@ -46,7 +46,6 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
 
   // Debug log
   useEffect(() => {
-    console.log('Current selectedObject value:', selectedObject);
   }, [selectedObject]);
 
   // Fetch Events

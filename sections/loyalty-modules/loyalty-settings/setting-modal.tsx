@@ -303,7 +303,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                   placeholder="Select Status"
                   options={[
                     { label: 'Active', value: 'active' },
-                    { label: 'Suspended', value: 'suspended' },
+                    { label: 'Inactive', value: 'suspended' },
                   ]}
                 />
 

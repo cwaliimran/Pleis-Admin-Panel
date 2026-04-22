@@ -9,26 +9,36 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGetCategoriesQuery } from '@/store/Reducer/categories';
-import { useAddPinnedContentMutation, useUpdatePinnedContentMutation } from '@/store/Reducer/pinned-content-api';
+import { useAddPinnedContentMutation, 
+  // useGetEventBaseVenuTypeQuery,
+   useGetOrganizationsBaseVenueTypeQuery,
+   useUpdatePinnedContentMutation } from '@/store/Reducer/pinned-content-api';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
+// import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
+// import { Skeleton } from '@/components/ui/skeleton';
+import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 
 type Option = { value: string; label: string };
 
 const defaultValues = {
   linkType: '',
   selectedObject: '',
+  contentType: '',
+  // content: [],
   status: 'active',
 };
 
 const schema = Yup.object().shape({
   linkType: Yup.string().required('Link type is required'),
   selectedObject: Yup.string().required('Please select an option'),
+  contentType: Yup.string().required('Content type is required'),
+  // content: Yup.array().required('Content is required'),
   status: Yup.string().required('Status is required'),
 });
 
@@ -60,7 +70,8 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
     limit: 10000,
   });
 
-  const { data: venueData, isLoading: venueLoading } = useGetVenuesQuery({
+  // const { data: venueData, isLoading: venueLoading } = useGetVenuesQuery({
+  const { data: venueData, isLoading: venueLoading } = useGetVenueTypesQuery({
     page: 0,
     search: '',
     limit: '10000',
@@ -99,10 +110,31 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
 
   const [updateCategory, { isLoading: updateCategoryLoading }] = useUpdatePinnedContentMutation();
 
+  // const { data: eventsData, isLoading: eventLoading, isFetching: eventFetching } = useGetEventBaseVenuTypeQuery({ id: watch("selectedObject") },
+  //   {
+  //     skip:
+  //       linkType !== "VenueTypes" ||
+  //       !watch("selectedObject") ||
+  //       watch("contentType") !== "event",
+  //     refetchOnMountOrArgChange: true
+
+  //   });
+
+  // const { data: organizationsData, isLoading: organizationLoading, isFetching: organizationFetching } = useGetOrganizationsBaseVenueTypeQuery({ id: watch("selectedObject") },
+  //   {
+  //     skip:
+  //       linkType !== "VenueTypes" ||
+  //       !watch("selectedObject") ||
+  //       watch("contentType") !== "organization",
+  //     refetchOnMountOrArgChange: true
+
+  //   });
+
   // handle user-driven link type change
   const handleLinkTypeChange = (value: string) => {
     // Set link type and clear selectedObject silently (no validation yet)
     setValue('linkType', value, { shouldValidate: false, shouldDirty: true });
+
     setValue('selectedObject', '', {
       shouldValidate: false,
       shouldDirty: false,
@@ -111,8 +143,10 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
 
   // Prepare form data for editing
   const prepareFormData = (data: any) => {
+    console.log("data",data);
     const formData: any = {
       linkType: data?.type || '',
+      contentType: data?.contentType || '',
       status: data?.status || 'active',
     };
 
@@ -143,8 +177,9 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
   const handleSubmit = async (formData: any) => {
     try {
       const payload: any = {
-        type: formData.linkType,
-        object: formData.selectedObject,
+        filterType: formData.linkType,
+        filter: formData.selectedObject,
+        contentType: formData.contentType,
       };
 
       // Add status and id for edit mode
@@ -179,10 +214,10 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
   const getDynamicOptions = (): Option[] => {
     switch (linkType) {
       case 'Categories':
-        return categoryOptions;
+      return categoryOptions;
       case 'Tags':
         return tagOptions;
-      case 'Venues':
+      case 'VenueTypes':
         return venueOptions;
       default:
         return [];
@@ -192,11 +227,11 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
   const getDynamicLabel = () => {
     switch (linkType) {
       case 'Categories':
-        return 'Select Category';
+      return 'Select Category';
       case 'Tags':
         return 'Select Tag';
-      case 'Venues':
-        return 'Select Venue';
+      case 'VenueTypes':
+        return 'Select Venue Type';
       default:
         return 'Select Option';
     }
@@ -208,7 +243,7 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
         return categoriesLoading;
       case 'Tags':
         return tagsLoading;
-      case 'Venues':
+      case 'VenueTypes':
         return venueLoading;
       default:
         return false;
@@ -241,7 +276,7 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
                       <SelectContent className="dark:bg-secondary">
                         <SelectItem value="Categories">Categories</SelectItem>
                         <SelectItem value="Tags">Tags</SelectItem>
-                        <SelectItem value="Venues">Venues</SelectItem>
+                        <SelectItem value="VenueTypes">Venue Types</SelectItem>
                       </SelectContent>
                     </Select>
                     {formState.errors.linkType && <p className="text-sm text-red-500">{formState.errors.linkType.message as string}</p>}
@@ -261,6 +296,7 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
                     </div>
                   )}
 
+
                   {/* Status Field (Only for Edit) */}
                   {isEdit && (
                     <div className="col-span-2">
@@ -276,8 +312,71 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
                       />
                     </div>
                   )}
+
+                  {watch("selectedObject") && (
+                    <div className="col-span-2">
+                      <RHFSelectField
+                        name="contentType"
+                        label="Select Content Type"
+                        placeholder="Select Content Type"
+                        className="w-full flex-1"
+                        options={[
+                          { value: 'Event', label: 'Event' },
+                          { value: 'Organizations', label: 'Organizations' },
+                        ]}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* {watch("contentType") === "event" && (
+
+                eventLoading || eventFetching ?
+                  <div className="mt-2 w-full space-y-2">
+                    <Skeleton className="ml-1 h-3 w-20 rounded-4xl border-gray-200 px-5" />
+                    <Skeleton className="h-8 rounded-4xl border-gray-200 px-5" />
+                  </div>
+                  : (
+                    <div className="col-span-2 mt-3">
+                      <Label >Select Events</Label>
+                      <RHFMultiSelectField
+                        name="content"
+                        placeholder="Choose Event"
+                        options={eventsData?.data?.map((val: any) => ({
+                          value: val?._id,
+                          label: val?.basicInfo?.title,
+                        }))}
+                        className="h-[40px] mt-2 cursor-pointer  border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                      />
+                    </div>
+                  )
+              )
+              }
+
+              {watch("contentType") === "organizations" && (
+
+                organizationLoading || organizationFetching ?
+                  <div className="mt-2 w-full space-y-2">
+                    <Skeleton className="ml-1 h-3 w-20 rounded-4xl border-gray-200 px-5" />
+                    <Skeleton className="h-8 rounded-4xl border-gray-200 px-5" />
+                  </div>
+                  : (
+                    <div className="col-span-2 mt-3">
+                      <Label >Select Organizations</Label>
+                      <RHFMultiSelectField
+                        name="content"
+                        placeholder="Choose Organizations"
+                        options={organizationsData?.data?.map((val: any) => ({
+                          value: val?._id,
+                          label: val?.basicInfo?.name,
+                        }))}
+                        className="h-[40px] mt-2 cursor-pointer  border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-[120px] lg:min-w-[440px]"
+                      />
+                    </div>
+                  )
+              )
+              } */}
 
               {/* Action Buttons */}
               <div className="mt-6 flex items-center justify-end gap-2">

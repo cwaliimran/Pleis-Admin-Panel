@@ -62,7 +62,6 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     date: date ? formatDate(date) : undefined,
   });
 
-  console.log("apiData", apiData?.data);
 
   // Local state for venue types and meta
   const [venueTypes, setVenueTypes] = useState<any[]>([]);

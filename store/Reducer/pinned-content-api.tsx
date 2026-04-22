@@ -55,7 +55,42 @@ export const pinnedContentApi = createApi({
       }),
       invalidatesTags: ['pinned-content'],
     }),
+    getEventBaseVenuType: builder.query({
+      query: ({ id }) => {
+
+        return {
+          url: API_ROUTES.EVENTS_BASE_VENU_TYPE(id),
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
+    }),
+    getOrganizationsBaseVenueType: builder.query({
+      query: ({ id }) => {
+
+        return {
+          url: API_ROUTES.ORGANIZATIONS_BASE_VENU_TYPE(id),
+          method: 'GET',
+        };
+      },
+      transformResponse: (res) => ({
+
+        data: res.data,
+        meta: res.meta,
+      }),
+    }),
+    reorderPinnedContent: builder.mutation({
+      query: (body) => ({
+        url: API_ROUTES.PINNED_CONTENT_REORDER,
+        method: 'POST',
+        body: body,
+      }),
+      invalidatesTags: ['pinned-content'],
   }),
+}),
 });
 
 export const {
@@ -63,4 +98,7 @@ export const {
   useAddPinnedContentMutation,
   useUpdatePinnedContentMutation,
   useDeletePinnedContentMutation,
+  useGetEventBaseVenuTypeQuery,
+  useGetOrganizationsBaseVenueTypeQuery,
+  useReorderPinnedContentMutation
 } = pinnedContentApi;
