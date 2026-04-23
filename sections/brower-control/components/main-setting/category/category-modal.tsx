@@ -248,7 +248,7 @@ const BannerModalV2 = ({ open, onClose, isEdit = false, selectedData }: any) => 
                       <RHFCustomCombobox
                         name="selectedObject"
                         label={getDynamicLabel()}
-                        placeholder={`Select ${getDynamicLabel()}`}
+                        placeholder={`${getDynamicLabel()}`}
                         className="w-full flex-1"
                         multiple={true}
                         allowCustom={false}

@@ -56,11 +56,11 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
     setIsModalOpen(true);
   };
 
-  const handleDeleteCategory = (id: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      setCategories(categories.filter((cat) => cat.id !== id));
-    }
-  };
+  // const handleDeleteCategory = (id: string) => {
+  //   if (confirm('Are you sure you want to delete this category?')) {
+  //     setCategories(categories.filter((cat) => cat.id !== id));
+  //   }
+  // };
 
   // ------- DELETE PINNED CONTENT ------- //
   const [deletePinnedContent, { isLoading: deleteLoading }] = useDeletePinnedContentMutation();
@@ -102,7 +102,7 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
       const { active } = event;
-      const draggedCategory:any = categories.find((category:any) => category._id === active.id);
+      const draggedCategory: any = categories.find((category: any) => category._id === active.id);
 
       setActiveCategory({
         _id: draggedCategory?._id,
@@ -111,8 +111,9 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
           _id: draggedCategory?.filter?._id,
         },
         type: draggedCategory?.filterType,
-        contentType: draggedCategory?.contentType
-      } );
+        contentType: draggedCategory?.contentType,
+        status: draggedCategory?.status,
+      });
     },
     [categories]
   );
@@ -124,14 +125,13 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
 
       if (!over || active.id === over.id) return;
 
-      const activeIndex = categories.findIndex((category:any) => category._id === active.id);
-      const overIndex = categories.findIndex((category:any) => category._id === over.id);
+      const activeIndex = categories.findIndex((category: any) => category._id === active.id);
+      const overIndex = categories.findIndex((category: any) => category._id === over.id);
 
       if (activeIndex === -1 || overIndex === -1) return;
 
       const previousOrder = activeIndex + 1;
       const newOrder = overIndex + 1;
-
 
       const reorderedArray = arrayMove(categories, activeIndex, overIndex);
       const updatedCategories = reorderedArray.map((category, index) => ({
@@ -157,14 +157,12 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
 
         showSuccess(response?.message || 'Reordered successfully');
       } catch (error) {
-      setCategories(categories);
+        setCategories(categories);
         showError(getErrorMessage(error));
       }
     },
     [categories, reorder]
   );
-
-
 
   return (
     <div className="space-y-5">
@@ -187,28 +185,24 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
           <CustomDndProvider
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-            overlay={
-              activeCategory ? (
-                <CategoryCard
-                  category={activeCategory}
-                  onEdit={() => { }}
-                  onDelete={() => { }}
-                  isOverlay={true}
-                />
-              ) : null
-            }
+            overlay={activeCategory ? <CategoryCard category={activeCategory} onEdit={() => {}} onDelete={() => {}} isOverlay={true} /> : null}
           >
-
             {categories.map((category: any) => (
-              <CategoryCard key={category?._id} category={{
-                _id: category?._id,
-                object: {
-                  title: category?.filter?.title,
-                  _id: category?.filter?._id,
-                },
-                type: category?.filterType,
-                contentType: category?.contentType
-              }} onEdit={handleEditCategory} onDelete={handleDelete} />
+              <CategoryCard
+                key={category?._id}
+                category={{
+                  _id: category?._id,
+                  object: {
+                    title: category?.filter?.title,
+                    _id: category?.filter?._id,
+                  },
+                  type: category?.filterType,
+                  contentType: category?.contentType,
+                  status: category?.status, 
+                }}
+                onEdit={handleEditCategory}
+                onDelete={handleDelete}
+              />
             ))}
           </CustomDndProvider>
         )}

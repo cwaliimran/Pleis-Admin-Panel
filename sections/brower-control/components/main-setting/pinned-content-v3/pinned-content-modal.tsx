@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
@@ -9,20 +8,17 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGetCategoriesQuery } from '@/store/Reducer/categories';
-import { useAddPinnedContentMutation, 
-  // useGetEventBaseVenuTypeQuery,
-   useGetOrganizationsBaseVenueTypeQuery,
-   useUpdatePinnedContentMutation } from '@/store/Reducer/pinned-content-api';
+import { useAddPinnedContentMutation, useUpdatePinnedContentMutation } from '@/store/Reducer/pinned-content-api';
 import { useGetTagsQuery } from '@/store/Reducer/tags';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import React, { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 // import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
 // import { Skeleton } from '@/components/ui/skeleton';
-import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 
 type Option = { value: string; label: string };
 
@@ -288,7 +284,7 @@ const BannerModalV2: React.FC<BannerModalV2Props> = ({ open, onClose, isEdit = f
                       <RHFCustomDropdown
                         name="selectedObject"
                         label={getDynamicLabel()}
-                        placeholder={`Select ${getDynamicLabel()}`}
+                        placeholder={`${getDynamicLabel()}`}
                         options={getDynamicOptions()}
                         isLoading={isLoadingOptions()}
                         showNone={false}

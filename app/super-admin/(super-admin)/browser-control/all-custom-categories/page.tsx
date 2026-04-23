@@ -19,7 +19,7 @@ const Page = () => {
       />
 
       {/* <ViewAllCategoryManagement /> */}
-      <CategoryManagement heading="All Promos" viewAll={false} fixLength={false} />
+      <CategoryManagement heading="Custom Categories" viewAll={false} fixLength={false} />
     </div>
   );
 };
