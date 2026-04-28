@@ -264,7 +264,7 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
           userData={venueTypes.find((item: any) => item?.basicInfo?._id === selectedId)}
           onUpdateSuccess={(updatedUser) => {
             setVenueTypes((prev) => prev.map((item) => (item.basicInfo?._id === selectedId ? { ...item, ...updatedUser } : item)));
-            showSuccess('User updated successfully');
+            // showSuccess('User updated successfully');
             editModal.onFalse();
           }}
           isLoading={false}

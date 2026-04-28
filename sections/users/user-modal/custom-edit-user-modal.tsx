@@ -415,7 +415,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, selectedId
               placeholder="Select Status"
               options={[
                 { value: 'active', label: 'Active' },
-                { value: 'suspended', label: 'Suspended' },
+                { value: 'suspended', label: userData?.accountState?.status === 'suspended' ? 'Suspended' : 'Suspend' },
                 ...(userData?.accountState?.userType === 'organizer' && userData?.accountState?.status === 'pending'
                   ? [{ value: 'pending', label: 'Pending' }]
                   : []),
