@@ -88,7 +88,7 @@ const QuickAccessV2 = ({ heading }: PromoManagerProps) => {
           return;
         }
 
-        showSuccess(response?.message || 'Reordered successfully');
+        showSuccess('Quick access reordered successfully');
       } catch (error) {
         setPromoEvents(promoEvents);
         showError(getErrorMessage(error));

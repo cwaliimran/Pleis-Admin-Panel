@@ -77,7 +77,7 @@ const defaultValues: SettingsFormValues = {
   status: 'active'
 };
 
-const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handleSuccess, user, status }: SettingsModalProps) => {
+const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handleSuccess, user }: SettingsModalProps) => {
   const [deleting, setDeleting] = useState(false);
   const [pointValue, setPointValue] = useState(0);
 
@@ -152,7 +152,8 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
         category: companyDetails?.category?._id || '',
         model: loyaltySettings?.model || 'essential',
         pointValuePercentage: loyaltySettings?.pointValuePercentage ?? 0,
-        status: status ?? 'active',
+        // status: status ?? 'active',
+        status: companyDetails?.status || 'active',
       };
 
       setPointValue(loyaltySettings?.pointValuePercentage ?? 0);
@@ -196,10 +197,10 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
       }
 
       const payload: any = {
-        status: formData.status,
         companyDetails: {
           ...(uploadedLogoKey && { logo: uploadedLogoKey }),
           ...(uploadedCoverImageKey && { coverImage: uploadedCoverImageKey }),
+          status: formData.status,
           description: formData.description,
           category: formData.category,
           loyaltySettings: {
@@ -303,7 +304,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                   placeholder="Select Status"
                   options={[
                     { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'suspended' },
+                    { label: 'Suspend', value: 'suspended' },
                   ]}
                 />
 
