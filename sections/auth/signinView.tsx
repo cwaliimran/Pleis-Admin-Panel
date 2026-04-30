@@ -15,7 +15,6 @@ import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -267,7 +266,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
 
                 {userType === 'organizer' && (
                   <>
-                    <div className="text-muted-foreground text-center text-sm">Or sign in with</div>
+                    {/* <div className="text-muted-foreground text-center text-sm">Or sign in with</div>
 
                     <div className="flex items-center justify-center gap-4">
                       <Button variant="outline" className="h-[60px] w-[60px] cursor-pointer rounded-full py-3">
@@ -317,7 +316,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
                           />
                         </span>
                       </Button>
-                    </div>
+                    </div> */}
 
                     <p className="text-muted-foreground mt-4 text-center text-sm">
                       Don&#39;t have an account?{' '}

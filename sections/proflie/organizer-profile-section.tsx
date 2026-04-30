@@ -1,5 +1,7 @@
 'use client';
 
+import RHFIBANField from '@/components/rhf/rhf-iban-field';
+import { validateCroatianIBAN } from '@/lib/validators';
 import TwoFactorAuth from '@/app/common/2fa/2fa';
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
@@ -61,8 +63,22 @@ const profileSchema = Yup.object({
   avatar: Yup.string().nullable(),
   organizationName: Yup.string().required('Organization name is required'),
   companyName: Yup.string().required('Company name is required'),
-  oib: Yup.string().required('OIB is required'),
-  bankAccountNumber: Yup.string().required('Bank account number is required'),
+  oib: Yup.string()
+    .required('VAT is required')
+    .matches(/^\d{8,12}$/, 'VAT must be between 8 and 12 digits'),
+  bankAccountNumber: Yup.string()
+    .required('Bank Account Number is required')
+    .test('croatian-iban', 'Invalid IBAN', function (value) {
+      if (!value) return true;
+      const iban = value.replace(/\s/g, '').toUpperCase();
+      if (!iban.startsWith('HR'))
+        return this.createError({ message: 'Bank Account Number must be an IBAN starting with HR' });
+      if (iban.length !== 21)
+        return this.createError({ message: `IBAN must be exactly 21 characters (got ${iban.length})` });
+      if (!validateCroatianIBAN(value))
+        return this.createError({ message: 'Invalid IBAN: check digits do not match (MOD 97 failed)' });
+      return true;
+    }),
   representativeName: Yup.string().required('Representative name is required'),
   subscriptionStatus: Yup.string(),
   location: Yup.object({
@@ -429,7 +445,7 @@ const OrganizerProfileSection = () => {
                   <div className="mt-6 mb-4 grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <RHFTextField name="companyName" label="Company Name" placeholder="Enter company name" />
                     <RHFTextField name="oib" label="VAT" placeholder="Enter VAT number" />
-                    <RHFTextField name="bankAccountNumber" label="Bank Account Number" placeholder="Enter bank account number" />
+                    <RHFIBANField name="bankAccountNumber" label="Bank Account Number" />
                     <RHFTextField name="representativeName" label="Representative Full Name" placeholder="Enter representative full name" />
                     <RHFTextField name="subscriptionStatus" label="Current Subscription" placeholder="Subscription status" disabled />
                     <div className="col-span-1 space-y-4 md:col-span-2">

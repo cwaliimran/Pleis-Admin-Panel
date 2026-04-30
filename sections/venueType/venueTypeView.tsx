@@ -44,7 +44,7 @@ const VenueTypeView = () => {
   const [updateVenueType, { isLoading: updateVenueTypeLoading }] = useUpdateVenueTypeMutation();
   const [deleteVenueType, { isLoading: deleteVenueTypeLoading }] = useDeleteVenueTypeMutation();
 
-  const { data: apiData, isLoading } = useGetVenueTypesQuery({
+  const { currentData: apiData, isFetching: isLoading } = useGetVenueTypesQuery({
     page: page - 1,
     search,
     limit,
@@ -74,7 +74,7 @@ const VenueTypeView = () => {
         }
       );
     }
-  }, [apiData, page, limit]);
+  }, [apiData]);
 
   const schema = Yup.object().shape({
     image: Yup.mixed().nullable(),

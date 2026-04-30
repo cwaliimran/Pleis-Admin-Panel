@@ -2,6 +2,7 @@
 
 import { RHFTextField } from '@/components/rhf';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+import RHFIBANField from '@/components/rhf/rhf-iban-field';
 import React from 'react';
 import type { Option } from './types';
 
@@ -34,11 +35,7 @@ const OrganizerFields: React.FC<OrganizerFieldsProps> = ({
       <RHFTextField name="oib" label="VAT" placeholder="Enter VAT" />
 
       <div className="md:col-span-2">
-        <RHFTextField
-          name="bankAccountNumber"
-          label="Bank Account Number"
-          placeholder="Enter bank account number"
-        />
+        <RHFIBANField name="bankAccountNumber" label="Bank Account Number" />
       </div>
 
       <div className="md:col-span-2">

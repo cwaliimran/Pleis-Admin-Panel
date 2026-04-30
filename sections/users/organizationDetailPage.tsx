@@ -394,7 +394,7 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-bold">Events</h3>
+                      <h3 className="text-lg font-bold">Total Events</h3>
                     </div>
                   </div>
                   <div className="mt-2 flex items-center text-3xl font-bold">{organizationData?.events !== 0 ? organizationData?.events : 0}</div>

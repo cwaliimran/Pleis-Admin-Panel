@@ -1,4 +1,5 @@
 // validation.ts
+import { validateCroatianIBAN } from '@/lib/validators';
 import * as Yup from 'yup';
 
 type RoleKey = 'admin' | 'organizer' | 'manager' | 'staff' | 'guest' | 'user';
@@ -27,18 +28,24 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
         organizationName: Yup.string().required('Organization Name is required'),
         companyName: Yup.string()
           .required('Company Name is required')
-          .matches(/^[A-Za-z\s]+$/, 'Company Name must only contain letters and spaces')
+          // .matches(/^[A-Za-z\s]+$/, 'Company Name must only contain letters and spaces')
           .max(100, 'Company Name must be at most 100 characters'),
         oib: Yup.string()
           .required('VAT is required')
-          .matches(/^\d{1,11}$/, 'VAT must be at most 11 digits')
-          .max(11, 'VAT must be at most 11 digits'),
+          .matches(/^\d{8,12}$/, 'VAT must be between 8 and 12 digits'),
         bankAccountNumber: Yup.string()
           .required('Bank Account Number is required')
-          .trim()
-          .min(5, 'Bank Account Number must be at least 5 characters')
-          .max(34, 'Bank Account Number must be at most 34 characters')
-          .matches(/^[A-Za-z0-9\s-]+$/, 'Bank Account Number can only contain letters, numbers, spaces, and hyphens'),
+          .test('croatian-iban', 'Invalid IBAN', function (value) {
+            if (!value) return true;
+            const iban = value.replace(/\s/g, '').toUpperCase();
+            if (!iban.startsWith('HR'))
+              return this.createError({ message: 'Bank Account Number must be an IBAN starting with HR' });
+            if (iban.length !== 21)
+              return this.createError({ message: `IBAN must be exactly 21 characters (got ${iban.length})` });
+            if (!validateCroatianIBAN(value))
+              return this.createError({ message: 'Invalid IBAN: check digits do not match (MOD 97 failed)' });
+            return true;
+          }),
         representativeName: Yup.string()
           .required('Representative Name is required')
           .matches(/^[A-Za-z\s]+$/, 'Representative Name must only contain letters and spaces')

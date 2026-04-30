@@ -110,6 +110,8 @@ const TagsTypeTable: FC<PageProps> = ({
 
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
+    defaultSortKey: 'title',
+    defaultSortOrder: 'asc',
   });
 
 

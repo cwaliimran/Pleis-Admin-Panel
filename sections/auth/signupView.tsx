@@ -3,6 +3,8 @@
 import { ModeToggle } from '@/components/atoms/mode-toggle';
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFTextField } from '@/components/rhf';
+import RHFIBANField from '@/components/rhf/rhf-iban-field';
+import { validateCroatianIBAN } from '@/lib/validators';
 import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,7 +18,6 @@ import { getDeviceType } from '@/utils/getDeviceType';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -109,14 +110,20 @@ const schema = Yup.object().shape({
     .max(100, 'Company name must be at most 100 characters'),
   oib: Yup.string()
     .required('VAT is required')
-    .matches(/^\d{1,11}$/, 'VAT must be at most 11 digits')
-    .max(11, 'VAT must be at most 11 digits'),
+    .matches(/^\d{8,12}$/, 'VAT must be between 8 and 12 digits'),
   bankAccountNumber: Yup.string()
-    .required('Bank account number is required')
-    .trim()
-    .min(5, 'Bank account number must be at least 5 characters')
-    .max(34, 'Bank account number must be at most 34 characters')
-    .matches(/^[A-Za-z0-9\s-]+$/, 'Bank account number can only contain letters, numbers, spaces, and hyphens'),
+    .required('Bank Account Number is required')
+    .test('croatian-iban', 'Invalid IBAN', function (value) {
+      if (!value) return true;
+      const iban = value.replace(/\s/g, '').toUpperCase();
+      if (!iban.startsWith('HR'))
+        return this.createError({ message: 'Bank Account Number must be an IBAN starting with HR' });
+      if (iban.length !== 21)
+        return this.createError({ message: `IBAN must be exactly 21 characters (got ${iban.length})` });
+      if (!validateCroatianIBAN(value))
+        return this.createError({ message: 'Invalid IBAN: check digits do not match (MOD 97 failed)' });
+      return true;
+    }),
   representativeFullName: Yup.string()
     .required('Representative full name is required')
     .matches(/^[A-Za-z\s]+$/, 'Representative name must only contain letters and spaces')
@@ -356,7 +363,7 @@ function SignUpView() {
                     <RHFTextField name="oib" placeholder="VAT" />
                   </div>
                   <div className="col-span-2">
-                    <RHFTextField name="bankAccountNumber" placeholder="Bank Account Number" />
+                    <RHFIBANField name="bankAccountNumber" />
                   </div>
                   <div className="col-span-2">
                     <RHFTextField name="representativeFullName" placeholder="Representative Full Name" />
@@ -443,8 +450,8 @@ function SignUpView() {
 
           {/* Social Auth Buttons */}
           <div className="text-muted-foreground mt-8 text-center text-sm">
-            Or sign up with
-            <div className="mt-2 flex items-center justify-center gap-4">
+            {/* Or sign up with */}
+            {/* <div className="mt-2 flex items-center justify-center gap-4">
               <Button variant="outline" className="h-[60px] w-[60px] cursor-pointer rounded-full py-3" type="button">
                 <span className="flex h-6 w-6 items-center justify-center">
                   <Image
@@ -475,7 +482,8 @@ function SignUpView() {
                   <Image src="/images/metaIcon.png" alt="Meta" className="h-[25px] w-[25px] object-contain" width={40} height={40} />
                 </span>
               </Button>
-            </div>
+            </div> */}
+            
             <p className="mt-4 text-sm">
               Already have an account?{' '}
               <Link href="/" className="font-medium text-[#0f172b] hover:underline dark:text-white">

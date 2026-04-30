@@ -7,6 +7,8 @@ import * as Yup from 'yup';
 
 import ButtonLoading from '@/components/common/button-loading';
 import { RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFIBANField from '@/components/rhf/rhf-iban-field';
+import { validateCroatianIBAN } from '@/lib/validators';
 import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
@@ -226,8 +228,24 @@ const roleConfigs: RoleConfigMap = {
 
 /* ----------------------- VALIDATION (dynamic by role) ---------------------- */
 
+const ibanSchema = (required: boolean) => {
+  const base = Yup.string().test('croatian-iban', 'Invalid IBAN', function (value) {
+    if (!value) return true;
+    const iban = value.replace(/\s/g, '').toUpperCase();
+    if (!iban.startsWith('HR'))
+      return this.createError({ message: 'Bank Account Number must be an IBAN starting with HR' });
+    if (iban.length !== 21)
+      return this.createError({ message: `IBAN must be exactly 21 characters (got ${iban.length})` });
+    if (!validateCroatianIBAN(value))
+      return this.createError({ message: 'Invalid IBAN: check digits do not match (MOD 97 failed)' });
+    return true;
+  });
+  return required ? base.required('Bank Account Number is required') : base.nullable();
+};
+
 const schemaForField = (name: string, cfg: FieldConfig) => {
   const label = cfg.label || name;
+  if (name === 'bankAccountNumber') return ibanSchema(!!cfg.required);
   switch (cfg.type) {
     case 'email':
       return cfg.required
@@ -612,7 +630,9 @@ const CustomUserModal: React.FC<UserModalProps> = ({
                 if (name === 'profileIcon') return null;
 
                 const node =
-                  cfg.type === 'text' ||
+                  name === 'bankAccountNumber' ? (
+                    <RHFIBANField key={name} name={name} label={cfg.label} />
+                  ) : cfg.type === 'text' ||
                   cfg.type === 'email' ||
                   cfg.type === 'password' ? (
                     <RHFTextField

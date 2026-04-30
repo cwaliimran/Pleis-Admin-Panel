@@ -1,3 +1,4 @@
+import { validateCroatianIBAN } from "@/lib/validators";
 import * as Yup from "yup";
 
 export const defaultValues = {
@@ -57,7 +58,19 @@ export const schema = Yup.object().shape({
   //  Bank Details
   companyName: Yup.string(),
   accountName: Yup.string(),
-  accountNumber: Yup.string(),
+  accountNumber: Yup.string()
+    .optional()
+    .test('croatian-iban', 'Invalid IBAN', function (value) {
+      if (!value) return true;
+      const iban = value.replace(/\s/g, '').toUpperCase();
+      if (!iban.startsWith('HR'))
+        return this.createError({ message: 'Bank Account Number must be an IBAN starting with HR' });
+      if (iban.length !== 21)
+        return this.createError({ message: `IBAN must be exactly 21 characters (got ${iban.length})` });
+      if (!validateCroatianIBAN(value))
+        return this.createError({ message: 'Invalid IBAN: check digits do not match (MOD 97 failed)' });
+      return true;
+    }),
   oib: Yup.string(),
   address: Yup.string(),
   postalCode: Yup.string(),

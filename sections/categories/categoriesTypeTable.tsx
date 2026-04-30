@@ -86,6 +86,8 @@ const CategoriesTypeTable: FC<PageProps> = ({
   // Sorting logic
   const { sortedData, sortConfig, handleSort } = useTableSort({
     data: data || [],
+    defaultSortKey: 'title',
+    defaultSortOrder: 'asc',
   });
 
   console.log('sortedData', sortedData);
