@@ -8,14 +8,14 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DraggablePromoItemSkeleton } from '../promo-manager/DraggablePromoItemSkeleton';
 import { CategoryCard } from './category-card';
 import CategoryModal from './category-modal';
 import type { Category } from './types';
 import { CustomDndProvider } from '@/components/providers/DndProvider';
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ReorderPayload } from '../promo-manager/types';
 
 type CustomCategoryProps = {
@@ -167,6 +167,12 @@ export function CategoryManagement({ heading, viewAll, fixLength }: CustomCatego
 
 
 
+  const displayedCategories = useMemo(
+    () => (fixLength ? categories.slice(0, 10) : categories),
+    [categories, fixLength]
+  );
+  const sortableIds = useMemo(() => displayedCategories.map((c: any) => c._id), [displayedCategories]);
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -192,17 +198,18 @@ export function CategoryManagement({ heading, viewAll, fixLength }: CustomCatego
               activeCategory ? (
                 <CategoryCard
                   category={activeCategory}
-                  onEdit={() => { }}
-                  onDelete={() => { }}
+                  onEdit={() => {}}
+                  onDelete={() => {}}
                   isOverlay={true}
                 />
               ) : null
             }
           >
-
-            {(fixLength ? categories.slice(0, 10) : categories).map((category: any) => (
-              <CategoryCard key={category?._id} category={category} onEdit={handleEditCategory} onDelete={handleDelete} />
-            ))}
+            <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+              {displayedCategories.map((category: any) => (
+                <CategoryCard key={category?._id} category={category} onEdit={handleEditCategory} onDelete={handleDelete} />
+              ))}
+            </SortableContext>
           </CustomDndProvider>
         )}
       </div>

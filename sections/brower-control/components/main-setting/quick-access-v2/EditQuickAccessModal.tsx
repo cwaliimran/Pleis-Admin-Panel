@@ -24,7 +24,7 @@ interface PageProps {
 const EditQuickAccessModal: FC<PageProps> = ({ isOpen, onOpenChange, editingQuickAccess }) => {
 
     const defaultValues = useMemo(() => ({
-        status: editingQuickAccess?.quickAction ? 'enabled' : 'disabled',
+        status: editingQuickAccess?.quickAction ? 'active' : 'inactive',
     }), [editingQuickAccess]);
 
     const [updateQuickAccess, { isLoading }] = useUpdateQuickAccessMutation();
@@ -46,7 +46,7 @@ const EditQuickAccessModal: FC<PageProps> = ({ isOpen, onOpenChange, editingQuic
     const onSubmit = async (data: any) => {
         let response = await updateQuickAccess({
             id: editingQuickAccess?._id,
-            quickAction: data.status === "enabled" ? true : false
+            quickAction: data.status === "active" ? true : false
         });
         if (!response?.error) {
             toast.success("Quick Access Status Updated Successfully");
@@ -78,28 +78,27 @@ const EditQuickAccessModal: FC<PageProps> = ({ isOpen, onOpenChange, editingQuic
                                 label="Select Status"
                                 placeholder="Select Status"
                                 options={[
-                                    { label: 'Enabled', value: 'enabled' },
-                                    { label: 'Disabled', value: 'disabled' },
+                                    { label: 'Active', value: 'active' },
+                                    { label: 'Inactive', value: 'inactive' },
                                 ]}
                             />
 
                         </div>
 
-                        <div className="flex gap-3 pt-4">
-                            <Button variant="outline" onClick={handleCancel} className="flex-1">
-                                Cancel
-                            </Button>
-
-                            {isLoading ? (
-                                <Button type="button" className="bg-primary/80 cursor-not-allowed text-white">
-                                    <ButtonLoading title="Updating" />
-                                </Button>
-                            ) : (
-                                <Button type="submit" className="bg-primary hover:bg-primary/80 text-white">
-                                    Update
-                                </Button>
-                            )}
-                        </div>
+                                                <div className="flex w-full gap-3 pt-4">
+                                                    <Button type="button" variant="outline" onClick={handleCancel} className="flex-1">
+                                                        Cancel
+                                                    </Button>
+                                                    {isLoading ? (
+                                                        <Button type="button" className="flex-1 bg-primary/80 cursor-not-allowed text-white">
+                                                            <ButtonLoading title="Updating" />
+                                                        </Button>
+                                                    ) : (
+                                                        <Button type="submit" className="flex-1 bg-primary hover:bg-primary/80 text-white">
+                                                            Update
+                                                        </Button>
+                                                    )}
+                                                </div>
                     </div>
                 </FormProvider>
             </DialogContent>

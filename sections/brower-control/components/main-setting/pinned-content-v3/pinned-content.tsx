@@ -8,9 +8,9 @@ import { useDeletePinnedContentMutation, useGetPinnedContentQuery, useReorderPin
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DraggablePromoItemSkeleton } from '../promo-manager/DraggablePromoItemSkeleton';
 import { ReorderPayload } from '../promo-manager/types';
 import { CategoryCard } from './pinned-content-card';
@@ -164,6 +164,8 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
     [categories, reorder]
   );
 
+  const sortableIds = useMemo(() => categories.map((c: any) => c._id), [categories]);
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
@@ -187,23 +189,25 @@ export function PinnedContentV3({ heading }: CustomCategoryProps) {
             onDragEnd={handleDragEnd}
             overlay={activeCategory ? <CategoryCard category={activeCategory} onEdit={() => {}} onDelete={() => {}} isOverlay={true} /> : null}
           >
-            {categories.map((category: any) => (
-              <CategoryCard
-                key={category?._id}
-                category={{
-                  _id: category?._id,
-                  object: {
-                    title: category?.filter?.title,
-                    _id: category?.filter?._id,
-                  },
-                  type: category?.filterType,
-                  contentType: category?.contentType,
-                  status: category?.status, 
-                }}
-                onEdit={handleEditCategory}
-                onDelete={handleDelete}
-              />
-            ))}
+            <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+              {categories.map((category: any) => (
+                <CategoryCard
+                  key={category?._id}
+                  category={{
+                    _id: category?._id,
+                    object: {
+                      title: category?.filter?.title,
+                      _id: category?.filter?._id,
+                    },
+                    type: category?.filterType,
+                    contentType: category?.contentType,
+                    status: category?.status,
+                  }}
+                  onEdit={handleEditCategory}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </SortableContext>
           </CustomDndProvider>
         )}
       </div>

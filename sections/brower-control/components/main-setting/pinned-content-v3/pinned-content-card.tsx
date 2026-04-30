@@ -9,7 +9,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useUpdatePinnedContentMutation } from '@/store/Reducer/pinned-content-api';
 import { showError, showSuccess } from '@/utils/toast';
 import { getErrorMessage } from '@/utils/api';
-import { useState } from 'react';
+// import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export function CategoryCard({
@@ -28,13 +28,11 @@ export function CategoryCard({
     data: { type: 'category', category },
   });
 
-  const [isActive, setIsActive] = useState(category?.status === 'active');
+  // Remove local isActive state; always use category.status
   const [updatePinnedContent, { isLoading: isToggling }] = useUpdatePinnedContentMutation();
 
   const handleStatusToggle = async () => {
-    const newStatus = isActive ? 'inactive' : 'active';
-    setIsActive(!isActive); // optimistic
-
+    const newStatus = category?.status === 'active' ? 'inactive' : 'active';
     try {
       const response = await updatePinnedContent({
         id: category?._id,
@@ -42,14 +40,12 @@ export function CategoryCard({
       }).unwrap();
 
       if (response?.error) {
-        setIsActive(isActive); // revert
         showError(getErrorMessage(response.error));
         return;
       }
 
       showSuccess(response?.message || `Status updated to ${newStatus}`);
     } catch (err) {
-      setIsActive(isActive); // revert
       showError(getErrorMessage(err));
     }
   };
@@ -76,7 +72,7 @@ export function CategoryCard({
     <div
       ref={setNodeRef}
       style={dragStyle}
-      className={`dark:bg-secondary rounded-lg border border-l-4 border-gray-200 border-l-blue-400 bg-white px-4 py-2.5 transition-all hover:shadow-md dark:border-gray-600 ${
+      className={`dark:bg-secondary rounded-lg border border-l-4 border-gray-200 border-l-blue-400 bg-white px-4 py-2.5 transition-shadow hover:shadow-md dark:border-gray-600 ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
@@ -102,10 +98,10 @@ export function CategoryCard({
                   <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
                 ) : (
                   <>
-                    <Input
+                    <input
                       id={`status-toggle-${category?._id}`}
                       type="checkbox"
-                      checked={isActive}
+                      checked={category?.status === 'active'}
                       onChange={handleStatusToggle}
                       className="peer sr-only"
                       disabled={isToggling}
@@ -113,7 +109,7 @@ export function CategoryCard({
                     <div
                       onClick={isToggling ? undefined : handleStatusToggle}
                       className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
-                        isActive ? 'bg-primary after:translate-x-full after:border-white' : 'bg-gray-200'
+                        category?.status === 'active' ? 'bg-primary after:translate-x-full after:border-white' : 'bg-gray-200'
                       }`}
                     />
                   </>

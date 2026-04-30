@@ -5,6 +5,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { Edit, GripVertical } from 'lucide-react';
 import { PromoEvent } from './types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react';
+import { useUpdateQuickAccessMutation } from '@/store/Reducer/promo-section-api';
+import { showError, showSuccess } from '@/utils/toast';
 import { useBoolean } from '@/hooks/useBoolean';
 import EditQuickAccessModal from './EditQuickAccessModal';
 import { Label } from '@/components/ui/label';
@@ -36,6 +40,23 @@ export function DraggablePromoItem({
     },
   });
   const openModal = useBoolean();
+  const [updateQuickAccess, { isLoading: isToggling }] = useUpdateQuickAccessMutation();
+  // Stateless toggle handler
+  const handleToggle = async () => {
+    try {
+      const response = await updateQuickAccess({
+        id: promo?._id,
+        quickAction: !promo?.quickAction,
+      }).unwrap();
+      if (response?.error) {
+        showError(response?.error?.message || 'Failed to update status');
+        return;
+      }
+      showSuccess('Quick Access status updated');
+    } catch (err) {
+      showError('Failed to update status');
+    }
+  };
 
   const handleOpenQuickAccess = () => {
     openModal.onTrue();
@@ -79,8 +100,30 @@ export function DraggablePromoItem({
       <div className="flex items-center space-x-1 sm:space-x-2 ">
 
 
-        <CustomBadge variant={promo?.quickAction ? 'success' : 'error'}
-        >{promo?.quickAction ? 'Enabled' : 'Disabled'}</CustomBadge>
+
+        {/* Toggle for quick access active/inactive */}
+        <div className="flex items-center gap-2">
+          {isToggling ? (
+            <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+          ) : (
+            <>
+              <input
+                id={`quick-toggle-${promo?._id}`}
+                type="checkbox"
+                checked={!!promo?.quickAction}
+                onChange={handleToggle}
+                className="peer sr-only"
+                disabled={isToggling}
+              />
+              <div
+     onClick={isToggling ? undefined : handleToggle}
+                className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
+                  promo?.quickAction ? 'bg-primary after:translate-x-full after:border-white' : 'bg-gray-200'           
+                }`}
+              />
+            </>
+          )}
+        </div>
 
         <div
           {...attributes}
