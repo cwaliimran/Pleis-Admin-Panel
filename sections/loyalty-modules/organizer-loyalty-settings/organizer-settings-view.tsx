@@ -21,7 +21,7 @@ const OrganizerSettingsView = () => {
 
   const { data: apiData, isLoading, isFetching, refetch } = useGetUserByIdQuery({ id: selectedCompanyId || '' }, { skip: !selectedCompanyId });
   const [updateUser, { isLoading: updateLoading }] = useUpdateUserMutation();
-  
+
   // Loyalty enable toggle
   const handleEnableLoyalty = async () => {
     if (!selectedCompanyId) return;
@@ -187,6 +187,16 @@ const OrganizerSettingsView = () => {
                 </div>
                 <div className="rounded-full bg-gray-100 px-4 py-2 text-sm dark:bg-gray-800">
                   <span className="font-medium text-gray-900 dark:text-white">0</span> Boost
+                </div>
+                <div
+                  className={`rounded-full px-4 py-2 text-sm ${apiData?.basicInfo?.companyDetails?.status === 'active' ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'}`}
+                >
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {apiData?.basicInfo?.companyDetails?.status === 'active'
+                      ? apiData?.basicInfo?.companyDetails?.status?.slice(0, 1)?.toUpperCase() +
+                        apiData?.basicInfo?.companyDetails?.status?.slice(1)?.toLowerCase()
+                      : 'Suspended'}
+                  </span>
                 </div>
               </div>
             </div>

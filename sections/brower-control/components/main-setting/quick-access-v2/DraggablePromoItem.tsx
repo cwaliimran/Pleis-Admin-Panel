@@ -5,14 +5,14 @@ import { CSS } from '@dnd-kit/utilities';
 import { Edit, GripVertical } from 'lucide-react';
 import { PromoEvent } from './types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+// import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { useUpdateQuickAccessMutation } from '@/store/Reducer/promo-section-api';
 import { showError, showSuccess } from '@/utils/toast';
 import { useBoolean } from '@/hooks/useBoolean';
 import EditQuickAccessModal from './EditQuickAccessModal';
-import { Label } from '@/components/ui/label';
-import CustomBadge from '@/components/ui/custom-badge';
+// import { Label } from '@/components/ui/label';
+// import CustomBadge from '@/components/ui/custom-badge';
 
 interface DraggablePromoItemProps {
   promo: any;
@@ -21,18 +21,8 @@ interface DraggablePromoItemProps {
   isOverlay?: boolean;
 }
 
-export function DraggablePromoItem({
-  promo,
-  isOverlay = false,
-}: DraggablePromoItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
+export function DraggablePromoItem({ promo, isOverlay = false }: DraggablePromoItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: promo?._id?.toString(),
     data: {
       type: 'promo',
@@ -46,7 +36,7 @@ export function DraggablePromoItem({
     try {
       const response = await updateQuickAccess({
         id: promo?._id,
-        quickAction: !promo?.quickAction,
+        status: promo?.status === 'active' ? 'inactive' : 'active',
       }).unwrap();
       if (response?.error) {
         showError(response?.error?.message || 'Failed to update status');
@@ -55,12 +45,13 @@ export function DraggablePromoItem({
       showSuccess('Quick Access status updated');
     } catch (err) {
       showError('Failed to update status');
+      console.log(err);
     }
   };
 
   const handleOpenQuickAccess = () => {
     openModal.onTrue();
-  }
+  };
 
   const className = `bg-white dark:bg-secondary rounded-lg border border-gray-200 dark:border-gray-600 p-4 flex items-center justify-between border-l-4 border-l-blue-500 hover:shadow-sm transition-shadow 
   ${isDragging ? 'opacity-50' : ''} `;
@@ -69,9 +60,7 @@ export function DraggablePromoItem({
     return (
       <div className="dark:bg-secondary flex scale-105 rotate-1 items-center justify-between rounded-lg border border-l-4 border-gray-200 border-l-blue-500 bg-white p-4 opacity-95 shadow-lg dark:border-gray-800">
         <div>
-          <h3 className="text-xs font-semibold text-gray-900 dark:text-white">
-            {promo?.title}
-          </h3>
+          <h3 className="text-xs font-semibold text-gray-900 dark:text-white">{promo?.title}</h3>
         </div>
         <div className="flex items-center space-x-2">
           <GripVertical className="h-4 w-4 text-gray-400" />
@@ -83,24 +72,19 @@ export function DraggablePromoItem({
   // Use CSS.Transform for proper drag and drop functionality
   const dragStyle = transform
     ? {
-      transform: CSS.Transform.toString(transform),
-      transition: transition,
-    }
+        transform: CSS.Transform.toString(transform),
+        transition: transition,
+      }
     : {};
 
   return (
     // eslint-disable-next-line react/forbid-component-props
     <div ref={setNodeRef} className={className} style={dragStyle}>
       <div>
-        <h3 className="text-[14px] font-semibold text-gray-900 sm:text-[16px] dark:text-white ">
-          {promo?.title}
-        </h3>
+        <h3 className="text-[14px] font-semibold text-gray-900 sm:text-[16px] dark:text-white">{promo?.title}</h3>
       </div>
 
-      <div className="flex items-center space-x-1 sm:space-x-2 ">
-
-
-
+      <div className="flex items-center space-x-1 sm:space-x-2">
         {/* Toggle for quick access active/inactive */}
         <div className="flex items-center gap-2">
           {isToggling ? (
@@ -110,41 +94,30 @@ export function DraggablePromoItem({
               <input
                 id={`quick-toggle-${promo?._id}`}
                 type="checkbox"
-                checked={!!promo?.quickAction}
+                title="Toggle Quick Access"
+                checked={promo?.status === 'active'}
                 onChange={handleToggle}
                 className="peer sr-only"
                 disabled={isToggling}
               />
               <div
-     onClick={isToggling ? undefined : handleToggle}
+                onClick={isToggling ? undefined : handleToggle}
                 className={`peer relative h-6 w-11 cursor-pointer rounded-full after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] ${
-                  promo?.quickAction ? 'bg-primary after:translate-x-full after:border-white' : 'bg-gray-200'           
+                  promo?.status === 'active' ? 'bg-primary after:translate-x-full after:border-white' : 'bg-gray-200'
                 }`}
               />
             </>
           )}
         </div>
 
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab rounded p-1 hover:cursor-grabbing hover:bg-gray-100 hover:dark:bg-gray-700"
-        >
+        <div {...attributes} {...listeners} className="cursor-grab rounded p-1 hover:cursor-grabbing hover:bg-gray-100 hover:dark:bg-gray-700">
           <GripVertical className="h-4 w-4 text-gray-400" />
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-black dark:text-white "
-          onClick={handleOpenQuickAccess}
-        >
+        <Button variant="ghost" size="sm" className="text-black dark:text-white" onClick={handleOpenQuickAccess}>
           <Edit className="h-4 w-4" />
         </Button>
 
-        <EditQuickAccessModal
-          isOpen={openModal.value}
-          onOpenChange={openModal.onFalse}
-          editingQuickAccess={promo} />
+        <EditQuickAccessModal isOpen={openModal.value} onOpenChange={openModal.onFalse} editingQuickAccess={promo} />
       </div>
     </div>
   );

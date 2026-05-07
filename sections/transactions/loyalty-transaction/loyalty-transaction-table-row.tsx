@@ -30,7 +30,7 @@ const LoyaltyTransactionTableRow: FC<TableRowProps> = ({ item, handleEdit }) => 
           {item?.user?.firstName || ''} {item?.user?.lastName || ''}
         </TableCell>
 
-        <TableCell className="text-left capitalize">{item?.publicId || 'N/A'}</TableCell>
+        <TableCell className="text-left">{item?.publicId || 'N/A'}</TableCell>
 
         <TableCell className="text-left capitalize">{getDomainType(item?.domainType)}</TableCell>
 

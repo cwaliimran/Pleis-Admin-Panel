@@ -61,9 +61,7 @@ const schema = Yup.object().shape({
     .min(0, 'Must be at least 0%')
     .max(20, 'Cannot exceed 20%')
     .default(0),
-  status: Yup.mixed<'active' | 'suspended'>()
-    .oneOf(['active', 'suspended'])
-    .default('active'),
+  status: Yup.mixed<'active' | 'suspended'>().oneOf(['active', 'suspended']).default('active'),
 });
 
 const defaultValues: SettingsFormValues = {
@@ -74,7 +72,7 @@ const defaultValues: SettingsFormValues = {
   category: '',
   model: 'essential',
   pointValuePercentage: 0,
-  status: 'active'
+  status: 'active',
 };
 
 const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handleSuccess, user }: SettingsModalProps) => {
@@ -322,8 +320,9 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                       {loyaltyModels.map((modelItem) => (
                         <label key={modelItem.value} htmlFor={`modal-${modelItem.value}`} className="cursor-pointer">
                           <Card
-                            className={`dark:bg-secondary cursor-pointer border transition ${selectedModel === modelItem.value ? 'border-primary shadow-lg dark:border-gray-300' : 'border-muted'
-                              }`}
+                            className={`dark:bg-secondary cursor-pointer border transition ${
+                              selectedModel === modelItem.value ? 'border-primary shadow-lg dark:border-gray-300' : 'border-muted'
+                            }`}
                           >
                             <CardHeader>
                               <CardTitle className="flex items-center gap-2">

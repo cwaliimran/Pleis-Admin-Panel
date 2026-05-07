@@ -1,7 +1,12 @@
 'use client';
 
 import { CustomDndProvider } from '@/components/providers/DndProvider';
-import { useGetQuickAccessQuery, useReorderQuickAccessMutation } from '@/store/Reducer/promo-section-api';
+import {
+  useGetQuickAccessQuery,
+  useReorderQuickAccessMutation,
+  useGetQuickActionConfigQuery,
+  useUpdateQuickActionConfigMutation,
+} from '@/store/Reducer/promo-section-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
@@ -10,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DraggablePromoItem } from './DraggablePromoItem';
 import { DraggablePromoItemSkeleton } from './DraggablePromoItemSkeleton';
 import { PromoEvent, ReorderPayload } from './types';
+import { Loader2 } from 'lucide-react';
 
 type PromoManagerProps = {
   heading?: string;
@@ -22,13 +28,14 @@ const QuickAccessV2 = ({ heading }: PromoManagerProps) => {
   const [activePromo, setActivePromo] = useState<PromoEvent | null>(null);
 
   const [reorderPromo] = useReorderQuickAccessMutation();
+  const [updateQuickActionConfig, { isLoading: isUpdatingConfig }] = useUpdateQuickActionConfigMutation();
 
   const { data: apiData, isLoading } = useGetQuickAccessQuery({
     page: 0,
     limit: 10000,
   });
 
-  console.log('apiData', apiData?.data);
+  const { data: quickActionConfig, isLoading: isLoadingConfig } = useGetQuickActionConfigQuery({});
 
   // Update local state when API data changes
   useEffect(() => {
@@ -62,9 +69,6 @@ const QuickAccessV2 = ({ heading }: PromoManagerProps) => {
       const previousOrder = activeIndex + 1;
       const newOrder = overIndex + 1;
 
-      console.log('previousOrder', previousOrder);
-      console.log('newOrder', newOrder);
-
       const reorderedArray = arrayMove(promoEvents, activeIndex, overIndex);
       const updatedPromoEvents = reorderedArray.map((promo, index) => ({
         ...promo,
@@ -97,6 +101,25 @@ const QuickAccessV2 = ({ heading }: PromoManagerProps) => {
     [promoEvents, reorderPromo]
   );
 
+  // Handle toggle quick action status
+  const handleToggleQuickAction = useCallback(async () => {
+    try {
+      const currentStatus = quickActionConfig?.quickAction || false;
+      const response = await updateQuickActionConfig({
+        quickAction: !currentStatus,
+      }).unwrap();
+
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      showSuccess(`Quick Access ${!currentStatus ? 'enabled' : 'disabled'} successfully`);
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  }, [quickActionConfig?.quickAction, updateQuickActionConfig]);
+
   const displayedEvents = useMemo(() => promoEvents.slice(0, 10), [promoEvents]);
   const sortableIds = useMemo(() => displayedEvents.map((promo: any) => promo?._id), [displayedEvents]);
 
@@ -111,6 +134,29 @@ const QuickAccessV2 = ({ heading }: PromoManagerProps) => {
           {/* Header */}
           <div className="mb-6 flex flex-col items-center justify-between gap-y-2 sm:flex-row">
             <h1 className="w-full text-center text-xl font-bold text-gray-900 sm:w-auto sm:text-start sm:text-2xl dark:text-white">{heading}</h1>
+
+            {/* Enable/Disable Button */}
+            <div className="flex w-full justify-center sm:w-auto sm:justify-end">
+              <button
+                type="button"
+                onClick={handleToggleQuickAction}
+                disabled={isUpdatingConfig || isLoadingConfig}
+                className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all ${
+                  quickActionConfig?.quickAction
+                    ? 'cursor-pointer bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800'
+                    : 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800'
+                } disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                {isUpdatingConfig || isLoadingConfig ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <span>{quickActionConfig?.quickAction ? '✓ Enabled' : '✕ Disabled'}</span>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Promo Events List */}

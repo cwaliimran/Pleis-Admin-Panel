@@ -34,6 +34,7 @@ const VenueTypeView = () => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [category, setCategory] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -49,6 +50,7 @@ const VenueTypeView = () => {
     search,
     limit,
     status,
+    category,
     date: date ? formatDate(date) : undefined,
   });
 
@@ -79,10 +81,7 @@ const VenueTypeView = () => {
   const schema = Yup.object().shape({
     image: Yup.mixed().nullable(),
     title: Yup.string().required('Venue Type is required'),
-    categories: Yup.array()
-      .of(Yup.string())
-      .min(1, 'Please select at least 1 category')
-      .max(2, 'You can select up to 2 categories only'),
+    categories: Yup.array().of(Yup.string()).min(1, 'Please select at least 1 category').max(2, 'You can select up to 2 categories only'),
     status: Yup.string().oneOf(['active', 'inactive']),
   });
 
@@ -101,7 +100,11 @@ const VenueTypeView = () => {
             .map((category: any) => (typeof category === 'string' ? category : category?._id || category?.id))
             .filter(Boolean)
         : selectedVenueType?.category
-          ? [typeof selectedVenueType.category === 'string' ? selectedVenueType.category : selectedVenueType.category?._id || selectedVenueType.category?.id].filter(Boolean)
+          ? [
+              typeof selectedVenueType.category === 'string'
+                ? selectedVenueType.category
+                : selectedVenueType.category?._id || selectedVenueType.category?.id,
+            ].filter(Boolean)
           : [];
 
       reset({
@@ -295,8 +298,13 @@ const VenueTypeView = () => {
         limit={limit}
         page={page}
         status={status}
+        category={category}
         onStatusChange={(val) => {
           setStatus(val);
+          setPage(1);
+        }}
+        onCategoryChange={(val) => {
+          setCategory(val);
           setPage(1);
         }}
         date={date}
@@ -304,7 +312,6 @@ const VenueTypeView = () => {
           setDate(val);
           setPage(1);
         }}
-      
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);

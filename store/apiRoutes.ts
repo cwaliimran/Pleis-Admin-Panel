@@ -193,7 +193,6 @@ export const API_ROUTES = {
   ORGANIZER_DASHBOARD: `/organizer/dashboard`,
   ORGANIZER_LOYALTY_DASHBOARD: `/organizer/loyalty/dashboard`,
 
-
   ADMIN_EVENTS: `/admin/events`,
   ADMIN_EVENTS_BY_ID: (id: string) => `/admin/events/${id}`,
   UPDATE_ADMIN_EVENTS_BY_ID_AND_SCOPE: (id: string, scope: string) => `/admin/events/${id}?scope=${scope}`,
@@ -491,6 +490,9 @@ export const API_ROUTES = {
   ORGANIZER_USER_LIST: `/organizer/users`,
   ORGANIZER_USER_LIST_BY_ID: (id: string) => `/organizer/users/${id}`,
   ORGANIZER_PENDING_USER_LIST_BY_ID: (id: string) => `/organizer/users/${id}`,
+
+  // ── FEED CONFIG ───────────────────────────────────
+  QUICK_ACTION_CONFIG: `/admin/feed-config/quick-action`,
 };
 
 export default API_ROUTES;

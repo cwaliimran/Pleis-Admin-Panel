@@ -125,7 +125,10 @@ const Header: FC<HeaderProps> = ({ links }) => {
 
   // Determine if dropdowns should be shown
   const isAdmin = user?.accountState?.userType === 'admin';
-  const isOrganizer = user?.role === 'organizer';
+  // organizer and manager should see organizer dropdown
+  // const isOrganizer = user?.role === 'organizer';
+  const isOrganizer = user?.accountState?.userType === 'organizer' || user?.accountState?.userType === 'manager';
+  
   const shouldShowCompanyDropdown = isAdmin && routeRequirements.requiresCompany;
   const shouldShowOrganizationDropdown = isAdmin && routeRequirements.requiresOrganization && Boolean(companyId);
   const showOrganizerDropdown = isOrganizer && shouldShowOrganizerDropdown(pathname || '');

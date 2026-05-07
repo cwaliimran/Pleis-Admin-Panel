@@ -29,22 +29,22 @@ const truncateText = (text: string, limit: number = 15): string => {
   return text;
 };
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'EUR',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+// const currencyFormatter = new Intl.NumberFormat('en-US', {
+//   style: 'currency',
+//   currency: 'EUR',
+//   minimumFractionDigits: 2,
+//   maximumFractionDigits: 2,
+// });
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
-const formatCurrency = (value?: number | null) => {
-  if (value === undefined || value === null || Number.isNaN(Number(value))) {
-    return '-';
-  }
+// const formatCurrency = (value?: number | null) => {
+//   if (value === undefined || value === null || Number.isNaN(Number(value))) {
+//     return '-';
+//   }
 
-  return currencyFormatter.format(Number(value));
-};
+//   return currencyFormatter.format(Number(value));
+// };
 
 const formatPercent = (value?: number | null) => {
   if (value === undefined || value === null || Number.isNaN(Number(value))) {
@@ -81,9 +81,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
   });
   const inactiveSubscription = item?.user?.inActiveSubscription;
 
-  const subscriptionTypeItems = Array.isArray(inactiveSubscription?.subscriptionTypes)
-    ? inactiveSubscription.subscriptionTypes.filter(Boolean)
-    : [];
+  const subscriptionTypeItems = Array.isArray(inactiveSubscription?.subscriptionTypes) ? inactiveSubscription.subscriptionTypes.filter(Boolean) : [];
   const primarySubscriptionType = subscriptionTypeItems[0] || '-';
   const remainingSubscriptionTypeCount = Math.max(subscriptionTypeItems.length - 1, 0);
 
@@ -93,14 +91,14 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
   const ticketingCommission = inactiveSubscription?.ticketingCommission;
   const reservationCommission = inactiveSubscription?.reservationCommission;
 
-  const commissionItems = [
-    { label: 'Ordering', value: orderingCommission },
-    { label: 'Ticketing', value: ticketingCommission },
-    { label: 'Reservation', value: reservationCommission },
-  ].filter((entry) => entry.value !== undefined && entry.value !== null && !Number.isNaN(Number(entry.value)));
+  // const commissionItems = [
+  //   { label: 'Ordering', value: orderingCommission },
+  //   { label: 'Ticketing', value: ticketingCommission },
+  //   { label: 'Reservation', value: reservationCommission },
+  // ].filter((entry) => entry.value !== undefined && entry.value !== null && !Number.isNaN(Number(entry.value)));
 
-  const primaryCommission = commissionItems[0];
-  const remainingCommissionCount = Math.max(commissionItems.length - 1, 0);
+  // const primaryCommission = commissionItems[0];
+  // const remainingCommissionCount = Math.max(commissionItems.length - 1, 0);
 
   return (
     <>
@@ -110,105 +108,107 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
           userType === 'organizer' ? router.push(`/organizer/organization/${item?._id}`) : router.push(`/super-admin/organization/${item?._id}`)
         }
       >
-      <TableCell>
-        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl! bg-gray-100 shadow-sm dark:bg-gray-800">
-          {item?.basicInfo?.media?.logo && item?.basicInfo?.media?.logo !== noImageUrl && item?.basicInfo?.media?.logo !== noImageUrlDev ? (
-            <AvatarImage src={item?.basicInfo?.media?.logo} alt="Store" className="h-full w-full cursor-pointer object-cover" />
-          ) : (
-            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.name?.[0]?.toUpperCase() || ''}</span>
-          )}
-        </Avatar>
-      </TableCell>
+        <TableCell>
+          <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl! bg-gray-100 shadow-sm dark:bg-gray-800">
+            {item?.basicInfo?.media?.logo && item?.basicInfo?.media?.logo !== noImageUrl && item?.basicInfo?.media?.logo !== noImageUrlDev ? (
+              <AvatarImage src={item?.basicInfo?.media?.logo} alt="Store" className="h-full w-full cursor-pointer object-cover" />
+            ) : (
+              <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.name?.[0]?.toUpperCase() || ''}</span>
+            )}
+          </Avatar>
+        </TableCell>
 
-      <TableCell className="text-left font-medium capitalize">
-        <span
-          className={item?.basicInfo?.name && item?.basicInfo?.name.length > 15 ? 'cursor-pointer transition-colors hover:text-blue-600' : ''}
-          title={item?.basicInfo?.name && item?.basicInfo?.name.length > 15 ? item?.basicInfo?.name : ''}
-          onClick={(e) => {
-            if (item?.basicInfo?.name && item?.basicInfo?.name.length > 15) {
-              e.stopPropagation();
-              setTextOverflowModal({
-                isOpen: true,
-                fullText: item?.basicInfo?.name,
-              });
-            }
-          }}
-        >
-          {truncateText(item?.basicInfo?.name || '-', 15)}
-        </span>
-      </TableCell>
-
-      {userType !== 'organizer' && (
-        <TableCell className="text-left text-sm">
+        <TableCell className="text-left font-medium capitalize">
           <span
-            className={
-              item?.creator &&
-              (item?.creator?.firstName || item?.creator?.lastName) &&
-              ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 15
-                ? 'cursor-pointer transition-colors hover:text-blue-600'
-                : ''
-            }
-            title={
-              item?.creator &&
-              (item?.creator?.firstName || item?.creator?.lastName) &&
-              ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 15
-                ? (item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')
-                : ''
-            }
+            className={item?.basicInfo?.name && item?.basicInfo?.name.length > 15 ? 'cursor-pointer transition-colors hover:text-blue-600' : ''}
+            title={item?.basicInfo?.name && item?.basicInfo?.name.length > 15 ? item?.basicInfo?.name : ''}
             onClick={(e) => {
-              const creatorName = (item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '');
-              if (creatorName.length > 15) {
+              if (item?.basicInfo?.name && item?.basicInfo?.name.length > 15) {
                 e.stopPropagation();
                 setTextOverflowModal({
                   isOpen: true,
-                  fullText: creatorName,
+                  fullText: item?.basicInfo?.name,
                 });
               }
             }}
           >
-            {truncateText(((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).trim(), 15)}
+            {truncateText(item?.basicInfo?.name || '-', 15)}
           </span>
         </TableCell>
-      )}
 
-      <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
-
-      <TableCell className="text-left text-sm">
-        <div className="flex items-center gap-2">
-          <span
-            className={primarySubscriptionType !== '-' && primarySubscriptionType.length > 15 ? 'cursor-pointer transition-colors hover:text-blue-600' : ''}
-            title={primarySubscriptionType !== '-' && primarySubscriptionType.length > 15 ? primarySubscriptionType : ''}
-            onClick={(e) => {
-              if (primarySubscriptionType !== '-' && primarySubscriptionType.length > 15) {
-                e.stopPropagation();
-                setTextOverflowModal({
-                  isOpen: true,
-                  fullText: primarySubscriptionType,
-                });
+        {userType !== 'organizer' && (
+          <TableCell className="text-left text-sm">
+            <span
+              className={
+                item?.creator &&
+                (item?.creator?.firstName || item?.creator?.lastName) &&
+                ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 15
+                  ? 'cursor-pointer transition-colors hover:text-blue-600'
+                  : ''
               }
-            }}
-          >
-            {truncateText(primarySubscriptionType, 15)}
-          </span>
-
-          {remainingSubscriptionTypeCount > 0 && (
-            <button
-              type="button"
-              className="cursor-pointer text-sm font-semibold text-blue-600 hover:underline"
+              title={
+                item?.creator &&
+                (item?.creator?.firstName || item?.creator?.lastName) &&
+                ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 15
+                  ? (item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')
+                  : ''
+              }
               onClick={(e) => {
-                e.stopPropagation();
-                setIsSubscriptionTypeModalOpen(true);
+                const creatorName = (item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '');
+                if (creatorName.length > 15) {
+                  e.stopPropagation();
+                  setTextOverflowModal({
+                    isOpen: true,
+                    fullText: creatorName,
+                  });
+                }
               }}
             >
-              +{remainingSubscriptionTypeCount}
-            </button>
-          )}
-        </div>
-      </TableCell>
+              {truncateText(((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).trim(), 15)}
+            </span>
+          </TableCell>
+        )}
 
-      <TableCell className="text-left text-sm">{formatDateUS(subscriptionEndDate)}</TableCell>
+        <TableCell className="text-left text-sm">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 
-      <TableCell className="text-left text-sm">
+        <TableCell className="text-left text-sm">
+          <div className="flex items-center gap-2">
+            <span
+              className={
+                primarySubscriptionType !== '-' && primarySubscriptionType.length > 15 ? 'cursor-pointer transition-colors hover:text-blue-600' : ''
+              }
+              title={primarySubscriptionType !== '-' && primarySubscriptionType.length > 15 ? primarySubscriptionType : ''}
+              onClick={(e) => {
+                if (primarySubscriptionType !== '-' && primarySubscriptionType.length > 15) {
+                  e.stopPropagation();
+                  setTextOverflowModal({
+                    isOpen: true,
+                    fullText: primarySubscriptionType,
+                  });
+                }
+              }}
+            >
+              {truncateText(primarySubscriptionType, 15)}
+            </span>
+
+            {remainingSubscriptionTypeCount > 0 && (
+              <button
+                type="button"
+                className="cursor-pointer text-sm font-semibold text-blue-600 hover:underline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsSubscriptionTypeModalOpen(true);
+                }}
+              >
+                +{remainingSubscriptionTypeCount}
+              </button>
+            )}
+          </div>
+        </TableCell>
+
+        <TableCell className="text-left text-sm">{formatDateUS(subscriptionEndDate)}</TableCell>
+
+        {/* <TableCell className="text-left text-sm">
         <div className="flex items-center gap-2">
           <span>{primaryCommission ? `${primaryCommission.label}: ${formatPercent(primaryCommission.value)}` : '-'}</span>
 
@@ -225,48 +225,53 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
             </button>
           )}
         </div>
-      </TableCell>
+      </TableCell> */}
 
-      <TableCell className="text-left text-sm">{formatCount(item?.viewCount)}</TableCell>
+        <TableCell className="text-left text-sm">{formatCount(item?.viewCount)}</TableCell>
 
-      <TableCell className="text-left text-sm">{formatCurrency(item?.revenue)}</TableCell>
+        {/* <TableCell className="text-left text-sm">{formatCurrency(item?.revenue)}</TableCell> */}
 
-      <TableCell className="text-muted-foreground text-left text-sm">
-        <CustomBadge variant={item?.status === 'active' ? 'success' : item?.status === 'inactive' ? 'error' : 'default'}>{item?.status}</CustomBadge>
-      </TableCell>
+        <TableCell className="text-left text-sm">{item?.meta?.favoritesCount}</TableCell>
 
-      <TableCell className="text-end">
-        <div className="flex gap-2">
-          <button
-            title="View Org"
-            type="button"
-            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-          >
-            <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
-          </button>
+        <TableCell className="text-left text-sm">{item?.meta?.activeEventsCount}</TableCell>
 
-          <button
-            title="Edit Org"
-            type="button"
-            className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-          >
-            <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
-          </button>
+        <TableCell className="text-muted-foreground text-left text-sm">
+          <CustomBadge variant={item?.status === 'active' ? 'success' : item?.status === 'inactive' ? 'error' : 'default'}>
+            {item?.status}
+          </CustomBadge>
+        </TableCell>
 
-          <button
-            title="Delete Org"
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete?.(item._id);
-            }}
-            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
-          >
-            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
-          </button>
-        </div>
-      </TableCell>
+        <TableCell className="text-end">
+          <div className="flex gap-2">
+            <button
+              title="View Org"
+              type="button"
+              className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+            >
+              <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+            </button>
 
+            <button
+              title="Edit Org"
+              type="button"
+              className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+            >
+              <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+            </button>
+
+            <button
+              title="Delete Org"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete?.(item._id);
+              }}
+              className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+            >
+              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+            </button>
+          </div>
+        </TableCell>
       </TableRow>
 
       <Dialog open={isCommissionModalOpen} onOpenChange={setIsCommissionModalOpen}>
@@ -337,7 +342,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
           </DialogHeader>
 
           <div className="text-sm">
-            <p className="break-words text-base font-medium">{textOverflowModal.fullText}</p>
+            <p className="text-base font-medium break-words">{textOverflowModal.fullText}</p>
           </div>
         </DialogContent>
       </Dialog>

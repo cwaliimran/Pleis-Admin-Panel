@@ -39,9 +39,11 @@ const headLabel = [
   },
   { id: 'subscriptionType', label: 'Sub Type', align: 'left' },
   { id: 'subscriptionValidity', label: 'Sub End Date', align: 'left' },
-  { id: 'commission', label: 'Commissions (%)', align: 'left' },
+  // { id: 'commission', label: 'Commissions (%)', align: 'left' },
   { id: 'totalViews', label: 'T. Views', align: 'left' },
-  { id: 'totalRevenue', label: 'Total Revenue', align: 'left' },
+  // { id: 'totalRevenue', label: 'Total Revenue', align: 'left' },
+  { id: 'favourite', label: 'Favourites', align: 'left' },
+  { id: 'activeEvents', label: 'A. Events', align: 'left' },
   { id: 'status', label: 'Status' },
   { id: 'actions', label: 'Action' },
 ];

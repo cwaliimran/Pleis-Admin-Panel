@@ -83,6 +83,8 @@ const VenueTypeTable: FC<PageProps> = ({
   // limit = 10,
   status = '',
   onStatusChange = () => {},
+  category = '',
+  onCategoryChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -113,6 +115,13 @@ const VenueTypeTable: FC<PageProps> = ({
     date: undefined,
   });
 
+  console.log('categoriesResponse', categoriesResponse?.data);
+
+  const categoryOptions =
+    categoriesResponse?.data?.map((category: any) => ({
+      label: category?.title,
+      value: category?._id,
+    })) || [];
 
   const categoryTitleMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -162,7 +171,7 @@ const VenueTypeTable: FC<PageProps> = ({
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search Venue Type, Category...',
+                              placeholder: 'Search Venue Types...',
                               value: search,
                               onChange: onSearch,
                             }}
@@ -179,7 +188,14 @@ const VenueTypeTable: FC<PageProps> = ({
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
                               },
-                             
+                              {
+                                id: 'sheet-category',
+                                label: 'Category',
+                                placeholder: 'Select by Category',
+                                value: category,
+                                onChange: onCategoryChange,
+                                options: categoryOptions,
+                              },
                             ]}
                             resetFilter={{
                               onReset: onResetFilters,

@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
@@ -32,6 +32,7 @@ type SettingsFormValues = {
   category: string;
   model: 'essential' | 'preferred' | 'premier';
   pointValuePercentage: number;
+  status: 'active' | 'suspended';
 };
 
 type SettingsModalProps = {
@@ -59,6 +60,7 @@ const schema = Yup.object().shape({
     .min(0, 'Must be at least 0%')
     .max(20, 'Cannot exceed 20%')
     .default(0),
+  status: Yup.mixed<'active' | 'suspended'>().oneOf(['active', 'suspended']).default('active'),
 });
 
 const defaultValues: SettingsFormValues = {
@@ -69,6 +71,7 @@ const defaultValues: SettingsFormValues = {
   category: '',
   model: 'essential',
   pointValuePercentage: 0,
+  status: 'active',
 };
 
 const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handleSuccess }: SettingsModalProps) => {
@@ -146,6 +149,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
         category: companyDetails?.category?._id || '',
         model: loyaltySettings?.model || 'essential',
         pointValuePercentage: loyaltySettings?.pointValuePercentage ?? 0,
+        status: companyDetails?.status || 'active',
       };
 
       setPointValue(loyaltySettings?.pointValuePercentage ?? 0);
@@ -192,6 +196,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
         companyDetails: {
           ...(uploadedLogoKey && { logo: uploadedLogoKey }),
           ...(uploadedCoverImageKey && { coverImage: uploadedCoverImageKey }),
+          status: formData.status,
           description: formData.description,
           category: formData.category,
           loyaltySettings: {
@@ -287,6 +292,16 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                     showNone={false}
                   />
                 )}
+
+                <RHFSelectField
+                  name="status"
+                  label="Select Status"
+                  placeholder="Select Status"
+                  options={[
+                    { label: 'Active', value: 'active' },
+                    { label: 'Suspend', value: 'suspended' },
+                  ]}
+                />
 
                 {/* Loyalty Model Selection */}
                 <div>

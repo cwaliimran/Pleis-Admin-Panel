@@ -163,6 +163,25 @@ export const promoSectionApi = createApi({
       }),
       invalidatesTags: ['quick-access'],
     }),
+
+    // QUICK ACTION CONFIG ----------------------
+    getQuickActionConfig: builder.query({
+      query: () => ({
+        url: API_ROUTES.QUICK_ACTION_CONFIG,
+        method: 'GET',
+      }),
+      transformResponse: (res) => res.data,
+      providesTags: ['quick-access'],
+    }),
+
+    updateQuickActionConfig: builder.mutation({
+      query: (payload) => ({
+        url: API_ROUTES.QUICK_ACTION_CONFIG,
+        method: 'PATCH',
+        body: payload,
+      }),
+      invalidatesTags: ['quick-access'],
+    }),
   }),
 });
 
@@ -182,4 +201,7 @@ export const {
   useGetQuickAccessQuery,
   useUpdateQuickAccessMutation,
   useReorderQuickAccessMutation,
+
+  useGetQuickActionConfigQuery,
+  useUpdateQuickActionConfigMutation,
 } = promoSectionApi;
