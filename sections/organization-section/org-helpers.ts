@@ -57,7 +57,6 @@ export const otherDetailsSchema = Yup.object().shape({
   friday: operatingHoursSchema,
   saturday: operatingHoursSchema,
   sunday: operatingHoursSchema,
-  status: Yup.string().required('Status is required'),
   location: Yup.object().shape({
     address: Yup.string().required('Address is required'),
     city: Yup.string().required('City is required'),
@@ -249,7 +248,6 @@ export const buildFormDefaultValues = (organization: any, initialGalleryMedia: s
       friday: { from: '00:00', to: '00:00', isOpen: 'false' },
       saturday: { from: '00:00', to: '00:00', isOpen: 'false' },
       sunday: { from: '00:00', to: '00:00', isOpen: 'false' },
-      status: 'active',
       location: {
         address: '',
         city: '',
@@ -280,7 +278,6 @@ export const buildFormDefaultValues = (organization: any, initialGalleryMedia: s
     friday: getOperatingHoursFromData(organization, 'friday'),
     saturday: getOperatingHoursFromData(organization, 'saturday'),
     sunday: getOperatingHoursFromData(organization, 'sunday'),
-    status: organization.status || 'active',
     location: {
       address: location?.fullAddress || '',
       city: location?.city || '',

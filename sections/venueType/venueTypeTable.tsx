@@ -111,11 +111,9 @@ const VenueTypeTable: FC<PageProps> = ({
     page: 0,
     limit: 200,
     search: '',
-    status: '',
+    status: 'active',
     date: undefined,
   });
-
-  console.log('categoriesResponse', categoriesResponse?.data);
 
   const categoryOptions =
     categoriesResponse?.data?.map((category: any) => ({

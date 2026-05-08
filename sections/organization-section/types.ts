@@ -37,7 +37,6 @@ export interface FormValues extends FieldValues {
   friday: OperatingHours;
   saturday: OperatingHours;
   sunday: OperatingHours;
-  status: string;
   location: Location;
 }
 

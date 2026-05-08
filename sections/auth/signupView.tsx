@@ -90,11 +90,29 @@ const defaultValues: FormData = {
 
 const schema = Yup.object().shape({
   // Step 1 — Basic Info
-  fname: Yup.string().required('First name is required').trim(),
-  lname: Yup.string().required('Last name is required').trim(),
+  fname: Yup.string()
+    .trim()
+    .required('First name is required')
+    .min(2, 'First name must be at least 2 characters')
+    .max(50, 'First name must be at most 50 characters')
+    .matches(/^[A-Za-z\s'-]+$/, 'First name can only contain letters, spaces, apostrophes, and hyphens'),
+  lname: Yup.string()
+    .trim()
+    .required('Last name is required')
+    .min(2, 'Last name must be at least 2 characters')
+    .max(50, 'Last name must be at most 50 characters')
+    .matches(/^[A-Za-z\s'-]+$/, 'Last name can only contain letters, spaces, apostrophes, and hyphens'),
   organizationName: Yup.string().required('Organization name is required').trim(),
   email: Yup.string().required('Email is required').email('Invalid email format'),
-  password: Yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
+  password: Yup.string()
+    .required('Password is required')
+    .min(6, 'Password must be at least 8 characters')
+    .max(64, 'Password must be at most 64 characters')
+    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .matches(/\d/, 'Password must contain at least one number')
+    .matches(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
+    .matches(/^\S+$/, 'Password must not contain spaces'),
   confirmPassword: Yup.string()
     .required('Confirm password is required')
     .oneOf([Yup.ref('password')], 'Passwords must match'),
@@ -116,12 +134,9 @@ const schema = Yup.object().shape({
     .test('croatian-iban', 'Invalid IBAN', function (value) {
       if (!value) return true;
       const iban = value.replace(/\s/g, '').toUpperCase();
-      if (!iban.startsWith('HR'))
-        return this.createError({ message: 'Bank Account Number must be an IBAN starting with HR' });
-      if (iban.length !== 21)
-        return this.createError({ message: `IBAN must be exactly 21 characters (got ${iban.length})` });
-      if (!validateCroatianIBAN(value))
-        return this.createError({ message: 'Invalid IBAN: check digits do not match (MOD 97 failed)' });
+      if (!iban.startsWith('HR')) return this.createError({ message: 'Bank Account Number must be an IBAN starting with HR' });
+      if (iban.length !== 21) return this.createError({ message: `IBAN must be exactly 21 characters (got ${iban.length})` });
+      if (!validateCroatianIBAN(value)) return this.createError({ message: 'Invalid IBAN: check digits do not match (MOD 97 failed)' });
       return true;
     }),
   representativeFullName: Yup.string()
@@ -483,7 +498,7 @@ function SignUpView() {
                 </span>
               </Button>
             </div> */}
-            
+
             <p className="mt-4 text-sm">
               Already have an account?{' '}
               <Link href="/" className="font-medium text-[#0f172b] hover:underline dark:text-white">

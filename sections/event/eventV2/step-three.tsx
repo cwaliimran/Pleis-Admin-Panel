@@ -7,8 +7,8 @@ import { fDate, formatStr } from '@/utils/format-time';
 import { showError } from '@/utils/toast';
 import { AlertCircle, Calendar } from 'lucide-react';
 import * as React from 'react';
-import type { StepThreeProps } from './types';
 import TimeSlotConfigModal from './timelotConfig';
+import type { StepThreeProps } from './types';
 
 // Reusable Components
 const FeatureSection: React.FC<{
@@ -199,124 +199,11 @@ const StepThree: React.FC<StepThreeProps> = ({
     setValue('ticketing.timingSlots.dateTimeSlots', config, { shouldDirty: true });
   };
 
-  // Convert 12-hour format back to 24-hour format for internal state
-  // const handleTimeSlotSave = (config: any) => {
-  //   // Get event time boundaries for validation
-  //   const getEventTimeBoundaries = () => {
-  //     if (!fromTime || !endTime) {
-  //       return { startMinutes: 0, endMinutes: 1440 };
-  //     }
-
-  //     try {
-  //       // Parse 24-hour format time from form (e.g., "13:00")
-  //       const parseTime24Hour = (time24: string) => {
-  //         const [hoursStr, minutesStr] = time24.split(':');
-  //         const hours = parseInt(hoursStr, 10);
-  //         const minutes = parseInt(minutesStr, 10);
-
-  //         if (isNaN(hours) || isNaN(minutes)) return null;
-
-  //         return hours * 60 + minutes;
-  //       };
-
-  //       const startMinutes = parseTime24Hour(fromTime);
-  //       const endMinutes = parseTime24Hour(endTime);
-
-  //       if (startMinutes === null || endMinutes === null) {
-  //         console.warn('Failed to parse event times');
-  //         return { startMinutes: 0, endMinutes: 1440 };
-  //       }
-
-  //       return { startMinutes, endMinutes };
-  //     } catch (error) {
-  //       console.warn('Error parsing event times:', error);
-  //       return { startMinutes: 0, endMinutes: 1440 };
-  //     }
-  //   };
-
-  //   const { startMinutes: eventStartMinutes, endMinutes: eventEndMinutes } = getEventTimeBoundaries();
-
-  //   const timeToMinutes = (time: string): number => {
-  //     const [hours, minutes] = time.split(':').map(Number);
-  //     return hours * 60 + minutes;
-  //   };
-
-  //   const convert12To24Hour = (time12h: string): string => {
-  //     const [time, period] = time12h.split(' ');
-  //     const [hoursStr, minutesStr] = time.split(':');
-  //     let hours = Number(hoursStr);
-  //     const minutes = Number(minutesStr);
-
-  //     if (period === 'PM' && hours !== 12) {
-  //       hours += 12;
-  //     } else if (period === 'AM' && hours === 12) {
-  //       hours = 0;
-  //     }
-
-  //     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  //   };
-
-  //   // Validate all time slots are within event boundaries
-  //   for (const dateSlot of config) {
-  //     for (const slot of dateSlot.timeSlots) {
-  //       const startTime24 = convert12To24Hour(slot.startTime);
-  //       const endTime24 = convert12To24Hour(slot.endTime);
-
-  //       const startMinutes = timeToMinutes(startTime24);
-  //       const endMinutes = timeToMinutes(endTime24);
-
-  //       if (startMinutes < eventStartMinutes || startMinutes > eventEndMinutes) {
-  //         showError(`Time slot start time ${slot.startTime} is outside event time range`);
-  //         return;
-  //       }
-
-  //       if (endMinutes < eventStartMinutes || endMinutes > eventEndMinutes) {
-  //         showError(`Time slot end time ${slot.endTime} is outside event time range`);
-  //         return;
-  //       }
-
-  //       if (endMinutes <= startMinutes) {
-  //         showError('End time must be after start time for all slots');
-  //         return;
-  //       }
-  //     }
-  //   }
-
-  //   const configWith24HourFormat = config.map((dateSlot: any) => ({
-  //     date: dateSlot.date,
-  //     timeSlots: dateSlot.timeSlots.map((slot: any) => ({
-  //       id: slot.id || `slot-${Date.now()}-${Math.random()}`,
-  //       startTime: convert12To24Hour(slot.startTime),
-  //       endTime: convert12To24Hour(slot.endTime),
-  //       quantity: parseInt(slot.quantity) || 0,
-  //     })),
-  //   }));
-
-  //   setTimeSlotConfig(configWith24HourFormat);
-  //   setValue('ticketing.timingSlots.dateTimeSlots', config, { shouldDirty: true });
-  // };
-
   // Get event data for time slot constraints
   const fromDate = watch('fromDate');
   const fromTime = watch('fromTime');
   const endDate = watch('endDate');
   const endTime = watch('endTime');
-
-  // const eventData = React.useMemo(() => {
-  //   if (!fromDate || !endDate || !fromTime || !endTime) return null;
-
-  //   const startDateTime = `${fDate(fromDate, formatStr.paramCase.db)} ${fromTime}`;
-  //   const endDateTime = `${fDate(endDate, formatStr.paramCase.db)} ${endTime}`;
-
-  //   return {
-  //     _id: 'temp',
-  //     schedule: {
-  //       type: 'oneTime',
-  //       startDateTime,
-  //       endDateTime,
-  //     },
-  //   };
-  // }, [fromDate, endDate, fromTime, endTime]);
 
   const eventData = React.useMemo(() => {
     if (!fromDate || !endDate || !fromTime || !endTime) return null;
@@ -454,120 +341,6 @@ const StepThree: React.FC<StepThreeProps> = ({
     return true;
   };
 
-  // const validateTicketingFields = (): boolean => {
-  //   const ticketing = watch('ticketing');
-
-  //   if (!ticketing.title || ticketing.title.trim() === '') {
-  //     showError('Please enter a ticket type');
-  //     return false;
-  //   }
-
-  //   if (ticketing.price === undefined || ticketing.price === null || ticketing.price < 0) {
-  //     showError('Please enter a valid price');
-  //     return false;
-  //   }
-
-  //   if (ticketing.taxPercentage === undefined || ticketing.taxPercentage === null) {
-  //     showError('Please select a tax percentage');
-  //     return false;
-  //   }
-
-  //   if (timeslotEnabled) {
-  //     if (!timeSlotConfig || timeSlotConfig.length === 0) {
-  //       showError('Please configure time slots');
-  //       return false;
-  //     }
-  //   } else {
-  //     if (!ticketing.quantity || ticketing.quantity < 1) {
-  //       showError('Please enter a valid quantity');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate early bird pricing
-  //   if (earlyBirdEnabled) {
-  //     if (!ticketing.timeSensitivePricing.earlyBird.endDate) {
-  //       showError('Please set early bird end date');
-  //       return false;
-  //     }
-  //     if (ticketing.timeSensitivePricing.earlyBird.discountedPrice === undefined || ticketing.timeSensitivePricing.earlyBird.discountedPrice < 0) {
-  //       showError('Please set early bird discounted price');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate last minute pricing
-  //   if (lastMinuteEnabled) {
-  //     if (!ticketing.timeSensitivePricing.lastMinute.startDate) {
-  //       showError('Please set last minute start date');
-  //       return false;
-  //     }
-  //     if (ticketing.timeSensitivePricing.lastMinute.discountedPrice === undefined || ticketing.timeSensitivePricing.lastMinute.discountedPrice < 0) {
-  //       showError('Please set last minute discounted price');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate fast track
-  //   if (fasttrackEnabled) {
-  //     if (!ticketing.fastTrackEntry.quantity || ticketing.fastTrackEntry.quantity < 1) {
-  //       showError('Please set fast track quantity');
-  //       return false;
-  //     }
-  //     if (ticketing.fastTrackEntry.extraPrice === undefined || ticketing.fastTrackEntry.extraPrice < 0) {
-  //       showError('Please set fast track extra price');
-  //       return false;
-  //     }
-  //     if (ticketing.fastTrackEntry.quantity > baseQuantity) {
-  //       showError(`Fast track quantity cannot exceed base quantity (${baseQuantity})`);
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate repeatable
-  //   if (repeatableEnabled) {
-  //     if (!ticketing.repeatable.visits || ticketing.repeatable.visits < 1) {
-  //       showError('Please set number of visits for repeatable ticket');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate reservation
-  //   if (reservationEnabled) {
-  //     if (!ticketing.requiresReservation.type) {
-  //       showError('Please select a reservation type');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate transfer fee
-  //   if (transferEnabled) {
-  //     if (ticketing.transferFee === undefined || ticketing.transferFee === null || ticketing.transferFee < 0) {
-  //       showError('Please set a valid transfer fee');
-  //       return false;
-  //     }
-  //   }
-
-  //   // Validate scheduled publish
-  //   if (publishType === 'scheduled') {
-  //     if (!ticketing.publishSettings.scheduledDate) {
-  //       showError('Please set scheduled publish date and time');
-  //       return false;
-  //     }
-  //   }
-
-  //   return true;
-  // };
-
-  // const handlePublish = async () => {
-  //   if (!validateTicketingFields()) {
-  //     return;
-  //   }
-
-  //   // Submit form
-  //   await methods.handleSubmit(methods.getValues())();
-  // };
-
   const handlePublish = () => {
     if (!validateTicketingFields()) {
       return;
@@ -581,6 +354,22 @@ const StepThree: React.FC<StepThreeProps> = ({
     <>
       <div>
         <div className="mt-4 flex flex-col gap-6">
+          <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Ticketing setup is optional</p>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-200">You can skip this step for now and configure ticketing later.</p>
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleSkipTicketing}
+              className="w-full cursor-pointer rounded-4xl bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 sm:w-auto dark:bg-amber-500 dark:text-amber-950 dark:hover:bg-amber-400"
+              disabled={isLoading}
+            >
+              Skip For Now
+            </Button>
+          </div>
+
           {/* Required Fields Section */}
           <div className="dark:bg-secondary mb-3">
             <SectionHeader title="Required Fields" icon={<AlertCircle className="text-blue-600" size={20} />} />
@@ -1051,16 +840,6 @@ const StepThree: React.FC<StepThreeProps> = ({
               disabled={isLoading}
             >
               Back
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSkipTicketing}
-              className="cursor-pointer rounded-4xl py-2 md:mt-2 md:min-w-[90px]"
-              disabled={isLoading}
-            >
-              Skip
             </Button>
 
             {isLoading ? (

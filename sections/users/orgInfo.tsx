@@ -189,6 +189,29 @@ const OrgInfo = ({ organizationData, userType }: any) => {
           </Card>
 
           <Card className="dark:bg-secondary mt-5 shadow-lg">
+            <CardHeader>
+              <h1 className="font-semibold text-slate-500">WORKING HOURS</h1>
+              <div className="mt-3 space-y-2">
+                {(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const).map((day) => {
+                  const hours = organizationData?.operatingHours?.[day];
+                  return (
+                    <div key={day} className="flex items-center justify-between border-b border-gray-100 pb-1 last:border-0 dark:border-gray-700">
+                      <span className="w-24 text-sm text-gray-600 capitalize dark:text-gray-400">{day}</span>
+                      {hours?.isOpen ? (
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                          {hours.from} – {hours.to}
+                        </span>
+                      ) : (
+                        <span className="text-sm font-medium text-red-500">Closed</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardHeader>
+          </Card>
+
+          <Card className="dark:bg-secondary mt-5 shadow-lg">
             <CardHeader className="gap-4">
               <h1 className="font-semibold text-slate-500">GALLERY</h1>
               <OrgGallery organizationData={organizationData} />

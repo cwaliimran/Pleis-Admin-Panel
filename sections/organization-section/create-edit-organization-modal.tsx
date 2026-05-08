@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,8 @@ import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
 import * as Yup from 'yup';
 
+import { STATUS_OPTIONS } from './constants';
+
 interface OrganizationModalProps {
   open: boolean;
   onClose: () => void;
@@ -33,6 +35,7 @@ type OrganizationFormValues = {
   name: string;
   companyName?: string;
   user?: string;
+  status: string;
   phone: string;
   phoneCode: string;
   website: string;
@@ -58,6 +61,7 @@ const createValidationSchema = (userType?: string, isEdit?: boolean) => {
     image: Yup.mixed().nullable().optional(),
     name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
     companyName: Yup.string().optional(),
+    status: Yup.string().required('Status is required').oneOf(['active', 'inactive'], 'Invalid status'),
     phone: Yup.string().matches(PHONE_REGEX, 'Invalid phone number').required('Phone number is required'),
     phoneCode: Yup.string().default(''),
     website: Yup.string().nullable().optional().matches(URL_REGEX, {
@@ -137,6 +141,7 @@ const getSelectedUserId = (organization?: any): string => {
 
 const buildCreatePayload = (formData: OrganizationFormValues, logoKey: string | null, userType?: string): any => {
   const payload: any = {
+    status: formData.status,
     basicInfo: {
       name: formData.name,
       website: formData.website || '',
@@ -168,6 +173,7 @@ const buildUpdatePayload = (formData: OrganizationFormValues, logoKey: string | 
   const isSuperAdmin = userType === 'super-admin';
 
   const payload: any = {
+    status: formData.status,
     basicInfo: {
       name: formData.name,
       website: formData.website || '',
@@ -232,27 +238,24 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   const selectedCompanyId = getSelectedUserId(organization);
   const selectedCompanyLabel = getCompanyName(organization) || 'Current Company';
 
-  const userOptions = useMemo(
-    () => {
-      const mappedOptions =
-        apiData?.data
-          ?.map((user: any) => ({
-            label: getCompanyName(user),
-            value: user?._id || user?.basicInfo?._id,
-          }))
-          .filter((option: any) => option?.value) || [];
+  const userOptions = useMemo(() => {
+    const mappedOptions =
+      apiData?.data
+        ?.map((user: any) => ({
+          label: getCompanyName(user),
+          value: user?._id || user?.basicInfo?._id,
+        }))
+        .filter((option: any) => option?.value) || [];
 
-      if (selectedCompanyId && !mappedOptions.some((option: any) => option.value === selectedCompanyId)) {
-        mappedOptions.unshift({
-          label: selectedCompanyLabel,
-          value: selectedCompanyId,
-        });
-      }
+    if (selectedCompanyId && !mappedOptions.some((option: any) => option.value === selectedCompanyId)) {
+      mappedOptions.unshift({
+        label: selectedCompanyLabel,
+        value: selectedCompanyId,
+      });
+    }
 
-      return mappedOptions;
-    },
-    [apiData, selectedCompanyId, selectedCompanyLabel]
-  );
+    return mappedOptions;
+  }, [apiData, selectedCompanyId, selectedCompanyLabel]);
 
   const isLoading = isAdding || isUpdating;
 
@@ -266,6 +269,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
       ...(userType !== 'organizer' && {
         user: getSelectedUserId(organization),
       }),
+      status: organization?.status || 'active',
       phone: organization?.basicInfo?.phoneNumber?.number || '',
       phoneCode: organization?.basicInfo?.phoneNumber?.code || '',
       website: organization?.basicInfo?.website || '',
@@ -463,6 +467,8 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                   />
 
                   <RHFTextField name="website" label="Website Link" placeholder="Enter Website Link" />
+
+                  {isEdit && <RHFSelectField name="status" label="Status" placeholder="Select Status" className="w-full" options={STATUS_OPTIONS} />}
 
                   <div className="col-span-2 space-y-4">
                     <RHFTextField name="instagram" label="Instagram Link" placeholder="Enter Instagram Link" />

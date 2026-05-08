@@ -51,7 +51,6 @@ export const defaultFormValues: FormValues = {
   friday: { ...DEFAULT_OPERATING_HOURS },
   saturday: { ...DEFAULT_OPERATING_HOURS },
   sunday: { ...DEFAULT_OPERATING_HOURS },
-  status: 'active',
   location: {
     address: '',
     city: '',

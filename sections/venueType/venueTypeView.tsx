@@ -314,6 +314,7 @@ const VenueTypeView = () => {
         }}
         onResetFilters={() => {
           setStatus('');
+          setCategory('');
           setDate(undefined);
           setSearch('');
           setPage(1);

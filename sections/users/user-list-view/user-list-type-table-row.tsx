@@ -62,9 +62,9 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
         <TableCell>
           <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
             {item?.basicInfo?.profileIcon &&
-              item?.basicInfo?.profileIcon !== noImageUrl &&
-              item?.basicInfo?.profileIcon !== noImageUrlDev &&
-              item?.basicInfo?.profileIcon !== noImageUrlDevCap ? (
+            item?.basicInfo?.profileIcon !== noImageUrl &&
+            item?.basicInfo?.profileIcon !== noImageUrlDev &&
+            item?.basicInfo?.profileIcon !== noImageUrlDevCap ? (
               <AvatarImage src={item?.basicInfo?.profileIcon} alt="Store" className="h-full w-full cursor-pointer object-cover" />
             ) : (
               <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.basicInfo?.firstName?.[0]?.toUpperCase() || ''}</span>
@@ -90,9 +90,17 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
           </TableCell>
         )}
 
-        <TableCell className="text-center text-sm">{item?.accountState?.userglobalwallets?.global?.level?.title ?? "-"}</TableCell>
-        <TableCell className="text-center text-sm">{item?.accountState?.userglobalwallets?.global?.points ?? "-"}</TableCell>
-        <TableCell className="text-center text-sm">{item?.accountState?.revenue ?? "-"}</TableCell>
+        <TableCell className="text-center text-sm">{item?.accountState?.userglobalwallets?.global?.level?.title ?? '-'}</TableCell>
+
+        <TableCell className="text-center text-sm">{item?.accountState?.userglobalwallets?.global?.points ?? '-'}</TableCell>
+
+        <TableCell className="text-center text-sm">
+          {typeof item?.accountState?.revenue === 'number'
+            ? item?.accountState?.revenue === 0
+              ? '0'
+              : item?.accountState?.revenue?.toFixed(2)
+            : (item?.accountState?.revenue ?? '-')}
+        </TableCell>
 
         <TableCell className="text-muted-foreground text-left text-sm">
           <CustomBadge variant={getStatusVariant(item?.accountState?.status)}>{item?.accountState?.status}</CustomBadge>

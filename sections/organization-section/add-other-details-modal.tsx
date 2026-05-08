@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 
-import { ALLOWED_IMAGE_TYPES, DAYS_OF_WEEK, MAX_IMAGE_SIZE, OPEN_CLOSED_OPTIONS, STATUS_OPTIONS } from './constants';
+import { ALLOWED_IMAGE_TYPES, DAYS_OF_WEEK, MAX_IMAGE_SIZE, OPEN_CLOSED_OPTIONS } from './constants';
 import {
   buildCategoryOptions,
   buildFormDefaultValues,
@@ -188,7 +188,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
   const { data: tagData } = useGetTagsQuery({
     page: 0,
     search: '',
-    limit: '100',
+    limit: '1000',
     status: '',
   });
 
@@ -232,36 +232,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
       reset(formDefaultValues);
     }
   }, [open, formDefaultValues, reset]);
-
-  // Auto-populate location when venue changes
-  // useEffect(() => {
-  //   if (watchVenue && venueList) {
-  //     const selectedVenue = venueList.find((v: any) => v._id === watchVenue);
-
-  //     if (selectedVenue?.location) {
-  //       setValue('location.address', selectedVenue.location.fullAddress || '', {
-  //         shouldValidate: true,
-  //         shouldDirty: true,
-  //       });
-  //       setValue('location.city', selectedVenue.location.city || '', {
-  //         shouldValidate: true,
-  //         shouldDirty: true,
-  //       });
-  //       setValue('location.postalCode', selectedVenue.location.postalCode || '', {
-  //         shouldValidate: true,
-  //         shouldDirty: true,
-  //       });
-  //       setValue('location.country', selectedVenue.location.country || '', {
-  //         shouldValidate: true,
-  //         shouldDirty: true,
-  //       });
-  //       setValue('location.coordinates', selectedVenue.location.coordinates || [0, 0], {
-  //         shouldValidate: true,
-  //         shouldDirty: true,
-  //       });
-  //     }
-  //   }
-  // }, [watchVenue, venueList, setValue]);
 
   useEffect(() => {
     if (!watchVenue || !venueList) return;
@@ -325,7 +295,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
           categories: formData.categories,
         },
         operatingHours: buildOperatingHoursPayload(formData),
-        status: formData.status,
         venue: formData.venue,
         location: {
           fullAddress: formData.location.address,
@@ -516,8 +485,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
                 multiline
                 rows={2}
               />
-
-              <RHFSelectField name="status" label="Status" placeholder="Select Status" className="w-full flex-1" options={STATUS_OPTIONS} />
             </div>
 
             <div className="mt-2 flex w-full items-center justify-center">
