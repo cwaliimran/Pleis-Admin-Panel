@@ -1,5 +1,6 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
@@ -10,24 +11,14 @@ import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { cn } from '@/lib/utils';
 import { GenderDonutChart, InvoiceCard, MostViewedEvent, ViewsOverTime, VisitorAge, VisitorRegion } from '@/sections/invoices';
 import { LoyaltyCard, MostEngagedMembers } from '@/sections/loyalty';
-import {
-  loyaltPointsDashboard,
-  loyaltyCardHeaderData,
-  loyaltyMidCardData,
-  LoyaltyPoints,
-  rewardData,
-  rewardDataWithLimitedAvail,
-  TabData,
-  tabsData,
-} from '@/sections/loyalty/data';
+import { loyaltPointsDashboard, loyaltyCardHeaderData, loyaltyMidCardData, LoyaltyPoints, TabData, tabsData } from '@/sections/loyalty/data';
+import RewardCard from '@/sections/loyalty/rewardCard';
+import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
 import GlobalLoyaltyTransactionDashboardWidget from '@/sections/transactions/global-loyalty-transaction/global-loyalty-transaction-dashboard-widget';
 import LoyaltyTransactionDashboardWidget from '@/sections/transactions/loyalty-transaction/loyalty-transaction-dashboard-widget';
-import RewardCard from '@/sections/loyalty/rewardCard';
+import { useGetGlobalLoyaltyDashboardQuery, useGetLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
 import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
-import { useGetGlobalLoyaltyDashboardQuery, useGetLoyaltyDashboardQuery } from '@/store/Reducer/dashboard';
-import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }) => {
   const router = useRouter();
@@ -38,7 +29,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
 
   const { companyId } = useCompanySelectionState();
   const { organizerOrganizationIds } = useCompanySelection();
-    
+
   const [mainActive, setMainActive] = React.useState('overview');
   const [activeDurationTab, setActiveDurationTab] = React.useState('all');
 
@@ -52,14 +43,20 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
   };
 
   const dashboardQuery = global
-    ? useGetGlobalLoyaltyDashboardQuery({
-        dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
-      },{refetchOnMountOrArgChange: true})
-    : useGetLoyaltyDashboardQuery({
-        dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
-        companyOrganizer: companyId,
-        organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
-      },{refetchOnMountOrArgChange: true});
+    ? useGetGlobalLoyaltyDashboardQuery(
+        {
+          dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
+        },
+        { refetchOnMountOrArgChange: true }
+      )
+    : useGetLoyaltyDashboardQuery(
+        {
+          dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
+          companyOrganizer: companyId,
+          organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
+        },
+        { refetchOnMountOrArgChange: true }
+      );
 
   const { data: dashboardRaw = {} as any, isLoading, isFetching } = dashboardQuery;
 
@@ -92,11 +89,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
       if (!stat) return null;
       const growthNumber = Number(stat?.growth ?? 0);
       const growth =
-        key === 'newUsers'
-          ? undefined
-          : Number.isFinite(growthNumber)
-            ? `${growthNumber > 0 ? '+' : ''}${growthNumber.toFixed(2)}%`
-            : undefined;
+        key === 'newUsers' ? undefined : Number.isFinite(growthNumber) ? `${growthNumber > 0 ? '+' : ''}${growthNumber.toFixed(2)}%` : undefined;
       return {
         id: key,
         title: midCardKeyTitleMap[key],
@@ -117,13 +110,11 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
     visitors: Number(item?.total ?? 0),
   }));
   const topAgeGroup = ageDemographicsData.reduce(
-    (max: { ageGroup: string; visitors: number }, cur: { ageGroup: string; visitors: number }) =>
-      cur.visitors > max.visitors ? cur : max,
+    (max: { ageGroup: string; visitors: number }, cur: { ageGroup: string; visitors: number }) => (cur.visitors > max.visitors ? cur : max),
     { ageGroup: '', visitors: 0 }
   );
   const totalAgeVisitors = ageDemographicsData.reduce((sum: number, item: { visitors: number }) => sum + item.visitors, 0);
-  const topAgePercent =
-    totalAgeVisitors > 0 ? Math.round((topAgeGroup.visitors / totalAgeVisitors) * 100) : 0;
+  const topAgePercent = totalAgeVisitors > 0 ? Math.round((topAgeGroup.visitors / totalAgeVisitors) * 100) : 0;
 
   const regionOverviewData = Array.isArray(dashboardRaw?.data?.usersDashboardAnalytics?.regionOverview)
     ? dashboardRaw.data.usersDashboardAnalytics.regionOverview.map((item: any) => ({
@@ -258,12 +249,10 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
     }
   };
 
-   // ---- Loading state ----
-     if (isLoading || isFetching) {
-       return <DashboardSkeleton />;
-     }
-   
-
+  // ---- Loading state ----
+  if (isLoading || isFetching) {
+    return <DashboardSkeleton />;
+  }
 
   // Map globalLoyaltyPointsPertWalletType to VisitorAge chart data
   const pointsByWalletType = Array.isArray(dashboardRaw?.data?.globalLoyaltyPointsDistributed?.globalLoyaltyPointsPertWalletType)
@@ -273,15 +262,15 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
       }))
     : [];
 
-
   return (
     <>
-      <div className="mt-10 flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div
-          className={`${global ? 'w-[50%]' : 'w-[90%]'} border-b border-gray-200 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400`}
-        >
-          <ul className="-mb-px flex flex-wrap">
-            {visibleTabs.map((tab: TabData, index: number) => (
+      {!global && (
+        <div className="mt-10 flex w-full flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div
+            className={`${global ? 'w-[50%]' : 'w-[90%]'} border-b border-gray-200 text-center text-sm font-medium text-gray-500 dark:border-gray-700 dark:text-gray-400`}
+          >
+            <ul className="-mb-px flex flex-wrap">
+              {visibleTabs.map((tab: TabData, index: number) => (
                 <li key={index} className="me-0">
                   <div
                     onClick={() => handleTabClick(tab)}
@@ -295,9 +284,10 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                   </div>
                 </li>
               ))}
-          </ul>
+            </ul>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-5 w-full">
         {/* Show select on small screens */}
@@ -307,7 +297,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               <SelectValue placeholder="Select tab" />
             </SelectTrigger>
             <SelectContent className="dark:bg-secondary">
-               <SelectItem className="py-3" value="all">
+              <SelectItem className="py-3" value="all">
                 All
               </SelectItem>
               <SelectItem className="py-3" value="monthly">
@@ -386,10 +376,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               </div>
             </CardHeader>
 
-            <ViewsOverTime
-              height={330}
-              data={newUsersGrowthChartData}
-            />
+            <ViewsOverTime height={330} data={newUsersGrowthChartData} />
           </Card>
         </div>
 
@@ -454,10 +441,10 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 <h3 className="text-xl font-semibold">Age Demographics</h3>
               </div>
             </CardHeader>
-            <div className="flex-1 flex flex-col justify-center items-center h-full">
+            <div className="flex h-full flex-1 flex-col items-center justify-center">
               {ageDemographicsData?.length === 0 ? (
                 <div className="flex h-full w-full items-center justify-center">
-                  <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
+                  <span className="text-base text-gray-400 dark:text-gray-500">No data is available</span>
                 </div>
               ) : (
                 <>
@@ -465,7 +452,8 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                   {topAgeGroup.ageGroup && (
                     <div className="mx-4 mt-4">
                       <p className="text-muted-foreground text-sm font-medium">
-                        <span className="text-xl font-bold text-black dark:text-white">{topAgePercent}%</span> visitors are {topAgeGroup.ageGroup} years old
+                        <span className="text-xl font-bold text-black dark:text-white">{topAgePercent}%</span> visitors are {topAgeGroup.ageGroup}{' '}
+                        years old
                       </p>
                     </div>
                   )}
@@ -498,10 +486,10 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </div>
               </div>
             </CardHeader>
-            <div className="flex-1 flex flex-col justify-center items-center h-full">
+            <div className="flex h-full flex-1 flex-col items-center justify-center">
               {regionOverviewData?.length === 0 ? (
                 <div className="flex h-full w-full items-center justify-center">
-                  <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
+                  <span className="text-base text-gray-400 dark:text-gray-500">No data is available</span>
                 </div>
               ) : (
                 <VisitorRegion
@@ -529,23 +517,23 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                     <div key={item.name} className="flex items-center">
                       <div className="mr-2 h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
                       <h1 className={`text-[13px] ${item.name === 'Males' || item.name === 'Others' ? 'text-[#7DAEF4]' : ''}`}>
-                        {item.name} <span className="font-semibold">({item.percent}% / {item.count})</span>
+                        {item.name}{' '}
+                        <span className="font-semibold">
+                          ({item.percent}% / {item.count})
+                        </span>
                       </h1>
                     </div>
                   ))}
                 </div>
               </div>
             </CardHeader>
-            <div className="flex-1 flex flex-col justify-center items-center h-full">
+            <div className="flex h-full flex-1 flex-col items-center justify-center">
               {genderDonutChartData?.length === 0 ? (
                 <div className="flex h-full w-full items-center justify-center">
-                  <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
+                  <span className="text-base text-gray-400 dark:text-gray-500">No data is available</span>
                 </div>
               ) : (
-                <GenderDonutChart
-                  data={genderDonutChartData}
-                  COLORS={genderOrder.map((item) => genderColorMap[item])}
-                />
+                <GenderDonutChart data={genderDonutChartData} COLORS={genderOrder.map((item) => genderColorMap[item])} />
               )}
             </div>
           </Card>
@@ -576,10 +564,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 </h3>
               </div> */}
             </CardHeader>
-            <ViewsOverTime
-              height={350}
-              data={globalWalletPointsOverTime}
-            />
+            <ViewsOverTime height={350} data={globalWalletPointsOverTime} />
           </Card>
         </div>
 
@@ -632,11 +617,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               <h3 className="text-md font-medium">Points distribution by activity type</h3>
             </CardHeader>
 
-            <VisitorAge
-              noHeaderTotal={false}
-              height={370}
-              data={pointsByWalletType}
-            />
+            <VisitorAge noHeaderTotal={false} height={370} data={pointsByWalletType} />
           </Card>
         </div>
 
@@ -648,19 +629,33 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
                 <h3 className="text-xl font-semibold"> Status Analytics</h3>
 
                 <div className="flex flex-col items-end space-y-1">
-                  {Array.isArray(dashboardRaw?.data?.usersPerGlobalLevel?.globalLevelAnalytics) && dashboardRaw.data.usersPerGlobalLevel.globalLevelAnalytics.map((item: any, idx: number) => {
-                    const blueShades = [ '#2563EB',  '#202C88', '#6fa4f0', '#1E40AF', '#60A5FA', '#3B82F6', 
-                      '#1D4ED8', '#93C5FD', '#BFDBFE', '#DBEAFE'];
-                    const color = blueShades[idx % blueShades.length];
-                    return (
-                      <div className="flex items-center" key={item.name}>
-                        <div className="mr-2 h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
-                        <h1 className="text-[13px]">
-                          {item.name} <span className="font-semibold">({item.percent}% / {item.count})</span>
-                        </h1>
-                      </div>
-                    );
-                  })}
+                  {Array.isArray(dashboardRaw?.data?.usersPerGlobalLevel?.globalLevelAnalytics) &&
+                    dashboardRaw.data.usersPerGlobalLevel.globalLevelAnalytics.map((item: any, idx: number) => {
+                      const blueShades = [
+                        '#2563EB',
+                        '#202C88',
+                        '#6fa4f0',
+                        '#1E40AF',
+                        '#60A5FA',
+                        '#3B82F6',
+                        '#1D4ED8',
+                        '#93C5FD',
+                        '#BFDBFE',
+                        '#DBEAFE',
+                      ];
+                      const color = blueShades[idx % blueShades.length];
+                      return (
+                        <div className="flex items-center" key={item.name}>
+                          <div className="mr-2 h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
+                          <h1 className="text-[13px]">
+                            {item.name}{' '}
+                            <span className="font-semibold">
+                              ({item.percent}% / {item.count})
+                            </span>
+                          </h1>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </CardHeader>
@@ -675,9 +670,19 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               }
               COLORS={
                 Array.isArray(dashboardRaw?.data?.usersPerGlobalLevel?.globalLevelAnalytics)
-                  ? dashboardRaw.data.usersPerGlobalLevel.globalLevelAnalytics.map((_ : any , idx : number) => {
-                      const blueShades = ['#2563EB', '#202C88','#7DAEF4', '#1E40AF', '#60A5FA', 
-                        '#3B82F6', '#1D4ED8', '#93C5FD', '#BFDBFE', '#DBEAFE' ];
+                  ? dashboardRaw.data.usersPerGlobalLevel.globalLevelAnalytics.map((_: any, idx: number) => {
+                      const blueShades = [
+                        '#2563EB',
+                        '#202C88',
+                        '#7DAEF4',
+                        '#1E40AF',
+                        '#60A5FA',
+                        '#3B82F6',
+                        '#1D4ED8',
+                        '#93C5FD',
+                        '#BFDBFE',
+                        '#DBEAFE',
+                      ];
                       return blueShades[idx % blueShades.length];
                     })
                   : ['#2563EB', '#202C88', '#7DAEF4']
@@ -703,32 +708,39 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
 
       <div className="mt-3 grid gap-4 md:grid-cols-3">
         <div className="space-y-5">
-          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.mostPopularRewards) 
-            && dashboardRaw.data.globalRewardsUsageStats.mostPopularRewards
-          ).map((item : any , index : number) => (
+          {(
+            Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.mostPopularRewards) &&
+            dashboardRaw.data.globalRewardsUsageStats.mostPopularRewards
+          ).map((item: any, index: number) => (
             <RewardCard key={item.rewardId || index} item={item} />
           ))}
         </div>
-        <div className="space-y-5"> 
-          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.expiredRewards) 
-            && dashboardRaw.data.globalRewardsUsageStats.expiredRewards
-          ).map((item : any , index : number) => (
+        <div className="space-y-5">
+          {(
+            Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.expiredRewards) && dashboardRaw.data.globalRewardsUsageStats.expiredRewards
+          ).map((item: any, index: number) => (
             <RewardCard key={item.rewardId || index} item={item} />
           ))}
         </div>
-        <div className="space-y-5"> 
-          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.limitReward) 
+        <div className="space-y-5">
+          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.limitReward)
             ? dashboardRaw.data.globalRewardsUsageStats.limitReward.slice(0, 3)
             : []
-          ).map((item : any , index : number) => (
+          ).map((item: any, index: number) => (
             <RewardCard key={index} item={item} type="limit" />
           ))}
         </div>
       </div>
 
       <div className="mt-5">
-        <Button variant={'outline'} className="cursor-pointer font-bold" 
-        onClick={() => { const path = global ? `/${userType}/global-rewards` : `/${userType}/rewards`; router.push(path)}}>
+        <Button
+          variant={'outline'}
+          className="cursor-pointer font-bold"
+          onClick={() => {
+            const path = global ? `/${userType}/global-rewards` : `/${userType}/rewards`;
+            router.push(path);
+          }}
+        >
           See All
         </Button>
       </div>
@@ -757,7 +769,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               }
             />
           </Card>
-        </div>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+        </div>
 
         {/* --------------- Members with the Highest Points --------------- */}
         <div>
@@ -804,7 +816,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
             </CardHeader>
             {Array.isArray(dashboardRaw?.data?.topOrderedMenuItems) && dashboardRaw.data.topOrderedMenuItems.length === 0 ? (
               <div className="flex h-full w-full items-center justify-center py-10">
-                <span className="text-gray-400 dark:text-gray-500 text-base">No data is available</span>
+                <span className="text-base text-gray-400 dark:text-gray-500">No data is available</span>
               </div>
             ) : (
               <VisitorAge
@@ -876,9 +888,7 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
               chartData={
                 Array.isArray(dashboardRaw?.data?.totalPriceByPaymentStatus)
                   ? dashboardRaw.data.totalPriceByPaymentStatus.map((item: any) => ({
-                      month: item?.paymentStatus
-                        ? item?.paymentStatus?.charAt(0)?.toUpperCase() + item?.paymentStatus?.slice(1)
-                        : '',
+                      month: item?.paymentStatus ? item?.paymentStatus?.charAt(0)?.toUpperCase() + item?.paymentStatus?.slice(1) : '',
                       search: Number(item?.totalOrders ?? 0),
                     }))
                   : []
