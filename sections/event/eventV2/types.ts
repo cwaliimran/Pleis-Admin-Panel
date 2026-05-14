@@ -2,6 +2,7 @@ export interface EventFormValues {
   image: File | null;
   mediaUrl: string;
   mediaType: 'image' | 'video';
+  status: 'active' | 'inactive';
   name: string;
   venue: string;
   categories: string[];

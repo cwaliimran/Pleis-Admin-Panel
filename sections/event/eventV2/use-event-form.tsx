@@ -151,6 +151,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
       const allRequiredFieldsFilled = [
         mediaUrl,
         mediaType,
+        watch('status'),
         watch('name'),
         watch('description'),
         venue,
@@ -321,6 +322,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
 
       const payload: any = {
         basicInfo: {
+          status: data.status,
           media: {
             type: data.mediaType || 'image',
             name: imageFileString,
@@ -461,7 +463,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
           : 'Event created successfully';
 
         showSuccess(response?.message || successMessage);
-        router.push(`/${userType}/events`);
+        router.push(`/${userType}/events/${response.data._id}`);
       }
     } catch (error) {
       if (imageFileString) {
@@ -560,6 +562,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
       image: event?.basicInfo?.media || null,
       mediaUrl: event?.basicInfo?.media || '',
       mediaType: 'image',
+      status: event?.basicInfo?.status || event?.status || 'active',
       name: event?.basicInfo?.title || '',
       description: event?.basicInfo?.description || '',
       organization: organizationId,

@@ -856,7 +856,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                 onClick={handlePublish}
                 className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white md:mt-2 md:min-w-[90px]"
               >
-                Publish
+                Create
               </Button>
             )}
           </div>

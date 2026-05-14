@@ -13,23 +13,23 @@ const EventOverView = ({ event }: { event: any }) => {
 
   const toggle = () => setExpanded(!expanded);
 
-  const ticketsData = [
-    {
-      title: 'Early Bird Tickets',
-      sold: event?.ticketingStats?.earlyBird?.used?.count || 0,
-      total: event?.ticketingStats?.earlyBird?.totalCreated || 0,
-    },
-    {
-      title: 'Last Minute Tickets',
-      sold: event?.ticketingStats?.lastMinute?.used?.count || 0,
-      total: event?.ticketingStats?.lastMinute?.totalCreated || 0,
-    },
-    {
-      title: 'Regular Tickets',
-      sold: event?.ticketingStats?.regular?.used?.count || 0,
-      total: event?.ticketingStats?.regular?.totalCreated || 0,
-    },
-  ];
+  // const ticketsData = [
+  //   {
+  //     title: 'Early Bird Tickets',
+  //     sold: event?.ticketingStats?.earlyBird?.used?.count || 0,
+  //     total: event?.ticketingStats?.earlyBird?.totalCreated || 0,
+  //   },
+  //   {
+  //     title: 'Last Minute Tickets',
+  //     sold: event?.ticketingStats?.lastMinute?.used?.count || 0,
+  //     total: event?.ticketingStats?.lastMinute?.totalCreated || 0,
+  //   },
+  //   {
+  //     title: 'Regular Tickets',
+  //     sold: event?.ticketingStats?.regular?.used?.count || 0,
+  //     total: event?.ticketingStats?.regular?.totalCreated || 0,
+  //   },
+  // ];
 
   return (
     <div>
@@ -290,7 +290,7 @@ const EventOverView = ({ event }: { event: any }) => {
           </Card>
 
           {/* Tickets Section */}
-          <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
+          {/* <Card className="mt-4 space-y-4 shadow-lg dark:bg-[#171717]">
             <CardContent>
               <h2 className="text-muted-foreground text-sm font-semibold">TICKETS</h2>
 
@@ -327,18 +327,14 @@ const EventOverView = ({ event }: { event: any }) => {
                 </div>
               ))}
 
-              {/* Total Summary */}
               <div className="flex items-center justify-between pt-2 md:pt-4">
                 <div>
                   <p className="text-muted-foreground text-sm font-semibold">Total</p>
                   <p className="text-lg font-bold">{event?.ticketingStats?.grandTotal?.amount || 0} €</p>
                 </div>
-                {/* <Button variant="outline" size="sm">
-                  Manage Tickets
-                </Button> */}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </div>
     </div>

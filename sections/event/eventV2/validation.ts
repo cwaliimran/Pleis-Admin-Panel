@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 export const eventValidationSchema = Yup.object().shape({
   mediaUrl: Yup.string().required('Event media is required'),
   mediaType: Yup.string().optional(),
+  status: Yup.string().oneOf(['active', 'inactive']).required('Status is required'),
   name: Yup.string().required('Name is required'),
   description: Yup.string(),
   venue: Yup.string(),

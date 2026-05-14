@@ -20,6 +20,7 @@ export const defaultValues: EventFormValues = {
   image: null,
   mediaUrl: '',
   mediaType: 'image',
+  status: 'active',
   name: '',
   description: '',
   organization: '',

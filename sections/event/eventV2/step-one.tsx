@@ -1,6 +1,6 @@
 'use client';
 
-import { RHFTextField } from '@/components/rhf';
+import { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Badge } from '@/components/ui/badge';
@@ -224,6 +224,22 @@ const StepOne = ({
             />
           </div>
         )}
+      </div>
+
+      {/* Status */}
+      <div>
+        <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">STATUS</label>
+        <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
+          <RHFSelectField
+            name="status"
+            placeholder="Select Status"
+            options={[
+              { label: 'Active', value: 'active' },
+              { label: 'Inactive', value: 'inactive' },
+            ]}
+            className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
+          />
+        </div>
       </div>
 
       {/* Partner Organizer */}
