@@ -26,7 +26,6 @@ const PromoCodeView = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
 
   const { companyId } = useCompanySelectionState();
-  console.log("companyId", companyId);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);

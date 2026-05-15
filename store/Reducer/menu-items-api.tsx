@@ -56,6 +56,19 @@ export const menuItemsApi = createApi({
       invalidatesTags: ['menu-item'],
     }),
 
+    importPresetMenuItems: builder.mutation({
+      query: (payload) => ({
+        url: '',
+        method: 'POST',
+        body: payload,
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_IMPORT_PRESET_MENU_ITEMS,
+          organizerRoute: API_ROUTES.ORGANIZER_IMPORT_PRESET_MENU_ITEMS,
+        },
+      }),
+      invalidatesTags: ['menu-item'],
+    }),
+
     updateMenuItem: builder.mutation({
       query: ({ id, ...updatedMenuItem }) => ({
         url: '',
@@ -130,6 +143,7 @@ export const {
   useGetMenuMinifyDataQuery,
   useGetMenuItemByMenuIdQuery,
   useAddMenuItemMutation,
+  useImportPresetMenuItemsMutation,
   useUpdateMenuItemMutation,
   useDeleteMenuItemMutation,
 } = menuItemsApi;

@@ -134,7 +134,7 @@ const EventTicket = ({ event }: { event: any }) => {
               </Card>
 
               <Button onClick={openModal.onTrue} className="bg-primary hover:bg-primary mt-4 h-10 w-full cursor-pointer rounded-3xl text-white">
-                <Plus /> Add Tickets
+                <Plus /> Add Tickets Type
               </Button>
             </div>
 

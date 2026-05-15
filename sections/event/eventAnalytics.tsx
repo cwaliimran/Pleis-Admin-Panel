@@ -24,7 +24,12 @@ const EventAnalytics = ({ id, refreshKey = 0 }: { id: string; refreshKey?: numbe
   const [dateTab, setDateTab] = React.useState('all');
   const previousRefreshKey = React.useRef(refreshKey);
 
-  const { data: analyticsData = {}, isLoading, isFetching, refetch } = useGeteventAnalyticsByIdQuery(
+  const {
+    data: analyticsData = {},
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGeteventAnalyticsByIdQuery(
     {
       id,
       dateFilter: dateFilterMap[dateTab] ?? 'all',
@@ -65,9 +70,7 @@ const EventAnalytics = ({ id, refreshKey = 0 }: { id: string; refreshKey?: numbe
     };
   };
 
-  const salesTrendData = (analyticsData?.salesOverTime ?? analyticsData?.reservationsOverTime ?? []).map((item: any) =>
-    mapStatToRow(item, 'sales')
-  );
+  const salesTrendData = (analyticsData?.salesOverTime ?? analyticsData?.reservationsOverTime ?? []).map((item: any) => mapStatToRow(item, 'sales'));
 
   const viewsOverTimeData = (analyticsData?.eventViewsByTime ?? analyticsData?.viewsOverTime ?? analyticsData?.weeklyViews ?? []).map((item: any) =>
     mapStatToRow(item, 'views')
@@ -119,6 +122,7 @@ const EventAnalytics = ({ id, refreshKey = 0 }: { id: string; refreshKey?: numbe
         <div className="col-span-12 lg:col-span-6">
           <SaleTrend chartData={salesTrendData} isLoading={isLoading || isFetching} />
         </div>
+
         <div className="col-span-12 lg:col-span-6">
           <PreferenceTrend viewData={viewsOverTimeData} isLoading={isLoading || isFetching} />
         </div>

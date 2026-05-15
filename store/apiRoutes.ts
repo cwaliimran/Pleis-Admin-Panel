@@ -401,6 +401,7 @@ export const API_ROUTES = {
   ORGANIZER_MENU_BY_COMPANY_ORGANIZER: (id: string) => `/organizer/menu/names/by-company-organizer/${id}`,
 
   ADMIN_MENU_ITEMS: `/admin/menu/items`,
+  ADMIN_IMPORT_PRESET_MENU_ITEMS: `/admin/menu/items/import`,
   ADMIN_MENU_ITEMS_BY_ID: (id: string) => `/admin/menu/items/${id}`,
   ADMIN_MENU_ITEMS_BY_MENU_ID: (id: string) => `/admin/menu/items/menu/${id}`,
   ADMIN_MENU_ITEMS_MINIFY_DATA: `/admin/menu/items/bundles`,
@@ -408,6 +409,7 @@ export const API_ROUTES = {
   // ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
 
   ORGANIZER_MENU_ITEMS: `/organizer/menu-management/items`,
+  ORGANIZER_IMPORT_PRESET_MENU_ITEMS: `/organizer/menu/items/import`,
   ORGANIZER_MENU_ITEMS_BY_ID: (id: string) => `/organizer/menu/items/${id}`,
   ORGANIZER_MENU_ITEMS_BY_MENU_ID: (id: string) => `/organizer/menu/items/menu/${id}`,
 

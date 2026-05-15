@@ -728,6 +728,7 @@ export const MenuManagementView: React.FC<MenuManagementViewProps> = ({ userType
           open={isPresetImportModalOpen}
           onClose={() => setIsPresetImportModalOpen(false)}
           onImportComplete={handlePresetImportComplete}
+          companyOrganizer={companyId}
         />
       )}
 

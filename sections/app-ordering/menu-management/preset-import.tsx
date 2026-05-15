@@ -4,9 +4,14 @@ import ButtonLoading from '@/components/common/button-loading';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 import { cn } from '@/lib/utils';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useImportPresetMenuItemsMutation } from '@/store/Reducer/menu-items-api';
 import { useGetPresetMenuQuery } from '@/store/Reducer/preset-menu-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError } from '@/utils/toast';
 import { Loader2, Package, Search } from 'lucide-react';
 import Image from 'next/image';
 import React, { useMemo, useState } from 'react';
@@ -33,19 +38,39 @@ interface PresetImportScreenProps {
   open: boolean;
   onClose: () => void;
   onImportComplete?: () => void;
+  companyOrganizer?: string | null;
 }
 
-const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }) => {
+const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose, onImportComplete, companyOrganizer }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPresets, setSelectedPresets] = useState<Set<string>>(new Set());
+  const [isMenuSelectDialogOpen, setIsMenuSelectDialogOpen] = useState(false);
+  const [selectedMenuId, setSelectedMenuId] = useState('');
+
+  const [importPresetMenuItems, { isLoading: importLoading }] = useImportPresetMenuItemsMutation();
 
   const { data: presetData, isLoading: presetLoading } = useGetPresetMenuQuery({
     page: 0,
     search: searchQuery,
-    limit: '10000',
+    limit: '500',
     status: 'active',
     date: undefined,
   });
+
+  const { data: menuListData, isLoading: menuListLoading } = useGetMenuListQuery(
+    {
+      search: '',
+      page: 0,
+      status: 'active',
+      date: undefined,
+      limit: '500',
+      companyOrganizer,
+      organizations: undefined,
+    },
+    {
+      skip: !open,
+    }
+  );
 
   // Helper function to safely convert to number
   const toSafeNumber = (value: any, defaultValue: number = 0): number => {
@@ -86,15 +111,6 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
     });
   };
 
-  // Select all presets
-  const handleSelectAll = () => {
-    if (selectedPresets.size === filteredPresets.length) {
-      setSelectedPresets(new Set());
-    } else {
-      setSelectedPresets(new Set(filteredPresets.map((preset: PresetItem) => preset._id)));
-    }
-  };
-
   // Get image URL with fallback
   const getImageUrl = (preset: PresetItem): string | null => {
     const img = preset?.imageInfo?.url || preset?.image;
@@ -104,70 +120,69 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
     return img;
   };
 
-  // Import selected presets
-  //   const handleImport = async () => {
-  //     if (selectedPresets.size === 0) {
-  //       showError('Please select at least one preset to import');
-  //       return;
-  //     }
+  const menuOptions = useMemo(() => {
+    const rawMenus = menuListData?.data || [];
+    return rawMenus.map((menu: any) => ({
+      value: menu?._id,
+      label: menu?.title || menu?.name || 'Untitled Menu',
+    }));
+  }, [menuListData]);
 
-  //     const selectedItems = filteredPresets.filter((preset: PresetItem) => selectedPresets.has(preset._id));
+  const handleOpenImportDialog = () => {
+    if (selectedPresets.size === 0) {
+      showError('Please select at least one preset item to import');
+      return;
+    }
 
-  //     try {
-  //       let successCount = 0;
-  //       let errorCount = 0;
+    if (!companyOrganizer) {
+      showError('Company organizer is required to import preset items');
+      return;
+    }
 
-  //       for (const preset of selectedItems) {
-  //         try {
-  //           const payload = {
-  //             title: preset.title,
-  //             description: preset.description || '',
-  //             basePrice: toSafeNumber(preset.basePrice, 0),
-  //             discountPrice: preset.discountPrice ? toSafeNumber(preset.discountPrice, undefined) : null,
-  //             taxPercent: toSafeNumber(preset.taxPercent, 0),
-  //             type: preset.type || 'food',
-  //             category: preset.category?._id || '',
-  //             menu: selectedCompany?.menuId || '', // You may need to adjust this based on your data structure
-  //             image: preset.imageInfo?.url || preset.image || '',
-  //             startTime: '12:00 AM',
-  //             endTime: '11:59 PM',
-  //           };
+    setIsMenuSelectDialogOpen(true);
+  };
 
-  //           const response = await addMenuItem(payload).unwrap();
+  const handleImport = async () => {
+    if (!selectedMenuId) {
+      showError('Please select a menu');
+      return;
+    }
 
-  //           if (response?.error) {
-  //             errorCount++;
-  //           } else {
-  //             successCount++;
-  //           }
-  //         } catch (error) {
-  //           errorCount++;
-  //           console.error(`Error importing ${preset.title}:`, error);
-  //         }
-  //       }
+    if (!companyOrganizer) {
+      showError('Company organizer is required');
+      return;
+    }
 
-  //       if (successCount > 0) {
-  //         showSuccess(`Successfully imported ${successCount} menu item${successCount > 1 ? 's' : ''}`);
-  //       }
+    try {
+      const payload = {
+        menu: selectedMenuId,
+        companyOrganizer,
+        presetItems: Array.from(selectedPresets),
+      };
 
-  //       if (errorCount > 0) {
-  //         showError(`Failed to import ${errorCount} item${errorCount > 1 ? 's' : ''}`);
-  //       }
+      const response = await importPresetMenuItems(payload).unwrap();
 
-  //       if (successCount > 0) {
-  //         setSelectedPresets(new Set());
-  //         onImportComplete?.();
-  //         onClose();
-  //       }
-  //     } catch (error) {
-  //       const errorMessage = getErrorMessage(error);
-  //       showError(errorMessage || 'Failed to import presets. Please try again.');
-  //     }
-  //   };
+      if (response?.error) {
+        showError(getErrorMessage(response.error));
+        return;
+      }
+
+      // showSuccess(response?.message || 'Preset items imported successfully');
+      setIsMenuSelectDialogOpen(false);
+      setSelectedMenuId('');
+      setSelectedPresets(new Set());
+      onImportComplete?.();
+      onClose();
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
 
   const handleClose = () => {
     setSelectedPresets(new Set());
     setSearchQuery('');
+    setIsMenuSelectDialogOpen(false);
+    setSelectedMenuId('');
     onClose();
   };
 
@@ -176,7 +191,7 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full max-w-[1200px]! flex-col overflow-hidden"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full max-w-300! flex-col overflow-hidden"
         >
           <DialogHeader className="border-b pb-4 dark:border-gray-700">
             <DialogTitle className="flex items-center gap-2 text-2xl">
@@ -201,15 +216,6 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
                   className="h-11 w-full rounded-lg border-2 bg-white pr-4 pl-10 text-sm transition-colors focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                 />
               </div>
-
-              <Button
-                variant="outline"
-                onClick={handleSelectAll}
-                disabled={filteredPresets.length === 0}
-                className="h-11 shrink-0 gap-2 font-semibold"
-              >
-                {selectedPresets.size === filteredPresets.length && filteredPresets.length > 0 ? 'Deselect All' : 'Select All'}
-              </Button>
             </div>
 
             {/* Preset Grid */}
@@ -227,7 +233,7 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
                   </p>
                 </div>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredPresets.map((preset: PresetItem) => {
                     const isSelected = selectedPresets.has(preset._id);
                     const imageUrl = getImageUrl(preset);
@@ -237,17 +243,17 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
                         key={preset._id}
                         onClick={() => handleTogglePreset(preset._id)}
                         className={cn(
-                          'group relative cursor-pointer overflow-hidden rounded-xl border-2 bg-white transition-all hover:shadow-lg dark:bg-gray-800',
-                          isSelected ? 'border-blue-500 shadow-md dark:border-blue-400' : 'border-gray-200 dark:border-gray-700'
+                          'group relative cursor-pointer overflow-hidden rounded-lg border bg-white transition-colors duration-150 hover:shadow-md dark:bg-gray-800',
+                          isSelected ? 'border-blue-500 shadow-sm dark:border-blue-400' : 'border-gray-200 dark:border-gray-700'
                         )}
                       >
                         {/* Checkbox */}
-                        <div className="absolute top-3 right-3 z-10">
+                        <div className="absolute top-2 right-2 z-10">
                           <Checkbox
                             checked={isSelected}
                             onCheckedChange={() => handleTogglePreset(preset._id)}
                             className={cn(
-                              'h-6 w-6 rounded-md border-2 transition-all',
+                              'h-5 w-5 rounded border transition-all',
                               isSelected
                                 ? 'border-blue-500 bg-blue-500 dark:border-blue-400 dark:bg-blue-400'
                                 : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700'
@@ -257,54 +263,48 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
                         </div>
 
                         {/* Image */}
-                        <div className="relative h-40 w-full overflow-hidden bg-linear-to-br from-blue-500/10 to-purple-500/10">
+                        <div className="relative h-36 w-full overflow-hidden bg-linear-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800">
                           {imageUrl ? (
-                            // <img
-                            //   src={imageUrl}
-                            //   alt={preset.title}
-                            //   className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                            //   onError={(e) => {
-                            //     e.currentTarget.style.display = 'none';
-                            //     e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                            //   }}
-                            // />
                             <Image
                               src={imageUrl}
                               alt={preset.title}
                               width={400}
                               height={400}
-                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                              className="h-full w-full transform-gpu object-cover transition-transform duration-300 group-hover:scale-105"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
                               }}
                             />
                           ) : null}
-                          <div className={cn('flex h-full w-full items-center justify-center text-5xl', imageUrl ? 'hidden' : '')}>🍽️</div>
+                          <div className={cn('flex h-full w-full items-center justify-center text-4xl', imageUrl ? 'hidden' : '')}>🍽️</div>
                         </div>
 
                         {/* Content */}
-                        <div className="p-4">
-                          <h3 className="mb-1 line-clamp-1 font-bold text-gray-900 dark:text-gray-100">{preset.title}</h3>
+                        <div className="flex flex-col justify-between p-3">
+                          {/* Top section with title and price */}
+                          <div className="mb-0.5 flex items-start justify-between gap-2">
+                            <h3 className="line-clamp-2 flex-1 text-sm font-semibold text-gray-900 dark:text-gray-100">{preset.title}</h3>
+                            <div className="text-right whitespace-nowrap">
+                              <span className="text-base font-bold text-blue-600 dark:text-blue-400">
+                                €{toSafeNumber(preset.basePrice, 0).toFixed(2)}
+                              </span>
+                              {preset.discountPrice &&
+                                toSafeNumber(preset.discountPrice, 0) > 0 &&
+                                toSafeNumber(preset.discountPrice, 0) < toSafeNumber(preset.basePrice, 0) && (
+                                  <div className="text-xs font-medium text-gray-400 line-through dark:text-gray-500">
+                                    €{toSafeNumber(preset.discountPrice, 0).toFixed(2)}
+                                  </div>
+                                )}
+                            </div>
+                          </div>
 
-                          {preset.category && <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">{preset.category.title}</p>}
+                          {/* Category and Description */}
+                          {preset.category && <p className="mb-1 text-xs font-medium text-blue-600 dark:text-blue-400">{preset.category.title}</p>}
 
                           {preset.description && (
-                            <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">{preset.description}</p>
+                            <p className="line-clamp-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">{preset.description}</p>
                           )}
-
-                          <div className="flex items-center justify-between">
-                            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                              €{toSafeNumber(preset.basePrice, 0).toFixed(2)}
-                            </span>
-                            {preset.discountPrice &&
-                              toSafeNumber(preset.discountPrice, 0) > 0 &&
-                              toSafeNumber(preset.discountPrice, 0) < toSafeNumber(preset.basePrice, 0) && (
-                                <span className="text-sm font-medium text-gray-400 line-through dark:text-gray-500">
-                                  €{toSafeNumber(preset.discountPrice, 0).toFixed(2)}
-                                </span>
-                              )}
-                          </div>
                         </div>
                       </div>
                     );
@@ -330,13 +330,13 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
                   Cancel
                 </Button>
 
-                {false ? (
+                {importLoading ? (
                   <Button disabled className="h-11 cursor-not-allowed bg-blue-600 px-6 text-white hover:bg-blue-600">
                     <ButtonLoading title="Importing" />
                   </Button>
                 ) : (
                   <Button
-                    // onClick={handleImport}
+                    onClick={handleOpenImportDialog}
                     disabled={selectedPresets.size === 0}
                     className="h-11 bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
                   >
@@ -348,6 +348,46 @@ const PresetImportScreen: React.FC<PresetImportScreenProps> = ({ open, onClose }
           </div>
         </DialogContent>
       </DialogOverlay>
+
+      <Dialog open={isMenuSelectDialogOpen} onOpenChange={setIsMenuSelectDialogOpen}>
+        <DialogOverlay className="bg-opacity-30 fixed inset-0" />
+        <DialogContent aria-describedby={undefined} className="dark:bg-secondary mx-auto w-full max-w-125!">
+          <DialogHeader>
+            <DialogTitle>Select Menu For Import</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Choose the target menu where {selectedPresets.size} preset item{selectedPresets.size > 1 ? 's' : ''} will be imported.
+            </p>
+
+            <div className="space-y-2">
+              <div className="text-sm font-semibold">Menu</div>
+              <Select value={selectedMenuId} onValueChange={setSelectedMenuId}>
+                <SelectTrigger className="h-11 w-full border-2">
+                  <SelectValue placeholder={menuListLoading ? 'Loading menus...' : 'Select menu'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {menuOptions.map((option: { value: string; label: string }) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => setIsMenuSelectDialogOpen(false)} disabled={importLoading}>
+                Cancel
+              </Button>
+              <Button onClick={handleImport} disabled={importLoading || !selectedMenuId} className="bg-blue-600 text-white hover:bg-blue-700">
+                {importLoading ? <ButtonLoading title="Importing" /> : 'Confirm Import'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
