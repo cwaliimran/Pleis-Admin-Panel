@@ -6,7 +6,6 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useDuplicateMenuMutation } from '@/store/Reducer/menu-list-api';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -21,14 +20,13 @@ const schema = Yup.object({
   organization: Yup.string().required('Organization is required'),
 });
 
-const DuplicateMenuModal = ({ open, selectedId, onClose, selectedData }: any) => {
+const DuplicateMenuModal = ({ open, selectedId, onClose, selectedData, data, isLoading }: any) => {
   const methods = useForm({
     resolver: yupResolver(schema),
     defaultValues: selectedData || defaultValues,
   });
 
   const [duplicateMenu, { isLoading: duplicateMenuLoading }] = useDuplicateMenuMutation();
-  const { data: { data: organizations = [] } = {}, isLoading: organizationsLoading } = useGetOrganizationQuery({ page: 0, limit: 10000 });
 
   const { reset } = methods;
 
@@ -85,11 +83,13 @@ const DuplicateMenuModal = ({ open, selectedId, onClose, selectedData }: any) =>
                       name="organization"
                       label="Organization"
                       placeholder="Select Organization"
-                      options={organizations?.map((val: any) => ({
-                        value: val?._id,
-                        label: val?.basicInfo?.name,
-                      }))}
-                      isLoading={organizationsLoading}
+                      options={data}
+                      // options={data?.map((val: any) => ({
+                      //   value: val?._id,
+                      //   label: val?.basicInfo?.name,
+                      //   // label: userType === 'admin' ? `${val?.basicInfo?.name}` : val?.name,
+                      // }))}
+                      isLoading={isLoading}
                       showNone={false}
                     />
                   </div>

@@ -1,19 +1,20 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteMenuListMutation, useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useGetOrganizationByCompanyQuery, useGetOrganizationsOnOrganizerSideQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import DuplicateMenuModal from './duplicate-menu-modal';
 import MenuItemModal from './menulist-modal';
 import MenuItemTable from './menulist-table';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 
 type MenuListViewProps = {
   userType: 'super-admin' | 'organizer';
@@ -35,7 +36,6 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
   const { organizerOrganizationIds } = useCompanySelection();
-  console.log('organizerOrganizationIds', organizerOrganizationIds);
 
   const [deleteMenuList, { isLoading: deleteLoading }] = useDeleteMenuListMutation();
 
@@ -54,6 +54,48 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
     companyOrganizer: selectedCompany || undefined,
     organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
   });
+
+  // Fetch organization list
+  const {
+    data: organizationResponse,
+    isLoading: organizationLoading,
+    isFetching: organizationFetching,
+  } = useGetOrganizationByCompanyQuery(
+    {
+      companyOrganizer: selectedCompany || undefined,
+    },
+    {
+      skip: !selectedCompany,
+    }
+  );
+
+  // Fetch organizer organizations
+  const { data: organizerOrganizationsResponse } = useGetOrganizationsOnOrganizerSideQuery(
+    {},
+    {
+      skip: userType !== 'organizer',
+    }
+  );
+
+  // Admin
+  const organizationOptions = useMemo(
+    () =>
+      organizationResponse?.data?.map((organization: any) => ({
+        label: organization?.basicInfo?.name || 'Unknown Organization',
+        value: organization?._id,
+      })) || [],
+    [organizationResponse]
+  );
+
+  // Organizer
+  const organizerOrganizationOptions = useMemo(
+    () =>
+      organizerOrganizationsResponse?.data?.map((organization: any) => ({
+        label: organization?.title || 'Unknown Organization',
+        value: organization?._id,
+      })) || [],
+    [organizerOrganizationsResponse]
+  );
 
   const [localData, setLocalData] = useState<any[]>([]);
 
@@ -196,7 +238,16 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
         />
       )}
 
-      {duplicateModal.value && <DuplicateMenuModal open={duplicateModal.value} onClose={duplicateModal.onFalse} selectedId={selectedId} />}
+      {duplicateModal.value && (
+        <DuplicateMenuModal
+          open={duplicateModal.value}
+          onClose={duplicateModal.onFalse}
+          selectedId={selectedId}
+          // data={organizerOrganizationOptions}
+          data={userType === 'organizer' ? organizerOrganizationOptions : organizationOptions}
+          isLoading={organizationLoading || organizationFetching}
+        />
+      )}
 
       <ConfirmDialog
         open={deleteModal.value}
