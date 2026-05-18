@@ -19,15 +19,16 @@ import EventTicket from '@/sections/event/eventTicket';
 import LastTransaction from '@/sections/event/lastTransaction';
 import { useCloneeventMutation, useDeleteeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
 import { fDate } from '@/utils/format-time';
-import { capitalizeFirst } from '@/utils/short-utils';
+import { capitalizeFirst, getStatusVariant } from '@/utils/short-utils';
 import { Copy, Loader2, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 // import EventFeedbackView from '../event-feedback/event-feedback-view';
-import FeedbackView from '../feedback/feedback-view';
-import { showError } from '@/utils/toast';
+import CustomBadge from '@/components/ui/custom-badge';
 import { getErrorMessage } from '@/utils/api';
+import { showError } from '@/utils/toast';
+import FeedbackView from '../feedback/feedback-view';
 
 const EventDetailsPage = () => {
   const params = useParams<{ id: string }>();
@@ -161,6 +162,8 @@ const EventDetailsPage = () => {
     }
   };
 
+  console.log('Event Details:', event?.status);
+
   return (
     <>
       {isLoading || loading ? (
@@ -196,9 +199,7 @@ const EventDetailsPage = () => {
                         {/* Top Row */}
                         <div className="flex items-center justify-between gap-3 text-sm text-gray-500">
                           <div className="flex flex-col items-center gap-2 md:flex-row">
-                            <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-800">
-                              {capitalizeFirst(event?.status) || 'Upcoming'}
-                            </span>
+                            <CustomBadge variant={getStatusVariant(event?.status)}>{event?.status}</CustomBadge>
                             <span>{fDate(event?.schedule?.endDateTime) || '-'}</span>
                           </div>
 
@@ -443,9 +444,7 @@ const EventDetailsPage = () => {
                     </div>
                     <div className="mt-2 flex items-center text-4xl font-bold">
                       {totalTicketsSold.toLocaleString()}
-                      {totalTicketAmount > 0 && (
-                        <sub className="ml-1 text-base font-medium">/ {totalTicketAmount.toLocaleString()}</sub>
-                      )}
+                      {totalTicketAmount > 0 && <sub className="ml-1 text-base font-medium">/ {totalTicketAmount.toLocaleString()}</sub>}
                     </div>
                   </CardHeader>
                 </Card>

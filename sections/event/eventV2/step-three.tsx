@@ -354,7 +354,7 @@ const StepThree: React.FC<StepThreeProps> = ({
     <>
       <div>
         <div className="mt-4 flex flex-col gap-6">
-          <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Ticketing setup is optional</p>
               <p className="mt-1 text-sm text-amber-700 dark:text-amber-200">You can skip this step for now and configure ticketing later.</p>
@@ -848,7 +848,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                 disabled
                 className="bg-primary hover:bg-primary cursor-not-allowed rounded-4xl py-2 text-white md:mt-2 md:min-w-[90px]"
               >
-                <ButtonLoading title="Publishing" />
+                <ButtonLoading title="Creating" />
               </Button>
             ) : (
               <Button
