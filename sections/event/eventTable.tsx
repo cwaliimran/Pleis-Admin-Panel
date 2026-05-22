@@ -2,13 +2,12 @@
 
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
-import TableHeadCustom from '@/components/table/table-head-custom';
+import TableHeadCustom, { SortConfig } from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -22,21 +21,21 @@ const headLabel = [
     label: 'Name',
     align: 'left',
     sortable: true,
-    sortKey: 'basicInfo.title',
+    sortKey: 'eventName',
   },
   {
     id: 'organization',
     label: 'Organization',
     align: 'left',
     sortable: true,
-    sortKey: 'basicInfo.organization.basicInfo.name',
+    sortKey: 'organizationName',
   },
   {
     id: 'venue',
     label: 'Venue',
     align: 'left',
     sortable: true,
-    sortKey: 'basicInfo.venue.title',
+    sortKey: 'venueName',
   },
   {
     id: 'startDate',
@@ -91,6 +90,9 @@ interface PageProps {
   userType?: any;
   onDateChange?: (startDate: Date | undefined, endDate: Date | undefined) => void;
   onResetFilters?: () => void;
+  sortBy?: string;
+  sortOrder?: string;
+  onSortChange?: (sortBy: string, sortOrder: string) => void;
 }
 
 const EventTable: FC<PageProps> = ({
@@ -108,16 +110,31 @@ const EventTable: FC<PageProps> = ({
   endDate,
   onDateChange = () => {},
   onResetFilters = () => {},
+  sortBy = '',
+  sortOrder = '',
+  onSortChange,
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
 
-  // Sorting logic
-  const { sortedData, sortConfig, handleSort } = useTableSort({
-    data: data || [],
-  });
+  const sortConfig: SortConfig = {
+    key: sortBy || null,
+    direction: sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : null,
+  };
+
+  const handleSort = (key: string) => {
+    if (sortBy !== key) {
+      onSortChange?.(key, 'asc');
+    } else if (sortOrder === 'asc') {
+      onSortChange?.(key, 'desc');
+    } else if (sortOrder === 'desc') {
+      onSortChange?.('', '');
+    } else {
+      onSortChange?.(key, 'asc');
+    }
+  };
 
   const methods = useForm({
     defaultValues: {
@@ -198,8 +215,8 @@ const EventTable: FC<PageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={headLabel} sortConfig={sortConfig} onSort={handleSort} />
 
-              <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item, index) => (
+              <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={data?.length || 0}>
+                {data?.map((item, index) => (
                   <EventTableRowV2 key={item?._id || index} item={item} handleDelete={handleDelete} userType={userType} />
                 ))}
               </TableBodyWrapper>

@@ -23,18 +23,32 @@ const PresetView = () => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
   const [deletePresetMenu, { isLoading: deleteLoading }] = useDeletePresetMenuMutation();
 
-  const { data: apiData, isLoading } = useGetPresetMenuQuery({
+  const handleSortChange = useCallback((newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  }, []);
+
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetPresetMenuQuery({
     page: page - 1,
     search,
     limit,
     status: status === 'all' ? '' : status,
     date: date ? formatDate(date) : undefined,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -128,7 +142,7 @@ const PresetView = () => {
       <PresetTable
         data={localData}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -157,8 +171,13 @@ const PresetView = () => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
       />
 
       <PresetModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />

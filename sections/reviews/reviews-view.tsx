@@ -30,6 +30,14 @@ const ReviewsView = ({ userType }: ReviewsViewProps) => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
+
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -39,7 +47,7 @@ const ReviewsView = ({ userType }: ReviewsViewProps) => {
 
   const { companyId } = useCompanySelectionState();
 
-  const { data: apiData, isLoading } = useGetReviewsQuery({
+  const { data: apiData, isLoading, isFetching } = useGetReviewsQuery({
     page: page - 1,
     search,
     limit,
@@ -47,6 +55,8 @@ const ReviewsView = ({ userType }: ReviewsViewProps) => {
     date: date ? formatDate(date) : undefined,
     companyOrganizer: companyId || undefined,
     userType: userType,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const reviewsStatData = apiData?.meta || {};
@@ -151,7 +161,7 @@ const ReviewsView = ({ userType }: ReviewsViewProps) => {
         data={localData}
         meta={meta}
         user={user}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -176,10 +186,15 @@ const ReviewsView = ({ userType }: ReviewsViewProps) => {
           setDate(val);
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
       />

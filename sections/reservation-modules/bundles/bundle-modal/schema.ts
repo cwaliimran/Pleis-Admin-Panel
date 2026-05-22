@@ -11,6 +11,10 @@ export const bundleSchema = Yup.object().shape({
     .transform((value, originalValue) => (originalValue === '' ? undefined : value))
     .required('Bundle price is required')
     .min(0, 'Price must be at least 0')
+    .test('max-one-decimal', 'Bundle price can have at most 1 decimal place', (value) => {
+      if (value === undefined || value === null) return true;
+      return /^\d+(\.\d)?$/.test(String(value));
+    })
     .default(0),
   tickets: Yup.array()
     .of(

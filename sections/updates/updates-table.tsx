@@ -8,12 +8,17 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { SamplePageProps } from './types';
 import UpdatesTableRow from './updates-table-row';
+
+type UpdatesTableProps = SamplePageProps & {
+  sortBy?: string;
+  sortOrder?: string;
+  onSortChange?: (sortBy: string, sortOrder: string) => void;
+};
 
 const HEAD_LABEL = [
   { id: 'image', label: 'Image', align: 'left' },
@@ -32,7 +37,7 @@ const HEAD_LABEL = [
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 
-const UpdatesTable: FC<SamplePageProps> = ({
+const UpdatesTable: FC<UpdatesTableProps> = ({
   data = [],
   meta,
   loading,
@@ -47,6 +52,9 @@ const UpdatesTable: FC<SamplePageProps> = ({
   onStatusChange = () => {},
   date,
   onDateChange = () => {},
+  sortBy = '',
+  sortOrder = '',
+  onSortChange = () => {},
   onResetFilters = () => {},
 }) => {
   // Pagination logic
@@ -55,9 +63,33 @@ const UpdatesTable: FC<SamplePageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  const { sortedData, sortConfig, handleSort } = useTableSort({
-    data: data || [],
-  });
+  const direction: 'asc' | 'desc' | null = sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : null;
+
+  const sortConfig = {
+    key: sortBy || null,
+    direction,
+  };
+
+  const handleSort = (key: string) => {
+    if (!key) return;
+
+    if (sortBy !== key) {
+      onSortChange(key, 'asc');
+      return;
+    }
+
+    if (sortOrder === 'asc') {
+      onSortChange(key, 'desc');
+      return;
+    }
+
+    if (sortOrder === 'desc') {
+      onSortChange('', '');
+      return;
+    }
+
+    onSortChange(key, 'asc');
+  };
 
   const methods = useForm({
     defaultValues: {
@@ -139,9 +171,9 @@ const UpdatesTable: FC<SamplePageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item, idx) => (
-                // {eventHighlightDummyData?.map((item, idx) => (
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
+                {data?.map((item, idx) => (
+                  // {eventHighlightDummyData?.map((item, idx) => (
                   <UpdatesTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>

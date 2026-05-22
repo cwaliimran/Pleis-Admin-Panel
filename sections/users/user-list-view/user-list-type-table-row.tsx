@@ -110,45 +110,47 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
 
         <TableCell className="text-left text-sm">{fDate(item?.metadata?.createdAt, formatStr.split.date)}</TableCell>
 
-        <TableCell className="text-end">
-          <div className={`flex gap-2 ${memberPage ? 'justify-center' : ''}`}>
-            <button
-              type="button"
-              title="View User"
-              disabled={user?.basicInfo?._id === item?.basicInfo?._id}
-              onClick={handleNavigate}
-              className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:disabled:hover:bg-gray-800"
-            >
-              <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
-            </button>
+        {user?.accountState?.userType !== 'manager' && (
+          <TableCell className="text-end">
+            <div className={`flex gap-2 ${memberPage ? 'justify-center' : ''}`}>
+              <button
+                type="button"
+                title="View User"
+                disabled={user?.basicInfo?._id === item?.basicInfo?._id}
+                onClick={handleNavigate}
+                className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:disabled:hover:bg-gray-800"
+              >
+                <Eye className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+              </button>
 
-            <button
-              type="button"
-              title="Edit"
-              disabled={user?.basicInfo?._id === item?.basicInfo?._id}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleEdit?.(item?.basicInfo?._id);
-              }}
-              className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:disabled:hover:bg-gray-800"
-            >
-              <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
-            </button>
+              <button
+                type="button"
+                title="Edit"
+                disabled={user?.basicInfo?._id === item?.basicInfo?._id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit?.(item?.basicInfo?._id);
+                }}
+                className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 dark:disabled:hover:bg-gray-800"
+              >
+                <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+              </button>
 
-            <button
-              title="Delete User"
-              type="button"
-              disabled={user?.basicInfo?._id === item?.basicInfo?._id}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete?.(item?.basicInfo?._id);
-              }}
-              className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-red-100 dark:bg-red-900 dark:hover:bg-red-800 dark:disabled:hover:bg-red-900"
-            >
-              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
-            </button>
-          </div>
-        </TableCell>
+              <button
+                title="Delete User"
+                type="button"
+                disabled={user?.basicInfo?._id === item?.basicInfo?._id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete?.(item?.basicInfo?._id);
+                }}
+                className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-red-100 dark:bg-red-900 dark:hover:bg-red-800 dark:disabled:hover:bg-red-900"
+              >
+                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+              </button>
+            </div>
+          </TableCell>
+        )}
       </TableRow>
 
       {/* Modals */}

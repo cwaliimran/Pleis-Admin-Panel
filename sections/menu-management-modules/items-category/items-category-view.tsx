@@ -39,6 +39,8 @@ const ItemsCategoryView = () => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState('');
+  const [sortOrder, setSortOrder] = useState('');
 
   const { uploadImage, uploading: imageUploading } = useImageUpload();
 
@@ -50,9 +52,16 @@ const ItemsCategoryView = () => {
 
   const [deleteItemsCategory, { isLoading: deleteItemsCategoryLoading }] = useDeleteItemsCategoryMutation();
 
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
+
   const {
     data: apiData,
     isLoading,
+    isFetching,
     refetch,
   } = useGetItemsCategoryQuery({
     page: page - 1,
@@ -60,6 +69,8 @@ const ItemsCategoryView = () => {
     limit,
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -223,7 +234,7 @@ const ItemsCategoryView = () => {
       <TagsTypeTable
         data={venueTypes}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -252,8 +263,13 @@ const ItemsCategoryView = () => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
       />
 
       <TagsTypeModal

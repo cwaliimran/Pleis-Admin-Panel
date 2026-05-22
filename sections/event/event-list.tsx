@@ -37,6 +37,14 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
   const [status, setStatus] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
+
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
 
   const {
     data: apiData,
@@ -53,6 +61,8 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     // ...(organization ? { organization } : {}),
     organization: userType === 'organizer' ? organizerOrganizationIds : organization || undefined,
     organizationId, // This param is just to recall header data fetching when organization changes
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const handleDelete = (data: any) => {
@@ -142,6 +152,8 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     setStatus('');
     setStartDate(undefined);
     setEndDate(undefined);
+    setSortBy('');
+    setSortOrder('');
   };
 
   return (
@@ -204,6 +216,9 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
         onResetFilters={onResetFilters}
         meta={apiData?.meta}
         userType={userType}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
       />
     </div>
   );

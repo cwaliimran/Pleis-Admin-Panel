@@ -9,6 +9,8 @@ import { fDate, formatStr } from '@/utils/format-time';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FC, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 interface PageProps {
   item: any;
@@ -73,6 +75,9 @@ const formatCount = (value?: number | null) => {
 
 const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType }) => {
   const router = useRouter();
+
+  const { user } = useSelector((state: RootState) => state.userSlice);
+
   const [isSubscriptionTypeModalOpen, setIsSubscriptionTypeModalOpen] = useState(false);
   const [isCommissionModalOpen, setIsCommissionModalOpen] = useState(false);
   const [textOverflowModal, setTextOverflowModal] = useState<TextOverflowModalState>({
@@ -120,10 +125,10 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
 
         <TableCell className="text-left font-medium capitalize">
           <span
-            className={item?.basicInfo?.name && item?.basicInfo?.name.length > 15 ? 'cursor-pointer transition-colors hover:text-blue-600' : ''}
-            title={item?.basicInfo?.name && item?.basicInfo?.name.length > 15 ? item?.basicInfo?.name : ''}
+            className={item?.basicInfo?.name && item?.basicInfo?.name.length > 30 ? 'cursor-pointer transition-colors hover:text-blue-600' : ''}
+            title={item?.basicInfo?.name && item?.basicInfo?.name.length > 30 ? item?.basicInfo?.name : ''}
             onClick={(e) => {
-              if (item?.basicInfo?.name && item?.basicInfo?.name.length > 15) {
+              if (item?.basicInfo?.name && item?.basicInfo?.name.length > 30) {
                 e.stopPropagation();
                 setTextOverflowModal({
                   isOpen: true,
@@ -132,7 +137,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
               }
             }}
           >
-            {truncateText(item?.basicInfo?.name || '-', 15)}
+            {truncateText(item?.basicInfo?.name || '-', 30)}
           </span>
         </TableCell>
 
@@ -142,20 +147,20 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
               className={
                 item?.creator &&
                 (item?.creator?.firstName || item?.creator?.lastName) &&
-                ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 15
+                ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 30
                   ? 'cursor-pointer transition-colors hover:text-blue-600'
                   : ''
               }
               title={
                 item?.creator &&
                 (item?.creator?.firstName || item?.creator?.lastName) &&
-                ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 15
+                ((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).length > 30
                   ? (item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')
                   : ''
               }
               onClick={(e) => {
                 const creatorName = (item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '');
-                if (creatorName.length > 15) {
+                if (creatorName.length > 30) {
                   e.stopPropagation();
                   setTextOverflowModal({
                     isOpen: true,
@@ -164,7 +169,7 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
                 }
               }}
             >
-              {truncateText(((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).trim(), 15)}
+              {truncateText(((item?.creator?.firstName || '') + ' ' + (item?.creator?.lastName || '')).trim(), 30)}
             </span>
           </TableCell>
         )}
@@ -259,17 +264,19 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
               <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
             </button>
 
-            <button
-              title="Delete Org"
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete?.(item._id);
-              }}
-              className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
-            >
-              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
-            </button>
+            {user?.accountState?.userType !== 'manager' && (
+              <button
+                title="Delete Org"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete?.(item._id);
+                }}
+                className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+              >
+                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+              </button>
+            )}
           </div>
         </TableCell>
       </TableRow>
@@ -332,13 +339,13 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
       <Dialog open={textOverflowModal.isOpen} onOpenChange={(isOpen) => setTextOverflowModal({ ...textOverflowModal, isOpen })}>
         <DialogContent
           aria-describedby={undefined}
-          className="max-w-md"
+          className="bg-secondary max-w-md"
           onClick={(e) => {
             e.stopPropagation();
           }}
         >
           <DialogHeader>
-            <DialogTitle>Full Value</DialogTitle>
+            <DialogTitle>Organization Name</DialogTitle>
           </DialogHeader>
 
           <div className="text-sm">

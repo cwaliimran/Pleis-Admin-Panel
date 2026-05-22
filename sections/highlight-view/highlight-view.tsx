@@ -39,6 +39,14 @@ const HighlightsView = () => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
+
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
@@ -51,6 +59,7 @@ const HighlightsView = () => {
   const {
     data: apiData,
     isLoading,
+    isFetching,
     refetch,
   } = useGetHighlightsQuery({
     page: page - 1,
@@ -58,6 +67,8 @@ const HighlightsView = () => {
     limit,
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   // Local state for venue types and meta
@@ -315,7 +326,7 @@ const HighlightsView = () => {
       <HighlightTypeTable
         data={venueTypes}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -340,10 +351,15 @@ const HighlightsView = () => {
           setDate(val);
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
       />

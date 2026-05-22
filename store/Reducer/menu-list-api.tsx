@@ -9,7 +9,7 @@ export const menuListApi = createApi({
 
   endpoints: (builder) => ({
     getMenuList: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer, organizations }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, organizations, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -19,6 +19,8 @@ export const menuListApi = createApi({
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (organizations) params.organization = organizations;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
 
         return {
           url: '',

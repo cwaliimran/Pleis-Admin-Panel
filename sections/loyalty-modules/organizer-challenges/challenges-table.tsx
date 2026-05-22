@@ -30,12 +30,12 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'reward.rewardType',
   },
-  {
-    id: 'reward',
-    label: 'Reward',
-    sortable: true,
-    sortKey: 'reward.rewardType',
-  },
+  // {
+  //   id: 'reward',
+  //   label: 'Reward',
+  //   sortable: true,
+  //   sortKey: 'reward.rewardType',
+  // },
   {
     id: 'taskType',
     label: 'Task Type',

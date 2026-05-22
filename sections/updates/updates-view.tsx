@@ -25,6 +25,8 @@ const UpdatesView = ({ userType }: { userType: string }) => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -47,6 +49,8 @@ const UpdatesView = ({ userType }: { userType: string }) => {
     date: date ? formatDate(date) : undefined,
     companyOrganizer: companyId || undefined,
     organizations: organizerOrganizationIds.length > 0 ? organizerOrganizationIds : undefined,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -106,6 +110,12 @@ const UpdatesView = ({ userType }: { userType: string }) => {
     [deleteModal]
   );
 
+  const handleSortChange = useCallback((newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  }, []);
+
   // DELETE CALL
   const onDelete = async () => {
     try {
@@ -163,10 +173,15 @@ const UpdatesView = ({ userType }: { userType: string }) => {
           setDate(val);
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
       />

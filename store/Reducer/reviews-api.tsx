@@ -9,15 +9,17 @@ export const reviewsApi = createApi({
 
   endpoints: (builder) => ({
     getReviews: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer, userType }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, userType, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
           page: page + 1,
           limit,
         };
-        if (date) (params as any).date = date;
+        if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
 
         return {
           url: API_ROUTES.ADMIN_REVIEWS(userType),

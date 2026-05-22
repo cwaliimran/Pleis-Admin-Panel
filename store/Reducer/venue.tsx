@@ -9,7 +9,7 @@ export const venueApi = createApi({
 
   endpoints: (builder) => ({
     getVenues: builder.query({
-      query: ({ search, page, status, date, limit, organization }) => {
+      query: ({ search, page, status, date, limit, organization, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -19,6 +19,8 @@ export const venueApi = createApi({
 
         if (date) params.date = date;
         if (organization) params.organization = organization;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
 
         return {
           url: '',

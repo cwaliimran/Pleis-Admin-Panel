@@ -17,7 +17,10 @@ const OrganizerSettingsView = () => {
   const { user } = useAuth();
   const settingsModal = useBoolean();
 
-  const selectedCompanyId = user?.basicInfo?._id || '';
+  const userType = user?.accountState?.userType;
+  const selectedCompanyId = userType === 'manager' ? user?.basicInfo?.companyDetails?._id : user?.basicInfo?._id;
+
+  // const selectedCompanyId = user?.basicInfo?._id || '';
 
   const { data: apiData, isLoading, isFetching, refetch } = useGetUserByIdQuery({ id: selectedCompanyId || '' }, { skip: !selectedCompanyId });
   const [updateUser, { isLoading: updateLoading }] = useUpdateUserMutation();

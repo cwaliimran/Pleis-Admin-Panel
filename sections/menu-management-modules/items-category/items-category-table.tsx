@@ -8,7 +8,6 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -58,6 +57,9 @@ interface PageProps {
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
+  sortBy?: string;
+  sortOrder?: string;
+  onSortChange?: (sortBy: string, sortOrder: string) => void;
 }
 
 const TagsTypeTable: FC<PageProps> = ({
@@ -76,6 +78,9 @@ const TagsTypeTable: FC<PageProps> = ({
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
+  sortBy = '',
+  sortOrder = '',
+  onSortChange = () => {},
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -83,9 +88,19 @@ const TagsTypeTable: FC<PageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  const { sortedData, sortConfig, handleSort } = useTableSort({
-    data: data || [],
-  });
+  const sortConfig = { key: sortBy || null, direction: (sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : null) as 'asc' | 'desc' | null };
+
+  const handleSort = (key: string) => {
+    if (sortBy !== key) {
+      onSortChange(key, 'asc');
+    } else if (sortOrder === 'asc') {
+      onSortChange(key, 'desc');
+    } else if (sortOrder === 'desc') {
+      onSortChange('', '');
+    } else {
+      onSortChange(key, 'asc');
+    }
+  };
 
   const methods = useForm({
     defaultValues: {
@@ -166,8 +181,8 @@ const TagsTypeTable: FC<PageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={headLabel} sortConfig={sortConfig} onSort={handleSort} />
 
-              <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item: any, index: number) => (
+              <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={data?.length || 0}>
+                {data?.map((item: any, index: number) => (
                   <TagsTypeTableRow key={item?._id || index} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>

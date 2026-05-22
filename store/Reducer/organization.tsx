@@ -9,7 +9,7 @@ export const organizationApi = createApi({
 
   endpoints: (builder) => ({
     getOrganization: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,8 +17,10 @@ export const organizationApi = createApi({
           limit,
         };
 
-        if (date) (params as any).date = date;
-        if (companyOrganizer) (params as any).companyOrganizer = companyOrganizer;
+        if (date) params.date = date;
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
 
         return {
           url: '',

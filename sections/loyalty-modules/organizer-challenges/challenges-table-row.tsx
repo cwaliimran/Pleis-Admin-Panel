@@ -72,7 +72,7 @@ const ChallengesTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
 
       <TableCell className="text-left">{getChallengesTypeLabel(item?.reward?.rewardType) || '-'}</TableCell>
 
-      <TableCell className="text-left">{item?.reward?.rewardMenuItem?.title || '-'}</TableCell>
+      {/* <TableCell className="text-left">{item?.reward?.rewardMenuItem?.title || '-'}</TableCell> */}
 
       <TableCell className="text-left">{getChallengesTypeLabel(item?.taskType) || '-'}</TableCell>
 

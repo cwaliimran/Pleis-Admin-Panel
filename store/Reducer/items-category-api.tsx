@@ -9,7 +9,7 @@ export const itemsCategoryApi = createApi({
 
   endpoints: (builder) => ({
     getItemsCategory: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -19,6 +19,8 @@ export const itemsCategoryApi = createApi({
 
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
 
         return {
           url: '',

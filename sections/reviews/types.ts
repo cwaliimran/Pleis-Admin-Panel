@@ -23,6 +23,9 @@ export interface SamplePageProps {
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
+  sortBy?: string;
+  sortOrder?: string;
+  onSortChange?: (sortBy: string, sortOrder: string) => void;
 }
 
 export interface TableRowProps {

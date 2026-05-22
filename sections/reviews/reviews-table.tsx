@@ -2,13 +2,12 @@
 
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
-import TableHeadCustom from '@/components/table/table-head-custom';
+import TableHeadCustom, { SortConfig } from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { useTableSort } from '@/hooks/useTableSort';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -32,6 +31,9 @@ const ReviewsTable: FC<SamplePageProps> = ({
   // date,
   // onDateChange = () => {},
   onResetFilters = () => {},
+  sortBy = '',
+  sortOrder = '',
+  onSortChange,
 }) => {
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
@@ -39,9 +41,22 @@ const ReviewsTable: FC<SamplePageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  const { sortedData, sortConfig, handleSort } = useTableSort({
-    data: data || [],
-  });
+  const sortConfig: SortConfig = {
+    key: sortBy || null,
+    direction: sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : null,
+  };
+
+  const handleSort = (key: string) => {
+    if (sortBy !== key) {
+      onSortChange?.(key, 'asc');
+    } else if (sortOrder === 'asc') {
+      onSortChange?.(key, 'desc');
+    } else if (sortOrder === 'desc') {
+      onSortChange?.('', '');
+    } else {
+      onSortChange?.(key, 'asc');
+    }
+  };
 
   const HEAD_LABEL = [
     { id: 'image', label: 'Image', align: 'left' },
@@ -50,7 +65,7 @@ const ReviewsTable: FC<SamplePageProps> = ({
       label: 'User',
       align: 'left',
       sortable: true,
-      sortKey: 'name',
+      sortKey: 'userName',
     },
     { id: 'organization', label: 'Organization', align: 'left' },
     { id: 'rating', label: 'Rating', align: 'left' },
@@ -136,8 +151,8 @@ const ReviewsTable: FC<SamplePageProps> = ({
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
-                {sortedData?.map((item, idx) => (
+              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
+                {data?.map((item, idx) => (
                   <ReviewsTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} user={user} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>

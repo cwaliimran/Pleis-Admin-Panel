@@ -38,6 +38,7 @@ const EventDetailsPage = () => {
   const deleteModal = useBoolean();
 
   const [loading, setLoading] = React.useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [preOrderLoading, setPreOrderLoading] = useState(false);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [active, setActive] = React.useState('overview');
@@ -82,16 +83,22 @@ const EventDetailsPage = () => {
 
   const handleUpdateEvent = async () => {
     try {
-      setLoading(true);
+      setIsUpdating(true);
       const newStatus = event.status === 'active' ? 'inactive' : 'active';
-      const res = await updateEvent({ id, status: newStatus }).unwrap();
+
+      const payload = {
+        id,
+        basicInfo: { status: newStatus },
+      };
+
+      const res = await updateEvent(payload).unwrap();
       if (res?.data) {
         refetch();
       }
     } catch (error) {
       showError(getErrorMessage(error));
     } finally {
-      setLoading(false);
+      setIsUpdating(false);
     }
   };
 
@@ -143,14 +150,15 @@ const EventDetailsPage = () => {
   const onDelete = async () => {
     try {
       if (deleteId) {
-        const response = await deleteEvent(deleteId).unwrap();
+        const payload = { id: deleteId };
+        const response = await deleteEvent(payload).unwrap();
         if (response && response.message === 'Event deleted successfully') {
           router.push(`/${userType}/events`);
         }
       }
       deleteModal.onFalse();
     } catch (error) {
-      console.log('Failed to delete event', error);
+      showError(getErrorMessage(error));
     }
   };
 
@@ -161,8 +169,6 @@ const EventDetailsPage = () => {
       setAnalyticsRefreshKey((currentKey) => currentKey + 1);
     }
   };
-
-  console.log('Event Details:', event?.status);
 
   return (
     <>
@@ -332,9 +338,11 @@ const EventDetailsPage = () => {
                       <div className="w-full sm:w-auto">
                         <Button
                           onClick={handleUpdateEvent}
+                          disabled={isUpdating}
                           variant="default"
                           className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-3xl px-4 py-2 sm:w-auto"
                         >
+                          {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
                           {event?.status === 'active' ? 'Unpublish' : 'Publish'}
                         </Button>
                       </div>

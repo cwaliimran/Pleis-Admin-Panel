@@ -26,10 +26,18 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [deleteOrganization, { isLoading: deleteOrganizationLoading }] = useDeleteOrganizationMutation();
+
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
 
   const {
     data: apiData,
@@ -41,6 +49,8 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     limit,
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -146,10 +156,15 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
           setDate(val);
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
       />

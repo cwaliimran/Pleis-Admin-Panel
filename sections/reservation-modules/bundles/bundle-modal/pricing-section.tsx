@@ -27,9 +27,11 @@ const PricingSection = ({ originalPrice, bundlePrice, discount }: PricingSection
           <RHFTextField
             type="number"
             name="price"
-            placeholder="0.00"
+            placeholder="0"
             label="Bundle Price (EUR)"
             className="h-11 border border-gray-300 bg-white dark:border-gray-500"
+            step={0.1}
+            min={0}
           />
         </div>
       </div>

@@ -8,10 +8,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGeteventsQuery } from '@/store/Reducer/events';
+import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useAddQrcodeMutation } from '@/store/Reducer/qrcodes-api';
 import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
 import { useGetVenuesQuery } from '@/store/Reducer/venue';
+import { RootState } from '@/store/store';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,11 +21,10 @@ import { X } from 'lucide-react';
 import QRCode from 'qrcode';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
 import { QR_TYPE_CONFIG } from './constants';
 import { QRCodeType } from './types';
-import { useAuth } from '@/hooks/useAuth';
-import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 
 interface QRGeneratorModalProps {
   isOpen: boolean;
@@ -75,9 +76,9 @@ type QRFormValues = {
 
 export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onClose, qrType }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { user } = useAuth();
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
-  console.log('user', user?.basicInfo?.companyDetails?.loyaltySettings?.title);
+  // console.log('Loyalty Club', user?.basicInfo?.companyDetails?.loyaltySettings?.title);
 
   // Fixed colors (not customizable)
   const color = '#1d1d1f';

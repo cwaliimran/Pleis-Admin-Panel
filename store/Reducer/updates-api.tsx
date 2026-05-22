@@ -9,7 +9,7 @@ export const updatesApi = createApi({
 
   endpoints: (builder) => ({
     getUpdates: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer, organizations }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, organizations, sortBy, sortOrder }) => {
         const params: any = {
           // keyword: search,
           page: page + 1,
@@ -21,6 +21,8 @@ export const updatesApi = createApi({
         if (organizations) params.organizations = organizations;
         if (status) params.status = status;
         if (search) params.keyword = search;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
 
         return {
           url: '',

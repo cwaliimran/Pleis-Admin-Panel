@@ -25,6 +25,14 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
+
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
@@ -47,6 +55,8 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
     date: date ? formatDate(date) : undefined,
     companyOrganizer: selectedCompany || undefined,
     organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
   });
 
   const [localData, setLocalData] = useState<any[]>([]);
@@ -172,10 +182,15 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           setDate(val);
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
       />

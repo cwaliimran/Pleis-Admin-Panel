@@ -30,6 +30,8 @@ import UserEvents from './userEvents';
 import UserLoyalty from './userLoyalty';
 import UserNotifications from './userNotifications';
 import CustomBadge from '@/components/ui/custom-badge';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 interface IdType {
   userType?: string;
@@ -38,6 +40,8 @@ interface IdType {
 const OrganizationDetailPage = ({ userType }: IdType) => {
   const id = useParams<any>();
   const organizationId = id;
+
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
   const router = useRouter();
   const openModal = useBoolean();
@@ -272,10 +276,12 @@ const OrganizationDetailPage = ({ userType }: IdType) => {
 
                 <div className="flex justify-end">
                   <Pencil className="cursor-pointer text-gray-500 transition-colors hover:text-gray-700" onClick={openModal.onTrue} />
-                  <Trash2
-                    className="ml-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
-                    onClick={() => handleDelete(organizationData?._id)}
-                  />
+                  {user?.accountState?.userType !== 'manager' && (
+                    <Trash2
+                      className="ml-4 cursor-pointer text-gray-500 transition-colors hover:text-gray-700"
+                      onClick={() => handleDelete(organizationData?._id)}
+                    />
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">

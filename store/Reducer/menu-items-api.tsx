@@ -13,7 +13,7 @@ export const menuItemsApi = createApi({
      * ───────────────────────────────────────────── */
 
     getMenuItems: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer, organization }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, organization, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -24,6 +24,8 @@ export const menuItemsApi = createApi({
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (organization) params.organization = organization;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
 
         return {
           url: '',

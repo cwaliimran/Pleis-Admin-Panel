@@ -12,6 +12,8 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import UserListTypeTableRow from './user-list-type-table-row';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 const MEMBERHEADLABEL = [
   { id: 'image', label: 'Image', align: 'left' },
@@ -81,6 +83,8 @@ const UserListTypeTable: FC<PageProps> = ({
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
+  const { user } = useSelector((state: RootState) => state.userSlice);
+
   const USERHEADLABEL = [
     { id: 'image', label: 'Image', align: 'left' },
     { id: 'name', label: 'Name', align: 'left' },
@@ -92,7 +96,8 @@ const UserListTypeTable: FC<PageProps> = ({
     { id: 'status', label: 'Status', align: 'left' },
     { id: 'region', label: 'Region', align: 'left' },
     { id: 'createdAt', label: 'Created At', align: 'left' },
-    { id: 'action', label: 'Action', align: 'left' },
+    // { id: 'action', label: 'Action', align: 'left' },
+    ...(user.accountState?.userType !== 'manager' ? [{ id: 'action', label: 'Action', align: 'left' }] : []),
   ];
 
   const methods = useForm({
