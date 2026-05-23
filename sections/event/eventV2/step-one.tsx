@@ -237,7 +237,7 @@ const StepOne = ({
               { label: 'Active', value: 'active' },
               { label: 'Inactive', value: 'inactive' },
             ]}
-            className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
+            className="h-10 cursor-pointer rounded-4xl border-slate-600 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
           />
         </div>
       </div>

@@ -1,17 +1,9 @@
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
 import { useGeteventAnalyticsByIdQuery } from '@/store/Reducer/events';
 import React from 'react';
-import {
-  EventPerformanceComparsionInUserDetails,
-  InterestPerCategory,
-  PreferenceTrend,
-  RegionOverview,
-  SaleTrend,
-  ViewershipTrend,
-  VisitorGanderAnalytics,
-} from '../users';
-import { dateTabs } from '../users/data';
+import { VisitorGanderAnalytics } from '../users';
+import EventTopInterests from './components/event-top-interests';
+import EventAgeDistribution from './components/event-age-distribution';
+import EventViewsOverTime from './components/event-views-over-time';
 
 const dateFilterMap: Record<string, string> = {
   today: 'today',
@@ -70,15 +62,15 @@ const EventAnalytics = ({ id, refreshKey = 0 }: { id: string; refreshKey?: numbe
     };
   };
 
-  const salesTrendData = (analyticsData?.salesOverTime ?? analyticsData?.reservationsOverTime ?? []).map((item: any) => mapStatToRow(item, 'sales'));
+  // const salesTrendData = (analyticsData?.salesOverTime ?? analyticsData?.reservationsOverTime ?? []).map((item: any) => mapStatToRow(item, 'sales'));
 
   const viewsOverTimeData = (analyticsData?.eventViewsByTime ?? analyticsData?.viewsOverTime ?? analyticsData?.weeklyViews ?? []).map((item: any) =>
     mapStatToRow(item, 'views')
   );
 
-  const eventPerformanceData = (analyticsData?.eventOverTime ?? analyticsData?.revenueAnalytics?.trend ?? []).map((item: any) =>
-    mapStatToRow(item, 'revenue')
-  );
+  // const eventPerformanceData = (analyticsData?.eventOverTime ?? analyticsData?.revenueAnalytics?.trend ?? []).map((item: any) =>
+  //   mapStatToRow(item, 'revenue')
+  // );
 
   const ageDemographicsData =
     viewerShipTrends?.ageDemographics ??
@@ -95,12 +87,12 @@ const EventAnalytics = ({ id, refreshKey = 0 }: { id: string; refreshKey?: numbe
       percent: Number(value?.percentage ?? 0),
     }));
 
-  const regionOverviewData = viewerShipTrends?.regionOverview ?? [];
+  // const regionOverviewData = viewerShipTrends?.regionOverview ?? [];
   const interestPerCategoryData = analyticsData?.interestPerCategory ?? [];
 
   return (
     <div>
-      <div className="flex items-start justify-start gap-4 p-2 md:flex-row md:items-center">
+      {/* <div className="flex items-start justify-start gap-4 p-2 md:flex-row md:items-center">
         <Tabs value={dateTab} onValueChange={setDateTab}>
           <div className="scrollbar-hide overflow-x-auto whitespace-nowrap">
             <TabsList className="flex items-center gap-2 rounded-full border bg-[#EBEBEB] p-1 dark:border-white dark:bg-black">
@@ -116,33 +108,35 @@ const EventAnalytics = ({ id, refreshKey = 0 }: { id: string; refreshKey?: numbe
             </TabsList>
           </div>
         </Tabs>
-      </div>
+      </div> */}
 
       <div className="mt-5 grid w-full grid-cols-12 gap-4">
-        <div className="col-span-12 lg:col-span-6">
+        {/* <div className="col-span-12 lg:col-span-6">
           <SaleTrend chartData={salesTrendData} isLoading={isLoading || isFetching} />
-        </div>
+        </div> */}
 
         <div className="col-span-12 lg:col-span-6">
-          <PreferenceTrend viewData={viewsOverTimeData} isLoading={isLoading || isFetching} />
+          <EventViewsOverTime viewData={viewsOverTimeData} isLoading={isLoading || isFetching} />
         </div>
 
-        <div className="col-span-12 lg:col-span-12">
+        {/* <div className="col-span-12 lg:col-span-12">
           <EventPerformanceComparsionInUserDetails chartData={eventPerformanceData} isLoading={isLoading || isFetching} />
-        </div>
+        </div> */}
 
-        <div className="col-span-12 lg:col-span-6">
+        {/* <div className="col-span-12 lg:col-span-6">
           <RegionOverview data={regionOverviewData} isLoading={isLoading || isFetching} />
-        </div>
+        </div> */}
+
         <div className="col-span-12 lg:col-span-6">
-          <ViewershipTrend ageDemographics={ageDemographicsData} />
+          <EventAgeDistribution ageDemographics={ageDemographicsData} />
         </div>
 
         <div className="col-span-12 lg:col-span-6">
-          <VisitorGanderAnalytics data={genderAnalyticsData} isLoading={isLoading || isFetching} />
+          <VisitorGanderAnalytics title="Audience Gender Distribution" data={genderAnalyticsData} isLoading={isLoading || isFetching} />
         </div>
+
         <div className="col-span-12 lg:col-span-6">
-          <InterestPerCategory data={interestPerCategoryData} isLoading={isLoading || isFetching} />
+          <EventTopInterests data={interestPerCategoryData} isLoading={isLoading || isFetching} />
         </div>
       </div>
     </div>

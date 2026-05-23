@@ -124,7 +124,7 @@ const RHFMultiSelectField: FC<RHFMultiSelectFieldProps> = ({
                           return (
                             <CommandItem
                               key={opt.value}
-                              value={opt.value}
+                              value={opt.label}
                               onSelect={() => {
                                 if (!optionDisabled) {
                                   toggle(opt.value);

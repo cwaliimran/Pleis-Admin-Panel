@@ -60,6 +60,9 @@ const EventDetailsPage = () => {
   const totalTicketAmount = Number(event?.ticketingStats?.grandTotal?.amount ?? 0);
   const totalViews = Number(event?.eventViews ?? event?.meta?.viewsCount ?? event?.viewsCount ?? 0);
 
+  // This is dummy reference update this according to the actual data structure once backend is ready
+  const totalLikes = Number(event?.eventLikes ?? event?.meta?.likesCount ?? event?.likesCount ?? 0);
+
   const [cloneEvent] = useCloneeventMutation();
   const userType = window?.location?.pathname?.split('/')[1];
 
@@ -466,6 +469,18 @@ const EventDetailsPage = () => {
                       </div>
                     </div>
                     <div className="mt-2 flex items-center text-4xl font-bold">{totalViews.toLocaleString()}</div>
+                  </CardHeader>
+                </Card>
+
+                {/* Likes */}
+                <Card className="dark:bg-secondary">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold">Likes</h3>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center text-4xl font-bold">{totalLikes.toLocaleString()}</div>
                   </CardHeader>
                 </Card>
 
