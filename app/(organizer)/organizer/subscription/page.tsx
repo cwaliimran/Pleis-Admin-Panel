@@ -1,5 +1,5 @@
 import Header from '@/app/common/header/header';
-import { OrganizerSubscriptionView } from '@/sections/subscription/organizer-subscription/organizer-subscription-view';
+import { OrganizerSubscriptionRoleView } from '@/sections/subscription/organizer-subscription/organizer-subscription-role-view';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const Page = () => {
         ]}
       />
 
-      <OrganizerSubscriptionView />
+      <OrganizerSubscriptionRoleView />
     </div>
   );
 };

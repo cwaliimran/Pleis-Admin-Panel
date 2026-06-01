@@ -12,6 +12,7 @@ import { Settings2 } from 'lucide-react';
 import { FC } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import EventTableRowV2 from './event-table-row';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 // import EventTableRow from './eventTableRow';
 
 const headLabel = [
@@ -85,6 +86,8 @@ interface PageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
+  organization?: string;
+  onOrganizationChange?: (organization: string) => void;
   startDate?: Date;
   endDate?: Date;
   userType?: any;
@@ -106,6 +109,8 @@ const EventTable: FC<PageProps> = ({
   search = '',
   status = '',
   onStatusChange = () => {},
+  organization = '',
+  onOrganizationChange = () => {},
   startDate,
   endDate,
   onDateChange = () => {},
@@ -118,6 +123,18 @@ const EventTable: FC<PageProps> = ({
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
+
+  const { data: organizationData } = useGetOrganizationQuery(
+    {
+      page: 0,
+      search: '',
+      limit: '2000',
+      status: '',
+    },
+    {
+      skip: userType !== 'super-admin',
+    }
+  );
 
   const sortConfig: SortConfig = {
     key: sortBy || null,
@@ -193,6 +210,22 @@ const EventTable: FC<PageProps> = ({
                             { value: 'inactive', label: 'Inactive' },
                           ],
                         },
+                        ...(userType === 'super-admin'
+                          ? [
+                              {
+                                id: 'organization',
+                                label: 'Organization',
+                                placeholder: 'Select by Organization',
+                                value: organization,
+                                onChange: onOrganizationChange,
+                                options:
+                                  organizationData?.data.map((org: any) => ({
+                                    value: org._id,
+                                    label: org?.basicInfo?.name,
+                                  })) || [],
+                              },
+                            ]
+                          : []),
                       ]}
                       searchFilter={{
                         placeholder: 'Search Events...',

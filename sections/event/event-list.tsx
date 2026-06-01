@@ -35,6 +35,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [selectedOrganization, setSelectedOrganization] = useState<string>(organization || '');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState<string>('');
@@ -59,7 +60,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
     // ...(organization ? { organization } : {}),
-    organization: userType === 'organizer' ? organizerOrganizationIds : organization || undefined,
+    organization: userType === 'organizer' ? organizerOrganizationIds : selectedOrganization || undefined,
     organizationId, // This param is just to recall header data fetching when organization changes
     sortBy: sortBy || undefined,
     sortOrder: sortOrder || undefined,
@@ -139,6 +140,11 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     setPage(1);
   };
 
+  const onOrganizationChange = (newOrganization: string) => {
+    setSelectedOrganization(newOrganization);
+    setPage(1);
+  };
+
   const onDateChange = (newStartDate: Date | undefined, newEndDate: Date | undefined) => {
     setStartDate(newStartDate);
     setEndDate(newEndDate);
@@ -150,6 +156,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     setLimit(10);
     setSearch('');
     setStatus('');
+    setSelectedOrganization('');
     setStartDate(undefined);
     setEndDate(undefined);
     setSortBy('');
@@ -210,6 +217,8 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
         page={page}
         status={status}
         onStatusChange={onStatusChange}
+        organization={selectedOrganization}
+        onOrganizationChange={onOrganizationChange}
         startDate={startDate}
         endDate={endDate}
         onDateChange={onDateChange}
