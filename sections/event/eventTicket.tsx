@@ -16,21 +16,13 @@ const EventTicket = ({ event }: { event: any }) => {
   const [updateTicketing] = useUpdateTicketingMutation();
   const [updatingTicketId, setUpdatingTicketId] = useState<string | null>(null);
 
-  // New ticketTypeStats array
   const ticketTypeStats = data?.ticketTypeStats || [];
+  const ticketPerformance = data?.ticketPerformance || [];
+  const ticketingStatsTickets = data?.ticketingStats?.tickets || [];
+  const slotBasedSales = data?.ticketingStats?.slotBasedSales;
 
-  // Calculate totals from ticketTypeStats
   const totalSold = ticketTypeStats.reduce((acc: number, ticket: any) => acc + (ticket.sold || 0), 0);
   const totalCreated = ticketTypeStats.reduce((acc: number, ticket: any) => acc + (ticket.totalCreated || 0), 0);
-
-  // const scannedProgress = data?.scannedTicketProgress || {
-  //   totalSold: 0,
-  //   scanned: { count: 0, percentage: 0 },
-  //   notScanned: { count: 0, percentage: 0 },
-  // };
-
-  // const ticketPerformanceWeekly = data?.ticketPerformanceWeekly || [];
-  const ticketingStatsTickets = data?.ticketingStats?.tickets || [];
 
   // TODO: wire up when API provides real data
   // const publishDate = event?.publishedAt
@@ -86,8 +78,7 @@ const EventTicket = ({ event }: { event: any }) => {
                       const sold = ticket.sold || 0;
                       const soldPercentage = totalTickets > 0 ? (sold / totalTickets) * 100 : 0;
 
-                      const matchedStats = ticketingStatsTickets.find((t: any) => t.ticketId === ticket.ticketId);
-                      const scanned = matchedStats?.used?.count ?? 0;
+                      const scanned = ticket.scanned?.count ?? 0;
                       const scannedPercentage = totalTickets > 0 ? (scanned / totalTickets) * 100 : 0;
 
                       return (
@@ -180,13 +171,13 @@ const EventTicket = ({ event }: { event: any }) => {
                 <CardHeader>
                   <CardTitle>Ticket Sales Over Time</CardTitle>
                 </CardHeader>
-                <TicketSalesChart />
+                <TicketSalesChart ticketPerformance={ticketPerformance} />
               </Card>
               <SalesByTicketType
                 tickets={ticketingStatsTickets}
-                event={event}
                 updatingTicketId={updatingTicketId}
                 onStatusToggle={handleStatusToggle}
+                slotBasedSales={slotBasedSales}
               />
             </div>
           </div>

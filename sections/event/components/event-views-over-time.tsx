@@ -48,15 +48,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const EventViewsOverTime = ({ viewData = defaultViewData, isLoading = false }: EventViewsOverTimeProps) => {
-  const data = viewData.length > 0 ? viewData : defaultViewData;
+const EventViewsOverTime = ({ viewData = [], isLoading = false }: EventViewsOverTimeProps) => {
+  const totalViews = viewData.reduce((sum, item) => sum + Number(item.visitors ?? 0), 0);
+  const isEmpty = viewData.length === 0 || totalViews === 0;
 
-  const totalViews = data.reduce((sum, item) => sum + Number(item.visitors ?? 0), 0);
-  const topSlot = data.reduce(
-    (prev, curr) => (Number(curr.visitors ?? 0) > Number(prev.visitors ?? 0) ? curr : prev),
-    data[0] ?? { ageGroup: 'N/A', visitors: 0 }
-  );
-  const topSlotPercentage = totalViews > 0 ? Math.round((Number(topSlot.visitors ?? 0) / totalViews) * 100) : 0;
+  const topSlot = !isEmpty
+    ? viewData.reduce(
+        (prev, curr) => (Number(curr.visitors ?? 0) > Number(prev.visitors ?? 0) ? curr : prev),
+        viewData[0]
+      )
+    : null;
+  const topSlotPercentage = topSlot ? Math.round((Number(topSlot.visitors) / totalViews) * 100) : 0;
 
   return (
     <Card className="h-[450px] dark:bg-[#171717]">
@@ -66,10 +68,14 @@ const EventViewsOverTime = ({ viewData = defaultViewData, isLoading = false }: E
       <CardContent>
         {isLoading ? (
           <Skeleton className="h-[280px] w-full rounded-lg" />
+        ) : isEmpty ? (
+          <div className="flex h-[300px] w-full flex-col items-center justify-center gap-2">
+            <p className="text-muted-foreground text-sm">No views data available</p>
+          </div>
         ) : (
-          <div className="h-[300px] w-full">
+          <div className="h-75 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
+              <LineChart data={viewData} margin={{ top: 8, right: 16, left: -16, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="4 4" vertical={true} stroke="#e2e8f0" opacity={0.6} />
                 <XAxis
                   dataKey="ageGroup"
@@ -78,7 +84,7 @@ const EventViewsOverTime = ({ viewData = defaultViewData, isLoading = false }: E
                   style={{ fontSize: '12px' }}
                   interval="preserveStartEnd"
                 />
-                <YAxis axisLine={false} tickLine={false} style={{ fontSize: '12px' }} />
+                <YAxis axisLine={false} tickLine={false} style={{ fontSize: '12px' }} allowDecimals={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Line
                   type="monotone"
@@ -93,11 +99,13 @@ const EventViewsOverTime = ({ viewData = defaultViewData, isLoading = false }: E
           </div>
         )}
 
-        <div className="mx-4 mt-4">
-          <p className="text-muted-foreground text-[12px] font-medium">
-            <span className="text-xl font-bold text-black dark:text-white">{topSlotPercentage}%</span> views came from {topSlot.ageGroup}
-          </p>
-        </div>
+        {!isLoading && !isEmpty && topSlot && (
+          <div className="mx-4 mt-4">
+            <p className="text-muted-foreground text-[12px] font-medium">
+              <span className="text-xl font-bold text-black dark:text-white">{topSlotPercentage}%</span> views came from {topSlot.ageGroup}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

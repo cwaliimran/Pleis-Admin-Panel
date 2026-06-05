@@ -110,18 +110,17 @@ export const eventApi = createApi({
         const dateFilter = typeof arg === 'string' ? undefined : arg?.dateFilter ?? arg?.eventDateFilter;
 
         const params: Record<string, any> = {};
-        if (id) params.event = id;
         if (dateFilter) params.dateFilter = dateFilter;
 
         return {
-        url: '',
-        method: 'GET',
-        params,
-        roleBasedRouting: {
-          adminRoute: API_ROUTES.ADMIN_EVENTS_ANALYTICS,
-          organizerRoute: API_ROUTES.ORGANIZER_EVENTS_ANALYTICS,
-        },
-      };
+          url: '',
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_EVENTS_ANALYTICS_BY_ID(id),
+            organizerRoute: API_ROUTES.ORGANIZER_EVENTS_ANALYTICS_BY_ID(id),
+          },
+        };
       },
       transformResponse: (res) => res.data,
     }),

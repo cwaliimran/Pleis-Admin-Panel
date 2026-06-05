@@ -3,42 +3,14 @@
 import { useTheme } from 'next-themes';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-// Daily data for ~30 days — every 5th label shown via interval prop
-const DUMMY_DATA = [
-  { day: 'May 1', value: 8 },
-  { day: 'May 2', value: 14 },
-  { day: 'May 3', value: 11 },
-  { day: 'May 4', value: 20 },
-  { day: 'May 5', value: 17 },
-  { day: 'May 6', value: 25 },
-  { day: 'May 7', value: 22 },
-  { day: 'May 8', value: 30 },
-  { day: 'May 9', value: 28 },
-  { day: 'May 10', value: 35 },
-  { day: 'May 11', value: 40 },
-  { day: 'May 12', value: 38 },
-  { day: 'May 13', value: 45 },
-  { day: 'May 14', value: 42 },
-  { day: 'May 15', value: 55 },
-  { day: 'May 16', value: 50 },
-  { day: 'May 17', value: 48 },
-  { day: 'May 18', value: 60 },
-  { day: 'May 19', value: 58 },
-  { day: 'May 20', value: 65 },
-  { day: 'May 21', value: 70 },
-  { day: 'May 22', value: 68 },
-  { day: 'May 23', value: 75 },
-  { day: 'May 24', value: 72 },
-  { day: 'May 25', value: 80 },
-  { day: 'May 26', value: 77 },
-  { day: 'May 27', value: 85 },
-  { day: 'May 28', value: 82 },
-  { day: 'May 29', value: 90 },
-  { day: 'May 30', value: 88 },
-];
+const formatChartDate = (dateStr: string): string => {
+  const date = new Date(dateStr + 'T00:00:00');
+  if (isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
 
 interface TicketSalesChartProps {
-  chartData?: Array<{ day: string; value: number }>;
+  ticketPerformance?: Array<{ date: string; value: number }>;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -63,13 +35,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const TicketSalesChart = ({ chartData }: TicketSalesChartProps) => {
-  const data = chartData && chartData.length > 0 ? chartData : DUMMY_DATA;
+const TicketSalesChart = ({ ticketPerformance }: TicketSalesChartProps) => {
+  const data = (ticketPerformance ?? []).map((p) => ({ day: formatChartDate(p.date), value: p.value }));
+  const interval = data.length <= 10 ? 0 : Math.floor(data.length / 6);
+
+  if (data.length === 0) {
+    return (
+      <div className="flex h-75 w-full items-center justify-center px-2 pb-4">
+        <p className="text-muted-foreground text-sm">No sales data available</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-[300px] w-full px-2 pb-4">
+    <div className="h-75 w-full px-2 pb-4">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 48, left: -16, bottom: 0 }}>
           <defs>
             <linearGradient id="ticketSalesGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#2563EB" stopOpacity={0.3} />
@@ -77,8 +58,8 @@ const TicketSalesChart = ({ chartData }: TicketSalesChartProps) => {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.4} />
-          <XAxis dataKey="day" axisLine={false} tickLine={false} style={{ fontSize: '11px' }} interval={4} />
-          <YAxis axisLine={false} tickLine={false} style={{ fontSize: '11px' }} />
+          <XAxis dataKey="day" axisLine={false} tickLine={false} style={{ fontSize: '11px' }} interval={interval} padding={{ left: 10, right: 10 }} />
+          <YAxis axisLine={false} tickLine={false} style={{ fontSize: '11px' }} allowDecimals={false} domain={[0, 'auto']} />
           <Tooltip cursor={{ stroke: '#2563EB', strokeWidth: 1, strokeDasharray: '4 4' }} content={<CustomTooltip />} />
           <Area
             type="monotone"

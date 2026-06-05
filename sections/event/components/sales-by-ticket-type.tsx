@@ -16,59 +16,33 @@ type TimeSlotRow = {
 
 type SalesByTicketTypeProps = {
   tickets: any[];
-  event: any;
   updatingTicketId: string | null;
   onStatusToggle: (ticketId: string, currentStatus: string) => void;
+  slotBasedSales?: { eventId: string; tickets: any[] };
 };
 
 const formatPrice = (amount: number) => `€${Number(amount || 0).toFixed(2)}`;
-
-const getMockModifierPricing = (ticket: any) => {
-  const regularPrice = Number(ticket.price ?? 20);
-  const earlyBirdPrice = Number(ticket.timeSensitivePricing?.earlyBird?.discountedPrice ?? Math.max(regularPrice - 10, 0));
-  const lastMinutePrice = Number(ticket.timeSensitivePricing?.lastMinute?.discountedPrice ?? Math.max(regularPrice - 10, 0));
-  const fastTrackFee = Number(ticket.fastTrackEntry?.extraPrice ?? 5);
-  const transferFee = Number(ticket.transferFee ?? 3);
-
-  return {
-    regularPrice,
-    earlyBirdPrice,
-    lastMinutePrice,
-    fastTrackFee,
-    transferFee,
-  };
-};
 
 const toNumber = (value: unknown, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const getDisplayCount = (count: number, sold: number, totalCreated: number, ratio: number) => {
-  if (count > 0) return count;
-  const baseline = sold > 0 ? sold : Math.max(Math.floor(totalCreated * 0.35), 1);
-  return Math.max(Math.floor(baseline * ratio), 1);
-};
+const buildTimeSlotRows = (slotTicket: any): TimeSlotRow[] => {
+  const rawSlots = slotTicket?.slots || [];
+  if (!Array.isArray(rawSlots)) return [];
 
-const buildTimeSlotRows = (ticket: any): TimeSlotRow[] => {
-  const rawDateTimeSlots =
-    ticket?.timingSlots?.dateTimeSlots || ticket?.timingSlots?.slots || ticket?.timeSlotConfig || ticket?.features?.timeSlotConfig || [];
-
-  if (!Array.isArray(rawDateTimeSlots)) return [];
-
-  return rawDateTimeSlots.flatMap((daySlot: any, dayIndex: number) => {
-    const date = daySlot?.date || 'N/A';
+  return rawSlots.flatMap((daySlot: any) => {
     const timeSlots = Array.isArray(daySlot?.timeSlots) ? daySlot.timeSlots : [];
 
-    return timeSlots.map((slot: any, slotIndex: number) => {
+    return timeSlots.map((slot: any) => {
       const quantity = toNumber(slot?.quantity);
-      const fallbackSold = Math.min(quantity, Math.max(0, Math.floor(quantity * 0.45) + slotIndex + dayIndex));
-      const sold = Math.min(quantity, toNumber(slot?.sold ?? slot?.used?.count ?? slot?.sales, fallbackSold));
-      const scanned = Math.min(sold, toNumber(slot?.scanned ?? slot?.used?.count, Math.floor(sold * 0.7)));
-      const remaining = Math.max(quantity - sold, 0);
+      const sold = toNumber(slot?.sold, 0);
+      const scanned = toNumber(slot?.scanned, 0);
+      const remaining = toNumber(slot?.remaining, Math.max(quantity - sold, 0));
 
       return {
-        date,
+        date: slot?.date || daySlot?.date || 'N/A',
         startTime: slot?.startTime || '--:--',
         endTime: slot?.endTime || '--:--',
         quantity,
@@ -80,29 +54,7 @@ const buildTimeSlotRows = (ticket: any): TimeSlotRow[] => {
   });
 };
 
-const buildMockTimeSlotRows = (baseDate: string, capacity: number): TimeSlotRow[] => {
-  const safeCapacity = Math.max(capacity, 20);
-
-  const makeRow = (startTime: string, endTime: string, multiplier: number): TimeSlotRow => {
-    const quantity = Math.max(Math.floor(safeCapacity * multiplier), 10);
-    const sold = Math.floor(quantity * 0.65);
-    const scanned = Math.floor(sold * 0.75);
-
-    return {
-      date: baseDate,
-      startTime,
-      endTime,
-      quantity,
-      sold,
-      scanned,
-      remaining: Math.max(quantity - sold, 0),
-    };
-  };
-
-  return [makeRow('18:00', '19:30', 0.3), makeRow('19:30', '21:00', 0.35), makeRow('21:00', '22:30', 0.35)];
-};
-
-const SalesByTicketType = ({ tickets, event, updatingTicketId, onStatusToggle }: SalesByTicketTypeProps) => {
+const SalesByTicketType = ({ tickets, updatingTicketId, onStatusToggle, slotBasedSales }: SalesByTicketTypeProps) => {
   const [selectedTimeSlotTicket, setSelectedTimeSlotTicket] = useState<{ title: string; rows: TimeSlotRow[] } | null>(null);
 
   return (
@@ -111,24 +63,23 @@ const SalesByTicketType = ({ tickets, event, updatingTicketId, onStatusToggle }:
         <CardHeader>
           <CardTitle className="text-md font-semibold">Sales by Ticket Type</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 pt-0">
+        <CardContent className="max-h-100 space-y-4 overflow-y-auto pt-0">
           {tickets.length === 0 && <p className="text-muted-foreground py-4 text-sm">No ticket types available</p>}
 
           {tickets.map((ticket: any, idx: number) => {
             const isOnSale = ticket.saleStatus === 'onSale';
             const isActive = ticket.status === 'active';
-            const sold = ticket.sold ?? ticket.used?.count ?? 0;
-            const totalCreated = ticket.totalCreated ?? 0;
-            const earlyBird = getDisplayCount(ticket.earlyBird?.count ?? 0, sold, totalCreated, 0.4);
-            const lastMinute = getDisplayCount(ticket.lastMinute?.count ?? 0, sold, totalCreated, 0.25);
-            const fastTrack = getDisplayCount(ticket.fastTrack?.count ?? 0, sold, totalCreated, 0.2);
-            const transfer = getDisplayCount(ticket.transfer?.count ?? 0, sold, totalCreated, 0.15);
-            const totalRevenue = ticket.totalRevenue ?? ticket.revenue ?? ticket.used?.amount ?? 0;
-            const { regularPrice, earlyBirdPrice, lastMinutePrice, fastTrackFee, transferFee } = getMockModifierPricing(ticket);
-            const timeSlotRows = buildTimeSlotRows(ticket);
-            // const hasTimeSlots = Boolean(ticket?.timingSlots?.enabled) || Boolean(ticket?.features?.timeslot) || timeSlotRows.length > 0;
-            const baseDate = String(event?.schedule?.startDateTime || '').split(/[ T]/)[0] || '2026-06-01';
-            const modalRows = timeSlotRows.length > 0 ? timeSlotRows : buildMockTimeSlotRows(baseDate, toNumber(totalCreated, 40));
+            const sold = toNumber(ticket.sold ?? ticket.total?.count, 0);
+            const totalCreated = toNumber(ticket.totalCreated, 0);
+            const earlyBird = toNumber(ticket.earlyBird?.count, 0);
+            const lastMinute = toNumber(ticket.lastMinute?.count, 0);
+            const fastTrack = toNumber(ticket.fastTrack?.count, 0);
+            const transfer = toNumber(ticket.transfer?.count, 0);
+            const totalRevenue = toNumber(ticket.revenue ?? ticket.total?.amount, 0);
+            const regularPrice = sold > 0 ? totalRevenue / sold : 0;
+
+            const slotTicket = slotBasedSales?.tickets?.find((t: any) => t.ticketId === ticket.ticketId);
+            const modalRows = buildTimeSlotRows(slotTicket);
 
             return (
               <div key={ticket.ticketId || idx}>
@@ -206,8 +157,9 @@ const SalesByTicketType = ({ tickets, event, updatingTicketId, onStatusToggle }:
                     </div>
                     <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{earlyBird}</p>
                     <p className="text-muted-foreground text-xs">tickets</p>
-                    <p className="text-sm font-bold text-amber-700 dark:text-amber-300">{formatPrice(earlyBirdPrice)}</p>
-                    <p className="text-xs text-green-600 dark:text-green-400">-{formatPrice(regularPrice - earlyBirdPrice)}</p>
+                    {ticket.earlyBird?.amount > 0 && (
+                      <p className="text-sm font-bold text-amber-700 dark:text-amber-300">{formatPrice(ticket.earlyBird.amount)}</p>
+                    )}
                   </div>
 
                   <div className="rounded-lg border border-purple-200 bg-purple-50 p-3 dark:border-purple-800/30 dark:bg-purple-900/20">
@@ -217,8 +169,9 @@ const SalesByTicketType = ({ tickets, event, updatingTicketId, onStatusToggle }:
                     </div>
                     <p className="text-lg font-bold text-purple-700 dark:text-purple-300">{lastMinute}</p>
                     <p className="text-muted-foreground text-xs">tickets</p>
-                    <p className="text-sm font-bold text-purple-700 dark:text-purple-300">{formatPrice(lastMinutePrice)}</p>
-                    <p className="text-xs text-green-600 dark:text-green-400">-{formatPrice(regularPrice - lastMinutePrice)}</p>
+                    {ticket.lastMinute?.amount > 0 && (
+                      <p className="text-sm font-bold text-purple-700 dark:text-purple-300">{formatPrice(ticket.lastMinute.amount)}</p>
+                    )}
                   </div>
 
                   <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800/30 dark:bg-blue-900/20">
@@ -228,8 +181,9 @@ const SalesByTicketType = ({ tickets, event, updatingTicketId, onStatusToggle }:
                     </div>
                     <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{fastTrack}</p>
                     <p className="text-muted-foreground text-xs">tickets</p>
-                    <p className="text-sm font-bold text-blue-700 dark:text-blue-300">{formatPrice(regularPrice + fastTrackFee)}</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400">+{formatPrice(fastTrackFee)}</p>
+                    {ticket.fastTrack?.amount > 0 && (
+                      <p className="text-sm font-bold text-blue-700 dark:text-blue-300">{formatPrice(ticket.fastTrack.amount)}</p>
+                    )}
                   </div>
 
                   <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-800/60 dark:bg-gray-900/20">
@@ -239,8 +193,9 @@ const SalesByTicketType = ({ tickets, event, updatingTicketId, onStatusToggle }:
                     </div>
                     <p className="text-lg font-bold text-gray-700 dark:text-gray-300">{transfer}</p>
                     <p className="text-muted-foreground text-xs">tickets</p>
-                    <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{formatPrice(regularPrice + transferFee)}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">+{formatPrice(transferFee)} fee</p>
+                    {ticket.transfer?.amount > 0 && (
+                      <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{formatPrice(ticket.transfer.amount)}</p>
+                    )}
                   </div>
                 </div>
 

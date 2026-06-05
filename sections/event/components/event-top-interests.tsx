@@ -19,6 +19,7 @@ const VerticalAxisTick = ({ x, y, payload }: any) => (
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const type = payload[0]?.payload?.type;
     return (
       <div
         style={{
@@ -32,7 +33,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         }}
       >
         <div style={{ fontWeight: 600, marginBottom: 4 }}>{label}</div>
-        <div style={{ color: '#2563EB', fontWeight: 600 }}>{payload[0]?.value} interested</div>
+        <div style={{ color: '#2563EB', fontWeight: 600 }}>Count: {payload[0]?.value}</div>
+        {type && <div style={{ fontSize: 11, color: '#64748b', marginTop: 2, textTransform: 'capitalize' }}>Type: {type}</div>}
       </div>
     );
   }
@@ -51,7 +53,7 @@ const resolveTotal = (item: Record<string, any>): number => {
 
 const EventTopInterests = ({ data = [], isLoading = false }: EventTopInterestsProps) => {
   const chartData = data
-    .map((item) => ({ label: resolveLabel(item), total: resolveTotal(item) }))
+    .map((item) => ({ label: resolveLabel(item), total: resolveTotal(item), type: item.type }))
     .sort((a, b) => b.total - a.total)
     .slice(0, 8);
 
@@ -62,9 +64,13 @@ const EventTopInterests = ({ data = [], isLoading = false }: EventTopInterestsPr
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <Skeleton className="h-[300px] w-full rounded-lg" />
+          <Skeleton className="h-75 w-full rounded-lg" />
+        ) : chartData.length === 0 ? (
+          <div className="flex h-82.5 w-full flex-col items-center justify-center gap-2">
+            <p className="text-muted-foreground text-sm">No interest data available</p>
+          </div>
         ) : (
-          <div className="h-[330px] w-full">
+          <div className="h-82.5 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData}
@@ -78,7 +84,7 @@ const EventTopInterests = ({ data = [], isLoading = false }: EventTopInterestsPr
                   tick={<VerticalAxisTick />}
                   interval={0}
                 />
-                <YAxis axisLine={false} tickLine={false} style={{ fontSize: '12px' }} />
+                <YAxis axisLine={false} tickLine={false} style={{ fontSize: '12px' }} allowDecimals={false} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(37,99,235,0.06)' }} />
                 <Bar
                   dataKey="total"
