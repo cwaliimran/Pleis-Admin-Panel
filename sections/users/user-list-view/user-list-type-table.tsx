@@ -97,7 +97,7 @@ const UserListTypeTable: FC<PageProps> = ({
     { id: 'region', label: 'Region', align: 'left' },
     { id: 'createdAt', label: 'Created At', align: 'left' },
     // { id: 'action', label: 'Action', align: 'left' },
-    ...(user.accountState?.userType !== 'manager' ? [{ id: 'action', label: 'Action', align: 'left' }] : []),
+    ...(user?.accountState?.userType !== 'manager' ? [{ id: 'action', label: 'Action', align: 'left' }] : []),
   ];
 
   const methods = useForm({
