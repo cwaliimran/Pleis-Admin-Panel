@@ -36,6 +36,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [selectedOrganization, setSelectedOrganization] = useState<string>(organization || '');
+  const [date, setDate] = useState<Date | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState<string>('');
@@ -57,6 +58,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     search,
     limit,
     status: status === 'all' ? undefined : status,
+    date: date ? formatDate(date) : undefined,
     startDate: startDate ? formatDate(startDate) : undefined,
     endDate: endDate ? formatDate(endDate) : undefined,
     // ...(organization ? { organization } : {}),
@@ -145,9 +147,21 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     setPage(1);
   };
 
+  const onSingleDateChange = (newDate: Date | undefined) => {
+    setDate(newDate);
+    if (newDate) {
+      setStartDate(undefined);
+      setEndDate(undefined);
+    }
+    setPage(1);
+  };
+
   const onDateChange = (newStartDate: Date | undefined, newEndDate: Date | undefined) => {
     setStartDate(newStartDate);
     setEndDate(newEndDate);
+    if (newStartDate !== undefined || newEndDate !== undefined) {
+      setDate(undefined);
+    }
     setPage(1);
   };
 
@@ -157,6 +171,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     setSearch('');
     setStatus('');
     setSelectedOrganization('');
+    setDate(undefined);
     setStartDate(undefined);
     setEndDate(undefined);
     setSortBy('');
@@ -219,6 +234,8 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
         onStatusChange={onStatusChange}
         organization={selectedOrganization}
         onOrganizationChange={onOrganizationChange}
+        date={date}
+        onSingleDateChange={onSingleDateChange}
         startDate={startDate}
         endDate={endDate}
         onDateChange={onDateChange}

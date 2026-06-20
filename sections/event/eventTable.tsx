@@ -88,6 +88,8 @@ interface PageProps {
   onStatusChange?: (status: string) => void;
   organization?: string;
   onOrganizationChange?: (organization: string) => void;
+  date?: Date;
+  onSingleDateChange?: (date: Date | undefined) => void;
   startDate?: Date;
   endDate?: Date;
   userType?: any;
@@ -111,6 +113,8 @@ const EventTable: FC<PageProps> = ({
   onStatusChange = () => {},
   organization = '',
   onOrganizationChange = () => {},
+  date,
+  onSingleDateChange,
   startDate,
   endDate,
   onDateChange = () => {},
@@ -183,6 +187,12 @@ const EventTable: FC<PageProps> = ({
                     {/* Date Range Filters */}
                     <TableFilters
                       className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                      dateFilter={{
+                        id: 'date',
+                        placeholder: 'Select date',
+                        value: date,
+                        onChange: (newDate) => onSingleDateChange?.(newDate),
+                      }}
                       dateRangeFilter={{
                         startDate: {
                           id: 'start-date',
