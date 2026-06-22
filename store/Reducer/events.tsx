@@ -9,7 +9,7 @@ export const eventApi = createApi({
 
   endpoints: (builder) => ({
     getevents: builder.query({
-      query: ({ search, page, status, startDate, endDate, date, limit, organization, sortBy, sortOrder }) => {
+      query: ({ search, page, status, startDate, endDate, date, limit, organization, venue, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -21,6 +21,7 @@ export const eventApi = createApi({
         if (endDate) params.endDate = endDate;
         if (date) params.date = date;
         if (organization) params.organization = organization;
+        if (venue) params.venue = venue;
         if (sortBy) params.sortBy = sortBy;
         if (sortOrder) params.sortOrder = sortOrder;
 

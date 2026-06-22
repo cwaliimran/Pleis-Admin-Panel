@@ -36,6 +36,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [selectedOrganization, setSelectedOrganization] = useState<string>(organization || '');
+  const [selectedVenue, setSelectedVenue] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -63,6 +64,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     endDate: endDate ? formatDate(endDate) : undefined,
     // ...(organization ? { organization } : {}),
     organization: userType === 'organizer' ? organizerOrganizationIds : selectedOrganization || undefined,
+    venue: selectedVenue || undefined,
     organizationId, // This param is just to recall header data fetching when organization changes
     sortBy: sortBy || undefined,
     sortOrder: sortOrder || undefined,
@@ -147,6 +149,11 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     setPage(1);
   };
 
+  const onVenueChange = (newVenue: string) => {
+    setSelectedVenue(newVenue);
+    setPage(1);
+  };
+
   const onSingleDateChange = (newDate: Date | undefined) => {
     setDate(newDate);
     if (newDate) {
@@ -171,6 +178,7 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
     setSearch('');
     setStatus('');
     setSelectedOrganization('');
+    setSelectedVenue('');
     setDate(undefined);
     setStartDate(undefined);
     setEndDate(undefined);
@@ -234,6 +242,8 @@ const EventList = ({ userType, organization }: OrganizationListProps) => {
         onStatusChange={onStatusChange}
         organization={selectedOrganization}
         onOrganizationChange={onOrganizationChange}
+        venue={selectedVenue}
+        onVenueChange={onVenueChange}
         date={date}
         onSingleDateChange={onSingleDateChange}
         startDate={startDate}

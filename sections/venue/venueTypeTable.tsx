@@ -37,8 +37,8 @@ const headLabel = [
   },
   { id: 'floorplan', label: 'Floor Plan', align: 'left' },
   { id: 'location', label: 'Location', align: 'left' },
-  { id: 'status', label: 'Status' },
-  { id: 'updatedAt', label: 'Last Updated' },
+  { id: 'status', label: 'Status', align: 'left', sortable: true, sortKey: 'status' },
+  { id: 'updatedAt', label: 'Last Updated', align: 'left', sortable: true, sortKey: 'lastUpdatedAt' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];
 

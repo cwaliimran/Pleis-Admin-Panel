@@ -477,7 +477,7 @@ const EventDetailsPage = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-bold">Likes</h3>
+                        <h3 className="text-lg font-bold">Favorites</h3>
                       </div>
                     </div>
                     <div className="mt-2 flex items-center text-4xl font-bold">{totalLikes.toLocaleString()}</div>

@@ -13,6 +13,7 @@ import { FC } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import EventTableRowV2 from './event-table-row';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
 // import EventTableRow from './eventTableRow';
 
 const headLabel = [
@@ -42,26 +43,36 @@ const headLabel = [
     id: 'startDate',
     label: 'Start Date',
     align: 'left',
+    sortable: true,
+    sortKey: 'startDate',
   },
   {
     id: 'endDate',
     label: 'End Date',
     align: 'left',
+    sortable: true,
+    sortKey: 'endDate',
   },
   {
     id: 'totalRevenue',
     label: 'Revenue',
     align: 'left',
+    sortable: true,
+    sortKey: 'revenue',
   },
   {
     id: 'totalViews',
     label: 'Views',
     align: 'left',
+    sortable: true,
+    sortKey: 'views',
   },
   {
     id: 'status',
     label: 'Status',
     align: 'left',
+    sortable: true,
+    sortKey: 'status',
   },
   { id: 'actions', label: 'Action', align: 'left', sortable: false },
 ];
@@ -88,6 +99,8 @@ interface PageProps {
   onStatusChange?: (status: string) => void;
   organization?: string;
   onOrganizationChange?: (organization: string) => void;
+  venue?: string;
+  onVenueChange?: (venue: string) => void;
   date?: Date;
   onSingleDateChange?: (date: Date | undefined) => void;
   startDate?: Date;
@@ -113,6 +126,8 @@ const EventTable: FC<PageProps> = ({
   onStatusChange = () => {},
   organization = '',
   onOrganizationChange = () => {},
+  venue = '',
+  onVenueChange = () => {},
   date,
   onSingleDateChange,
   startDate,
@@ -139,6 +154,13 @@ const EventTable: FC<PageProps> = ({
       skip: userType !== 'super-admin',
     }
   );
+
+  const { data: venueData } = useGetVenuesQuery({
+    page: 0,
+    search: '',
+    limit: 2000,
+    status: '',
+  });
 
   const sortConfig: SortConfig = {
     key: sortBy || null,
@@ -236,6 +258,18 @@ const EventTable: FC<PageProps> = ({
                               },
                             ]
                           : []),
+                        {
+                          id: 'venue',
+                          label: 'Venue',
+                          placeholder: 'Select by Venue',
+                          value: venue,
+                          onChange: onVenueChange,
+                          options:
+                            venueData?.data.map((v: any) => ({
+                              value: v._id,
+                              label: v?.title,
+                            })) || [],
+                        },
                       ]}
                       searchFilter={{
                         placeholder: 'Search Events...',
