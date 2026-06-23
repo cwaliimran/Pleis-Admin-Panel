@@ -65,7 +65,7 @@ const EventTableRowV2: FC<PageProps> = ({ item, handleDelete, userType }) => {
 
       <TableCell className="text-left">{item?.schedule?.endDateTime ? fDate(item.schedule.endDateTime, 'DD/MM/YYYY HH:mm') : '-'}</TableCell>
 
-      <TableCell>{item?.meta?.revenue === 0 ? '0' : item?.meta?.revenue || 'N/A'}</TableCell>
+      <TableCell>{item?.meta?.totalFavorites === 0 ? '0' : item?.meta?.totalFavorites || 'N/A'}</TableCell>
 
       <TableCell className="text-left">{item?.meta?.totalViews === 0 ? '0' : item?.meta?.totalViews || 'N/A'}</TableCell>
 

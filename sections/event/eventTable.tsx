@@ -53,12 +53,19 @@ const headLabel = [
     sortable: true,
     sortKey: 'endDate',
   },
+  // {
+  //   id: 'totalRevenue',
+  //   label: 'Revenue',
+  //   align: 'left',
+  //   sortable: true,
+  //   sortKey: 'revenue',
+  // },
   {
-    id: 'totalRevenue',
-    label: 'Revenue',
+    id: 'favorite',
+    label: 'Favorite',
     align: 'left',
     sortable: true,
-    sortKey: 'revenue',
+    sortKey: 'favorite',
   },
   {
     id: 'totalViews',
