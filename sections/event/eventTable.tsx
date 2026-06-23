@@ -215,7 +215,7 @@ const EventTable: FC<PageProps> = ({
                   <form className="flex flex-col gap-6 px-4 py-2">
                     {/* Date Range Filters */}
                     <TableFilters
-                      className="w-full [&_.w-44]:w-full [&_.w-45]:w-full"
+                      className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
                       dateFilter={{
                         id: 'date',
                         placeholder: 'Select date',

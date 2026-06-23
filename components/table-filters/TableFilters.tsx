@@ -314,7 +314,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               <div
                 key={filter.id}
                 title={filter.disabled ? filter.disabledHint : undefined}
-                className="w-45"
+                className="w-[180px]"
               >
                 <Select
                   value={filter.value}
