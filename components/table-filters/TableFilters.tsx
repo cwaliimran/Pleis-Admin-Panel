@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
-import { ChevronDownIcon } from 'lucide-react';
+import { ChevronDownIcon, Search } from 'lucide-react';
 import { fDate, formatStr } from '@/utils/format-time';
 
 export interface FilterOption {
@@ -35,6 +35,7 @@ export interface SelectFilter {
   onChange: (value: string) => void;
   disabled?: boolean;
   disabledHint?: string;
+  searchable?: boolean;
 }
 
 export interface DateFilter {
@@ -95,6 +96,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false);
+  const [filterSearches, setFilterSearches] = useState<Record<string, string>>({});
 
   const [localSearch, setLocalSearch] = useState(searchFilter?.value ?? '');
 
@@ -302,39 +304,76 @@ const TableFilters: React.FC<TableFiltersProps> = ({
           )}
 
           {/* Select Filters */}
-          {selectFilters.map((filter) => (
-            <div
-              key={filter.id}
-              title={filter.disabled ? filter.disabledHint : undefined}
-              className="w-[180px]"
-            >
-              <Select
-                value={filter.value}
-                onValueChange={filter.onChange}
-                disabled={filter.disabled}
+          {selectFilters.map((filter) => {
+            const searchQuery = filterSearches[filter.id] ?? '';
+            const visibleOptions = filter.searchable
+              ? filter.options.filter((o) => o.label.toLowerCase().includes(searchQuery.toLowerCase()))
+              : filter.options;
+
+            return (
+              <div
+                key={filter.id}
+                title={filter.disabled ? filter.disabledHint : undefined}
+                className="w-45"
               >
-                <SelectTrigger
-                  className={`w-full ${filter.disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                <Select
+                  value={filter.value}
+                  onValueChange={(val) => {
+                    filter.onChange(val);
+                    if (filter.searchable) {
+                      setFilterSearches((prev) => ({ ...prev, [filter.id]: '' }));
+                    }
+                  }}
+                  disabled={filter.disabled}
+                  onOpenChange={(open) => {
+                    if (!open && filter.searchable) {
+                      setFilterSearches((prev) => ({ ...prev, [filter.id]: '' }));
+                    }
+                  }}
                 >
-                  <SelectValue placeholder={filter.placeholder} />
-                </SelectTrigger>
-                <SelectContent className="dark:bg-secondary max-h-64 overflow-y-auto">
-                  <SelectGroup>
-                    <SelectLabel>{filter.label}</SelectLabel>
-                    {filter.options.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        value={option.value}
-                        className="cursor-pointer"
-                      >
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+                  <SelectTrigger
+                    className={`w-full ${filter.disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  >
+                    <SelectValue placeholder={filter.placeholder} />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-secondary w-full">
+                    {filter.searchable && (
+                      <div className="relative px-3 pb-2">
+                        <Search className="absolute top-2 left-6 h-4 w-4 opacity-50" />
+                        <Input
+                          placeholder="Search..."
+                          value={searchQuery}
+                          onChange={(e) =>
+                            setFilterSearches((prev) => ({ ...prev, [filter.id]: e.target.value }))
+                          }
+                          className="h-8 w-full border-0 pr-3 pl-8 focus-visible:ring-0 focus-visible:ring-offset-0"
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    )}
+                    <div className="max-h-52 overflow-y-auto">
+                      <SelectGroup>
+                        <SelectLabel>{filter.label}</SelectLabel>
+                        {visibleOptions.length === 0 ? (
+                          <p className="text-muted-foreground py-4 text-center text-sm">No results found.</p>
+                        ) : (
+                          visibleOptions.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              value={option.value}
+                              className="cursor-pointer"
+                            >
+                              {option.label}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectGroup>
+                    </div>
+                  </SelectContent>
+                </Select>
+              </div>
+            );
+          })}
         </div>
       )}
 
