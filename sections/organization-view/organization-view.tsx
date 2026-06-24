@@ -28,6 +28,8 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
+  const [subType, setSubType] = useState<string>('');
+  const [organization, setOrganization] = useState<string>('');
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -51,6 +53,8 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
     date: date ? formatDate(date) : undefined,
     sortBy: sortBy || undefined,
     sortOrder: sortOrder || undefined,
+    subType: subType || undefined,
+    organization: organization || undefined,
   });
 
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -159,12 +163,24 @@ const OrganizationView = ({ userType }: OrganizationListProps) => {
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={handleSortChange}
+        subType={subType}
+        onSubTypeChange={(val) => {
+          setSubType(val);
+          setPage(1);
+        }}
+        organization={organization}
+        onOrganizationChange={(val) => {
+          setOrganization(val);
+          setPage(1);
+        }}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
           setSortBy('');
           setSortOrder('');
+          setSubType('');
+          setOrganization('');
           setPage(1);
         }}
       />

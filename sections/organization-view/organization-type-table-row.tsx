@@ -84,17 +84,17 @@ const OrganizationTypeTableRow: FC<PageProps> = ({ item, handleDelete, userType 
     isOpen: false,
     fullText: '',
   });
-  const inactiveSubscription = item?.user?.inActiveSubscription;
+  const activeSubscription = item?.user?.activeSubscription;
 
-  const subscriptionTypeItems = Array.isArray(inactiveSubscription?.subscriptionTypes) ? inactiveSubscription.subscriptionTypes.filter(Boolean) : [];
+  const subscriptionTypeItems = Array.isArray(activeSubscription?.subscriptionTypes) ? activeSubscription.subscriptionTypes.filter(Boolean) : [];
   const primarySubscriptionType = subscriptionTypeItems[0] || '-';
   const remainingSubscriptionTypeCount = Math.max(subscriptionTypeItems.length - 1, 0);
 
-  const subscriptionEndDate = inactiveSubscription?.endDate;
+  const subscriptionEndDate = activeSubscription?.endDate;
 
-  const orderingCommission = inactiveSubscription?.orderingCommission;
-  const ticketingCommission = inactiveSubscription?.ticketingCommission;
-  const reservationCommission = inactiveSubscription?.reservationCommission;
+  const orderingCommission = activeSubscription?.orderingCommission;
+  const ticketingCommission = activeSubscription?.ticketingCommission;
+  const reservationCommission = activeSubscription?.reservationCommission;
 
   // const commissionItems = [
   //   { label: 'Ordering', value: orderingCommission },

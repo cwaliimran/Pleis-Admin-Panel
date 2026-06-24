@@ -110,6 +110,7 @@ export const API_ROUTES = {
   ORGANIZER_RESERVATION_CHANGE_TIMING: `/organizer/reservations/change-timing`,
 
   ADMIN_ORGANIZATION: `/admin/organizations`,
+  ADMIN_ORGANIZATION_ALL: `/admin/organizations/all`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
   ADMIN_ORGANIZATION_NOTIFICATIONS_BY_ID: (id: string) => `/admin/organizations/${id}/notifications`,

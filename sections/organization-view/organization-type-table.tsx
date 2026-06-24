@@ -8,10 +8,20 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { useGetAllOrganizationsAdminQuery } from '@/store/Reducer/organization';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import OrganizationTypeTableRow from './organization-type-table-row';
+
+const SUBSCRIPTION_TYPE_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'free', label: 'Free' },
+  { value: 'ordering', label: 'Ordering' },
+  { value: 'loyalty', label: 'Loyalty' },
+  { value: 'reservations', label: 'Reservations' },
+  { value: 'analytics', label: 'Analytics' },
+];
 
 const headLabel = [
   { id: 'log', label: 'Logo', align: 'left' },
@@ -74,6 +84,10 @@ interface PageProps {
   sortBy?: string;
   sortOrder?: string;
   onSortChange?: (sortBy: string, sortOrder: string) => void;
+  subType?: string;
+  onSubTypeChange?: (subType: string) => void;
+  organization?: string;
+  onOrganizationChange?: (organization: string) => void;
 }
 
 const OrganizationTypeTable: FC<PageProps> = ({
@@ -84,8 +98,6 @@ const OrganizationTypeTable: FC<PageProps> = ({
   onPageChange,
   userType,
   // onLimitChange,
-  onSearch = () => {},
-  search = '',
   // limit = 10,
   status = '',
   onStatusChange = () => {},
@@ -95,7 +107,14 @@ const OrganizationTypeTable: FC<PageProps> = ({
   sortBy = '',
   sortOrder = '',
   onSortChange,
+  subType = '',
+  onSubTypeChange = () => {},
+  organization = '',
+  onOrganizationChange = () => {},
 }) => {
+  const { data: allOrgsData } = useGetAllOrganizationsAdminQuery(undefined, {
+    skip: userType !== 'super-admin',
+  });
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
@@ -151,7 +170,7 @@ const OrganizationTypeTable: FC<PageProps> = ({
                     <div className="flex w-full flex-col gap-3">
                       <div className="flex w-full flex-col gap-3">
                         <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
-                          Select Date
+                          Select by created date
                         </label>
                         <div className="w-full">
                           <TableFilters
@@ -161,11 +180,6 @@ const OrganizationTypeTable: FC<PageProps> = ({
                               placeholder: 'Select date',
                               value: date,
                               onChange: onDateChange,
-                            }}
-                            searchFilter={{
-                              placeholder: 'Search Organization...',
-                              value: search,
-                              onChange: onSearch,
                             }}
                             selectFilters={[
                               {
@@ -180,6 +194,31 @@ const OrganizationTypeTable: FC<PageProps> = ({
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
                               },
+                              {
+                                id: 'sheet-sub-type',
+                                label: 'Sub Type',
+                                placeholder: 'Select by Sub Type',
+                                value: subType,
+                                onChange: onSubTypeChange,
+                                options: SUBSCRIPTION_TYPE_OPTIONS,
+                              },
+                              ...(userType === 'super-admin'
+                                ? [
+                                    {
+                                      id: 'sheet-organization',
+                                      label: 'Organization',
+                                      placeholder: 'Select by Organization',
+                                      value: organization,
+                                      onChange: onOrganizationChange,
+                                      searchable: true,
+                                      options:
+                                        allOrgsData?.data?.map((org: any) => ({
+                                          value: org._id,
+                                          label: org?.basicInfo?.name,
+                                        })) || [],
+                                    },
+                                  ]
+                                : []),
                             ]}
                             resetFilter={{
                               onReset: onResetFilters,

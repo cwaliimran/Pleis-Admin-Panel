@@ -9,7 +9,7 @@ export const organizationApi = createApi({
 
   endpoints: (builder) => ({
     getOrganization: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer, sortBy, sortOrder }) => {
+      query: ({ search, page, status, date, limit, companyOrganizer, sortBy, sortOrder, subType, organization }) => {
         const params: any = {
           keyword: search,
           status,
@@ -21,6 +21,8 @@ export const organizationApi = createApi({
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (sortBy) params.sortBy = sortBy;
         if (sortOrder) params.sortOrder = sortOrder;
+        if (subType) params.subType = subType;
+        if (organization) params.organization = organization;
 
         return {
           url: '',
@@ -29,13 +31,24 @@ export const organizationApi = createApi({
           roleBasedRouting: {
             adminRoute: API_ROUTES.ADMIN_ORGANIZATION,
             organizerRoute: API_ROUTES.ORGANIZATION,
-            adminOnlyParams: ['companyOrganizer'], // Only admins can use this param
+            adminOnlyParams: ['companyOrganizer', 'organization'],
           },
         };
       },
       transformResponse: (res) => ({
         data: res.data,
         meta: res.meta,
+      }),
+      providesTags: ['organization'],
+    }),
+
+    getAllOrganizationsAdmin: builder.query({
+      query: () => ({
+        url: API_ROUTES.ADMIN_ORGANIZATION_ALL,
+        method: 'GET',
+      }),
+      transformResponse: (res) => ({
+        data: res.data,
       }),
       providesTags: ['organization'],
     }),
@@ -184,6 +197,7 @@ export const organizationApi = createApi({
 
 export const {
   useGetOrganizationQuery,
+  useGetAllOrganizationsAdminQuery,
   useGetOrganizationByCompanyQuery,
   useGetOrganizationsOnOrganizerSideQuery,
   useAddOrganizationMutation,
