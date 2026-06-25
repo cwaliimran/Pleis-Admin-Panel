@@ -14,7 +14,7 @@ export const userListApi = createApi({
      * User List (admin & organizer)
      * ───────────────────────────────────────────── */
     getUserList: builder.query({
-      query: ({ search, page, status, date, limit, userType }) => {
+      query: ({ search, page, status, date, limit, userType, sortBy, sortOrder, organization, company }) => {
         const params: any = {
           keyword: search,
           status,
@@ -24,6 +24,10 @@ export const userListApi = createApi({
 
         if (date) params.date = date;
         if (userType) params.userType = userType;
+        if (sortBy) params.sortBy = sortBy;
+        if (sortOrder) params.sortOrder = sortOrder;
+        if (organization) params.organization = organization;
+        if (company) params.company = company;
 
         return {
           url: '',
@@ -32,6 +36,7 @@ export const userListApi = createApi({
           roleBasedRouting: {
             adminRoute: API_ROUTES.ADMIN_USER_LIST,
             organizerRoute: API_ROUTES.ORGANIZER_USER_LIST,
+            adminOnlyParams: ['organization', 'company'],
           },
         };
       },
@@ -40,6 +45,27 @@ export const userListApi = createApi({
         meta: res.meta,
       }),
       providesTags: ['userList'],
+    }),
+
+    getUsersForCompanyFilter: builder.query({
+      query: () => ({
+        url: API_ROUTES.ADMIN_USER_LIST,
+        method: 'GET',
+        params: { page: 1, limit: 1000 },
+      }),
+      transformResponse: (res) => {
+        const seen = new Set<string>();
+        const companies: { value: string; label: string }[] = [];
+        for (const user of res.data ?? []) {
+          const id = user?.basicInfo?._id;
+          const name = user?.basicInfo?.companyDetails?.name;
+          if (id && name && !seen.has(id)) {
+            seen.add(id);
+            companies.push({ value: id, label: name });
+          }
+        }
+        return companies;
+      },
     }),
 
     getUserById: builder.query({
@@ -183,6 +209,7 @@ export const userListApi = createApi({
 
 export const {
   useGetUserListQuery,
+  useGetUsersForCompanyFilterQuery,
   useGetUserByIdQuery,
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,

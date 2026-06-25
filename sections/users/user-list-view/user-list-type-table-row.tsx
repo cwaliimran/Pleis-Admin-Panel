@@ -90,17 +90,21 @@ const UserListTypeTableRow: FC<PageProps> = ({ item, userType, memberPage, handl
           </TableCell>
         )}
 
-        <TableCell className="text-center text-sm">{item?.accountState?.userglobalwallets?.global?.level?.title ?? '-'}</TableCell>
+        <TableCell className="text-start text-sm">{item?.accountState?.userglobalwallets?.global?.level?.title ?? '-'}</TableCell>
 
-        <TableCell className="text-center text-sm">{item?.accountState?.userglobalwallets?.global?.points ?? '-'}</TableCell>
+        <TableCell className="text-start text-sm">{item?.accountState?.companyDetails?.name ?? '-'}</TableCell>
 
-        <TableCell className="text-center text-sm">
+        <TableCell className="text-start text-sm">
+          {item?.accountState?.lastLogin ? fDate(item.accountState.lastLogin, formatStr.split.date) : '-'}
+        </TableCell>
+
+        {/* <TableCell className="text-center text-sm">
           {typeof item?.accountState?.revenue === 'number'
             ? item?.accountState?.revenue === 0
               ? '0'
               : item?.accountState?.revenue?.toFixed(2)
             : (item?.accountState?.revenue ?? '-')}
-        </TableCell>
+        </TableCell> */}
 
         <TableCell className="text-muted-foreground text-left text-sm">
           <CustomBadge variant={getStatusVariant(item?.accountState?.status)}>{item?.accountState?.status}</CustomBadge>

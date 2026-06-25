@@ -37,6 +37,16 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const [status, setStatus] = useState<string>('');
   const [role, setRole] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
+  const [organization, setOrganization] = useState<string>('');
+  const [company, setCompany] = useState<string>('');
+
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [imageUploading, setimageUploading] = useState<boolean>(false);
@@ -46,13 +56,21 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
   const [addUserSuperAdminAndGuest, { isLoading: addUserSuperAdminAndGuestLoading }] = useAddUserSuperAdminAndGuestMutation();
   const [updateUser, { isLoading: updateUserLoading }] = useUpdateUserForUserListMutation();
 
-  const { data: apiData, isLoading, isFetching } = useGetUserListQuery({
+  const {
+    data: apiData,
+    isLoading,
+    isFetching,
+  } = useGetUserListQuery({
     page: page - 1,
     search,
     limit,
     userType: role === 'all' ? undefined : role,
     status: status === 'all' ? undefined : status,
     date: date ? formatDate(date) : undefined,
+    sortBy: sortBy || undefined,
+    sortOrder: sortOrder || undefined,
+    organization: organization || undefined,
+    company: company || undefined,
   });
 
   const [venueTypes, setVenueTypes] = useState<any[]>([]);
@@ -235,12 +253,29 @@ const UserListView = ({ usertype, memberPage = false }: UserListViewProps) => {
           setDate(val);
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
+        organization={organization}
+        onOrganizationChange={(val) => {
+          setOrganization(val);
+          setPage(1);
+        }}
+        company={company}
+        onCompanyChange={(val) => {
+          setCompany(val);
+          setPage(1);
+        }}
         onResetFilters={() => {
           setStatus('');
           setDate(undefined);
           setSearch('');
           setPage(1);
           setRole('');
+          setSortBy('');
+          setSortOrder('');
+          setOrganization('');
+          setCompany('');
         }}
       />
 

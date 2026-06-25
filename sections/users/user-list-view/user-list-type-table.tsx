@@ -1,28 +1,32 @@
 'use client';
 
+'use client';
+
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
 import { LoadingBar } from '@/components/table/table-bar-loading';
-import TableHeadCustom from '@/components/table/table-head-custom';
+import TableHeadCustom, { SortConfig } from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table, TableBody } from '@/components/ui/table';
+import { useGetAllOrganizationsAdminQuery } from '@/store/Reducer/organization';
+import { useGetUsersForCompanyFilterQuery } from '@/store/Reducer/user-list';
+import { RootState } from '@/store/store';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import UserListTypeTableRow from './user-list-type-table-row';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import UserListTypeTableRow from './user-list-type-table-row';
 
 const MEMBERHEADLABEL = [
   { id: 'image', label: 'Image', align: 'left' },
-  { id: 'username', label: 'Username', align: 'left' },
-  { id: 'globalStatus', label: 'Global Status', align: 'left' },
+  { id: 'username', label: 'Username', align: 'left', sortable: true, sortKey: 'userName' },
+  { id: 'globalStatus', label: 'Global Status', align: 'left', sortable: true, sortKey: 'globalStatus' },
   { id: 'totalPoints', label: 'Points Earned', align: 'left' },
   { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
-  { id: 'status', label: 'Status', align: 'left' },
-  { id: 'region', label: 'Region', align: 'left' },
+  { id: 'status', label: 'Status', align: 'left', sortable: true, sortKey: 'status' },
+  { id: 'region', label: 'Region', align: 'left', sortable: true, sortKey: 'region' },
   { id: 'action', label: 'Action', align: 'center' },
 ];
 
@@ -52,8 +56,15 @@ interface PageProps {
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
+  sortBy?: string;
+  sortOrder?: string;
+  onSortChange?: (sortBy: string, sortOrder: string) => void;
   userType?: any;
   memberPage?: boolean;
+  organization?: string;
+  onOrganizationChange?: (val: string) => void;
+  company?: string;
+  onCompanyChange?: (val: string) => void;
 }
 
 const UserListTypeTable: FC<PageProps> = ({
@@ -76,7 +87,18 @@ const UserListTypeTable: FC<PageProps> = ({
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
+  sortBy = '',
+  sortOrder = '',
+  onSortChange,
+  organization = '',
+  onOrganizationChange = () => {},
+  company = '',
+  onCompanyChange = () => {},
 }) => {
+  const isAdmin = userType !== 'organizer';
+
+  const { data: allOrgsData } = useGetAllOrganizationsAdminQuery(undefined, { skip: !isAdmin });
+  const { data: companyOptions = [] } = useGetUsersForCompanyFilterQuery(undefined, { skip: !isAdmin });
   // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
@@ -87,18 +109,34 @@ const UserListTypeTable: FC<PageProps> = ({
 
   const USERHEADLABEL = [
     { id: 'image', label: 'Image', align: 'left' },
-    { id: 'name', label: 'Name', align: 'left' },
-    ...(userType !== 'organizer' ? [{ id: 'username', label: 'Username', align: 'left' }] : []),
-    { id: 'role', label: 'Role', align: 'left' },
-    { id: 'globalStatus', label: 'Global Status', align: 'left' },
-    { id: 'totalPoints', label: 'Points Earned', align: 'left' },
-    { id: 'totalRevenue', label: "User's Revenue", align: 'left' },
-    { id: 'status', label: 'Status', align: 'left' },
-    { id: 'region', label: 'Region', align: 'left' },
-    { id: 'createdAt', label: 'Created At', align: 'left' },
-    // { id: 'action', label: 'Action', align: 'left' },
+    { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'name' },
+    ...(userType !== 'organizer' ? [{ id: 'username', label: 'Username', align: 'left', sortable: true, sortKey: 'userName' }] : []),
+    { id: 'role', label: 'Role', align: 'left', sortable: true, sortKey: 'role' },
+    { id: 'globalStatus', label: 'Global Status', align: 'left', sortable: true, sortKey: 'globalStatus' },
+    { id: 'company', label: 'Company', align: 'left', sortable: true, sortKey: 'companyName' },
+    { id: 'lastActiveDate', label: 'Last Active Date', align: 'left', sortable: true, sortKey: 'lastLogin' },
+    { id: 'status', label: 'Status', align: 'left', sortable: true, sortKey: 'status' },
+    { id: 'region', label: 'Region', align: 'left', sortable: true, sortKey: 'region' },
+    { id: 'createdAt', label: 'Created At', align: 'left', sortable: true, sortKey: 'createdAt' },
     ...(user?.accountState?.userType !== 'manager' ? [{ id: 'action', label: 'Action', align: 'left' }] : []),
   ];
+
+  const sortConfig: SortConfig = {
+    key: sortBy || null,
+    direction: sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : null,
+  };
+
+  const handleSort = (key: string) => {
+    if (sortBy !== key) {
+      onSortChange?.(key, 'asc');
+    } else if (sortOrder === 'asc') {
+      onSortChange?.(key, 'desc');
+    } else if (sortOrder === 'desc') {
+      onSortChange?.('', '');
+    } else {
+      onSortChange?.(key, 'asc');
+    }
+  };
 
   const methods = useForm({
     defaultValues: {
@@ -172,39 +210,44 @@ const UserListTypeTable: FC<PageProps> = ({
                                       options:
                                         userType === 'organizer'
                                           ? [
-                                              {
-                                                value: 'staff',
-                                                label: 'Staff',
-                                              },
-                                              {
-                                                value: 'manager',
-                                                label: 'Manager',
-                                              },
+                                              { value: 'staff', label: 'Staff' },
+                                              { value: 'manager', label: 'Manager' },
                                             ]
                                           : [
                                               { value: 'all', label: 'All' },
-                                              {
-                                                value: 'admin',
-                                                label: 'Admin',
-                                              },
-                                              {
-                                                value: 'organizer',
-                                                label: 'Organizer',
-                                              },
-                                              {
-                                                value: 'manager',
-                                                label: 'Manager',
-                                              },
-                                              {
-                                                value: 'staff',
-                                                label: 'Staff',
-                                              },
-                                              {
-                                                value: 'guest',
-                                                label: 'Guest',
-                                              },
+                                              { value: 'admin', label: 'Admin' },
+                                              { value: 'organizer', label: 'Organizer' },
+                                              { value: 'manager', label: 'Manager' },
+                                              { value: 'staff', label: 'Staff' },
+                                              { value: 'guest', label: 'Guest' },
                                               { value: 'user', label: 'User' },
                                             ],
+                                    },
+                                  ]
+                                : []),
+                              ...(isAdmin
+                                ? [
+                                    {
+                                      id: 'sheet-organization',
+                                      label: 'Organization',
+                                      placeholder: 'Select by Organization',
+                                      value: organization,
+                                      onChange: onOrganizationChange,
+                                      searchable: true,
+                                      options:
+                                        allOrgsData?.data?.map((org: any) => ({
+                                          value: org._id,
+                                          label: org?.basicInfo?.name,
+                                        })) || [],
+                                    },
+                                    {
+                                      id: 'sheet-company',
+                                      label: 'Company',
+                                      placeholder: 'Select by Company',
+                                      value: company,
+                                      onChange: onCompanyChange,
+                                      searchable: true,
+                                      options: companyOptions,
                                     },
                                   ]
                                 : []),
@@ -228,7 +271,7 @@ const UserListTypeTable: FC<PageProps> = ({
             className={`min-h-[40vh] rounded-lg border ${!loading && data.filter((item: any) => item.status !== 'deleted').length === 0 ? 'border-b-0' : ''}`}
           >
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={headLabel} />
+              <TableHeadCustom headLabel={headLabel} sortConfig={sortConfig} onSort={handleSort} />
               <TableBody>
                 {loading ? (
                   <tr>
