@@ -130,6 +130,14 @@ export const subscriptionsApi = createApi({
       }),
       invalidatesTags: ['organizerSubscriptions'],
     }),
+
+    getMonriWebPaySession: builder.query({
+      query: ({ amount, orderNumber, orderType, paymentMethod }) => ({
+        url: API_ROUTES.MONRI_WEB_PAY_SESSION,
+        method: 'GET',
+        params: { amount, orderNumber, orderType, paymentMethod },
+      }),
+    }),
   }),
 });
 
@@ -145,4 +153,5 @@ export const {
   useGetOrganizerSubscriptionsQuery,
   useGetOrganizerOwnSubscriptionsQuery,
   useUpdateOrganizerSubscriptionMutation,
+  useLazyGetMonriWebPaySessionQuery,
 } = subscriptionsApi;

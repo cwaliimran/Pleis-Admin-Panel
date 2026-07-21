@@ -5,8 +5,9 @@ import { format } from 'date-fns';
 
 interface CurrentSubscriptionBoxProps {
   subscription: SubscriptionConfig;
+  status: string;
   startDate: string;
-  endDate: string;
+  endDate: string | null;
   lockedInPrice?: number; // From API if different from calculated
   calculatedPrice?: number; // Calculated from current pricing
   inactiveSubscription?: InactiveSubscriptionData | null;
@@ -14,6 +15,7 @@ interface CurrentSubscriptionBoxProps {
 
 export const CurrentSubscriptionBox: React.FC<CurrentSubscriptionBoxProps> = ({
   subscription,
+  status,
   startDate,
   endDate,
   lockedInPrice,
@@ -140,7 +142,13 @@ export const CurrentSubscriptionBox: React.FC<CurrentSubscriptionBoxProps> = ({
               )}
             </div>
           )}
-          <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white dark:bg-blue-700">ACTIVE</span>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold text-white ${
+              status === 'active' ? 'bg-blue-600 dark:bg-blue-700' : 'bg-gray-400 dark:bg-gray-600'
+            }`}
+          >
+            {status === 'active' ? 'ACTIVE' : 'INACTIVE'}
+          </span>
         </div>
       </div>
 
@@ -185,7 +193,7 @@ export const CurrentSubscriptionBox: React.FC<CurrentSubscriptionBoxProps> = ({
             <span className="text-sm font-medium text-blue-800 dark:text-blue-300">Period:</span>
           </div>
           <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-            {format(new Date(startDate), 'MMM dd, yyyy')} - {format(new Date(endDate), 'MMM dd, yyyy')}
+            {format(new Date(startDate), 'MMM dd, yyyy')} - {endDate ? format(new Date(endDate), 'MMM dd, yyyy') : 'Ongoing'}
           </span>
         </div>
       </div>

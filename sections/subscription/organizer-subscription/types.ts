@@ -81,8 +81,9 @@ export interface UserSubscriptionData {
   totalSubscriptionAmount: number;
   monthlyPrice: number;
   startDate: string;
-  endDate: string;
+  endDate: string | null;
   basePrice: number;
+  status: string;
   orderingCommission: number;
   ticketingCommission: number;
   reservationCommission: number;

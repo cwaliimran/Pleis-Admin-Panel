@@ -1,17 +1,12 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { useGetAllByOrganizationQuery } from '@/store/Reducer/helpers-api';
-import { useAddMenuListMutation, useUpdateMenuListMutation } from '@/store/Reducer/menu-list-api';
-import { useGetOrganizationByCompanyQuery } from '@/store/Reducer/organization';
-import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
@@ -19,18 +14,22 @@ import { MenuItemFormValues, MenuItemModalProps } from './types';
 const defaultValues: MenuItemFormValues = {
   title: '',
   description: '',
-  organization: '',
-  status: 'active',
+  organizations: [],
+  validFrom: undefined,
+  status: 'draft',
 };
 
 const schema = Yup.object().shape({
-  title: Yup.string().required('Title is required'),
-  description: Yup.string().required('Description is required'),
-  organization: Yup.string().required('Organization is required'),
-  status: Yup.string().required('Status is required'),
+  title: Yup.string().required('Name is required'),
+  description: Yup.string().optional(),
+  organizations: Yup.array().of(Yup.string().required()).min(1, 'Select at least one organization').required('Organization is required'),
+  validFrom: Yup.date().required('Valid from date is required'),
+  status: Yup.mixed<'draft' | 'active' | 'inactive'>().oneOf(['draft', 'active', 'inactive']).required('Status is required'),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCompany, userType }: MenuItemModalProps) => {
+const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, organizations, onSubmit }: MenuItemModalProps) => {
+  const [submitting, setSubmitting] = useState(false);
+
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
     defaultValues,
@@ -42,69 +41,29 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCo
   const prepareFormData = (data: any): MenuItemFormValues => ({
     title: data?.title || '',
     description: data?.description || '',
-    organization: data?.organization?._id || '',
-    status: data?.status || 'active',
+    organizations: data?.organizations || [],
+    validFrom: data?.validFrom ? new Date(data.validFrom) : undefined,
+    status: data?.status || 'draft',
   });
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
-      const formData = prepareFormData(selectedData);
-      reset(formData);
+      reset(prepareFormData(selectedData));
     } else if (open && !isEdit) {
       reset(defaultValues);
     }
   }, [open, isEdit, selectedData, reset]);
 
-  const isSuperAdmin = userType === 'super-admin';
+  const organizationOptions = organizations?.map((org) => ({ value: org._id, label: org.name })) || [];
 
-  const { data: { data: superAdminOrgs = [] } = {}, isLoading: superAdminOrgsLoading } = useGetOrganizationByCompanyQuery(
-    { companyOrganizer: selectedCompany || undefined },
-    { skip: !isSuperAdmin }
-  );
-
-  const { data: { data: organizerOrgs = [] } = {}, isLoading: organizerOrgsLoading } = useGetAllByOrganizationQuery(
-    { companyOrganizer: selectedCompany || undefined },
-    { skip: isSuperAdmin }
-  );
-
-  const organizations = isSuperAdmin ? superAdminOrgs : organizerOrgs;
-  const organizationsLoading = isSuperAdmin ? superAdminOrgsLoading : organizerOrgsLoading;
-
-  const [addMenuList, { isLoading: addMenuListLoading }] = useAddMenuListMutation();
-  const [updateMenuList, { isLoading: updateMenuListLoading }] = useUpdateMenuListMutation();
-
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: MenuItemFormValues) => {
+    setSubmitting(true);
     try {
-      const payload: any = {
-        title: formData?.title,
-        description: formData?.description,
-        organization: formData?.organization,
-      };
-
-      if (isEdit && selectedData) {
-        payload.status = formData?.status;
-        payload.id = selectedData?._id;
-      }
-
-      const response = isEdit && selectedData ? await updateMenuList(payload).unwrap() : await addMenuList(payload).unwrap();
-
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
-
-      if (response?.error) {
-        showError(getErrorMessage(response.error));
-        return;
-      }
-
-      showSuccess(response?.message || (isEdit ? 'Menu List updated successfully' : 'Menu List created successfully'));
-
+      onSubmit(formData);
       methods.reset(defaultValues);
       onClose();
-    } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      showError(errorMessage);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -127,48 +86,32 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, selectedCo
           <div className="mt-4 w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
+                <RHFTextField name="title" label="Name" placeholder="e.g. Summer Menu 2026" />
+
+                <RHFTextField name="description" label="Description" placeholder="Brief description of this menu" multiline rows={2} />
+
                 <div className="grid w-full grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-2">
-                  <div className={`${isEdit ? 'col-span-1' : 'col-span-2'}`}>
-                    <RHFTextField name="title" label="Name" placeholder="Enter Name" />
-                  </div>
+                  <RHFDate name="validFrom" label="Valid From" placeholder="Select date" />
 
-                  {isEdit && (
-                    <RHFSelectField
-                      name="status"
-                      label="Select Status"
-                      placeholder="Select Status"
-                      className="w-full flex-1"
-                      options={[
-                        { value: 'active', label: 'Active' },
-                        { value: 'inactive', label: 'Inactive' },
-                      ]}
-                    />
-                  )}
-
-                  <div className="col-span-2">
-                    <RHFCustomDropdown
-                      name="organization"
-                      label="Organization"
-                      placeholder="Select Organization"
-                      options={organizations?.map((val: any) => ({
-                        value: val?._id,
-                        label: isSuperAdmin ? val?.basicInfo?.name : val?.name,
-                      }))}
-                      isLoading={organizationsLoading}
-                      showNone={false}
-                    />
-                  </div>
+                  <RHFSelectField
+                    name="status"
+                    label="Status"
+                    placeholder="Select Status"
+                    className="w-full flex-1"
+                    options={[
+                      { value: 'draft', label: 'Draft' },
+                      { value: 'active', label: 'Active' },
+                      { value: 'inactive', label: 'Inactive' },
+                    ]}
+                  />
                 </div>
 
-                {/* Description */}
-                <div className="grid w-full grid-cols-1 gap-4">
-                  <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
-                </div>
+                <RHFMultiSelectField name="organizations" label="Organizations" placeholder="Select Organization" options={organizationOptions} />
               </div>
 
               <div className="mt-4 flex items-center justify-end gap-2">
                 <div className="flex w-full items-center justify-center">
-                  {addMenuListLoading || updateMenuListLoading ? (
+                  {submitting ? (
                     <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                       <ButtonLoading title={isEdit ? 'Updating' : 'Creating'} />
                     </Button>

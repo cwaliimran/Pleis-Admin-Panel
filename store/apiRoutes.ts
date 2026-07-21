@@ -95,6 +95,7 @@ export const API_ROUTES = {
 
   GET_ORGANIZER_SUBSCRIPTION: `/organizer/subscriptions`,
   GET_ORGANIZER_OWN_SUBSCRIPTION: `/organizer/subscriptions/user`,
+  MONRI_WEB_PAY_SESSION: `/app/payments/monri/web-pay-session`,
   // UPDATE_ORGANIZER_SUBSCRIPTION_BY_ID: (id: string) => `/organizer/subscriptions/${id}`,
 
   // ── ADMIN ROUTES ─────────────────────────────────

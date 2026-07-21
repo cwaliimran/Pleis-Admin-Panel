@@ -12,7 +12,7 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import MenuItemTableRow from './menuItems-table-row';
-import { SamplePageProps } from './types';
+import { CategoryOption, MenuItemRecord, MenuOption, PresetTypeOption, SamplePageProps, SubcategoryOption } from './types';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
@@ -24,35 +24,53 @@ const HEAD_LABEL = [
     sortKey: 'menuItemName',
   },
   {
-    id: 'description',
-    label: 'Description',
-    align: 'left',
-    sortable: true,
-    sortKey: 'description',
-  },
-  {
     id: 'menu',
     label: 'Menu',
     align: 'left',
     sortable: true,
     sortKey: 'menuName',
   },
-  { id: 'tax', label: 'Tax', align: 'left' },
-  { id: 'type', label: 'Type', align: 'left' },
-  { id: 'category', label: 'Item category', align: 'left' },
   {
-    id: 'basePrice',
+    id: 'subcategory',
+    label: 'Subcategory',
+    align: 'left',
+    sortable: true,
+    sortKey: 'subcategory',
+  },
+  {
+    id: 'type',
+    label: 'Type',
+    align: 'left',
+    sortable: true,
+    sortKey: 'type',
+  },
+  {
+    id: 'serving',
+    label: 'Serving',
+    align: 'left',
+    sortable: true,
+    sortKey: 'serving',
+  },
+  {
+    id: 'price',
     label: 'Price (€)',
     align: 'left',
     sortable: true,
     sortKey: 'price',
   },
-  // { id: 'discount', label: 'Temp Discount', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: 'Action', align: 'left' },
+  { id: 'actions', label: 'Action', align: 'center' },
 ];
 
-const MenuItemTable: FC<SamplePageProps> = ({
+const MenuItemTable: FC<
+  SamplePageProps & {
+    menus: MenuOption[];
+    categories: CategoryOption[];
+    subcategories: SubcategoryOption[];
+    presetTypes: PresetTypeOption[];
+    allItems: MenuItemRecord[];
+  }
+> = ({
   data = [],
   meta,
   loading,
@@ -60,6 +78,11 @@ const MenuItemTable: FC<SamplePageProps> = ({
   handleEdit,
   onPageChange,
   limit = 10,
+  menus,
+  categories,
+  subcategories,
+  presetTypes,
+  allItems,
   // filters states bellow
   search = '',
   onSearch = () => {},
@@ -67,6 +90,12 @@ const MenuItemTable: FC<SamplePageProps> = ({
   onStatusChange = () => {},
   date,
   onDateChange = () => {},
+  menuId = '',
+  onMenuChange = () => {},
+  categoryId = '',
+  onCategoryChange = () => {},
+  subcategoryId = '',
+  onSubcategoryChange = () => {},
   onResetFilters = () => {},
   sortBy = '',
   sortOrder = '',
@@ -101,6 +130,8 @@ const MenuItemTable: FC<SamplePageProps> = ({
     },
   });
 
+  const visibleSubcategories = categoryId ? subcategories.filter((subcategory) => subcategory.categoryId === categoryId) : subcategories;
+
   return (
     <div>
       <div className="grid grid-cols-12">
@@ -132,19 +163,19 @@ const MenuItemTable: FC<SamplePageProps> = ({
                           <TableFilters
                             className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
                             dateFilter={{
-                              id: 'organization-date',
+                              id: 'menu-item-date',
                               placeholder: 'Select date',
                               value: date,
                               onChange: onDateChange,
                             }}
                             searchFilter={{
-                              placeholder: 'Search name, menu, organization...',
+                              placeholder: 'Search name...',
                               value: search,
                               onChange: onSearch,
                             }}
                             selectFilters={[
                               {
-                                id: 'sheet-revenue',
+                                id: 'menu-item-status',
                                 label: 'Status',
                                 placeholder: 'Select by Status',
                                 value: status,
@@ -153,6 +184,39 @@ const MenuItemTable: FC<SamplePageProps> = ({
                                   { value: 'all', label: 'All' },
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
+                                ],
+                              },
+                              {
+                                id: 'menu-item-menu',
+                                label: 'Select Menu',
+                                placeholder: 'All menus',
+                                value: menuId,
+                                onChange: onMenuChange,
+                                options: [
+                                  { value: 'all', label: 'All menus' },
+                                  ...menus.map((menu) => ({ value: menu._id, label: menu.title })),
+                                ],
+                              },
+                              {
+                                id: 'menu-item-category',
+                                label: 'Category',
+                                placeholder: 'All categories',
+                                value: categoryId,
+                                onChange: onCategoryChange,
+                                options: [
+                                  { value: 'all', label: 'All categories' },
+                                  ...categories.map((category) => ({ value: category._id, label: category.title })),
+                                ],
+                              },
+                              {
+                                id: 'menu-item-subcategory',
+                                label: 'Subcategory',
+                                placeholder: 'All subcategories',
+                                value: subcategoryId,
+                                onChange: onSubcategoryChange,
+                                options: [
+                                  { value: 'all', label: 'All subcategories' },
+                                  ...visibleSubcategories.map((subcategory) => ({ value: subcategory._id, label: subcategory.title })),
                                 ],
                               },
                             ]}
@@ -176,8 +240,17 @@ const MenuItemTable: FC<SamplePageProps> = ({
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
-                {data?.map((item: any, idx: number) => (
-                  <MenuItemTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
+                {data?.map((item, idx) => (
+                  <MenuItemTableRow
+                    key={item?._id || idx}
+                    item={item}
+                    menus={menus}
+                    subcategories={subcategories}
+                    presetTypes={presetTypes}
+                    allItems={allItems}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                  />
                 ))}
               </TableBodyWrapper>
             </Table>

@@ -21,6 +21,7 @@ import {
   Volume1,
   ListFilter,
   BadgeInfo,
+  ClipboardList,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -29,6 +30,7 @@ type MenuItem = {
   url?: string;
   icon: any;
   items?: MenuItem[];
+  panel?: string;
 };
 
 type MenuGroup = {
@@ -36,6 +38,50 @@ type MenuGroup = {
   key: string;
   icon: any;
   items?: MenuItem[];
+  panel?: string;
+};
+
+export type SidePanelItem = {
+  title: string;
+  url: string;
+};
+
+export type SidePanelSection = {
+  label: string;
+  items: SidePanelItem[];
+};
+
+export type SidePanel = {
+  title: string;
+  backLabel: string;
+  sections: SidePanelSection[];
+};
+
+// Drill-down side panels — triggered by a MenuItem with a matching `panel` key instead of a `url`.
+export const sidePanels: Record<string, SidePanel> = {
+  presetMenu: {
+    title: 'Preset Menu',
+    backLabel: 'Back to Menu',
+    sections: [
+      {
+        label: 'Taxonomy',
+        items: [
+          { title: 'Preset Categories', url: paths.superAdmin.itemsCategory },
+          { title: 'Preset Types', url: paths.superAdmin.presetTypes },
+        ],
+      },
+      {
+        label: 'Reference Tables',
+        items: [
+          { title: 'Brands', url: paths.superAdmin.brands },
+          { title: 'Serving', url: paths.superAdmin.serving },
+          { title: 'Diet Tags', url: paths.superAdmin.dietTags },
+          { title: 'Allergens', url: paths.superAdmin.allergens },
+          { title: 'Daypart', url: paths.superAdmin.daypart },
+        ],
+      },
+    ],
+  },
 };
 
 export const menuGroups: MenuGroup[] = [
@@ -102,16 +148,22 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
-        title: 'Preset',
-        url: paths.superAdmin.preset.default,
+        title: 'Subcategories',
+        url: paths.superAdmin.menuSubcategories,
         icon: CalendarDays,
       },
       {
-        title: 'Preset categories',
-        url: paths.superAdmin.itemsCategory,
+        title: 'Discounts',
+        url: paths.superAdmin.discounts,
         icon: CalendarDays,
       },
     ],
+  },
+  {
+    label: 'Preset Menu',
+    key: 'preset-menu-panel',
+    icon: ClipboardList,
+    panel: 'presetMenu',
   },
   {
     label: 'Loyalty',

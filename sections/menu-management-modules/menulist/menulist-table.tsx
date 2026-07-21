@@ -11,8 +11,8 @@ import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { SamplePageProps } from './types';
 import MenuItemTableRow from './menulist-table-row';
+import { MenuOrganization, SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   {
@@ -37,6 +37,13 @@ const HEAD_LABEL = [
     sortKey: 'organizationName',
   },
   {
+    id: 'validFrom',
+    label: 'Valid From',
+    align: 'left',
+    sortable: true,
+    sortKey: 'validFrom',
+  },
+  {
     id: 'createdAt',
     label: 'Created At',
     align: 'left',
@@ -47,7 +54,7 @@ const HEAD_LABEL = [
   { id: 'actions', label: 'Action', align: 'center' },
 ];
 
-const MenuItemTable: FC<SamplePageProps> = ({
+const MenuItemTable: FC<SamplePageProps & { organizations: MenuOrganization[] }> = ({
   data = [],
   meta,
   loading,
@@ -56,6 +63,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
   handleEdit,
   onPageChange,
   limit = 10,
+  organizations,
   // filters states bellow
   search = '',
   onSearch = () => {},
@@ -147,6 +155,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                                 onChange: onStatusChange,
                                 options: [
                                   { value: 'all', label: 'All' },
+                                  { value: 'draft', label: 'Draft' },
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
@@ -176,6 +185,7 @@ const MenuItemTable: FC<SamplePageProps> = ({
                   <MenuItemTableRow
                     key={item?._id || idx}
                     item={item}
+                    organizations={organizations}
                     handleDelete={handleDelete}
                     handleDuplicate={handleDuplicate}
                     handleEdit={handleEdit}

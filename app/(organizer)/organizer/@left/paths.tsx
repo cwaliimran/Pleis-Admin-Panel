@@ -7,6 +7,8 @@ export const paths = {
     dashboard: '/organizer',
     menuItems: '/organizer/menuItems',
     menuList: '/organizer/menu-list',
+    menuSubcategories: '/organizer/menu-subcategories',
+    discounts: '/organizer/discounts',
     rewards: '/organizer/rewards',
     challenges: '/organizer/challenges',
     streak: '/organizer/streaks',

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import {
   useGetOrganizerOwnSubscriptionsQuery,
   useGetOrganizerSubscriptionsQuery,
+  useLazyGetMonriWebPaySessionQuery,
   useUpdateOrganizerSubscriptionMutation,
 } from '@/store/Reducer/subscriptions-api';
 import { getErrorMessage } from '@/utils/api';
@@ -64,6 +65,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
     }
   );
   const [updateOrganizerSubscription, { isLoading: isUpdating }] = useUpdateOrganizerSubscriptionMutation();
+  const [triggerMonriWebPaySession, { isFetching: isTestSubLoading }] = useLazyGetMonriWebPaySessionQuery();
 
   const pricingData = apiData?.data?.[0] || null;
   const isUserOnFreePlan = useMemo(() => {
@@ -388,6 +390,41 @@ export const OrganizerSubscriptionView: React.FC = () => {
   };
 
   // ============================================================================
+  // TEST SUBSCRIPTION PAYMENT (MONRI)
+  // ============================================================================
+  const handleTestSub = async (): Promise<void> => {
+    try {
+      const response = await triggerMonriWebPaySession({
+        amount: 2120,
+        orderNumber: '69ea1decb5dc8799ceb9c5e1',
+        orderType: 'ticketingbookings',
+        paymentMethod: 'card',
+      }).unwrap();
+
+      const fields: Record<string, unknown> = response;
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://ipgtest.monri.com/v2/form';
+
+      Object.entries(fields).forEach(([key, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = String(value);
+        form.appendChild(input);
+      });
+
+      console.log(form);
+
+      document.body.appendChild(form);
+      form.submit();
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
+  // ============================================================================
   // DERIVED STATE FOR UI
   // ============================================================================
   const getButtonText = (): string => {
@@ -445,11 +482,19 @@ export const OrganizerSubscriptionView: React.FC = () => {
       {/* Header */}
       <div className="rounded-2xl border-b border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-[#222121]">
         <div className="px-6 py-7">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Subscription Management</h1>
               <p className="mt-1 text-gray-600 dark:text-gray-400">Choose your plan and unlock powerful features</p>
             </div>
+            <button
+              type="button"
+              onClick={handleTestSub}
+              disabled={isTestSubLoading}
+              className="cursor-pointer rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-gray-700 dark:hover:bg-gray-600"
+            >
+              {isTestSubLoading ? 'Loading...' : 'Test Sub'}
+            </button>
           </div>
         </div>
       </div>
@@ -487,6 +532,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
           userSubscriptionData && (
             <CurrentSubscriptionBox
               subscription={subscriptionAnalysis.currentSubscription}
+              status={userSubscriptionData.status}
               startDate={userSubscriptionData.startDate}
               endDate={userSubscriptionData.endDate}
               lockedInPrice={userSubscriptionData.totalSubscriptionAmount}
@@ -738,7 +784,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
         onConfirm={handleSubscribe}
         title="Switch to Free Plan?"
         message="Are you sure you want to switch to the Free Plan? You'll lose access to premium features."
-        effectiveDate={subscriptionAnalysis?.nextRecurring?.startDate || userSubscriptionData?.endDate}
+        effectiveDate={subscriptionAnalysis?.nextRecurring?.startDate || userSubscriptionData?.endDate || undefined}
         confirmButtonText="Yes, Switch to Free Plan"
         cancelButtonText="Cancel"
         isLoading={isUpdating}

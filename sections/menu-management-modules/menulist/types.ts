@@ -1,3 +1,20 @@
+export type MenuStatus = 'draft' | 'active' | 'inactive';
+
+export interface MenuOrganization {
+  _id: string;
+  name: string;
+}
+
+export interface MenuListItem {
+  _id: string;
+  title: string;
+  description?: string;
+  organizations: string[];
+  validFrom: string;
+  status: MenuStatus;
+  createdAt: string;
+}
+
 export interface SampleMeta {
   currentPage: number;
   totalPages: number;
@@ -7,7 +24,7 @@ export interface SampleMeta {
 
 export interface SamplePageProps {
   page: any;
-  data: any[];
+  data: MenuListItem[];
   meta: SampleMeta;
   loading?: boolean;
   handleDelete?: (id: string) => void;
@@ -29,18 +46,19 @@ export interface SamplePageProps {
 }
 
 export interface TableRowProps {
-  item: any;
+  item: MenuListItem;
+  organizations: MenuOrganization[];
   handleDelete?: (id: string) => void;
   handleDuplicate?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
 
 export type MenuItemFormValues = {
-  image?: any;
   title?: string;
-  organization?: string;
   description?: string;
-  status?: string;
+  organizations?: string[];
+  validFrom?: Date;
+  status?: MenuStatus;
 };
 
 export type MenuItemModalProps = {
@@ -48,7 +66,15 @@ export type MenuItemModalProps = {
   selectedId?: string;
   onClose: () => void;
   isEdit?: boolean;
-  selectedData?: any;
-  selectedCompany?: any;
-  userType: 'super-admin' | 'organizer';
+  selectedData?: MenuListItem | null;
+  organizations: MenuOrganization[];
+  onSubmit: (values: MenuItemFormValues) => void;
+};
+
+export type DuplicateMenuModalProps = {
+  open: boolean;
+  selectedId?: string | null;
+  onClose: () => void;
+  organizations: MenuOrganization[];
+  onSubmit: (organizationId: string) => void;
 };

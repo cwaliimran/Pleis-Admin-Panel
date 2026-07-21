@@ -16,9 +16,17 @@ interface RHFDatePickerProps {
   placeholder?: string;
   className?: string;
   minDate?: Date;
+  displayFormat?: string;
 }
 
-const RHFDatePicker: FC<RHFDatePickerProps> = ({ name, label, placeholder = 'Pick a date', className, minDate = new Date() }) => {
+const RHFDatePicker: FC<RHFDatePickerProps> = ({
+  name,
+  label,
+  placeholder = 'Pick a date',
+  className,
+  minDate = new Date(),
+  displayFormat = 'PPP',
+}) => {
   const { control } = useFormContext();
 
   return (
@@ -26,7 +34,7 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({ name, label, placeholder = 'Pic
       control={control}
       name={name}
       rules={{
-        validate: (value) => !minDate || !value || value >= minDate || `Date must be after ${format(minDate, 'PPP')}`,
+        validate: (value) => !minDate || !value || value >= minDate || `Date must be after ${format(minDate, displayFormat)}`,
       }}
       render={({ field, formState: {} }) => (
         <FormItem className={'flex-1'}>
@@ -39,7 +47,7 @@ const RHFDatePicker: FC<RHFDatePickerProps> = ({ name, label, placeholder = 'Pic
                   className={cn(className, 'w-full justify-start text-left font-normal', !field.value && 'text-muted-foreground')}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {field.value ? format(field.value, 'PPP') : <span>{placeholder}</span>}
+                  {field.value ? format(field.value, displayFormat) : <span>{placeholder}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="dark:bg-secondary w-auto p-0" align="start">

@@ -1,0 +1,27 @@
+import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
+import MenuSubcategoriesView from '@/sections/menu-management-modules/menuSubcategories/menuSubcategories-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Menu Subcategories - Pleis',
+};
+
+const Page = () => {
+  return (
+    <div className="min-h-screen pb-12">
+      <Header
+        links={[
+          { name: 'Dashboard', href: '/super-admin' },
+          { name: 'Menu Subcategories', href: '' },
+        ]}
+      />
+
+      <CompanyGuard>
+        <MenuSubcategoriesView userType="super-admin" />
+      </CompanyGuard>
+    </div>
+  );
+};
+
+export default Page;

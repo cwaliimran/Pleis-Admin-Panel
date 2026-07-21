@@ -3,21 +3,35 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useDeleteMenuItemMutation, useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
-import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showError, showSuccess } from '@/utils/toast';
+import { showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import MenuItemModal from './menuItems-modal';
+import { useMemo, useState } from 'react';
+import { mockBrands, mockCategories, mockMenuItemsData, mockMenus, mockPresetTypes, mockSubcategories } from './data';
+import MenuItemModal from './menuItems-modal-v2';
 import MenuItemTable from './menuItems-table';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { MenuItemFormValues, MenuItemRecord } from './types';
 
+let nextMenuItemId = mockMenuItemsData.length + 1;
+
+const getMenuName = (id: string) => mockMenus.find((menu) => menu._id === id)?.title || '';
+const getSubcategoryName = (id?: string) => mockSubcategories.find((subcategory) => subcategory._id === id)?.title || '';
+const getPresetTypeName = (id: string) => mockPresetTypes.find((preset) => preset._id === id)?.label || '';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- userType kept for the route contract; will scope mock data once the v2 API lands
 const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+
+  // TODO(v2-api): replace this local state with useGetMenuItemsQuery once the backend endpoint is ready.
+  const [menuItems, setMenuItems] = useState<MenuItemRecord[]>(mockMenuItemsData);
+
+  const menus = mockMenus;
+  const categories = mockCategories;
+  const subcategories = mockSubcategories;
+  const presetTypes = mockPresetTypes;
+  const brands = mockBrands;
 
   // Pagination and filter state
   const [page, setPage] = useState(1);
@@ -25,6 +39,9 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [menuId, setMenuId] = useState<string>('');
+  const [categoryId, setCategoryId] = useState<string>('');
+  const [subcategoryId, setSubcategoryId] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
 
@@ -35,52 +52,90 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   };
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [selectedRecord, setSelectedRecord] = useState<MenuItemRecord | null>(null);
 
-  const [deleteMenuItem, { isLoading: deleteLoading }] = useDeleteMenuItemMutation();
+  const filteredSortedMenuItems = useMemo(() => {
+    let result = [...menuItems];
 
-  const { companyId: selectedCompany } = useCompanySelectionState();
-
-  const { organizerOrganizationIds } = useCompanySelection();
-
-  const {
-    data: apiData,
-    isLoading,
-    isFetching,
-  } = useGetMenuItemsQuery({
-    page: page - 1,
-    search,
-    limit,
-    status: status === 'all' ? '' : status,
-    date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany || undefined,
-    organization: userType === 'organizer' ? organizerOrganizationIds : undefined,
-    sortBy: sortBy || undefined,
-    sortOrder: sortOrder || undefined,
-  });
-
-  const [localData, setLocalData] = useState<any[]>([]);
-
-  const [meta, setMeta] = useState<any>({
-    currentPage: page,
-    totalPages: 1,
-    totalRecords: 0,
-    limit,
-  });
-
-  useEffect(() => {
-    if (apiData?.data) {
-      setLocalData(apiData.data);
-      setMeta(
-        apiData.meta || {
-          currentPage: page,
-          totalPages: 1,
-          totalRecords: 0,
-          limit,
-        }
-      );
+    if (search.trim()) {
+      const term = search.trim().toLowerCase();
+      result = result.filter((item) => item.title.toLowerCase().includes(term));
     }
-  }, [apiData, page, limit]);
+
+    if (status && status !== 'all') {
+      result = result.filter((item) => item.status === status);
+    }
+
+    if (date) {
+      const target = formatDate(date);
+      result = result.filter((item) => item.createdAt === target);
+    }
+
+    if (menuId && menuId !== 'all') {
+      result = result.filter((item) => item.menuIds.includes(menuId));
+    }
+
+    if (categoryId && categoryId !== 'all') {
+      result = result.filter((item) => subcategories.find((sub) => sub._id === item.subcategoryId)?.categoryId === categoryId);
+    }
+
+    if (subcategoryId && subcategoryId !== 'all') {
+      result = result.filter((item) => item.subcategoryId === subcategoryId);
+    }
+
+    if (sortBy && sortOrder) {
+      const direction = sortOrder === 'asc' ? 1 : -1;
+      result.sort((a, b) => {
+        if (sortBy === 'price') {
+          return (a.price - b.price) * direction;
+        }
+
+        let aVal: string;
+        let bVal: string;
+
+        switch (sortBy) {
+          case 'menuItemName':
+            aVal = a.title;
+            bVal = b.title;
+            break;
+          case 'menuName':
+            aVal = getMenuName(a.menuIds[0]);
+            bVal = getMenuName(b.menuIds[0]);
+            break;
+          case 'subcategory':
+            aVal = getSubcategoryName(a.subcategoryId);
+            bVal = getSubcategoryName(b.subcategoryId);
+            break;
+          case 'type':
+            aVal = getPresetTypeName(a.presetTypeId);
+            bVal = getPresetTypeName(b.presetTypeId);
+            break;
+          case 'serving':
+            aVal = a.serving || '';
+            bVal = b.serving || '';
+            break;
+          default:
+            aVal = '';
+            bVal = '';
+        }
+
+        return aVal.localeCompare(bVal) * direction;
+      });
+    }
+
+    return result;
+  }, [menuItems, search, status, date, menuId, categoryId, subcategoryId, sortBy, sortOrder, subcategories]);
+
+  const totalRecords = filteredSortedMenuItems.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
+  const paginatedMenuItems = filteredSortedMenuItems.slice((page - 1) * limit, page * limit);
+
+  const meta = {
+    currentPage: page,
+    totalPages,
+    totalRecords,
+    limit,
+  };
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -89,75 +144,84 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
     openModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR STATIC ------------
-  // const handleEdit = (id: string) => {
-  //   console.log('id', id);
-  //   openModal.onTrue();
-  //   editModal.onTrue();
-  // };
-
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
   const handleEdit = (id: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
-
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
-    } else {
-      showError('Reward not found');
-    }
+    const selectedData = menuItems.find((item) => item._id === id) || null;
+    setSelectedId(id);
+    setSelectedRecord(selectedData);
+    editModal.onTrue();
+    openModal.onTrue();
   };
 
-  const handleDelete = useCallback(
-    (id: string) => {
-      if (!id) {
-        showError('No menu item selected');
-        return;
-      }
+  const handleDelete = (id: string) => {
+    setSelectedId(id);
+    deleteModal.onTrue();
+  };
 
-      setSelectedId(id);
-      deleteModal.onTrue();
-    },
-    [deleteModal]
-  );
+  const onDelete = () => {
+    setMenuItems((prev) => prev.filter((item) => item._id !== selectedId));
+    showSuccess('Menu item deleted successfully');
+    setSelectedId(null);
+    deleteModal.onFalse();
+  };
 
-  // DELETE CALL
-  const onDelete = async () => {
-    try {
-      const response = await deleteMenuItem(selectedId).unwrap();
+  const onMenuItemSubmit = (values: MenuItemFormValues) => {
+    const record: Omit<MenuItemRecord, '_id' | 'createdAt'> = {
+      title: values.title,
+      amount: values.amount || undefined,
+      image: typeof values.image === 'string' ? values.image : undefined,
+      presetTypeId: values.presetTypeId,
+      brandId: values.brandId,
+      subcategoryId: values.subcategoryId,
+      menuIds: values.menuIds,
+      description: values.description || undefined,
+      quantityType: values.quantityType,
+      comboItemIds: values.quantityType === 'combo' ? values.comboItemIds : undefined,
+      serving: values.serving,
+      price: Number(values.price),
+      taxPercent: Number(values.taxPercent),
+      availableDays: values.availableDays,
+      daypart: values.daypart,
+      dietTags: values.dietTags,
+      allergens: values.allergens,
+      cuisine: values.cuisine || undefined,
+      isRecommended: values.isRecommended,
+      isUpsell: values.isUpsell,
+      isToGo: values.isToGo,
+      requiresConfirmation: values.requiresConfirmation,
+      status: values.status,
+    };
 
-      if (response?.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      showSuccess(response?.message || 'Deleted successfully');
-
-      setSelectedId(null);
-      deleteModal.onFalse();
-    } catch (error) {
-      showError(getErrorMessage(error));
+    if (editModal.value && selectedId) {
+      setMenuItems((prev) => prev.map((item) => (item._id === selectedId ? { ...item, ...record } : item)));
+      showSuccess('Menu item updated successfully');
+    } else {
+      setMenuItems((prev) => [{ ...record, _id: `item-${nextMenuItemId++}`, createdAt: formatDate(new Date())! }, ...prev]);
+      showSuccess('Menu item created successfully');
     }
   };
 
   return (
     <div>
-      <div>
-        <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-            <Plus />
-            Create Menu Item
-          </Button>
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold">Menu Items</h2>
+          <p className="text-muted-foreground text-sm">All items across all menus for this venue.</p>
         </div>
+
+        <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+          <Plus />
+          Create Menu Item
+        </Button>
       </div>
 
       <MenuItemTable
-        data={localData}
+        data={paginatedMenuItems}
         meta={meta}
-        loading={isLoading || isFetching}
+        menus={menus}
+        categories={categories}
+        subcategories={subcategories}
+        presetTypes={presetTypes}
+        allItems={menuItems}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -182,6 +246,22 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           setDate(val);
           setPage(1);
         }}
+        menuId={menuId}
+        onMenuChange={(val) => {
+          setMenuId(val);
+          setPage(1);
+        }}
+        categoryId={categoryId}
+        onCategoryChange={(val) => {
+          setCategoryId(val);
+          setSubcategoryId('');
+          setPage(1);
+        }}
+        subcategoryId={subcategoryId}
+        onSubcategoryChange={(val) => {
+          setSubcategoryId(val);
+          setPage(1);
+        }}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={handleSortChange}
@@ -189,6 +269,9 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           setStatus('');
           setDate(undefined);
           setSearch('');
+          setMenuId('');
+          setCategoryId('');
+          setSubcategoryId('');
           setSortBy('');
           setSortOrder('');
           setPage(1);
@@ -201,7 +284,12 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           onClose={openModal.onFalse}
           isEdit={editModal.value}
           selectedData={selectedRecord}
-          userType={userType}
+          menus={menus}
+          subcategories={subcategories}
+          presetTypes={presetTypes}
+          brands={brands}
+          allItems={menuItems}
+          onSubmit={onMenuItemSubmit}
         />
       )}
 
@@ -214,7 +302,6 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteLoading}
       />
     </div>
   );

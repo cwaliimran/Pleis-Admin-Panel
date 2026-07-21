@@ -1,14 +1,14 @@
-"use client"
-import React from 'react'
-import MenuList from '../../../common/menuList'
+'use client';
+import React from 'react';
+import MenuList from '../../../common/menuList';
 
-import { menuGroups } from "./data"
+import { menuGroups, sidePanels } from './data';
 const Default = () => {
-    return (
-        <>
-            <MenuList menuGroups={menuGroups} />
-        </>
-    )
-}
+  return (
+    <>
+      <MenuList menuGroups={menuGroups} panels={sidePanels} />
+    </>
+  );
+};
 
-export default Default
+export default Default;

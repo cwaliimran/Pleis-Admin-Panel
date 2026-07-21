@@ -2,72 +2,87 @@
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { Pencil, Trash2 } from 'lucide-react';
-import { FC } from 'react';
-import { TableRowProps } from './types';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
-import { capitalizeFirstLetter } from '@/utils/format-time';
+import { Layers, Pencil, Tag, Trash2, TrendingUp } from 'lucide-react';
+import { FC } from 'react';
+import { formatAvailableDays, formatDaypart } from './constants';
+import { TableRowProps } from './types';
 
-const MenuItemTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
+const MenuItemTableRow: FC<TableRowProps> = ({ item, menus, subcategories, presetTypes, allItems, handleDelete, handleEdit }) => {
+  const menuTitles = item.menuIds.map((id) => menus.find((menu) => menu._id === id)?.title).filter(Boolean).join(', ') || '-';
+  const subcategoryTitle = subcategories.find((subcategory) => subcategory._id === item.subcategoryId)?.title || '-';
+  const presetType = presetTypes.find((preset) => preset._id === item.presetTypeId);
+
+  const isCombo = item.quantityType === 'combo';
+  const comboItems = isCombo ? (item.comboItemIds || []).map((id) => allItems.find((menuItem) => menuItem._id === id)).filter(Boolean) : [];
+  const sumOfParts = comboItems.reduce((sum, comboItem) => sum + (comboItem?.price || 0), 0);
+  const discountPercent = isCombo && sumOfParts > item.price ? Math.round((1 - item.price / sumOfParts) * 100) : 0;
+
+  const subtitle = isCombo
+    ? `${comboItems.length} items${item.availableDays.length ? ` · ${formatAvailableDays(item.availableDays)}` : ''}${
+        item.daypart?.length ? ` · ${formatDaypart(item.daypart)}` : ''
+      }`
+    : [presetType?.label, item.amount].filter(Boolean).join(' · ');
+
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
         <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.image && item.image !== noImageUrl && item.image !== noImageUrlDev ? (
-            <AvatarImage src={item?.image} alt="Store" className="h-full w-full cursor-pointer object-cover" />
+            <AvatarImage src={item?.image} alt={item?.title} className="h-full w-full cursor-pointer object-cover" />
           ) : (
             <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.title?.[0]?.toUpperCase() || ''}</span>
           )}
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left capitalize">{item?.title || '-'}</TableCell>
-
       <TableCell className="text-left">
-        {item?.description.length > 22 ? (
-          <Dialog>
-            <DialogTrigger asChild>
-              <span className="cursor-pointer hover:text-blue-600" title="Click to view full description">
-                {item?.description.slice(0, 22) + '...'}
-              </span>
-            </DialogTrigger>
-            <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
-              <DialogHeader>
-                <DialogTitle>Description</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-300">{capitalizeFirstLetter(item?.description)}</p>
-              </div>
-            </DialogContent>
-          </Dialog>
-        ) : (
-          capitalizeFirstLetter(item?.description || '-')
-        )}
+        <div className="flex items-center gap-2">
+          <span className="font-semibold capitalize">{item?.title || '-'}</span>
+          {isCombo && (
+            <CustomBadge variant="warning" className="gap-1 px-2 py-0.5 text-[11px]">
+              <Layers className="h-3 w-3" />
+              Combo
+            </CustomBadge>
+          )}
+          {item.isUpsell && (
+            <CustomBadge variant="info" className="gap-1 px-2 py-0.5 text-[11px]">
+              <TrendingUp className="h-3 w-3" />
+              Upsell
+            </CustomBadge>
+          )}
+        </div>
+        {subtitle && <div className="text-muted-foreground mt-0.5 text-xs">{subtitle}</div>}
       </TableCell>
 
-      <TableCell className="text-left capitalize">{item?.menu?.title || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{menuTitles}</TableCell>
 
-      {/* <TableCell className="text-left capitalize">{item?.taxPercent || '-'}%</TableCell> */}
-      <TableCell className="text-left capitalize">{item?.taxPercent ? `${item.taxPercent}%` : '-'}</TableCell>
+      <TableCell className="text-left capitalize">{subcategoryTitle}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.type || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{presetType?.label || '—'}</TableCell>
 
-      <TableCell className="text-left capitalize">{item?.category?.title || '-'}</TableCell>
-
-      <TableCell className="text-left">{item?.basePrice || '-'}</TableCell>
-
-      {/* <TableCell className="text-left">{item?.discountPrice || '-'}</TableCell> */}
+      <TableCell className="text-left capitalize">{isCombo ? 'Combo' : item.serving}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === 'active' ? 'success' : item.status === 'inactive' ? 'error' : 'info'}>{item.status}</CustomBadge>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">{item.price.toFixed(2)}</span>
+          {discountPercent > 0 ? (
+            <CustomBadge variant="error" className="gap-1 px-2 py-0.5 text-[11px]">
+              <Tag className="h-3 w-3" />-{discountPercent}%
+            </CustomBadge>
+          ) : null}
+        </div>
+      </TableCell>
+
+      <TableCell className="text-left">
+        <CustomBadge variant={item.status === 'active' ? 'success' : 'error'}>{item.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2">
           <button
-            title="View Venue"
+            title="Edit Menu Item"
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -79,7 +94,7 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit })
           </button>
 
           <button
-            title="View Venue"
+            title="Delete Menu Item"
             type="button"
             onClick={(e) => {
               e.stopPropagation();

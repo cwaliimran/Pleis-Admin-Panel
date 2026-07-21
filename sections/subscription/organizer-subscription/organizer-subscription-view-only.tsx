@@ -110,6 +110,7 @@ export const OrganizerSubscriptionViewOnly: React.FC = () => {
           userSubscriptionData && (
             <CurrentSubscriptionBox
               subscription={currentSubscription}
+              status={userSubscriptionData.status}
               startDate={userSubscriptionData.startDate}
               endDate={userSubscriptionData.endDate}
               lockedInPrice={userSubscriptionData.totalSubscriptionAmount}

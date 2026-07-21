@@ -1,30 +1,35 @@
 'use client';
 
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useDeleteMenuListMutation, useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
-import { useGetOrganizationByCompanyQuery, useGetOrganizationsOnOrganizerSideQuery } from '@/store/Reducer/organization';
-import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showError, showSuccess } from '@/utils/toast';
+import { showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { mockMenuListData, mockOrganizations } from './data';
 import DuplicateMenuModal from './duplicate-menu-modal';
 import MenuItemModal from './menulist-modal';
 import MenuItemTable from './menulist-table';
+import { MenuItemFormValues, MenuListItem } from './types';
 
 type MenuListViewProps = {
   userType: 'super-admin' | 'organizer';
 };
 
+let nextMenuId = mockMenuListData.length + 1;
+
+const getOrganizationName = (id: string) => mockOrganizations.find((org) => org._id === id)?.name || '';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- userType kept for the route contract; will scope mock data once the v2 API lands
 const MenuListView = ({ userType }: MenuListViewProps) => {
   const openModal = useBoolean();
   const duplicateModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+
+  // TODO(v2-api): replace this local state with useGetMenuListQuery once the backend endpoint is ready.
+  const [menus, setMenus] = useState<MenuListItem[]>(mockMenuListData);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -41,94 +46,81 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   };
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [selectedRecord, setSelectedRecord] = useState<MenuListItem | null>(null);
 
-  const { organizerOrganizationIds } = useCompanySelection();
+  const organizations = mockOrganizations;
 
-  const [deleteMenuList, { isLoading: deleteLoading }] = useDeleteMenuListMutation();
+  const filteredSortedMenus = useMemo(() => {
+    let result = [...menus];
 
-  const { companyId: selectedCompany } = useCompanySelectionState();
-
-  const {
-    data: apiData,
-    isLoading,
-    isFetching,
-  } = useGetMenuListQuery({
-    page: page - 1,
-    search,
-    limit,
-    status: status === 'all' ? '' : status,
-    date: date ? formatDate(date) : undefined,
-    companyOrganizer: selectedCompany || undefined,
-    organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
-    sortBy: sortBy || undefined,
-    sortOrder: sortOrder || undefined,
-  });
-
-  // Fetch organization list
-  const {
-    data: organizationResponse,
-    isLoading: organizationLoading,
-    isFetching: organizationFetching,
-  } = useGetOrganizationByCompanyQuery(
-    {
-      companyOrganizer: selectedCompany || undefined,
-    },
-    {
-      skip: !selectedCompany,
-    }
-  );
-
-  // Fetch organizer organizations
-  const { data: organizerOrganizationsResponse } = useGetOrganizationsOnOrganizerSideQuery(
-    {},
-    {
-      skip: userType !== 'organizer',
-    }
-  );
-
-  // Admin
-  const organizationOptions = useMemo(
-    () =>
-      organizationResponse?.data?.map((organization: any) => ({
-        label: organization?.basicInfo?.name || 'Unknown Organization',
-        value: organization?._id,
-      })) || [],
-    [organizationResponse]
-  );
-
-  // Organizer
-  const organizerOrganizationOptions = useMemo(
-    () =>
-      organizerOrganizationsResponse?.data?.map((organization: any) => ({
-        label: organization?.title || 'Unknown Organization',
-        value: organization?._id,
-      })) || [],
-    [organizerOrganizationsResponse]
-  );
-
-  const [localData, setLocalData] = useState<any[]>([]);
-
-  const [meta, setMeta] = useState<any>({
-    currentPage: page,
-    totalPages: 1,
-    totalRecords: 0,
-    limit,
-  });
-
-  useEffect(() => {
-    if (apiData?.data) {
-      setLocalData(apiData.data);
-      setMeta(
-        apiData.meta || {
-          currentPage: page,
-          totalPages: 1,
-          totalRecords: 0,
-          limit,
-        }
+    if (search.trim()) {
+      const term = search.trim().toLowerCase();
+      result = result.filter(
+        (menu) =>
+          menu.title.toLowerCase().includes(term) ||
+          menu.description?.toLowerCase().includes(term) ||
+          menu.organizations.some((orgId) => getOrganizationName(orgId).toLowerCase().includes(term))
       );
     }
-  }, [apiData, page, limit]);
+
+    if (status && status !== 'all') {
+      result = result.filter((menu) => menu.status === status);
+    }
+
+    if (date) {
+      const target = formatDate(date);
+      result = result.filter((menu) => menu.createdAt === target);
+    }
+
+    if (sortBy && sortOrder) {
+      const direction = sortOrder === 'asc' ? 1 : -1;
+      result.sort((a, b) => {
+        let aVal: string;
+        let bVal: string;
+
+        switch (sortBy) {
+          case 'menuName':
+            aVal = a.title;
+            bVal = b.title;
+            break;
+          case 'description':
+            aVal = a.description || '';
+            bVal = b.description || '';
+            break;
+          case 'organizationName':
+            aVal = getOrganizationName(a.organizations[0]);
+            bVal = getOrganizationName(b.organizations[0]);
+            break;
+          case 'validFrom':
+            aVal = a.validFrom;
+            bVal = b.validFrom;
+            break;
+          case 'createdAt':
+            aVal = a.createdAt;
+            bVal = b.createdAt;
+            break;
+          default:
+            aVal = '';
+            bVal = '';
+        }
+
+        return aVal.localeCompare(bVal) * direction;
+      });
+    }
+
+    return result;
+  }, [menus, search, status, date, sortBy, sortOrder]);
+
+  const totalRecords = filteredSortedMenus.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
+  const paginatedMenus = filteredSortedMenus.slice((page - 1) * limit, page * limit);
+
+  const meta = {
+    currentPage: page,
+    totalPages,
+    totalRecords,
+    limit,
+  };
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -142,51 +134,72 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
     duplicateModal.onTrue();
   };
 
-  // ------------ EDIT FUNCTION FOR API VERSION ------------
   const handleEdit = (id: string) => {
-    const selectedData = localData?.find((item: any) => item?._id === id);
+    const selectedData = menus.find((item) => item._id === id) || null;
+    setSelectedId(id);
+    setSelectedRecord(selectedData);
+    editModal.onTrue();
+    openModal.onTrue();
+  };
 
-    if (selectedData) {
-      setSelectedId(id);
-      setSelectedRecord(selectedData);
-      editModal.onTrue();
-      openModal.onTrue();
+  const handleDelete = (id: string) => {
+    setSelectedId(id);
+    deleteModal.onTrue();
+  };
+
+  const onDelete = () => {
+    setMenus((prev) => prev.filter((menu) => menu._id !== selectedId));
+    showSuccess('Menu deleted successfully');
+    setSelectedId(null);
+    deleteModal.onFalse();
+  };
+
+  const onMenuSubmit = (values: MenuItemFormValues) => {
+    if (editModal.value && selectedId) {
+      setMenus((prev) =>
+        prev.map((menu) =>
+          menu._id === selectedId
+            ? {
+                ...menu,
+                title: values.title || menu.title,
+                description: values.description,
+                organizations: values.organizations || [],
+                validFrom: values.validFrom ? formatDate(values.validFrom)! : menu.validFrom,
+                status: values.status || menu.status,
+              }
+            : menu
+        )
+      );
+      showSuccess('Menu updated successfully');
     } else {
-      showError('Reward not found');
+      const newMenu: MenuListItem = {
+        _id: `menu-${nextMenuId++}`,
+        title: values.title || '',
+        description: values.description,
+        organizations: values.organizations || [],
+        validFrom: values.validFrom ? formatDate(values.validFrom)! : formatDate(new Date())!,
+        status: values.status || 'draft',
+        createdAt: formatDate(new Date())!,
+      };
+      setMenus((prev) => [newMenu, ...prev]);
+      showSuccess('Menu created successfully');
     }
   };
 
-  const handleDelete = useCallback(
-    (id: string) => {
-      if (!id) {
-        showError('No menu item selected');
-        return;
-      }
+  const onDuplicateSubmit = (organizationId: string) => {
+    const source = menus.find((menu) => menu._id === selectedId);
+    if (!source) return;
 
-      setSelectedId(id);
-      deleteModal.onTrue();
-    },
-    [deleteModal]
-  );
-
-  // DELETE CALL
-  const onDelete = async () => {
-    try {
-      const response = await deleteMenuList(selectedId).unwrap();
-
-      if (response?.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
-        return;
-      }
-
-      showSuccess(response?.message || 'Deleted successfully');
-
-      setSelectedId(null);
-      deleteModal.onFalse();
-    } catch (error) {
-      showError(getErrorMessage(error));
-    }
+    const newMenu: MenuListItem = {
+      ...source,
+      _id: `menu-${nextMenuId++}`,
+      title: `${source.title} (Copy)`,
+      organizations: [organizationId],
+      status: 'draft',
+      createdAt: formatDate(new Date())!,
+    };
+    setMenus((prev) => [newMenu, ...prev]);
+    showSuccess('Menu duplicated successfully');
   };
 
   return (
@@ -201,9 +214,9 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
       </div>
 
       <MenuItemTable
-        data={localData}
+        data={paginatedMenus}
         meta={meta}
-        loading={isLoading || isFetching}
+        organizations={organizations}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         handleDuplicate={handleDuplicate}
@@ -247,9 +260,9 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
           open={openModal.value}
           onClose={openModal.onFalse}
           isEdit={editModal.value}
-          selectedCompany={selectedCompany}
           selectedData={selectedRecord}
-          userType={userType}
+          organizations={organizations}
+          onSubmit={onMenuSubmit}
         />
       )}
 
@@ -258,9 +271,8 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
           open={duplicateModal.value}
           onClose={duplicateModal.onFalse}
           selectedId={selectedId}
-          // data={organizerOrganizationOptions}
-          data={userType === 'organizer' ? organizerOrganizationOptions : organizationOptions}
-          isLoading={organizationLoading || organizationFetching}
+          organizations={organizations}
+          onSubmit={onDuplicateSubmit}
         />
       )}
 
@@ -273,7 +285,6 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
           setSelectedId(null);
         }}
         onConfirm={onDelete}
-        isLoading={deleteLoading}
       />
     </div>
   );

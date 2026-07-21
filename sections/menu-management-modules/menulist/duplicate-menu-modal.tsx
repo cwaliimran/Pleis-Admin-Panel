@@ -5,12 +5,11 @@ import FormProvider from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { useDuplicateMenuMutation } from '@/store/Reducer/menu-list-api';
-import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
+import { DuplicateMenuModalProps } from './types';
 
 const defaultValues = {
   organization: '',
@@ -20,42 +19,26 @@ const schema = Yup.object({
   organization: Yup.string().required('Organization is required'),
 });
 
-const DuplicateMenuModal = ({ open, selectedId, onClose, selectedData, data, isLoading }: any) => {
+const DuplicateMenuModal = ({ open, onClose, organizations, onSubmit }: DuplicateMenuModalProps) => {
+  const [submitting, setSubmitting] = useState(false);
+
   const methods = useForm({
     resolver: yupResolver(schema),
-    defaultValues: selectedData || defaultValues,
+    defaultValues,
   });
-
-  const [duplicateMenu, { isLoading: duplicateMenuLoading }] = useDuplicateMenuMutation();
 
   const { reset } = methods;
 
-  const handleSubmit = async (formData: any) => {
+  const organizationOptions = organizations?.map((org) => ({ value: org._id, label: org.name })) || [];
+
+  const handleSubmit = async (formData: typeof defaultValues) => {
+    setSubmitting(true);
     try {
-      const payload: any = {
-        id: selectedId,
-        organization: formData?.organization,
-      };
-
-      const response = await duplicateMenu(payload).unwrap();
-
-      if (!response) {
-        showError('No response from server. Please try again later.');
-        return;
-      }
-
-      if (response?.error) {
-        showError(getErrorMessage(response.error));
-        return;
-      }
-
-      showSuccess(response?.message || 'Menu duplicated successfully');
-
+      onSubmit(formData.organization);
       methods.reset(defaultValues);
       onClose();
-    } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      showError(errorMessage);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -83,13 +66,7 @@ const DuplicateMenuModal = ({ open, selectedId, onClose, selectedData, data, isL
                       name="organization"
                       label="Organization"
                       placeholder="Select Organization"
-                      options={data}
-                      // options={data?.map((val: any) => ({
-                      //   value: val?._id,
-                      //   label: val?.basicInfo?.name,
-                      //   // label: userType === 'admin' ? `${val?.basicInfo?.name}` : val?.name,
-                      // }))}
-                      isLoading={isLoading}
+                      options={organizationOptions}
                       showNone={false}
                     />
                   </div>
@@ -97,7 +74,7 @@ const DuplicateMenuModal = ({ open, selectedId, onClose, selectedData, data, isL
               </div>
 
               <div className="mt-6 flex items-center justify-center gap-2">
-                {duplicateMenuLoading ? (
+                {submitting ? (
                   <Button type="button" disabled className="bg-primary hover:bg-primary cursor-not-allowed px-4 py-2 text-white">
                     <ButtonLoading title="Duplicating" />
                   </Button>

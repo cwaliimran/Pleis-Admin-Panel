@@ -108,6 +108,14 @@ export const paths = {
     },
     menuItems: '/super-admin/menuItems',
     menuList: '/super-admin/menu-list',
+    menuSubcategories: '/super-admin/menu-subcategories',
+    discounts: '/super-admin/discounts',
+    presetTypes: '/super-admin/preset-types',
+    brands: '/super-admin/brands',
+    serving: '/super-admin/serving',
+    dietTags: '/super-admin/diet-tags',
+    allergens: '/super-admin/allergens',
+    daypart: '/super-admin/daypart',
 
     // Ticketing and Reservation Paths
     ticketing: '/super-admin/ticketing',

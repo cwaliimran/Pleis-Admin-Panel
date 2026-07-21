@@ -675,7 +675,7 @@ export const analyzeSubscriptionChange = (
   const changeType = determineChangeType(currentConfig, newConfig);
 
   // Calculate dates
-  const subscriptionEndDate = new Date(userSubscriptionData.endDate);
+  const subscriptionEndDate = new Date(userSubscriptionData.endDate as string);
   const rawDaysRemaining = calculateDaysRemaining(currentDate, subscriptionEndDate);
 
   // Calculate total days in period
