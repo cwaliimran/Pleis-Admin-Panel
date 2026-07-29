@@ -3,25 +3,26 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useDeleteDiscountMutation, useGetDiscountsQuery } from '@/store/Reducer/discounts-api';
+import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { mockDiscountsData } from './data';
+import { useState } from 'react';
 import DiscountModal from './discounts-modal';
 import DiscountTable from './discounts-table';
-import { DiscountFormValues, DiscountRecord } from './types';
+import { DiscountRecord } from './types';
 
-let nextDiscountId = mockDiscountsData.length + 1;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- userType kept for the route contract; will scope mock data once the v2 API lands
 const DiscountsView = ({ userType }: { userType: 'organizer' | 'super-admin' }) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
 
-  // TODO(v2-api): replace this local state with a real query once the backend endpoint is ready.
-  const [discounts, setDiscounts] = useState<DiscountRecord[]>(mockDiscountsData);
+  const { companyId } = useCompanySelectionState();
+  // Organizer requests are scoped to the logged-in organizer's own company server-side;
+  // only super-admin needs the header's selected company sent explicitly.
+  const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -33,6 +34,27 @@ const DiscountsView = ({ userType }: { userType: 'organizer' | 'super-admin' }) 
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
 
+  const { data, isLoading, isFetching } = useGetDiscountsQuery(
+    {
+      page: page - 1,
+      limit,
+      search,
+      status: !status || status === 'all' ? undefined : status,
+      type: !type || type === 'all' ? undefined : type,
+      startDate: startDate ? formatDate(startDate) : undefined,
+      endDate: endDate ? formatDate(endDate) : undefined,
+      companyOrganizer: scopedCompanyId,
+      sortBy,
+      sortOrder,
+    },
+    { skip: userType === 'super-admin' && !companyId }
+  );
+
+  const [deleteDiscount, { isLoading: deleteLoading }] = useDeleteDiscountMutation();
+
+  const discounts: DiscountRecord[] = data?.data || [];
+  const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
+
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
@@ -41,62 +63,6 @@ const DiscountsView = ({ userType }: { userType: 'organizer' | 'super-admin' }) 
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<DiscountRecord | null>(null);
-
-  const filteredSortedDiscounts = useMemo(() => {
-    let result = [...discounts];
-
-    if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      result = result.filter((item) => item.title.toLowerCase().includes(term));
-    }
-
-    if (status && status !== 'all') {
-      result = result.filter((item) => item.status === status);
-    }
-
-    if (type && type !== 'all') {
-      result = result.filter((item) => item.type === type);
-    }
-
-    if (startDate) {
-      const target = formatDate(startDate);
-      result = result.filter((item) => item.startDate.startsWith(target!));
-    }
-
-    if (endDate) {
-      const target = formatDate(endDate);
-      result = result.filter((item) => item.endDate.startsWith(target!));
-    }
-
-    if (sortBy && sortOrder) {
-      const direction = sortOrder === 'asc' ? 1 : -1;
-      result.sort((a, b) => {
-        switch (sortBy) {
-          case 'title':
-            return a.title.localeCompare(b.title) * direction;
-          case 'startDate':
-            return (new Date(a.startDate).getTime() - new Date(b.startDate).getTime()) * direction;
-          case 'endDate':
-            return (new Date(a.endDate).getTime() - new Date(b.endDate).getTime()) * direction;
-          default:
-            return 0;
-        }
-      });
-    }
-
-    return result;
-  }, [discounts, search, status, type, startDate, endDate, sortBy, sortOrder]);
-
-  const totalRecords = filteredSortedDiscounts.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
-  const paginatedDiscounts = filteredSortedDiscounts.slice((page - 1) * limit, page * limit);
-
-  const meta = {
-    currentPage: page,
-    totalPages,
-    totalRecords,
-    limit,
-  };
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -118,50 +84,14 @@ const DiscountsView = ({ userType }: { userType: 'organizer' | 'super-admin' }) 
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    setDiscounts((prev) => prev.filter((item) => item._id !== selectedId));
-    showSuccess('Discount deleted successfully');
-    setSelectedId(null);
-    deleteModal.onFalse();
-  };
-
-  const onDiscountSubmit = (values: DiscountFormValues) => {
-    const startDateTime = `${formatDate(values.startDateDate)}T${values.startTime}`;
-    const endDateTime = `${formatDate(values.endDateDate)}T${values.endTime}`;
-
-    if (editModal.value && selectedId) {
-      setDiscounts((prev) =>
-        prev.map((item) =>
-          item._id === selectedId
-            ? {
-                ...item,
-                title: values.title,
-                description: values.description || undefined,
-                type: values.type,
-                value: Number(values.value),
-                itemIds: values.itemIds,
-                startDate: startDateTime,
-                endDate: endDateTime,
-              }
-            : item
-        )
-      );
-      showSuccess('Discount updated successfully');
-    } else {
-      const newDiscount: DiscountRecord = {
-        _id: `discount-${nextDiscountId++}`,
-        title: values.title,
-        description: values.description || undefined,
-        type: values.type,
-        value: Number(values.value),
-        itemIds: values.itemIds,
-        startDate: startDateTime,
-        endDate: endDateTime,
-        status: 'active',
-        createdAt: formatDate(new Date())!,
-      };
-      setDiscounts((prev) => [newDiscount, ...prev]);
-      showSuccess('Discount created successfully');
+  const onDelete = async () => {
+    try {
+      await deleteDiscount(selectedId).unwrap();
+      showSuccess('Discount deleted successfully');
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -177,8 +107,9 @@ const DiscountsView = ({ userType }: { userType: 'organizer' | 'super-admin' }) 
       </div>
 
       <DiscountTable
-        data={paginatedDiscounts}
+        data={discounts}
         meta={meta}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -228,13 +159,21 @@ const DiscountsView = ({ userType }: { userType: 'organizer' | 'super-admin' }) 
       />
 
       {openModal.value && (
-        <DiscountModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} onSubmit={onDiscountSubmit} />
+        <DiscountModal
+          open={openModal.value}
+          onClose={openModal.onFalse}
+          isEdit={editModal.value}
+          selectedData={selectedRecord}
+          companyId={scopedCompanyId}
+          userType={userType}
+        />
       )}
 
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Discount"
         content="Are you sure you want to delete this discount?"
+        isLoading={deleteLoading}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

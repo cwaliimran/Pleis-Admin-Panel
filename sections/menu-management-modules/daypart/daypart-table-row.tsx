@@ -5,6 +5,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
+import { formatStr, fDate } from '@/utils/format-time';
 
 const DaypartTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
@@ -16,8 +17,10 @@ const DaypartTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
       <TableCell className="text-left">{item.isAllDay ? 'All day' : `${item.startTime} – ${item.endTime}`}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === 'active' ? 'success' : 'default'}>{item.status}</CustomBadge>
+        <CustomBadge variant={item.status === 'active' ? 'success' : 'error'}>{item.status}</CustomBadge>
       </TableCell>
+
+      <TableCell className="text-left">{fDate(item.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-end">
         <div className="flex justify-center gap-2">

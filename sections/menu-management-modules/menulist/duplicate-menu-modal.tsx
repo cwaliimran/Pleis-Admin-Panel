@@ -5,8 +5,10 @@ import FormProvider from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useDuplicateMenuMutation } from '@/store/Reducer/menu-list-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { DuplicateMenuModalProps } from './types';
@@ -19,8 +21,8 @@ const schema = Yup.object({
   organization: Yup.string().required('Organization is required'),
 });
 
-const DuplicateMenuModal = ({ open, onClose, organizations, onSubmit }: DuplicateMenuModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const DuplicateMenuModal = ({ open, onClose, selectedId, organizations, organizationsLoading, companyId, userType }: DuplicateMenuModalProps) => {
+  const [duplicateMenu, { isLoading: submitting }] = useDuplicateMenuMutation();
 
   const methods = useForm({
     resolver: yupResolver(schema),
@@ -32,13 +34,18 @@ const DuplicateMenuModal = ({ open, onClose, organizations, onSubmit }: Duplicat
   const organizationOptions = organizations?.map((org) => ({ value: org._id, label: org.name })) || [];
 
   const handleSubmit = async (formData: typeof defaultValues) => {
-    setSubmitting(true);
+    if (!selectedId) return;
+
+    const payload: any = { id: selectedId, organization: formData.organization };
+    if (userType === 'super-admin' && companyId) payload.companyOrganizer = companyId;
+
     try {
-      onSubmit(formData.organization);
-      methods.reset(defaultValues);
+      await duplicateMenu(payload).unwrap();
+      showSuccess('Menu duplicated successfully');
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -67,6 +74,7 @@ const DuplicateMenuModal = ({ open, onClose, organizations, onSubmit }: Duplicat
                       label="Organization"
                       placeholder="Select Organization"
                       options={organizationOptions}
+                      isLoading={organizationsLoading}
                       showNone={false}
                     />
                   </div>

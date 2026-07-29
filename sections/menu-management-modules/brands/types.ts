@@ -3,7 +3,7 @@ export type BrandStatus = 'active' | 'inactive';
 export interface BrandRecord {
   _id: string;
   name: string;
-  principal: string;
+  brandOwner: string;
   status: BrandStatus;
   createdAt: string;
 }
@@ -44,7 +44,7 @@ export interface TableRowProps {
 
 export type BrandFormValues = {
   name: string;
-  principal: string;
+  brandOwner: string;
   status: BrandStatus;
 };
 
@@ -53,5 +53,4 @@ export type BrandModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: BrandRecord | null;
-  onSubmit: (values: BrandFormValues) => void;
 };

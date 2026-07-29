@@ -16,8 +16,8 @@ import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'name' },
-  { id: 'principal', label: 'Principal', align: 'left', sortable: true, sortKey: 'principal' },
-  { id: 'createdAt', label: 'Created At', align: 'left' },
+  { id: 'brandOwner', label: 'Principal', align: 'left', sortable: true, sortKey: 'brandOwner' },
+  { id: 'createdAt', label: 'Created At', align: 'left', sortable: true, sortKey: 'createdAt' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
 ];

@@ -58,6 +58,4 @@ export type DaypartModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: DaypartRecord | null;
-  nextCode: string;
-  onSubmit: (values: DaypartFormValues) => void;
 };

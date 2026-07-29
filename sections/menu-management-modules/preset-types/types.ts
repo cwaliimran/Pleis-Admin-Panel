@@ -1,34 +1,33 @@
 export type PresetTypeStatus = 'active' | 'inactive';
 
-export interface PresetCategoryOption {
+export interface PresetTypeCategoryRef {
   _id: string;
-  code: string;
   title: string;
-  codePrefix: string;
+  status?: string;
 }
 
-export interface PresetSubcategoryOption {
+export interface PresetTypeSubcategoryRef {
   _id: string;
-  title: string;
-  categoryId: string;
+  name: string;
+  status?: string;
 }
 
-export interface PresetTypeNameOption {
+export interface PresetTypeTypeRef {
   _id: string;
-  title: string;
-  subcategoryId: string;
+  name: string;
+  status?: string;
 }
 
 export interface PresetTypeRecord {
   _id: string;
-  code: string;
-  categoryId: string;
-  subcategoryId: string;
-  typeNameId: string;
-  name?: string;
-  description?: string;
-  examples?: string;
   image?: string;
+  code: string;
+  category: PresetTypeCategoryRef | null;
+  subCategory: PresetTypeSubcategoryRef | null;
+  type: PresetTypeTypeRef | null;
+  name: string;
+  description?: string;
+  example?: string;
   status: PresetTypeStatus;
   createdAt: string;
 }
@@ -53,30 +52,28 @@ export interface SamplePageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
-  categoryId?: string;
-  onCategoryChange?: (categoryId: string) => void;
-  subcategoryId?: string;
-  onSubcategoryChange?: (subcategoryId: string) => void;
+  date?: Date;
+  onDateChange?: (date: Date | undefined) => void;
+  sortBy?: string;
+  sortOrder?: string;
+  onSortChange?: (sortBy: string, sortOrder: string) => void;
   onResetFilters?: () => void;
 }
 
 export interface TableRowProps {
   item: PresetTypeRecord;
-  categories: PresetCategoryOption[];
-  subcategories: PresetSubcategoryOption[];
-  typeNames: PresetTypeNameOption[];
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
 
 export type PresetTypeFormValues = {
   image?: any;
-  categoryId: string;
-  subcategoryId: string;
-  typeNameId: string;
-  name?: string;
+  category: string;
+  subCategory: string;
+  type: string;
+  name: string;
   description?: string;
-  examples?: string;
+  example?: string;
   status: PresetTypeStatus;
 };
 
@@ -85,8 +82,4 @@ export type PresetTypeModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: PresetTypeRecord | null;
-  categories: PresetCategoryOption[];
-  subcategories: PresetSubcategoryOption[];
-  typeNames: PresetTypeNameOption[];
-  onSubmit: (values: PresetTypeFormValues) => void;
 };

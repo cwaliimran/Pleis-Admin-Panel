@@ -12,67 +12,27 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import MenuItemTableRow from './menuItems-table-row';
-import { CategoryOption, MenuItemRecord, MenuOption, PresetTypeOption, SamplePageProps, SubcategoryOption } from './types';
+import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  {
-    id: 'name',
-    label: 'Name',
-    align: 'left',
-    sortable: true,
-    sortKey: 'menuItemName',
-  },
-  {
-    id: 'menu',
-    label: 'Menu',
-    align: 'left',
-    sortable: true,
-    sortKey: 'menuName',
-  },
-  {
-    id: 'subcategory',
-    label: 'Subcategory',
-    align: 'left',
-    sortable: true,
-    sortKey: 'subcategory',
-  },
-  {
-    id: 'type',
-    label: 'Type',
-    align: 'left',
-    sortable: true,
-    sortKey: 'type',
-  },
-  {
-    id: 'serving',
-    label: 'Serving',
-    align: 'left',
-    sortable: true,
-    sortKey: 'serving',
-  },
-  {
-    id: 'price',
-    label: 'Price (€)',
-    align: 'left',
-    sortable: true,
-    sortKey: 'price',
-  },
+  { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'title' },
+  { id: 'menu', label: 'Menu', align: 'left' },
+  { id: 'category', label: 'Category', align: 'left' },
+  { id: 'type', label: 'Type', align: 'left' },
+  { id: 'serving', label: 'Serving', align: 'left' },
+  { id: 'price', label: 'Price (€)', align: 'left', sortable: true, sortKey: 'basePrice' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
 ];
 
-const MenuItemTable: FC<
-  SamplePageProps & {
-    menus: MenuOption[];
-    categories: CategoryOption[];
-    subcategories: SubcategoryOption[];
-    presetTypes: PresetTypeOption[];
-    allItems: MenuItemRecord[];
-  }
-> = ({
+type Menu = { _id: string; title: string };
+type Category = { _id: string; title: string };
+
+const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; categories: Category[] }> = ({
   data = [],
   meta,
+  lookups,
   loading,
   handleDelete,
   handleEdit,
@@ -80,10 +40,6 @@ const MenuItemTable: FC<
   limit = 10,
   menus,
   categories,
-  subcategories,
-  presetTypes,
-  allItems,
-  // filters states bellow
   search = '',
   onSearch = () => {},
   status = '',
@@ -94,14 +50,11 @@ const MenuItemTable: FC<
   onMenuChange = () => {},
   categoryId = '',
   onCategoryChange = () => {},
-  subcategoryId = '',
-  onSubcategoryChange = () => {},
   onResetFilters = () => {},
   sortBy = '',
   sortOrder = '',
   onSortChange,
 }) => {
-  // Pagination logic
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
@@ -130,8 +83,6 @@ const MenuItemTable: FC<
     },
   });
 
-  const visibleSubcategories = categoryId ? subcategories.filter((subcategory) => subcategory.categoryId === categoryId) : subcategories;
-
   return (
     <div>
       <div className="grid grid-cols-12">
@@ -153,101 +104,75 @@ const MenuItemTable: FC<
                 </SheetHeader>
                 <FormProvider {...methods}>
                   <form className="flex flex-col gap-6 px-4 py-2">
-                    {/* Date Range Filters full width */}
-                    <div className="flex w-full flex-col gap-3">
-                      <div className="flex w-full flex-col gap-3">
-                        <label htmlFor="sheet-event-start-date" className="px-1 text-sm font-medium">
-                          Select Date
-                        </label>
-                        <div className="w-full">
-                          <TableFilters
-                            className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
-                            dateFilter={{
-                              id: 'menu-item-date',
-                              placeholder: 'Select date',
-                              value: date,
-                              onChange: onDateChange,
-                            }}
-                            searchFilter={{
-                              placeholder: 'Search name...',
-                              value: search,
-                              onChange: onSearch,
-                            }}
-                            selectFilters={[
-                              {
-                                id: 'menu-item-status',
-                                label: 'Status',
-                                placeholder: 'Select by Status',
-                                value: status,
-                                onChange: onStatusChange,
-                                options: [
-                                  { value: 'all', label: 'All' },
-                                  { value: 'active', label: 'Active' },
-                                  { value: 'inactive', label: 'Inactive' },
-                                ],
-                              },
-                              {
-                                id: 'menu-item-menu',
-                                label: 'Select Menu',
-                                placeholder: 'All menus',
-                                value: menuId,
-                                onChange: onMenuChange,
-                                options: [
-                                  { value: 'all', label: 'All menus' },
-                                  ...menus.map((menu) => ({ value: menu._id, label: menu.title })),
-                                ],
-                              },
-                              {
-                                id: 'menu-item-category',
-                                label: 'Category',
-                                placeholder: 'All categories',
-                                value: categoryId,
-                                onChange: onCategoryChange,
-                                options: [
-                                  { value: 'all', label: 'All categories' },
-                                  ...categories.map((category) => ({ value: category._id, label: category.title })),
-                                ],
-                              },
-                              {
-                                id: 'menu-item-subcategory',
-                                label: 'Subcategory',
-                                placeholder: 'All subcategories',
-                                value: subcategoryId,
-                                onChange: onSubcategoryChange,
-                                options: [
-                                  { value: 'all', label: 'All subcategories' },
-                                  ...visibleSubcategories.map((subcategory) => ({ value: subcategory._id, label: subcategory.title })),
-                                ],
-                              },
-                            ]}
-                            resetFilter={{
-                              onReset: onResetFilters,
-                              showResetButton: true,
-                            }}
-                            filtersAlignment="left"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    <TableFilters
+                      className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                      dateFilter={{
+                        id: 'menu-item-date',
+                        label: 'Created date',
+                        placeholder: 'Select date',
+                        value: date,
+                        onChange: onDateChange,
+                      }}
+                      searchFilter={{
+                        placeholder: 'Search name...',
+                        value: search,
+                        onChange: onSearch,
+                      }}
+                      selectFilters={[
+                        {
+                          id: 'menu-item-status',
+                          label: 'Status',
+                          placeholder: 'Select by Status',
+                          value: status,
+                          onChange: onStatusChange,
+                          options: [
+                            { value: 'all', label: 'All' },
+                            { value: 'active', label: 'Active' },
+                            { value: 'inactive', label: 'Inactive' },
+                          ],
+                        },
+                        {
+                          id: 'menu-item-menu',
+                          label: 'Select Menu',
+                          placeholder: 'All menus',
+                          value: menuId,
+                          onChange: onMenuChange,
+                          options: [{ value: 'all', label: 'All menus' }, ...menus.map((menu) => ({ value: menu._id, label: menu.title }))],
+                        },
+                        {
+                          id: 'menu-item-category',
+                          label: 'Category',
+                          placeholder: 'All categories',
+                          value: categoryId,
+                          onChange: onCategoryChange,
+                          options: [
+                            { value: 'all', label: 'All categories' },
+                            ...categories.map((category) => ({ value: category._id, label: category.title })),
+                          ],
+                        },
+                      ]}
+                      resetFilter={{
+                        onReset: onResetFilters,
+                        showResetButton: true,
+                      }}
+                      filtersAlignment="left"
+                    />
                   </form>
                 </FormProvider>
               </SheetContent>
             </Sheet>
           </div>
 
-          <div className="min-h-[45vh] rounded-lg border">
+          <div className="mt-3 min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
                 {data?.map((item, idx) => (
                   <MenuItemTableRow
-                    key={item?._id || idx}
+                    key={`${item?._id || 'row'}-${idx}`}
                     item={item}
-                    menus={menus}
-                    subcategories={subcategories}
-                    presetTypes={presetTypes}
-                    allItems={allItems}
+                    lookups={lookups}
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}
                   />

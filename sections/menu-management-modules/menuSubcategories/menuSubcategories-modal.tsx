@@ -1,31 +1,37 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
+import { useAddMenuSubcategoryMutation, useUpdateMenuSubcategoryMutation } from '@/store/Reducer/menu-subcategories-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { SubcategoryFormValues, SubcategoryModalProps } from './types';
 
 const schema = Yup.object().shape({
-  title: Yup.string().required('Name is required'),
-  categoryId: Yup.string().required('Category is required'),
-  sortOrder: Yup.string()
-    .required('Sort order is required')
-    .test('is-integer', 'Sort order must be a whole number', (value) => !!value && Number.isInteger(Number(value)) && Number(value) > 0),
+  name: Yup.string().required('Name is required'),
+  category: Yup.string().required('Category is required'),
+  order: Yup.string()
+    .required('Order is required')
+    .test('is-integer', 'Order must be a whole number', (value) => !!value && Number.isInteger(Number(value)) && Number(value) > 0),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, categories, nextSortOrder, onSubmit }: SubcategoryModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, nextOrder }: SubcategoryModalProps) => {
+  const [addSubcategory, { isLoading: addLoading }] = useAddMenuSubcategoryMutation();
+  const [updateSubcategory, { isLoading: updateLoading }] = useUpdateMenuSubcategoryMutation();
+  const submitting = addLoading || updateLoading;
 
   const defaultValues: SubcategoryFormValues = {
-    title: '',
-    categoryId: '',
-    sortOrder: String(nextSortOrder),
+    name: '',
+    category: '',
+    order: String(nextOrder),
     status: 'active',
   };
 
@@ -40,27 +46,37 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, categor
   useEffect(() => {
     if (open && isEdit && selectedData) {
       reset({
-        title: selectedData.title,
-        categoryId: selectedData.categoryId,
-        sortOrder: String(selectedData.sortOrder),
+        name: selectedData.name,
+        category: selectedData.category?._id || '',
+        order: String(selectedData.order),
         status: selectedData.status,
       });
     } else if (open && !isEdit) {
-      reset({ ...defaultValues, sortOrder: String(nextSortOrder) });
+      reset({ ...defaultValues, order: String(nextOrder) });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isEdit, selectedData, reset, nextSortOrder]);
-
-  const categoryOptions = categories.map((category) => ({ value: category._id, label: category.code }));
+  }, [open, isEdit, selectedData, reset, nextOrder]);
 
   const handleSubmit = async (formData: SubcategoryFormValues) => {
-    setSubmitting(true);
+    const payload = {
+      name: formData.name,
+      category: formData.category,
+      order: Number(formData.order),
+      status: formData.status,
+    };
+
     try {
-      onSubmit(formData);
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateSubcategory({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Subcategory updated successfully');
+      } else {
+        await addSubcategory(payload).unwrap();
+        showSuccess('Subcategory created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -74,7 +90,7 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, categor
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[30vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Subcategory' : 'Create Subcategory'}</DialogTitle>
@@ -83,11 +99,20 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, categor
           <div className="mt-4 w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
-                <RHFTextField name="title" label="Name" placeholder="e.g. House Cocktails" />
+                <RHFTextField name="name" label="Name" placeholder="e.g. House Cocktails" />
 
-                <RHFSelectField name="categoryId" label="Category" placeholder="Select category" options={categoryOptions} />
+                <RHFAsyncCombobox
+                  name="category"
+                  label="Category"
+                  placeholder="Select category"
+                  searchPlaceholder="Search categories..."
+                  selectedLabel={selectedData?.category?.title}
+                  useOptionsQuery={useGetItemsCategoryQuery}
+                  getOptionValue={(category) => category._id}
+                  getOptionLabel={(category) => category.title}
+                />
 
-                <RHFTextField name="sortOrder" label="Sort order" type="number" step="1" min="1" />
+                <RHFTextField name="order" label="Order" type="number" step="1" min="1" />
 
                 {isEdit && (
                   <RHFSelectField

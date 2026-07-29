@@ -6,16 +6,25 @@ import { fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
-import { getAppliesToLabel } from './utils';
+import { getAppliesToLabel, parseDiscountDateTime } from './utils';
 
-const formatDateTime = (value: string) => fDate(value, `${formatStr.split.date} HH:mm`);
+const formatScheduleDate = (value: string) => {
+  const { date } = parseDiscountDateTime(value);
+  return fDate(date, `${formatStr.split.date} HH:mm`);
+};
+
+const STATUS_BADGE_VARIANT = {
+  active: 'success',
+  inactive: 'error',
+  expired: 'default',
+} as const;
 
 const DiscountTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
-  const appliesToLabel = getAppliesToLabel(item.itemIds);
+  const appliesToLabel = getAppliesToLabel(item.menuItems);
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell className="text-left font-semibold">{item.title}</TableCell>
+      <TableCell className="text-left font-semibold">{item.name}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant={item.type === 'percentage' ? 'warning' : 'info'}>{item.type === 'percentage' ? '% Percentage' : '€ Fixed'}</CustomBadge>
@@ -24,16 +33,16 @@ const DiscountTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit })
       <TableCell className="text-left font-semibold">{item.type === 'percentage' ? `${item.value}%` : `€${item.value.toFixed(2)}`}</TableCell>
 
       <TableCell className="text-left">
-        <div>{item.itemIds.length} items</div>
-        <div className="text-muted-foreground text-xs">{appliesToLabel}</div>
+        <div>{item.menuItems.length} items</div>
+        <div className="text-muted-foreground max-w-55 truncate text-xs">{appliesToLabel}</div>
       </TableCell>
 
-      <TableCell className="text-left">{formatDateTime(item.startDate)}</TableCell>
+      <TableCell className="text-left">{formatScheduleDate(item.startDate)}</TableCell>
 
-      <TableCell className="text-left">{formatDateTime(item.endDate)}</TableCell>
+      <TableCell className="text-left">{formatScheduleDate(item.endDate)}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === 'active' ? 'success' : 'default'}>{item.status}</CustomBadge>
+        <CustomBadge variant={STATUS_BADGE_VARIANT[item.status] || 'default'}>{item.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

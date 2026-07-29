@@ -2,7 +2,7 @@
 
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
-import TableHeadCustom from '@/components/table/table-head-custom';
+import TableHeadCustom, { SortConfig } from '@/components/table/table-head-custom';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -12,20 +12,21 @@ import { Settings2 } from 'lucide-react';
 import { FC, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import PresetTypeTableRow from './preset-types-table-row';
-import { PresetCategoryOption, PresetSubcategoryOption, PresetTypeNameOption, SamplePageProps } from './types';
+import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
+  { id: 'image', label: 'Image', align: 'left' },
   { id: 'code', label: 'Code', align: 'left' },
+  { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'name' },
   { id: 'category', label: 'Category', align: 'left' },
   { id: 'subcategory', label: 'Subcategory', align: 'left' },
   { id: 'type', label: 'Type', align: 'left' },
+  { id: 'createdAt', label: 'Created At', align: 'left', sortable: true, sortKey: 'createdAt' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
 ];
 
-const PresetTypeTable: FC<
-  SamplePageProps & { categories: PresetCategoryOption[]; subcategories: PresetSubcategoryOption[]; typeNames: PresetTypeNameOption[] }
-> = ({
+const PresetTypeTable: FC<SamplePageProps> = ({
   data = [],
   meta,
   loading,
@@ -33,17 +34,15 @@ const PresetTypeTable: FC<
   handleEdit,
   onPageChange,
   limit = 10,
-  categories,
-  subcategories,
-  typeNames,
   search = '',
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
-  categoryId = '',
-  onCategoryChange = () => {},
-  subcategoryId = '',
-  onSubcategoryChange = () => {},
+  date,
+  onDateChange = () => {},
+  sortBy = '',
+  sortOrder = '',
+  onSortChange,
   onResetFilters = () => {},
 }) => {
   const totalPages = meta?.totalPages || 1;
@@ -51,13 +50,28 @@ const PresetTypeTable: FC<
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
+  const sortConfig: SortConfig = {
+    key: sortBy || null,
+    direction: sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : null,
+  };
+
+  const handleSort = (key: string) => {
+    if (sortBy !== key) {
+      onSortChange?.(key, 'asc');
+    } else if (sortOrder === 'asc') {
+      onSortChange?.(key, 'desc');
+    } else if (sortOrder === 'desc') {
+      onSortChange?.('', '');
+    } else {
+      onSortChange?.(key, 'asc');
+    }
+  };
+
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
     },
   });
-
-  const visibleSubcategories = categoryId ? subcategories.filter((subcategory) => subcategory.categoryId === categoryId) : subcategories;
 
   return (
     <div>
@@ -82,6 +96,13 @@ const PresetTypeTable: FC<
                   <form className="flex flex-col gap-6 px-4 py-2">
                     <TableFilters
                       className="w-full [&_.w-44]:w-full [&_.w-\[180px\]]:w-full"
+                      dateFilter={{
+                        id: 'preset-type-created-date',
+                        label: 'Created date',
+                        placeholder: 'Select date',
+                        value: date,
+                        onChange: onDateChange,
+                      }}
                       searchFilter={{
                         placeholder: 'Search type name or code...',
                         value: search,
@@ -100,28 +121,6 @@ const PresetTypeTable: FC<
                             { value: 'inactive', label: 'Inactive' },
                           ],
                         },
-                        {
-                          id: 'preset-type-category',
-                          label: 'Category',
-                          placeholder: 'All categories',
-                          value: categoryId,
-                          onChange: onCategoryChange,
-                          options: [
-                            { value: 'all', label: 'All categories' },
-                            ...categories.map((category) => ({ value: category._id, label: category.code })),
-                          ],
-                        },
-                        {
-                          id: 'preset-type-subcategory',
-                          label: 'Subcategory',
-                          placeholder: 'All subcategories',
-                          value: subcategoryId,
-                          onChange: onSubcategoryChange,
-                          options: [
-                            { value: 'all', label: 'All subcategories' },
-                            ...visibleSubcategories.map((subcategory) => ({ value: subcategory._id, label: subcategory.title })),
-                          ],
-                        },
                       ]}
                       resetFilter={{
                         onReset: onResetFilters,
@@ -137,19 +136,11 @@ const PresetTypeTable: FC<
 
           <div className="mt-3 min-h-[45vh] rounded-lg border">
             <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} />
+              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
 
               <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
                 {data?.map((item, idx) => (
-                  <PresetTypeTableRow
-                    key={item?._id || idx}
-                    item={item}
-                    categories={categories}
-                    subcategories={subcategories}
-                    typeNames={typeNames}
-                    handleDelete={handleDelete}
-                    handleEdit={handleEdit}
-                  />
+                  <PresetTypeTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
                 ))}
               </TableBodyWrapper>
             </Table>

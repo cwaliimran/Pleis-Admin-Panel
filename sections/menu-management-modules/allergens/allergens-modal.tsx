@@ -8,9 +8,12 @@ import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useAddAllergenMutation, useGetAllergenCodeQuery, useUpdateAllergenMutation } from '@/store/Reducer/allergens-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { TriangleAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { AllergenFormValues, AllergenModalProps } from './types';
@@ -25,8 +28,11 @@ const schema = Yup.object().shape({
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const AllergenModal = ({ open, onClose, isEdit = false, selectedData, nextCode, onSubmit }: AllergenModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const AllergenModal = ({ open, onClose, isEdit = false, selectedData }: AllergenModalProps) => {
+  const { data: codeData, isLoading: codeLoading } = useGetAllergenCodeQuery(undefined, { skip: isEdit });
+  const [addAllergen, { isLoading: addLoading }] = useAddAllergenMutation();
+  const [updateAllergen, { isLoading: updateLoading }] = useUpdateAllergenMutation();
+  const submitting = addLoading || updateLoading;
 
   const methods = useForm<AllergenFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<AllergenFormValues>),
@@ -45,13 +51,20 @@ const AllergenModal = ({ open, onClose, isEdit = false, selectedData, nextCode, 
   }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: AllergenFormValues) => {
-    setSubmitting(true);
+    const payload = { ...formData, name: formData.name };
+
     try {
-      onSubmit(formData);
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateAllergen({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Allergen updated successfully');
+      } else {
+        await addAllergen({ ...payload, code: codeData?.code }).unwrap();
+        showSuccess('Allergen created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -81,7 +94,11 @@ const AllergenModal = ({ open, onClose, isEdit = false, selectedData, nextCode, 
 
                 <div className="flex flex-col gap-2">
                   <Label className="text-sm font-medium">Code</Label>
-                  <Input value={isEdit ? selectedData?.code || '' : nextCode} disabled className="h-[40px] bg-gray-50 dark:bg-gray-800" />
+                  <Input
+                    value={isEdit ? selectedData?.code || '' : codeLoading ? 'Loading...' : codeData?.code || ''}
+                    disabled
+                    className="h-10 bg-gray-50 dark:bg-gray-800"
+                  />
                   <p className="text-muted-foreground text-xs">Auto-generated</p>
                 </div>
 
@@ -100,7 +117,10 @@ const AllergenModal = ({ open, onClose, isEdit = false, selectedData, nextCode, 
                           role="switch"
                           aria-checked={checked}
                           onClick={() => field.onChange(checked ? 'inactive' : 'active')}
-                          className={cn('relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors', checked ? 'bg-primary' : 'bg-input')}
+                          className={cn(
+                            'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                            checked ? 'bg-primary' : 'bg-input'
+                          )}
                         >
                           <span
                             className={cn(

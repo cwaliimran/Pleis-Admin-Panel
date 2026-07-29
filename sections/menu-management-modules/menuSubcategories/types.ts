@@ -3,16 +3,19 @@ export type SubcategoryStatus = 'active' | 'inactive';
 export interface CategoryOption {
   _id: string;
   title: string;
-  code: string;
+}
+
+export interface SubcategoryCategory {
+  _id: string;
+  title: string;
+  status?: string;
 }
 
 export interface MenuSubcategoryRecord {
   _id: string;
-  title: string;
-  icon?: string;
-  categoryId: string;
-  itemsCount: number;
-  sortOrder: number;
+  name: string;
+  category: SubcategoryCategory | null;
+  order: number;
   status: SubcategoryStatus;
   createdAt: string;
 }
@@ -46,16 +49,15 @@ export interface SamplePageProps {
 
 export interface TableRowProps {
   item: MenuSubcategoryRecord;
-  categories: CategoryOption[];
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
   dragDisabled?: boolean;
 }
 
 export type SubcategoryFormValues = {
-  title: string;
-  categoryId: string;
-  sortOrder: string;
+  name: string;
+  category: string;
+  order: string;
   status: SubcategoryStatus;
 };
 
@@ -64,7 +66,5 @@ export type SubcategoryModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: MenuSubcategoryRecord | null;
-  categories: CategoryOption[];
-  nextSortOrder: number;
-  onSubmit: (values: SubcategoryFormValues) => void;
+  nextOrder: number;
 };

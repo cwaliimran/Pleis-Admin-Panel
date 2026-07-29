@@ -1,58 +1,58 @@
 export type MenuItemStatus = 'active' | 'inactive';
-export type QuantityType = 'single' | 'combo';
 
-export interface MenuOption {
+/** Lightweight `{_id, code, name}` shape returned by preset-menu list endpoints when `summary=true`. */
+export interface SummaryOption {
   _id: string;
-  title: string;
+  code?: string;
+  name: string;
 }
 
-export interface CategoryOption {
-  _id: string;
-  title: string;
-}
-
-export interface SubcategoryOption {
-  _id: string;
-  title: string;
-  categoryId: string;
-}
-
-export interface PresetTypeOption {
-  _id: string;
-  code: string;
-  label: string;
-}
-
-export interface BrandOption {
-  _id: string;
-  label: string;
-}
+/**
+ * The API is inconsistent about which reference fields it populates: some come back as a raw ID
+ * string, others as a populated object — and it can differ per field, and apparently per record.
+ * It's also inconsistent about array fields (dietTags/allergens): sometimes a proper array,
+ * sometimes a single bare object. Every reference field is typed to accept any of these shapes;
+ * use `getRefId`/`getRefLabel`/`toRefArray` (menuItems-utils.ts) rather than assuming one.
+ */
+export type RefValue =
+  | string
+  | { _id: string; title?: string; name?: string; type?: string; unit?: string; code?: string; level2?: string }
+  | null
+  | undefined;
 
 export interface MenuItemRecord {
   _id: string;
-  title: string;
-  amount?: string;
   image?: string;
-  presetTypeId: string;
-  brandId?: string;
-  subcategoryId: string;
-  menuIds: string[];
+  title: string;
   description?: string;
-  quantityType: QuantityType;
-  comboItemIds?: string[];
-  serving: string;
-  price: number;
+  type?: string;
+  category?: RefValue;
+  basePrice: number;
+  discountPrice?: number;
   taxPercent: number;
+  menu?: RefValue;
+  startTime?: string | null;
+  endTime?: string | null;
+  status: MenuItemStatus;
+  presetType?: RefValue;
+  brand?: RefValue;
+  amountQuantity?: string;
+  quantityType: 'single';
+  comboItems: string[];
+  servingSize?: RefValue;
+  /** Populated companion to `servingSize` (same id) that the API sends separately — display-only. */
+  serving?: RefValue;
   availableDays: string[];
-  daypart?: string[];
-  dietTags?: string[];
-  allergens?: string[];
+  /** API sometimes sends a single object instead of an array — normalize with `toRefArray` before use. */
+  daypart?: RefValue[] | RefValue;
+  dietTags: RefValue[] | RefValue;
+  allergens: RefValue[] | RefValue;
   cuisine?: string;
   isRecommended?: boolean;
-  isUpsell?: boolean;
-  isToGo?: boolean;
-  requiresConfirmation?: boolean;
-  status: MenuItemStatus;
+  isTogo?: boolean;
+  isRequiresOrderConfirmation?: boolean;
+  /** Set by the separate Sales/Limited-Time-Offer feature — read-only here, not part of this create/edit form. */
+  upSellItem?: boolean;
   createdAt: string;
 }
 
@@ -63,10 +63,22 @@ export interface SampleMeta {
   limit: number;
 }
 
+/**
+ * Name lookups keyed by _id, built once in the view and passed down to the table/row so IDs never
+ * leak into the UI. Only covers references the table actually displays (Category/Menu/Serving) —
+ * presetType/brand/daypart/dietTags/allergens aren't shown in the table, so they're fetched inside
+ * the modal only, when it's open.
+ */
+export interface MenuItemLookups {
+  categories: Map<string, string>;
+  menus: Map<string, string>;
+  servingSizes: Map<string, string>;
+}
+
 export interface SamplePageProps {
-  page: any;
   data: MenuItemRecord[];
   meta: SampleMeta;
+  lookups: MenuItemLookups;
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
@@ -83,8 +95,6 @@ export interface SamplePageProps {
   onMenuChange?: (menuId: string) => void;
   categoryId?: string;
   onCategoryChange?: (categoryId: string) => void;
-  subcategoryId?: string;
-  onSubcategoryChange?: (subcategoryId: string) => void;
   onResetFilters?: () => void;
   sortBy?: string;
   sortOrder?: string;
@@ -93,10 +103,7 @@ export interface SamplePageProps {
 
 export interface TableRowProps {
   item: MenuItemRecord;
-  menus: MenuOption[];
-  subcategories: SubcategoryOption[];
-  presetTypes: PresetTypeOption[];
-  allItems: MenuItemRecord[];
+  lookups: MenuItemLookups;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }
@@ -104,27 +111,27 @@ export interface TableRowProps {
 export type MenuItemFormValues = {
   image?: any;
   title: string;
-  amount?: string;
-  presetTypeId: string;
-  brandId?: string;
-  subcategoryId: string;
-  menuIds: string[];
   description?: string;
-  quantityType: QuantityType;
-  comboItemIds?: string[];
-  serving: string;
-  price: string;
+  type?: string;
+  category: string;
+  basePrice: string;
   taxPercent: string;
-  availableDays: string[];
-  daypart?: string[];
-  dietTags?: string[];
-  allergens?: string[];
-  cuisine?: string;
-  isRecommended?: boolean;
-  isUpsell?: boolean;
-  isToGo?: boolean;
-  requiresConfirmation?: boolean;
+  menus: string[];
+  startTime?: string;
+  endTime?: string;
   status: MenuItemStatus;
+  presetType?: string;
+  brand?: string;
+  amountQuantity?: string;
+  servingSize?: string;
+  availableDays: string[];
+  dayparts: string[];
+  dietTags: string[];
+  allergens: string[];
+  cuisine?: string;
+  isRecommended: boolean;
+  isTogo: boolean;
+  isRequiresOrderConfirmation: boolean;
 };
 
 export type MenuItemModalProps = {
@@ -132,10 +139,8 @@ export type MenuItemModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: MenuItemRecord | null;
-  menus: MenuOption[];
-  subcategories: SubcategoryOption[];
-  presetTypes: PresetTypeOption[];
-  brands: BrandOption[];
-  allItems: MenuItemRecord[];
-  onSubmit: (values: MenuItemFormValues) => void;
+  companyId?: string | null;
+  userType: 'organizer' | 'super-admin';
+  /** Used only to show the correct label for a selected reference that isn't on the dropdown's first fetched page. */
+  lookups?: MenuItemLookups;
 };

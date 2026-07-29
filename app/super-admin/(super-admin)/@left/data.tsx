@@ -30,7 +30,6 @@ type MenuItem = {
   url?: string;
   icon: any;
   items?: MenuItem[];
-  panel?: string;
 };
 
 type MenuGroup = {
@@ -38,50 +37,6 @@ type MenuGroup = {
   key: string;
   icon: any;
   items?: MenuItem[];
-  panel?: string;
-};
-
-export type SidePanelItem = {
-  title: string;
-  url: string;
-};
-
-export type SidePanelSection = {
-  label: string;
-  items: SidePanelItem[];
-};
-
-export type SidePanel = {
-  title: string;
-  backLabel: string;
-  sections: SidePanelSection[];
-};
-
-// Drill-down side panels — triggered by a MenuItem with a matching `panel` key instead of a `url`.
-export const sidePanels: Record<string, SidePanel> = {
-  presetMenu: {
-    title: 'Preset Menu',
-    backLabel: 'Back to Menu',
-    sections: [
-      {
-        label: 'Taxonomy',
-        items: [
-          { title: 'Preset Categories', url: paths.superAdmin.itemsCategory },
-          { title: 'Preset Types', url: paths.superAdmin.presetTypes },
-        ],
-      },
-      {
-        label: 'Reference Tables',
-        items: [
-          { title: 'Brands', url: paths.superAdmin.brands },
-          { title: 'Serving', url: paths.superAdmin.serving },
-          { title: 'Diet Tags', url: paths.superAdmin.dietTags },
-          { title: 'Allergens', url: paths.superAdmin.allergens },
-          { title: 'Daypart', url: paths.superAdmin.daypart },
-        ],
-      },
-    ],
-  },
 };
 
 export const menuGroups: MenuGroup[] = [
@@ -157,13 +112,59 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.discounts,
         icon: CalendarDays,
       },
+      {
+        title: 'Combos',
+        url: paths.superAdmin.combos,
+        icon: CalendarDays,
+      },
     ],
   },
   {
     label: 'Preset Menu',
-    key: 'preset-menu-panel',
+    key: paths.superAdmin.presetTypes,
     icon: ClipboardList,
-    panel: 'presetMenu',
+    items: [
+      {
+        title: 'Preset Types',
+        url: paths.superAdmin.presetTypes,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Preset Categories',
+        url: paths.superAdmin.itemsCategory,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Brands',
+        url: paths.superAdmin.brands,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Serving',
+        url: paths.superAdmin.serving,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Diet Tags',
+        url: paths.superAdmin.dietTags,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Allergens',
+        url: paths.superAdmin.allergens,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Daypart',
+        url: paths.superAdmin.daypart,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Types',
+        url: paths.superAdmin.subcategoryTypes,
+        icon: CalendarDays,
+      },
+    ],
   },
   {
     label: 'Loyalty',

@@ -6,6 +6,7 @@ import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { CopyCheck, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
+import { getOrgLabel } from './menulist-utils';
 import { MenuStatus, TableRowProps } from './types';
 
 const STATUS_BADGE_VARIANT: Record<MenuStatus, 'success' | 'error' | 'warning'> = {
@@ -15,16 +16,13 @@ const STATUS_BADGE_VARIANT: Record<MenuStatus, 'success' | 'error' | 'warning'> 
 };
 
 const MenuItemTableRow: FC<TableRowProps> = ({ item, organizations, handleDelete, handleDuplicate, handleEdit }) => {
-  const organizationNames =
-    item.organizations
-      ?.map((orgId) => organizations.find((org) => org._id === orgId)?.name)
-      .filter(Boolean)
-      .join(', ') || '-';
+  const organizationLookup = new Map(organizations.map((org) => [org._id, org.name]));
+  const organizationName = getOrgLabel(item.organization, organizationLookup);
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left">{item?.title || '-'}</TableCell>
-      
+
       <TableCell className="text-left capitalize">
         {item.description && item.description.length > 30 ? (
           <Dialog>
@@ -47,9 +45,9 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, organizations, handleDelete
         )}
       </TableCell>
 
-      <TableCell className="text-left capitalize">{organizationNames}</TableCell>
+      <TableCell className="text-left capitalize">{organizationName}</TableCell>
 
-      <TableCell className="text-left">{fDate(item?.validFrom, formatStr.split.date)}</TableCell>
+      <TableCell className="text-left">{fDate(item?.startDate, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 

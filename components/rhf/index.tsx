@@ -18,6 +18,8 @@ export { default as RHFTextField } from "./rhf-text-field";
 
 export { RHFCombobox } from "./rhf-combobox";
 
+export { default as RHFAsyncCombobox } from "./rhf-async-combobox";
+
 export { default as RHFCheckboxGroup } from "./rhf-checkbox-group";
 
 export { default as RHFChipToggleGroup } from "./rhf-chip-toggle-group";

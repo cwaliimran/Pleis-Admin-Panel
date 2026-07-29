@@ -10,14 +10,7 @@ import { GripVertical, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const CATEGORY_BADGE_VARIANT: Record<string, 'info' | 'warning'> = {
-  'cat-1': 'info',
-  'cat-2': 'warning',
-};
-
-const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, categories, handleDelete, handleEdit, dragDisabled }) => {
-  const category = categories.find((cat) => cat._id === item.categoryId);
-
+const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, dragDisabled }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item._id,
     disabled: dragDisabled,
@@ -48,17 +41,12 @@ const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, categories, handleDe
       </TableCell>
 
       <TableCell className="text-left">
-        <span className="font-semibold">
-          {item.icon && <span className="mr-1.5">{item.icon}</span>}
-          {item.title}
-        </span>
+        <span className="font-semibold">{item.name}</span>
       </TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={CATEGORY_BADGE_VARIANT[item.categoryId] || 'default'}>{category?.code || '-'}</CustomBadge>
+        <CustomBadge variant="info">{item.category?.title || '-'}</CustomBadge>
       </TableCell>
-
-      <TableCell className="text-left">{item.itemsCount} items</TableCell>
 
       <TableCell className="text-left">{fDate(item.createdAt, formatStr.split.date)}</TableCell>
 

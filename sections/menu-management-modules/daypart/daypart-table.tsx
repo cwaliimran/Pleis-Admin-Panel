@@ -19,6 +19,7 @@ const HEAD_LABEL = [
   { id: 'name', label: 'Daypart', align: 'left', sortable: true, sortKey: 'name' },
   { id: 'timeRange', label: 'Time Range', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
+  { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
 ];
 

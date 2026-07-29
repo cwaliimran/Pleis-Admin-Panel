@@ -1,5 +1,5 @@
 export type ServingStatus = 'active' | 'inactive';
-export type ServingLevel2 = 'food' | 'drink' | null;
+export type ServingLevel2 = 'none' | 'food' | 'drink';
 
 export interface ServingRecord {
   _id: string;
@@ -57,6 +57,4 @@ export type ServingModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: ServingRecord | null;
-  nextCode: string;
-  onSubmit: (values: ServingFormValues) => void;
 };

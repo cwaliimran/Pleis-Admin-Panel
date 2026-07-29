@@ -1,53 +1,58 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFAsyncCombobox, RHFTextField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
+import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
+import { useGetMenuSubcategoriesQuery } from '@/store/Reducer/menu-subcategories-api';
+import { useAddPresetTypeMutation, useGetPresetTypeCodeQuery, useUpdatePresetTypeMutation } from '@/store/Reducer/preset-type-api';
+import { useGetSubcategoryTypesQuery } from '@/store/Reducer/subcategory-types-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as Yup from 'yup';
-import { getNextPresetTypeCode, mockPresetTypeRecords } from './data';
 import { PresetTypeFormValues, PresetTypeModalProps } from './types';
 
+const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlDevCap];
+
 const defaultValues: PresetTypeFormValues = {
-  image: '',
-  categoryId: '',
-  subcategoryId: '',
-  typeNameId: '',
+  image: null,
+  category: '',
+  subCategory: '',
+  type: '',
   name: '',
   description: '',
-  examples: '',
+  example: '',
   status: 'active',
 };
 
 const schema = Yup.object().shape({
-  categoryId: Yup.string().required('Category is required'),
-  subcategoryId: Yup.string().required('Subcategory is required'),
-  typeNameId: Yup.string().required('Type is required'),
-  name: Yup.string().optional(),
+  image: Yup.mixed().required('Image is required'),
+  category: Yup.string().required('Category is required'),
+  subCategory: Yup.string().required('Subcategory is required'),
+  type: Yup.string().required('Type is required'),
+  name: Yup.string().required('Name is required'),
   description: Yup.string().optional(),
-  examples: Yup.string().optional(),
+  example: Yup.string().optional(),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const PresetTypeModal = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-  categories,
-  subcategories,
-  typeNames,
-  onSubmit,
-}: PresetTypeModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: PresetTypeModalProps) => {
+  const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const { data: codeData, isLoading: codeLoading } = useGetPresetTypeCodeQuery(undefined, { skip: isEdit });
+  const [addPresetType, { isLoading: addLoading }] = useAddPresetTypeMutation();
+  const [updatePresetType, { isLoading: updateLoading }] = useUpdatePresetTypeMutation();
+  const submitting = addLoading || updateLoading || imageUploading;
 
   const methods = useForm<PresetTypeFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<PresetTypeFormValues>),
@@ -56,18 +61,20 @@ const PresetTypeModal = ({
 
   const { reset, control, setValue, formState } = methods;
   const isDirty = formState?.isDirty;
-  const categoryId = useWatch({ control, name: 'categoryId' });
-  const subcategoryId = useWatch({ control, name: 'subcategoryId' });
+  const categoryValue = useWatch({ control, name: 'category' });
+  const subCategoryValue = useWatch({ control, name: 'subCategory' });
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
+      const imageValue = selectedData.image && !PLACEHOLDER_IMAGE_URLS.includes(selectedData.image) ? selectedData.image : null;
       reset({
-        categoryId: selectedData.categoryId,
-        subcategoryId: selectedData.subcategoryId,
-        typeNameId: selectedData.typeNameId,
-        name: selectedData.name || '',
+        image: imageValue,
+        category: selectedData.category?._id || '',
+        subCategory: selectedData.subCategory?._id || '',
+        type: selectedData.type?._id || '',
+        name: selectedData.name,
         description: selectedData.description || '',
-        examples: selectedData.examples || '',
+        example: selectedData.example || '',
         status: selectedData.status,
       });
     } else if (open && !isEdit) {
@@ -75,24 +82,38 @@ const PresetTypeModal = ({
     }
   }, [open, isEdit, selectedData, reset]);
 
-  const categoryOptions = categories.map((category) => ({ value: category._id, label: category.code }));
-  const subcategoryOptions = subcategories
-    .filter((subcategory) => !categoryId || subcategory.categoryId === categoryId)
-    .map((subcategory) => ({ value: subcategory._id, label: subcategory.title }));
-  const typeNameOptions = typeNames
-    .filter((typeName) => !subcategoryId || typeName.subcategoryId === subcategoryId)
-    .map((typeName) => ({ value: typeName._id, label: typeName.title }));
-
-  const nextCode = categoryId ? getNextPresetTypeCode(mockPresetTypeRecords, categoryId) : '';
-
   const handleSubmit = async (formData: PresetTypeFormValues) => {
-    setSubmitting(true);
     try {
-      onSubmit(formData);
-      methods.reset(defaultValues);
+      let imageKey: string | undefined;
+
+      if (formData.image instanceof FileList && formData.image.length > 0) {
+        const uploaded = await uploadImage(formData.image[0]);
+        if (!uploaded) return;
+        imageKey = uploaded;
+      }
+
+      const payload: any = {
+        name: formData.name,
+        category: formData.category,
+        subCategory: formData.subCategory,
+        type: formData.type,
+        description: formData.description || undefined,
+        example: formData.example || undefined,
+        status: formData.status,
+      };
+      if (imageKey) payload.image = imageKey;
+
+      if (isEdit && selectedData?._id) {
+        await updatePresetType({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Preset type updated successfully');
+      } else {
+        await addPresetType({ ...payload, code: codeData?.code }).unwrap();
+        showSuccess('Preset type created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -106,7 +127,7 @@ const PresetTypeModal = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[780px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-195!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Preset Type' : 'Create Preset Type'}</DialogTitle>
@@ -115,39 +136,61 @@ const PresetTypeModal = ({
           <div className="mt-4 w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-5">
-                <RHFUploadAvatar name="image" label="Image" initialImage={typeof selectedData?.image === 'string' ? selectedData.image : null} />
+                <RHFUploadAvatar
+                  name="image"
+                  label="Image"
+                  initialImage={
+                    typeof selectedData?.image === 'string' && !PLACEHOLDER_IMAGE_URLS.includes(selectedData.image) ? selectedData.image : null
+                  }
+                />
 
                 {/* CLASSIFICATION */}
                 <div className="flex flex-col gap-4">
                   <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Classification</h4>
 
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
-                    <RHFSelectField
-                      name="categoryId"
+                    <RHFAsyncCombobox
+                      name="category"
                       label="Category"
                       placeholder="Select category..."
-                      options={categoryOptions}
-                      onChange={() => {
-                        setValue('subcategoryId', '');
-                        setValue('typeNameId', '');
+                      searchPlaceholder="Search categories..."
+                      selectedLabel={selectedData?.category?.title}
+                      useOptionsQuery={useGetItemsCategoryQuery}
+                      getOptionValue={(category) => category._id}
+                      getOptionLabel={(category) => category.title}
+                      onValueChange={() => {
+                        setValue('subCategory', '', { shouldDirty: true });
+                        setValue('type', '', { shouldDirty: true });
                       }}
                     />
 
-                    <RHFSelectField
-                      name="subcategoryId"
+                    <RHFAsyncCombobox
+                      name="subCategory"
                       label="Subcategory"
-                      placeholder={categoryId ? 'Select subcategory...' : 'Select category first...'}
-                      options={subcategoryOptions}
-                      disabled={!categoryId}
-                      onChange={() => setValue('typeNameId', '')}
+                      placeholder={categoryValue ? 'Select subcategory...' : 'Select category first...'}
+                      searchPlaceholder="Search subcategories..."
+                      disabled={!categoryValue}
+                      skip={!categoryValue}
+                      queryArgs={{ category: categoryValue }}
+                      selectedLabel={selectedData?.subCategory?.name}
+                      useOptionsQuery={useGetMenuSubcategoriesQuery}
+                      getOptionValue={(subcategory) => subcategory._id}
+                      getOptionLabel={(subcategory) => subcategory.name}
+                      onValueChange={() => setValue('type', '', { shouldDirty: true })}
                     />
 
-                    <RHFSelectField
-                      name="typeNameId"
+                    <RHFAsyncCombobox
+                      name="type"
                       label="Type"
-                      placeholder={subcategoryId ? 'Select type...' : 'Select subcategory first...'}
-                      options={typeNameOptions}
-                      disabled={!subcategoryId}
+                      placeholder={subCategoryValue ? 'Select type...' : 'Select subcategory first...'}
+                      searchPlaceholder="Search types..."
+                      disabled={!subCategoryValue}
+                      skip={!subCategoryValue}
+                      queryArgs={{ subCategory: subCategoryValue }}
+                      selectedLabel={selectedData?.type?.name}
+                      useOptionsQuery={useGetSubcategoryTypesQuery}
+                      getOptionValue={(type) => type._id}
+                      getOptionLabel={(type) => type.name}
                     />
                   </div>
                 </div>
@@ -159,16 +202,17 @@ const PresetTypeModal = ({
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="flex flex-col gap-1">
                       <Label className="text-sm font-medium">
-                        Code <span className="text-muted-foreground text-xs font-normal">· Auto-generated based on category</span>
+                        Code <span className="text-[11px] text-gray-500 dark:text-gray-300">(Auto-generated)</span>
                       </Label>
                       <Input
-                        value={isEdit ? selectedData?.code || '' : nextCode}
+                        value={isEdit ? selectedData?.code || '' : codeLoading ? 'Loading...' : codeData?.code || ''}
                         disabled
-                        className="h-[40px] bg-gray-50 dark:bg-gray-800"
+                        className="h-10 bg-gray-50 dark:bg-gray-800"
                       />
+                      {/* <p className="text-muted-foreground text-xs">Auto-generated</p> */}
                     </div>
 
-                    <RHFTextField name="name" label="Name (optional display name)" placeholder="Override name (leave blank to use Type)" />
+                    <RHFTextField name="name" label="Name" placeholder="e.g. Lunch Menu" />
                   </div>
 
                   <RHFTextField
@@ -179,10 +223,7 @@ const PresetTypeModal = ({
                     rows={2}
                   />
 
-                  <div>
-                    <RHFTextField name="examples" label="Examples (Optional)" placeholder="e.g. espresso, cappuccino, latte, macchiato" />
-                    <p className="text-muted-foreground mt-1 text-xs">Comma-separated examples shown to organizers when selecting this type</p>
-                  </div>
+                  <RHFTextField name="example" label="Example (Optional)" placeholder="e.g. espresso, cappuccino, latte, macchiato" />
                 </div>
 
                 {/* STATUS */}
@@ -195,10 +236,10 @@ const PresetTypeModal = ({
                     render={({ field }) => {
                       const checked = field.value === 'active';
                       return (
-                        <FormItem className="flex flex-row items-center justify-between gap-4 mt-1">
+                        <FormItem className="mt-1 flex flex-row items-center justify-between gap-4">
                           <div>
                             <FormLabel>Active</FormLabel>
-                            <p className="text-muted-foreground text-xs pt-1">Preset type is available for organizers to use</p>
+                            <p className="text-muted-foreground pt-1 text-xs">Preset type is available for organizers to use</p>
                           </div>
                           <button
                             type="button"

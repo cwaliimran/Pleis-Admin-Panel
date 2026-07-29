@@ -5,12 +5,17 @@ export interface MenuOrganization {
   name: string;
 }
 
+// The `organization` reference on a menu record can come back as a raw id string or a populated
+// object — and the shape of that object differs between the admin (by-company) and organizer
+// list endpoints (`basicInfo.name` vs `title`). Never assume one shape — see menulist-utils.ts.
+export type OrganizationRef = string | { _id: string; basicInfo?: { name?: string }; title?: string; name?: string } | null | undefined;
+
 export interface MenuListItem {
   _id: string;
   title: string;
   description?: string;
-  organizations: string[];
-  validFrom: string;
+  organization: OrganizationRef;
+  startDate: string;
   status: MenuStatus;
   createdAt: string;
 }
@@ -56,7 +61,7 @@ export interface TableRowProps {
 export type MenuItemFormValues = {
   title?: string;
   description?: string;
-  organizations?: string[];
+  organization?: string;
   validFrom?: Date;
   status?: MenuStatus;
 };
@@ -68,7 +73,9 @@ export type MenuItemModalProps = {
   isEdit?: boolean;
   selectedData?: MenuListItem | null;
   organizations: MenuOrganization[];
-  onSubmit: (values: MenuItemFormValues) => void;
+  organizationsLoading?: boolean;
+  companyId?: string | null;
+  userType: 'organizer' | 'super-admin';
 };
 
 export type DuplicateMenuModalProps = {
@@ -76,5 +83,7 @@ export type DuplicateMenuModalProps = {
   selectedId?: string | null;
   onClose: () => void;
   organizations: MenuOrganization[];
-  onSubmit: (organizationId: string) => void;
+  organizationsLoading?: boolean;
+  companyId?: string | null;
+  userType: 'organizer' | 'super-admin';
 };

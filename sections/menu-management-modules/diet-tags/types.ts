@@ -3,7 +3,7 @@ export type DietTagStatus = 'active' | 'inactive';
 export interface DietTagRecord {
   _id: string;
   code: string;
-  tag: string;
+  name: string;
   description: string;
   status: DietTagStatus;
   createdAt: string;
@@ -44,7 +44,7 @@ export interface TableRowProps {
 }
 
 export type DietTagFormValues = {
-  tag: string;
+  name: string;
   description: string;
   status: DietTagStatus;
 };
@@ -54,6 +54,4 @@ export type DietTagModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: DietTagRecord | null;
-  nextCode: string;
-  onSubmit: (values: DietTagFormValues) => void;
 };

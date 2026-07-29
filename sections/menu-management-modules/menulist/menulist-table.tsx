@@ -41,7 +41,7 @@ const HEAD_LABEL = [
     label: 'Valid From',
     align: 'left',
     sortable: true,
-    sortKey: 'validFrom',
+    sortKey: 'startDate',
   },
   {
     id: 'createdAt',

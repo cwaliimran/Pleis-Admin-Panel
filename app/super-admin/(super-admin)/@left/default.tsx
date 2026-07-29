@@ -2,11 +2,11 @@
 import React from 'react';
 import MenuList from '../../../common/menuList';
 
-import { menuGroups, sidePanels } from './data';
+import { menuGroups } from './data';
 const Default = () => {
   return (
     <>
-      <MenuList menuGroups={menuGroups} panels={sidePanels} />
+      <MenuList menuGroups={menuGroups} />
     </>
   );
 };

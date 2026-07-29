@@ -20,6 +20,9 @@
 # production
 /build
 
+# local context docs
+/context
+
 # misc
 .DS_Store
 *.pem

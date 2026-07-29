@@ -5,27 +5,32 @@ import FormProvider, { RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { cn } from '@/lib/utils';
+import { useAddBrandMutation, useUpdateBrandMutation } from '@/store/Reducer/brands-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { cn } from '@/lib/utils';
 import { BrandFormValues, BrandModalProps } from './types';
 
 const defaultValues: BrandFormValues = {
   name: '',
-  principal: '',
+  brandOwner: '',
   status: 'active',
 };
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Brand name is required'),
-  principal: Yup.string().required('Principal is required'),
+  brandOwner: Yup.string().required('Principal is required'),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const BrandModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }: BrandModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const BrandModal = ({ open, onClose, isEdit = false, selectedData }: BrandModalProps) => {
+  const [addBrand, { isLoading: addLoading }] = useAddBrandMutation();
+  const [updateBrand, { isLoading: updateLoading }] = useUpdateBrandMutation();
+  const submitting = addLoading || updateLoading;
 
   const methods = useForm<BrandFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<BrandFormValues>),
@@ -37,20 +42,27 @@ const BrandModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }: B
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
-      reset({ name: selectedData.name, principal: selectedData.principal, status: selectedData.status });
+      reset({ name: selectedData.name, brandOwner: selectedData.brandOwner, status: selectedData.status });
     } else if (open && !isEdit) {
       reset(defaultValues);
     }
   }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: BrandFormValues) => {
-    setSubmitting(true);
+    const payload = { ...formData, name: formData.name };
+
     try {
-      onSubmit(formData);
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateBrand({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Brand updated successfully');
+      } else {
+        await addBrand(payload).unwrap();
+        showSuccess('Brand created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -64,7 +76,7 @@ const BrandModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }: B
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[35vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[30vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Brand' : 'Create Brand'}</DialogTitle>
@@ -75,7 +87,7 @@ const BrandModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }: B
               <div className="mt-0 flex w-full flex-col gap-4">
                 <RHFTextField name="name" label="Brand name" placeholder="e.g. Hendrick's" />
 
-                <RHFTextField name="principal" label="Principal · parent company / brand owner" placeholder="e.g. William Grant & Sons" />
+                <RHFTextField name="brandOwner" label="Principal · parent company / brand owner" placeholder="e.g. William Grant & Sons" />
 
                 <FormField
                   control={control}
@@ -90,7 +102,10 @@ const BrandModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }: B
                           role="switch"
                           aria-checked={checked}
                           onClick={() => field.onChange(checked ? 'inactive' : 'active')}
-                          className={cn('relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors', checked ? 'bg-primary' : 'bg-input')}
+                          className={cn(
+                            'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                            checked ? 'bg-primary' : 'bg-input'
+                          )}
                         >
                           <span
                             className={cn(

@@ -2,7 +2,7 @@
 
 import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { useQuickNavigation } from '@/hooks/useQuickNavigation';
-import { ChevronDown, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { FC, memo, useCallback, useState } from 'react';
 
@@ -11,17 +11,15 @@ type MenuItem = {
   url?: string;
   icon?: any;
   items?: MenuItem[];
-  panel?: string;
 };
 
 interface MenuItemsProps {
   items: MenuItem[];
   parentKey?: string;
   isCollapsed?: boolean;
-  onOpenPanel?: (panel: string) => void;
 }
 
-const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false, onOpenPanel }) => {
+const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false }) => {
   const pathname = usePathname();
   const { navigate } = useQuickNavigation();
 
@@ -51,28 +49,6 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false, o
         const hasChildren = item.items && item.items.length > 0;
         const isActive = item.url && pathname === item.url;
         const isHovered = isCollapsed && hoveredItem === itemKey;
-
-        if (item.panel) {
-          return (
-            <div key={itemKey}>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <button
-                    type="button"
-                    onClick={() => onOpenPanel?.(item.panel!)}
-                    className="hover:bg-muted flex w-full cursor-pointer items-center justify-between gap-2 rounded px-3 py-1.5 text-sm transition-colors duration-100"
-                  >
-                    <div className="flex items-center gap-2">
-                      {item.icon && <item.icon className="h-4 w-4" />}
-                      <span>{item.title}</span>
-                    </div>
-                    <ArrowRight className="text-muted-foreground h-4 w-4" />
-                  </button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </div>
-          );
-        }
 
         const ButtonContent = (
           <div
@@ -141,7 +117,7 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false, o
             {hasChildren && !isCollapsed && openSubMenus[itemKey] && (
               <div className="ml-5 border-l pl-3">
                 <SidebarMenuButton>
-                  <MenuItem items={item.items!} parentKey={itemKey} isCollapsed={false} onOpenPanel={onOpenPanel} />
+                  <MenuItem items={item.items!} parentKey={itemKey} isCollapsed={false} />
                 </SidebarMenuButton>
               </div>
             )}

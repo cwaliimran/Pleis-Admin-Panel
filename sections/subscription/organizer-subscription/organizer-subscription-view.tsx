@@ -40,14 +40,21 @@ export const OrganizerSubscriptionView: React.FC = () => {
   const [isCustomOrgSelected, setIsCustomOrgSelected] = useState<boolean>(false);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean>(false);
-  const [isPrefilled, setIsPrefilled] = useState<boolean>(false);
+  // Signature of the subscription data last synced into the form; null forces a re-sync
+  const [prefilledSignature, setPrefilledSignature] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [isFreePlan, setIsFreePlan] = useState<boolean>(false);
+  // True while re-fetching fresh subscription data after a successful update
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
   // ============================================================================
   // API HOOKS
   // ============================================================================
-  const { data: organizerOwnSubData, isLoading: isOwnSubLoading } = useGetOrganizerOwnSubscriptionsQuery(
+  const {
+    data: organizerOwnSubData,
+    isLoading: isOwnSubLoading,
+    refetch: refetchOwnSubscription,
+  } = useGetOrganizerOwnSubscriptionsQuery(
     {},
     {
       refetchOnMountOrArgChange: true,
@@ -192,7 +199,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
       setSelectedModules([]);
       setIncludeAnalytics(false);
       setHasActiveSubscription(false);
-      setIsPrefilled(false);
+      setPrefilledSignature(null);
     }
   }, [userSubscriptionData, isUserOnFreePlan]);
 
@@ -200,7 +207,17 @@ export const OrganizerSubscriptionView: React.FC = () => {
   // PREFILL USER SUBSCRIPTION DATA (ONLY FOR PAID USERS)
   // ============================================================================
   useEffect(() => {
-    if (!userSubscriptionData || isPrefilled || isUserOnFreePlan) return;
+    if (!userSubscriptionData || isUserOnFreePlan) return;
+
+    // Re-sync the form whenever the subscription data from the API differs
+    // from what was last applied (e.g. after an update refetch)
+    const signature = JSON.stringify([
+      userSubscriptionData.subscriptionTypes,
+      userSubscriptionData.pricingPlan,
+      userSubscriptionData.numberOfOrganizations,
+      userSubscriptionData.startDate,
+    ]);
+    if (signature === prefilledSignature) return;
 
     const modules: ModuleId[] = [];
     let hasAnalytics = false;
@@ -232,8 +249,8 @@ export const OrganizerSubscriptionView: React.FC = () => {
     }
 
     setHasActiveSubscription(true);
-    setIsPrefilled(true);
-  }, [userSubscriptionData, isPrefilled, isUserOnFreePlan]);
+    setPrefilledSignature(signature);
+  }, [userSubscriptionData, prefilledSignature, isUserOnFreePlan]);
 
   // ============================================================================
   // PRICE BREAKDOWN CALCULATION (ONLY FOR FREE USERS)
@@ -380,12 +397,19 @@ export const OrganizerSubscriptionView: React.FC = () => {
       }
 
       showSuccess(response?.message || 'Subscription updated successfully!');
+      // Force a re-sync: the prefill effect will re-apply current data now and
+      // again when the invalidated query returns fresh subscription data
+      setPrefilledSignature(null);
+      // Keep the loader on until the fresh subscription data has arrived,
+      // so the UI never shows stale selections without an indicator
+      setIsSyncing(true);
+      await refetchOwnSubscription();
       setShowConfirmModal(false);
-      // Reset prefilled flag so the prefill effect re-runs with fresh API data
-      setIsPrefilled(false);
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       showError(errorMessage);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -448,6 +472,9 @@ export const OrganizerSubscriptionView: React.FC = () => {
   }, [subscriptionAnalysis]);
 
   const isPaidActiveUser = hasActiveSubscription && !isFreePlan;
+
+  // Loading state covering both the update mutation and the follow-up refetch
+  const isProcessing = isUpdating || isSyncing;
 
   const shouldShowBillingCycle = !isPaidActiveUser || hasUserMadeChanges;
 
@@ -740,17 +767,17 @@ export const OrganizerSubscriptionView: React.FC = () => {
 
           <button
             type="button"
-            disabled={isButtonDisabled || isUpdating}
+            disabled={isButtonDisabled || isProcessing}
             onClick={handleSubscribeClick}
             className={`w-full rounded-lg py-4 text-lg font-bold transition-all ${
               isButtonDisabled
                 ? 'cursor-not-allowed bg-gray-200 text-gray-400 dark:bg-gray-800 dark:text-gray-600'
-                : isUpdating
+                : isProcessing
                   ? 'cursor-not-allowed bg-blue-600 text-white'
                   : 'cursor-pointer bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl'
             }`}
           >
-            {isUpdating ? (
+            {isProcessing ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
                 Processing...
@@ -787,7 +814,7 @@ export const OrganizerSubscriptionView: React.FC = () => {
         effectiveDate={subscriptionAnalysis?.nextRecurring?.startDate || userSubscriptionData?.endDate || undefined}
         confirmButtonText="Yes, Switch to Free Plan"
         cancelButtonText="Cancel"
-        isLoading={isUpdating}
+        isLoading={isProcessing}
       />
     </section>
   );

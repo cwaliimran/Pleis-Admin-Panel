@@ -9,8 +9,11 @@ import { FormControl, FormField, FormItem, FormLabel } from '@/components/ui/for
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useAddDaypartMutation, useGetDaypartCodeQuery, useUpdateDaypartMutation } from '@/store/Reducer/daypart-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as Yup from 'yup';
 import { DaypartFormValues, DaypartModalProps } from './types';
@@ -39,8 +42,11 @@ const schema = Yup.object().shape({
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const DaypartModal = ({ open, onClose, isEdit = false, selectedData, nextCode, onSubmit }: DaypartModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const DaypartModal = ({ open, onClose, isEdit = false, selectedData }: DaypartModalProps) => {
+  const { data: codeData, isLoading: codeLoading } = useGetDaypartCodeQuery(undefined, { skip: isEdit });
+  const [addDaypart, { isLoading: addLoading }] = useAddDaypartMutation();
+  const [updateDaypart, { isLoading: updateLoading }] = useUpdateDaypartMutation();
+  const submitting = addLoading || updateLoading;
 
   const methods = useForm<DaypartFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<DaypartFormValues>),
@@ -66,13 +72,25 @@ const DaypartModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
   }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: DaypartFormValues) => {
-    setSubmitting(true);
+    const payload = {
+      ...formData,
+      name: formData.name.toLowerCase(),
+      ...(formData.isAllDay ? { startTime: '00:00', endTime: '23:59' } : {}),
+    };
+    
+
     try {
-      onSubmit(formData.isAllDay ? { ...formData, startTime: '00:00', endTime: '23:59' } : formData);
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateDaypart({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Daypart updated successfully');
+      } else {
+        await addDaypart({ ...payload, code: codeData?.code }).unwrap();
+        showSuccess('Daypart created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -97,7 +115,11 @@ const DaypartModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <Label className="text-sm font-medium">Code</Label>
-                  <Input value={isEdit ? selectedData?.code || '' : nextCode} disabled className="h-[40px] bg-gray-50 dark:bg-gray-800" />
+                  <Input
+                    value={isEdit ? selectedData?.code || '' : codeLoading ? 'Loading...' : codeData?.code || ''}
+                    disabled
+                    className="h-10 bg-gray-50 dark:bg-gray-800"
+                  />
                   <p className="text-muted-foreground text-xs">Auto-generated</p>
                 </div>
 
@@ -114,7 +136,10 @@ const DaypartModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
                         role="switch"
                         aria-checked={!!field.value}
                         onClick={() => field.onChange(!field.value)}
-                        className={cn('relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors', field.value ? 'bg-primary' : 'bg-input')}
+                        className={cn(
+                          'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                          field.value ? 'bg-primary' : 'bg-input'
+                        )}
                       >
                         <span
                           className={cn(
@@ -169,7 +194,10 @@ const DaypartModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
                           role="switch"
                           aria-checked={checked}
                           onClick={() => field.onChange(checked ? 'inactive' : 'active')}
-                          className={cn('relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors', checked ? 'bg-primary' : 'bg-input')}
+                          className={cn(
+                            'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                            checked ? 'bg-primary' : 'bg-input'
+                          )}
                         >
                           <span
                             className={cn(

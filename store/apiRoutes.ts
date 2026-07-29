@@ -348,8 +348,48 @@ export const API_ROUTES = {
   ADMIN_PRESET: `/admin/menu/presets`,
   ADMIN_PRESET_BY_ID: (id: string) => `/admin/menu/presets/${id}`,
 
+  ADMIN_PRESET_MENU_BRAND: `/admin/preset-menu/brand`,
+  ADMIN_PRESET_MENU_BRAND_BY_ID: (id: string) => `/admin/preset-menu/brand/${id}`,
+
+  ADMIN_PRESET_MENU_SERVING: `/admin/preset-menu/serving`,
+  ADMIN_PRESET_MENU_SERVING_BY_ID: (id: string) => `/admin/preset-menu/serving/${id}`,
+  ADMIN_PRESET_MENU_SERVING_CODE: `/admin/preset-menu/serving/code`,
+
+  ADMIN_PRESET_MENU_DIET_TAG: `/admin/preset-menu/diet-tag`,
+  ADMIN_PRESET_MENU_DIET_TAG_BY_ID: (id: string) => `/admin/preset-menu/diet-tag/${id}`,
+  ADMIN_PRESET_MENU_DIET_TAG_CODE: `/admin/preset-menu/diet-tag/code`,
+
+  ADMIN_PRESET_MENU_ALLERGEN: `/admin/preset-menu/allergen`,
+  ADMIN_PRESET_MENU_ALLERGEN_BY_ID: (id: string) => `/admin/preset-menu/allergen/${id}`,
+  ADMIN_PRESET_MENU_ALLERGEN_CODE: `/admin/preset-menu/allergen/code`,
+
+  ADMIN_PRESET_MENU_DAYPART: `/admin/preset-menu/daypart`,
+  ADMIN_PRESET_MENU_DAYPART_BY_ID: (id: string) => `/admin/preset-menu/daypart/${id}`,
+  ADMIN_PRESET_MENU_DAYPART_CODE: `/admin/preset-menu/daypart/code`,
+
   ADMIN_MENU_CATEGORIES: `/admin/menu/categories`,
   ADMIN_MENU_CATEGORIES_BY_ID: (id: string) => `/admin/menu/categories/${id}`,
+
+  ADMIN_MENU_SUB_CATEGORIES: `/admin/menu/sub-categories`,
+  ADMIN_MENU_SUB_CATEGORIES_BY_ID: (id: string) => `/admin/menu/sub-categories/${id}`,
+  ADMIN_MENU_SUB_CATEGORIES_ORDER_BY_ID: (id: string) => `/admin/menu/sub-categories/order/${id}`,
+
+  ADMIN_MENU_SUB_CATEGORY_TYPES: `/admin/menu/sub-categories/types`,
+  ADMIN_MENU_SUB_CATEGORY_TYPES_BY_ID: (id: string) => `/admin/menu/sub-categories/types/${id}`,
+
+  ADMIN_MENU_PRESET_TYPE: `/admin/menu/preset-type`,
+  ADMIN_MENU_PRESET_TYPE_BY_ID: (id: string) => `/admin/menu/preset-type/${id}`,
+  ADMIN_MENU_PRESET_TYPE_CODE: `/admin/menu/preset-type/code`,
+
+  ADMIN_MENU_DISCOUNTS: `/admin/menu/discounts`,
+  ADMIN_MENU_DISCOUNTS_BY_ID: (id: string) => `/admin/menu/discounts/${id}`,
+  ORGANIZER_MENU_DISCOUNTS: `/organizer/menu/discounts`,
+  ORGANIZER_MENU_DISCOUNTS_BY_ID: (id: string) => `/organizer/menu/discounts/${id}`,
+
+  ADMIN_MENU_COMBOS: `/admin/menu/combos`,
+  ADMIN_MENU_COMBOS_BY_ID: (id: string) => `/admin/menu/combos/${id}`,
+  ORGANIZER_MENU_COMBOS: `/organizer/menu/combos`,
+  ORGANIZER_MENU_COMBOS_BY_ID: (id: string) => `/organizer/menu/combos/${id}`,
 
   ORGANIZER_MENU_CATEGORIES: `/organizer/menu/categories`,
   ORGANIZER_MENU_CATEGORIES_BY_ID: (id: string) => `/organizer/menu/categories/${id}`,

@@ -12,21 +12,21 @@ const ServingTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) 
       <TableCell className="text-left font-mono font-semibold">{item.code}</TableCell>
 
       <TableCell className="text-left">
-        {item.level2 ? (
-          <CustomBadge variant={item.level2 === 'food' ? 'warning' : 'info'} className="uppercase">
+        {item.level2 && item.level2 !== 'none' ? (
+          <CustomBadge variant={item.level2 === 'food' ? 'warning' : 'info'}>
             {item.level2}
           </CustomBadge>
         ) : (
-          <CustomBadge variant="default">—</CustomBadge>
+          <CustomBadge variant="default">N/A</CustomBadge>
         )}
       </TableCell>
 
       <TableCell className="text-left">{item.type}</TableCell>
 
-      <TableCell className="text-left">{item.unit || '—'}</TableCell>
+      <TableCell className="text-left pl-4">{item.unit || '—'}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === 'active' ? 'success' : 'default'}>{item.status}</CustomBadge>
+        <CustomBadge variant={item.status === 'active' ? 'success' : 'error'}>{item.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

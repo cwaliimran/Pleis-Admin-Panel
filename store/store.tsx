@@ -20,8 +20,18 @@ import { venueApi } from './Reducer/venue';
 import { venueTypeApi } from './Reducer/venueType';
 import { userSlice } from './slice/userSlice';
 import { presetMenuApi } from './Reducer/preset-menu-api';
+import { brandsApi } from './Reducer/brands-api';
+import { servingApi } from './Reducer/serving-api';
+import { dietTagsApi } from './Reducer/diet-tags-api';
+import { allergensApi } from './Reducer/allergens-api';
+import { daypartApi } from './Reducer/daypart-api';
+import { menuSubcategoriesApi } from './Reducer/menu-subcategories-api';
+import { subcategoryTypesApi } from './Reducer/subcategory-types-api';
+import { presetTypeApi } from './Reducer/preset-type-api';
+import { discountsApi } from './Reducer/discounts-api';
 import { menuListApi } from './Reducer/menu-list-api';
 import { menuItemsApi } from './Reducer/menu-items-api';
+import { combosApi } from './Reducer/combos-api';
 import { itemsCategoryApi } from './Reducer/items-category-api';
 import { rewardsApi } from './Reducer/rewards-api';
 import { promotionApi } from './Reducer/promotion-api';
@@ -80,8 +90,18 @@ const appReducer = combineReducers({
   [twoFactorAuthApi.reducerPath]: twoFactorAuthApi.reducer,
   [settingsApi.reducerPath]: settingsApi.reducer,
   [presetMenuApi.reducerPath]: presetMenuApi.reducer,
+  [brandsApi.reducerPath]: brandsApi.reducer,
+  [servingApi.reducerPath]: servingApi.reducer,
+  [dietTagsApi.reducerPath]: dietTagsApi.reducer,
+  [allergensApi.reducerPath]: allergensApi.reducer,
+  [daypartApi.reducerPath]: daypartApi.reducer,
+  [menuSubcategoriesApi.reducerPath]: menuSubcategoriesApi.reducer,
+  [subcategoryTypesApi.reducerPath]: subcategoryTypesApi.reducer,
+  [presetTypeApi.reducerPath]: presetTypeApi.reducer,
+  [discountsApi.reducerPath]: discountsApi.reducer,
   [menuListApi.reducerPath]: menuListApi.reducer,
   [menuItemsApi.reducerPath]: menuItemsApi.reducer,
+  [combosApi.reducerPath]: combosApi.reducer,
   [itemsCategoryApi.reducerPath]: itemsCategoryApi.reducer,
   [rewardsApi.reducerPath]: rewardsApi.reducer,
   [promotionApi.reducerPath]: promotionApi.reducer,
@@ -147,7 +167,17 @@ export const store = configureStore({
       twoFactorAuthApi.middleware,
       settingsApi.middleware,
       presetMenuApi.middleware,
+      brandsApi.middleware,
+      servingApi.middleware,
+      dietTagsApi.middleware,
+      allergensApi.middleware,
+      daypartApi.middleware,
+      menuSubcategoriesApi.middleware,
+      subcategoryTypesApi.middleware,
+      presetTypeApi.middleware,
+      discountsApi.middleware,
       menuItemsApi.middleware,
+      combosApi.middleware,
       itemsCategoryApi.middleware,
       rewardsApi.middleware,
       promotionApi.middleware,

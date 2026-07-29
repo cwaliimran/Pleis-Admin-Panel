@@ -103,6 +103,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.organizer.discounts,
         icon: CalendarDays,
       },
+      {
+        title: 'Combos',
+        url: paths.organizer.combos,
+        icon: CalendarDays,
+      },
     ],
   },
   {

@@ -12,12 +12,12 @@ const BrandTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =>
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left font-semibold">{item.name}</TableCell>
 
-      <TableCell className="text-left">{item.principal}</TableCell>
+      <TableCell className="text-left">{item.brandOwner}</TableCell>
 
       <TableCell className="text-left">{fDate(item.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === 'active' ? 'success' : 'default'}>{item.status}</CustomBadge>
+        <CustomBadge variant={item.status === 'active' ? 'success' : 'error'}>{item.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

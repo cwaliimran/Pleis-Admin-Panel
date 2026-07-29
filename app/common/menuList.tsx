@@ -1,31 +1,18 @@
 'use client';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, useSidebar } from '@/components/ui/sidebar';
 import { useQuickNavigation } from '@/hooks/useQuickNavigation';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion as m } from 'framer-motion';
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import MenuItem from './menuItem';
 
 interface PageProps {
   menuGroups: any;
-  panels?: Record<string, { title: string; backLabel: string; sections: { label: string; items: { title: string; url: string }[] }[] }>;
 }
 
-const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
+const MenuList: FC<PageProps> = ({ menuGroups }) => {
   const pathname = usePathname();
   const { navigate } = useQuickNavigation();
   const { isMobile, toggleSidebar, state } = useSidebar();
@@ -34,17 +21,6 @@ const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [activePanel, setActivePanel] = useState<string | null>(null);
-
-  const handleOpenPanel = useCallback(
-    (panel: string) => {
-      if (isCollapsed && typeof toggleSidebar === 'function') {
-        toggleSidebar();
-      }
-      setActivePanel(panel);
-    },
-    [isCollapsed, toggleSidebar]
-  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -70,9 +46,6 @@ const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
       setOpenGroup(null);
       setHoveredGroup(null);
       setHoverTimeout(null);
-      // The panel's items have no icons, so there's no sensible icon-only rendering for it —
-      // collapsing the sidebar closes it, same as it already does for an open group submenu.
-      setActivePanel(null);
     }
   }, [isCollapsed]);
 
@@ -83,11 +56,6 @@ const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
   const handleGroupClick = useCallback(
     (group: any) => {
       const hasItems = group.items?.length > 0;
-
-      if (group.panel) {
-        handleOpenPanel(group.panel);
-        return;
-      }
 
       if (hasItems) {
         if (!isCollapsed) {
@@ -101,7 +69,7 @@ const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
         }
       }
     },
-    [navigate, isMobile, toggleSidebar, toggleGroup, isCollapsed, handleOpenPanel]
+    [navigate, isMobile, toggleSidebar, toggleGroup, isCollapsed]
   );
 
   const memoizedMenuItems = useMemo(() => {
@@ -146,22 +114,14 @@ const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
               {!isCollapsed && <span className="truncate transition-all duration-100">{group.label}</span>}
 
               {/* Chevron appears on hover (collapsed only, and has children) */}
-              {isCollapsed && (hasItems || group.panel) && !isDisabled && (
+              {isCollapsed && hasItems && !isDisabled && (
                 <div className="absolute right-[-10px] transition-opacity duration-200 group-hover:opacity-100">
                   <ChevronRight className="text-muted-foreground h-3 w-3" />
                 </div>
               )}
             </div>
 
-            {!isCollapsed && !isDisabled && (
-              <>
-                {group.panel ? (
-                  <ArrowRight className="text-muted-foreground h-4 w-4" />
-                ) : (
-                  hasItems && (isOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />)
-                )}
-              </>
-            )}
+            {!isCollapsed && hasItems && !isDisabled && (isOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />)}
           </button>
 
           {/* Inline submenu (for expanded sidebar) */}
@@ -176,7 +136,7 @@ const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
               >
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    <MenuItem items={group.items} parentKey={group.key} isCollapsed={isCollapsed} onOpenPanel={handleOpenPanel} />
+                    <MenuItem items={group.items} parentKey={group.key} isCollapsed={isCollapsed} />
                   </SidebarMenu>
                 </SidebarGroupContent>
               </m.div>
@@ -222,93 +182,23 @@ const MenuList: FC<PageProps> = ({ menuGroups, panels }) => {
         </SidebarGroup>
       );
     });
-  }, [menuGroups, openGroup, pathname, isCollapsed, hoveredGroup, handleGroupClick, navigate, toggleSidebar, isMobile, hoverTimeout, handleOpenPanel]);
-
-  const activePanelConfig = activePanel ? panels?.[activePanel] : null;
+  }, [menuGroups, openGroup, pathname, isCollapsed, hoveredGroup, handleGroupClick, navigate, toggleSidebar, isMobile, hoverTimeout]);
 
   return (
     <Sidebar className="a-50 relative z-10 overflow-visible" collapsible="icon">
-      <AnimatePresence mode="wait" initial={false}>
-        {activePanelConfig ? (
-          <m.div
-            key="panel"
-            initial={{ x: 24, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -24, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-          >
-            <SidebarHeader>
-              <div className={cn('pt-3 pb-1', isCollapsed ? 'px-0 text-center' : 'px-4')}>
-                {!isCollapsed && <p className="text-muted-foreground text-xs">Pleis Admin</p>}
-                <h2 className="text-xl font-bold">{isCollapsed ? 'P' : activePanelConfig.title}</h2>
-              </div>
-            </SidebarHeader>
+      <SidebarHeader>
+        <h1
+          className={cn(
+            !isCollapsed ? 'text-4xl' : 'text-xl',
+            'z-10 pt-3 pb-1 text-center font-bold transition-all duration-200',
+            isCollapsed ? 'px-0' : 'px-4'
+          )}
+        >
+          {isCollapsed ? 'P' : 'PLEIS'}
+        </h1>
+      </SidebarHeader>
 
-            <SidebarContent>
-              <button
-                type="button"
-                onClick={() => setActivePanel(null)}
-                title="Back to Menu"
-                className="hover:bg-muted mx-2 mt-1 mb-2 flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm"
-              >
-                <ArrowLeft className="h-4 w-4 shrink-0" />
-                {!isCollapsed && activePanelConfig.backLabel}
-              </button>
-
-              {activePanelConfig.sections.map((section) => (
-                <SidebarGroup key={section.label} className="py-0">
-                  {!isCollapsed && <SidebarGroupLabel className="uppercase">{section.label}</SidebarGroupLabel>}
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {section.items.map((item) => (
-                        <SidebarMenuItem key={item.url}>
-                          <SidebarMenuButton asChild>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigate(item.url);
-                                if (isMobile) toggleSidebar();
-                              }}
-                              className={cn(
-                                'hover:bg-muted flex w-full cursor-pointer items-center rounded-md px-3 py-2 text-left text-sm transition-colors',
-                                pathname === item.url ? 'bg-muted font-semibold' : ''
-                              )}
-                            >
-                              {item.title}
-                            </button>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </SidebarGroup>
-              ))}
-            </SidebarContent>
-          </m.div>
-        ) : (
-          <m.div
-            key="root"
-            initial={{ x: -24, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 24, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-          >
-            <SidebarHeader>
-              <h1
-                className={cn(
-                  !isCollapsed ? 'text-4xl' : 'text-xl',
-                  'z-10 pt-3 pb-1 text-center font-bold transition-all duration-200',
-                  isCollapsed ? 'px-0' : 'px-4'
-                )}
-              >
-                {isCollapsed ? 'P' : 'PLEIS'}
-              </h1>
-            </SidebarHeader>
-
-            <SidebarContent>{memoizedMenuItems}</SidebarContent>
-          </m.div>
-        )}
-      </AnimatePresence>
+      <SidebarContent>{memoizedMenuItems}</SidebarContent>
 
       <SidebarFooter />
     </Sidebar>

@@ -6,25 +6,30 @@ import FormProvider, { RHFDate, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useAddDiscountMutation, useUpdateDiscountMutation } from '@/store/Reducer/discounts-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
+import { cn } from '@/lib/utils';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as Yup from 'yup';
 import { DiscountTypeCards, ItemsPicker } from './discounts-modal-fields';
 import { DiscountFormValues, DiscountModalProps } from './types';
+import { buildDiscountDateTime, parseDiscountDateTime } from './utils';
 
 const NO_MIN_DATE = new Date(0);
 
 const defaultValues: DiscountFormValues = {
-  title: '',
-  description: '',
+  name: '',
   type: 'percentage',
   value: '',
-  itemIds: [],
+  menuItems: [],
   startDateDate: undefined,
   startTime: '',
   endDateDate: undefined,
   endTime: '',
+  status: 'active',
 };
 
 const isValidTime = (time?: string) => !!time && /^([01]\d|2[0-3]):([0-5]\d)$/.test(time);
@@ -38,13 +43,12 @@ const combineDateTime = (date?: Date, time?: string): number | null => {
 };
 
 const schema = Yup.object().shape({
-  title: Yup.string().required('Discount name is required'),
-  description: Yup.string().optional(),
+  name: Yup.string().required('Discount name is required'),
   type: Yup.mixed<'percentage' | 'fixed'>().oneOf(['percentage', 'fixed']).required(),
   value: Yup.string()
     .required('Value is required')
     .test('is-decimal', 'Value must be a valid number greater than 0', (value) => !!value && !isNaN(Number(value)) && Number(value) > 0),
-  itemIds: Yup.array().of(Yup.string().required()).min(1, 'Select at least one menu item').required(),
+  menuItems: Yup.array().of(Yup.string().required()).min(1, 'Select at least one menu item').required(),
   startDateDate: Yup.date().required('Start date is required'),
   startTime: Yup.string().required('Start time is required').test('valid-time', 'Invalid time format', isValidTime),
   endDateDate: Yup.date()
@@ -57,10 +61,13 @@ const schema = Yup.object().shape({
       return end > start;
     }),
   endTime: Yup.string().required('End time is required').test('valid-time', 'Invalid time format', isValidTime),
+  status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const DiscountModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }: DiscountModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const DiscountModal = ({ open, onClose, isEdit = false, selectedData, companyId, userType }: DiscountModalProps) => {
+  const [addDiscount, { isLoading: addLoading }] = useAddDiscountMutation();
+  const [updateDiscount, { isLoading: updateLoading }] = useUpdateDiscountMutation();
+  const submitting = addLoading || updateLoading;
 
   const methods = useForm<DiscountFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<DiscountFormValues>),
@@ -83,19 +90,19 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
-      const [startDatePart, startTimePart] = selectedData.startDate.split('T');
-      const [endDatePart, endTimePart] = selectedData.endDate.split('T');
+      const start = parseDiscountDateTime(selectedData.startDate);
+      const end = parseDiscountDateTime(selectedData.endDate);
 
       reset({
-        title: selectedData.title,
-        description: selectedData.description || '',
+        name: selectedData.name,
         type: selectedData.type,
         value: String(selectedData.value),
-        itemIds: selectedData.itemIds,
-        startDateDate: new Date(startDatePart),
-        startTime: startTimePart || '',
-        endDateDate: new Date(endDatePart),
-        endTime: endTimePart || '',
+        menuItems: selectedData.menuItems.map((item) => item._id),
+        startDateDate: start.date,
+        startTime: start.time24,
+        endDateDate: end.date,
+        endTime: end.time24,
+        status: selectedData.status === 'active' ? 'active' : 'inactive',
       });
     } else if (open && !isEdit) {
       reset(defaultValues);
@@ -103,13 +110,29 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }
   }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: DiscountFormValues) => {
-    setSubmitting(true);
+    const payload: any = {
+      name: formData.name,
+      type: formData.type,
+      value: Number(formData.value),
+      menuItems: formData.menuItems,
+      startDate: buildDiscountDateTime(formData.startDateDate!, formData.startTime),
+      endDate: buildDiscountDateTime(formData.endDateDate!, formData.endTime),
+      status: formData.status,
+    };
+    if (userType === 'super-admin' && companyId) payload.companyOrganizer = companyId;
+
     try {
-      onSubmit(formData);
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateDiscount({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Discount updated successfully');
+      } else {
+        await addDiscount(payload).unwrap();
+        showSuccess('Discount created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -123,7 +146,7 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[650px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-162.5!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Discount' : 'Create Discount'}</DialogTitle>
@@ -136,15 +159,7 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }
                 <div className="flex flex-col gap-4">
                   <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Basic Information</h4>
 
-                  <RHFTextField name="title" label="Discount name" placeholder="e.g. Summer Happy Hour" />
-
-                  <RHFTextField
-                    name="description"
-                    label="Description (Optional)"
-                    placeholder="Internal description of this discount"
-                    multiline
-                    rows={2}
-                  />
+                  <RHFTextField name="name" label="Discount name" placeholder="e.g. Summer Happy Hour" />
                 </div>
 
                 {/* DISCOUNT VALUE */}
@@ -164,10 +179,10 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }
                 {/* APPLIES TO */}
                 <div className="flex flex-col gap-4">
                   <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">
-                    Applies To <span className="normal-case">· select one or more menu items</span>
+                    Applies To <span className="normal-case">· select a menu, then one or more of its items</span>
                   </h4>
 
-                  <ItemsPicker name="itemIds" />
+                  <ItemsPicker name="menuItems" companyId={companyId} userType={userType} initialItemRefs={selectedData?.menuItems} />
                 </div>
 
                 {/* SCHEDULE */}
@@ -207,6 +222,41 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, onSubmit }
                       )}
                     />
                   </div>
+                </div>
+
+                {/* STATUS */}
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Status</h4>
+
+                  <FormField
+                    control={control}
+                    name="status"
+                    render={({ field }) => {
+                      const checked = field.value === 'active';
+                      return (
+                        <FormItem className="mt-1 flex flex-row items-center justify-between gap-4">
+                          <FormLabel>Active</FormLabel>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={checked}
+                            onClick={() => field.onChange(checked ? 'inactive' : 'active')}
+                            className={cn(
+                              'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                              checked ? 'bg-primary' : 'bg-input'
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
+                                checked && 'translate-x-5'
+                              )}
+                            />
+                          </button>
+                        </FormItem>
+                      );
+                    }}
+                  />
                 </div>
               </div>
 

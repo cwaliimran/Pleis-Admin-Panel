@@ -3,24 +3,20 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteDaypartMutation, useGetDaypartsQuery } from '@/store/Reducer/daypart-api';
+import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { getNextDaypartCode, mockDaypartData } from './data';
+import { useState } from 'react';
 import DaypartModal from './daypart-modal';
 import DaypartTable from './daypart-table';
-import { DaypartFormValues, DaypartRecord } from './types';
-
-let nextDaypartId = mockDaypartData.length + 1;
+import { DaypartRecord } from './types';
 
 const DaypartView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
-
-  // TODO(v2-api): replace this local state with a real query once the backend endpoint is ready.
-  const [dayparts, setDayparts] = useState<DaypartRecord[]>(mockDaypartData);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -30,6 +26,21 @@ const DaypartView = () => {
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
 
+  const { data, isLoading, isFetching } = useGetDaypartsQuery({
+    page: page - 1,
+    limit,
+    search,
+    status: !status || status === 'all' ? undefined : status,
+    date: date ? formatDate(date) : undefined,
+    sortBy,
+    sortOrder,
+  });
+
+  const [deleteDaypart, { isLoading: deleteLoading }] = useDeleteDaypartMutation();
+
+  const dayparts: DaypartRecord[] = data?.data || [];
+  const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
+
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
@@ -38,46 +49,6 @@ const DaypartView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<DaypartRecord | null>(null);
-
-  const filteredSortedDayparts = useMemo(() => {
-    let result = [...dayparts];
-
-    if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      result = result.filter((item) => item.name.toLowerCase().includes(term));
-    }
-
-    if (status && status !== 'all') {
-      result = result.filter((item) => item.status === status);
-    }
-
-    if (date) {
-      const target = formatDate(date);
-      result = result.filter((item) => item.createdAt === target);
-    }
-
-    if (sortBy && sortOrder) {
-      const direction = sortOrder === 'asc' ? 1 : -1;
-      result.sort((a, b) => {
-        if (sortBy === 'code') return a.code.localeCompare(b.code) * direction;
-        if (sortBy === 'name') return a.name.localeCompare(b.name) * direction;
-        return 0;
-      });
-    }
-
-    return result;
-  }, [dayparts, search, status, date, sortBy, sortOrder]);
-
-  const totalRecords = filteredSortedDayparts.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
-  const paginatedDayparts = filteredSortedDayparts.slice((page - 1) * limit, page * limit);
-
-  const meta = {
-    currentPage: page,
-    totalPages,
-    totalRecords,
-    limit,
-  };
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -99,43 +70,14 @@ const DaypartView = () => {
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    setDayparts((prev) => prev.filter((item) => item._id !== selectedId));
-    showSuccess('Daypart deleted successfully');
-    setSelectedId(null);
-    deleteModal.onFalse();
-  };
-
-  const onDaypartSubmit = (values: DaypartFormValues) => {
-    if (editModal.value && selectedId) {
-      setDayparts((prev) =>
-        prev.map((item) =>
-          item._id === selectedId
-            ? {
-                ...item,
-                name: values.name,
-                startTime: values.startTime,
-                endTime: values.endTime,
-                isAllDay: values.isAllDay,
-                status: values.status,
-              }
-            : item
-        )
-      );
-      showSuccess('Daypart updated successfully');
-    } else {
-      const newDaypart: DaypartRecord = {
-        _id: `daypart-${nextDaypartId++}`,
-        code: getNextDaypartCode(dayparts),
-        name: values.name,
-        startTime: values.startTime,
-        endTime: values.endTime,
-        isAllDay: values.isAllDay,
-        status: values.status,
-        createdAt: formatDate(new Date())!,
-      };
-      setDayparts((prev) => [...prev, newDaypart]);
-      showSuccess('Daypart created successfully');
+  const onDelete = async () => {
+    try {
+      await deleteDaypart(selectedId).unwrap();
+      showSuccess('Daypart deleted successfully');
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -151,8 +93,9 @@ const DaypartView = () => {
       </div>
 
       <DaypartTable
-        data={paginatedDayparts}
+        data={dayparts}
         meta={meta}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -190,20 +133,14 @@ const DaypartView = () => {
       />
 
       {openModal.value && (
-        <DaypartModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          nextCode={getNextDaypartCode(dayparts)}
-          onSubmit={onDaypartSubmit}
-        />
+        <DaypartModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
       )}
 
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Daypart"
         content="Are you sure you want to delete this daypart?"
+        isLoading={deleteLoading}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

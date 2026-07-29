@@ -8,28 +8,32 @@ import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useAddDietTagMutation, useGetDietTagCodeQuery, useUpdateDietTagMutation } from '@/store/Reducer/diet-tags-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { DietTagFormValues, DietTagModalProps } from './types';
 
 const defaultValues: DietTagFormValues = {
-  tag: '',
+  name: '',
   description: '',
   status: 'active',
 };
 
 const schema = Yup.object().shape({
-  tag: Yup.string()
-    .required('Tag identifier is required')
-    .matches(/^[a-z][a-z0-9_]*$/, 'Use snake_case (lowercase letters, numbers, underscores)'),
+  name: Yup.string().required('Name is required'),
   description: Yup.string().required('Description is required'),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const DietTagModal = ({ open, onClose, isEdit = false, selectedData, nextCode, onSubmit }: DietTagModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const DietTagModal = ({ open, onClose, isEdit = false, selectedData }: DietTagModalProps) => {
+  const { data: codeData, isLoading: codeLoading } = useGetDietTagCodeQuery(undefined, { skip: isEdit });
+  const [addDietTag, { isLoading: addLoading }] = useAddDietTagMutation();
+  const [updateDietTag, { isLoading: updateLoading }] = useUpdateDietTagMutation();
+  const submitting = addLoading || updateLoading;
 
   const methods = useForm<DietTagFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<DietTagFormValues>),
@@ -41,20 +45,27 @@ const DietTagModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
-      reset({ tag: selectedData.tag, description: selectedData.description, status: selectedData.status });
+      reset({ name: selectedData.name, description: selectedData.description, status: selectedData.status });
     } else if (open && !isEdit) {
       reset(defaultValues);
     }
   }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: DietTagFormValues) => {
-    setSubmitting(true);
+    const payload = { ...formData, name: formData.name };
+
     try {
-      onSubmit(formData);
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateDietTag({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Diet tag updated successfully');
+      } else {
+        await addDietTag({ ...payload, code: codeData?.code }).unwrap();
+        showSuccess('Diet tag created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -79,19 +90,17 @@ const DietTagModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <Label className="text-sm font-medium">Code</Label>
-                  <Input value={isEdit ? selectedData?.code || '' : nextCode} disabled className="h-[40px] bg-gray-50 dark:bg-gray-800" />
+                  <Input
+                    value={isEdit ? selectedData?.code || '' : codeLoading ? 'Loading...' : codeData?.code || ''}
+                    disabled
+                    className="h-10 bg-gray-50 dark:bg-gray-800"
+                  />
                   <p className="text-muted-foreground text-xs">Auto-generated</p>
                 </div>
 
-                <RHFTextField name="tag" label="Tag identifier" placeholder="e.g. raw_food (snake_case)" />
+                <RHFTextField name="name" label="Name" placeholder="e.g. Raw Food" />
 
-                <RHFTextField
-                  name="description"
-                  label="Description"
-                  placeholder="e.g. No cooked or processed ingredients"
-                  multiline
-                  rows={2}
-                />
+                <RHFTextField name="description" label="Description" placeholder="e.g. No cooked or processed ingredients" multiline rows={2} />
 
                 <FormField
                   control={control}
@@ -106,7 +115,10 @@ const DietTagModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
                           role="switch"
                           aria-checked={checked}
                           onClick={() => field.onChange(checked ? 'inactive' : 'active')}
-                          className={cn('relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors', checked ? 'bg-primary' : 'bg-input')}
+                          className={cn(
+                            'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                            checked ? 'bg-primary' : 'bg-input'
+                          )}
                         >
                           <span
                             className={cn(

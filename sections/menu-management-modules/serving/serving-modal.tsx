@@ -8,8 +8,11 @@ import { FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useAddServingMutation, useGetServingCodeQuery, useUpdateServingMutation } from '@/store/Reducer/serving-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { ServingFormValues, ServingModalProps } from './types';
@@ -31,8 +34,11 @@ const schema = Yup.object().shape({
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const ServingModal = ({ open, onClose, isEdit = false, selectedData, nextCode, onSubmit }: ServingModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const ServingModal = ({ open, onClose, isEdit = false, selectedData }: ServingModalProps) => {
+  const { data: codeData, isLoading: codeLoading } = useGetServingCodeQuery(undefined, { skip: isEdit });
+  const [addServing, { isLoading: addLoading }] = useAddServingMutation();
+  const [updateServing, { isLoading: updateLoading }] = useUpdateServingMutation();
+  const submitting = addLoading || updateLoading;
 
   const methods = useForm<ServingFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<ServingFormValues>),
@@ -56,17 +62,25 @@ const ServingModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
   }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: ServingFormValues) => {
-    setSubmitting(true);
+    const payload: any = {
+      type: formData.type,
+      level2: formData.level2,
+      status: formData.status,
+    };
+    if (formData.unit !== NONE_UNIT) payload.unit = formData.unit;
+
     try {
-      onSubmit({
-        ...formData,
-        level2: formData.level2 === NONE_LEVEL2 ? '' : formData.level2,
-        unit: formData.unit === NONE_UNIT ? '' : formData.unit,
-      });
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateServing({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Serving updated successfully');
+      } else {
+        await addServing({ ...payload, code: codeData?.code }).unwrap();
+        showSuccess('Serving created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -91,7 +105,11 @@ const ServingModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="flex flex-col gap-2">
                   <Label className="text-sm font-medium">Code</Label>
-                  <Input value={isEdit ? selectedData?.code || '' : nextCode} disabled className="h-[40px] bg-gray-50 dark:bg-gray-800" />
+                  <Input
+                    value={isEdit ? selectedData?.code || '' : codeLoading ? 'Loading...' : codeData?.code || ''}
+                    disabled
+                    className="h-[40px] bg-gray-50 dark:bg-gray-800"
+                  />
                   <p className="text-muted-foreground text-xs">Auto-generated</p>
                 </div>
 
@@ -135,7 +153,10 @@ const ServingModal = ({ open, onClose, isEdit = false, selectedData, nextCode, o
                           role="switch"
                           aria-checked={checked}
                           onClick={() => field.onChange(checked ? 'inactive' : 'active')}
-                          className={cn('relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors', checked ? 'bg-primary' : 'bg-input')}
+                          className={cn(
+                            'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                            checked ? 'bg-primary' : 'bg-input'
+                          )}
                         >
                           <span
                             className={cn(

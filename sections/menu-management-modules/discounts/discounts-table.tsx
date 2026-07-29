@@ -20,10 +20,10 @@ const HEAD_LABEL = [
     label: 'Name',
     align: 'left',
     sortable: true,
-    sortKey: 'title',
+    sortKey: 'name',
   },
-  { id: 'type', label: 'Type', align: 'left' },
-  { id: 'value', label: 'Value', align: 'left' },
+  { id: 'type', label: 'Discount Type', align: 'left', sortable: true, sortKey: 'type' },
+  { id: 'value', label: 'Value', align: 'left', sortable: true, sortKey: 'value' },
   { id: 'appliesTo', label: 'Applies To', align: 'left' },
   {
     id: 'startDate',
@@ -148,6 +148,7 @@ const DiscountTable: FC<SamplePageProps> = ({
                           options: [
                             { value: 'all', label: 'All' },
                             { value: 'active', label: 'Active' },
+                            { value: 'inactive', label: 'Inactive' },
                             { value: 'expired', label: 'Expired' },
                           ],
                         },

@@ -2,19 +2,24 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
+import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { useAddMenuListMutation, useUpdateMenuListMutation } from '@/store/Reducer/menu-list-api';
+import { getErrorMessage } from '@/utils/api';
+import { formatDate } from '@/utils/format-time';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
+import { getOrgId } from './menulist-utils';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
 
 const defaultValues: MenuItemFormValues = {
   title: '',
   description: '',
-  organizations: [],
+  organization: '',
   validFrom: undefined,
   status: 'draft',
 };
@@ -22,13 +27,24 @@ const defaultValues: MenuItemFormValues = {
 const schema = Yup.object().shape({
   title: Yup.string().required('Name is required'),
   description: Yup.string().optional(),
-  organizations: Yup.array().of(Yup.string().required()).min(1, 'Select at least one organization').required('Organization is required'),
+  organization: Yup.string().required('Organization is required'),
   validFrom: Yup.date().required('Valid from date is required'),
   status: Yup.mixed<'draft' | 'active' | 'inactive'>().oneOf(['draft', 'active', 'inactive']).required('Status is required'),
 });
 
-const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, organizations, onSubmit }: MenuItemModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const MenuItemModal = ({
+  open,
+  onClose,
+  isEdit = false,
+  selectedData,
+  organizations,
+  organizationsLoading,
+  companyId,
+  userType,
+}: MenuItemModalProps) => {
+  const [addMenuList, { isLoading: addLoading }] = useAddMenuListMutation();
+  const [updateMenuList, { isLoading: updateLoading }] = useUpdateMenuListMutation();
+  const submitting = addLoading || updateLoading;
 
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
@@ -41,9 +57,9 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, organizati
   const prepareFormData = (data: any): MenuItemFormValues => ({
     title: data?.title || '',
     description: data?.description || '',
-    organizations: data?.organizations || [],
+    organization: getOrgId(data?.organization),
     validFrom: data?.validFrom ? new Date(data.validFrom) : undefined,
-    status: data?.status || 'draft',
+    status: data?.status || 'active',
   });
 
   useEffect(() => {
@@ -57,13 +73,27 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, organizati
   const organizationOptions = organizations?.map((org) => ({ value: org._id, label: org.name })) || [];
 
   const handleSubmit = async (formData: MenuItemFormValues) => {
-    setSubmitting(true);
+    const payload: any = {
+      title: formData.title,
+      description: formData.description,
+      organization: formData.organization,
+      status: formData.status,
+      startDate: formatDate(formData.validFrom),
+    };
+    if (userType === 'super-admin' && companyId) payload.companyOrganizer = companyId;
+
     try {
-      onSubmit(formData);
-      methods.reset(defaultValues);
+      if (isEdit && selectedData?._id) {
+        await updateMenuList({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Menu updated successfully');
+      } else {
+        await addMenuList(payload).unwrap();
+        showSuccess('Menu created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -106,7 +136,14 @@ const MenuItemModal = ({ open, onClose, isEdit = false, selectedData, organizati
                   />
                 </div>
 
-                <RHFMultiSelectField name="organizations" label="Organizations" placeholder="Select Organization" options={organizationOptions} />
+                <RHFCustomDropdown
+                  name="organization"
+                  label="Organization"
+                  placeholder="Select Organization"
+                  options={organizationOptions}
+                  isLoading={organizationsLoading}
+                  showNone={false}
+                />
               </div>
 
               <div className="mt-4 flex items-center justify-end gap-2">

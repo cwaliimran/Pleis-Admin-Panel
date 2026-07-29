@@ -3,28 +3,25 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
-import { arrayMove } from '@dnd-kit/sortable';
-import { showSuccess } from '@/utils/toast';
-import { formatDate } from '@/utils/format-time';
+import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
+import {
+  useDeleteMenuSubcategoryMutation,
+  useGetMenuSubcategoriesQuery,
+  useUpdateMenuSubcategoryOrderMutation,
+} from '@/store/Reducer/menu-subcategories-api';
+import { getErrorMessage } from '@/utils/api';
+import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { mockCategories, mockSubcategories } from './data';
+import { useState } from 'react';
 import SubcategoryModal from './menuSubcategories-modal';
 import MenuSubcategoryTable from './menuSubcategories-table';
-import { MenuSubcategoryRecord, SubcategoryFormValues } from './types';
+import { CategoryOption, MenuSubcategoryRecord } from './types';
 
-let nextSubcategoryId = mockSubcategories.length + 1;
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- userType kept for the route contract; will scope mock data once the v2 API lands
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- userType kept for the route contract; sub-categories endpoints are admin-only for now
 const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-admin' }) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
-
-  // TODO(v2-api): replace this local state with a real query once the backend endpoint is ready.
-  const [subcategories, setSubcategories] = useState<MenuSubcategoryRecord[]>([...mockSubcategories].sort((a, b) => a.sortOrder - b.sortOrder));
-
-  const categories = mockCategories;
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -32,44 +29,31 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
   const [status, setStatus] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
 
+  const { data, isLoading, isFetching } = useGetMenuSubcategoriesQuery({
+    page: page - 1,
+    limit,
+    search,
+    status: !status || status === 'all' ? undefined : status,
+    category: !categoryId || categoryId === 'all' ? undefined : categoryId,
+  });
+
+  const { data: categoriesData } = useGetItemsCategoryQuery({ page: 0, limit: 1000, search: '' });
+
+  const [deleteSubcategory, { isLoading: deleteLoading }] = useDeleteMenuSubcategoryMutation();
+  const [updateSubcategoryOrder] = useUpdateMenuSubcategoryOrderMutation();
+
+  const subcategories: MenuSubcategoryRecord[] = data?.data || [];
+  const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
+  const categories: CategoryOption[] = categoriesData?.data || [];
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MenuSubcategoryRecord | null>(null);
 
   const hasActiveFilters = !!search.trim() || (!!status && status !== 'all') || (!!categoryId && categoryId !== 'all');
 
-  const filteredSubcategories = useMemo(() => {
-    let result = [...subcategories];
-
-    if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      result = result.filter((item) => item.title.toLowerCase().includes(term));
-    }
-
-    if (status && status !== 'all') {
-      result = result.filter((item) => item.status === status);
-    }
-
-    if (categoryId && categoryId !== 'all') {
-      result = result.filter((item) => item.categoryId === categoryId);
-    }
-
-    return result;
-  }, [subcategories, search, status, categoryId]);
-
-  const totalRecords = filteredSubcategories.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
-  const paginatedSubcategories = filteredSubcategories.slice((page - 1) * limit, page * limit);
-
   // Manual drag-and-drop reordering only makes sense on the full, unfiltered, single-page list —
   // reordering a filtered/paginated subset would silently scramble the real order underneath it.
-  const reorderDisabled = hasActiveFilters || totalPages > 1;
-
-  const meta = {
-    currentPage: page,
-    totalPages,
-    totalRecords,
-    limit,
-  };
+  const reorderDisabled = hasActiveFilters || (meta?.totalPages || 1) > 1;
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -91,47 +75,26 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    setSubcategories((prev) => prev.filter((item) => item._id !== selectedId));
-    showSuccess('Subcategory deleted successfully');
-    setSelectedId(null);
-    deleteModal.onFalse();
+  const onDelete = async () => {
+    try {
+      await deleteSubcategory(selectedId).unwrap();
+      showSuccess('Subcategory deleted successfully');
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
   };
 
-  const handleReorder = (activeId: string, overId: string) => {
-    setSubcategories((prev) => {
-      const activeIndex = prev.findIndex((item) => item._id === activeId);
-      const overIndex = prev.findIndex((item) => item._id === overId);
-      if (activeIndex === -1 || overIndex === -1) return prev;
+  const handleReorder = async (activeId: string, overId: string) => {
+    const overIndex = subcategories.findIndex((item) => item._id === overId);
+    if (overIndex === -1) return;
 
-      const reordered = arrayMove(prev, activeIndex, overIndex);
-      return reordered.map((item, index) => ({ ...item, sortOrder: index + 1 }));
-    });
-    showSuccess('Order updated');
-  };
-
-  const onSubcategorySubmit = (values: SubcategoryFormValues) => {
-    if (editModal.value && selectedId) {
-      setSubcategories((prev) =>
-        prev.map((item) =>
-          item._id === selectedId
-            ? { ...item, title: values.title, categoryId: values.categoryId, sortOrder: Number(values.sortOrder), status: values.status }
-            : item
-        )
-      );
-      showSuccess('Subcategory updated successfully');
-    } else {
-      const newSubcategory: MenuSubcategoryRecord = {
-        _id: `subcat-new-${nextSubcategoryId++}`,
-        title: values.title,
-        categoryId: values.categoryId,
-        itemsCount: 0,
-        sortOrder: Number(values.sortOrder),
-        status: 'active',
-        createdAt: formatDate(new Date())!,
-      };
-      setSubcategories((prev) => [...prev, newSubcategory]);
-      showSuccess('Subcategory created successfully');
+    try {
+      await updateSubcategoryOrder({ id: activeId, newOrder: overIndex + 1 }).unwrap();
+      showSuccess('Order updated');
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -150,9 +113,10 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
       </div>
 
       <MenuSubcategoryTable
-        data={paginatedSubcategories}
+        data={subcategories}
         meta={meta}
         categories={categories}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         handleReorder={handleReorder}
@@ -192,9 +156,7 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
           onClose={openModal.onFalse}
           isEdit={editModal.value}
           selectedData={selectedRecord}
-          categories={categories}
-          nextSortOrder={subcategories.length + 1}
-          onSubmit={onSubcategorySubmit}
+          nextOrder={(meta?.totalRecords || 0) + 1}
         />
       )}
 
@@ -202,6 +164,7 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
         open={deleteModal.value}
         title="Delete Subcategory"
         content="Are you sure you want to delete this subcategory?"
+        isLoading={deleteLoading}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

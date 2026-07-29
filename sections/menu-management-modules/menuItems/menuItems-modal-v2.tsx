@@ -1,92 +1,105 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFCheckboxGroup, RHFChipToggleGroup, RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
+import Time24hInput from '@/components/common/time-24h-input';
+import FormProvider, { RHFAsyncCombobox, RHFChipToggleGroup, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import { useGetAllergensQuery } from '@/store/Reducer/allergens-api';
+import { useGetBrandsQuery } from '@/store/Reducer/brands-api';
+import { useGetDaypartsQuery } from '@/store/Reducer/daypart-api';
+import { useGetDietTagsQuery } from '@/store/Reducer/diet-tags-api';
+import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
+import { useAddMenuItemMutation, useUpdateMenuItemMutation } from '@/store/Reducer/menu-items-api';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useGetPresetTypesQuery } from '@/store/Reducer/preset-type-api';
+import { useGetServingsQuery } from '@/store/Reducer/serving-api';
+import { getErrorMessage } from '@/utils/api';
+import { convertTimeFormat } from '@/utils/format-time';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { ALLERGEN_OPTIONS, COMBO_SERVING_VALUE, DAYPART_OPTIONS, DAY_OPTIONS, DIET_TAG_OPTIONS, SERVING_OPTIONS, TAX_OPTIONS } from './constants';
-import { ComboItemsPicker, QuantityTypeCards, ToggleRow } from './menuItems-modal-fields';
+import { DAY_OPTIONS, TAX_OPTIONS } from './constants';
+import { SummaryMultiSelect, ToggleRow } from './menuItems-modal-fields';
+import { formatServingLabel, getRefId, getRefLabel, toImageKey, toRefArray } from './menuItems-utils';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
 
-const NO_BRAND = 'none';
+const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlDevCap];
+
+const isValidTime = (time?: string) => !time || /^([01]\d|2[0-3]):([0-5]\d)$/.test(time);
 
 const defaultValues: MenuItemFormValues = {
-  image: '',
+  image: null,
   title: '',
-  amount: '',
-  presetTypeId: '',
-  brandId: NO_BRAND,
-  subcategoryId: '',
-  menuIds: [],
   description: '',
-  quantityType: 'single',
-  comboItemIds: [],
-  serving: 'glass',
-  price: '',
+  type: '',
+  category: '',
+  basePrice: '',
   taxPercent: '25',
+  menus: [],
+  startTime: '',
+  endTime: '',
+  status: 'active',
+  presetType: '',
+  brand: '',
+  amountQuantity: '',
+  servingSize: '',
   availableDays: [],
-  daypart: [],
+  dayparts: [],
   dietTags: [],
   allergens: [],
   cuisine: '',
   isRecommended: false,
-  isUpsell: false,
-  isToGo: false,
-  requiresConfirmation: false,
-  status: 'active',
+  isTogo: false,
+  isRequiresOrderConfirmation: false,
 };
 
 const schema = Yup.object().shape({
+  image: Yup.mixed().nullable(),
   title: Yup.string().required('Name is required'),
-  amount: Yup.string().optional(),
-  presetTypeId: Yup.string().required('Preset type is required'),
-  brandId: Yup.string().optional(),
-  subcategoryId: Yup.string().required('Subcategory is required'),
-  menuIds: Yup.array().of(Yup.string().required()).min(1, 'Select at least one menu').required(),
   description: Yup.string().optional(),
-  quantityType: Yup.mixed<'single' | 'combo'>().oneOf(['single', 'combo']).required(),
-  comboItemIds: Yup.array()
-    .of(Yup.string().required())
-    .when('quantityType', {
-      is: 'combo',
-      then: (s) => s.min(2, 'Add at least 2 combo items'),
-    }),
-  serving: Yup.string().required('Serving is required'),
-  price: Yup.string()
+  type: Yup.string().optional(),
+  category: Yup.string().required('Category is required'),
+  basePrice: Yup.string()
     .required('Price is required')
-    .test('is-decimal', 'Price must be a valid number', (value) => !!value && !isNaN(Number(value)) && Number(value) > 0),
+    .test('is-decimal', 'Price must be a valid number greater than 0', (value) => !!value && !isNaN(Number(value)) && Number(value) > 0),
   taxPercent: Yup.string().required('Tax is required'),
-  availableDays: Yup.array().of(Yup.string().required()).min(1, 'Select at least one available day').required(),
-  daypart: Yup.array().of(Yup.string().required()).optional(),
+  menus: Yup.array().of(Yup.string().required()).min(1, 'Select at least one menu').required(),
+  startTime: Yup.string().optional().test('valid-time', 'Invalid time format', isValidTime),
+  endTime: Yup.string()
+    .optional()
+    .test('valid-time', 'Invalid time format', isValidTime)
+    .test('after-start', 'End time must be after start time', function (value) {
+      const { startTime } = this.parent;
+      if (!value || !startTime) return true;
+      return value > startTime;
+    }),
+  status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
+  presetType: Yup.string().optional(),
+  brand: Yup.string().optional(),
+  amountQuantity: Yup.string().optional(),
+  servingSize: Yup.string().optional(),
+  availableDays: Yup.array().of(Yup.string().required()).optional(),
+  dayparts: Yup.array().of(Yup.string().required()).optional(),
   dietTags: Yup.array().of(Yup.string().required()).optional(),
   allergens: Yup.array().of(Yup.string().required()).optional(),
   cuisine: Yup.string().optional(),
-  isRecommended: Yup.boolean().optional(),
-  isUpsell: Yup.boolean().optional(),
-  isToGo: Yup.boolean().optional(),
-  requiresConfirmation: Yup.boolean().optional(),
-  status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
+  isRecommended: Yup.boolean().required(),
+  isTogo: Yup.boolean().required(),
+  isRequiresOrderConfirmation: Yup.boolean().required(),
 });
 
-const MenuItemModalV2 = ({
-  open,
-  onClose,
-  isEdit = false,
-  selectedData,
-  menus,
-  subcategories,
-  presetTypes,
-  brands,
-  allItems,
-  onSubmit,
-}: MenuItemModalProps) => {
-  const [submitting, setSubmitting] = useState(false);
+const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyId, userType, lookups }: MenuItemModalProps) => {
+  const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const [addMenuItem, { isLoading: addLoading }] = useAddMenuItemMutation();
+  const [updateMenuItem, { isLoading: updateLoading }] = useUpdateMenuItemMutation();
+  const submitting = addLoading || updateLoading || imageUploading;
 
   const methods = useForm<MenuItemFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<MenuItemFormValues>),
@@ -95,64 +108,148 @@ const MenuItemModalV2 = ({
 
   const { reset, control, setValue, formState } = methods;
   const isDirty = formState?.isDirty;
-  const quantityType = useWatch({ control, name: 'quantityType' });
 
-  const prepareFormData = (data: any): MenuItemFormValues => ({
-    title: data?.title || '',
-    amount: data?.amount || '',
-    presetTypeId: data?.presetTypeId || '',
-    brandId: data?.brandId || NO_BRAND,
-    subcategoryId: data?.subcategoryId || '',
-    menuIds: data?.menuIds || [],
-    description: data?.description || '',
-    quantityType: data?.quantityType || 'single',
-    comboItemIds: data?.comboItemIds || [],
-    serving: data?.serving || 'glass',
-    price: data?.price !== undefined ? String(data.price) : '',
-    taxPercent: data?.taxPercent !== undefined ? String(data.taxPercent) : '25',
-    availableDays: data?.availableDays || [],
-    daypart: data?.daypart || [],
-    dietTags: data?.dietTags || [],
-    allergens: data?.allergens || [],
-    cuisine: data?.cuisine || '',
-    isRecommended: data?.isRecommended || false,
-    isUpsell: data?.isUpsell || false,
-    isToGo: data?.isToGo || false,
-    requiresConfirmation: data?.requiresConfirmation || false,
-    status: data?.status || 'active',
-  });
+  /** Category label carried over from a picked preset, so the combobox shows a name, not a raw id. */
+  const [presetCategoryLabel, setPresetCategoryLabel] = useState<string | undefined>();
+
+  const { data: dietTagsData, isFetching: dietTagsLoading } = useGetDietTagsQuery({ page: 0, limit: 100, search: '', summary: true });
+  const { data: allergensData, isFetching: allergensLoading } = useGetAllergensQuery({ page: 0, limit: 100, search: '', summary: true });
+  const { data: daypartsData, isFetching: daypartsLoading } = useGetDaypartsQuery({ page: 0, limit: 100, search: '', summary: true });
 
   useEffect(() => {
-    if (open && isEdit && selectedData) {
-      reset(prepareFormData(selectedData));
-    } else if (open && !isEdit) {
+    if (!open) return;
+    setPresetCategoryLabel(undefined);
+
+    if (isEdit && selectedData) {
+      const imageValue = selectedData.image && !PLACEHOLDER_IMAGE_URLS.includes(selectedData.image) ? selectedData.image : null;
+      reset({
+        image: imageValue,
+        title: selectedData.title,
+        description: selectedData.description || '',
+        type: selectedData.type || '',
+        category: getRefId(selectedData.category),
+        basePrice: String(selectedData.basePrice),
+        taxPercent: String(selectedData.taxPercent),
+        menus: selectedData.menu ? [getRefId(selectedData.menu)] : [],
+        startTime: selectedData.startTime ? convertTimeFormat(selectedData.startTime, true) : '',
+        endTime: selectedData.endTime ? convertTimeFormat(selectedData.endTime, true) : '',
+        status: selectedData.status,
+        presetType: getRefId(selectedData.presetType),
+        brand: getRefId(selectedData.brand),
+        amountQuantity: selectedData.amountQuantity || '',
+        servingSize: getRefId(selectedData.servingSize),
+        availableDays: selectedData.availableDays || [],
+        dayparts: toRefArray(selectedData.daypart).map(getRefId).filter(Boolean),
+        dietTags: toRefArray(selectedData.dietTags).map(getRefId).filter(Boolean),
+        allergens: toRefArray(selectedData.allergens).map(getRefId).filter(Boolean),
+        cuisine: selectedData.cuisine || '',
+        isRecommended: !!selectedData.isRecommended,
+        isTogo: !!selectedData.isTogo,
+        isRequiresOrderConfirmation: !!selectedData.isRequiresOrderConfirmation,
+      });
+    } else if (!isEdit) {
       reset(defaultValues);
     }
   }, [open, isEdit, selectedData, reset]);
 
-  // Serving is fixed to "Combo" once quantity type switches — a combo is priced/served as one bundle, not per-glass/bottle/etc.
-  useEffect(() => {
-    if (quantityType === 'combo') {
-      setValue('serving', COMBO_SERVING_VALUE);
-    } else if (quantityType === 'single' && methods.getValues('serving') === COMBO_SERVING_VALUE) {
-      setValue('serving', 'glass');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantityType]);
+  /** Copies a picked preset's image, name, description and category into the form — all still editable after. */
+  const applyPreset = (preset?: { image?: string; name?: string; description?: string; category?: any }) => {
+    if (!preset) return;
 
-  const presetTypeOptions = presetTypes.map((preset) => ({ value: preset._id, label: `${preset.code} — ${preset.label}` }));
-  const brandOptions = [{ value: NO_BRAND, label: 'No brand' }, ...brands.map((brand) => ({ value: brand._id, label: brand.label }))];
-  const subcategoryOptions = subcategories.map((subcategory) => ({ value: subcategory._id, label: subcategory.title }));
-  const menuOptions = menus.map((menu) => ({ value: menu._id, label: menu.title }));
+    const setIfPresent = (field: 'title' | 'image' | 'description' | 'category', value?: string) => {
+      if (value) setValue(field, value, { shouldDirty: true, shouldValidate: true });
+    };
+
+    setIfPresent('title', preset.name);
+    setIfPresent('description', preset.description);
+    setIfPresent('image', preset.image && !PLACEHOLDER_IMAGE_URLS.includes(preset.image) ? preset.image : undefined);
+    setIfPresent('category', getRefId(preset.category));
+
+    // The prefilled id usually isn't on the category dropdown's first fetched page, so carry its label.
+    setPresetCategoryLabel(preset.category ? getRefLabel(preset.category) : undefined);
+  };
 
   const handleSubmit = async (formData: MenuItemFormValues) => {
-    setSubmitting(true);
     try {
-      onSubmit({ ...formData, brandId: formData.brandId === NO_BRAND ? undefined : formData.brandId });
-      methods.reset(defaultValues);
+      // A newly picked file is uploaded first and already yields a bare key; a plain string is an
+      // already-hosted image (kept from the record, or inherited from a preset) whose absolute URL
+      // has to be reduced to that same key before it goes in the payload.
+      let imageKey: string | undefined;
+      if (formData.image instanceof FileList && formData.image.length > 0) {
+        const uploaded = await uploadImage(formData.image[0]);
+        if (!uploaded) return;
+        imageKey = uploaded;
+      } else if (typeof formData.image === 'string' && formData.image) {
+        imageKey = toImageKey(formData.image);
+      }
+
+      if (isEdit && selectedData?._id) {
+        // Only send fields the user actually changed, not the whole record.
+        const dirty = formState.dirtyFields as Partial<Record<keyof MenuItemFormValues, boolean>>;
+        const payload: any = {};
+
+        if (dirty.title) payload.title = formData.title;
+        if (dirty.description) payload.description = formData.description || '';
+        if (dirty.type) payload.type = formData.type || '';
+        if (dirty.category) payload.category = formData.category;
+        if (dirty.basePrice) payload.basePrice = Number(formData.basePrice);
+        if (dirty.taxPercent) payload.taxPercent = Number(formData.taxPercent);
+        if (dirty.menus) payload.menuIds = formData.menus;
+        if (dirty.startTime) payload.startTime = formData.startTime ? convertTimeFormat(formData.startTime, false) : null;
+        if (dirty.endTime) payload.endTime = formData.endTime ? convertTimeFormat(formData.endTime, false) : null;
+        if (dirty.status) payload.status = formData.status;
+        if (dirty.presetType) payload.presetType = formData.presetType || null;
+        if (dirty.brand) payload.brand = formData.brand || null;
+        if (dirty.amountQuantity) payload.amountQuantity = formData.amountQuantity || '';
+        if (dirty.servingSize) payload.servingSize = formData.servingSize || null;
+        if (dirty.availableDays) payload.availableDays = formData.availableDays;
+        if (dirty.dayparts) payload.daypart = formData.dayparts;
+        if (dirty.dietTags) payload.dietTags = formData.dietTags;
+        if (dirty.allergens) payload.allergens = formData.allergens;
+        if (dirty.cuisine) payload.cuisine = formData.cuisine || '';
+        if (dirty.isRecommended) payload.isRecommended = formData.isRecommended;
+        if (dirty.isTogo) payload.isTogo = formData.isTogo;
+        if (dirty.isRequiresOrderConfirmation) payload.isRequiresOrderConfirmation = formData.isRequiresOrderConfirmation;
+        if (dirty.image && imageKey) payload.image = imageKey;
+
+        await updateMenuItem({ id: selectedData._id, ...payload }).unwrap();
+        showSuccess('Menu item updated successfully');
+      } else {
+        const payload: any = {
+          title: formData.title,
+          description: formData.description || '',
+          type: formData.type || '',
+          category: formData.category,
+          basePrice: Number(formData.basePrice),
+          taxPercent: Number(formData.taxPercent),
+          menuIds: formData.menus,
+          startTime: formData.startTime ? convertTimeFormat(formData.startTime, false) : null,
+          endTime: formData.endTime ? convertTimeFormat(formData.endTime, false) : null,
+          status: formData.status,
+          presetType: formData.presetType || null,
+          brand: formData.brand || null,
+          amountQuantity: formData.amountQuantity || '',
+          quantityType: 'single',
+          servingSize: formData.servingSize || null,
+          availableDays: formData.availableDays,
+          daypart: formData.dayparts,
+          dietTags: formData.dietTags,
+          allergens: formData.allergens,
+          cuisine: formData.cuisine || '',
+          isRecommended: formData.isRecommended,
+          isTogo: formData.isTogo,
+          isRequiresOrderConfirmation: formData.isRequiresOrderConfirmation,
+        };
+        if (imageKey) payload.image = imageKey;
+        if (companyId) payload.companyOrganizer = companyId;
+
+        await addMenuItem(payload).unwrap();
+        showSuccess('Menu item created successfully');
+      }
+      reset(defaultValues);
       onClose();
-    } finally {
-      setSubmitting(false);
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -166,7 +263,7 @@ const MenuItemModalV2 = ({
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:max-w-[800px]!"
+          className="dark:bg-secondary mx-auto flex max-h-[90vh] w-full flex-col items-center overflow-y-auto md:max-w-200!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Menu Item' : 'Create Menu Item'}</DialogTitle>
@@ -175,73 +272,187 @@ const MenuItemModalV2 = ({
           <div className="w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-5">
-                <RHFUploadAvatar name="image" label="Image" initialImage={typeof selectedData?.image === 'string' ? selectedData.image : null} />
+                <RHFUploadAvatar
+                  name="image"
+                  label="Image"
+                  initialImage={
+                    typeof selectedData?.image === 'string' && !PLACEHOLDER_IMAGE_URLS.includes(selectedData.image) ? selectedData.image : null
+                  }
+                />
 
                 {/* BASIC INFORMATION */}
                 <div className="flex flex-col gap-4">
                   <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Basic Information</h4>
 
                   <div className="grid w-full grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-2">
-                    <RHFSelectField name="presetTypeId" label="Preset Type" placeholder="Select preset type..." options={presetTypeOptions} />
+                    <RHFAsyncCombobox
+                      name="presetType"
+                      label="Preset Type"
+                      placeholder="Select preset type..."
+                      searchPlaceholder="Search preset types..."
+                      useOptionsQuery={useGetPresetTypesQuery}
+                      getOptionValue={(presetType) => presetType._id}
+                      getOptionLabel={(presetType) => presetType.name}
+                      onValueChange={(_, preset) => applyPreset(preset)}
+                    />
 
-                    <RHFSelectField name="brandId" label="Brand (Optional)" placeholder="Select brand" options={brandOptions} />
+                    <RHFAsyncCombobox
+                      name="brand"
+                      label="Brand"
+                      placeholder="Select brand..."
+                      searchPlaceholder="Search brands..."
+                      useOptionsQuery={useGetBrandsQuery}
+                      queryArgs={{ summary: true }}
+                      getOptionValue={(brand) => brand._id}
+                      getOptionLabel={(brand) => brand.name}
+                    />
 
                     <RHFTextField name="title" label="Name" placeholder="Item name as shown to guests" />
 
-                    <RHFTextField name="amount" label="Amount (Optional)" placeholder="e.g. 200ml, 250g — appended to name" />
+                    <RHFTextField name="amountQuantity" label="Amount (Optional)" placeholder="e.g. 200ml, 250g" />
 
-                    <div className="col-span-2">
-                      <RHFSelectField name="subcategoryId" label="Subcategory" placeholder="Select subcategory..." options={subcategoryOptions} />
-                    </div>
+                    <RHFAsyncCombobox
+                      name="category"
+                      label="Category"
+                      placeholder="Select category..."
+                      searchPlaceholder="Search categories..."
+                      selectedLabel={
+                        presetCategoryLabel ?? (selectedData?.category ? getRefLabel(selectedData.category, lookups?.categories) : undefined)
+                      }
+                      useOptionsQuery={useGetItemsCategoryQuery}
+                      getOptionValue={(category) => category._id}
+                      getOptionLabel={(category) => category.title}
+                      onValueChange={() => setPresetCategoryLabel(undefined)}
+                    />
+
+                    <RHFTextField name="type" label="Type (Optional)" placeholder="e.g. Pizza, Drink, Tea" />
+
+                    <RHFAsyncCombobox
+                      name="menus"
+                      label="Menus"
+                      placeholder="Select menus..."
+                      searchPlaceholder="Search menus..."
+                      multiple
+                      disabled={isEdit}
+                      initialSelected={
+                        selectedData?.menu
+                          ? [{ value: getRefId(selectedData.menu), label: getRefLabel(selectedData.menu, lookups?.menus) }]
+                          : undefined
+                      }
+                      useOptionsQuery={useGetMenuListQuery}
+                      queryArgs={{ companyOrganizer: userType === 'super-admin' ? companyId || undefined : undefined }}
+                      skip={userType === 'super-admin' && !companyId}
+                      getOptionValue={(menu) => menu._id}
+                      getOptionLabel={(menu) => menu.title}
+                    />
                   </div>
-
-                  <RHFMultiSelectField
-                    name="menuIds"
-                    label="Menus (item can appear in multiple menus)"
-                    placeholder="Select menus"
-                    options={menuOptions}
-                  />
 
                   <RHFTextField name="description" label="Description (Optional)" placeholder="Shown to guests if filled in" multiline rows={2} />
                 </div>
 
-                {/* QUANTITY TYPE */}
+                {/* CLASSIFICATION */}
                 <div className="flex flex-col gap-4">
-                  <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Quantity Type</h4>
-                  <QuantityTypeCards />
-                  {quantityType === 'combo' && <ComboItemsPicker name="comboItemIds" allItems={allItems} excludeId={selectedData?._id} />}
+                  <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">
+                    Classification 
+                  </h4>
+
+                  <RHFAsyncCombobox
+                    name="servingSize"
+                    label="Serving Size"
+                    placeholder="Select serving size..."
+                    searchPlaceholder="Search servings..."
+                    selectedLabel={selectedData?.servingSize ? getRefLabel(selectedData.servingSize, lookups?.servingSizes) : undefined}
+                    useOptionsQuery={useGetServingsQuery}
+                    queryArgs={{ summary: true }}
+                    getOptionValue={(serving) => serving._id}
+                    getOptionLabel={(serving) => formatServingLabel(serving)}
+                  />
                 </div>
 
-                {/* SERVING & PRICING */}
+                {/* PRICING */}
                 <div className="flex flex-col gap-4">
-                  <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Serving &amp; Pricing</h4>
+                  <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Pricing</h4>
 
-                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
-                    <RHFSelectField
-                      name="serving"
-                      label="Serving"
-                      placeholder="Select serving"
-                      options={SERVING_OPTIONS}
-                      disabled={quantityType === 'combo'}
-                    />
-
-                    <RHFTextField name="price" label="Price (€)" type="number" placeholder="0.00" step="0.01" min="0.01" />
+                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    <RHFTextField name="basePrice" label="Price (€)" type="number" placeholder="0.00" step="0.01" min="0.01" />
 
                     <RHFSelectField name="taxPercent" label="Tax %" placeholder="Select Tax %" options={TAX_OPTIONS} />
                   </div>
+                </div>
+
+                {/* AVAILABILITY */}
+                <div className="flex flex-col gap-4">
+                  <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">
+                    Availability 
+                  </h4>
 
                   <RHFChipToggleGroup name="availableDays" label="Available Days" options={DAY_OPTIONS} />
 
-                  <RHFCheckboxGroup name="daypart" label="Daypart (Optional)" helperText="· multi-select" options={DAYPART_OPTIONS} />
+                  <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                    <FormField
+                      control={control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Start time</FormLabel>
+                          <FormControl>
+                            <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" title="Start Time" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>End time</FormLabel>
+                          <FormControl>
+                            <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" title="End Time" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* DAYPART */}
+                <div className="flex flex-col gap-4">
+                  <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">
+                    Daypart 
+                  </h4>
+
+                  <SummaryMultiSelect
+                    name="dayparts"
+                    label="Dayparts (Optional)"
+                    placeholder="Select dayparts..."
+                    options={daypartsData?.data || []}
+                    loading={daypartsLoading}
+                  />
                 </div>
 
                 {/* DIETARY & ALLERGENS */}
                 <div className="flex flex-col gap-4">
                   <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Dietary &amp; Allergens</h4>
 
-                  <RHFCheckboxGroup name="dietTags" label="Diet Tags (Optional)" options={DIET_TAG_OPTIONS} />
+                  <SummaryMultiSelect
+                    name="dietTags"
+                    label="Diet Tags (Optional)"
+                    placeholder="Select diet tags..."
+                    options={dietTagsData?.data || []}
+                    loading={dietTagsLoading}
+                  />
 
-                  <RHFCheckboxGroup name="allergens" label="Allergens (Optional)" options={ALLERGEN_OPTIONS} />
+                  <SummaryMultiSelect
+                    name="allergens"
+                    label="Allergens (Optional)"
+                    placeholder="Select allergens..."
+                    options={allergensData?.data || []}
+                    loading={allergensLoading}
+                  />
 
                   <RHFTextField name="cuisine" label="Cuisine (Optional)" placeholder="e.g. Mediterranean, Asian fusion..." />
                 </div>
@@ -259,10 +470,9 @@ const MenuItemModalV2 = ({
                       toValue={(checked) => (checked ? 'active' : 'inactive')}
                     />
                     <ToggleRow name="isRecommended" title="⭐ Recommended" description="Highlighted on the Offer / browse screen" />
-                    <ToggleRow name="isUpsell" title="↑ Upsell item" description="Shown as add-on suggestion at order confirmation" />
-                    <ToggleRow name="isToGo" title="To go" description="Item can be ordered for takeaway" />
+                    <ToggleRow name="isTogo" title="To go" description="Item can be ordered for takeaway" />
                     <ToggleRow
-                      name="requiresConfirmation"
+                      name="isRequiresOrderConfirmation"
                       title="Requires order confirmation"
                       description="Short stock or limited availability — staff must approve"
                     />

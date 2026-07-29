@@ -3,33 +3,34 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useDeleteMenuListMutation, useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useGetOrganizationByCompanyQuery, useGetOrganizationsOnOrganizerSideQuery } from '@/store/Reducer/organization';
+import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { mockMenuListData, mockOrganizations } from './data';
 import DuplicateMenuModal from './duplicate-menu-modal';
 import MenuItemModal from './menulist-modal';
 import MenuItemTable from './menulist-table';
-import { MenuItemFormValues, MenuListItem } from './types';
+import { MenuListItem, MenuOrganization } from './types';
 
 type MenuListViewProps = {
   userType: 'super-admin' | 'organizer';
 };
 
-let nextMenuId = mockMenuListData.length + 1;
-
-const getOrganizationName = (id: string) => mockOrganizations.find((org) => org._id === id)?.name || '';
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- userType kept for the route contract; will scope mock data once the v2 API lands
 const MenuListView = ({ userType }: MenuListViewProps) => {
   const openModal = useBoolean();
   const duplicateModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
 
-  // TODO(v2-api): replace this local state with useGetMenuListQuery once the backend endpoint is ready.
-  const [menus, setMenus] = useState<MenuListItem[]>(mockMenuListData);
+  const { companyId } = useCompanySelectionState();
+  // Organizer requests are scoped to the logged-in organizer's own company server-side;
+  // only super-admin needs the header's selected company sent explicitly.
+  const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -48,79 +49,46 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MenuListItem | null>(null);
 
-  const organizations = mockOrganizations;
+  const { data, isLoading, isFetching } = useGetMenuListQuery(
+    {
+      page: page - 1,
+      limit,
+      search,
+      status: !status || status === 'all' ? undefined : status,
+      date: date ? formatDate(date) : undefined,
+      companyOrganizer: scopedCompanyId,
+      sortBy,
+      sortOrder,
+    },
+    { skip: companySkip }
+  );
 
-  const filteredSortedMenus = useMemo(() => {
-    let result = [...menus];
+  // Organizations belonging to the selected company (super-admin) or the organizer's own
+  // organizations — used both to populate the create/edit/duplicate dropdowns and to resolve
+  // the organization name shown in the table.
+  const { data: adminOrganizationsData, isFetching: adminOrgFetching } = useGetOrganizationByCompanyQuery(
+    { companyOrganizer: companyId },
+    { skip: userType !== 'super-admin' || !companyId }
+  );
+  const { data: organizerOrganizationsData, isFetching: organizerOrgFetching } = useGetOrganizationsOnOrganizerSideQuery(
+    {},
+    { skip: userType !== 'organizer' }
+  );
 
-    if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      result = result.filter(
-        (menu) =>
-          menu.title.toLowerCase().includes(term) ||
-          menu.description?.toLowerCase().includes(term) ||
-          menu.organizations.some((orgId) => getOrganizationName(orgId).toLowerCase().includes(term))
-      );
-    }
+  const organizationsFetching = userType === 'super-admin' ? adminOrgFetching : organizerOrgFetching;
 
-    if (status && status !== 'all') {
-      result = result.filter((menu) => menu.status === status);
-    }
+  const organizations: MenuOrganization[] = useMemo(() => {
+    const raw = (userType === 'super-admin' ? adminOrganizationsData?.data : organizerOrganizationsData?.data) || [];
+    return raw.map((org: any) => ({
+      _id: org._id,
+      name: org?.basicInfo?.name || org?.title || org?.name || 'Unknown Organization',
+    }));
+  }, [userType, adminOrganizationsData, organizerOrganizationsData]);
 
-    if (date) {
-      const target = formatDate(date);
-      result = result.filter((menu) => menu.createdAt === target);
-    }
+  const [deleteMenuList, { isLoading: deleteLoading }] = useDeleteMenuListMutation();
 
-    if (sortBy && sortOrder) {
-      const direction = sortOrder === 'asc' ? 1 : -1;
-      result.sort((a, b) => {
-        let aVal: string;
-        let bVal: string;
-
-        switch (sortBy) {
-          case 'menuName':
-            aVal = a.title;
-            bVal = b.title;
-            break;
-          case 'description':
-            aVal = a.description || '';
-            bVal = b.description || '';
-            break;
-          case 'organizationName':
-            aVal = getOrganizationName(a.organizations[0]);
-            bVal = getOrganizationName(b.organizations[0]);
-            break;
-          case 'validFrom':
-            aVal = a.validFrom;
-            bVal = b.validFrom;
-            break;
-          case 'createdAt':
-            aVal = a.createdAt;
-            bVal = b.createdAt;
-            break;
-          default:
-            aVal = '';
-            bVal = '';
-        }
-
-        return aVal.localeCompare(bVal) * direction;
-      });
-    }
-
-    return result;
-  }, [menus, search, status, date, sortBy, sortOrder]);
-
-  const totalRecords = filteredSortedMenus.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
-  const paginatedMenus = filteredSortedMenus.slice((page - 1) * limit, page * limit);
-
-  const meta = {
-    currentPage: page,
-    totalPages,
-    totalRecords,
-    limit,
-  };
+  const menus: MenuListItem[] = data?.data || [];
+  const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -147,60 +115,28 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    setMenus((prev) => prev.filter((menu) => menu._id !== selectedId));
-    showSuccess('Menu deleted successfully');
-    setSelectedId(null);
-    deleteModal.onFalse();
-  };
-
-  const onMenuSubmit = (values: MenuItemFormValues) => {
-    if (editModal.value && selectedId) {
-      setMenus((prev) =>
-        prev.map((menu) =>
-          menu._id === selectedId
-            ? {
-                ...menu,
-                title: values.title || menu.title,
-                description: values.description,
-                organizations: values.organizations || [],
-                validFrom: values.validFrom ? formatDate(values.validFrom)! : menu.validFrom,
-                status: values.status || menu.status,
-              }
-            : menu
-        )
-      );
-      showSuccess('Menu updated successfully');
-    } else {
-      const newMenu: MenuListItem = {
-        _id: `menu-${nextMenuId++}`,
-        title: values.title || '',
-        description: values.description,
-        organizations: values.organizations || [],
-        validFrom: values.validFrom ? formatDate(values.validFrom)! : formatDate(new Date())!,
-        status: values.status || 'draft',
-        createdAt: formatDate(new Date())!,
-      };
-      setMenus((prev) => [newMenu, ...prev]);
-      showSuccess('Menu created successfully');
+  const onDelete = async () => {
+    try {
+      await deleteMenuList(selectedId).unwrap();
+      showSuccess('Menu deleted successfully');
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
-  const onDuplicateSubmit = (organizationId: string) => {
-    const source = menus.find((menu) => menu._id === selectedId);
-    if (!source) return;
-
-    const newMenu: MenuListItem = {
-      ...source,
-      _id: `menu-${nextMenuId++}`,
-      title: `${source.title} (Copy)`,
-      organizations: [organizationId],
-      status: 'draft',
-      createdAt: formatDate(new Date())!,
-    };
-    setMenus((prev) => [newMenu, ...prev]);
-    showSuccess('Menu duplicated successfully');
-  };
+  if (companySkip) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 text-6xl opacity-30">🏢</div>
+          <h3 className="mb-2 text-xl font-bold text-gray-900 dark:text-gray-100">No Company Selected</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-500">Please select a company from the dropdown above to manage its menus</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -214,8 +150,9 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
       </div>
 
       <MenuItemTable
-        data={paginatedMenus}
+        data={menus}
         meta={meta}
+        loading={isLoading || isFetching}
         organizations={organizations}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
@@ -262,7 +199,9 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
           isEdit={editModal.value}
           selectedData={selectedRecord}
           organizations={organizations}
-          onSubmit={onMenuSubmit}
+          organizationsLoading={organizationsFetching}
+          companyId={scopedCompanyId}
+          userType={userType}
         />
       )}
 
@@ -272,7 +211,9 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
           onClose={duplicateModal.onFalse}
           selectedId={selectedId}
           organizations={organizations}
-          onSubmit={onDuplicateSubmit}
+          organizationsLoading={organizationsFetching}
+          companyId={scopedCompanyId}
+          userType={userType}
         />
       )}
 
@@ -280,6 +221,7 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
         open={deleteModal.value}
         title="Delete Menu"
         content="Are you sure you want to delete this menu?"
+        isLoading={deleteLoading}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

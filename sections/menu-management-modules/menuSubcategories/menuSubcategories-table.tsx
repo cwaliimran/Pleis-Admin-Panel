@@ -21,7 +21,6 @@ const HEAD_LABEL = [
   { id: 'drag', label: '', align: 'left' },
   { id: 'name', label: 'Name', align: 'left' },
   { id: 'category', label: 'Category', align: 'left' },
-  { id: 'items', label: 'Items', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
@@ -70,7 +69,7 @@ const MenuSubcategoryTable: FC<SamplePageProps & { categories: CategoryOption[] 
       <div className="grid grid-cols-12">
         <Card className="dark:bg-secondary col-span-12 mt-5 mb-5 px-2 shadow-md md:px-8 lg:col-span-12">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h3 className="ml-2 text-xl font-semibold md:ml-0">Item Category List</h3>
+            <h3 className="ml-2 text-xl font-semibold md:ml-0">Subcategory List</h3>
 
             {/* FILTER SHEET */}
             <Sheet>
@@ -114,7 +113,7 @@ const MenuSubcategoryTable: FC<SamplePageProps & { categories: CategoryOption[] 
                           onChange: onCategoryChange,
                           options: [
                             { value: 'all', label: 'All categories' },
-                            ...categories.map((category) => ({ value: category._id, label: category.code })),
+                            ...categories.map((category) => ({ value: category._id, label: category.title })),
                           ],
                         },
                       ]}
@@ -148,7 +147,6 @@ const MenuSubcategoryTable: FC<SamplePageProps & { categories: CategoryOption[] 
                       <MenuSubcategoryTableRow
                         key={item?._id || idx}
                         item={item}
-                        categories={categories}
                         handleDelete={handleDelete}
                         handleEdit={handleEdit}
                         dragDisabled={reorderDisabled}

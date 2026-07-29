@@ -1,16 +1,22 @@
 export type DiscountType = 'percentage' | 'fixed';
-export type DiscountStatus = 'active' | 'expired';
+export type DiscountStatus = 'active' | 'inactive' | 'expired';
+
+export interface DiscountMenuItemRef {
+  _id: string;
+  title: string;
+  status?: string;
+}
 
 export interface DiscountRecord {
   _id: string;
-  title: string;
-  description?: string;
+  name: string;
   type: DiscountType;
   value: number;
-  itemIds: string[];
+  menuItems: DiscountMenuItemRef[];
   startDate: string;
   endDate: string;
   status: DiscountStatus;
+  companyOrganizer?: string;
   createdAt: string;
 }
 
@@ -53,15 +59,15 @@ export interface TableRowProps {
 }
 
 export type DiscountFormValues = {
-  title: string;
-  description?: string;
+  name: string;
   type: DiscountType;
   value: string;
-  itemIds: string[];
+  menuItems: string[];
   startDateDate?: Date;
   startTime: string;
   endDateDate?: Date;
   endTime: string;
+  status: 'active' | 'inactive';
 };
 
 export type DiscountModalProps = {
@@ -69,5 +75,6 @@ export type DiscountModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: DiscountRecord | null;
-  onSubmit: (values: DiscountFormValues) => void;
+  companyId?: string | null;
+  userType: 'organizer' | 'super-admin';
 };

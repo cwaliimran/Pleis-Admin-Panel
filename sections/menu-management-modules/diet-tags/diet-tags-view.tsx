@@ -3,24 +3,20 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteDietTagMutation, useGetDietTagsQuery } from '@/store/Reducer/diet-tags-api';
+import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { getNextDietTagCode, mockDietTagsData } from './data';
+import { useState } from 'react';
 import DietTagModal from './diet-tags-modal';
 import DietTagTable from './diet-tags-table';
-import { DietTagFormValues, DietTagRecord } from './types';
-
-let nextDietTagId = mockDietTagsData.length + 1;
+import { DietTagRecord } from './types';
 
 const DietTagsView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
-
-  // TODO(v2-api): replace this local state with a real query once the backend endpoint is ready.
-  const [dietTags, setDietTags] = useState<DietTagRecord[]>(mockDietTagsData);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -30,6 +26,21 @@ const DietTagsView = () => {
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
 
+  const { data, isLoading, isFetching } = useGetDietTagsQuery({
+    page: page - 1,
+    limit,
+    search,
+    status: !status || status === 'all' ? undefined : status,
+    date: date ? formatDate(date) : undefined,
+    sortBy,
+    sortOrder,
+  });
+
+  const [deleteDietTag, { isLoading: deleteLoading }] = useDeleteDietTagMutation();
+
+  const dietTags: DietTagRecord[] = data?.data || [];
+  const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
+
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
@@ -38,46 +49,6 @@ const DietTagsView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<DietTagRecord | null>(null);
-
-  const filteredSortedDietTags = useMemo(() => {
-    let result = [...dietTags];
-
-    if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      result = result.filter((item) => item.tag.toLowerCase().includes(term) || item.description.toLowerCase().includes(term));
-    }
-
-    if (status && status !== 'all') {
-      result = result.filter((item) => item.status === status);
-    }
-
-    if (date) {
-      const target = formatDate(date);
-      result = result.filter((item) => item.createdAt === target);
-    }
-
-    if (sortBy && sortOrder) {
-      const direction = sortOrder === 'asc' ? 1 : -1;
-      result.sort((a, b) => {
-        if (sortBy === 'code') return a.code.localeCompare(b.code) * direction;
-        if (sortBy === 'tag') return a.tag.localeCompare(b.tag) * direction;
-        return 0;
-      });
-    }
-
-    return result;
-  }, [dietTags, search, status, date, sortBy, sortOrder]);
-
-  const totalRecords = filteredSortedDietTags.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
-  const paginatedDietTags = filteredSortedDietTags.slice((page - 1) * limit, page * limit);
-
-  const meta = {
-    currentPage: page,
-    totalPages,
-    totalRecords,
-    limit,
-  };
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -99,28 +70,14 @@ const DietTagsView = () => {
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    setDietTags((prev) => prev.filter((item) => item._id !== selectedId));
-    showSuccess('Diet tag deleted successfully');
-    setSelectedId(null);
-    deleteModal.onFalse();
-  };
-
-  const onDietTagSubmit = (values: DietTagFormValues) => {
-    if (editModal.value && selectedId) {
-      setDietTags((prev) => prev.map((item) => (item._id === selectedId ? { ...item, ...values } : item)));
-      showSuccess('Diet tag updated successfully');
-    } else {
-      const newDietTag: DietTagRecord = {
-        _id: `diet-${nextDietTagId++}`,
-        code: getNextDietTagCode(dietTags),
-        tag: values.tag,
-        description: values.description,
-        status: values.status,
-        createdAt: formatDate(new Date())!,
-      };
-      setDietTags((prev) => [...prev, newDietTag]);
-      showSuccess('Diet tag created successfully');
+  const onDelete = async () => {
+    try {
+      await deleteDietTag(selectedId).unwrap();
+      showSuccess('Diet tag deleted successfully');
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -136,8 +93,9 @@ const DietTagsView = () => {
       </div>
 
       <DietTagTable
-        data={paginatedDietTags}
+        data={dietTags}
         meta={meta}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -175,20 +133,14 @@ const DietTagsView = () => {
       />
 
       {openModal.value && (
-        <DietTagModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          nextCode={getNextDietTagCode(dietTags)}
-          onSubmit={onDietTagSubmit}
-        />
+        <DietTagModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
       )}
 
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Diet Tag"
         content="Are you sure you want to delete this diet tag?"
+        isLoading={deleteLoading}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

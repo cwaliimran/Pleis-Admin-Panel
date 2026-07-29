@@ -3,24 +3,20 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteAllergenMutation, useGetAllergensQuery } from '@/store/Reducer/allergens-api';
+import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
-import { showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { getNextAllergenCode, mockAllergensData } from './data';
+import { useState } from 'react';
 import AllergenModal from './allergens-modal';
 import AllergenTable from './allergens-table';
-import { AllergenFormValues, AllergenRecord } from './types';
-
-let nextAllergenId = mockAllergensData.length + 1;
+import { AllergenRecord } from './types';
 
 const AllergensView = () => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
-
-  // TODO(v2-api): replace this local state with a real query once the backend endpoint is ready.
-  const [allergens, setAllergens] = useState<AllergenRecord[]>(mockAllergensData);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -30,6 +26,22 @@ const AllergensView = () => {
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
 
+  const { data, isLoading, isFetching } = useGetAllergensQuery({
+    page: page - 1,
+    limit,
+    search,
+    status: !status || status === 'all' ? undefined : status,
+    date: date ? formatDate(date) : undefined,
+    sortBy,
+    sortOrder,
+  });
+
+  const [deleteAllergen, { isLoading: deleteLoading }] = useDeleteAllergenMutation();
+
+  const allergens: AllergenRecord[] = data?.data || [];
+  const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
+  const totalCount = data?.meta?.AllergensCount?.total || 0;
+
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
@@ -38,46 +50,6 @@ const AllergensView = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<AllergenRecord | null>(null);
-
-  const filteredSortedAllergens = useMemo(() => {
-    let result = [...allergens];
-
-    if (search.trim()) {
-      const term = search.trim().toLowerCase();
-      result = result.filter((item) => item.name.toLowerCase().includes(term));
-    }
-
-    if (status && status !== 'all') {
-      result = result.filter((item) => item.status === status);
-    }
-
-    if (date) {
-      const target = formatDate(date);
-      result = result.filter((item) => item.createdAt === target);
-    }
-
-    if (sortBy && sortOrder) {
-      const direction = sortOrder === 'asc' ? 1 : -1;
-      result.sort((a, b) => {
-        if (sortBy === 'code') return a.code.localeCompare(b.code) * direction;
-        if (sortBy === 'name') return a.name.localeCompare(b.name) * direction;
-        return 0;
-      });
-    }
-
-    return result;
-  }, [allergens, search, status, date, sortBy, sortOrder]);
-
-  const totalRecords = filteredSortedAllergens.length;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / limit));
-  const paginatedAllergens = filteredSortedAllergens.slice((page - 1) * limit, page * limit);
-
-  const meta = {
-    currentPage: page,
-    totalPages,
-    totalRecords,
-    limit,
-  };
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -99,27 +71,14 @@ const AllergensView = () => {
     deleteModal.onTrue();
   };
 
-  const onDelete = () => {
-    setAllergens((prev) => prev.filter((item) => item._id !== selectedId));
-    showSuccess('Allergen deleted successfully');
-    setSelectedId(null);
-    deleteModal.onFalse();
-  };
-
-  const onAllergenSubmit = (values: AllergenFormValues) => {
-    if (editModal.value && selectedId) {
-      setAllergens((prev) => prev.map((item) => (item._id === selectedId ? { ...item, ...values } : item)));
-      showSuccess('Allergen updated successfully');
-    } else {
-      const newAllergen: AllergenRecord = {
-        _id: `allergen-${nextAllergenId++}`,
-        code: getNextAllergenCode(allergens),
-        name: values.name,
-        status: values.status,
-        createdAt: formatDate(new Date())!,
-      };
-      setAllergens((prev) => [...prev, newAllergen]);
-      showSuccess('Allergen created successfully');
+  const onDelete = async () => {
+    try {
+      await deleteAllergen(selectedId).unwrap();
+      showSuccess('Allergen deleted successfully');
+      setSelectedId(null);
+      deleteModal.onFalse();
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -135,9 +94,10 @@ const AllergensView = () => {
       </div>
 
       <AllergenTable
-        data={paginatedAllergens}
+        data={allergens}
         meta={meta}
-        totalCount={allergens.length}
+        totalCount={totalCount}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -175,20 +135,14 @@ const AllergensView = () => {
       />
 
       {openModal.value && (
-        <AllergenModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          nextCode={getNextAllergenCode(allergens)}
-          onSubmit={onAllergenSubmit}
-        />
+        <AllergenModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
       )}
 
       <ConfirmDialog
         open={deleteModal.value}
         title="Delete Allergen"
         content="Are you sure you want to delete this allergen?"
+        isLoading={deleteLoading}
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);

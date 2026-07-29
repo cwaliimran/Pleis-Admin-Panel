@@ -1,37 +1,42 @@
 'use client';
 
+import ImageWithFallback from '@/components/common/img-with-fallback';
+import { Avatar } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { fDate, formatStr } from '@/utils/format-time';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const CATEGORY_BADGE_VARIANT: Record<string, 'info' | 'warning'> = {
-  'preset-cat-1': 'info',
-  'preset-cat-2': 'warning',
-};
-
-const PresetTypeTableRow: FC<TableRowProps> = ({ item, categories, subcategories, typeNames, handleDelete, handleEdit }) => {
-  const category = categories.find((cat) => cat._id === item.categoryId);
-  const subcategory = subcategories.find((sub) => sub._id === item.subcategoryId);
-  const typeName = item.name || typeNames.find((type) => type._id === item.typeNameId)?.title;
-
+const PresetTypeTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell className="text-left font-mono font-semibold">{item.code}</TableCell>
-
       <TableCell className="text-left">
-        <CustomBadge variant={CATEGORY_BADGE_VARIANT[item.categoryId] || 'default'} className="uppercase">
-          {category?.code || '-'}
-        </CustomBadge>
+        <Avatar className="h-10 w-10 rounded-md">
+          <ImageWithFallback url={item.image || ''} alt={item.name} className="h-full w-full rounded-md object-cover" />
+        </Avatar>
       </TableCell>
 
-      <TableCell className="text-left">{subcategory?.title || '-'}</TableCell>
-
-      <TableCell className="text-left">{typeName || '-'}</TableCell>
+      <TableCell className="text-left font-mono font-semibold">{item.code}</TableCell>
+      
+      <TableCell className="text-left">{item.type?.name || '-'}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={item.status === 'active' ? 'success' : 'default'}>{item.status}</CustomBadge>
+        <CustomBadge variant="warning">{item.category?.title || '-'}</CustomBadge>
+      </TableCell>
+
+      <TableCell className="text-left">
+        <CustomBadge variant="info">{item.subCategory?.name || '-'}</CustomBadge>
+      </TableCell>
+
+
+      <TableCell className="text-left font-semibold">{item.name}</TableCell>
+
+      <TableCell className="text-left">{fDate(item.createdAt, formatStr.split.date)}</TableCell>
+
+      <TableCell className="text-left">
+        <CustomBadge variant={item.status === 'active' ? 'success' : 'error'}>{item.status}</CustomBadge>
       </TableCell>
 
       <TableCell className="text-end">

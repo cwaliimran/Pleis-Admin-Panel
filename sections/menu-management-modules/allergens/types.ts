@@ -53,6 +53,4 @@ export type AllergenModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: AllergenRecord | null;
-  nextCode: string;
-  onSubmit: (values: AllergenFormValues) => void;
 };
