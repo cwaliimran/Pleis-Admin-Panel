@@ -308,8 +308,18 @@ export const menuGroups: MenuGroup[] = [
     icon: CalendarDays,
     items: [
       {
-        title: 'Reservations',
+        title: 'Reservations v1',
         url: paths.superAdmin.reservation,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Reservations v2',
+        url: paths.superAdmin.reservationV2,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Reservation Preferences',
+        url: paths.superAdmin.reservationPreferences,
         icon: CalendarDays,
       },
       {
@@ -404,8 +414,13 @@ export const menuGroups: MenuGroup[] = [
     icon: ShoppingBasket,
     items: [
       {
-        title: 'Order Management',
+        title: 'Order Management v1',
         url: paths.superAdmin.orderManagement,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Order Management v2',
+        url: paths.superAdmin.orderManagementV2,
         icon: CalendarDays,
       },
       {
@@ -426,6 +441,11 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Settings',
         url: paths.superAdmin.orderSettings,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Settings v2',
+        url: paths.superAdmin.orderSettingsV2,
         icon: CalendarDays,
       },
     ],

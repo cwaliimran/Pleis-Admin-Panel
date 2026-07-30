@@ -123,6 +123,8 @@ export const paths = {
     ticketing: '/super-admin/ticketing',
     ticketingTransactions: '/super-admin/ticketing-transactions',
     reservation: '/super-admin/reservation',
+    reservationV2: '/super-admin/reservation-v2',
+    reservationPreferences: '/super-admin/reservation-preferences',
     analytics: '/super-admin/analytics',
     calendar: '/super-admin/calendar',
     reservationTransactions: '/super-admin/res-transactions',
@@ -136,6 +138,7 @@ export const paths = {
     menuManagement: '/super-admin/app-ordering/menu-management',
     orderAnalytics: '/super-admin/app-ordering/order-analytics',
     orderSettings: '/super-admin/app-ordering/order-settings',
+    orderSettingsV2: '/super-admin/app-ordering/order-settings-v2',
     orderTransactions: '/super-admin/app-ordering/order-transactions',
 
     qrCodes: '/super-admin/qr-codes',
