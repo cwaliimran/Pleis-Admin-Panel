@@ -56,6 +56,7 @@ const defaultValues: MenuItemFormValues = {
   allergens: [],
   cuisine: '',
   isRecommended: false,
+  upSellItem: false,
   isTogo: false,
   isRequiresOrderConfirmation: false,
 };
@@ -91,6 +92,7 @@ const schema = Yup.object().shape({
   allergens: Yup.array().of(Yup.string().required()).optional(),
   cuisine: Yup.string().optional(),
   isRecommended: Yup.boolean().required(),
+  upSellItem: Yup.boolean().required(),
   isTogo: Yup.boolean().required(),
   isRequiresOrderConfirmation: Yup.boolean().required(),
 });
@@ -144,6 +146,8 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
         allergens: toRefArray(selectedData.allergens).map(getRefId).filter(Boolean),
         cuisine: selectedData.cuisine || '',
         isRecommended: !!selectedData.isRecommended,
+        // Sent as a string, so it can come back as one too — `!!'false'` would be true.
+        upSellItem: selectedData.upSellItem === true || selectedData.upSellItem === 'true',
         isTogo: !!selectedData.isTogo,
         isRequiresOrderConfirmation: !!selectedData.isRequiresOrderConfirmation,
       });
@@ -208,6 +212,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
         if (dirty.allergens) payload.allergens = formData.allergens;
         if (dirty.cuisine) payload.cuisine = formData.cuisine || '';
         if (dirty.isRecommended) payload.isRecommended = formData.isRecommended;
+        if (dirty.upSellItem) payload.upSellItem = String(formData.upSellItem);
         if (dirty.isTogo) payload.isTogo = formData.isTogo;
         if (dirty.isRequiresOrderConfirmation) payload.isRequiresOrderConfirmation = formData.isRequiresOrderConfirmation;
         if (dirty.image && imageKey) payload.image = imageKey;
@@ -237,6 +242,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
           allergens: formData.allergens,
           cuisine: formData.cuisine || '',
           isRecommended: formData.isRecommended,
+          upSellItem: String(formData.upSellItem),
           isTogo: formData.isTogo,
           isRequiresOrderConfirmation: formData.isRequiresOrderConfirmation,
         };
@@ -470,6 +476,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
                       toValue={(checked) => (checked ? 'active' : 'inactive')}
                     />
                     <ToggleRow name="isRecommended" title="⭐ Recommended" description="Highlighted on the Offer / browse screen" />
+                    <ToggleRow name="upSellItem" title="Upsell Item" description="Suggested to guests as an add-on at checkout" />
                     <ToggleRow name="isTogo" title="To go" description="Item can be ordered for takeaway" />
                     <ToggleRow
                       name="isRequiresOrderConfirmation"

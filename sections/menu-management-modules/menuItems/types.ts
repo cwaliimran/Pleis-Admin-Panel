@@ -51,8 +51,8 @@ export interface MenuItemRecord {
   isRecommended?: boolean;
   isTogo?: boolean;
   isRequiresOrderConfirmation?: boolean;
-  /** Set by the separate Sales/Limited-Time-Offer feature — read-only here, not part of this create/edit form. */
-  upSellItem?: boolean;
+  /** Sent to the API as a string ('true'/'false'), so it may come back as either. */
+  upSellItem?: boolean | string;
   createdAt: string;
 }
 
@@ -130,6 +130,7 @@ export type MenuItemFormValues = {
   allergens: string[];
   cuisine?: string;
   isRecommended: boolean;
+  upSellItem: boolean;
   isTogo: boolean;
   isRequiresOrderConfirmation: boolean;
 };

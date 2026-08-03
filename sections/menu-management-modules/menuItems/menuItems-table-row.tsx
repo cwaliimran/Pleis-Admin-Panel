@@ -35,7 +35,7 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, lookups, handleDelete, hand
       <TableCell className="text-left">
         <div className="flex items-center gap-2">
           <span className="font-semibold capitalize">{item?.title || '-'}</span>
-          {item.upSellItem && (
+          {(item.upSellItem === true || item.upSellItem === 'true') && (
             <CustomBadge variant="info" className="gap-1 px-2 py-0.5 text-[11px]">
               <TrendingUp className="h-3 w-3" />
               Upsell

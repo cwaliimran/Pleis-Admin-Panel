@@ -17,6 +17,8 @@ interface CustomHeaderProps {
     align?: string;
     sortable?: boolean;
     sortKey?: string;
+    /** Extra classes for a single column, e.g. to tint a metric group. */
+    className?: string;
   }>;
   sortConfig?: SortConfig;
   onSort?: (key: string) => void;
@@ -87,7 +89,8 @@ const TableHeadCustom: FC<CustomHeaderProps> = ({
               'border-b border-slate-300 dark:border-[#272727]',
               getTextAlignClass(header.align),
               header.sortable &&
-                'cursor-pointer transition-colors select-none hover:bg-slate-200 dark:hover:bg-[#333333]'
+                'cursor-pointer transition-colors select-none hover:bg-slate-200 dark:hover:bg-[#333333]',
+              header.className
             )}
             onClick={() => handleSort(header)}
           >

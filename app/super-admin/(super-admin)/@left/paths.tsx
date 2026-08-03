@@ -106,6 +106,9 @@ export const paths = {
     loyalty: {
       default: '/super-admin/loyalty',
     },
+    loyaltyV2: {
+      default: '/super-admin/loyalty-v2',
+    },
     menuItems: '/super-admin/menuItems',
     menuList: '/super-admin/menu-list',
     menuSubcategories: '/super-admin/menu-subcategories',
@@ -161,6 +164,11 @@ export const paths = {
     rewards: '/super-admin/rewards',
     challenges: '/super-admin/challenges',
     promotions: '/super-admin/promotions',
+    rewardsV2: '/super-admin/rewards-v2',
+    challengesV2: '/super-admin/challenges-v2',
+    promotionsV2: '/super-admin/promotions-v2',
+    streakV2: '/super-admin/streaks-v2',
+    referralsV2: '/super-admin/referrals-v2',
     members: '/super-admin/members',
     settings: '/super-admin/settings',
     referrals: '/super-admin/referrals',

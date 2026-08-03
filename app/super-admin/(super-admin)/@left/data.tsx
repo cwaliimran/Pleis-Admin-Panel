@@ -224,6 +224,38 @@ export const menuGroups: MenuGroup[] = [
     ],
   },
   {
+    label: 'Loyalty v2',
+    key: paths.superAdmin.loyaltyV2.default,
+    icon: Handshake,
+    items: [
+      {
+        title: 'Rewards v2',
+        url: paths.superAdmin.rewardsV2,
+        icon: Tags,
+      },
+       {
+        title: 'Challenges  v2',
+        url: paths.superAdmin.challengesV2,
+        icon: Tags,
+      },
+      {
+        title: 'Promotions  v2',
+        url: paths.superAdmin.promotionsV2,
+        icon: Tags,
+      },
+      {
+        title: 'Streaks  v2',
+        url: paths.superAdmin.streakV2,
+        icon: ListOrdered,
+      },
+      {
+        title: 'Referrals  v2',
+        url: paths.superAdmin.referralsV2,
+        icon: Tags,
+      },
+    ],
+  },
+  {
     label: 'Global Loyalty',
     key: paths.superAdmin.globalLoyalty.default,
     icon: Earth,

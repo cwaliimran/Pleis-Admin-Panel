@@ -115,7 +115,6 @@ const RHFAsyncCombobox = ({
   useEffect(() => {
     setPage(1);
     setItems([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryArgsKey]);
 
   const { data, isLoading, isFetching } = useOptionsQuery(
