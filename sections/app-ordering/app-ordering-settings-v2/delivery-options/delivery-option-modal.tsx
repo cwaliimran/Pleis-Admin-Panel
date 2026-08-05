@@ -12,8 +12,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { DELIVERY_OPTION_STATUS_OPTIONS, DELIVERY_OPTION_TYPE_OPTIONS } from '../constants';
-import { DeliveryOption, DeliveryOptionPayload, DeliveryOptionStatus, DeliveryOptionType } from '../types';
+import { DELIVERY_OPTION_STATUS_OPTIONS, DELIVERY_OPTION_TYPE_OPTIONS } from './constants';
+import { DeliveryOption, DeliveryOptionPayload, DeliveryOptionStatus, DeliveryOptionType } from './types';
 
 const schema: Yup.ObjectSchema<DeliveryOptionPayload> = Yup.object().shape({
   name: Yup.string().trim().required('Name is required').max(40, 'Name must be 40 characters or fewer').default(''),

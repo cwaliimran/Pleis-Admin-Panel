@@ -9,7 +9,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import React, { useEffect, useMemo, useState } from 'react';
 import { AutomaticResponseSection } from './automatic-response-section';
 import { CancellationPolicySection } from './cancellation-policy-section';
-import { OccasionsSection } from './occasions-section';
+import { OccasionsSection } from './occasions';
 import { ReservationSystemCard } from './reservation-system-card';
 import { ReservationTypesSection } from './reservation-types-section';
 import { TimeSlotsSection } from './time-slots-section';
@@ -21,8 +21,6 @@ interface ReservationPreferencesViewProps {
 }
 
 export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProps> = ({ userType = 'super-admin' }) => {
-  // Single source of truth for the organization id — super-admin resolves it from
-  // the company selector in the header, organizer from the dropdown this hook renders.
   const { organizationId, OrganizationDropdown } = useOrganizerOrganization({
     userType,
     storageKey: 'reservation-preferences-organization',
@@ -40,11 +38,6 @@ export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProp
     deleteReservationType,
   } = useReservationPreferences(organizationId);
 
-  /**
-   * Everything on this page is edited against a local draft and persisted by the
-   * single "Save settings" button — reservation types are the exception, they
-   * persist per modal.
-   */
   const [draft, setDraft] = useState<ReservationPreferences | null>(null);
 
   useEffect(() => {
@@ -116,7 +109,7 @@ export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProp
 
         {/* Half-width pair, matching the prototype's layout. */}
         <div className="grid gap-6 sm:grid-cols-2 lg:w-1/2 lg:pr-3">
-          <OccasionsSection value={draft.occasions} disabled={isSaving} onChange={(occasions) => patch({ occasions })} />
+          <OccasionsSection organizationId={organizationId} />
 
           <CancellationPolicySection
             value={draft.cancellationPolicy}

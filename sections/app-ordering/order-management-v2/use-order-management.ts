@@ -1,149 +1,216 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { mockOrderManagementApi } from './mock-data';
-import { DestructiveActionPayload, Order, OrderActionType, OrderFilters, OrderTabCounts, OrderingStatus } from './types';
+import type { GetOrdersV2Args, UpdateOrderV2Args } from '@/store/Reducer/order-management-v2-api';
+import {
+  useGetOrderingStatusV2Query,
+  useGetOrdersV2Query,
+  useUpdateOrderV2Mutation,
+  useUpdateOrderingStatusV2Mutation,
+} from '@/store/Reducer/order-management-v2-api';
+import { useCallback, useMemo, useState } from 'react';
+import { DEFAULT_PAGE_LIMIT, NEXT_STATUS_BY_ACTION, getRejectionReasonLabel } from './constants';
+import { mapApiOrders, mapOrderingStatus, mapPagination, mapTabCounts } from './mappers';
+import { DestructiveActionPayload, Order, OrderActionType, OrderFilters, OrderPagination, OrderTabCounts, OrderingStatus } from './types';
 
 // ============================================================
-// API SEAM
+// The module's single data seam.
 //
-// Deliberately shaped like the RTK Query hooks this module will use once
-// the endpoints exist: `{ data, isLoading, isFetching }` for reads and
-// per-mutation pending flags for writes.
-//
-// Swapping to the real API means replacing the bodies below with
-// `useGetOrdersQuery` / `useUpdateOrderMutation` etc. — the components
-// consuming this hook do not change.
+// Everything here is served by RTK Query. Components consuming this hook
+// work with the view model only and never see the wire shape.
 // ============================================================
 
-const EMPTY_COUNTS: OrderTabCounts = { active: 0, past: 0 };
+/** Either a specific set of menu items, or every outstanding one. */
+export type DeliverItemsPayload = { all: true } | { all?: false; menuItemIds: string[] };
 
 interface UseOrderManagementArgs {
   organizationId?: string;
   filters: OrderFilters;
-  /** Recorded as who opened in-app ordering. */
-  actorName: string;
+  /** 1-based, as shown in the UI. */
+  page: number;
+  limit: number;
 }
 
 interface UseOrderManagementReturn {
   orders: Order[];
   counts: OrderTabCounts;
+  pagination: OrderPagination;
   orderingStatus: OrderingStatus | null;
   isLoading: boolean;
   isFetching: boolean;
+  /**
+   * `isFetching` minus the refetch that follows a write. Drives the table's
+   * loading bar, so a single-row update never blanks the whole list.
+   */
+  isListLoading: boolean;
   isTogglingOrdering: boolean;
   pendingOrderId: string | null;
-  toggleOrdering: (isOpen: boolean) => Promise<void>;
-  runOrderAction: (orderId: string, action: OrderActionType, payload?: DestructiveActionPayload) => Promise<void>;
+  /** The order currently having items marked delivered, if any. */
+  deliveringOrderId: string | null;
+  /**
+   * Marks specific menu items delivered, or the whole order at once.
+   * Resolves with the backend's message so the caller can surface it.
+   */
+  deliverItems: (order: Order, payload: DeliverItemsPayload) => Promise<string | undefined>;
+  /** Re-reads the current page without changing any filter state. */
+  refetchOrders: () => void;
+  toggleOrdering: (isOpen: boolean) => Promise<string | undefined>;
+  runOrderAction: (order: Order, action: OrderActionType, payload?: DestructiveActionPayload) => Promise<string | undefined>;
 }
 
-export const useOrderManagement = ({ organizationId, filters, actorName }: UseOrderManagementArgs): UseOrderManagementReturn => {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [counts, setCounts] = useState<OrderTabCounts>(EMPTY_COUNTS);
-  const [orderingStatus, setOrderingStatus] = useState<OrderingStatus | null>(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [isTogglingOrdering, setIsTogglingOrdering] = useState(false);
-  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+/** `all` is a UI-only value — the param is simply left off. */
+const omitAll = <T extends string>(value: T | 'all'): T | undefined => (value === 'all' ? undefined : (value as T));
 
-  /** Guards against a slow response for a previous organization landing last. */
-  const organizationRequestRef = useRef(0);
-  /** Same guard for the list, which also re-runs on every filter change. */
-  const ordersRequestRef = useRef(0);
+export const useOrderManagement = ({ organizationId, filters, page, limit }: UseOrderManagementArgs): UseOrderManagementReturn => {
+  // ---- Orders list ----
+  const queryArgs: GetOrdersV2Args = useMemo(
+    () => ({
+      organization: organizationId,
+      status: filters.tab,
+      page: page - 1, // the slice re-adds the offset; the API is 1-based
+      limit,
+      keyword: filters.search.trim() || undefined,
+      orderStatus: omitAll(filters.status),
+      pickupFilter: omitAll(filters.deliveryType),
+      paymentMethod: omitAll(filters.paymentType),
+      range: omitAll(filters.dateRange),
+    }),
+    [organizationId, filters, page, limit]
+  );
 
-  // ---- Ordering status (per organization) ----
-  useEffect(() => {
-    if (!organizationId) {
-      setOrderingStatus(null);
-      return;
-    }
+  // `refetchOnMountOrArgChange` because orders are live — switching tab or
+  // filter must hit the API rather than replay a cached page.
+  const { data, isLoading, isFetching, refetch } = useGetOrdersV2Query(queryArgs, {
+    skip: !organizationId,
+    refetchOnMountOrArgChange: true,
+  });
 
-    const requestId = ++organizationRequestRef.current;
-
-    mockOrderManagementApi.getOrderingStatus(organizationId).then((status) => {
-      if (requestId !== organizationRequestRef.current) return;
-      setOrderingStatus(status);
-    });
-  }, [organizationId]);
-
-  // ---- Orders list (per organization + filters) ----
-  useEffect(() => {
-    if (!organizationId) {
-      // Clearing here is what stops one venue's orders showing under another.
-      setOrders([]);
-      setCounts(EMPTY_COUNTS);
-      setHasLoadedOnce(false);
-      setIsFetching(false);
-      return;
-    }
-
-    const requestId = ++ordersRequestRef.current;
-    setIsFetching(true);
-
-    mockOrderManagementApi
-      .getOrders(organizationId, filters)
-      .then((response) => {
-        if (requestId !== ordersRequestRef.current) return;
-        setOrders(response.orders);
-        setCounts(response.counts);
-      })
-      .finally(() => {
-        if (requestId !== ordersRequestRef.current) return;
-        setIsFetching(false);
-        setHasLoadedOnce(true);
-      });
-  }, [organizationId, filters]);
-
-  const refetchOrders = useCallback(async () => {
+  const refetchOrders = useCallback(() => {
     if (!organizationId) return;
+    refetch();
+  }, [organizationId, refetch]);
 
-    const requestId = ++ordersRequestRef.current;
-    const response = await mockOrderManagementApi.getOrders(organizationId, filters);
-    if (requestId !== ordersRequestRef.current) return;
+  const orders = useMemo(() => mapApiOrders(data?.data ?? []), [data]);
+  const counts = useMemo(() => mapTabCounts(data?.meta), [data]);
+  const pagination = useMemo(() => mapPagination(data?.meta, page, limit || DEFAULT_PAGE_LIMIT), [data, page, limit]);
 
-    setOrders(response.orders);
-    setCounts(response.counts);
-  }, [organizationId, filters]);
+  // ---- Item delivery ----
+  const [updateOrder] = useUpdateOrderV2Mutation();
+  const [deliveringOrderId, setDeliveringOrderId] = useState<string | null>(null);
+
+  const deliverItems = useCallback(
+    async (order: Order, payload: DeliverItemsPayload) => {
+      setDeliveringOrderId(order.id);
+      try {
+        // One field at a time: `deliveredall` for the whole order, otherwise
+        // just the id list. The backend derives the new status from either.
+        const args: UpdateOrderV2Args = {
+          id: order.id,
+          ...(payload.all ? { deliveredall: true } : { deliveredMenuItem: payload.menuItemIds.join(',') }),
+        };
+
+        // Once nothing is left to hand over the order moves on: `completed`
+        // if it is already settled, otherwise `sent` to await payment.
+        const outstanding = order.rounds.filter((round) => !round.isDelivered).flatMap((round) => round.items.map((item) => item.menuItemId));
+        const deliversEverything = payload.all || outstanding.every((id) => payload.menuItemIds.includes(id));
+
+        if (deliversEverything) {
+          args.status = order.paymentStatus === 'paid' ? 'completed' : 'sent';
+        }
+
+        const response = await updateOrder(args).unwrap();
+
+        // Awaited inside the pending window, so the button stays busy until
+        // the fresh list has landed and the table never flashes its loader.
+        await refetch();
+
+        return response?.message;
+      } finally {
+        setDeliveringOrderId(null);
+      }
+    },
+    [updateOrder, refetch]
+  );
+
+  // ---- Ordering switch (per organization) ----
+  const { data: orderingStatusData } = useGetOrderingStatusV2Query({ organization: organizationId }, { skip: !organizationId });
+
+  const [updateOrderingStatus, { isLoading: isTogglingOrdering }] = useUpdateOrderingStatusV2Mutation();
+
+  const orderingStatus = useMemo(() => mapOrderingStatus(orderingStatusData), [orderingStatusData]);
 
   const toggleOrdering = useCallback(
     async (isOpen: boolean) => {
       if (!organizationId) throw new Error('No organization selected');
 
-      setIsTogglingOrdering(true);
-      try {
-        const status = await mockOrderManagementApi.setOrderingOpen(organizationId, isOpen, actorName);
-        setOrderingStatus(status);
-      } finally {
-        setIsTogglingOrdering(false);
-      }
+      // Unwrapped so a failed request rejects and the view can toast it;
+      // the mutation invalidates the status tag, which refetches the switch.
+      const response = await updateOrderingStatus({ organization: organizationId, isOrderingEnabled: isOpen }).unwrap();
+
+      return response?.message;
     },
-    [organizationId, actorName]
+    [organizationId, updateOrderingStatus]
   );
 
-  const runOrderAction = useCallback(
-    async (orderId: string, action: OrderActionType, payload?: DestructiveActionPayload) => {
-      if (!organizationId) throw new Error('No organization selected');
+  // ---- Status actions ----
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
 
-      setPendingOrderId(orderId);
+  const runOrderAction: UseOrderManagementReturn['runOrderAction'] = useCallback(
+    async (order, action, payload) => {
+      const nextStatus = NEXT_STATUS_BY_ACTION[action];
+
+      if (action !== 'markAsPaid' && !nextStatus) {
+        throw new Error('This action is not connected yet.');
+      }
+
+      setPendingOrderId(order.id);
       try {
-        await mockOrderManagementApi.runOrderAction(organizationId, orderId, action, payload);
-        // Re-read so the row drops out of the tab when it changes lifecycle stage.
-        await refetchOrders();
+        // `markAsPaid` settles payment; everything else writes the status.
+        const args: UpdateOrderV2Args = action === 'markAsPaid' ? { id: order.id, paymentStatus: 'paid' } : { id: order.id, status: nextStatus };
+
+        // A `sent` order has nothing left to hand over, so settling the
+        // payment is the last step — it completes the order outright.
+        if (action === 'markAsPaid' && order.status === 'sent') {
+          args.status = 'completed';
+        }
+
+        // The two destructive actions carry the same pair of fields under
+        // different names, so only the matching pair is ever sent. The reason
+        // goes over as the label the user picked, not its key.
+        const reasonText = payload?.reason ? getRejectionReasonLabel(payload.reason) : '';
+        const noteText = payload?.note?.trim() ?? '';
+
+        if (action === 'reject') {
+          args.reasonForRejection = reasonText;
+          args.noteForRejection = noteText;
+        } else if (action === 'cancel') {
+          args.reasonForCancellation = reasonText;
+          args.noteForCancellation = noteText;
+        }
+
+        const response = await updateOrder(args).unwrap();
+        await refetch();
+
+        return response?.message;
       } finally {
         setPendingOrderId(null);
       }
     },
-    [organizationId, refetchOrders]
+    [updateOrder, refetch]
   );
 
   return {
     orders,
     counts,
+    pagination,
     orderingStatus,
-    isLoading: isFetching && !hasLoadedOnce,
+    isLoading: isLoading && !data,
     isFetching,
+    isListLoading: isFetching && !deliveringOrderId && !pendingOrderId,
     isTogglingOrdering,
     pendingOrderId,
+    deliveringOrderId,
+    deliverItems,
+    refetchOrders,
     toggleOrdering,
     runOrderAction,
   };

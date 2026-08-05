@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import React, { FC } from 'react';
 import ButtonLoading from '../common/button-loading';
 import { Button } from '../ui/button';
@@ -29,11 +30,13 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({ open, title, content, onClose, 
               </Button>
 
               {isLoading ? (
-                <Button type="button" className="cursor-not-allowed bg-[#E7000B] hover:bg-[#E7000B]/80" onClick={onConfirm}>
+                // Same `buttonClass` as the idle state, so a dialog with a custom
+                // colour does not flip to the destructive red while submitting.
+                <Button type="button" disabled className={cn('cursor-not-allowed bg-[#E7000B] hover:bg-[#E7000B]/80', buttonClass)}>
                   <ButtonLoading />
                 </Button>
               ) : (
-                <Button className={`cursor-pointer bg-[#E7000B] hover:bg-[#E7000B]/80 ${buttonClass}`} onClick={onConfirm}>
+                <Button className={cn('cursor-pointer bg-[#E7000B] hover:bg-[#E7000B]/80', buttonClass)} onClick={onConfirm}>
                   Confirm
                 </Button>
               )}

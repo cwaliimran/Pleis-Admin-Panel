@@ -113,9 +113,33 @@ export const API_ROUTES = {
   ADMIN_ORGANIZATION: `/admin/organizations`,
   ADMIN_ORGANIZATION_ALL: `/admin/organizations/all`,
   ADMIN_ORGANIZATION_BY_ID: (id: string) => `/admin/organizations/${id}`,
+  /** v2 update — carries the nested `inAppOrderingSettings` subtree. */
+  ADMIN_ORGANIZATION_V2_BY_ID: (id: string) => `/admin/organizations/v2/${id}`,
+  ORGANIZER_ORGANIZATION_V2_BY_ID: (id: string) => `/organizer/organizations/v2/${id}`,
   ADMIN_ORGANIZATION_BY_COMPANY_ORGANIZER: (id: string) => `/admin/organizations/names/by-company-organizer/${id}`,
   ADMIN_ORGANIZATION_NOTIFICATIONS_BY_ID: (id: string) => `/admin/organizations/${id}/notifications`,
   ORGANIZER_ORGANIZATION_NOTIFICATIONS_BY_ID: (id: string) => `/organizer/organizations/${id}/notifications`,
+
+  // ── RESERVATION OCCASIONS ───────────────────────────────────────────────
+  // Scoped by `?organization=` on read, by body on create.
+  ADMIN_OCCASIONS: `/admin/occasion`,
+  ADMIN_OCCASION_BY_ID: (id: string) => `/admin/occasion/${id}`,
+
+  ORGANIZER_OCCASIONS: `/organizer/occasion`,
+  ORGANIZER_OCCASION_BY_ID: (id: string) => `/organizer/occasion/${id}`,
+
+  // ── IN-APP ORDERING SETTINGS ────────────────────────────────────────────
+  // One document per organization holding every sub-setting.
+  // GET scopes by `?organization=`, PUT carries it in the body.
+  ADMIN_ORDERING_SETTINGS: `/admin/in-app-ordering/settings`,
+  ORGANIZER_ORDERING_SETTINGS: `/organizer/in-app-ordering/settings`,
+
+  // ── DELIVERY OPTIONS (in-app ordering settings) ─────────────────────────
+  ADMIN_DELIVERY_OPTIONS: (organizationId: string) => `/admin/organizations/${organizationId}/delivery-options`,
+  ADMIN_DELIVERY_OPTION_BY_ID: (organizationId: string, id: string) => `/admin/organizations/${organizationId}/delivery-options/${id}`,
+
+  ORGANIZER_DELIVERY_OPTIONS: (organizationId: string) => `/organizer/organizations/${organizationId}/delivery-options`,
+  ORGANIZER_DELIVERY_OPTION_BY_ID: (organizationId: string, id: string) => `/organizer/organizations/${organizationId}/delivery-options/${id}`,
 
   ADMIN_NOTIFICATIONS: `/admin/notifications`,
   ADMIN_NOTIFICATIONS_GET_ALL: `/admin/notifications/all`,

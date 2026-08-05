@@ -4,23 +4,19 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
+import { showError, showInfo, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
+import { SettingsCard } from '../common/settings-card';
 import { DELIVERY_OPTION_STATUS_CONFIG, DELIVERY_OPTION_TYPE_CONFIG } from './constants';
+import { DeliveryOptionModal } from './delivery-option-modal';
 import DeliveryOptionsTable from './delivery-options-table';
-import { DeliveryOptionModal } from './modals/delivery-option-modal';
-import { SettingsCard } from './settings-card';
 import { DeliveryOption, DeliveryOptionPayload, SortDirection } from './types';
+import { useDeliveryOptions } from './use-delivery-options';
 
 interface DeliveryOptionsSectionProps {
-  options: DeliveryOption[];
-  isLoading: boolean;
-  isMutating: boolean;
-  onCreate: (payload: DeliveryOptionPayload) => Promise<void>;
-  onUpdate: (id: string, payload: DeliveryOptionPayload) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
-  onGenerateQrCode: (id: string) => Promise<void>;
+  /** The section loads and writes its own data; this is all it needs from the page. */
+  organizationId?: string;
 }
 
 /** Sort on what the user actually sees in the cell, not the raw enum key. */
@@ -30,15 +26,9 @@ const getSortValue = (option: DeliveryOption, key: string): string => {
   return option.name;
 };
 
-export const DeliveryOptionsSection: React.FC<DeliveryOptionsSectionProps> = ({
-  options,
-  isLoading,
-  isMutating,
-  onCreate,
-  onUpdate,
-  onDelete,
-  onGenerateQrCode,
-}) => {
+export const DeliveryOptionsSection: React.FC<DeliveryOptionsSectionProps> = ({ organizationId }) => {
+  const { options, isLoading, isMutating, createOption, updateOption, deleteOption } = useDeliveryOptions(organizationId);
+
   const [sortBy, setSortBy] = useState('');
   const [sortOrder, setSortOrder] = useState<SortDirection | ''>('');
   const [editingOption, setEditingOption] = useState<DeliveryOption | null>(null);
@@ -75,29 +65,25 @@ export const DeliveryOptionsSection: React.FC<DeliveryOptionsSectionProps> = ({
     optionModal.onTrue();
   };
 
+  // Left to throw on failure so the modal stays open and toasts the reason.
   const handleSubmit = async (payload: DeliveryOptionPayload) => {
     if (editingOption) {
-      await onUpdate(editingOption.id, payload);
+      await updateOption(editingOption.id, payload);
       return;
     }
-    await onCreate(payload);
+    await createOption(payload);
   };
 
-  const handleGenerateQrCode = async (option: DeliveryOption) => {
-    try {
-      await onGenerateQrCode(option.id);
-      showSuccess(`QR code generated for ${option.name}`);
-    } catch (error) {
-      showError(getErrorMessage(error));
-    }
+  const handleGenerateQrCode = (option: DeliveryOption) => {
+    showInfo(`QR code generation for ${option.name} is not connected yet`);
   };
 
   const handleConfirmDelete = async () => {
     if (!optionPendingDelete) return;
 
     try {
-      await onDelete(optionPendingDelete.id);
-      showSuccess(`${optionPendingDelete.name} deleted`);
+      const message = await deleteOption(optionPendingDelete.id);
+      showSuccess(message || `${optionPendingDelete.name} deleted`);
       deleteDialog.onFalse();
       setOptionPendingDelete(null);
     } catch (error) {
@@ -112,7 +98,7 @@ export const DeliveryOptionsSection: React.FC<DeliveryOptionsSectionProps> = ({
         description="Define the delivery options customers can choose when placing orders"
         bodyClassName="px-7 py-6"
         headerAction={
-          <Button type="button" onClick={handleOpenAdd} disabled={isLoading} className="h-10 gap-1.5 font-semibold">
+          <Button type="button" onClick={handleOpenAdd} disabled={isLoading || !organizationId} className="h-10 gap-1.5 font-semibold">
             <Plus className="h-4 w-4" />
             Add DO
           </Button>

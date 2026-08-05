@@ -1,14 +1,13 @@
 'use client';
 
-import { AppLoading } from '@/components/atoms/app-loading';
 import { useOrganizerOrganization } from '@/hooks/useOrganizerOrganization';
 import React from 'react';
-import { DeliveryOptionsSection } from './delivery-options-section';
-import { OrderTimingSection } from './order-timing-section';
-import { PaymentMethodsSection } from './payment-methods-section';
-import { TipsSection } from './tips-section';
+import { DeliveryOptionsSection } from './delivery-options';
+import { OrderAcceptanceSection } from './order-acceptance';
+import { OrderTimingSection } from './order-timing';
+import { PaymentMethodsSection } from './payment-methods';
+import { TipsSection } from './tips';
 import { UserType } from './types';
-import { useOrderingSettings } from './use-ordering-settings';
 
 interface OrderingSettingsViewProps {
   userType: UserType;
@@ -17,26 +16,13 @@ interface OrderingSettingsViewProps {
 export const OrderingSettingsViewV2: React.FC<OrderingSettingsViewProps> = ({ userType }) => {
   // Single source of truth for the organization id — super-admin resolves it from the
   // company selector in the header, organizer from the dropdown this hook renders.
+  //
+  // Every section below loads and saves its own data from that id, and renders
+  // its own skeleton while it waits, so there is no page-level loading gate.
   const { organizationId, OrganizationDropdown } = useOrganizerOrganization({
     userType,
     storageKey: 'ordering-settings-v2-organization',
   });
-
-  const {
-    settings,
-    isFetching,
-    isSavingPayment,
-    isSavingTips,
-    isSavingOrderTiming,
-    isMutatingDeliveryOptions,
-    savePayment,
-    saveTips,
-    saveOrderTiming,
-    createDeliveryOption,
-    updateDeliveryOption,
-    deleteDeliveryOption,
-    generateDeliveryOptionQrCode,
-  } = useOrderingSettings(organizationId);
 
   const renderBody = () => {
     if (!organizationId) {
@@ -55,37 +41,23 @@ export const OrderingSettingsViewV2: React.FC<OrderingSettingsViewProps> = ({ us
       );
     }
 
-    if (!settings) {
-      return (
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <AppLoading />
-        </div>
-      );
-    }
-
     return (
       <div className="flex flex-col gap-6">
-        <PaymentMethodsSection value={settings.payment} onSave={savePayment} isSaving={isSavingPayment} disabled={isFetching} />
+        <PaymentMethodsSection organizationId={organizationId} />
 
-        <TipsSection value={settings.tips} onSave={saveTips} isSaving={isSavingTips} disabled={isFetching} />
+        <OrderAcceptanceSection organizationId={organizationId} />
 
-        <DeliveryOptionsSection
-          options={settings.deliveryOptions}
-          isLoading={isFetching}
-          isMutating={isMutatingDeliveryOptions}
-          onCreate={createDeliveryOption}
-          onUpdate={updateDeliveryOption}
-          onDelete={deleteDeliveryOption}
-          onGenerateQrCode={generateDeliveryOptionQrCode}
-        />
+        <TipsSection organizationId={organizationId} />
 
-        <OrderTimingSection value={settings.orderTiming} onSave={saveOrderTiming} isSaving={isSavingOrderTiming} disabled={isFetching} />
+        <DeliveryOptionsSection organizationId={organizationId} />
+
+        <OrderTimingSection organizationId={organizationId} />
       </div>
     );
   };
 
   return (
-    <div className="flex max-w-[70%] flex-col gap-6 pb-10">
+    <div className="flex max-w-full flex-col gap-6 pb-10">
       {OrganizationDropdown && (
         <div className="flex justify-end rounded-2xl border border-gray-200 bg-white px-7 py-5 shadow-sm dark:border-gray-800 dark:bg-[#222121]">
           {OrganizationDropdown}

@@ -1,29 +1,30 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { useAuth } from '@/hooks/useAuth';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useOrganizerOrganization } from '@/hooks/useOrganizerOrganization';
 import { cn } from '@/lib/utils';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
-import { Search } from 'lucide-react';
+import { RefreshCw, Search, X } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ACTION_SUCCESS_MESSAGE,
   DATE_RANGE_OPTIONS,
+  DEFAULT_ORDER_FILTERS,
+  DEFAULT_PAGE_LIMIT,
   DELIVERY_FILTER_OPTIONS,
   ORDER_TAB_CONFIG,
   PAYMENT_FILTER_OPTIONS,
   STATUS_FILTER_OPTIONS,
-  formatOpenedAt,
 } from './constants';
 import { OrderActionModal } from './order-action-modal';
 import { ORDER_TABLE_COLUMN_COUNT, OrderRow } from './order-row';
@@ -40,6 +41,7 @@ import {
   PaymentType,
   UserType,
 } from './types';
+import type { DeliverItemsPayload } from './use-order-management';
 import { useOrderManagement } from './use-order-management';
 
 const TABLE_HEAD = [
@@ -48,15 +50,15 @@ const TABLE_HEAD = [
   { id: 'customer', label: 'Customer', align: 'left' },
   { id: 'delivery', label: 'Delivery', align: 'left' },
   { id: 'items', label: 'Items', align: 'left' },
-  { id: 'payment', label: 'Payment', align: 'left' },
+  { id: 'payment', label: 'Method', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
+  { id: 'paymentStatus', label: 'Payment', align: 'left' },
   { id: 'total', label: 'Total', align: 'left' },
   { id: 'actions', label: '', align: 'right' },
 ];
 
 const SELECT_TRIGGER_CLASS = 'h-11 w-full cursor-pointer bg-white shadow-none md:w-auto md:min-w-[168px] dark:bg-[#222121]';
 
-/** shadcn's SelectItem ships `cursor-default`; every option here is clickable. */
 const SELECT_ITEM_CLASS = 'cursor-pointer';
 
 interface OrderManagementViewProps {
@@ -64,8 +66,6 @@ interface OrderManagementViewProps {
 }
 
 export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ userType }) => {
-  const { user } = useAuth();
-
   // Single source of truth for the organization id — super-admin resolves it from
   // the company selector in the header, organizer from the dropdown this renders.
   const { organizationId, OrganizationDropdown } = useOrganizerOrganization({
@@ -74,18 +74,25 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   });
 
   const [activeTab, setActiveTab] = useState<OrderTab>('active');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [status, setStatus] = useState<OrderStatus | 'all'>('all');
-  const [deliveryType, setDeliveryType] = useState<DeliveryType | 'all'>('all');
-  const [paymentType, setPaymentType] = useState<PaymentType | 'all'>('all');
-  const [dateRange, setDateRange] = useState<DateRangeFilter>('today');
+  const [searchQuery, setSearchQuery] = useState<string>(DEFAULT_ORDER_FILTERS.search);
+  const [status, setStatus] = useState<OrderStatus | 'all'>(DEFAULT_ORDER_FILTERS.status);
+  const [deliveryType, setDeliveryType] = useState<DeliveryType | 'all'>(DEFAULT_ORDER_FILTERS.deliveryType);
+  const [paymentType, setPaymentType] = useState<PaymentType | 'all'>(DEFAULT_ORDER_FILTERS.paymentType);
+  // Starts as `all` so the first load sends no `range` param at all.
+  const [dateRange, setDateRange] = useState<DateRangeFilter | 'all'>(DEFAULT_ORDER_FILTERS.dateRange);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(DEFAULT_PAGE_LIMIT);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const [destructiveAction, setDestructiveAction] = useState<{ action: DestructiveActionType; order: Order } | null>(null);
   const [pendingOrderingState, setPendingOrderingState] = useState<boolean | null>(null);
+  const [deliverAllOrder, setDeliverAllOrder] = useState<Order | null>(null);
+  const [markAsPaidOrder, setMarkAsPaidOrder] = useState<Order | null>(null);
 
   const actionModal = useBoolean();
   const orderingConfirm = useBoolean();
+  const deliverAllConfirm = useBoolean();
+  const markAsPaidConfirm = useBoolean();
 
   const debouncedSearch = useDebounce(searchQuery, 500);
 
@@ -95,23 +102,115 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     [activeTab, debouncedSearch, status, deliveryType, paymentType, dateRange]
   );
 
-  const { orders, counts, orderingStatus, isFetching, isTogglingOrdering, pendingOrderId, toggleOrdering, runOrderAction } = useOrderManagement({
+  const {
+    orders,
+    counts,
+    pagination,
+    orderingStatus,
+    isFetching,
+    isListLoading,
+    isTogglingOrdering,
+    pendingOrderId,
+    deliveringOrderId,
+    deliverItems,
+    refetchOrders,
+    toggleOrdering,
+    runOrderAction,
+  } = useOrderManagement({
     organizationId,
     filters,
-    actorName: user?.name || 'Staff',
+    page,
+    limit,
   });
 
-  // An expanded row that filters away would otherwise stay "open" invisibly.
+  // Drives the "Clear filters" control — the tab is navigation, not a filter.
+  const hasActiveFilters =
+    searchQuery !== DEFAULT_ORDER_FILTERS.search ||
+    status !== DEFAULT_ORDER_FILTERS.status ||
+    deliveryType !== DEFAULT_ORDER_FILTERS.deliveryType ||
+    paymentType !== DEFAULT_ORDER_FILTERS.paymentType ||
+    dateRange !== DEFAULT_ORDER_FILTERS.dateRange;
+
+  const handleClearFilters = () => {
+    setSearchQuery(DEFAULT_ORDER_FILTERS.search);
+    setStatus(DEFAULT_ORDER_FILTERS.status);
+    setDeliveryType(DEFAULT_ORDER_FILTERS.deliveryType);
+    setPaymentType(DEFAULT_ORDER_FILTERS.paymentType);
+    setDateRange(DEFAULT_ORDER_FILTERS.dateRange);
+  };
+
+  // A narrowed result set rarely has the page the user was on, and an
+  // expanded row that filters away would stay "open" invisibly.
   useEffect(() => {
+    setPage(1);
     setExpandedOrderId(null);
   }, [filters, organizationId]);
 
+  // Empty until the status endpoint returns a venue/organization name — every
+  // sentence that uses it degrades to not naming one.
   const venueName = orderingStatus?.venueName || '';
+  const venueSuffix = venueName ? ` at ${venueName}` : '';
 
   const handleAdvance = async (order: Order, action: OrderActionType) => {
+    // "Delivered" settles every outstanding item at once, so it asks first.
+    if (action === 'delivered') {
+      setDeliverAllOrder(order);
+      deliverAllConfirm.onTrue();
+      return;
+    }
+
+    // Settling payment is irreversible, so it asks too.
+    if (action === 'markAsPaid') {
+      setMarkAsPaidOrder(order);
+      markAsPaidConfirm.onTrue();
+      return;
+    }
+
     try {
-      await runOrderAction(order.id, action);
-      showSuccess(ACTION_SUCCESS_MESSAGE[action]);
+      const message = await runOrderAction(order, action);
+      showSuccess(message || ACTION_SUCCESS_MESSAGE[action]);
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
+  const handleDeliver = async (order: Order, payload: DeliverItemsPayload) => {
+    // Same guard for the panel's "Deliver all"; a selection needs no warning.
+    if (payload.all) {
+      setDeliverAllOrder(order);
+      deliverAllConfirm.onTrue();
+      return;
+    }
+
+    try {
+      const message = await deliverItems(order, payload);
+      showSuccess(message || 'Selected items marked as delivered');
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
+  const handleConfirmDeliverAll = async () => {
+    if (!deliverAllOrder) return;
+
+    try {
+      const message = await deliverItems(deliverAllOrder, { all: true });
+      showSuccess(message || ACTION_SUCCESS_MESSAGE.delivered);
+      deliverAllConfirm.onFalse();
+      setDeliverAllOrder(null);
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
+  const handleConfirmMarkAsPaid = async () => {
+    if (!markAsPaidOrder) return;
+
+    try {
+      const message = await runOrderAction(markAsPaidOrder, 'markAsPaid');
+      showSuccess(message || ACTION_SUCCESS_MESSAGE.markAsPaid);
+      markAsPaidConfirm.onFalse();
+      setMarkAsPaidOrder(null);
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -126,8 +225,8 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     if (!destructiveAction) return;
 
     try {
-      await runOrderAction(destructiveAction.order.id, destructiveAction.action, payload);
-      showSuccess(ACTION_SUCCESS_MESSAGE[destructiveAction.action]);
+      const message = await runOrderAction(destructiveAction.order, destructiveAction.action, payload);
+      showSuccess(message || ACTION_SUCCESS_MESSAGE[destructiveAction.action]);
       actionModal.onFalse();
       setDestructiveAction(null);
     } catch (error) {
@@ -139,8 +238,8 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     if (pendingOrderingState === null) return;
 
     try {
-      await toggleOrdering(pendingOrderingState);
-      showSuccess(`In-app ordering ${pendingOrderingState ? 'opened' : 'closed'}`);
+      const message = await toggleOrdering(pendingOrderingState);
+      showSuccess(message || `In-app ordering ${pendingOrderingState ? 'opened' : 'closed'}`);
       orderingConfirm.onFalse();
       setPendingOrderingState(null);
     } catch (error) {
@@ -155,7 +254,19 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
       {/* Header + ordering switch */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Order Management</h1>
+          <div className="flex items-center gap-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Order Management</h1>
+            <button
+              type="button"
+              title="Refresh orders"
+              aria-label="Refresh orders"
+              disabled={!organizationId || isFetching}
+              onClick={refetchOrders}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center text-gray-500 transition disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-400"
+            >
+              <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+            </button>
+          </div>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Live in-app orders
             {venueName && (
@@ -179,6 +290,10 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
                     <span className="font-bold text-gray-900 dark:text-gray-100">In-app ordering is {isOpen ? 'open' : 'closed'}</span>
                   </div>
 
+                  {/* The status endpoint returns only `isOrderingEnabled` — it has no
+                      `openedBy`, `openedAt` or venue name. Restore this once the
+                      backend sends them, along with `formatOpenedAt` in the imports.
+
                   {isOpen ? (
                     <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
                       Opened by <span className="font-semibold text-gray-700 dark:text-gray-200">{orderingStatus.openedBy}</span> ·{' '}
@@ -190,6 +305,11 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
                       Customers cannot place new orders at <span className="font-semibold text-gray-700 dark:text-gray-200">{venueName}</span> right
                       now.
                     </p>
+                  )}
+                  */}
+
+                  {!isOpen && (
+                    <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400">Customers cannot place new orders right now.</p>
                   )}
 
                   <p className="mt-1 text-xs leading-relaxed text-gray-400 dark:text-gray-400">
@@ -257,9 +377,7 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
                 <span
                   className={cn(
                     'inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-bold tabular-nums',
-                    activeTab === tab.id
-                      ? 'bg-blue-600 text-white dark:bg-blue-500'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                    activeTab === tab.id ? 'bg-blue-600 text-white dark:bg-blue-500' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                   )}
                 >
                   {counts[tab.id]}
@@ -320,7 +438,7 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
               </SelectContent>
             </Select>
 
-            <Select value={dateRange} onValueChange={(next) => setDateRange(next as DateRangeFilter)}>
+            <Select value={dateRange} onValueChange={(next) => setDateRange(next as DateRangeFilter | 'all')}>
               <SelectTrigger className={cn(SELECT_TRIGGER_CLASS, 'md:min-w-[132px]')} aria-label="Filter by date">
                 <SelectValue />
               </SelectTrigger>
@@ -332,6 +450,20 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
                 ))}
               </SelectContent>
             </Select>
+
+            {/* Only worth showing once there is something to clear. */}
+            {hasActiveFilters && (
+              <button
+                type="button"
+                title="Clear all filters"
+                aria-label="Clear all filters"
+                onClick={handleClearFilters}
+                className="flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-gray-200 px-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 dark:border-[#4A4949] dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                <X className="h-4 w-4" />
+                Clear
+              </button>
+            )}
           </div>
 
           {/* Orders table */}
@@ -339,21 +471,33 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
             <Table className="w-full rounded-md border">
               <TableHeadCustom headLabel={TABLE_HEAD} />
 
-              <TableBodyWrapper loading={isFetching} colSpan={ORDER_TABLE_COLUMN_COUNT} dataLength={orders.length} emptyMessage="No orders found">
+              <TableBodyWrapper loading={isListLoading} colSpan={ORDER_TABLE_COLUMN_COUNT} dataLength={orders.length} emptyMessage="No orders found">
                 {orders.map((order) => (
                   <OrderRow
                     key={order.id}
                     order={order}
                     isExpanded={expandedOrderId === order.id}
                     isPending={pendingOrderId === order.id}
+                    isDelivering={deliveringOrderId === order.id}
                     onToggle={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                     onAdvance={handleAdvance}
                     onDestructive={handleOpenDestructive}
+                    onDeliver={handleDeliver}
                   />
                 ))}
               </TableBodyWrapper>
             </Table>
           </div>
+
+          {pagination.totalRecords > 0 && (
+            <PaginationControls
+              currentPage={page}
+              totalPages={pagination.totalPages}
+              totalRecords={pagination.totalRecords}
+              limit={pagination.limit}
+              onPageChange={setPage}
+            />
+          )}
         </Card>
       )}
 
@@ -370,12 +514,38 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
       />
 
       <ConfirmDialog
+        open={markAsPaidConfirm.value}
+        title="Mark order as paid?"
+        content={`Confirm that payment for order #${markAsPaidOrder?.orderNumber ?? ''} has been received. This cannot be undone.`}
+        isLoading={Boolean(markAsPaidOrder && pendingOrderId === markAsPaidOrder.id)}
+        buttonClass="bg-green-600 hover:bg-green-600/80"
+        onClose={() => {
+          markAsPaidConfirm.onFalse();
+          setMarkAsPaidOrder(null);
+        }}
+        onConfirm={handleConfirmMarkAsPaid}
+      />
+
+      <ConfirmDialog
+        open={deliverAllConfirm.value}
+        title="Mark all items delivered?"
+        content={`Are you sure every item on order #${deliverAllOrder?.orderNumber ?? ''} has been delivered? This marks the whole order as delivered and cannot be undone.`}
+        isLoading={Boolean(deliverAllOrder && deliveringOrderId === deliverAllOrder.id)}
+        buttonClass="bg-green-600 hover:bg-green-600/80"
+        onClose={() => {
+          deliverAllConfirm.onFalse();
+          setDeliverAllOrder(null);
+        }}
+        onConfirm={handleConfirmDeliverAll}
+      />
+
+      <ConfirmDialog
         open={orderingConfirm.value}
         title={pendingOrderingState ? 'Open in-app ordering?' : 'Close in-app ordering?'}
         content={
           pendingOrderingState
-            ? `Customers will be able to place new orders at ${venueName}.`
-            : `Customers will not be able to place new orders at ${venueName}. Orders already placed are not affected.`
+            ? `Customers will be able to place new orders${venueSuffix}.`
+            : `Customers will not be able to place new orders${venueSuffix}. Orders already placed are not affected.`
         }
         isLoading={isTogglingOrdering}
         buttonClass={pendingOrderingState ? 'bg-green-600 hover:bg-green-600/80' : undefined}

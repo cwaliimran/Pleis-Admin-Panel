@@ -37,16 +37,6 @@ const buildSeedRecord = (): OrganizationRecord => ({
       maxGuestsForAutoConfirm: 8,
       autoRejectWhenNoCapacity: false,
     },
-    occasions: [
-      { id: uid(), label: 'Birthday', isSystem: false },
-      { id: uid(), label: 'Business meal', isSystem: false },
-      { id: uid(), label: 'Date night', isSystem: false },
-      { id: uid(), label: 'Celebration', isSystem: false },
-      { id: uid(), label: 'Anniversary', isSystem: false },
-      { id: uid(), label: 'Casual visit', isSystem: false },
-      { id: uid(), label: 'Visiting from abroad', isSystem: false },
-      { id: uid(), label: 'Other', isSystem: true },
-    ],
     cancellationPolicy: {
       freeCancellationHours: 48,
     },
@@ -125,12 +115,7 @@ export const mockReservationPreferencesApi = {
     await delay();
     const record = read(organizationId);
 
-    // New occasions arrive without a stable id from the form — mint one here so
-    // the saved list round-trips the same way the API would return it.
-    record.preferences = clone({
-      ...preferences,
-      occasions: preferences.occasions.map((occasion) => ({ ...occasion, id: occasion.id || uid() })),
-    });
+    record.preferences = clone(preferences);
 
     return clone(record.preferences);
   },

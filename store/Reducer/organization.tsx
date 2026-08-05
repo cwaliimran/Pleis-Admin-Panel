@@ -2,6 +2,41 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
 import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
+// ============================================================
+// In-app ordering settings held on the organization document
+//
+// Tips and the session timer live under `inAppOrderingSettings` on the
+// organization itself, not on the `/in-app-ordering/settings` record. They
+// are read with `getOrganizationById` and written with `updateOrganizationV2`.
+// ============================================================
+
+export type ApiTipType = 'fixed' | 'percentage';
+
+export interface ApiTipPreset {
+  /** Assigned by the backend; absent on presets the UI has just added. */
+  _id?: string;
+  tipType: ApiTipType;
+  value: number;
+}
+
+export interface ApiOrganizationTips {
+  enableCustomerTipping?: boolean;
+  allowCustomTips?: boolean;
+  tipPresets?: ApiTipPreset[];
+}
+
+export interface ApiInAppOrderingSettings {
+  tips?: ApiOrganizationTips | null;
+  /** Minutes. Not restricted to the presets the UI suggests. */
+  sessionTimerLength?: number;
+}
+
+export interface UpdateOrganizationV2Args {
+  /** The organization `_id`. */
+  id: string;
+  inAppOrderingSettings: ApiInAppOrderingSettings;
+}
+
 export const organizationApi = createApi({
   reducerPath: 'organizationApi',
   baseQuery: customFetchBaseQueryWithRoleRouting(),
@@ -128,6 +163,23 @@ export const organizationApi = createApi({
       invalidatesTags: ['organization'],
     }),
 
+    /**
+     * Partial update against the v2 route. Only the keys sent are changed,
+     * so the caller passes just the `inAppOrderingSettings` subtree.
+     */
+    updateOrganizationV2: builder.mutation<{ message?: string; data?: unknown }, UpdateOrganizationV2Args>({
+      query: ({ id, inAppOrderingSettings }) => ({
+        url: '',
+        method: 'PUT',
+        body: { inAppOrderingSettings },
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_ORGANIZATION_V2_BY_ID(id),
+          organizerRoute: API_ROUTES.ORGANIZER_ORGANIZATION_V2_BY_ID(id),
+        },
+      }),
+      invalidatesTags: ['organization'],
+    }),
+
     deleteOrganization: builder.mutation({
       query: (id) => ({
         url: '',
@@ -203,6 +255,7 @@ export const {
   useAddOrganizationMutation,
   useGetOrganizationByIdQuery,
   useUpdateOrganizationMutation,
+  useUpdateOrganizationV2Mutation,
   useDeleteOrganizationMutation,
   useGetOrgNotificationsByIdQuery,
   useGetOrganizationAnalyticsQuery,

@@ -362,7 +362,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
               disabled={isOtpLoading}
             />
             <Button onClick={handleConfirmOtp} className="w-full" disabled={isOtpLoading}>
-              {isOtpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Verify OTP'}
+              {isOtpLoading ? <Loader2 className="h-7 w-7 animate-spin" /> : 'Verify OTP'}
             </Button>
           </div>
         </DialogContent>

@@ -31,14 +31,9 @@ export interface AutomaticResponseSettings {
   autoRejectWhenNoCapacity: boolean;
 }
 
-// ---------- Occasions ----------
-
-export interface Occasion {
-  id: string;
-  label: string;
-  /** "Other" is supplied by the system — always offered, never removable. */
-  isSystem: boolean;
-}
+// Occasions own their types — see `occasions/types.ts`. They persist through
+// their own endpoints rather than the page-level save, so they are not part
+// of the aggregate below.
 
 // ---------- Cancellation policy ----------
 
@@ -96,13 +91,12 @@ export interface ReservationTypeFilters {
 
 /**
  * Everything behind the page-level "Save settings" button. Reservation types
- * are deliberately not part of this — they persist per modal.
+ * and occasions are deliberately not part of this — they persist on their own.
  */
 export interface ReservationPreferences {
   /** Master switch for the whole reservation section in the user app. */
   reservationSystemEnabled: boolean;
   timeSlots: TimeSlotSettings;
   automaticResponse: AutomaticResponseSettings;
-  occasions: Occasion[];
   cancellationPolicy: CancellationPolicySettings;
 }

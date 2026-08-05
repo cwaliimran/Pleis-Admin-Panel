@@ -34,7 +34,7 @@ export const SettingsCard: React.FC<SettingsCardProps> = ({
 
   return (
     <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-[#222121]">
-      <header className="flex items-start justify-between gap-4 border-b border-gray-200 px-7 py-6 dark:border-gray-800">
+      <header className="flex items-start justify-between gap-4 px-7 pt-6">
         <div className="flex-1">
           <h2 className="mb-1 text-xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
           <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">{description}</p>
