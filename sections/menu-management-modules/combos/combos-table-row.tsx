@@ -4,9 +4,13 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { CirclePlus, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
-import { formatComboPrice, getComboLines, getPriceModeLabel, getRefLabel, 
+import {
+  formatComboPrice,
+  getComboLines,
+  getPriceModeLabel,
+  getRefLabel,
   // getSumOfParts
- } from './combos-utils';
+} from './combos-utils';
 import { TableRowProps } from './types';
 
 const STATUS_BADGE: Record<string, { variant: 'success' | 'error' | 'warning'; label: string }> = {
@@ -43,7 +47,7 @@ const ComboTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =>
         </div>
       </TableCell>
 
-      <TableCell className="text-left">€{item.totalBasePrice.toFixed(2)}</TableCell>
+      <TableCell className="text-left">€{item?.totalBasePrice ? item?.totalBasePrice?.toFixed(2) : '—'}</TableCell>
 
       <TableCell className="text-left">
         <div className="flex flex-col gap-0.5">
