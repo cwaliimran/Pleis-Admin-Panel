@@ -54,13 +54,19 @@ const MenuItemModal = ({
   const { reset, formState } = methods;
   const isDirty = formState?.isDirty;
 
-  const prepareFormData = (data: any): MenuItemFormValues => ({
-    title: data?.title || '',
-    description: data?.description || '',
-    organization: getOrgId(data?.organization),
-    validFrom: data?.validFrom ? new Date(data.validFrom) : undefined,
-    status: data?.status || 'active',
-  });
+  const prepareFormData = (data: any): MenuItemFormValues => {
+    // API returns the date as `startDate`; the form field is named `validFrom`
+    const rawDate = data?.startDate ?? data?.validFrom;
+    const parsedDate = rawDate ? new Date(rawDate) : undefined;
+
+    return {
+      title: data?.title || '',
+      description: data?.description || '',
+      organization: getOrgId(data?.organization),
+      validFrom: parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate : undefined,
+      status: data?.status || 'active',
+    };
+  };
 
   useEffect(() => {
     if (open && isEdit && selectedData) {

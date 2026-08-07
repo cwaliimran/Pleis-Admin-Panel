@@ -1,5 +1,6 @@
 export * from './constants';
 export { DeliveryOptionModal } from './delivery-option-modal';
+export { DeliveryOptionQrModal } from './delivery-option-qr-modal';
 export { default as DeliveryOptionRow } from './delivery-option-row';
 export { DeliveryOptionsSection } from './delivery-options-section';
 export { default as DeliveryOptionsTable } from './delivery-options-table';

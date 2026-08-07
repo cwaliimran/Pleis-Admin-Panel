@@ -1,8 +1,9 @@
 // ============================================================
-// Reservation Preferences — domain types
+// Reservation Preferences — view model
 //
-// Served by `mock-data.ts` through `use-reservation-preferences.ts` until
-// the real endpoints exist.
+// Covers the page-level settings only. The wire shape lives in
+// `store/Reducer/reservation-preferences-api.ts`; `mappers.ts` is the only
+// place that knows both.
 // ============================================================
 
 export type UserType = 'organizer' | 'super-admin';
@@ -44,48 +45,9 @@ export interface CancellationPolicySettings {
   freeCancellationHours: CancellationWindowHours;
 }
 
-// ---------- Reservation types ----------
-
-export type ConditionType = 'free' | 'minimumSpend';
-
-export type ReservationTypeStatus = 'active' | 'inactive';
-
-export type TaxPercentage = 0 | 5 | 13 | 25;
-
-export interface ReservationTypeNote {
-  id: string;
-  text: string;
-}
-
-export interface ReservationType {
-  id: string;
-  name: string;
-  description: string;
-  /** Number of tables/booths of this type. */
-  quantity: number;
-  /** Max persons in a single reservation. */
-  maxPartySize: number;
-  /** Total seats. Defaults to quantity × maxPartySize but can be overridden. */
-  maxCapacity: number;
-  conditionType: ConditionType;
-  bonusPoints: number;
-  taxPercentage: TaxPercentage;
-  /** When true every request for this type must be approved by hand. */
-  requiresConfirmation: boolean;
-  asksForOccasion: boolean;
-  status: ReservationTypeStatus;
-  /** false → the type exists but is managed manually by the organizer. */
-  visibleToGuests: boolean;
-  /** Free-text notes surfaced to the guest in the Reservation detail (Wallet). */
-  importantInformation: ReservationTypeNote[];
-}
-
-export type ReservationTypePayload = Omit<ReservationType, 'id'>;
-
-export interface ReservationTypeFilters {
-  conditionType: ConditionType | 'all';
-  status: ReservationTypeStatus | 'all';
-}
+// Reservation types own their types — see `reservation-types/types.ts`. Like
+// occasions, they persist through their own endpoints rather than the
+// page-level save, so they are not part of the aggregate below.
 
 // ---------- Aggregate ----------
 

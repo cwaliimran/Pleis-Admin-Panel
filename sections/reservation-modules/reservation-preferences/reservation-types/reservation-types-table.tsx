@@ -12,11 +12,13 @@ interface ReservationTypesTableProps {
   data: ReservationType[];
   loading?: boolean;
   disabled?: boolean;
+  /** The row currently being written to, if any. */
+  pendingTypeId?: string | null;
   onEdit: (item: ReservationType) => void;
   onDelete: (item: ReservationType) => void;
 }
 
-export const ReservationTypesTable: React.FC<ReservationTypesTableProps> = ({ data, loading, disabled, onEdit, onDelete }) => {
+export const ReservationTypesTable: React.FC<ReservationTypesTableProps> = ({ data, loading, disabled, pendingTypeId, onEdit, onDelete }) => {
   return (
     <div className="overflow-x-auto rounded-lg border">
       <Table className="w-full rounded-md border">
@@ -29,7 +31,14 @@ export const ReservationTypesTable: React.FC<ReservationTypesTableProps> = ({ da
           emptyMessage="No reservation types found"
         >
           {data.map((item) => (
-            <ReservationTypeRow key={item.id} item={item} disabled={disabled} onEdit={onEdit} onDelete={onDelete} />
+            <ReservationTypeRow
+              key={item.id}
+              item={item}
+              disabled={disabled}
+              isPending={pendingTypeId === item.id}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           ))}
         </TableBodyWrapper>
       </Table>

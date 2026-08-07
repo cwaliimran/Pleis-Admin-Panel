@@ -11,7 +11,7 @@ import { AutomaticResponseSection } from './automatic-response-section';
 import { CancellationPolicySection } from './cancellation-policy-section';
 import { OccasionsSection } from './occasions';
 import { ReservationSystemCard } from './reservation-system-card';
-import { ReservationTypesSection } from './reservation-types-section';
+import { ReservationTypesSection } from './reservation-types';
 import { TimeSlotsSection } from './time-slots-section';
 import { ReservationPreferences, UserType } from './types';
 import { useReservationPreferences } from './use-reservation-preferences';
@@ -26,17 +26,7 @@ export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProp
     storageKey: 'reservation-preferences-organization',
   });
 
-  const {
-    preferences,
-    reservationTypes,
-    isFetching,
-    isSaving,
-    isMutatingTypes,
-    savePreferences,
-    createReservationType,
-    updateReservationType,
-    deleteReservationType,
-  } = useReservationPreferences(organizationId);
+  const { preferences, isSaving, savePreferences } = useReservationPreferences(organizationId);
 
   const [draft, setDraft] = useState<ReservationPreferences | null>(null);
 
@@ -57,8 +47,8 @@ export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProp
     if (!draft) return;
 
     try {
-      await savePreferences(draft);
-      showSuccess('Reservation preferences saved');
+      const message = await savePreferences(draft);
+      showSuccess(message || 'Reservation preferences saved');
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -118,14 +108,7 @@ export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProp
           />
         </div>
 
-        <ReservationTypesSection
-          data={reservationTypes}
-          isLoading={isFetching}
-          isMutating={isMutatingTypes}
-          onCreate={createReservationType}
-          onUpdate={updateReservationType}
-          onDelete={deleteReservationType}
-        />
+        <ReservationTypesSection organizationId={organizationId} />
       </div>
     );
   };

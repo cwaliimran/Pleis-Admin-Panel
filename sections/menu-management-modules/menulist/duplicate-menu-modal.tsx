@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider from '@/components/rhf';
+import FormProvider, { RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
@@ -14,10 +14,16 @@ import * as Yup from 'yup';
 import { DuplicateMenuModalProps } from './types';
 
 const defaultValues = {
+  name: '',
   organization: '',
 };
 
 const schema = Yup.object({
+  name: Yup.string()
+    .trim()
+    .required('Name is required')
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name must not exceed 100 characters'),
   organization: Yup.string().required('Organization is required'),
 });
 
@@ -36,7 +42,7 @@ const DuplicateMenuModal = ({ open, onClose, selectedId, organizations, organiza
   const handleSubmit = async (formData: typeof defaultValues) => {
     if (!selectedId) return;
 
-    const payload: any = { id: selectedId, organization: formData.organization };
+    const payload: any = { id: selectedId, name: formData.name.trim(), organization: formData.organization };
     if (userType === 'super-admin' && companyId) payload.companyOrganizer = companyId;
 
     try {
@@ -68,6 +74,10 @@ const DuplicateMenuModal = ({ open, onClose, selectedId, organizations, organiza
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
                 <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="col-span-2">
+                    <RHFTextField name="name" label="Name" placeholder="e.g. Summer Menu 2026 (Copy)" />
+                  </div>
+
                   <div className="col-span-2">
                     <RHFCustomDropdown
                       name="organization"

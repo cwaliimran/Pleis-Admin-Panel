@@ -1,15 +1,14 @@
-/** `draft` isn't user-selectable — it's forced on save when the components have no orderable overlap. */
 export type ComboStatus = 'active' | 'inactive' | 'draft';
 
-/**
- * Mirrors the backend `PriceMode` enum. What `price` means depends on the mode — see
- * `getComboFinalPrice`: a final €, a percentage *of* the sum charged, or a € amount taken off it.
- */
 export type PriceMode = 'fixed_combo_price' | 'percentage_off_sum' | 'fixed_amount_off_sum';
 
-// Reference fields on a combo record can come back as a raw id string or a populated object —
-// see the shape-inconsistency note in menuItems module. Never assume one shape.
 export type SubCategoryRef = string | { _id: string; name?: string; category?: string; status?: string } | null | undefined;
+
+export interface ComboMenuRef {
+  _id: string;
+  title?: string;
+  status?: string;
+}
 
 export type ComboMenuItemRef =
   | string
@@ -19,9 +18,23 @@ export type ComboMenuItemRef =
       basePrice?: number;
       image?: string;
       status?: string;
+      menu?: ComboMenuRef;
     }
   | null
   | undefined;
+
+export interface ComboMenuItemLine {
+  menuItem: ComboMenuItemRef;
+  quantity?: number;
+}
+
+export type ComboMenuItemEntry = ComboMenuItemLine | ComboMenuItemRef;
+
+export interface ComboLine {
+  id: string;
+  ref: ComboMenuItemRef;
+  quantity: number;
+}
 
 export interface ApplicableMenu {
   _id: string;
@@ -42,10 +55,6 @@ export interface AllergenRef {
   name: string;
 }
 
-/**
- * A menu item resolved to the full shape the modal needs: the combo's own `menuItems` only carry
- * title/price/image, so availability is read off the menu-items list query instead.
- */
 export interface ComboComponent {
   _id: string;
   title: string;
@@ -56,14 +65,16 @@ export interface ComboComponent {
   allergens?: AllergenRef[];
 }
 
-/** Availability the combo inherits from its components — intersect for days/dayparts, union for allergens. */
+export interface ComboComponentLine {
+  component: ComboComponent;
+  quantity: number;
+}
+
 export interface DerivedAvailability {
   days: string[];
   dayparts: DaypartRef[];
-  /** No component restricts the daypart (all are "All Day" or unset), so the combo spans every daypart. */
   isAllDay: boolean;
   allergens: AllergenRef[];
-  /** Components share no common day or daypart, so the combo could never be ordered. */
   isUnorderable: boolean;
 }
 
@@ -72,7 +83,8 @@ export interface ComboRecord {
   name: string;
   subCategory: SubCategoryRef;
   description?: string;
-  menuItems: ComboMenuItemRef[];
+  totalBasePrice: number;
+  menuItems: ComboMenuItemEntry[];
   priceMode: PriceMode;
   price: number;
   status: ComboStatus;
@@ -80,11 +92,19 @@ export interface ComboRecord {
   createdAt: string;
 }
 
+export interface CombosCount {
+  total: number;
+  active: number;
+  inactive: number;
+  notOrderable: number;
+}
+
 export interface SampleMeta {
   currentPage: number;
   totalPages: number;
   totalRecords: number;
   limit: number;
+  combosCount?: CombosCount;
 }
 
 export interface SamplePageProps {
@@ -112,11 +132,16 @@ export interface TableRowProps {
   handleEdit?: (id: string) => void;
 }
 
+export type ComboFormMenuItem = {
+  menuItem: string;
+  quantity: number;
+};
+
 export type ComboFormValues = {
   name: string;
   subCategory: string;
   description?: string;
-  menuItems: string[];
+  menuItems: ComboFormMenuItem[];
   priceMode: PriceMode;
   price: string;
   status: ComboStatus;

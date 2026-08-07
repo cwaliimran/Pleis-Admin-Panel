@@ -23,8 +23,7 @@ const ComboView = ({ userType }: ComboViewProps) => {
   const deleteModal = useBoolean();
 
   const { companyId } = useCompanySelectionState();
-  // Organizer requests are scoped to the logged-in organizer's own company server-side;
-  // only super-admin needs the header's selected company sent explicitly.
+
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
 
   const [page, setPage] = useState(1);

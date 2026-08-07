@@ -74,6 +74,8 @@ import { orderManagementV2Api } from './Reducer/order-management-v2-api';
 import { deliveryOptionsApi } from './Reducer/delivery-options-api';
 import { orderingSettingsApi } from './Reducer/ordering-settings-api';
 import { occasionsApi } from './Reducer/occasions-api';
+import { reservationTypesApi } from './Reducer/reservation-types-api';
+import { reservationPreferencesApi } from './Reducer/reservation-preferences-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -147,6 +149,8 @@ const appReducer = combineReducers({
   [deliveryOptionsApi.reducerPath]: deliveryOptionsApi.reducer,
   [orderingSettingsApi.reducerPath]: orderingSettingsApi.reducer,
   [occasionsApi.reducerPath]: occasionsApi.reducer,
+  [reservationTypesApi.reducerPath]: reservationTypesApi.reducer,
+  [reservationPreferencesApi.reducerPath]: reservationPreferencesApi.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -228,6 +232,8 @@ export const store = configureStore({
       deliveryOptionsApi.middleware,
       orderingSettingsApi.middleware,
       occasionsApi.middleware,
+      reservationTypesApi.middleware,
+      reservationPreferencesApi.middleware,
     ),
 });
 

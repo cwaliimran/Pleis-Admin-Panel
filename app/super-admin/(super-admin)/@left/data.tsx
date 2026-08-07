@@ -98,23 +98,23 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
-        title: 'Menu Items',
-        url: paths.superAdmin.menuItems,
-        icon: CalendarDays,
-      },
-      {
         title: 'Subcategories',
         url: paths.superAdmin.menuSubcategories,
         icon: CalendarDays,
       },
       {
-        title: 'Discounts',
-        url: paths.superAdmin.discounts,
+        title: 'Menu Items',
+        url: paths.superAdmin.menuItems,
         icon: CalendarDays,
       },
       {
         title: 'Combos',
         url: paths.superAdmin.combos,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Discounts',
+        url: paths.superAdmin.discounts,
         icon: CalendarDays,
       },
     ],

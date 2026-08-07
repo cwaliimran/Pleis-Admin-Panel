@@ -5,17 +5,16 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
 import { cn } from '@/lib/utils';
-import { ChevronsUpDown, Loader2, Plus, TriangleAlert, X } from 'lucide-react';
+import { ChevronsUpDown, Loader2, Minus, Plus, TriangleAlert, X } from 'lucide-react';
 import { FC, ReactNode, useState } from 'react';
 import { DAY_OPTIONS } from '../menuItems/constants';
-import { describeDaypartOverlap, describeDaysOverlap, formatDaypartLabel } from './combos-utils';
-import { ComboComponent, DerivedAvailability } from './types';
+import { describeDaypartOverlap, describeDaysOverlap, formatDaypartLabel, MAX_QUANTITY, MIN_QUANTITY } from './combos-utils';
+import { ComboComponent, ComboComponentLine, DerivedAvailability } from './types';
 
 const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlDevCap];
 
 const hasRealImage = (image?: string) => !!image && !PLACEHOLDER_IMAGE_URLS.includes(image);
 
-/** Section heading with the optional "· qualifier" affix used across the menu-management modals. */
 export const SectionHeading: FC<{ title: string; affix?: ReactNode; affixClassName?: string }> = ({ title, affix, affixClassName }) => (
   <h4 className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 border-b pb-2 text-xs font-semibold tracking-wide uppercase">
     <span>{title}</span>
@@ -29,7 +28,6 @@ export const InfoCallout: FC<{ children: ReactNode }> = ({ children }) => (
   </div>
 );
 
-/** Read-only card wrapper used by each derived-availability block. */
 const DerivedCard: FC<{ title: string; affix?: string; children: ReactNode; caption?: string }> = ({ title, affix, children, caption }) => (
   <div className="bg-muted/30 rounded-lg border p-3">
     <p className="mb-2 text-sm font-medium">
@@ -42,28 +40,65 @@ const DerivedCard: FC<{ title: string; affix?: string; children: ReactNode; capt
 );
 
 interface ComponentsCardProps {
-  components: ComboComponent[];
+  lines: ComboComponentLine[];
   options: ComboComponent[];
   loading?: boolean;
   sumOfParts: number;
   onAdd: (id: string) => void;
   onRemove: (id: string) => void;
+  onQuantityChange: (id: string, quantity: number) => void;
 }
 
-/** The combo's component list: one row per menu item, an inline picker, and a running sum of parts. */
-export const ComponentsCard: FC<ComponentsCardProps> = ({ components, options, loading, sumOfParts, onAdd, onRemove }) => {
+const QuantityStepper: FC<{ quantity: number; onChange: (quantity: number) => void }> = ({ quantity, onChange }) => (
+  <div className="flex h-8 shrink-0 items-center overflow-hidden rounded-md border">
+    <button
+      type="button"
+      title="Decrease quantity"
+      disabled={quantity <= MIN_QUANTITY}
+      onClick={() => onChange(quantity - 1)}
+      className="hover:bg-accent flex h-full w-7 cursor-pointer items-center justify-center transition disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <Minus className="h-3 w-3" />
+    </button>
+
+    <input
+      type="number"
+      inputMode="numeric"
+      min={MIN_QUANTITY}
+      max={MAX_QUANTITY}
+      value={quantity}
+      aria-label="Quantity"
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="h-full w-9 [appearance:textfield] border-x bg-transparent text-center text-sm font-medium outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+    />
+
+    <button
+      type="button"
+      title="Increase quantity"
+      disabled={quantity >= MAX_QUANTITY}
+      onClick={() => onChange(quantity + 1)}
+      className="hover:bg-accent flex h-full w-7 cursor-pointer items-center justify-center transition disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <Plus className="h-3 w-3" />
+    </button>
+  </div>
+);
+
+export const ComponentsCard: FC<ComponentsCardProps> = ({ lines, options, loading, sumOfParts, onAdd, onRemove, onQuantityChange }) => {
   const [open, setOpen] = useState(false);
+  const totalUnits = lines.reduce((total, line) => total + line.quantity, 0);
 
   return (
     <div className="overflow-hidden rounded-lg border">
       <div className="bg-muted/50 text-muted-foreground flex items-center justify-between border-b px-3 py-2 text-xs font-medium">
         <span>Menu items in this combo</span>
         <span>
-          {components.length} {components.length === 1 ? 'item' : 'items'}
+          {lines.length} {lines.length === 1 ? 'item' : 'items'}
+          {totalUnits !== lines.length ? ` · ${totalUnits} units` : ''}
         </span>
       </div>
 
-      {components.map((component) => (
+      {lines.map(({ component, quantity }) => (
         <div key={component._id} className="flex items-center gap-3 border-b px-3 py-2.5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gray-100 dark:bg-gray-800">
             {hasRealImage(component.image) ? (
@@ -74,9 +109,16 @@ export const ComponentsCard: FC<ComponentsCardProps> = ({ components, options, l
             )}
           </div>
 
-          <span className="flex-1 truncate text-sm font-medium">{component.title}</span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{component.title}</p>
+            <p className="text-muted-foreground text-xs">€{(component.basePrice || 0).toFixed(2)} each</p>
+          </div>
 
-          <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">1× · €{(component.basePrice || 0).toFixed(2)}</span>
+          <QuantityStepper quantity={quantity} onChange={(next) => onQuantityChange(component._id, next)} />
+
+          <span className="w-16 shrink-0 text-right text-sm font-medium whitespace-nowrap">
+            €{((component.basePrice || 0) * quantity).toFixed(2)}
+          </span>
 
           <button
             type="button"
@@ -147,7 +189,6 @@ export const ComponentsCard: FC<ComponentsCardProps> = ({ components, options, l
   );
 };
 
-/** Days / daypart / allergens the combo inherits from its components — display only, never edited here. */
 export const AvailabilityCards: FC<{ components: ComboComponent[]; availability: DerivedAvailability }> = ({ components, availability }) => {
   const hasComponents = components.length > 0;
 

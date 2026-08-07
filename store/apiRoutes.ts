@@ -128,6 +128,25 @@ export const API_ROUTES = {
   ORGANIZER_OCCASIONS: `/organizer/occasion`,
   ORGANIZER_OCCASION_BY_ID: (id: string) => `/organizer/occasion/${id}`,
 
+  // ── RESERVATION PREFERENCES ─────────────────────────────────────────────
+  // One document per organization. GET scopes by `?organization=`; the PUT
+  // is an upsert keyed by organization id in the path, so it also creates
+  // the document the first time an organization is saved.
+  ADMIN_RESERVATION_PREFERENCES: `/admin/reservation-preferences`,
+  ADMIN_RESERVATION_PREFERENCES_BY_ORGANIZATION: (organizationId: string) => `/admin/reservation-preferences/${organizationId}`,
+
+  ORGANIZER_RESERVATION_PREFERENCES: `/organizer/reservation-preferences`,
+  ORGANIZER_RESERVATION_PREFERENCES_BY_ORGANIZATION: (organizationId: string) => `/organizer/reservation-preferences/${organizationId}`,
+
+  // ── RESERVATION TYPES ───────────────────────────────────────────────────
+  // Paginated. GET scopes by `?organization=`, create carries it in the body;
+  // update and delete address the record by id.
+  ADMIN_RESERVATION_TYPES: `/admin/reservation-types`,
+  ADMIN_RESERVATION_TYPE_BY_ID: (id: string) => `/admin/reservation-types/${id}`,
+
+  ORGANIZER_RESERVATION_TYPES: `/organizer/reservation-types`,
+  ORGANIZER_RESERVATION_TYPE_BY_ID: (id: string) => `/organizer/reservation-types/${id}`,
+
   // ── IN-APP ORDERING SETTINGS ────────────────────────────────────────────
   // One document per organization holding every sub-setting.
   // GET scopes by `?organization=`, PUT carries it in the body.

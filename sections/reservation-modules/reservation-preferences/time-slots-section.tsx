@@ -5,8 +5,8 @@ import React from 'react';
 import { OFFSET_OPTIONS, SELECT_ITEM_CLASS, SELECT_TRIGGER_CLASS, SLOT_DURATION_OPTIONS } from './constants';
 import { SettingRow } from './setting-row';
 import { SettingsCard } from './settings-card';
-import { OffsetMinutes, SlotDurationMinutes, TimeSlotSettings } from './types';
 import { ToggleSwitch } from './toggle-switch';
+import { OffsetMinutes, SlotDurationMinutes, TimeSlotSettings } from './types';
 
 interface TimeSlotsSectionProps {
   value: TimeSlotSettings;
@@ -55,8 +55,12 @@ export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({ value, onCha
         </Select>
       </SettingRow>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      {/* `py-0` on both: SettingRow's own `first:pt-0 last:pb-0` is meant for a
+          vertical stack, and side by side it would offset the columns from
+          each other. The grid's own `pt-4` keeps the rhythm with the row above. */}
+      <div className="grid gap-5 pt-4 sm:grid-cols-2">
         <SettingRow
+          className="py-0"
           htmlFor="reservation-start-offset"
           title="Reservation start time"
           description="Offset from opening time when the first time slot starts."
@@ -80,6 +84,7 @@ export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({ value, onCha
         </SettingRow>
 
         <SettingRow
+          className="py-0"
           htmlFor="reservation-end-offset"
           title="Reservation end time"
           description="Offset before closing time when the last time slot ends."

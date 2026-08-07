@@ -18,17 +18,20 @@ import { useForm, useWatch } from 'react-hook-form';
 import * as Yup from 'yup';
 import { AvailabilityCards, ComponentsCard, InfoCallout, SectionHeading } from './combos-modal-fields';
 import {
+  clampQuantity,
   deriveAvailability,
   getComboFinalPrice,
+  getComboLines,
   getPriceComparison,
   getRefId,
   getRefLabel,
+  MAX_QUANTITY,
+  MIN_QUANTITY,
   PRICE_INPUT_CONFIG,
   PRICE_MODE_OPTIONS,
 } from './combos-utils';
-import { ComboComponent, ComboFormValues, ComboModalProps, PriceMode } from './types';
+import { ComboComponent, ComboComponentLine, ComboFormMenuItem, ComboFormValues, ComboModalProps, PriceMode } from './types';
 
-/** Components and their availability are read off the menu-items list, so fetch it whole rather than paging. */
 const MENU_ITEM_FETCH_LIMIT = 1000;
 
 const defaultValues: ComboFormValues = {
@@ -45,15 +48,23 @@ const schema = Yup.object().shape({
   name: Yup.string().required('Combo name is required'),
   subCategory: Yup.string().required('Subcategory is required'),
   description: Yup.string().optional(),
-  menuItems: Yup.array().of(Yup.string().required()).min(2, 'A combo needs at least 2 menu items').required(),
+
+  menuItems: Yup.array()
+    .of(
+      Yup.object({
+        menuItem: Yup.string().required(),
+        quantity: Yup.number().integer().min(MIN_QUANTITY).max(MAX_QUANTITY).required(),
+      }).required()
+    )
+    .min(2, 'A combo needs at least 2 menu items')
+    .required(),
   priceMode: Yup.mixed<'fixed_combo_price' | 'percentage_off_sum' | 'fixed_amount_off_sum'>()
     .oneOf(['fixed_combo_price', 'percentage_off_sum', 'fixed_amount_off_sum'])
     .required(),
   price: Yup.string()
     .required('Price is required')
     .test('is-decimal', 'Must be a valid number greater than 0', (v) => !!v && Number(v) > 0)
-    // What counts as a valid number depends on the mode, and on the sum of parts it's applied to —
-    // the latter lives outside the form, so it's read from the resolver context.
+
     .test('within-mode-range', 'Invalid for the selected price mode', function (value) {
       const price = Number(value);
       if (!value || isNaN(price) || price <= 0) return true;
@@ -69,7 +80,7 @@ const schema = Yup.object().shape({
       }
       return true;
     }),
-  // `draft` is accepted because a stored draft can be loaded into the form, even though it's never picked by hand.
+
   status: Yup.mixed<'active' | 'inactive' | 'draft'>().oneOf(['active', 'inactive', 'draft']).required(),
 });
 
@@ -78,11 +89,6 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
   const [updateCombo, { isLoading: updateLoading }] = useUpdateComboMutation();
   const submitting = addLoading || updateLoading;
 
-  /**
-   * The price rules need the sum of parts, which is derived further down from watched form state and
-   * so can't be passed at hook-init. RHF reassigns `control._options` every render and reads
-   * `context` fresh at validation time, so a stable object kept current below does the job.
-   */
   const validationContext = useRef({ sumOfParts: 0 }).current;
 
   const methods = useForm<ComboFormValues>({
@@ -95,8 +101,9 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
   const isDirty = formState?.isDirty;
 
   const watchedMenuItems = useWatch({ control, name: 'menuItems' });
-  // Memoised so the `|| []` fallback doesn't hand a fresh array to the derivations on every render.
-  const selectedIds: string[] = useMemo(() => watchedMenuItems || [], [watchedMenuItems]);
+
+  const selectedLines: ComboFormMenuItem[] = useMemo(() => watchedMenuItems || [], [watchedMenuItems]);
+  const selectedIds = useMemo(() => selectedLines.map((line) => line.menuItem), [selectedLines]);
   const priceValue = useWatch({ control, name: 'price' });
   const priceModeValue = useWatch({ control, name: 'priceMode' });
 
@@ -109,28 +116,29 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
   const menuItems: ComboComponent[] = useMemo(() => menuItemsData?.data || [], [menuItemsData]);
   const menuItemsById = useMemo(() => new Map(menuItems.map((item) => [item._id, item])), [menuItems]);
 
-  /**
-   * Resolved components, in the order the user picked them. Falls back to the combo's own populated
-   * menuItems for anything missing from the list — those still render, they just carry no
-   * availability data of their own to fold into the overlap.
-   */
-  const components: ComboComponent[] = useMemo(() => {
+  const componentLines: ComboComponentLine[] = useMemo(() => {
     const fallbacks = new Map(
-      (selectedData?.menuItems || [])
-        .filter((item) => item && typeof item !== 'string')
-        .map((item) => [getRefId(item), item as unknown as ComboComponent])
+      getComboLines(selectedData?.menuItems)
+        .filter((line) => line.ref && typeof line.ref !== 'string')
+        .map((line) => [line.id, line.ref as unknown as ComboComponent])
     );
-    return selectedIds.map((id) => menuItemsById.get(id) || fallbacks.get(id)).filter((item): item is ComboComponent => !!item);
-  }, [selectedIds, menuItemsById, selectedData]);
+    return selectedLines
+      .map((line) => {
+        const component = menuItemsById.get(line.menuItem) || fallbacks.get(line.menuItem);
+        return component ? { component, quantity: line.quantity } : null;
+      })
+      .filter((line): line is ComboComponentLine => !!line);
+  }, [selectedLines, menuItemsById, selectedData]);
+
+  const components: ComboComponent[] = useMemo(() => componentLines.map((line) => line.component), [componentLines]);
 
   const addableItems = useMemo(() => menuItems.filter((item) => !selectedIds.includes(item._id)), [menuItems, selectedIds]);
 
-  const sumOfParts = useMemo(() => components.reduce((sum, item) => sum + (item.basePrice || 0), 0), [components]);
+  const sumOfParts = useMemo(() => componentLines.reduce((sum, line) => sum + (line.component.basePrice || 0) * line.quantity, 0), [componentLines]);
   validationContext.sumOfParts = sumOfParts;
 
   const availability = useMemo(() => deriveAvailability(components), [components]);
 
-  // Both the mode and the sum change what a valid price is, so re-check a price the user already entered.
   useEffect(() => {
     if (priceValue) methods.trigger('price');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -148,11 +156,10 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
         name: selectedData.name,
         subCategory: getRefId(selectedData.subCategory),
         description: selectedData.description || '',
-        menuItems: (selectedData.menuItems || []).map(getRefId).filter(Boolean),
+        menuItems: getComboLines(selectedData.menuItems).map((line) => ({ menuItem: line.id, quantity: line.quantity })),
         priceMode: selectedData.priceMode,
         price: String(selectedData.price),
-        // `draft` is derived, not chosen, so offer a real choice instead — if the components still
-        // don't overlap the save re-forces draft anyway.
+
         status: selectedData.status === 'draft' ? 'active' : selectedData.status,
       });
     } else {
@@ -160,29 +167,31 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
     }
   }, [open, isEdit, selectedData, reset]);
 
+  const commitLines = (lines: ComboFormMenuItem[]) => setValue('menuItems', lines, { shouldDirty: true, shouldValidate: true });
+
+  const changeQuantity = (id: string, quantity: number) =>
+    commitLines(selectedLines.map((line) => (line.menuItem === id ? { ...line, quantity: clampQuantity(quantity) } : line)));
+
   const addComponent = (id: string) => {
-    if (selectedIds.includes(id)) return;
-    setValue('menuItems', [...selectedIds, id], { shouldDirty: true, shouldValidate: true });
+    const existing = selectedLines.find((line) => line.menuItem === id);
+    if (existing) {
+      changeQuantity(id, existing.quantity + 1);
+      return;
+    }
+    commitLines([...selectedLines, { menuItem: id, quantity: MIN_QUANTITY }]);
   };
 
-  const removeComponent = (id: string) => {
-    setValue(
-      'menuItems',
-      selectedIds.filter((selectedId) => selectedId !== id),
-      { shouldDirty: true, shouldValidate: true }
-    );
-  };
+  const removeComponent = (id: string) => commitLines(selectedLines.filter((line) => line.menuItem !== id));
 
   const handleSubmit = async (formData: ComboFormValues) => {
     const payload: any = {
       name: formData.name,
       subCategory: formData.subCategory,
       description: formData.description || '',
-      menuItems: formData.menuItems,
+      menuItems: formData.menuItems.map((line) => ({ menuItem: line.menuItem, quantity: clampQuantity(line.quantity) })),
       priceMode: formData.priceMode,
       price: Number(formData.price),
-      // Components with no orderable overlap can't go live, so the combo is parked as a draft
-      // regardless of what was picked — it stays that way until the overlap is fixed.
+
       status: availability.isUnorderable ? 'draft' : formData.status,
     };
     if (userType === 'super-admin' && companyId) payload.companyOrganizer = companyId;
@@ -221,7 +230,6 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
           <div className="mt-2 w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-6">
-                {/* COMBO DETAILS */}
                 <div className="flex flex-col gap-4">
                   <SectionHeading title="Combo details" />
 
@@ -243,23 +251,22 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
                   <RHFTextField name="description" label="Description (Optional)" placeholder="Shown to guests if filled in" multiline rows={2} />
                 </div>
 
-                {/* COMPONENTS */}
                 <div className="flex flex-col gap-4">
                   <SectionHeading title="Components" affix="minimum 2 items" affixClassName="text-red-500" />
 
-                  {/* Bound through FormField so Yup's min(2) message lands under the card. */}
                   <FormField
                     control={control}
                     name="menuItems"
                     render={() => (
                       <FormItem className="space-y-0">
                         <ComponentsCard
-                          components={components}
+                          lines={componentLines}
                           options={addableItems}
                           loading={menuItemsLoading}
                           sumOfParts={sumOfParts}
                           onAdd={addComponent}
                           onRemove={removeComponent}
+                          onQuantityChange={changeQuantity}
                         />
                         <FormMessage className="mt-2" />
                       </FormItem>
@@ -272,14 +279,12 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
                   </p>
                 </div>
 
-                {/* AVAILABILITY */}
                 <div className="flex flex-col gap-4">
                   <SectionHeading title="Availability" affix="derived from components, read-only" />
 
                   <AvailabilityCards components={components} availability={availability} />
                 </div>
 
-                {/* COMBO PRICE */}
                 <div className="flex flex-col gap-4">
                   <SectionHeading title="Combo price" />
 
@@ -290,14 +295,14 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
 
                     <div className="flex flex-col gap-2">
                       <span className="text-sm font-medium">Guest pays</span>
-                      <div className="bg-muted/50 flex h-9 items-center justify-between gap-2 rounded-md border px-3">
+                      <div className="bg-muted/50 flex min-h-9 flex-wrap items-center justify-between gap-x-2 gap-y-0.5 rounded-md border px-3 py-1.5">
                         {finalPrice != null ? (
                           <>
-                            <span className="text-sm font-semibold">€{finalPrice.toFixed(2)}</span>
+                            <span className="text-sm font-semibold tabular-nums">€{finalPrice.toFixed(2)}</span>
                             {comparison ? (
                               <span
                                 className={cn(
-                                  'text-[11px] whitespace-nowrap',
+                                  'text-[11px] leading-tight tabular-nums',
                                   comparison.isSaving ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                                 )}
                               >
@@ -318,7 +323,6 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
                   </p>
                 </div>
 
-                {/* WHERE IT APPEARS */}
                 <div className="flex flex-col gap-4">
                   <SectionHeading title="Where it appears" />
 
@@ -328,32 +332,30 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
                   </InfoCallout>
                 </div>
 
-                {/* STATUS */}
-                <div className="flex flex-col gap-4">
-                  <SectionHeading title="Status" />
+                {(availability.isUnorderable || isEdit) && (
+                  <div className="flex flex-col gap-4">
+                    <SectionHeading title="Status" />
 
-                  {availability.isUnorderable ? (
-                    <div className="bg-muted/30 flex items-center justify-between gap-3 rounded-md border px-3 py-2.5">
-                      <div>
-                        <p className="text-sm font-medium">Draft</p>
-                        <p className="text-muted-foreground mt-0.5 text-xs">Set automatically because the components have no orderable overlap.</p>
+                    {availability.isUnorderable ? (
+                      <div className="bg-muted/30 flex items-center justify-between gap-3 rounded-md border px-3 py-2.5">
+                        <div>
+                          <p className="text-sm font-medium">Draft</p>
+                          <p className="text-muted-foreground mt-0.5 text-xs">Set automatically because the components have no orderable overlap.</p>
+                        </div>
+                        <CustomBadge variant="warning">Draft</CustomBadge>
                       </div>
-                      <CustomBadge variant="warning">Draft</CustomBadge>
-                    </div>
-                  ) : (
-                    isEdit && (
+                    ) : (
                       <RHFSelectField
                         name="status"
-                        label="Status"
                         placeholder="Select Status"
                         options={[
                           { value: 'active', label: 'Active' },
                           { value: 'inactive', label: 'Inactive' },
                         ]}
                       />
-                    )
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="mt-6 flex w-full items-center justify-end gap-2">

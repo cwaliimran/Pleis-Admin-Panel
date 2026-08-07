@@ -14,11 +14,12 @@ import { Plus, X } from 'lucide-react';
 import React, { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { CONDITION_TYPE_OPTIONS, SELECT_ITEM_CLASS, SELECT_TRIGGER_CLASS, TAX_PERCENTAGE_OPTIONS, suggestMaxCapacity } from '../constants';
+import { SELECT_ITEM_CLASS, SELECT_TRIGGER_CLASS } from '../constants';
 import { FieldGroup } from '../field-group';
 import { SettingRow } from '../setting-row';
 import { ToggleSwitch } from '../toggle-switch';
-import { ConditionType, ReservationType, ReservationTypePayload, ReservationTypeStatus, TaxPercentage } from '../types';
+import { CONDITION_TYPE_OPTIONS, TAX_PERCENTAGE_OPTIONS, suggestMaxCapacity } from './constants';
+import { ConditionType, ReservationType, ReservationTypePayload, ReservationTypeStatus, TaxPercentage } from './types';
 
 const uid = () => `note_${Math.random().toString(36).slice(2, 10)}`;
 
@@ -87,7 +88,8 @@ interface ReservationTypeModalProps {
   /** Existing names, used to block duplicates. Includes the edited type's own name. */
   existingNames: string[];
   isSubmitting: boolean;
-  onSubmit: (payload: ReservationTypePayload) => Promise<void>;
+  /** Resolves with the backend's own message, which is surfaced in the toast. */
+  onSubmit: (payload: ReservationTypePayload) => Promise<string | undefined>;
   onClose: () => void;
 }
 
@@ -168,14 +170,14 @@ export const ReservationTypeModal: React.FC<ReservationTypeModalProps> = ({
     }
 
     try {
-      await onSubmit({
+      const message = await onSubmit({
         ...values,
         name,
         // Blank notes are dropped rather than rejected — an empty row is just
         // a note the user started and abandoned.
         importantInformation: values.importantInformation.filter((note) => note.text.trim()).map((note) => ({ ...note, text: note.text.trim() })),
       });
-      showSuccess(isEdit ? 'Reservation type updated' : 'Reservation type created');
+      showSuccess(message || (isEdit ? 'Reservation type updated' : 'Reservation type created'));
       onClose();
     } catch (error) {
       showError(getErrorMessage(error));

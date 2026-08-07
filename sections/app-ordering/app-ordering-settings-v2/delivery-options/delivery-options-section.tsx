@@ -4,12 +4,13 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
-import { showError, showInfo, showSuccess } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { SettingsCard } from '../common/settings-card';
 import { DELIVERY_OPTION_STATUS_CONFIG, DELIVERY_OPTION_TYPE_CONFIG } from './constants';
 import { DeliveryOptionModal } from './delivery-option-modal';
+import { DeliveryOptionQrModal } from './delivery-option-qr-modal';
 import DeliveryOptionsTable from './delivery-options-table';
 import { DeliveryOption, DeliveryOptionPayload, SortDirection } from './types';
 import { useDeliveryOptions } from './use-delivery-options';
@@ -33,9 +34,11 @@ export const DeliveryOptionsSection: React.FC<DeliveryOptionsSectionProps> = ({ 
   const [sortOrder, setSortOrder] = useState<SortDirection | ''>('');
   const [editingOption, setEditingOption] = useState<DeliveryOption | null>(null);
   const [optionPendingDelete, setOptionPendingDelete] = useState<DeliveryOption | null>(null);
+  const [qrOption, setQrOption] = useState<DeliveryOption | null>(null);
 
   const optionModal = useBoolean();
   const deleteDialog = useBoolean();
+  const qrModal = useBoolean();
 
   // The list is small and unpaginated, so sorting here covers the whole dataset.
   const sortedOptions = useMemo(() => {
@@ -75,7 +78,8 @@ export const DeliveryOptionsSection: React.FC<DeliveryOptionsSectionProps> = ({ 
   };
 
   const handleGenerateQrCode = (option: DeliveryOption) => {
-    showInfo(`QR code generation for ${option.name} is not connected yet`);
+    setQrOption(option);
+    qrModal.onTrue();
   };
 
   const handleConfirmDelete = async () => {
@@ -127,6 +131,15 @@ export const DeliveryOptionsSection: React.FC<DeliveryOptionsSectionProps> = ({ 
         existingNames={options.map((option) => option.name)}
         onSubmit={handleSubmit}
         isSubmitting={isMutating}
+      />
+
+      <DeliveryOptionQrModal
+        open={qrModal.value}
+        option={qrOption}
+        onClose={() => {
+          qrModal.onFalse();
+          setQrOption(null);
+        }}
       />
 
       <ConfirmDialog

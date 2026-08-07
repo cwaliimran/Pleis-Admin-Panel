@@ -4,7 +4,9 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { CirclePlus, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
-import { getComboFinalPrice, getPriceModeLabel, getRefLabel, getSumOfParts } from './combos-utils';
+import { formatComboPrice, getComboLines, getPriceModeLabel, getRefLabel, 
+  // getSumOfParts
+ } from './combos-utils';
 import { TableRowProps } from './types';
 
 const STATUS_BADGE: Record<string, { variant: 'success' | 'error' | 'warning'; label: string }> = {
@@ -14,8 +16,8 @@ const STATUS_BADGE: Record<string, { variant: 'success' | 'error' | 'warning'; l
 };
 
 const ComboTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
-  const sumOfParts = getSumOfParts(item.menuItems);
-  const finalPrice = getComboFinalPrice(item.priceMode, sumOfParts, item.price);
+  const lines = getComboLines(item.menuItems);
+  // const sumOfParts = getSumOfParts(item.menuItems);
   const badge = STATUS_BADGE[item.status] || STATUS_BADGE.inactive;
 
   return (
@@ -29,24 +31,25 @@ const ComboTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =>
           </span>
         </div>
         <p className="text-muted-foreground mt-1 text-xs">Subcategory: {getRefLabel(item.subCategory)}</p>
-        {/* {item.description && <p className="text-muted-foreground mt-1 text-xs">{item.description}</p>} */}
       </TableCell>
 
       <TableCell className="text-left">
         <div className="flex flex-col gap-0.5 text-sm">
-          {(item.menuItems || []).map((menuItem, idx) => (
-            <span key={`${getRefLabel(menuItem)}-${idx}`}>{getRefLabel(menuItem)}</span>
+          {lines.map((line, idx) => (
+            <span key={`${line.id}-${idx}`}>
+              <span className="text-muted-foreground">{line.quantity}×</span> {getRefLabel(line.ref)}
+            </span>
           ))}
         </div>
       </TableCell>
 
-      <TableCell className="text-left">€{sumOfParts.toFixed(2)}</TableCell>
+      <TableCell className="text-left">€{item.totalBasePrice.toFixed(2)}</TableCell>
 
       <TableCell className="text-left">
         <div className="flex flex-col gap-0.5">
           <span className="text-muted-foreground text-xs">{getPriceModeLabel(item.priceMode)}</span>
-          {/* `price` means something different per mode, so show what the guest actually pays. */}
-          <span className="font-semibold">{finalPrice != null ? `€${finalPrice.toFixed(2)}` : '—'}</span>
+
+          <span className="font-semibold tabular-nums">{formatComboPrice(item.priceMode, item.price)}</span>
         </div>
       </TableCell>
 
