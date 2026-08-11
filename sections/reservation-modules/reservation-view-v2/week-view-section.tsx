@@ -13,7 +13,6 @@ interface WeekViewSectionProps {
   days: DaySummary[];
   selectedDate: string;
   onSelectDate: (date: string) => void;
-  /** Jumps the strip to the week containing the picked date. */
   onPickWeek: (date: Date) => void;
   isLoading?: boolean;
 }

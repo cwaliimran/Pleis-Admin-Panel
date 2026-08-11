@@ -41,6 +41,16 @@ export interface ApiReservationType {
   status?: ApiReservationTypeStatus;
   createdAt?: string;
   updatedAt?: string;
+
+  // ---- summary mode only (`?summary=true`) ----
+  // The backend returns a trimmed record carrying live availability instead of
+  // the full configuration. Both are optional here because the paginated list
+  // never includes them.
+
+  /** Tables of this type still free to book. */
+  availableTables?: number;
+  /** Seats of this type still free to book. */
+  availableCapacity?: number;
 }
 
 export interface ApiReservationTypesMeta {
@@ -59,11 +69,18 @@ export interface GetReservationTypesResponse {
 
 export interface GetReservationTypesArgs {
   organization: string;
-  /** 0-based; the offset is re-added below so the API receives a 1-based page. */
-  page: number;
-  limit: number;
+  /** 0-based; the offset is re-added below so the API receives a 1-based page.
+   *  Omitted in summary mode, which is unpaginated. */
+  page?: number;
+  limit?: number;
   status?: ApiReservationTypeStatus;
   conditionType?: ApiConditionType;
+  /**
+   * Returns every type for the organization as a trimmed record carrying live
+   * `availableTables` / `availableCapacity`. Used by the reservation form to
+   * bound party size, table count, and seats.
+   */
+  summary?: boolean;
 }
 
 /** Every writable field. Create sends them all; update sends them all too. */
@@ -108,12 +125,16 @@ export const reservationTypesApi = createApi({
 
   endpoints: (builder) => ({
     getReservationTypes: builder.query<GetReservationTypesResponse, GetReservationTypesArgs>({
-      query: ({ organization, page, limit, status, conditionType }) => {
-        const params: Record<string, string | number> = {
-          organization,
-          page: page + 1,
-          limit,
-        };
+      query: ({ organization, page, limit, status, conditionType, summary }) => {
+        const params: Record<string, string | number | boolean> = { organization };
+
+        if (summary) {
+          // Summary mode is unpaginated — sending page/limit would truncate it.
+          params.summary = true;
+        } else {
+          if (page !== undefined) params.page = page + 1;
+          if (limit !== undefined) params.limit = limit;
+        }
 
         // Left off entirely when the filter is "all".
         if (status) params.status = status;

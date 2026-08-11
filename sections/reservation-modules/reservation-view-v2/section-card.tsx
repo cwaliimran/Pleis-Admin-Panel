@@ -5,11 +5,8 @@ import React from 'react';
 
 interface SectionCardProps {
   title: string;
-  /** Muted uppercase caption on the right of the header. */
   caption?: React.ReactNode;
-  /** Sits under the title, e.g. the reservation list's active selection. */
   subtitle?: React.ReactNode;
-  /** Controls rendered on the right, replacing the caption when both are given. */
   headerAction?: React.ReactNode;
   children: React.ReactNode;
   className?: string;

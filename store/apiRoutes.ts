@@ -101,11 +101,14 @@ export const API_ROUTES = {
   // ── ADMIN ROUTES ─────────────────────────────────
 
   ADMIN_RESERVATION_CALENDAR: `/admin/reservations/calendar`,
+  /** Backend spelling — `calender`, not `calendar`. Kept verbatim. */
+  ADMIN_RESERVATION_CALENDAR_V2: `/admin/reservations/v2/calender`,
   ADMIN_RESERVATION_COPY: `/admin/reservations/copy`,
   ADMIN_RESERVATION_COPY_SLOTS: `/admin/reservations/copy-slots`,
   ADMIN_RESERVATION_CHANGE_TIMING: `/admin/reservations/change-timing`,
 
   ORGANIZER_RESERVATION_CALENDAR: `/organizer/reservations/calendar`,
+  ORGANIZER_RESERVATION_CALENDAR_V2: `/organizer/reservations/v2/calender`,
   ORGANIZER_RESERVATION_COPY: `/organizer/reservations/copy`,
   ORGANIZER_RESERVATION_COPY_SLOTS: `/organizer/reservations/copy-slots`,
   ORGANIZER_RESERVATION_CHANGE_TIMING: `/organizer/reservations/change-timing`,
@@ -441,18 +444,27 @@ export const API_ROUTES = {
   ADMIN_THIRD_PARTY_BY_ID: (id: string) => `/admin/third-party/${id}`,
 
   ADMIN_RESERVATION: `/admin/reservations`,
+  /** Paginated reservation list for the v2 board. Scoped by `?organizationsId=`. */
+  ADMIN_RESERVATION_LIST_V2: `/admin/reservations/v2`,
   ADMIN_RESERVATION_BY_ID: (id: string) => `/admin/reservations/${id}`,
   ADMIN_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/admin/reservations/updateStatus/${id}/${status}`,
   ADMIN_USERS_RESERVATION: `/admin/reservations/users`,
+  /** Creates a reservation on a guest's behalf. Note the singular `user` — the
+   *  plural `.../users` route above is the read endpoint, not its collection. */
+  ADMIN_CREATE_USER_RESERVATION: `/admin/reservations/user`,
+  ADMIN_UPDATE_USER_RESERVATION_V2: (id: string) => `/admin/reservations/user/${id}`,
   ADMIN_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/admin/reservations/${userId}/${id}`,
 
   ADMIN_RESERVATION_ANALYTICS: `admin/reservations-analytics`,
   ORGANIZER_RESERVATION_ANALYTICS: `/organizer/reservations-analytics`,
 
   ORGANIZER_RESERVATION: `/organizer/reservations`,
+  ORGANIZER_RESERVATION_LIST_V2: `/organizer/reservations/v2`,
   ORGANIZER_RESERVATION_BY_ID: (id: string) => `/organizer/reservations/${id}`,
   ORGANIZER_UPDATE_RESERVATION_STATUS: (id: string, status: string) => `/organizer/reservations/updateStatus/${id}/${status}`,
   ORGANIZER_USERS_RESERVATION: `/organizer/reservations/users`,
+  ORGANIZER_CREATE_USER_RESERVATION: `/organizer/reservations/user`,
+  ORGANIZER_UPDATE_USER_RESERVATION_V2: (id: string) => `/organizer/reservations/user/${id}`,
   ORGANIZER_UPDATE_USER_RESERVATION: (userId: string, id: string) => `/organizer/reservations/${userId}/${id}`,
 
   ADMIN_LOYALTY_TRANSACTIONS: `/admin/transactions`,

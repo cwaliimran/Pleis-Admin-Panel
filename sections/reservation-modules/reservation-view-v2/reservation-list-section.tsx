@@ -1,28 +1,29 @@
 'use client';
 
+import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
-import { cn } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import React from 'react';
-import { LIST_FILTER_OPTIONS, RESERVATION_LIST_TABLE_HEAD } from './constants';
+import { LIST_FILTER_OPTIONS, RESERVATION_LIST_TABLE_HEAD, SELECT_ITEM_CLASS } from './constants';
 import { ReservationListRow } from './reservation-list-row';
 import { SectionCard } from './section-card';
-import { ListFilter, Reservation, ReservationStatus } from './types';
+import { ListFilter, Reservation, ReservationPagination, ReservationStatus } from './types';
 
 interface ReservationListSectionProps {
   data: Reservation[];
-  /** "Mon 02/06 · slot 19:00 · Standard table" — reflects the active selection. */
   subtitle: string;
   filter: ListFilter;
   onFilterChange: (filter: ListFilter) => void;
+  pagination: ReservationPagination;
+  onPageChange: (page: number) => void;
   isLoading: boolean;
-  isMutating: boolean;
+  pendingStatusId: string | null;
   onCreate: () => void;
   onEdit: (item: Reservation) => void;
-  onDelete: (item: Reservation) => void;
   onSetStatus: (item: Reservation, status: ReservationStatus) => void;
 }
 
@@ -31,11 +32,12 @@ export const ReservationListSection: React.FC<ReservationListSectionProps> = ({
   subtitle,
   filter,
   onFilterChange,
+  pagination,
+  onPageChange,
   isLoading,
-  isMutating,
+  pendingStatusId,
   onCreate,
   onEdit,
-  onDelete,
   onSetStatus,
 }) => {
   return (
@@ -44,24 +46,18 @@ export const ReservationListSection: React.FC<ReservationListSectionProps> = ({
       subtitle={subtitle}
       headerAction={
         <div className="flex shrink-0 flex-wrap items-center gap-3">
-          <div className="inline-flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-700">
-            {LIST_FILTER_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                aria-pressed={filter === option.value}
-                onClick={() => onFilterChange(option.value)}
-                className={cn(
-                  'cursor-pointer rounded-md px-3 py-1.5 text-sm font-semibold transition-colors',
-                  filter === option.value
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+          <Select value={filter} onValueChange={(next) => onFilterChange(next as ListFilter)}>
+            <SelectTrigger className="h-10 w-52 cursor-pointer bg-white shadow-none dark:bg-[#1a1a1a]">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              {LIST_FILTER_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value} className={SELECT_ITEM_CLASS}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Button type="button" onClick={onCreate} className="h-10 cursor-pointer gap-1 font-semibold">
             <Plus className="h-4 w-4" />
@@ -84,15 +80,24 @@ export const ReservationListSection: React.FC<ReservationListSectionProps> = ({
               <ReservationListRow
                 key={item.id}
                 item={item}
-                disabled={isMutating}
+                disabled={pendingStatusId === item.id}
                 onEdit={onEdit}
-                onDelete={onDelete}
                 onSetStatus={onSetStatus}
               />
             ))}
           </TableBodyWrapper>
         </Table>
       </div>
+
+      {pagination.totalPages > 1 && (
+        <PaginationControls
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          totalRecords={pagination.totalRecords}
+          limit={pagination.limit}
+          onPageChange={onPageChange}
+        />
+      )}
     </SectionCard>
   );
 };

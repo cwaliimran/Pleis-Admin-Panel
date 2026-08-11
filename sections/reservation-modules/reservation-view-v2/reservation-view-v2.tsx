@@ -4,23 +4,24 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useOrganizerOrganization } from '@/hooks/useOrganizerOrganization';
+import { useUpdateUserReservationStatusMutation } from '@/store/Reducer/user-reservations-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { addDays, format, parseISO, startOfWeek } from 'date-fns';
 import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { TIME_SLOTS } from './constants';
+import { RESERVATION_STATUS_CONFIG, TIME_SLOTS } from './constants';
 import { ReservationFormModal } from './modals/reservation-form-modal';
 import { ReservationListSection } from './reservation-list-section';
 import { ReservationTypesSection } from './reservation-types-section';
 import { TimeSlotsSection } from './time-slots-section';
-import { ListFilter, Reservation, ReservationPayload, ReservationQuery, ReservationStatus, UserType } from './types';
-import { useReservationView } from './use-reservation-view';
+import { ListFilter, Reservation, ReservationStatus, UserType } from './types';
+import { useReservationCalendar } from './use-reservation-calendar';
+import { useReservationList } from './use-reservation-list';
 import { WeekViewSection } from './week-view-section';
 
 const ISO = 'yyyy-MM-dd';
 
-/** Weeks run Monday → Sunday, matching the strip and the picker. */
 const toWeekStart = (date: Date) => startOfWeek(date, { weekStartsOn: 1 });
 
 interface ReservationViewV2Props {
@@ -28,8 +29,6 @@ interface ReservationViewV2Props {
 }
 
 export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType = 'super-admin' }) => {
-  // Single source of truth for the organization id — super-admin resolves it from
-  // the company selector in the header, organizer from the dropdown this hook renders.
   const { organizationId, OrganizationDropdown } = useOrganizerOrganization({
     userType,
     storageKey: 'reservation-view-v2-organization',
@@ -40,47 +39,68 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [listFilter, setListFilter] = useState<ListFilter>('all');
+  const [page, setPage] = useState(1);
 
   const [editing, setEditing] = useState<Reservation | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<Reservation | null>(null);
+  const [pendingStatusId, setPendingStatusId] = useState<string | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<{ item: Reservation; status: ReservationStatus } | null>(null);
 
   const formModal = useBoolean();
-  const deleteConfirm = useBoolean();
+  const statusConfirm = useBoolean();
+
+  const [updateStatus] = useUpdateUserReservationStatusMutation();
 
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, index) => format(addDays(weekStart, index), ISO)), [weekStart]);
-
-  // Memoised because the data hook re-fetches whenever this object changes.
-  const query: ReservationQuery = useMemo(
-    () => ({ date: selectedDate, slot: selectedSlot, typeId: selectedTypeId, filter: listFilter }),
-    [selectedDate, selectedSlot, selectedTypeId, listFilter]
-  );
 
   const {
     days,
     slots,
-    types,
+    hasDataForDate,
+    isLoading: isCalendarLoading,
+    isFetching: isCalendarFetching,
+  } = useReservationCalendar({ organizationId, date: selectedDate, weekDates });
+
+  const {
     reservations,
-    venues,
-    reservationTypes,
-    conditions,
-    isFetching,
-    isMutating,
-    createReservation,
-    updateReservation,
-    deleteReservation,
-    setStatus,
-  } = useReservationView({ organizationId, weekDates, query });
+    types,
+    pagination,
+    isLoading: isListLoading,
+    isFetching: isListFetching,
+  } = useReservationList({
+    organizationId,
+    date: selectedDate,
+    slot: selectedSlot,
+    typeId: selectedTypeId,
+    filter: listFilter,
+    page,
+  });
 
   const handlePickWeek = (date: Date) => {
     setWeekStart(toWeekStart(date));
     setSelectedDate(format(date, ISO));
     setSelectedSlot(null);
+    setPage(1);
   };
 
   const handleSelectDate = (date: string) => {
     setSelectedDate(date);
-    // A slot that was busy on one day is rarely the one you want on the next.
     setSelectedSlot(null);
+    setPage(1);
+  };
+
+  const handleSelectSlot = (slot: string | null) => {
+    setSelectedSlot(slot);
+    setPage(1);
+  };
+
+  const handleSelectType = (typeId: string | null) => {
+    setSelectedTypeId(typeId);
+    setPage(1);
+  };
+
+  const handleFilterChange = (filter: ListFilter) => {
+    setListFilter(filter);
+    setPage(1);
   };
 
   const handleOpenCreate = () => {
@@ -93,38 +113,30 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     formModal.onTrue();
   };
 
-  const handleSubmit = async (payload: ReservationPayload) => {
-    if (editing) {
-      await updateReservation(editing.id, payload);
-      return;
-    }
-    await createReservation(payload);
+  const handleRequestStatus = (item: Reservation, status: ReservationStatus) => {
+    setPendingStatus({ item, status });
+    statusConfirm.onTrue();
   };
 
-  const handleSetStatus = async (item: Reservation, status: ReservationStatus) => {
-    try {
-      await setStatus(item.id, status);
-      showSuccess(status === 'confirmed' ? 'Reservation confirmed' : 'Reservation cancelled');
-    } catch (error) {
-      showError(getErrorMessage(error));
-    }
-  };
+  const handleConfirmStatus = async () => {
+    if (!pendingStatus) return;
 
-  const handleConfirmDelete = async () => {
-    if (!pendingDelete) return;
+    const { item, status } = pendingStatus;
+    setPendingStatusId(item.id);
 
     try {
-      await deleteReservation(pendingDelete.id);
-      showSuccess('Reservation deleted');
-      deleteConfirm.onFalse();
-      setPendingDelete(null);
-      // The modal stays open when deleting from inside it, so close it too.
-      formModal.onFalse();
-      setEditing(null);
+      const response = await updateStatus({ id: item.id, status }).unwrap();
+      showSuccess(response?.message || `Reservation ${RESERVATION_STATUS_CONFIG[status].label.toLowerCase()}`);
+      statusConfirm.onFalse();
+      setPendingStatus(null);
     } catch (error) {
       showError(getErrorMessage(error));
+    } finally {
+      setPendingStatusId(null);
     }
   };
+
+  const isRejecting = pendingStatus?.status === 'rejected';
 
   const listSubtitle = useMemo(() => {
     const dayLabel = format(parseISO(selectedDate), 'EEE dd/MM');
@@ -172,27 +184,32 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             selectedDate={selectedDate}
             onSelectDate={handleSelectDate}
             onPickWeek={handlePickWeek}
-            isLoading={isFetching && days.length === 0}
+            isLoading={isCalendarLoading}
           />
 
-          <TimeSlotsSection slots={slots} selectedSlot={selectedSlot} onSelectSlot={setSelectedSlot} />
+          <TimeSlotsSection
+            slots={slots}
+            selectedSlot={selectedSlot}
+            onSelectSlot={handleSelectSlot}
+            isLoading={isCalendarLoading || isCalendarFetching}
+            isEmpty={!hasDataForDate}
+            emptyMessage={`No reservations on ${format(parseISO(selectedDate), 'EEE dd/MM/yyyy')}`}
+          />
 
-          <ReservationTypesSection types={types} selectedTypeId={selectedTypeId} onSelectType={setSelectedTypeId} />
+          <ReservationTypesSection types={types} selectedTypeId={selectedTypeId} onSelectType={handleSelectType} />
 
           <ReservationListSection
             data={reservations}
             subtitle={listSubtitle}
             filter={listFilter}
-            onFilterChange={setListFilter}
-            isLoading={isFetching}
-            isMutating={isMutating}
+            onFilterChange={handleFilterChange}
+            pagination={pagination}
+            onPageChange={setPage}
+            isLoading={isListLoading || isListFetching}
+            pendingStatusId={pendingStatusId}
             onCreate={handleOpenCreate}
             onEdit={handleOpenEdit}
-            onDelete={(item) => {
-              setPendingDelete(item);
-              deleteConfirm.onTrue();
-            }}
-            onSetStatus={handleSetStatus}
+            onSetStatus={handleRequestStatus}
           />
         </>
       )}
@@ -200,24 +217,12 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
       <ReservationFormModal
         open={formModal.value}
         reservation={editing}
-        venues={venues}
-        reservationTypes={reservationTypes}
-        conditions={conditions}
+        organizationId={organizationId}
         defaults={{
           date: selectedDate,
           time: selectedSlot || TIME_SLOTS[0],
           reservationTypeId: selectedTypeId || '',
         }}
-        isSubmitting={isMutating}
-        onSubmit={handleSubmit}
-        onDelete={
-          editing
-            ? () => {
-                setPendingDelete(editing);
-                deleteConfirm.onTrue();
-              }
-            : undefined
-        }
         onClose={() => {
           formModal.onFalse();
           setEditing(null);
@@ -225,15 +230,22 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
       />
 
       <ConfirmDialog
-        open={deleteConfirm.value}
-        title="Delete reservation?"
-        content={`The reservation for "${pendingDelete?.guestName}" will be removed. This cannot be undone.`}
-        isLoading={isMutating}
+        open={statusConfirm.value}
+        title={isRejecting ? 'Reject reservation?' : 'Confirm reservation?'}
+        content={
+          pendingStatus
+            ? `The reservation for "${pendingStatus.item.guestName}" will be marked as ${RESERVATION_STATUS_CONFIG[
+                pendingStatus.status
+              ].label.toLowerCase()}.`
+            : ''
+        }
+        isLoading={Boolean(pendingStatusId)}
+        buttonClass={isRejecting ? undefined : 'bg-green-600 hover:bg-green-600/80'}
         onClose={() => {
-          deleteConfirm.onFalse();
-          setPendingDelete(null);
+          statusConfirm.onFalse();
+          setPendingStatus(null);
         }}
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleConfirmStatus}
       />
     </div>
   );

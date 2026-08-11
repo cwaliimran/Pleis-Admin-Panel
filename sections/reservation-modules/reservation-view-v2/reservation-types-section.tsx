@@ -7,7 +7,6 @@ import { TypeOccupancy } from './types';
 
 interface ReservationTypesSectionProps {
   types: TypeOccupancy[];
-  /** `null` means no type filter is applied. */
   selectedTypeId: string | null;
   onSelectType: (typeId: string | null) => void;
 }
@@ -15,8 +14,6 @@ interface ReservationTypesSectionProps {
 export const ReservationTypesSection: React.FC<ReservationTypesSectionProps> = ({ types, selectedTypeId, onSelectType }) => {
   return (
     <SectionCard title="Reservation types" caption="Occupancy for selected day / slot">
-      {/* Fixed-width boxes rather than a stretching grid — they should not grow
-          to fill the card when there are only two or three types. */}
       <div className="flex flex-wrap gap-3">
         {types.map((type) => {
           const isSelected = selectedTypeId === type.typeId;

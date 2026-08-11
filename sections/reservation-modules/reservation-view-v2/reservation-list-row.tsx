@@ -2,7 +2,7 @@
 
 import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { Check, Pencil, X } from 'lucide-react';
 import React from 'react';
 import { RESERVATION_STATUS_CONFIG } from './constants';
 import { Reservation, ReservationStatus } from './types';
@@ -11,11 +11,10 @@ interface ReservationListRowProps {
   item: Reservation;
   disabled?: boolean;
   onEdit: (item: Reservation) => void;
-  onDelete: (item: Reservation) => void;
   onSetStatus: (item: Reservation, status: ReservationStatus) => void;
 }
 
-export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, disabled = false, onEdit, onDelete, onSetStatus }) => {
+export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, disabled = false, onEdit, onSetStatus }) => {
   const statusConfig = RESERVATION_STATUS_CONFIG[item.status];
   const occasionOrEvent = [item.occasion, item.eventName].filter(Boolean).join(' · ');
 
@@ -30,6 +29,8 @@ export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, di
 
       <TableCell className="text-gray-700 dark:text-gray-300">{item.venueName}</TableCell>
 
+      <TableCell className="text-gray-700 dark:text-gray-300">{item.reservationTypeName || '—'}</TableCell>
+
       <TableCell className="text-gray-700 dark:text-gray-300">{item.seats}</TableCell>
 
       <TableCell className="text-gray-700 dark:text-gray-300">{occasionOrEvent || '—'}</TableCell>
@@ -40,8 +41,7 @@ export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, di
 
       <TableCell className="pr-4">
         <div className="flex justify-end gap-2">
-          {/* Quick accept / cancel — only meaningful while the request is still new. */}
-          {item.status === 'new' && (
+          {item.status === 'needsConfirmation' && (
             <>
               <button
                 type="button"
@@ -56,13 +56,13 @@ export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, di
 
               <button
                 type="button"
-                title="Cancel reservation"
-                aria-label={`Cancel reservation for ${item.guestName}`}
+                title="Reject reservation"
+                aria-label={`Reject reservation for ${item.guestName}`}
                 disabled={disabled}
-                onClick={() => onSetStatus(item, 'cancelled')}
-                className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-700"
+                onClick={() => onSetStatus(item, 'rejected')}
+                className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-900 dark:hover:bg-red-800"
               >
-                <X className="h-4 w-4 text-gray-700 dark:text-gray-200" />
+                <X className="h-4 w-4 text-red-600 dark:text-red-300" />
               </button>
             </>
           )}
@@ -76,17 +76,6 @@ export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, di
             className="cursor-pointer rounded-md bg-gray-100 p-1.5 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-800 dark:hover:bg-gray-700"
           >
             <Pencil className="h-4 w-4 text-gray-700 dark:text-gray-200" />
-          </button>
-
-          <button
-            type="button"
-            title="Delete reservation"
-            aria-label={`Delete reservation for ${item.guestName}`}
-            disabled={disabled}
-            onClick={() => onDelete(item)}
-            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-900 dark:hover:bg-red-800"
-          >
-            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
           </button>
         </div>
       </TableCell>
