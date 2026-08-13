@@ -130,8 +130,18 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
-        title: 'Preset Categories',
+        title: 'Ref Categories',
         url: paths.superAdmin.itemsCategory,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Ref Subcategories',
+        url: paths.superAdmin.menuSubcategories,
+        icon: CalendarDays,
+      },
+      {
+        title: 'Ref Types',
+        url: paths.superAdmin.subcategoryTypes,
         icon: CalendarDays,
       },
       {
@@ -157,11 +167,6 @@ export const menuGroups: MenuGroup[] = [
       {
         title: 'Daypart',
         url: paths.superAdmin.daypart,
-        icon: CalendarDays,
-      },
-      {
-        title: 'Types',
-        url: paths.superAdmin.subcategoryTypes,
         icon: CalendarDays,
       },
     ],
@@ -233,7 +238,7 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.rewardsV2,
         icon: Tags,
       },
-       {
+      {
         title: 'Challenges  v2',
         url: paths.superAdmin.challengesV2,
         icon: Tags,

@@ -11,13 +11,7 @@ import StreaksTable from './streaks-table';
 import { StreakBadge, StreakMember, StreakRules, StreakSortKey, StreakSortOrder, StreaksQuery } from './types';
 import { useStreaksView } from './use-streaks-view';
 
-/**
- * Streaks V2 — owns every piece of list state and hands the table plain props.
- * Data still comes from `useStreaksView` (mock).
- *
- * Streak records are read-only; the only thing an admin edits here is the
- * global rule set, through the Streak Rules modal.
- */
+
 export const StreaksViewV2: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
@@ -37,7 +31,7 @@ export const StreaksViewV2: React.FC = () => {
     [page, limit, search, badge, lastVisitFrom, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, rules, isLoading, isMutating, saveRules } = useStreaksView(query);
+  const { data, meta, stats, rules, isLoading, isFetching, isRulesLoading, isMutating, saveRules } = useStreaksView(query);
 
   // Every filter and sort change invalidates the current offset.
   const handleSearchChange = (value: string) => {
@@ -82,13 +76,15 @@ export const StreaksViewV2: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-2 pb-6">
-      <StreaksStatsCards stats={stats} rules={rules} isLoading={isLoading} />
+      {/* The Current Rules tile reads off the rule set, so it waits on both. */}
+      <StreaksStatsCards stats={stats} rules={rules} isLoading={isLoading || isRulesLoading} />
 
       <StreaksTable
         data={data}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         onOpenRules={rulesModal.onTrue}
+        rulesLoading={isRulesLoading}
         onViewDetail={handleViewDetail}
         onPageChange={setPage}
         sortBy={sortBy}

@@ -328,9 +328,16 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_REWARDS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/reward' : '/admin/loyalty/rewards'),
   ADMIN_LOYALTY_REWARDS_BY_ID: (id: string, isGlobal: boolean) => (isGlobal ? `/admin/global-loyalty/reward/${id}` : `/admin/loyalty/rewards/${id}`),
 
+  /** v2 list — paginated, sortable, and returns header stats in `meta`. */
+  ADMIN_LOYALTY_REWARDS_V2: `/admin/loyalty/rewards/v2`,
+  /** Distinct `sortingType` values, for the Type filter. */
+  ADMIN_LOYALTY_REWARD_TYPES: `/admin/loyalty/rewards/types`,
+
   ORGANIZER_POINT_CAL: `/organizer/loyalty/points-calculator`,
   ORGANIZER_LOYALTY_REWARDS: `/organizer/loyalty/rewards`,
   ORGANIZER_LOYALTY_REWARDS_BY_ID: (id: string) => `/organizer/loyalty/rewards/${id}`,
+  ORGANIZER_LOYALTY_REWARDS_V2: `/organizer/loyalty/rewards/v2`,
+  ORGANIZER_LOYALTY_REWARD_TYPES: `/organizer/loyalty/rewards/types`,
 
   ADMIN_GLOBAL_REFERRALS_SETTING: `/admin/global-loyalty/referrals`,
   ADMIN_GLOBAL_REFERRALS_SETTING_RESET: `/admin/global-loyalty/referrals/reset`,
@@ -387,8 +394,20 @@ export const API_ROUTES = {
   ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string, isGlobal: boolean) =>
     isGlobal ? `/admin/global-loyalty/challanges/${id}` : `/admin/loyalty/challenges/${id}`,
 
+  /** v2 list — paginated, sortable, and returns header stats in `meta`. */
+  ADMIN_LOYALTY_CHALLENGES_V2: `/admin/loyalty/challenges/v2`,
+
   ORGANIZER_LOYALTY_CHALLENGE: `/organizer/loyalty/challenges`,
   ORGANIZER_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/organizer/loyalty/challenges/${id}`,
+  ORGANIZER_LOYALTY_CHALLENGES_V2: `/organizer/loyalty/challenges/v2`,
+
+  /** Per-member streak records — paginated, sortable, header stats in `meta`. */
+  ADMIN_LOYALTY_USERS_STREAKS: `/admin/loyalty/users-streaks`,
+  /** The global rule set. GET reads it, PUT upserts it — there is no POST. */
+  ADMIN_LOYALTY_STREAKS: `/admin/loyalty/streaks`,
+
+  ORGANIZER_LOYALTY_USERS_STREAKS: `/organizer/loyalty/users-streaks`,
+  ORGANIZER_LOYALTY_STREAKS: `/organizer/loyalty/streaks`,
 
   ORGANIZER_PRESET: `/organizer/menu/presets`,
   ADMIN_PRESET: `/admin/menu/presets`,

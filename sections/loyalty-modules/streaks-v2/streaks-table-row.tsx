@@ -17,7 +17,6 @@ interface StreaksTableRowProps {
 export const StreaksTableRow: React.FC<StreaksTableRowProps> = ({ item, onViewDetail }) => {
   return (
     <TableRow
-      // The whole row opens the detail, matching the design's "click any row".
       onClick={() => onViewDetail(item)}
       className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
     >
@@ -46,7 +45,7 @@ export const StreaksTableRow: React.FC<StreaksTableRowProps> = ({ item, onViewDe
       <TableCell className="text-left text-gray-700 dark:text-gray-300">{item.visits.toLocaleString()}</TableCell>
 
       <TableCell className="text-left whitespace-nowrap text-gray-700 dark:text-gray-300">
-        {fDate(item.lastVisitAt, STREAK_DATE_TIME_FORMAT)}
+        {fDate(item.lastVisitAt, STREAK_DATE_TIME_FORMAT) || '—'}
       </TableCell>
 
       <TableCell className="text-left">
@@ -55,7 +54,6 @@ export const StreaksTableRow: React.FC<StreaksTableRowProps> = ({ item, onViewDe
           title="View streak detail"
           aria-label={`View streak detail for ${item.username}`}
           onClick={(event) => {
-            // The row handler would fire a second time otherwise.
             event.stopPropagation();
             onViewDetail(item);
           }}

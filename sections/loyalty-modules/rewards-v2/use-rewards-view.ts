@@ -1,48 +1,72 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DEFAULT_PAGE_LIMIT } from './constants';
-import { MOCK_REWARDS } from './mock-data';
-import { Reward, RewardPayload, RewardSortKey, RewardStats, RewardsMeta, RewardsQuery } from './types';
-import { getConversion } from './utils';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import type { ApiReward, ApiRewardStats } from '@/store/Reducer/rewards-v2-api';
+import { useGetRewardTypesQuery, useGetRewardsV2Query } from '@/store/Reducer/rewards-v2-api';
+import { useMemo } from 'react';
+import { REWARD_TYPE_OPTIONS_LIMIT } from './constants';
+import { Reward, RewardStats, RewardsMeta, RewardsQuery } from './types';
 
-/** Rows the sort cannot rank (a "—" metric) always sink to the bottom. */
-const compareBy = (key: RewardSortKey, a: Reward, b: Reward): number => {
-  switch (key) {
-    case 'name':
-      return a.name.localeCompare(b.name);
-    case 'type':
-      return a.type.localeCompare(b.type);
-    case 'status':
-      return a.status.localeCompare(b.status);
-    case 'conversion': {
-      const left = getConversion(a);
-      const right = getConversion(b);
-      if (left === null || right === null) return left === right ? 0 : left === null ? 1 : -1;
-      return left - right;
-    }
-    case 'views':
-    case 'favorites': {
-      // Not browsable means "no data", which is different from zero.
-      const left = a.availableAsReward ? a[key] : null;
-      const right = b.availableAsReward ? b[key] : null;
-      if (left === null || right === null) return left === right ? 0 : left === null ? 1 : -1;
-      return left - right;
-    }
-    default:
-      return a[key] - b[key];
-  }
+const EMPTY_STATS: RewardStats = {
+  totalViews: 0,
+  totalFavorites: 0,
+  totalClaims: 0,
+  totalRedemptions: 0,
+  mostClaimed: null,
 };
 
-const buildStats = (rewards: Reward[]): RewardStats => {
-  const mostClaimed = rewards.reduce<Reward | null>((best, reward) => (!best || reward.claims > best.claims ? reward : best), null);
+const toReward = (item: ApiReward): Reward => ({
+  id: item._id,
+  name: item.title ?? '',
+  image: item.image ?? '',
+  type: item.sortingType ?? '',
+  status: item.status,
+  creationMethod: item.rewardType,
+
+  // Older records predate these flags; a missing flag means the reward is a
+  // normal browsable one, so metrics stay meaningful.
+  availableAsReward: item.availableAsReward ?? true,
+  challengeOnly: item.challengeOnly ?? false,
+  isPromotionOnly: item.isPromotionOnly ?? false,
+
+  menuId: item.menuItem?.menu?._id,
+  menuName: item.menuItem?.menu?.title,
+  menuItemId: item.menuItem?._id,
+  menuItemName: item.menuItem?.title,
+
+  eventId: item.event ?? undefined,
+  ticketId: item.ticket ?? undefined,
+  timeSlotId: item.timeSlot ?? undefined,
+  isFastTrack: item.isFastTrack ?? false,
+
+  pointCost: item.minPointsRequiredToClaim ?? 0,
+  totalLimit: item.claimLimit ?? null,
+  maxClaimsPerUser: item.maxLimitPerUser ?? null,
+  tierId: item.tierLimit?._id ?? '',
+  tierName: item.tierLimit?.title ?? '',
+  percentOff: item.percentOff ?? 0,
+  endDate: item.endDate ?? '',
+  description: item.description ?? '',
+
+  views: item.views ?? 0,
+  favorites: item.favoritesCount ?? 0,
+  claims: item.claimed ?? 0,
+  redeemed: item.redeemed ?? 0,
+  conversion: item.conversion ?? 0,
+  redemptionRate: item.redemptionRate ?? 0,
+});
+
+const toStats = (stats?: ApiRewardStats | null): RewardStats => {
+  if (!stats) return EMPTY_STATS;
+
+  const most = stats.mostClaimedReward;
 
   return {
-    totalViews: rewards.reduce((sum, reward) => sum + (reward.availableAsReward ? reward.views : 0), 0),
-    totalFavorites: rewards.reduce((sum, reward) => sum + (reward.availableAsReward ? reward.favorites : 0), 0),
-    totalClaims: rewards.reduce((sum, reward) => sum + reward.claims, 0),
-    totalRedemptions: rewards.reduce((sum, reward) => sum + reward.redeemed, 0),
-    mostClaimed: mostClaimed ? { name: mostClaimed.name, claims: mostClaimed.claims } : null,
+    totalViews: stats.totalViews ?? 0,
+    totalFavorites: stats.totalFavorites ?? 0,
+    totalClaims: stats.totalClaims ?? 0,
+    totalRedemptions: stats.totalRedemptions ?? 0,
+    mostClaimed: most?.name ? { name: most.name, claims: most.count ?? 0 } : null,
   };
 };
 
@@ -50,118 +74,62 @@ interface UseRewardsViewResult {
   data: Reward[];
   meta: RewardsMeta;
   stats: RewardStats;
-  /** Distinct types present in the data, for the filter dropdown. */
+  /** Distinct grouping values, for the Type filter. */
   typeOptions: { value: string; label: string }[];
   isLoading: boolean;
-  isMutating: boolean;
-  createReward: (payload: RewardPayload) => Promise<void>;
-  updateReward: (id: string, payload: RewardPayload) => Promise<void>;
-  deleteReward: (id: string) => Promise<void>;
+  isFetching: boolean;
 }
 
 /**
- * Mock-backed data layer for Rewards V2. Filtering, sorting and paging happen
- * here so the view and table stay presentational — exactly where the server
- * will take over.
+ * Data layer for Rewards V2. Filtering, sorting and paging are all done by the
+ * server; this only maps the wire format onto the view model.
  */
 export const useRewardsView = (query: RewardsQuery): UseRewardsViewResult => {
-  const [rewards, setRewards] = useState<Reward[]>(MOCK_REWARDS);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isMutating, setIsMutating] = useState(false);
+  // Admin picks the company in the header; the page sits behind `CompanyGuard`.
+  const { companyId } = useCompanySelectionState();
 
   const { page, limit, search, type, status, sortBy, sortOrder } = query;
 
-  // Stands in for the request round-trip so the loading states are exercised.
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 250);
-    return () => clearTimeout(timer);
-  }, [page, limit, search, type, status, sortBy, sortOrder]);
+  const { data, isLoading, isFetching } = useGetRewardsV2Query(
+    {
+      companyOrganizer: companyId as string,
+      page,
+      limit,
+      keyword: search.trim() || undefined,
+      status: status || undefined,
+      sortingType: type || undefined,
+      sortBy: sortBy || undefined,
+      sortOrder: sortOrder || undefined,
+    },
+    { skip: !companyId, refetchOnMountOrArgChange: true }
+  );
 
-  // Header tiles read every reward — they should not move when filters change.
-  const stats = useMemo(() => buildStats(rewards), [rewards]);
+  const { data: rewardTypes } = useGetRewardTypesQuery(
+    { companyOrganizer: companyId as string, limit: REWARD_TYPE_OPTIONS_LIMIT },
+    { skip: !companyId }
+  );
 
+  const rewards = useMemo(() => (data?.data ?? []).map(toReward), [data]);
+
+  // The endpoint returns one row per reward, so the same grouping value can
+  // repeat — deduped here so the dropdown lists each option once.
   const typeOptions = useMemo(() => {
-    const distinct = Array.from(new Set(rewards.map((reward) => reward.type).filter(Boolean)));
+    const distinct = Array.from(new Set((rewardTypes ?? []).map((option) => option.sortingType).filter(Boolean)));
     distinct.sort((a, b) => a.localeCompare(b));
     return distinct.map((value) => ({ value, label: value }));
-  }, [rewards]);
+  }, [rewardTypes]);
 
-  const filtered = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-
-    return rewards.filter((reward) => {
-      if (keyword && !reward.name.toLowerCase().includes(keyword)) return false;
-      if (type && reward.type !== type) return false;
-      if (status && reward.status !== status) return false;
-      return true;
-    });
-  }, [rewards, search, type, status]);
-
-  const sorted = useMemo(() => {
-    if (!sortBy || !sortOrder) return filtered;
-
-    const direction = sortOrder === 'asc' ? 1 : -1;
-    return [...filtered].sort((a, b) => compareBy(sortBy, a, b) * direction);
-  }, [filtered, sortBy, sortOrder]);
-
-  const totalRecords = sorted.length;
-  const pageSize = limit || DEFAULT_PAGE_LIMIT;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-  // Guards against landing past the end after a filter narrows the result set.
-  const currentPage = Math.min(page, totalPages);
-
-  const data = useMemo(() => sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize), [sorted, currentPage, pageSize]);
-
-  /** Stands in for the mutation round-trip. */
-  const runMutation = useCallback(async (mutate: () => void) => {
-    setIsMutating(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      mutate();
-    } finally {
-      setIsMutating(false);
-    }
-  }, []);
-
-  const createReward = useCallback(
-    async (payload: RewardPayload) => {
-      await runMutation(() => {
-        // Counters start at zero — the server owns them from here on.
-        const created: Reward = { ...payload, id: `rwd-${Date.now()}`, views: 0, favorites: 0, claims: 0, redeemed: 0 };
-        setRewards((previous) => [created, ...previous]);
-      });
-    },
-    [runMutation]
+  const meta = useMemo<RewardsMeta>(
+    () => ({
+      currentPage: data?.meta?.currentPage ?? page,
+      totalPages: data?.meta?.totalPages ?? 1,
+      totalRecords: data?.meta?.totalRecords ?? 0,
+      limit: data?.meta?.limit ?? limit,
+    }),
+    [data, page, limit]
   );
 
-  const updateReward = useCallback(
-    async (id: string, payload: RewardPayload) => {
-      await runMutation(() => {
-        setRewards((previous) => previous.map((reward) => (reward.id === id ? { ...reward, ...payload } : reward)));
-      });
-    },
-    [runMutation]
-  );
+  const stats = useMemo(() => toStats(data?.meta?.stats), [data]);
 
-  const deleteReward = useCallback(
-    async (id: string) => {
-      await runMutation(() => {
-        setRewards((previous) => previous.filter((reward) => reward.id !== id));
-      });
-    },
-    [runMutation]
-  );
-
-  return {
-    data,
-    meta: { currentPage, totalPages, totalRecords, limit: pageSize },
-    stats,
-    typeOptions,
-    isLoading,
-    isMutating,
-    createReward,
-    updateReward,
-    deleteReward,
-  };
+  return { data: rewards, meta, stats, typeOptions, isLoading, isFetching };
 };

@@ -19,6 +19,7 @@ interface StreaksTableProps {
   loading?: boolean;
 
   onOpenRules: () => void;
+  rulesLoading?: boolean;
   onViewDetail: (item: StreakMember) => void;
 
   onPageChange: (page: number) => void;
@@ -41,6 +42,7 @@ export const StreaksTable: React.FC<StreaksTableProps> = ({
   meta,
   loading = false,
   onOpenRules,
+  rulesLoading = false,
   onViewDetail,
   onPageChange,
   sortBy,
@@ -85,7 +87,8 @@ export const StreaksTable: React.FC<StreaksTableProps> = ({
           <Button
             type="button"
             onClick={onOpenRules}
-            className="bg-primary hover:bg-primary h-9 cursor-pointer gap-1.5 rounded-full px-4 text-white"
+            disabled={rulesLoading}
+            className="bg-primary hover:bg-primary h-9 cursor-pointer gap-1.5 rounded-full px-4 text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Settings2 className="h-4 w-4" />
             Streak Rules

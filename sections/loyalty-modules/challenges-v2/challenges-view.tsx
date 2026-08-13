@@ -3,13 +3,13 @@
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
+import { showError } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
+import ChallengesTable from './challenges-table';
+import ChallengesStatsCards from './components/challenges-stats-cards';
+import { DEFAULT_PAGE_LIMIT } from './constants';
 import ChallengeDetailModal from './modals/challenge-detail-modal';
 import ChallengeFormModal from './modals/challenge-form-modal';
-import ChallengesStatsCards from './components/challenges-stats-cards';
-import ChallengesTable from './challenges-table';
-import { DEFAULT_PAGE_LIMIT } from './constants';
 import {
   Challenge,
   ChallengePayload,
@@ -24,7 +24,7 @@ import { useChallengesView } from './use-challenges-view';
 
 /**
  * Challenges V2 — owns every piece of list state and hands the table plain
- * props. Data still comes from `useChallengesView` (mock).
+ * props. Data comes from `useChallengesView`, backed by the v2 challenges API.
  */
 export const ChallengesViewV2: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -49,7 +49,12 @@ export const ChallengesViewV2: React.FC = () => {
     [page, limit, search, taskType, rewardType, status, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, isLoading, isMutating, createChallenge, updateChallenge, deleteChallenge } = useChallengesView(query);
+  const { data, meta, stats, isLoading, isFetching } = useChallengesView(query);
+
+  // The write endpoints are wired in the next pass.
+  const notWired = async (): Promise<never> => {
+    throw new Error('Saving challenges is not connected yet.');
+  };
 
   // Every filter and sort change invalidates the current offset.
   const handleSearchChange = (value: string) => {
@@ -104,26 +109,15 @@ export const ChallengesViewV2: React.FC = () => {
   };
 
   const handleSubmit = async (payload: ChallengePayload) => {
-    if (editing) {
-      await updateChallenge(editing.id, payload);
-      showSuccess('Challenge updated');
-      return;
-    }
-
-    await createChallenge(payload);
-    showSuccess('Challenge created');
-    // A new challenge lands at the top of the unsorted list.
-    setPage(1);
+    void payload;
+    await notWired();
   };
 
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
 
     try {
-      await deleteChallenge(pendingDelete.id);
-      showSuccess('Challenge deleted');
-      deleteConfirm.onFalse();
-      setPendingDelete(null);
+      await notWired();
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -136,8 +130,8 @@ export const ChallengesViewV2: React.FC = () => {
       <ChallengesTable
         data={data}
         meta={meta}
-        loading={isLoading}
-        isMutating={isMutating}
+        loading={isLoading || isFetching}
+        isMutating={false}
         onCreate={handleCreate}
         onViewAnalytics={handleViewAnalytics}
         onEdit={handleEdit}
@@ -163,7 +157,7 @@ export const ChallengesViewV2: React.FC = () => {
       <ChallengeFormModal
         open={formModal.value}
         challenge={editing}
-        isSubmitting={isMutating}
+        isSubmitting={false}
         onSubmit={handleSubmit}
         onClose={() => {
           formModal.onFalse();
@@ -184,7 +178,7 @@ export const ChallengesViewV2: React.FC = () => {
         open={deleteConfirm.value}
         title="Delete Challenge"
         content={`Are you sure you want to delete "${pendingDelete?.name}"? This cannot be undone.`}
-        isLoading={isMutating}
+        isLoading={false}
         onClose={() => {
           deleteConfirm.onFalse();
           setPendingDelete(null);

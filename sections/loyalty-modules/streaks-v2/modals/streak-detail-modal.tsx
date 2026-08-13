@@ -11,11 +11,10 @@ import { formatThresholdLadder } from '../utils';
 interface StreakDetailModalProps {
   open: boolean;
   member: StreakMember | null;
-  rules: StreakRules;
+  rules: StreakRules | null;
   onClose: () => void;
 }
 
-/** One label/value line inside the "active streak rule" panel. */
 const InfoRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="flex items-center justify-between gap-4 border-b border-gray-200 py-2.5 last:border-b-0 dark:border-gray-700/60">
     <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
@@ -44,11 +43,11 @@ export const StreakDetailModal: React.FC<StreakDetailModalProps> = ({ open, memb
         <section className="rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700/60">
           <h4 className="mb-1 text-[11px] font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Active streak rule</h4>
 
-          <InfoRow label="Rule">{formatThresholdLadder(rules)} visits</InfoRow>
+          <InfoRow label="Rule">{rules ? `${formatThresholdLadder(rules)} visits` : 'Not set'}</InfoRow>
 
-          <InfoRow label="Count base">{STREAK_COUNT_BASE_LABELS[rules.countBase]}</InfoRow>
+          <InfoRow label="Count base">{rules ? STREAK_COUNT_BASE_LABELS[rules.countBase] : 'Not set'}</InfoRow>
 
-          <InfoRow label="Last Visit">{fDate(member.lastVisitAt, STREAK_DATE_TIME_FORMAT)}</InfoRow>
+          <InfoRow label="Last Visit">{fDate(member.lastVisitAt, STREAK_DATE_TIME_FORMAT) || '—'}</InfoRow>
         </section>
 
         <section>

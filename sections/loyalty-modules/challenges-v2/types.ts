@@ -1,34 +1,37 @@
 // ============================================================
 // Challenges V2 — domain types
 //
-// Served by `mock-data.ts` through `use-challenges-view.ts` until the real
-// endpoints exist. The query/meta shapes deliberately mirror the RTK Query
-// list contract (`{ data, meta }`) so swapping the hook for a generated
-// `useGetChallengesQuery` is a drop-in change.
+// The view model the components render. `use-challenges-view.ts` maps the wire
+// format (`store/Reducer/challenges-v2-api.ts`) onto this once, so nothing
+// below the hook deals with the backend's own field names.
 // ============================================================
 
-export type ChallengeStatus = 'active' | 'inactive';
+import type { ApiChallengeRewardType, ApiChallengeSortBy, ApiChallengeStatus, ApiChallengeTaskType } from '@/store/Reducer/challenges-v2-api';
 
-/** What the member has to do. Keys match the V1 API vocabulary. */
-export type ChallengeTaskType = 'visit' | 'earnPoints' | 'referUsers' | 'buyMenuItem';
+export type ChallengeStatus = ApiChallengeStatus;
+
+/** What the member has to do. */
+export type ChallengeTaskType = ApiChallengeTaskType;
 
 /** What they get for finishing it. */
-export type ChallengeRewardType = 'points' | 'menuItem' | 'linkedReward';
+export type ChallengeRewardType = ApiChallengeRewardType;
 
-/** Column keys the table can sort by. Sent to the API as `sortBy`. */
-export type ChallengeSortKey =
-  | 'name'
-  | 'taskType'
-  | 'rewardType'
-  | 'status'
-  | 'views'
-  | 'favorites'
-  | 'participants'
-  | 'completions'
-  | 'avgProgress';
+/** Column keys the table can sort by. `status` is deliberately absent — the API does not sort by it. */
+export type ChallengeSortKey = ApiChallengeSortBy;
 
 /** Empty string means "no sort" and is omitted from the request. */
 export type ChallengeSortOrder = 'asc' | 'desc' | '';
+
+/** `specialTicket` payout. Every id comes back populated with its name. */
+export interface ChallengeSpecialTicket {
+  eventId?: string;
+  eventName?: string;
+  organizationId?: string;
+  organizationName?: string;
+  companyName?: string;
+  timeSlotId?: string;
+  isFastTrack: boolean;
+}
 
 export interface Challenge {
   id: string;
@@ -43,26 +46,32 @@ export interface Challenge {
   /** Target the member must reach — 2 visits, 500 points, and so on. */
   taskValue: number;
 
-  /** `buyMenuItem` only — any of these purchases count toward the goal. */
-  qualifyingMenuId?: string;
-  qualifyingItemIds: string[];
+  // ---- `buyMenuItem` task only. The API links exactly one item. ----
+  taskMenuItemId?: string;
+  taskMenuItemName?: string;
+  taskMenuId?: string;
 
+  // ---- Reward branches ----
   /** `points` reward only. */
   pointReward: number;
-  /** `menuItem` reward only — the claimer picks one and gets a QR for it. */
-  rewardMenuId?: string;
-  rewardItemIds: string[];
-  /** `linkedReward` only — id of an existing reward used as the payout. */
-  linkedRewardId?: string;
+  /** `customReward` only — free text rather than a linked record. */
+  customRewardTitle?: string;
+  customRewardDescription?: string;
+  /** `specialTicket` only. */
+  specialTicket?: ChallengeSpecialTicket;
 
-  /** Progress resets to 0 on completion so the challenge can be done again. */
+  /**
+   * Progress resets to 0 on completion so the challenge can be done again.
+   * Write-only — the list does not echo it, so it reads back as `false`.
+   */
   repeatable: boolean;
   /** Total claims across all users. `null` means unlimited. */
   claimLimit: number | null;
   /** ISO `yyyy-MM-dd`. */
   endDate: string;
-  /** Id of the minimum tier required, `''` when any tier qualifies. */
-  tierLimit: string;
+  /** Minimum tier required. `''` when any tier qualifies. */
+  tierId: string;
+  tierName: string;
 
   // ---------- Analytics (server-owned) ----------
   views: number;
@@ -70,19 +79,50 @@ export interface Challenge {
   /** Members who started the challenge at least once. */
   participants: number;
   completions: number;
-  /** Started but not yet finished. The rest of `participants` expired. */
+  /** Started but not yet finished. */
   inProgress: number;
-  /** Mean progress across participants, in the same unit as `taskValue`. */
+  /** Started, ran out of time, never finished. */
+  expired: number;
+  /** Mean progress as a whole percent of the target, not a raw count. */
   avgProgress: number;
+  /** Whole percent — share of viewers who went on to start it. */
+  participationRate: number;
+  /** Whole percent — share of participants who finished. */
+  completionRate: number;
 }
 
-/** Values the form collects — the analytics counters stay server-owned. */
-export type ChallengePayload = Omit<
-  Challenge,
-  'id' | 'views' | 'favorites' | 'participants' | 'completions' | 'inProgress' | 'avgProgress'
->;
+/**
+ * Values the form collects. Still the pre-integration shape — it is rewritten
+ * against the real body when the write endpoints land.
+ */
+export interface ChallengePayload {
+  name: string;
+  image: string;
+  description: string;
+  taskType: ChallengeTaskType;
+  rewardType: ChallengeRewardType;
+  status: ChallengeStatus;
+  taskValue: number;
+  qualifyingMenuId?: string;
+  qualifyingItemIds: string[];
+  pointReward: number;
+  rewardMenuId?: string;
+  rewardItemIds: string[];
+  linkedRewardId?: string;
+  repeatable: boolean;
+  claimLimit: number | null;
+  endDate: string;
+  tierLimit: string;
+}
 
-/** Header tiles. Derived from every challenge, not just the current page. */
+/** Option shape the form's item pickers render. */
+export interface MenuItemOption {
+  id: string;
+  menuId: string;
+  name: string;
+}
+
+/** Header tiles. Computed by the server across every challenge, not the page. */
 export interface ChallengeStats {
   totalViews: number;
   totalFavorites: number;
@@ -93,7 +133,7 @@ export interface ChallengeStats {
 }
 
 export interface ChallengesQuery {
-  /** 1-based, as shown in the UI. */
+  /** 1-based, as shown in the UI and as the API expects it. */
   page: number;
   limit: number;
   search: string;
@@ -112,28 +152,4 @@ export interface ChallengesMeta {
   totalPages: number;
   totalRecords: number;
   limit: number;
-}
-
-// ---------- Reference data ----------
-
-export interface MenuOption {
-  id: string;
-  name: string;
-}
-
-export interface MenuItemOption {
-  id: string;
-  menuId: string;
-  name: string;
-}
-
-export interface TierOption {
-  id: string;
-  name: string;
-}
-
-/** An existing reward a challenge can hand out. */
-export interface LinkedRewardOption {
-  id: string;
-  name: string;
 }

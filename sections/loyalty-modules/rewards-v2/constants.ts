@@ -60,20 +60,33 @@ export const REWARD_REDEEM_DELAY_NOTICE = {
  */
 export const BROWSING_METRIC_CLASS = 'text-emerald-600 dark:text-emerald-400';
 
+/**
+ * `sortKey` is what the API expects as `sortBy` — the backend's own field
+ * names, which differ from the column ids the UI uses.
+ */
 export const REWARDS_HEAD_LABEL = [
   { id: 'photo', label: 'Photo', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left', sortable: true },
-  { id: 'type', label: 'Type', align: 'left', sortable: true },
-  { id: 'status', label: 'Status', align: 'left', sortable: true },
-  { id: 'views', label: 'Views', align: 'left', sortable: true, className: BROWSING_METRIC_CLASS },
-  { id: 'favorites', label: 'Favorites', align: 'left', sortable: true, className: BROWSING_METRIC_CLASS },
-  { id: 'claims', label: 'Claims', align: 'left', sortable: true },
-  { id: 'redeemed', label: 'Redeemed', align: 'left', sortable: true },
-  { id: 'conversion', label: 'Conversion', align: 'left', sortable: true, className: BROWSING_METRIC_CLASS },
+  { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'title' },
+  { id: 'type', label: 'Type', align: 'left', sortable: true, sortKey: 'sortingType' },
+  { id: 'status', label: 'Status', align: 'left', sortable: true, sortKey: 'status' },
+  { id: 'views', label: 'Views', align: 'left', sortable: true, sortKey: 'views', className: BROWSING_METRIC_CLASS },
+  { id: 'favorites', label: 'Favorites', align: 'left', sortable: true, sortKey: 'favoritesCount', className: BROWSING_METRIC_CLASS },
+  { id: 'claims', label: 'Claims', align: 'left', sortable: true, sortKey: 'claimed' },
+  { id: 'redeemed', label: 'Redeemed', align: 'left', sortable: true, sortKey: 'redeemed' },
+  { id: 'conversion', label: 'Conversion', align: 'left', sortable: true, sortKey: 'conversion', className: BROWSING_METRIC_CLASS },
   { id: 'actions', label: 'Actions', align: 'left' },
 ];
 
 export const DEFAULT_PAGE_LIMIT = 10;
 
-/** Points suggested per euro by the reward calculator. */
-export const POINTS_PER_EURO = 100;
+/**
+ * The types endpoint returns one row per reward rather than a distinct list,
+ * so it is asked for far more than a page's worth and deduped in the hook.
+ */
+export const REWARD_TYPE_OPTIONS_LIMIT = 200;
+
+/** How long the calculator waits after typing before asking the server. */
+export const CALCULATOR_DEBOUNCE_MS = 500;
+
+/** Reference-data dropdowns are unpaginated in this form. */
+export const OPTIONS_PAGE_LIMIT = '100';

@@ -11,10 +11,9 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import StreakThresholdField from '../components/streak-threshold-field';
-import { STREAK_BADGE_LABELS, STREAK_BADGE_ORDER, STREAK_COUNT_BASE_NOUN, STREAK_COUNT_BASE_OPTIONS } from '../constants';
+import { DEFAULT_STREAK_COUNT_BASE, STREAK_BADGE_LABELS, STREAK_BADGE_ORDER, STREAK_COUNT_BASE_NOUN, STREAK_COUNT_BASE_OPTIONS } from '../constants';
 import { StreakCountBase, StreakRules } from '../types';
 
-/** Thresholds are held as strings so a cleared input stays empty, not 0. */
 interface StreakRulesFormValues {
   countBase: StreakCountBase;
   bronze: string;
@@ -37,9 +36,17 @@ const schema = yup.object({
   platinum: positiveThreshold('Platinum'),
 });
 
+const toFormValues = (rules: StreakRules | null): StreakRulesFormValues => ({
+  countBase: rules?.countBase ?? DEFAULT_STREAK_COUNT_BASE,
+  bronze: rules ? String(rules.thresholds.bronze) : '',
+  silver: rules ? String(rules.thresholds.silver) : '',
+  gold: rules ? String(rules.thresholds.gold) : '',
+  platinum: rules ? String(rules.thresholds.platinum) : '',
+});
+
 interface StreakRulesModalProps {
   open: boolean;
-  rules: StreakRules;
+  rules: StreakRules | null;
   isSubmitting?: boolean;
   onSubmit: (rules: StreakRules) => Promise<void>;
   onClose: () => void;
@@ -48,31 +55,17 @@ interface StreakRulesModalProps {
 export const StreakRulesModal: React.FC<StreakRulesModalProps> = ({ open, rules, isSubmitting = false, onSubmit, onClose }) => {
   const methods = useForm<StreakRulesFormValues>({
     resolver: yupResolver(schema) as never,
-    defaultValues: {
-      countBase: rules.countBase,
-      bronze: String(rules.thresholds.bronze),
-      silver: String(rules.thresholds.silver),
-      gold: String(rules.thresholds.gold),
-      platinum: String(rules.thresholds.platinum),
-    },
+    defaultValues: toFormValues(rules),
   });
 
   const { watch, reset, handleSubmit, setError } = methods;
 
   const countBase = watch('countBase');
 
-  // Reload from the saved rules whenever the modal opens, so an abandoned edit
-  // never carries over into the next one.
   useEffect(() => {
     if (!open) return;
 
-    reset({
-      countBase: rules.countBase,
-      bronze: String(rules.thresholds.bronze),
-      silver: String(rules.thresholds.silver),
-      gold: String(rules.thresholds.gold),
-      platinum: String(rules.thresholds.platinum),
-    });
+    reset(toFormValues(rules));
   }, [open, rules, reset]);
 
   const submit = async (values: StreakRulesFormValues) => {
@@ -83,8 +76,6 @@ export const StreakRulesModal: React.FC<StreakRulesModalProps> = ({ open, rules,
       platinum: Number(values.platinum),
     };
 
-    // A higher tier must cost more visits than the one below it, otherwise a
-    // member would earn two badges from the same visit.
     for (let index = 1; index < STREAK_BADGE_ORDER.length; index += 1) {
       const badge = STREAK_BADGE_ORDER[index];
       const previous = STREAK_BADGE_ORDER[index - 1];
@@ -107,7 +98,7 @@ export const StreakRulesModal: React.FC<StreakRulesModalProps> = ({ open, rules,
   };
 
   const handleClose = () => {
-    reset();
+    reset(toFormValues(rules));
     onClose();
   };
 
@@ -121,6 +112,7 @@ export const StreakRulesModal: React.FC<StreakRulesModalProps> = ({ open, rules,
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 dark:border-blue-900/60 dark:bg-blue-900/20">
           <p className="text-xs leading-relaxed text-blue-800 dark:text-blue-200">
             💡 Set how streaks are counted and at what visit counts users earn each badge. Applies globally to all members.
+            {!rules && <span className="font-semibold"> No rules are configured yet — saving will create them.</span>}
           </p>
         </div>
 

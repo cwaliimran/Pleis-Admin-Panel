@@ -23,14 +23,18 @@ export const CHALLENGE_GOAL_UNITS: Record<ChallengeTaskType, [string, string]> =
 
 export const CHALLENGE_REWARD_TYPE_LABELS: Record<ChallengeRewardType, string> = {
   points: 'Point Reward',
+  customReward: 'Custom Reward',
+  specialTicket: 'Special Ticket',
   menuItem: 'Menu Item',
-  linkedReward: 'Linked Reward',
 };
 
-export const CHALLENGE_REWARD_TYPE_OPTIONS = (Object.keys(CHALLENGE_REWARD_TYPE_LABELS) as ChallengeRewardType[]).map((value) => ({
-  value,
-  label: CHALLENGE_REWARD_TYPE_LABELS[value],
-}));
+/**
+ * `menuItem` is left out of the filter — it exists in the enum so older records
+ * still render, but nothing creates one.
+ */
+export const CHALLENGE_REWARD_TYPE_OPTIONS: { value: ChallengeRewardType; label: string }[] = (
+  ['points', 'customReward', 'specialTicket'] as ChallengeRewardType[]
+).map((value) => ({ value, label: CHALLENGE_REWARD_TYPE_LABELS[value] }));
 
 /** The chip itself comes from `CustomBadge` + `getStatusVariant`, as elsewhere. */
 export const CHALLENGE_STATUS_LABELS: Record<ChallengeStatus, string> = {
@@ -65,9 +69,13 @@ export const CHALLENGE_REWARD_TYPE_HINTS: Partial<
     emphasis: 'QR code',
     trail: 'for that specific item.',
   },
-  linkedReward: {
+  customReward: {
     className: HINT_PURPLE,
-    lead: 'Use an existing reward as the payout. Typically used for "Challenge Only" rewards like merch or branded items.',
+    lead: 'Describe the payout in free text — typically merch or a branded item handed over at the venue.',
+  },
+  specialTicket: {
+    className: HINT_PURPLE,
+    lead: 'Award an exclusive event ticket that is not for sale. The member receives it on completing the challenge.',
   },
 };
 
@@ -79,21 +87,28 @@ export const CHALLENGE_REWARD_TYPE_HINTS: Partial<
  */
 export const BROWSING_METRIC_CLASS = 'text-emerald-600 dark:text-emerald-400';
 
+/**
+ * `sortKey` is what the API expects as `sortBy`. Status has no sort — the
+ * endpoint does not accept it — so it is rendered as a plain column.
+ */
 export const CHALLENGES_HEAD_LABEL = [
   { id: 'image', label: 'Image', align: 'left' },
-  { id: 'name', label: 'Name', align: 'left', sortable: true },
-  { id: 'taskType', label: 'Task Type', align: 'left', sortable: true },
-  { id: 'rewardType', label: 'Reward Type', align: 'left', sortable: true },
-  { id: 'status', label: 'Status', align: 'left', sortable: true },
-  { id: 'views', label: 'Views', align: 'left', sortable: true, className: BROWSING_METRIC_CLASS },
-  { id: 'favorites', label: 'Favorites', align: 'left', sortable: true, className: BROWSING_METRIC_CLASS },
-  { id: 'participants', label: 'Participants', align: 'left', sortable: true },
-  { id: 'completions', label: 'Completions', align: 'left', sortable: true },
-  { id: 'avgProgress', label: 'Avg Progress', align: 'left', sortable: true },
+  { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'title' },
+  { id: 'taskType', label: 'Task Type', align: 'left', sortable: true, sortKey: 'taskType' },
+  { id: 'rewardType', label: 'Reward Type', align: 'left', sortable: true, sortKey: 'rewardType' },
+  { id: 'status', label: 'Status', align: 'left' },
+  { id: 'views', label: 'Views', align: 'left', sortable: true, sortKey: 'views', className: BROWSING_METRIC_CLASS },
+  { id: 'favorites', label: 'Favorites', align: 'left', sortable: true, sortKey: 'favorites', className: BROWSING_METRIC_CLASS },
+  { id: 'participants', label: 'Participants', align: 'left', sortable: true, sortKey: 'participants' },
+  { id: 'completions', label: 'Completions', align: 'left', sortable: true, sortKey: 'completions' },
+  { id: 'avgProgress', label: 'Avg Progress', align: 'left', sortable: true, sortKey: 'avgProgress' },
   { id: 'actions', label: 'Actions', align: 'left' },
 ];
 
 export const DEFAULT_PAGE_LIMIT = 10;
 
-/** Points suggested per euro by the reward calculator. */
-export const POINTS_PER_EURO = 100;
+/** How long the calculator waits after typing before asking the server. */
+export const CALCULATOR_DEBOUNCE_MS = 500;
+
+/** Reference-data dropdowns are unpaginated in this form. */
+export const OPTIONS_PAGE_LIMIT = '100';

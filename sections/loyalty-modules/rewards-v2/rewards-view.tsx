@@ -10,12 +10,13 @@ import RewardDetailModal from './reward-detail-modal';
 import RewardFormModal from './reward-form-modal';
 import RewardsStatsCards from './rewards-stats-cards';
 import RewardsTable from './rewards-table';
-import { Reward, RewardPayload, RewardSortKey, RewardSortOrder, RewardStatus, RewardType, RewardsQuery } from './types';
+import { Reward, RewardSortKey, RewardSortOrder, RewardStatus, RewardType, RewardsQuery } from './types';
 import { useRewardsView } from './use-rewards-view';
+import { useDeleteRewardV2Mutation } from '@/store/Reducer/rewards-v2-api';
 
 /**
  * Rewards V2 — owns every piece of list state and hands the table plain props.
- * Data still comes from `useRewardsView` (mock).
+ * Data comes from `useRewardsView`, which is backed by the v2 rewards API.
  */
 export const RewardsViewV2: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -39,7 +40,9 @@ export const RewardsViewV2: React.FC = () => {
     [page, limit, search, type, status, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, typeOptions, isLoading, isMutating, createReward, updateReward, deleteReward } = useRewardsView(query);
+  const { data, meta, stats, typeOptions, isLoading, isFetching } = useRewardsView(query);
+
+  const [deleteReward, { isLoading: isDeleting }] = useDeleteRewardV2Mutation();
 
   // Every filter and sort change invalidates the current offset.
   const handleSearchChange = (value: string) => {
@@ -87,25 +90,12 @@ export const RewardsViewV2: React.FC = () => {
     detailModal.onTrue();
   };
 
-  const handleSubmit = async (payload: RewardPayload) => {
-    if (editing) {
-      await updateReward(editing.id, payload);
-      showSuccess('Reward updated');
-      return;
-    }
-
-    await createReward(payload);
-    showSuccess('Reward created');
-    // A new reward lands at the top of the unsorted list.
-    setPage(1);
-  };
-
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
 
     try {
-      await deleteReward(pendingDelete.id);
-      showSuccess('Reward deleted');
+      const response = await deleteReward({ id: pendingDelete.id }).unwrap();
+      showSuccess(response?.message || 'Reward deleted');
       deleteConfirm.onFalse();
       setPendingDelete(null);
     } catch (error) {
@@ -120,8 +110,8 @@ export const RewardsViewV2: React.FC = () => {
       <RewardsTable
         data={data}
         meta={meta}
-        loading={isLoading}
-        isMutating={isMutating}
+        loading={isLoading || isFetching}
+        isMutating={isDeleting}
         onCreate={handleCreate}
         onViewAnalytics={handleViewAnalytics}
         onEdit={handleEdit}
@@ -146,8 +136,6 @@ export const RewardsViewV2: React.FC = () => {
       <RewardFormModal
         open={formModal.value}
         reward={editing}
-        isSubmitting={isMutating}
-        onSubmit={handleSubmit}
         onClose={() => {
           formModal.onFalse();
           setEditing(null);
@@ -167,7 +155,7 @@ export const RewardsViewV2: React.FC = () => {
         open={deleteConfirm.value}
         title="Delete Reward"
         content={`Are you sure you want to delete "${pendingDelete?.name}"? This cannot be undone.`}
-        isLoading={isMutating}
+        isLoading={isDeleting}
         onClose={() => {
           deleteConfirm.onFalse();
           setPendingDelete(null);

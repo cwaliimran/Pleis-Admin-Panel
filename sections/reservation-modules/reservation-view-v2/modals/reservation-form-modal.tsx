@@ -38,10 +38,10 @@ import {
   SELECT_ITEM_CLASS,
   SELECT_TRIGGER_CLASS,
   USER_RESERVATION_STATUS_OPTIONS,
-  toStatusOption,
   deriveEndTime,
   fromIsoTime,
   toIsoDateTime,
+  toStatusOption,
 } from '../constants';
 import { Reservation } from '../types';
 

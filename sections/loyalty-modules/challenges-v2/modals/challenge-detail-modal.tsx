@@ -7,18 +7,7 @@ import { getStatusVariant } from '@/utils/short-utils';
 import React from 'react';
 import { CHALLENGE_REWARD_TYPE_LABELS, CHALLENGE_STATUS_LABELS, CHALLENGE_TASK_TYPE_LABELS } from '../constants';
 import { Challenge } from '../types';
-import {
-  formatAvgProgress,
-  formatGoal,
-  formatMetric,
-  getCompletionRate,
-  getExpiredWithoutCompletion,
-  getLinkedRewardName,
-  getMenuItemNames,
-  getParticipationRate,
-  getRemainingClaims,
-  getTierName,
-} from '../utils';
+import { formatAvgProgress, formatGoal, formatMetric, getCompletionRate, getParticipationRate, getRemainingClaims, getTierName } from '../utils';
 
 interface ChallengeDetailModalProps {
   open: boolean;
@@ -44,9 +33,8 @@ const MetricTile: React.FC<{ label: string; value: string }> = ({ label, value }
 export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open, challenge, onClose }) => {
   if (!challenge) return null;
 
-  const qualifyingItems = getMenuItemNames(challenge.qualifyingItemIds);
-  const rewardItems = getMenuItemNames(challenge.rewardItemIds);
   const remainingClaims = getRemainingClaims(challenge);
+  const ticket = challenge.specialTicket;
 
   /** Points rewards spell out the payout inline; the others have their own row. */
   const rewardTypeValue =
@@ -71,7 +59,7 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
               {CHALLENGE_TASK_TYPE_LABELS[challenge.taskType]}
             </span>
             <span>{CHALLENGE_REWARD_TYPE_LABELS[challenge.rewardType]}</span>
-            <span>Tier: {getTierName(challenge.tierLimit)}</span>
+            <span>Tier: {getTierName(challenge)}</span>
           </div>
         </DialogHeader>
 
@@ -86,23 +74,30 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
 
           <InfoRow label="Goal (X)">{formatGoal(challenge)}</InfoRow>
 
-          {challenge.taskType === 'buyMenuItem' && (
-            <InfoRow label="Qualifying Items">{qualifyingItems.length > 0 ? qualifyingItems.join(', ') : '—'}</InfoRow>
-          )}
+          {challenge.taskType === 'buyMenuItem' && <InfoRow label="Qualifying Item">{challenge.taskMenuItemName || '—'}</InfoRow>}
 
           <InfoRow label="Reward Type">{rewardTypeValue}</InfoRow>
 
-          {challenge.rewardType === 'menuItem' && <InfoRow label="Reward Items">{rewardItems.length > 0 ? rewardItems.join(', ') : '—'}</InfoRow>}
+          {challenge.rewardType === 'customReward' && (
+            <>
+              <InfoRow label="Reward Title">{challenge.customRewardTitle || '—'}</InfoRow>
+              {challenge.customRewardDescription && <InfoRow label="Reward Details">{challenge.customRewardDescription}</InfoRow>}
+            </>
+          )}
 
-          {challenge.rewardType === 'linkedReward' && <InfoRow label="Linked Reward">{getLinkedRewardName(challenge.linkedRewardId)}</InfoRow>}
-
-          <InfoRow label="Repeatable">{challenge.repeatable ? 'Yes · unlimited' : 'No'}</InfoRow>
+          {challenge.rewardType === 'specialTicket' && (
+            <>
+              <InfoRow label="Event">{ticket?.eventName || '—'}</InfoRow>
+              <InfoRow label="Organization">{ticket?.organizationName || '—'}</InfoRow>
+              <InfoRow label="Fast Track">{ticket?.isFastTrack ? 'Yes' : 'No'}</InfoRow>
+            </>
+          )}
 
           <InfoRow label="Claim Limit (total)">{challenge.claimLimit === null ? 'No limit' : challenge.claimLimit.toLocaleString()}</InfoRow>
 
           <InfoRow label="End Time">{fDate(challenge.endDate, formatStr.split.date)}</InfoRow>
 
-          <InfoRow label="Tier Limit">{getTierName(challenge.tierLimit)}</InfoRow>
+          <InfoRow label="Tier Limit">{getTierName(challenge)}</InfoRow>
         </section>
 
         <section>
@@ -122,7 +117,7 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
 
             {/* A capped challenge cares about stock left; an uncapped one about drop-off. */}
             {remainingClaims === null ? (
-              <MetricTile label="Expired Without Completion" value={getExpiredWithoutCompletion(challenge).toLocaleString()} />
+              <MetricTile label="Expired Without Completion" value={challenge.expired.toLocaleString()} />
             ) : (
               <MetricTile label="Remaining Claims" value={`${remainingClaims.toLocaleString()} / ${challenge.claimLimit?.toLocaleString()}`} />
             )}

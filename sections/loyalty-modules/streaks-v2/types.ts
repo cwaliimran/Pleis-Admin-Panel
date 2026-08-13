@@ -1,20 +1,24 @@
 // ============================================================
 // Streaks V2 — domain types
 //
-// Served by `mock-data.ts` through `use-streaks-view.ts` until the real
-// endpoints exist. The query/meta shapes deliberately mirror the RTK Query
-// list contract (`{ data, meta }`) so swapping the hook for a generated
-// `useGetStreaksQuery` is a drop-in change.
+// The view model the components render. `use-streaks-view.ts` maps the wire
+// format (`store/Reducer/streaks-v2-api.ts`) onto this once, so nothing below
+// the hook deals with the backend's own field names.
 // ============================================================
 
-/** Badge tiers, ordered worst to best — see `STREAK_BADGE_RANK`. */
-export type StreakBadge = 'bronze' | 'silver' | 'gold' | 'platinum';
+import type { ApiStreakBadge, ApiStreakCountBase, ApiUserStreakSortBy } from '@/store/Reducer/streaks-v2-api';
+
+/** Badge tiers, ordered worst to best — see `STREAK_BADGE_ORDER`. */
+export type StreakBadge = ApiStreakBadge;
 
 /** The period a streak is counted in. */
-export type StreakCountBase = 'day' | 'week' | 'month';
+export type StreakCountBase = ApiStreakCountBase;
 
-/** Column keys the table can sort by. Sent to the API as `sortBy`. */
-export type StreakSortKey = 'username' | 'name' | 'streak' | 'longestStreak' | 'highestBadge' | 'visits' | 'lastVisitAt';
+/**
+ * Column keys the table can sort by — the API's own field names. Note there is
+ * no badge sort, so the Highest Badge column is not sortable.
+ */
+export type StreakSortKey = ApiUserStreakSortBy;
 
 /** Empty string means "no sort" and is omitted from the request. */
 export type StreakSortOrder = 'asc' | 'desc' | '';
@@ -39,6 +43,9 @@ export interface StreakMember {
 /**
  * Global rules, edited through the Streak Rules modal and applied to every
  * member. `thresholds` is the number of consecutive visits each badge needs.
+ *
+ * The whole object is `null` until a rule set has been saved for the company —
+ * the API answers with an empty `data` object in that case.
  */
 export interface StreakRules {
   countBase: StreakCountBase;
@@ -51,9 +58,8 @@ export interface StreakRules {
  */
 export interface StreakStats {
   avgStreakPerUser: number;
+  /** The figure only — the API does not say who holds it. */
   longestStreak: number;
-  /** Who holds `longestStreak`. */
-  longestStreakUsername: string;
   /** Every badge ever handed out, all tiers combined. */
   badgesAwarded: number;
   topStreaker: { username: string; visits: number } | null;

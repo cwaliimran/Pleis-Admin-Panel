@@ -11,15 +11,7 @@ import React from 'react';
 import ChallengesFilterSheet from './components/challenges-filter-sheet';
 import ChallengesTableRow from './challenges-table-row';
 import { CHALLENGES_HEAD_LABEL } from './constants';
-import {
-  Challenge,
-  ChallengeRewardType,
-  ChallengeSortKey,
-  ChallengeSortOrder,
-  ChallengeStatus,
-  ChallengeTaskType,
-  ChallengesMeta,
-} from './types';
+import { Challenge, ChallengeRewardType, ChallengeSortKey, ChallengeSortOrder, ChallengeStatus, ChallengeTaskType, ChallengesMeta } from './types';
 
 interface ChallengesTableProps {
   data: Challenge[];

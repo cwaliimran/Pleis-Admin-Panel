@@ -8,27 +8,42 @@ import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
+import { useGetEventsByCompanyOrganizerQuery } from '@/store/Reducer/events';
+import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import type { ApiBooleanString, RewardWriteBody } from '@/store/Reducer/rewards-v2-api';
+import { useCreateRewardV2Mutation, useUpdateRewardV2Mutation } from '@/store/Reducer/rewards-v2-api';
+import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
+import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
-import { showError } from '@/utils/toast';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle } from 'lucide-react';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import { REWARD_CREATION_METHOD_HINTS, REWARD_CREATION_METHOD_OPTIONS, REWARD_REDEEM_DELAY_NOTICE } from './constants';
-import { MOCK_EVENTS, MOCK_MENUS, MOCK_MENU_ITEMS, MOCK_TIERS } from './mock-data';
+import {
+  OPTIONS_PAGE_LIMIT,
+  REWARD_CREATION_METHOD_HINTS,
+  REWARD_CREATION_METHOD_OPTIONS,
+  REWARD_REDEEM_DELAY_NOTICE,
+} from './constants';
 import RewardCalculatorPanel from './reward-calculator-panel';
-import RewardMenuItemsField from './reward-menu-items-field';
-import { Reward, RewardCreationMethod, RewardPayload } from './types';
+import { Reward, RewardCreationMethod } from './types';
 
 /** Numbers are held as strings so empty inputs stay empty rather than becoming 0. */
 interface RewardFormValues {
   image: unknown;
   creationMethod: RewardCreationMethod;
   menuId: string;
-  menuItemIds: string[];
+  menuItemId: string;
   eventId: string;
+  ticketId: string;
   name: string;
   type: string;
   pointCost: string;
@@ -40,10 +55,9 @@ interface RewardFormValues {
   isActive: boolean;
   availableAsReward: boolean;
   challengeOnly: boolean;
+  isPromotionOnly: boolean;
   description: string;
 }
-
-const ANY_TIER = 'any';
 
 const optionalPositive = (message: string) =>
   yup.string().test('optional-positive', message, (value) => {
@@ -52,23 +66,31 @@ const optionalPositive = (message: string) =>
   });
 
 const schema = yup.object({
-  image: yup.mixed().nullable(),
+  image: yup.mixed().required('Image is required'),
   creationMethod: yup.string().required('Creation method is required'),
+
   menuId: yup.string().when('creationMethod', {
     is: 'buyMenuItemReward',
     then: (current) => current.required('Menu is required'),
     otherwise: (current) => current,
   }),
-  menuItemIds: yup.array().of(yup.string().required()).when('creationMethod', {
+  menuItemId: yup.string().when('creationMethod', {
     is: 'buyMenuItemReward',
-    then: (current) => current.min(1, 'Add at least one menu item'),
+    then: (current) => current.required('Menu item is required'),
     otherwise: (current) => current,
   }),
+
   eventId: yup.string().when('creationMethod', {
     is: 'ticketReward',
     then: (current) => current.required('Event is required'),
     otherwise: (current) => current,
   }),
+  ticketId: yup.string().when('creationMethod', {
+    is: 'ticketReward',
+    then: (current) => current.required('Ticket is required'),
+    otherwise: (current) => current,
+  }),
+
   name: yup.string().required('Reward name is required'),
   type: yup.string().required('Type is required'),
   pointCost: yup
@@ -77,16 +99,21 @@ const schema = yup.object({
     .test('is-positive', 'Point value must be greater than 0', (value) => Number(value) > 0),
   totalLimit: optionalPositive('Claim limit must be a positive number'),
   maxClaimsPerUser: optionalPositive('Max claims per user must be a positive number'),
-  tierLimit: yup.string(),
+  tierLimit: yup.string().required('Tier limit is required'),
   percentOff: yup.string().test('is-valid-percent', 'Must be between 0 and 100', (value) => {
     if (!value) return true;
     const parsed = Number(value);
     return parsed >= 0 && parsed <= 100;
   }),
-  endDate: yup.mixed<Date | string>().required('End date is required'),
+  // `mixed().required()` treats '' as present, so the emptiness needs its own test.
+  endDate: yup
+    .mixed<Date | string>()
+    .required('End date is required')
+    .test('is-set', 'End date is required', (value) => Boolean(value)),
   isActive: yup.boolean(),
   availableAsReward: yup.boolean(),
   challengeOnly: yup.boolean(),
+  isPromotionOnly: yup.boolean(),
   description: yup.string(),
 });
 
@@ -94,33 +121,57 @@ const defaultValues: RewardFormValues = {
   image: null,
   creationMethod: 'customReward',
   menuId: '',
-  menuItemIds: [],
+  menuItemId: '',
   eventId: '',
+  ticketId: '',
   name: '',
   type: '',
   pointCost: '',
   totalLimit: '',
   maxClaimsPerUser: '',
-  tierLimit: ANY_TIER,
+  tierLimit: '',
   percentOff: '',
   endDate: '',
   isActive: true,
   availableAsReward: true,
   challengeOnly: false,
+  isPromotionOnly: false,
   description: '',
+};
+
+/** The API stores an Azure blob key; a saved record hands back the full URL. */
+const toBlobKey = (url: string): string => (url.includes('/') ? (url.split('/').pop() ?? '') : url);
+
+const asBooleanString = (value: boolean): ApiBooleanString => (value ? 'true' : 'false');
+
+const toDateOnly = (value: Date | string): string => {
+  if (value instanceof Date) {
+    // Local parts, so a late-evening pick does not roll back a day in UTC.
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${value.getFullYear()}-${month}-${day}`;
+  }
+  return String(value).slice(0, 10);
 };
 
 interface RewardFormModalProps {
   open: boolean;
   /** `null` opens the form in create mode. */
   reward: Reward | null;
-  isSubmitting?: boolean;
-  onSubmit: (payload: RewardPayload) => Promise<void>;
   onClose: () => void;
 }
 
-export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, isSubmitting = false, onSubmit, onClose }) => {
+export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, onClose }) => {
   const isEdit = Boolean(reward);
+
+  const { companyId } = useCompanySelectionState();
+  const { uploadImage, uploading } = useImageUpload();
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+
+  const [createReward, { isLoading: isCreating }] = useCreateRewardV2Mutation();
+  const [updateReward, { isLoading: isUpdating }] = useUpdateRewardV2Mutation();
+
+  const isSubmitting = isCreating || isUpdating || uploading || isCleaningUp;
 
   const methods = useForm<RewardFormValues>({
     resolver: yupResolver(schema) as never,
@@ -131,9 +182,63 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
 
   const creationMethod = watch('creationMethod');
   const selectedMenuId = watch('menuId');
+  const selectedEventId = watch('eventId');
   const isActive = watch('isActive');
 
-  // Reload whenever the modal opens so a stale draft never leaks into the next use.
+  // ---------- Reference data ----------
+
+  const { data: tiersData, isLoading: tiersLoading } = useGetTiersQuery(
+    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined },
+    { skip: !open }
+  );
+
+  const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
+    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: companyId || undefined },
+    { skip: !open || creationMethod !== 'buyMenuItemReward' }
+  );
+
+  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemByMenuIdQuery(
+    { menuId: selectedMenuId },
+    { skip: !selectedMenuId || creationMethod !== 'buyMenuItemReward' }
+  );
+
+  const { data: eventData, isLoading: eventsLoading } = useGetEventsByCompanyOrganizerQuery(
+    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, companyOrganizer: companyId || undefined },
+    { skip: !open || creationMethod !== 'ticketReward' }
+  );
+
+  const { data: ticketData, isFetching: ticketsFetching } = useGetTicketingByEventQuery(
+    { eventId: selectedEventId || undefined },
+    { skip: !selectedEventId || creationMethod !== 'ticketReward' }
+  );
+
+  const tierOptions = useMemo(
+    () => (tiersData?.data ?? []).map((tier: { _id: string; title: string }) => ({ value: tier._id, label: tier.title })),
+    [tiersData]
+  );
+
+  const menuOptions = useMemo(
+    () => (menuData?.data ?? []).map((menu: { _id: string; title: string }) => ({ value: menu._id, label: menu.title })),
+    [menuData]
+  );
+
+  const menuItemOptions = useMemo(
+    () => (menuItemsData?.data ?? []).map((item: { _id: string; title: string }) => ({ value: item._id, label: item.title })),
+    [menuItemsData]
+  );
+
+  const eventOptions = useMemo(
+    () => (eventData ?? []).map((event: { _id: string; basicInfo?: { title?: string } }) => ({ value: event._id, label: event.basicInfo?.title ?? '' })),
+    [eventData]
+  );
+
+  const ticketOptions = useMemo(
+    () => (ticketData?.data ?? []).map((ticket: { _id: string; title: string }) => ({ value: ticket._id, label: ticket.title })),
+    [ticketData]
+  );
+
+  // ---------- Seeding ----------
+
   useEffect(() => {
     if (!open) return;
 
@@ -146,87 +251,144 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
       image: reward.image || null,
       creationMethod: reward.creationMethod,
       menuId: reward.menuId || '',
-      menuItemIds: reward.menuItemIds,
+      menuItemId: reward.menuItemId || '',
       eventId: reward.eventId || '',
+      ticketId: reward.ticketId || '',
       name: reward.name,
       type: reward.type,
       pointCost: String(reward.pointCost),
       totalLimit: reward.totalLimit === null ? '' : String(reward.totalLimit),
       maxClaimsPerUser: reward.maxClaimsPerUser === null ? '' : String(reward.maxClaimsPerUser),
-      tierLimit: reward.tierLimit || ANY_TIER,
+      tierLimit: reward.tierId || '',
       percentOff: String(reward.percentOff),
       endDate: reward.endDate ? new Date(reward.endDate) : '',
       isActive: reward.status === 'active',
       availableAsReward: reward.availableAsReward,
       challengeOnly: reward.challengeOnly,
+      isPromotionOnly: reward.isPromotionOnly,
       description: reward.description,
     });
   }, [open, reward, reset]);
 
-  // Switching method makes the other method's selections meaningless.
+  // Switching method makes the other methods' selections meaningless.
   useEffect(() => {
     if (creationMethod !== 'buyMenuItemReward') {
       setValue('menuId', '');
-      setValue('menuItemIds', []);
+      setValue('menuItemId', '');
     }
     if (creationMethod !== 'ticketReward') {
       setValue('eventId', '');
+      setValue('ticketId', '');
     }
   }, [creationMethod, setValue]);
 
-  const menuOptions = useMemo(() => MOCK_MENUS.map((menu) => ({ value: menu.id, label: menu.name })), []);
-  const eventOptions = useMemo(() => MOCK_EVENTS.map((event) => ({ value: event.id, label: event.name })), []);
-  const tierOptions = useMemo(() => [{ value: ANY_TIER, label: 'Any tier' }, ...MOCK_TIERS.map((tier) => ({ value: tier.id, label: tier.name }))], []);
+  // A ticket belongs to one event, so changing the event invalidates the pick.
+  useEffect(() => {
+    if (creationMethod !== 'ticketReward') return;
+    if (reward?.eventId && reward.eventId === selectedEventId) return;
+    setValue('ticketId', '');
+  }, [selectedEventId, creationMethod, reward, setValue]);
 
-  // Narrow to the chosen menu; before one is picked every item is fair game.
-  const menuItemOptions = useMemo(
-    () => (selectedMenuId ? MOCK_MENU_ITEMS.filter((item) => item.menuId === selectedMenuId) : MOCK_MENU_ITEMS),
-    [selectedMenuId]
-  );
+  // ---------- Submit ----------
 
-  const hint = REWARD_CREATION_METHOD_HINTS[creationMethod];
+  /** Resolves an upload field to the blob key the API stores. */
+  const resolveImageKey = async (value: unknown, uploaded: string[]): Promise<string> => {
+    if (typeof value === 'string' && value) return toBlobKey(value);
 
-  const submit = async (values: RewardFormValues) => {
+    const file = value instanceof FileList ? value[0] : value instanceof File ? value : null;
+    if (!file) return '';
+
+    const key = await uploadImage(file);
+    if (!key) throw new Error('Image upload failed');
+
+    uploaded.push(key);
+    return key;
+  };
+
+  /**
+   * The dialog scrolls, so an inline error on a field above the fold is
+   * invisible from the buttons — a submit would appear to do nothing. Surface
+   * the first failure as a toast as well.
+   */
+  const reportInvalid = (errors: FieldErrors<RewardFormValues>) => {
+    const firstMessage = Object.values(errors).find((entry) => entry?.message)?.message;
+    showError(firstMessage ? String(firstMessage) : 'Please complete the highlighted fields.');
+  };
+
+  const submit = handleSubmit(async (values) => {
+    if (!companyId) {
+      showError('Please select a company first.');
+      return;
+    }
+
+    // Tracked so a failed save does not leave orphaned blobs behind.
+    const uploaded: string[] = [];
+
     try {
-      const payload: RewardPayload = {
-        name: values.name.trim(),
-        image: typeof values.image === 'string' ? values.image : '',
-        type: values.type.trim(),
-        status: values.isActive ? 'active' : 'inactive',
-        creationMethod: values.creationMethod,
-        availableAsReward: values.availableAsReward,
-        challengeOnly: values.challengeOnly,
-        menuId: values.creationMethod === 'buyMenuItemReward' ? values.menuId : undefined,
-        menuItemIds: values.creationMethod === 'buyMenuItemReward' ? values.menuItemIds : [],
-        eventId: values.creationMethod === 'ticketReward' ? values.eventId : undefined,
-        pointCost: Number(values.pointCost),
-        totalLimit: values.totalLimit === '' ? null : Number(values.totalLimit),
-        maxClaimsPerUser: values.maxClaimsPerUser === '' ? null : Number(values.maxClaimsPerUser),
-        tierLimit: values.tierLimit === ANY_TIER ? '' : values.tierLimit,
-        percentOff: values.percentOff === '' ? 0 : Number(values.percentOff),
-        endDate: values.endDate instanceof Date ? values.endDate.toISOString().slice(0, 10) : String(values.endDate),
+      const image = await resolveImageKey(values.image, uploaded);
+
+      const body: RewardWriteBody = {
+        rewardType: values.creationMethod,
+        image,
+        title: values.name.trim(),
         description: values.description?.trim() || '',
+        sortingType: values.type.trim(),
+        endDate: toDateOnly(values.endDate),
+        minPointsRequiredToClaim: Number(values.pointCost),
+        percentOff: values.percentOff === '' ? 0 : Number(values.percentOff),
+        tierLimit: values.tierLimit,
+        status: values.isActive ? 'active' : 'inactive',
+        isPromotionOnly: values.isPromotionOnly,
+        availableAsReward: asBooleanString(values.availableAsReward),
+        challengeOnly: asBooleanString(values.challengeOnly),
       };
 
-      await onSubmit(payload);
+      if (values.totalLimit !== '') body.claimLimit = Number(values.totalLimit);
+      if (values.maxClaimsPerUser !== '') body.maxLimitPerUser = Number(values.maxClaimsPerUser);
+
+      if (values.creationMethod === 'buyMenuItemReward') {
+        body.menuItem = values.menuItemId;
+      }
+
+      if (values.creationMethod === 'ticketReward') {
+        body.event = values.eventId;
+        body.ticket = values.ticketId;
+      }
+
+      const response =
+        reward && isEdit
+          ? await updateReward({ id: reward.id, companyOrganizer: companyId, ...body }).unwrap()
+          : await createReward({ companyOrganizer: companyId, ...body }).unwrap();
+
+      showSuccess(response?.message || (isEdit ? 'Reward updated' : 'Reward created'));
       reset(defaultValues);
       onClose();
     } catch (error) {
+      if (uploaded.length > 0) {
+        setIsCleaningUp(true);
+        try {
+          await Promise.all(uploaded.map((key) => deleteFileFromAzure(key)));
+        } catch {
+          // The save already failed; a stranded blob is not worth a second error.
+        } finally {
+          setIsCleaningUp(false);
+        }
+      }
+
       showError(getErrorMessage(error));
     }
-  };
+  }, reportInvalid);
 
   const handleClose = () => {
     reset(defaultValues);
     onClose();
   };
 
+  const hint = REWARD_CREATION_METHOD_HINTS[creationMethod];
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent
-        aria-describedby={undefined}
-        className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-160!"
-      >
+      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-160!">
         <DialogHeader>
           <DialogTitle className="text-center text-lg font-semibold">{isEdit ? 'Edit Reward' : 'Create Reward'}</DialogTitle>
         </DialogHeader>
@@ -239,7 +401,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
           </p>
         </div>
 
-        <FormProvider methods={methods} onSubmit={handleSubmit(submit)}>
+        <FormProvider methods={methods} onSubmit={submit}>
           <div className="flex flex-col gap-4">
             <RHFUploadAvatar name="image" label="" initialImage={reward?.image || null} />
 
@@ -257,20 +419,47 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
             </div>
 
             {creationMethod === 'buyMenuItemReward' && (
-              <>
-                <RHFCustomDropdown name="menuId" label="Select Menu" placeholder="Select menu" options={menuOptions} showNone={false} />
-                <RewardMenuItemsField name="menuItemIds" options={menuItemOptions} />
-              </>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <RHFCustomDropdown
+                  name="menuId"
+                  label="Select Menu"
+                  placeholder="Select menu"
+                  options={menuOptions}
+                  isLoading={menuLoading}
+                  showNone={false}
+                />
+                <RHFCustomDropdown
+                  name="menuItemId"
+                  label="Select Menu Item"
+                  placeholder="Select menu item"
+                  options={menuItemOptions}
+                  isLoading={menuItemsLoading}
+                  showNone={false}
+                  disabled={!selectedMenuId}
+                />
+              </div>
             )}
 
             {creationMethod === 'ticketReward' && (
-              <RHFCustomDropdown
-                name="eventId"
-                label="Select Event"
-                placeholder="Choose event for ticket reward"
-                options={eventOptions}
-                showNone={false}
-              />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <RHFCustomDropdown
+                  name="eventId"
+                  label="Select Event"
+                  placeholder="Choose event for ticket reward"
+                  options={eventOptions}
+                  isLoading={eventsLoading}
+                  showNone={false}
+                />
+                <RHFCustomDropdown
+                  name="ticketId"
+                  label="Select Ticket"
+                  placeholder="Choose ticket"
+                  options={ticketOptions}
+                  isLoading={ticketsFetching}
+                  showNone={false}
+                  disabled={!selectedEventId}
+                />
+              </div>
             )}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -290,7 +479,14 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
                 min="0"
               />
 
-              <RHFCustomDropdown name="tierLimit" label="Tier Limit" placeholder="Minimum tier required" options={tierOptions} showNone={false} />
+              <RHFCustomDropdown
+                name="tierLimit"
+                label="Tier Limit"
+                placeholder="Minimum tier required"
+                options={tierOptions}
+                isLoading={tiersLoading}
+                showNone={false}
+              />
 
               <RHFTextField
                 name="percentOff"
@@ -324,11 +520,17 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
                 title="Challenge Only"
                 description="Reward can only be obtained by completing a challenge, not by spending points directly."
               />
+
+              <RHFToggleField
+                name="isPromotionOnly"
+                title="Promotion Only"
+                description="Reward is surfaced through promotions rather than the general rewards list."
+              />
             </div>
 
             <RHFTextField name="description" label="Description (optional)" placeholder="Enter reward details" multiline rows={3} />
 
-            <RewardCalculatorPanel />
+            <RewardCalculatorPanel companyOrganizer={companyId || undefined} />
           </div>
 
           <div className="mt-5 flex items-center justify-center gap-3">

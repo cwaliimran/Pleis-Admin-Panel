@@ -7,17 +7,7 @@ import { getStatusVariant } from '@/utils/short-utils';
 import React from 'react';
 import { REWARD_CREATION_METHOD_LABELS, REWARD_STATUS_LABELS } from './constants';
 import { Reward } from './types';
-import {
-  formatMetric,
-  getBrowsingMetric,
-  getConversion,
-  getEventName,
-  getMenuItemNames,
-  getPointsSpent,
-  getRedemptionRate,
-  getRemainingClaims,
-  getTierName,
-} from './utils';
+import { formatMetric, getBrowsingMetric, getConversion, getPointsSpent, getRedemptionRate, getRemainingClaims, getTierName } from './utils';
 
 interface RewardDetailModalProps {
   open: boolean;
@@ -54,7 +44,6 @@ const OnOffValue: React.FC<{ on: boolean }> = ({ on }) =>
 export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, reward, onClose }) => {
   if (!reward) return null;
 
-  const linkedItems = getMenuItemNames(reward.menuItemIds);
   const remainingClaims = getRemainingClaims(reward);
 
   return (
@@ -79,7 +68,7 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
             {/* The badge already says "Ticket Reward", so the type would repeat it. */}
             {reward.creationMethod !== 'ticketReward' && reward.type && <span className="capitalize">{reward.type}</span>}
             <span>Point Cost: {reward.pointCost.toLocaleString()}</span>
-            <span>Tier: {getTierName(reward.tierLimit)}</span>
+            <span>Tier: {getTierName(reward)}</span>
           </div>
         </DialogHeader>
 
@@ -93,10 +82,13 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
           <InfoRow label="Creation Method">{REWARD_CREATION_METHOD_LABELS[reward.creationMethod]}</InfoRow>
 
           {reward.creationMethod === 'buyMenuItemReward' && (
-            <InfoRow label="Linked Items">{linkedItems.length > 0 ? linkedItems.join(', ') : '—'}</InfoRow>
+            <>
+              <InfoRow label="Menu">{reward.menuName || '—'}</InfoRow>
+              <InfoRow label="Linked Item">{reward.menuItemName || '—'}</InfoRow>
+            </>
           )}
 
-          {reward.creationMethod === 'ticketReward' && <InfoRow label="Event">{getEventName(reward.eventId)}</InfoRow>}
+          {reward.creationMethod === 'ticketReward' && <InfoRow label="Fast Track">{reward.isFastTrack ? 'Yes' : 'No'}</InfoRow>}
 
           <InfoRow label="Point Cost">{reward.pointCost.toLocaleString()}</InfoRow>
 
@@ -104,7 +96,7 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
 
           <InfoRow label="Max Claims Per User">{reward.maxClaimsPerUser === null ? 'No limit' : reward.maxClaimsPerUser.toLocaleString()}</InfoRow>
 
-          <InfoRow label="Tier Limit">{getTierName(reward.tierLimit)}</InfoRow>
+          <InfoRow label="Tier Limit">{getTierName(reward)}</InfoRow>
 
           <InfoRow label="% Off">{reward.percentOff}%</InfoRow>
 
@@ -113,9 +105,9 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
           </InfoRow>
 
           <InfoRow label="Challenge Only">{reward.challengeOnly ? 'Yes' : 'No'}</InfoRow>
-        </section>
 
-        {reward.statusNote && <p className="text-xs leading-relaxed text-gray-500 dark:text-gray-400">{reward.statusNote}</p>}
+          <InfoRow label="Promotion Only">{reward.isPromotionOnly ? 'Yes' : 'No'}</InfoRow>
+        </section>
 
         <section>
           <h4 className="mb-2 text-[11px] font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Performance</h4>

@@ -1,105 +1,148 @@
 'use client';
 
-import { startOfDay } from 'date-fns';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DEFAULT_PAGE_LIMIT } from './constants';
-import { MOCK_STREAK_MEMBERS, MOCK_STREAK_RULES, MOCK_STREAK_STATS } from './mock-data';
-import { StreakMember, StreakRules, StreakSortKey, StreakStats, StreaksMeta, StreaksQuery } from './types';
-import { getBadgeRank } from './utils';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import type { ApiStreakRules, ApiUserStreak, ApiUsersStreaksCount } from '@/store/Reducer/streaks-v2-api';
+import { useGetStreakRulesQuery, useGetUsersStreaksQuery, useUpdateStreakRulesMutation } from '@/store/Reducer/streaks-v2-api';
+import { formatDate } from '@/utils/format-time';
+import { useCallback, useMemo } from 'react';
+import { STREAK_BADGE_ORDER } from './constants';
+import { StreakBadge, StreakMember, StreakRules, StreakStats, StreaksMeta, StreaksQuery } from './types';
 
-const compareBy = (key: StreakSortKey, a: StreakMember, b: StreakMember): number => {
-  switch (key) {
-    case 'username':
-      return a.username.localeCompare(b.username);
-    case 'name':
-      return a.name.localeCompare(b.name);
-    case 'highestBadge':
-      return getBadgeRank(a.highestBadge) - getBadgeRank(b.highestBadge);
-    case 'lastVisitAt':
-      return new Date(a.lastVisitAt).getTime() - new Date(b.lastVisitAt).getTime();
-    default:
-      return a[key] - b[key];
-  }
+const EMPTY_STATS: StreakStats = {
+  avgStreakPerUser: 0,
+  longestStreak: 0,
+  badgesAwarded: 0,
+  topStreaker: null,
+};
+
+const toMember = (item: ApiUserStreak): StreakMember => {
+  const user = item.user;
+
+  return {
+    id: item._id,
+    username: user?.username ?? '',
+    // One of the two names can be missing, so joining beats interpolating.
+    name: [user?.firstName, user?.lastName].filter(Boolean).join(' '),
+    photo: user?.profileIcon ?? '',
+
+    streak: item.streak ?? 0,
+    longestStreak: item.longestStreak ?? 0,
+    // The API sends '' rather than null before the first badge; the label
+    // component already renders null as an em dash.
+    highestBadge: item.badge || null,
+    visits: item.visits ?? 0,
+    lastVisitAt: item.lastVisitAt ?? '',
+  };
+};
+
+const toStats = (count?: ApiUsersStreaksCount | null): StreakStats => {
+  if (!count) return EMPTY_STATS;
+
+  const top = count.topStreaker;
+
+  return {
+    avgStreakPerUser: count.averageStreak ?? 0,
+    longestStreak: count.highestStreak ?? 0,
+    badgesAwarded: count.totalBadgesAwarded ?? 0,
+    topStreaker: top?.username ? { username: top.username, visits: top.visits ?? 0 } : null,
+  };
+};
+
+/**
+ * The API holds the ladder as an array keyed by `title`; the UI wants one entry
+ * per tier. A rule set missing any tier cannot drive the ladder, so it reads as
+ * unset rather than being silently filled with zeros.
+ */
+const toRules = (rules: ApiStreakRules | null): StreakRules | null => {
+  if (!rules?.countBase || !rules.badges?.length) return null;
+
+  const visitsByTier = new Map(rules.badges.map((badge) => [badge.title, badge.visits]));
+
+  if (STREAK_BADGE_ORDER.some((badge) => typeof visitsByTier.get(badge) !== 'number')) return null;
+
+  const thresholds = Object.fromEntries(STREAK_BADGE_ORDER.map((badge) => [badge, visitsByTier.get(badge)])) as Record<StreakBadge, number>;
+
+  return { countBase: rules.countBase, thresholds };
 };
 
 interface UseStreaksViewResult {
   data: StreakMember[];
   meta: StreaksMeta;
   stats: StreakStats;
-  rules: StreakRules;
+  /** `null` until a rule set has been saved for this company. */
+  rules: StreakRules | null;
   isLoading: boolean;
+  isFetching: boolean;
+  isRulesLoading: boolean;
   isMutating: boolean;
   saveRules: (rules: StreakRules) => Promise<void>;
 }
 
 /**
- * Mock-backed data layer for Streaks V2. Filtering, sorting and paging happen
- * here so the view and table stay presentational — exactly where the server
- * will take over.
+ * Data layer for Streaks V2. Filtering, sorting and paging are all done by the
+ * server; this only maps the wire format onto the view model.
  *
- * Streak records are read-only: the app maintains them as members visit. The
+ * Streak records are read-only — the app maintains them as members visit. The
  * only thing an admin can change is the global rule set.
  */
 export const useStreaksView = (query: StreaksQuery): UseStreaksViewResult => {
-  const [members] = useState<StreakMember[]>(MOCK_STREAK_MEMBERS);
-  const [rules, setRules] = useState<StreakRules>(MOCK_STREAK_RULES);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isMutating, setIsMutating] = useState(false);
+  // Admin picks the company in the header; the page sits behind `CompanyGuard`.
+  const { companyId } = useCompanySelectionState();
 
   const { page, limit, search, badge, lastVisitFrom, sortBy, sortOrder } = query;
 
-  // Stands in for the request round-trip so the loading states are exercised.
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 250);
-    return () => clearTimeout(timer);
-  }, [page, limit, search, badge, lastVisitFrom, sortBy, sortOrder]);
+  const { data, isLoading, isFetching } = useGetUsersStreaksQuery(
+    {
+      companyOrganizer: companyId as string,
+      page,
+      limit,
+      keyword: search.trim() || undefined,
+      badge: badge || undefined,
+      // Local date parts, so an evening pick does not roll back a day in UTC.
+      lastVisitedFrom: formatDate(lastVisitFrom),
+      sortBy: sortBy || undefined,
+      sortOrder: sortOrder || undefined,
+    },
+    { skip: !companyId, refetchOnMountOrArgChange: true }
+  );
 
-  const filtered = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-    // Compare from midnight so a same-day visit is never filtered out.
-    const from = lastVisitFrom ? startOfDay(lastVisitFrom).getTime() : null;
+  const { data: rulesData, isLoading: isRulesLoading } = useGetStreakRulesQuery(
+    { companyOrganizer: companyId as string },
+    { skip: !companyId }
+  );
 
-    return members.filter((member) => {
-      if (keyword && !member.username.toLowerCase().includes(keyword) && !member.name.toLowerCase().includes(keyword)) return false;
-      if (badge && member.highestBadge !== badge) return false;
-      if (from !== null && new Date(member.lastVisitAt).getTime() < from) return false;
-      return true;
-    });
-  }, [members, search, badge, lastVisitFrom]);
+  const [updateStreakRules, { isLoading: isMutating }] = useUpdateStreakRulesMutation();
 
-  const sorted = useMemo(() => {
-    if (!sortBy || !sortOrder) return filtered;
+  const members = useMemo(() => (data?.data ?? []).map(toMember), [data]);
 
-    const direction = sortOrder === 'asc' ? 1 : -1;
-    return [...filtered].sort((a, b) => compareBy(sortBy, a, b) * direction);
-  }, [filtered, sortBy, sortOrder]);
+  const rules = useMemo(() => toRules(rulesData ?? null), [rulesData]);
 
-  const totalRecords = sorted.length;
-  const pageSize = limit || DEFAULT_PAGE_LIMIT;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-  // Guards against landing past the end after a filter narrows the result set.
-  const currentPage = Math.min(page, totalPages);
+  const stats = useMemo(() => toStats(data?.meta?.UsersStreaksCount), [data]);
 
-  const data = useMemo(() => sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize), [sorted, currentPage, pageSize]);
+  const meta = useMemo<StreaksMeta>(
+    () => ({
+      currentPage: data?.meta?.currentPage ?? page,
+      totalPages: data?.meta?.totalPages ?? 1,
+      totalRecords: data?.meta?.totalRecords ?? 0,
+      limit: data?.meta?.limit ?? limit,
+    }),
+    [data, page, limit]
+  );
 
-  const saveRules = useCallback(async (next: StreakRules) => {
-    setIsMutating(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setRules(next);
-    } finally {
-      setIsMutating(false);
-    }
-  }, []);
+  const saveRules = useCallback(
+    async (next: StreakRules) => {
+      if (!companyId) throw new Error('Please select a company first.');
 
-  return {
-    data,
-    meta: { currentPage, totalPages, totalRecords, limit: pageSize },
-    stats: MOCK_STREAK_STATS,
-    rules,
-    isLoading,
-    isMutating,
-    saveRules,
-  };
+      // Always a PUT — the endpoint upserts, so a first-time save and an edit
+      // are the same request.
+      await updateStreakRules({
+        companyOrganizer: companyId,
+        countBase: next.countBase,
+        badges: STREAK_BADGE_ORDER.map((badge) => ({ title: badge, visits: next.thresholds[badge] })),
+      }).unwrap();
+    },
+    [companyId, updateStreakRules]
+  );
+
+  return { data: members, meta, stats, rules, isLoading, isFetching, isRulesLoading, isMutating, saveRules };
 };

@@ -77,6 +77,9 @@ import { occasionsApi } from './Reducer/occasions-api';
 import { reservationTypesApi } from './Reducer/reservation-types-api';
 import { reservationPreferencesApi } from './Reducer/reservation-preferences-api';
 import { userReservationsApi } from './Reducer/user-reservations-api';
+import { rewardsV2Api } from './Reducer/rewards-v2-api';
+import { challengesV2Api } from './Reducer/challenges-v2-api';
+import { streaksV2Api } from './Reducer/streaks-v2-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -153,6 +156,9 @@ const appReducer = combineReducers({
   [reservationTypesApi.reducerPath]: reservationTypesApi.reducer,
   [reservationPreferencesApi.reducerPath]: reservationPreferencesApi.reducer,
   [userReservationsApi.reducerPath]: userReservationsApi.reducer,
+  [rewardsV2Api.reducerPath]: rewardsV2Api.reducer,
+  [challengesV2Api.reducerPath]: challengesV2Api.reducer,
+  [streaksV2Api.reducerPath]: streaksV2Api.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -237,6 +243,9 @@ export const store = configureStore({
       reservationTypesApi.middleware,
       reservationPreferencesApi.middleware,
       userReservationsApi.middleware,
+      rewardsV2Api.middleware,
+      challengesV2Api.middleware,
+      streaksV2Api.middleware,
     ),
 });
 

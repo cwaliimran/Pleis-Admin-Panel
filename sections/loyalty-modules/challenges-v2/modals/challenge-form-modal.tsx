@@ -23,8 +23,17 @@ import {
   CHALLENGE_TASK_TYPE_HINT,
   CHALLENGE_TASK_TYPE_OPTIONS,
 } from '../constants';
-import { MOCK_LINKED_REWARDS, MOCK_MENUS, MOCK_MENU_ITEMS, MOCK_TIERS } from '../mock-data';
-import { Challenge, ChallengePayload, ChallengeRewardType, ChallengeTaskType } from '../types';
+import { Challenge, ChallengePayload, ChallengeRewardType, ChallengeTaskType, MenuItemOption } from '../types';
+
+/**
+ * Reference data for the dropdowns. The mock lists were removed with the rest
+ * of the mock layer; these are filled from the real option endpoints when the
+ * write side of the module is wired.
+ */
+const MENUS: { id: string; name: string }[] = [];
+const MENU_ITEMS: MenuItemOption[] = [];
+const TIERS: { id: string; name: string }[] = [];
+const LINKED_REWARDS: { id: string; name: string }[] = [];
 
 /** Numbers are held as strings so empty inputs stay empty rather than becoming 0. */
 interface ChallengeFormValues {
@@ -98,7 +107,7 @@ const schema = yup.object({
       otherwise: (current) => current,
     }),
   linkedRewardId: yup.string().when('rewardType', {
-    is: 'linkedReward',
+    is: 'customReward',
     then: (current) => current.required('Reward is required'),
     otherwise: (current) => current,
   }),
@@ -166,16 +175,16 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
       description: challenge.description,
       taskType: challenge.taskType,
       taskValue: String(challenge.taskValue),
-      qualifyingMenuId: challenge.qualifyingMenuId || '',
-      qualifyingItemIds: challenge.qualifyingItemIds,
+      qualifyingMenuId: '',
+      qualifyingItemIds: [],
       claimLimit: challenge.claimLimit === null ? '' : String(challenge.claimLimit),
       endDate: challenge.endDate ? new Date(challenge.endDate) : '',
-      tierLimit: challenge.tierLimit || ANY_TIER,
+      tierLimit: challenge.tierId || ANY_TIER,
       rewardType: challenge.rewardType,
       pointReward: challenge.pointReward ? String(challenge.pointReward) : '',
-      rewardMenuId: challenge.rewardMenuId || '',
-      rewardItemIds: challenge.rewardItemIds,
-      linkedRewardId: challenge.linkedRewardId || '',
+      rewardMenuId: '',
+      rewardItemIds: [],
+      linkedRewardId: '',
       repeatable: challenge.repeatable,
       isActive: challenge.status === 'active',
     });
@@ -196,21 +205,21 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
       setValue('rewardMenuId', '');
       setValue('rewardItemIds', []);
     }
-    if (rewardType !== 'linkedReward') setValue('linkedRewardId', '');
+    if (rewardType !== 'customReward') setValue('linkedRewardId', '');
   }, [rewardType, setValue]);
 
-  const menuOptions = useMemo(() => MOCK_MENUS.map((menu) => ({ value: menu.id, label: menu.name })), []);
-  const tierOptions = useMemo(() => [{ value: ANY_TIER, label: 'Any tier' }, ...MOCK_TIERS.map((tier) => ({ value: tier.id, label: tier.name }))], []);
-  const linkedRewardOptions = useMemo(() => MOCK_LINKED_REWARDS.map((reward) => ({ value: reward.id, label: reward.name })), []);
+  const menuOptions = useMemo(() => MENUS.map((menu) => ({ value: menu.id, label: menu.name })), []);
+  const tierOptions = useMemo(() => [{ value: ANY_TIER, label: 'Any tier' }, ...TIERS.map((tier) => ({ value: tier.id, label: tier.name }))], []);
+  const linkedRewardOptions = useMemo(() => LINKED_REWARDS.map((reward) => ({ value: reward.id, label: reward.name })), []);
 
   // Narrow to the chosen menu; before one is picked every item is fair game.
   const qualifyingItemOptions = useMemo(
-    () => (qualifyingMenuId ? MOCK_MENU_ITEMS.filter((item) => item.menuId === qualifyingMenuId) : MOCK_MENU_ITEMS),
+    () => (qualifyingMenuId ? MENU_ITEMS.filter((item) => item.menuId === qualifyingMenuId) : MENU_ITEMS),
     [qualifyingMenuId]
   );
 
   const rewardItemOptions = useMemo(
-    () => (rewardMenuId ? MOCK_MENU_ITEMS.filter((item) => item.menuId === rewardMenuId) : MOCK_MENU_ITEMS),
+    () => (rewardMenuId ? MENU_ITEMS.filter((item) => item.menuId === rewardMenuId) : MENU_ITEMS),
     [rewardMenuId]
   );
 
@@ -231,7 +240,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
         pointReward: values.rewardType === 'points' ? Number(values.pointReward) : 0,
         rewardMenuId: values.rewardType === 'menuItem' ? values.rewardMenuId : undefined,
         rewardItemIds: values.rewardType === 'menuItem' ? values.rewardItemIds : [],
-        linkedRewardId: values.rewardType === 'linkedReward' ? values.linkedRewardId : undefined,
+        linkedRewardId: values.rewardType === 'customReward' ? values.linkedRewardId : undefined,
         repeatable: values.repeatable,
         claimLimit: values.claimLimit === '' ? null : Number(values.claimLimit),
         endDate: values.endDate instanceof Date ? values.endDate.toISOString().slice(0, 10) : String(values.endDate),
@@ -348,7 +357,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
               </>
             )}
 
-            {rewardType === 'linkedReward' && (
+            {rewardType === 'customReward' && (
               <RHFCustomDropdown
                 name="linkedRewardId"
                 label="Select Reward"

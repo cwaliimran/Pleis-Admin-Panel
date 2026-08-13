@@ -1,26 +1,27 @@
 // ============================================================
 // Rewards V2 — domain types
 //
-// Served by `mock-data.ts` through `use-rewards-view.ts` until the real
-// endpoints exist. The query/meta shapes deliberately mirror the RTK Query
-// list contract (`{ data, meta }`) so swapping the hook for a generated
-// `useGetRewardsQuery` is a drop-in change.
+// The view model the components render. `use-rewards-view.ts` maps the wire
+// format (`store/Reducer/rewards-v2-api.ts`) onto this once, so nothing below
+// the hook deals with the backend's own field names.
 // ============================================================
 
-export type RewardStatus = 'active' | 'inactive';
+import type { ApiRewardSortBy, ApiRewardStatus, ApiRewardType } from '@/store/Reducer/rewards-v2-api';
+
+export type RewardStatus = ApiRewardStatus;
 
 /**
  * Free-text grouping the admin types in ("Tickets", "Drinks", …) — the form
- * calls it "type for sorting". The filter's options are derived from whatever
- * values exist, so there is no fixed union to maintain.
+ * calls it "type for sorting" and the API calls it `sortingType`. Options come
+ * from the reward-types endpoint, so there is no fixed union to maintain.
  */
 export type RewardType = string;
 
 /** Drives which extra fields the form shows and which detail rows are relevant. */
-export type RewardCreationMethod = 'customReward' | 'buyMenuItemReward' | 'ticketReward';
+export type RewardCreationMethod = ApiRewardType;
 
-/** Column keys the table can sort by. Sent to the API as `sortBy`. */
-export type RewardSortKey = 'name' | 'type' | 'status' | 'views' | 'favorites' | 'claims' | 'redeemed' | 'conversion';
+/** Column keys the table can sort by — the API's own field names. */
+export type RewardSortKey = ApiRewardSortBy;
 
 /** Empty string means "no sort" and is omitted from the request. */
 export type RewardSortOrder = 'asc' | 'desc' | '';
@@ -42,12 +43,22 @@ export interface Reward {
   availableAsReward: boolean;
   /** Obtainable only by completing a challenge, never by spending points. */
   challengeOnly: boolean;
+  /** Surfaced through promotions rather than the rewards list. */
+  isPromotionOnly: boolean;
 
-  /** `buyMenuItemReward` only. The claimer picks one of `menuItemIds`. */
+  // ---- `buyMenuItemReward` only ----
+  /** The API links exactly one menu item, and nests its menu inside it. */
   menuId?: string;
-  menuItemIds: string[];
-  /** `ticketReward` only. */
+  menuName?: string;
+  menuItemId?: string;
+  menuItemName?: string;
+
+  // ---- `ticketReward` only ----
+  /** Ids only — the API does not populate these. */
   eventId?: string;
+  ticketId?: string;
+  timeSlotId?: string;
+  isFastTrack: boolean;
 
   /** Points a member spends to claim. */
   pointCost: number;
@@ -55,26 +66,25 @@ export interface Reward {
   totalLimit: number | null;
   /** `null` means unlimited. */
   maxClaimsPerUser: number | null;
-  /** Id of the minimum tier required, `''` when any tier qualifies. */
-  tierLimit: string;
+  /** Minimum tier required. `''` when any tier qualifies. */
+  tierId: string;
+  tierName: string;
   percentOff: number;
   /** ISO `yyyy-MM-dd`. */
   endDate: string;
   description: string;
 
-  /** Explains an unusual state on the detail modal, e.g. why it went inactive. */
-  statusNote?: string;
-
   views: number;
   favorites: number;
   claims: number;
   redeemed: number;
+  /** Whole percent, computed server-side. */
+  conversion: number;
+  /** Whole percent, computed server-side. */
+  redemptionRate: number;
 }
 
-/** Values the form collects. Ids are resolved to names for display elsewhere. */
-export type RewardPayload = Omit<Reward, 'id' | 'views' | 'favorites' | 'claims' | 'redeemed' | 'statusNote'>;
-
-/** Header tiles. Derived from every reward, not just the current page. */
+/** Header tiles. Computed by the server across every reward, not the page. */
 export interface RewardStats {
   totalViews: number;
   totalFavorites: number;
@@ -85,7 +95,7 @@ export interface RewardStats {
 }
 
 export interface RewardsQuery {
-  /** 1-based, as shown in the UI. */
+  /** 1-based, as shown in the UI and as the API expects it. */
   page: number;
   limit: number;
   search: string;
@@ -102,27 +112,4 @@ export interface RewardsMeta {
   totalPages: number;
   totalRecords: number;
   limit: number;
-}
-
-// ---------- Reference data ----------
-
-export interface MenuOption {
-  id: string;
-  name: string;
-}
-
-export interface MenuItemOption {
-  id: string;
-  menuId: string;
-  name: string;
-}
-
-export interface EventOption {
-  id: string;
-  name: string;
-}
-
-export interface TierOption {
-  id: string;
-  name: string;
 }

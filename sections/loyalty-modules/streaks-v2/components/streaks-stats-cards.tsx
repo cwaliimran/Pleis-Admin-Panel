@@ -7,7 +7,8 @@ import { formatRulesSummary } from '../utils';
 
 interface StreaksStatsCardsProps {
   stats: StreakStats;
-  rules: StreakRules;
+  /** `null` until a rule set has been saved — the tile then reads "Not set". */
+  rules: StreakRules | null;
   isLoading?: boolean;
 }
 
@@ -22,7 +23,8 @@ interface Tile {
 export const StreaksStatsCards: React.FC<StreaksStatsCardsProps> = ({ stats, rules, isLoading = false }) => {
   const tiles: Tile[] = [
     { label: 'Avg Streak / User', value: stats.avgStreakPerUser.toLocaleString() },
-    { label: 'Longest Streak', value: stats.longestStreak.toLocaleString(), hint: stats.longestStreakUsername },
+    // No hint: the API reports the figure without naming who holds it.
+    { label: 'Longest Streak', value: stats.longestStreak.toLocaleString() },
     { label: 'Badges Awarded', value: stats.badgesAwarded.toLocaleString(), hint: 'all tiers combined' },
     // Reads live off the rules, so saving the modal updates it immediately.
     { label: 'Current Rules', value: formatRulesSummary(rules), compact: true },
