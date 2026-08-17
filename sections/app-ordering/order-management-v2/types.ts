@@ -100,6 +100,7 @@ export interface Order {
   /** Tip — booked separately as "Napojnica" at 0% tax. Not yet sent by the API. */
   tipAmount: number;
   // tip: number;
+  
   total: number;
   rejectionReason?: RejectionReason;
   rejectionNote?: string;
