@@ -56,6 +56,8 @@ export interface TableRowProps {
 
 export type SubcategoryFormValues = {
   title: string;
+  /** Organization `_id`. */
+  organization: string;
   status: SubcategoryStatus;
 };
 

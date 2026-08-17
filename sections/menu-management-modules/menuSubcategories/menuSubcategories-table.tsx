@@ -18,6 +18,7 @@ type SortConfig = { key: string | null; direction: 'asc' | 'desc' | null };
 
 const HEAD_LABEL = [
   { id: 'title', label: 'Name', align: 'left', sortable: true, sortKey: 'title' },
+  { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization' },
   { id: 'createdAt', label: 'Created At', align: 'left', sortable: true, sortKey: 'createdAt' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },

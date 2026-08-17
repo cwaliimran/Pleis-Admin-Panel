@@ -292,7 +292,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
 
                     <RHFAsyncCombobox
                       name="brand"
-                      label="Brand"
+                      label="Brand (Optional)"
                       placeholder="Select brand..."
                       searchPlaceholder="Search brands..."
                       useOptionsQuery={useGetBrandsQuery}
