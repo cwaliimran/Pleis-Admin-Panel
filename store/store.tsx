@@ -26,6 +26,7 @@ import { dietTagsApi } from './Reducer/diet-tags-api';
 import { allergensApi } from './Reducer/allergens-api';
 import { daypartApi } from './Reducer/daypart-api';
 import { menuSubcategoriesApi } from './Reducer/menu-subcategories-api';
+import { menuItemSubcategoriesApi } from './Reducer/menu-item-subcategories-api';
 import { subcategoryTypesApi } from './Reducer/subcategory-types-api';
 import { presetTypeApi } from './Reducer/preset-type-api';
 import { discountsApi } from './Reducer/discounts-api';
@@ -106,6 +107,7 @@ const appReducer = combineReducers({
   [allergensApi.reducerPath]: allergensApi.reducer,
   [daypartApi.reducerPath]: daypartApi.reducer,
   [menuSubcategoriesApi.reducerPath]: menuSubcategoriesApi.reducer,
+  [menuItemSubcategoriesApi.reducerPath]: menuItemSubcategoriesApi.reducer,
   [subcategoryTypesApi.reducerPath]: subcategoryTypesApi.reducer,
   [presetTypeApi.reducerPath]: presetTypeApi.reducer,
   [discountsApi.reducerPath]: discountsApi.reducer,
@@ -193,6 +195,7 @@ export const store = configureStore({
       allergensApi.middleware,
       daypartApi.middleware,
       menuSubcategoriesApi.middleware,
+      menuItemSubcategoriesApi.middleware,
       subcategoryTypesApi.middleware,
       presetTypeApi.middleware,
       discountsApi.middleware,

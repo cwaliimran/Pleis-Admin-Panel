@@ -32,6 +32,25 @@ export const formatServingLabel = (serving?: { type?: string; code?: string; uni
   return `${name}${unit}${category}`;
 };
 
+/**
+ * Builds a preset type label as "PIC014 - Coca-Cola". The code is what staff search by, and it
+ * disambiguates presets whose names read alike. Falls back to whichever half the API sent.
+ */
+export const formatPresetTypeLabel = (preset?: { code?: string; name?: string; title?: string } | null): string => {
+  if (!preset) return '';
+  return [preset.code, preset.name || preset.title].filter(Boolean).join(' - ');
+};
+
+/**
+ * Trigger label for an already-selected preset type, in the same "CODE - Name" format as the
+ * dropdown. Returns undefined for a bare id string so the combobox shows its placeholder rather
+ * than a meaningless dash.
+ */
+export const getPresetTypeLabel = (value: RefValue): string | undefined => {
+  if (!value || typeof value === 'string') return undefined;
+  return formatPresetTypeLabel(value) || undefined;
+};
+
 /** Table shows the serving's disambiguated label — see `formatServingLabel`. */
 export const getServingLabel = (value: RefValue): string => {
   if (!value || typeof value === 'string') return '';

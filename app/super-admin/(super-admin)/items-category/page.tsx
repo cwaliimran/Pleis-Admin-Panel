@@ -3,7 +3,7 @@ import ItemsCategoryView from '@/sections/menu-management-modules/items-category
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Items Category - Pleis',
+  title: 'Category - Pleis',
 };
 
 const Page = () => {
@@ -12,7 +12,7 @@ const Page = () => {
       <Header
         links={[
           { name: 'Dashboard', href: '/super-admin' },
-          { name: 'Items Category', href: '' },
+          { name: 'Category', href: '' },
         ]}
       />
 

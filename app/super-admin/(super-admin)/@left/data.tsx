@@ -136,7 +136,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Ref Subcategories',
-        url: paths.superAdmin.menuSubcategories,
+        url: paths.superAdmin.presetSubcategories,
         icon: CalendarDays,
       },
       {

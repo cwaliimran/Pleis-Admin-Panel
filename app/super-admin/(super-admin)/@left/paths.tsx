@@ -114,6 +114,7 @@ export const paths = {
     menuSubcategories: '/super-admin/menu-subcategories',
     discounts: '/super-admin/discounts',
     combos: '/super-admin/combos',
+    presetSubcategories: '/super-admin/preset-subcategories',
     presetTypes: '/super-admin/preset-types',
     brands: '/super-admin/brands',
     serving: '/super-admin/serving',

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
+import { useGetMenuItemSubcategoriesQuery } from '@/store/Reducer/menu-item-subcategories-api';
 import { useDeleteMenuItemMutation, useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useGetServingsQuery } from '@/store/Reducer/serving-api';
@@ -82,16 +83,23 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   );
   const { data: servingsData } = useGetServingsQuery({ page: 0, limit: LOOKUP_FETCH_LIMIT, search: '', summary: true });
 
+  // Unfiltered by status on purpose: an item pointing at a since-deactivated subcategory still has
+  // to render its name in the table.
+  const { data: subCategoriesData } = useGetMenuItemSubcategoriesQuery(
+    { page: 0, limit: LOOKUP_FETCH_LIMIT, search: '', companyOrganizer: scopedCompanyId },
+    { skip: companySkip }
+  );
+
   const categories = categoriesData?.data || [];
   const menus = menusData?.data || [];
 
   const lookups: MenuItemLookups = useMemo(
     () => ({
-      categories: toLookupMap(categoriesData?.data),
+      subCategories: toLookupMap(subCategoriesData?.data),
       menus: toLookupMap(menusData?.data),
       servingSizes: toServingLookupMap(servingsData?.data),
     }),
-    [categoriesData, menusData, servingsData]
+    [subCategoriesData, menusData, servingsData]
   );
 
   const handleCreateNew = () => {

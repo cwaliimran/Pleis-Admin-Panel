@@ -27,6 +27,7 @@ export interface MenuItemRecord {
   description?: string;
   type?: string;
   category?: RefValue;
+  subCategory?: RefValue;
   basePrice: number;
   discountPrice?: number;
   taxPercent: number;
@@ -65,12 +66,12 @@ export interface SampleMeta {
 
 /**
  * Name lookups keyed by _id, built once in the view and passed down to the table/row so IDs never
- * leak into the UI. Only covers references the table actually displays (Category/Menu/Serving) —
+ * leak into the UI. Only covers references the table actually displays (Subcategory/Menu/Serving) —
  * presetType/brand/daypart/dietTags/allergens aren't shown in the table, so they're fetched inside
  * the modal only, when it's open.
  */
 export interface MenuItemLookups {
-  categories: Map<string, string>;
+  subCategories: Map<string, string>;
   menus: Map<string, string>;
   servingSizes: Map<string, string>;
 }
@@ -112,15 +113,14 @@ export type MenuItemFormValues = {
   image?: any;
   title: string;
   description?: string;
-  type?: string;
-  category: string;
+  subCategory: string;
   basePrice: string;
   taxPercent: string;
   menus: string[];
   startTime?: string;
   endTime?: string;
   status: MenuItemStatus;
-  presetType?: string;
+  presetType: string;
   brand?: string;
   amountQuantity?: string;
   servingSize?: string;

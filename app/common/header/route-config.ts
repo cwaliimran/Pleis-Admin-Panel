@@ -22,6 +22,7 @@ const COMPANY_REQUIRED_ROUTES = [
   '/super-admin/transactions-history',
   '/super-admin/menu-list',
   '/super-admin/menuItems',
+  '/super-admin/menu-subcategories',
   '/super-admin/combos',
   '/super-admin/ticketing',
   '/super-admin/bundles',

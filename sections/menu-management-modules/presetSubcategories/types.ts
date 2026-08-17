@@ -1,25 +1,23 @@
 export type SubcategoryStatus = 'active' | 'inactive';
 
-/** Populated on the list response; `null` for subcategories not tied to a single organization. */
-export interface SubcategoryOrganization {
+export interface CategoryOption {
   _id: string;
-  basicInfo?: { name?: string };
+  title: string;
 }
 
-export interface SubcategoryCompanyOrganizer {
+export interface SubcategoryCategory {
   _id: string;
-  firstName?: string;
-  lastName?: string;
+  title: string;
+  status?: string;
 }
 
 export interface MenuSubcategoryRecord {
   _id: string;
-  title: string;
-  organization?: SubcategoryOrganization | null;
-  companyOrganizer?: SubcategoryCompanyOrganizer | null;
+  name: string;
+  category: SubcategoryCategory | null;
+  order: number;
   status: SubcategoryStatus;
   createdAt: string;
-  updatedAt?: string;
 }
 
 export interface SampleMeta {
@@ -35,6 +33,8 @@ export interface SamplePageProps {
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  handleReorder?: (activeId: string, overId: string) => void;
+  reorderDisabled?: boolean;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -42,20 +42,22 @@ export interface SamplePageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
+  categoryId?: string;
+  onCategoryChange?: (categoryId: string) => void;
   onResetFilters?: () => void;
-  sortBy?: string;
-  sortOrder?: string;
-  onSortChange?: (sortBy: string, sortOrder: string) => void;
 }
 
 export interface TableRowProps {
   item: MenuSubcategoryRecord;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  dragDisabled?: boolean;
 }
 
 export type SubcategoryFormValues = {
-  title: string;
+  name: string;
+  category: string;
+  order: string;
   status: SubcategoryStatus;
 };
 
@@ -64,6 +66,5 @@ export type SubcategoryModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: MenuSubcategoryRecord | null;
-  companyId?: string | null;
-  userType: 'organizer' | 'super-admin';
+  nextOrder: number;
 };

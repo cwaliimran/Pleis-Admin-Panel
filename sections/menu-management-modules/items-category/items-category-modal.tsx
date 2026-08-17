@@ -1,6 +1,5 @@
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import * as React from 'react';
@@ -36,14 +35,12 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({ open, onClose, editMode, 
       <DialogOverlay className="bg-opacity-30 fixed inset-0 flex w-full items-center justify-center">
         <DialogContent aria-describedby={undefined} className="mx-4 w-full max-w-md dark:bg-[#171717]">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="text-lg font-semibold">{editMode ? 'Edit Item Category' : 'Create Item Category'}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{editMode ? 'Edit Category' : 'Create Category'}</DialogTitle>
           </DialogHeader>
 
           {/* <FormProvider methods={methods} onSubmit={onSubmit}> */}
           <FormProvider methods={methods} onSubmit={handleFormSubmit}>
             <div className="mt-4 flex flex-col gap-4">
-              <RHFUploadAvatar name="photo" label="Item Category Image" />
-
               <div className="space-y-3">
                 <RHFTextField
                   name="title"
@@ -81,7 +78,7 @@ const TagsTypeModal: React.FC<TagsTypeModalProps> = ({ open, onClose, editMode, 
                     className="bg-primary hover:bg-primary-dark cursor-pointer px-4 py-2 text-white"
                     disabled={editMode ? !isDirty : false}
                   >
-                    {editMode ? 'Update Item Category' : 'Create Item Category'}
+                    {editMode ? 'Update Category' : 'Create Category'}
                   </Button>
                 )}
               </div>

@@ -1,10 +1,11 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { useAddMenuItemSubcategoryMutation, useUpdateMenuItemSubcategoryMutation } from '@/store/Reducer/menu-item-subcategories-api';
+import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
+import { useAddMenuSubcategoryMutation, useUpdateMenuSubcategoryMutation } from '@/store/Reducer/menu-subcategories-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -13,20 +14,26 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { SubcategoryFormValues, SubcategoryModalProps } from './types';
 
-const defaultValues: SubcategoryFormValues = {
-  title: '',
-  status: 'active',
-};
-
 const schema = Yup.object().shape({
-  title: Yup.string().required('Name is required'),
+  name: Yup.string().required('Name is required'),
+  category: Yup.string().required('Category is required'),
+  order: Yup.string()
+    .required('Order is required')
+    .test('is-integer', 'Order must be a whole number', (value) => !!value && Number.isInteger(Number(value)) && Number(value) > 0),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, companyId, userType }: SubcategoryModalProps) => {
-  const [addSubcategory, { isLoading: addLoading }] = useAddMenuItemSubcategoryMutation();
-  const [updateSubcategory, { isLoading: updateLoading }] = useUpdateMenuItemSubcategoryMutation();
+const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, nextOrder }: SubcategoryModalProps) => {
+  const [addSubcategory, { isLoading: addLoading }] = useAddMenuSubcategoryMutation();
+  const [updateSubcategory, { isLoading: updateLoading }] = useUpdateMenuSubcategoryMutation();
   const submitting = addLoading || updateLoading;
+
+  const defaultValues: SubcategoryFormValues = {
+    name: '',
+    category: '',
+    order: String(nextOrder),
+    status: 'active',
+  };
 
   const methods = useForm<SubcategoryFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<SubcategoryFormValues>),
@@ -37,26 +44,26 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
   const isDirty = formState?.isDirty;
 
   useEffect(() => {
-    if (!open) return;
-
-    if (isEdit && selectedData) {
+    if (open && isEdit && selectedData) {
       reset({
-        title: selectedData.title,
+        name: selectedData.name,
+        category: selectedData.category?._id || '',
+        order: String(selectedData.order),
         status: selectedData.status,
       });
-    } else if (!isEdit) {
-      reset(defaultValues);
+    } else if (open && !isEdit) {
+      reset({ ...defaultValues, order: String(nextOrder) });
     }
-  }, [open, isEdit, selectedData, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isEdit, selectedData, reset, nextOrder]);
 
   const handleSubmit = async (formData: SubcategoryFormValues) => {
-    const payload: any = {
-      title: formData.title,
+    const payload = {
+      name: formData.name,
+      category: formData.category,
+      order: Number(formData.order),
       status: formData.status,
     };
-
-    // Organizers are scoped by their token; only super-admin has to name the company explicitly.
-    if (userType === 'super-admin' && companyId) payload.companyOrganizer = companyId;
 
     try {
       if (isEdit && selectedData?._id) {
@@ -92,7 +99,20 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
           <div className="mt-4 w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
-                <RHFTextField name="title" label="Name" placeholder="e.g. Beverages" />
+                <RHFTextField name="name" label="Name" placeholder="e.g. House Cocktails" />
+
+                <RHFAsyncCombobox
+                  name="category"
+                  label="Category"
+                  placeholder="Select category"
+                  searchPlaceholder="Search categories..."
+                  selectedLabel={selectedData?.category?.title}
+                  useOptionsQuery={useGetItemsCategoryQuery}
+                  getOptionValue={(category) => category._id}
+                  getOptionLabel={(category) => category.title}
+                />
+
+                <RHFTextField name="order" label="Order" type="number" step="1" min="1" />
 
                 {isEdit && (
                   <RHFSelectField

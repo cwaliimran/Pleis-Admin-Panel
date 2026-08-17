@@ -13,10 +13,10 @@ const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlD
 
 const MenuItemTableRow: FC<TableRowProps> = ({ item, lookups, handleDelete, handleEdit }) => {
   const menuTitle = getRefLabel(item.menu, lookups.menus);
-  const categoryTitle = getRefLabel(item.category, lookups.categories);
+  const subCategoryTitle = getRefLabel(item.subCategory, lookups.subCategories);
   const servingLabel = getServingLabel(item.serving) || getRefLabel(item.servingSize, lookups.servingSizes);
 
-  const subtitle = [item.amountQuantity].filter(Boolean).join(' · ');
+  // const subtitle = [item.amountQuantity].filter(Boolean).join(' · ');
   const hasDiscount = !!item.discountPrice && item.discountPrice > 0 && item.discountPrice < item.basePrice;
   const discountPercent = hasDiscount ? Math.round((1 - item.discountPrice! / item.basePrice) * 100) : 0;
 
@@ -32,24 +32,35 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, lookups, handleDelete, hand
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left">
-        <div className="flex items-center gap-2">
+      <TableCell className="py-3 text-left">
+        <div className="flex flex-col items-start gap-2">
           <span className="font-semibold capitalize">{item?.title || '-'}</span>
-          {(item.upSellItem === true || item.upSellItem === 'true') && (
-            <CustomBadge variant="info" className="gap-1 px-2 py-0.5 text-[11px]">
-              <TrendingUp className="h-3 w-3" />
-              Upsell
-            </CustomBadge>
-          )}
+
+          {item.upSellItem === true || item.upSellItem === 'true' || item.isRecommended === true ? (
+            <div className="item-start flex gap-x-2">
+              {(item.upSellItem === true || item.upSellItem === 'true') && (
+                <CustomBadge variant="info" className="gap-1 px-2 py-0.5 text-[11px]">
+                  <TrendingUp className="h-3 w-3" />
+                  Upsell
+                </CustomBadge>
+              )}
+
+              {item.isRecommended === true && (
+                <CustomBadge variant="warning" className="gap-1 px-2 py-0.5 text-[11px]">
+                  <TrendingUp className="h-3 w-3" />
+                  Recommended
+                </CustomBadge>
+              )}
+            </div>
+          ) : null}
         </div>
-        {subtitle && <div className="text-muted-foreground mt-0.5 text-xs">{subtitle}</div>}
+
+        {/* {subtitle && <div className="text-muted-foreground mt-0.5 text-xs">{subtitle}</div>} */}
       </TableCell>
 
       <TableCell className="text-left capitalize">{menuTitle}</TableCell>
 
-      <TableCell className="text-left capitalize">{categoryTitle}</TableCell>
-
-      <TableCell className="text-left capitalize">{item.type || '-'}</TableCell>
+      <TableCell className="text-left capitalize">{subCategoryTitle}</TableCell>
 
       <TableCell className="text-left capitalize">{servingLabel}</TableCell>
 

@@ -439,6 +439,16 @@ export const API_ROUTES = {
   ADMIN_MENU_SUB_CATEGORIES_BY_ID: (id: string) => `/admin/menu/sub-categories/${id}`,
   ADMIN_MENU_SUB_CATEGORIES_ORDER_BY_ID: (id: string) => `/admin/menu/sub-categories/order/${id}`,
 
+  /**
+   * Company-scoped subcategories assigned to a menu item (`subCategory`). Distinct from the
+   * preset taxonomy above (`.../sub-categories`) despite the near-identical name — these are
+   * filtered by `companyOrganizer` and carry a `title`, not a category/order pair.
+   */
+  ADMIN_MENU_ITEM_SUBCATEGORIES: `/admin/menu/menu-sub-categories`,
+  ADMIN_MENU_ITEM_SUBCATEGORIES_BY_ID: (id: string) => `/admin/menu/menu-sub-categories/${id}`,
+  ORGANIZER_MENU_ITEM_SUBCATEGORIES: `/organizer/menu/menu-sub-categories`,
+  ORGANIZER_MENU_ITEM_SUBCATEGORIES_BY_ID: (id: string) => `/organizer/menu/menu-sub-categories/${id}`,
+
   ADMIN_MENU_SUB_CATEGORY_TYPES: `/admin/menu/sub-categories/types`,
   ADMIN_MENU_SUB_CATEGORY_TYPES_BY_ID: (id: string) => `/admin/menu/sub-categories/types/${id}`,
 

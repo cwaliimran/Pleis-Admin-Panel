@@ -19,12 +19,9 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import TagsTypeModal from './items-category-modal';
 import TagsTypeTable from './items-category-table';
-import { useImageUpload } from '@/hooks/useImageUpload';
-import { noImageUrl, noImageUrlDev } from '@/constant/constant';
 
 const defaultValues = {
   title: '',
-  photo: null,
   status: 'active',
 };
 
@@ -41,8 +38,6 @@ const ItemsCategoryView = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState('');
   const [sortOrder, setSortOrder] = useState('');
-
-  const { uploadImage, uploading: imageUploading } = useImageUpload();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedVenueType, setSelectedVenueType] = useState<any>(null);
@@ -90,7 +85,6 @@ const ItemsCategoryView = () => {
 
   const schema = Yup.object().shape({
     title: Yup.string().required('Tag Name is required'),
-    photo: Yup.mixed().nullable(),
     status: Yup.string().oneOf(['active', 'inactive']),
   });
 
@@ -104,13 +98,8 @@ const ItemsCategoryView = () => {
   // Effect to populate form when editing
   useEffect(() => {
     if (editModal.value && selectedVenueType) {
-      let photoValue = selectedVenueType.image;
-      if (!photoValue || photoValue === '' || photoValue === noImageUrl || photoValue === noImageUrlDev) {
-        photoValue = null;
-      }
       reset({
         title: selectedVenueType.title || '',
-        photo: photoValue,
         status: selectedVenueType.status || 'active',
       });
     } else if (!editModal.value) {
@@ -134,7 +123,7 @@ const ItemsCategoryView = () => {
       editModal.onTrue();
       openModal.onTrue();
     } else {
-      showError('Item Category not found');
+      showError('Category not found');
     }
   };
 
@@ -145,15 +134,7 @@ const ItemsCategoryView = () => {
 
   // CREATE/UPDATE API CALL
   const onSubmit = handleSubmit(async (formData: any) => {
-    let uploadedFileKey: string | null = null;
-
     try {
-      if (formData.photo instanceof FileList && formData.photo.length > 0) {
-        uploadedFileKey = await uploadImage(formData.photo[0]);
-      }
-
-      if (uploadedFileKey) formData.image = uploadedFileKey;
-
       let response;
       if (editModal.value && selectedId) {
         response = await updateItemsCategory({
@@ -163,7 +144,6 @@ const ItemsCategoryView = () => {
       } else {
         response = await addItemsCategory({
           title: formData.title,
-          image: formData.image,
         }).unwrap();
       }
 
@@ -179,13 +159,13 @@ const ItemsCategoryView = () => {
       }
 
       if (response?.message) {
-        showSuccess(response?.message || (editModal.value ? 'Item category updated successfully' : 'Item category created successfully'));
+        showSuccess(response?.message || (editModal.value ? 'Category updated successfully' : 'Category created successfully'));
       }
 
       CloseModal();
     } catch (error) {
       const errorMessage = getErrorMessage(error);
-      console.log('Failed to save item category:', errorMessage);
+      console.log('Failed to save category:', errorMessage);
       showError(errorMessage);
     }
   });
@@ -226,7 +206,7 @@ const ItemsCategoryView = () => {
         <div className="mt-3 flex w-full items-center justify-end md:mt-0">
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />
-            Create Item Category
+            Create Category
           </Button>
         </div>
       </div>
@@ -278,14 +258,14 @@ const ItemsCategoryView = () => {
         editMode={editModal.value}
         methods={methods}
         onSubmit={onSubmit}
-        isLoading={addItemsCategoryLoading || updateItemsCategoryLoading || imageUploading}
+        isLoading={addItemsCategoryLoading || updateItemsCategoryLoading}
         selectedVenueType={selectedVenueType}
       />
 
       <ConfirmDialog
         open={deleteModal.value}
-        title="Delete Item Category"
-        content="Are you sure you want to delete this item category?"
+        title="Delete Category"
+        content="Are you sure you want to delete this category?"
         onClose={() => {
           deleteModal.onFalse();
           setSelectedId(null);
