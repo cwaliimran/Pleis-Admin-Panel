@@ -75,6 +75,8 @@ export interface OrderRound {
 }
 
 export interface OrderCustomer {
+  /** The user `_id`. Sent back as `userId` when the order is rewritten. */
+  id: string;
   name: string;
   /** Without the leading "@". */
   username: string;
@@ -92,6 +94,8 @@ export interface Order {
   deliveryType: DeliveryType;
   /** The specific delivery option chosen, e.g. "Table 5" or "Counter pickup". */
   deliveryLabel: string;
+  /** Raw table number, empty unless `tableService`. `deliveryLabel` folds it in for display. */
+  tableNumber: string;
   paymentType: PaymentType;
   paymentStatus: PaymentStatus;
   status: OrderStatus;
@@ -99,8 +103,6 @@ export interface Order {
   subtotal: number;
   /** Tip — booked separately as "Napojnica" at 0% tax. Not yet sent by the API. */
   tipAmount: number;
-  // tip: number;
-  
   total: number;
   rejectionReason?: RejectionReason;
   rejectionNote?: string;
@@ -143,4 +145,37 @@ export interface OrderPagination {
 export interface DestructiveActionPayload {
   reason: RejectionReason;
   note?: string;
+}
+
+// ---------- Updating an order ----------
+
+/** One selectable menu item in the add-item picker. */
+export interface MenuItemOption {
+  id: string;
+  name: string;
+  /** Unit price after any discount. The admin never edits it. */
+  price: number;
+  /** Sub-category the menu groups it under, e.g. "Fast Food". */
+  category?: string;
+  imageUrl?: string | null;
+  isAvailable?: boolean;
+}
+
+/** A line as the update modal holds it. Keyed on the menu item, like every write here. */
+export interface OrderDraftItem {
+  menuItemId: string;
+  name: string;
+  quantity: number;
+  /** Read-only — derived from the order line, or from the picked menu item. */
+  unitPrice: number;
+  /** Added during this edit rather than already on the order. */
+  isNew: boolean;
+}
+
+/** Prices and payment method are absent on purpose — the backend owns both. */
+export interface OrderUpdatePayload {
+  deliveryType: DeliveryType;
+  /** Empty unless `deliveryType` is `tableService`. */
+  tableNumber: string;
+  items: { menuItemId: string; quantity: number }[];
 }

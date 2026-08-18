@@ -69,6 +69,19 @@ export const menuItemSubcategoriesApi = createApi({
       invalidatesTags: ['menu-item-subcategory'],
     }),
 
+    updateMenuItemSubcategoryOrder: builder.mutation({
+      query: ({ id, newOrder }) => ({
+        url: '',
+        method: 'PUT',
+        body: { newOrder },
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_MENU_ITEM_SUBCATEGORIES_ORDER_BY_ID(id),
+          organizerRoute: API_ROUTES.ORGANIZER_MENU_ITEM_SUBCATEGORIES_ORDER_BY_ID(id),
+        },
+      }),
+      invalidatesTags: ['menu-item-subcategory'],
+    }),
+
     deleteMenuItemSubcategory: builder.mutation({
       query: (id) => ({
         url: '',
@@ -87,5 +100,6 @@ export const {
   useGetMenuItemSubcategoriesQuery,
   useAddMenuItemSubcategoryMutation,
   useUpdateMenuItemSubcategoryMutation,
+  useUpdateMenuItemSubcategoryOrderMutation,
   useDeleteMenuItemSubcategoryMutation,
 } = menuItemSubcategoriesApi;

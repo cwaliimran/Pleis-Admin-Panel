@@ -28,6 +28,7 @@ import {
 } from './constants';
 import { OrderActionModal } from './order-action-modal';
 import { ORDER_TABLE_COLUMN_COUNT, OrderRow } from './order-row';
+import { OrderUpdateModal } from './order-update-modal';
 import {
   DateRangeFilter,
   DeliveryType,
@@ -38,6 +39,7 @@ import {
   OrderFilters,
   OrderStatus,
   OrderTab,
+  OrderUpdatePayload,
   PaymentType,
   UserType,
 } from './types';
@@ -88,11 +90,13 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   const [pendingOrderingState, setPendingOrderingState] = useState<boolean | null>(null);
   const [deliverAllOrder, setDeliverAllOrder] = useState<Order | null>(null);
   const [markAsPaidOrder, setMarkAsPaidOrder] = useState<Order | null>(null);
+  const [updatingOrder, setUpdatingOrder] = useState<Order | null>(null);
 
   const actionModal = useBoolean();
   const orderingConfirm = useBoolean();
   const deliverAllConfirm = useBoolean();
   const markAsPaidConfirm = useBoolean();
+  const updateModal = useBoolean();
 
   const debouncedSearch = useDebounce(searchQuery, 500);
 
@@ -110,12 +114,15 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     isFetching,
     isListLoading,
     isTogglingOrdering,
+    updatingOrderId,
     pendingOrderId,
+    pendingAction,
     deliveringOrderId,
     deliverItems,
     refetchOrders,
     toggleOrdering,
     runOrderAction,
+    updateOrderDetails,
   } = useOrderManagement({
     organizationId,
     filters,
@@ -211,6 +218,24 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
       showSuccess(message || ACTION_SUCCESS_MESSAGE.markAsPaid);
       markAsPaidConfirm.onFalse();
       setMarkAsPaidOrder(null);
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
+  const handleOpenUpdate = (order: Order) => {
+    setUpdatingOrder(order);
+    updateModal.onTrue();
+  };
+
+  const handleConfirmUpdate = async (payload: OrderUpdatePayload) => {
+    if (!updatingOrder) return;
+
+    try {
+      const message = await updateOrderDetails(updatingOrder, payload);
+      showSuccess(message || 'Order updated');
+      updateModal.onFalse();
+      setUpdatingOrder(null);
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -478,11 +503,13 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
                     order={order}
                     isExpanded={expandedOrderId === order.id}
                     isPending={pendingOrderId === order.id}
+                    pendingAction={pendingAction}
                     isDelivering={deliveringOrderId === order.id}
                     onToggle={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
                     onAdvance={handleAdvance}
                     onDestructive={handleOpenDestructive}
                     onDeliver={handleDeliver}
+                    onUpdate={handleOpenUpdate}
                   />
                 ))}
               </TableBodyWrapper>
@@ -511,6 +538,18 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
           setDestructiveAction(null);
         }}
         onConfirm={handleConfirmDestructive}
+      />
+
+      <OrderUpdateModal
+        open={updateModal.value}
+        order={updatingOrder}
+        organizationId={organizationId}
+        isSubmitting={Boolean(updatingOrder && updatingOrderId === updatingOrder.id)}
+        onClose={() => {
+          updateModal.onFalse();
+          setUpdatingOrder(null);
+        }}
+        onConfirm={handleConfirmUpdate}
       />
 
       <ConfirmDialog

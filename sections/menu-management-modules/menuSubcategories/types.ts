@@ -17,6 +17,7 @@ export interface MenuSubcategoryRecord {
   title: string;
   organization?: SubcategoryOrganization | null;
   companyOrganizer?: SubcategoryCompanyOrganizer | null;
+  order?: number;
   status: SubcategoryStatus;
   createdAt: string;
   updatedAt?: string;
@@ -35,6 +36,8 @@ export interface SamplePageProps {
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  handleReorder?: (activeId: string, overId: string) => void;
+  reorderDisabled?: boolean;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -43,21 +46,20 @@ export interface SamplePageProps {
   status?: string;
   onStatusChange?: (status: string) => void;
   onResetFilters?: () => void;
-  sortBy?: string;
-  sortOrder?: string;
-  onSortChange?: (sortBy: string, sortOrder: string) => void;
 }
 
 export interface TableRowProps {
   item: MenuSubcategoryRecord;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
+  dragDisabled?: boolean;
 }
 
 export type SubcategoryFormValues = {
   title: string;
   /** Organization `_id`. */
   organization: string;
+  order: string;
   status: SubcategoryStatus;
 };
 
@@ -68,4 +70,5 @@ export type SubcategoryModalProps = {
   selectedData?: MenuSubcategoryRecord | null;
   companyId?: string | null;
   userType: 'organizer' | 'super-admin';
+  nextOrder: number;
 };

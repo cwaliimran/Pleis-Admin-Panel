@@ -103,6 +103,7 @@ export const PAYMENT_TYPE_CONFIG: Record<PaymentType, { label: string }> = {
   applePay: { label: 'Apple Pay' },
   card: { label: 'Card' },
   cash: { label: 'Cash' },
+  payLater: { label: 'Pay Later' },
 };
 
 export const getPaymentTypeLabel = (type: PaymentType) => PAYMENT_TYPE_CONFIG[type]?.label || humanizeKey(type);
@@ -218,6 +219,16 @@ export const MARK_AS_PAID_STATUSES: OrderStatus[] = ['confirmed', 'sent', 'pendi
 export const DELIVERABLE_STATUSES: OrderStatus[] = ['confirmed', 'sent', 'pendingPayment'];
 
 export const MARK_AS_PAID_ACTION: ActionConfig = { type: 'markAsPaid', label: 'Mark as Paid' };
+
+/** Only rewritable while nothing is committed — unaccepted and unpaid. */
+export const isOrderEditable = (order: { status: OrderStatus; paymentStatus: PaymentStatus }) =>
+  order.status === 'pending' && order.paymentStatus === 'pending';
+
+/** How many menu items the picker reveals at a time. Paginates rendering, not fetching. */
+export const MENU_ITEM_PAGE_SIZE = 15;
+
+export const MIN_ITEM_QUANTITY = 1;
+export const MAX_ITEM_QUANTITY = 99;
 
 /**
  * Only these write `status` directly. `markAsPaid` writes `paymentStatus`

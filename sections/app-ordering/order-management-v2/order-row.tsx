@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { ChevronDown, NotebookPen, PackageCheck, User } from 'lucide-react';
+import { ChevronDown, Loader2, NotebookPen, PackageCheck, Pencil, User } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import type { BadgeConfig } from './constants';
 import {
@@ -24,6 +24,7 @@ import {
   getPaymentStatusConfig,
   getPaymentTypeLabel,
   getRoundDeliveryConfig,
+  isOrderEditable,
 } from './constants';
 import { DestructiveActionType, Order, OrderActionType } from './types';
 import type { DeliverItemsPayload } from './use-order-management';
@@ -37,7 +38,10 @@ interface OrderRowProps {
   onAdvance: (order: Order, action: OrderActionType) => void;
   onDestructive: (order: Order, action: DestructiveActionType) => void;
   onDeliver: (order: Order, payload: DeliverItemsPayload) => void;
+  onUpdate: (order: Order) => void;
   isPending?: boolean;
+  /** Which action is mid-flight, so only that button shows a spinner. */
+  pendingAction?: OrderActionType | null;
   isDelivering?: boolean;
 }
 
@@ -81,7 +85,9 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   onAdvance,
   onDestructive,
   onDeliver,
+  onUpdate,
   isPending = false,
+  pendingAction = null,
   isDelivering = false,
 }) => {
   const deliveryConfig = getDeliveryTypeConfig(order.deliveryType);
@@ -118,6 +124,21 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   }, [undeliveredMenuItemIds]);
 
   const canDeliver = DELIVERABLE_STATUSES.includes(order.status) && undeliveredMenuItemIds.length > 0;
+
+  const canUpdate = isOrderEditable(order);
+
+  // "Delivered" is settled through the delivery endpoint, so it reports its
+  // progress via `isDelivering` rather than `pendingAction`.
+  const isActionRunning = (action: OrderActionType) =>
+    action === 'delivered' ? isDelivering : isPending && pendingAction === action;
+
+  const actionLabel = (action: OrderActionType, label: string) => (
+    <>
+      {isActionRunning(action) && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+      {label}
+    </>
+  );
+
   const isAllSelected = undeliveredMenuItemIds.length > 0 && selectedMenuItemIds.length === undeliveredMenuItemIds.length;
 
   const handleToggleItem = (menuItemId: string) =>
@@ -169,9 +190,9 @@ export const OrderRow: React.FC<OrderRowProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="truncate font-semibold text-gray-900 dark:text-gray-100">{order.customer.name}</span>
-                {tierConfig && (
+                {/* {tierConfig && (
                   <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide', tierConfig.chipClass)}>{tierConfig.label}</span>
-                )}
+                )} */}
               </div>
               {order.customer.username && <div className="truncate text-xs text-gray-500 dark:text-gray-400">@{order.customer.username}</div>}
             </div>
@@ -206,12 +227,12 @@ export const OrderRow: React.FC<OrderRowProps> = ({
               <Button
                 type="button"
                 size="sm"
-                disabled={isPending || isConfirmBlocked}
+                disabled={isPending || isDelivering || isConfirmBlocked}
                 title={isConfirmBlocked ? 'Payment failed — this order cannot be confirmed' : undefined}
                 onClick={() => onAdvance(order, primaryAction.type)}
                 className="cursor-pointer font-semibold disabled:cursor-not-allowed"
               >
-                {primaryAction.label}
+                {actionLabel(primaryAction.type, primaryAction.label)}
               </Button>
             )}
 
@@ -224,7 +245,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                 onClick={() => onAdvance(order, MARK_AS_PAID_ACTION.type)}
                 className="cursor-pointer font-semibold"
               >
-                {MARK_AS_PAID_ACTION.label}
+                {actionLabel(MARK_AS_PAID_ACTION.type, MARK_AS_PAID_ACTION.label)}
               </Button>
             )}
 
@@ -237,7 +258,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                 onClick={() => onDestructive(order, secondaryAction.type as DestructiveActionType)}
                 className="cursor-pointer font-semibold"
               >
-                {secondaryAction.label}
+                {actionLabel(secondaryAction.type, secondaryAction.label)}
               </Button>
             )}
 
@@ -250,15 +271,11 @@ export const OrderRow: React.FC<OrderRowProps> = ({
         </TableCell>
       </TableRow>
 
-      {/* Kept mounted so the panel animates closed as well as open. */}
       <TableRow className={cn('hover:bg-transparent', !isExpanded && 'border-0')}>
-        {/* Inset panel — deliberately the page background so it reads as recessed inside the card. */}
         <TableCell
           colSpan={ORDER_TABLE_COLUMN_COUNT}
           className={cn('p-0 transition-colors duration-300', isExpanded ? 'bg-[#f8f6f7] dark:bg-black' : 'bg-transparent')}
         >
-          {/* 0fr → 1fr gives the browser a height it can interpolate, so the
-              panel slides both ways without hard-coding a max-height. */}
           <div
             aria-hidden={!isExpanded}
             className={cn(
@@ -268,10 +285,23 @@ export const OrderRow: React.FC<OrderRowProps> = ({
           >
             <div className="overflow-hidden">
               <div className="grid gap-8 px-6 py-6 lg:grid-cols-2">
-                {/* Items, grouped by round */}
                 <div>
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <span className="text-xs font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">Items</span>
+
+                    {canUpdate && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={isPending}
+                        onClick={() => onUpdate(order)}
+                        className="h-8 cursor-pointer gap-1.5 text-xs font-semibold"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Update order
+                      </Button>
+                    )}
 
                     {canDeliver && (
                       <Button

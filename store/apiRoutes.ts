@@ -175,11 +175,15 @@ export const API_ROUTES = {
   ADMIN_ORDER_MANAGEMENT_UPDATE: (id: string) => `/admin/in-app-ordering/ordermanagement/${id}`,
   ADMIN_ORDER_MANAGEMENT_STATUS: `/admin/in-app-ordering/ordermanagement/update`,
   ADMIN_ORDER_MANAGEMENT_STATUS_BY_ID: (id: string) => `/admin/in-app-ordering/ordermanagement/update/${id}`,
+  ADMIN_ORDER_MANAGEMENT_UPDATE_ORDER: (id: string) => `/admin/in-app-ordering/ordermanagement/update-order/${id}`,
 
   ORGANIZER_ORDER_MANAGEMENT_GET: `/organizer/in-app-ordering/ordermanagement`,
   ORGANIZER_ORDER_MANAGEMENT_UPDATE: (id: string) => `/organizer/in-app-ordering/ordermanagement/${id}`,
   ORGANIZER_ORDER_MANAGEMENT_STATUS: `/organizer/in-app-ordering/ordermanagement/update`,
   ORGANIZER_ORDER_MANAGEMENT_STATUS_BY_ID: (id: string) => `/organizer/in-app-ordering/ordermanagement/update/${id}`,
+  ORGANIZER_ORDER_MANAGEMENT_UPDATE_ORDER: (id: string) => `/organizer/in-app-ordering/ordermanagement/update-order/${id}`,
+
+  APP_MENU_ITEMS_V2: `/app/menu/items/v2`,
 
   ADMIN_MENU_MANAGEMENT_GET: `/admin/in-app-ordering/menu-management`,
   ADMIN_MENU_MANAGEMENT_CATEGORIES: `/admin/in-app-ordering/menu-management/menu-item-categories`,
@@ -442,12 +446,14 @@ export const API_ROUTES = {
   /**
    * Company-scoped subcategories assigned to a menu item (`subCategory`). Distinct from the
    * preset taxonomy above (`.../sub-categories`) despite the near-identical name — these are
-   * filtered by `companyOrganizer` and carry a `title`, not a category/order pair.
+   * filtered by `companyOrganizer` and carry a `title` + `organization` instead of a category.
    */
   ADMIN_MENU_ITEM_SUBCATEGORIES: `/admin/menu/menu-sub-categories`,
   ADMIN_MENU_ITEM_SUBCATEGORIES_BY_ID: (id: string) => `/admin/menu/menu-sub-categories/${id}`,
+  ADMIN_MENU_ITEM_SUBCATEGORIES_ORDER_BY_ID: (id: string) => `/admin/menu/menu-sub-categories/order/${id}`,
   ORGANIZER_MENU_ITEM_SUBCATEGORIES: `/organizer/menu/menu-sub-categories`,
   ORGANIZER_MENU_ITEM_SUBCATEGORIES_BY_ID: (id: string) => `/organizer/menu/menu-sub-categories/${id}`,
+  ORGANIZER_MENU_ITEM_SUBCATEGORIES_ORDER_BY_ID: (id: string) => `/organizer/menu/menu-sub-categories/order/${id}`,
 
   ADMIN_MENU_SUB_CATEGORY_TYPES: `/admin/menu/sub-categories/types`,
   ADMIN_MENU_SUB_CATEGORY_TYPES_BY_ID: (id: string) => `/admin/menu/sub-categories/types/${id}`,

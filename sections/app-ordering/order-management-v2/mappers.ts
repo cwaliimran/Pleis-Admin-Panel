@@ -1,6 +1,13 @@
-import type { ApiOrder, ApiOrderItem, ApiOrderingStatus, ApiOrdersMeta } from '@/store/Reducer/order-management-v2-api';
+import type {
+  ApiMenuCatalogue,
+  ApiMenuCatalogueItem,
+  ApiOrder,
+  ApiOrderItem,
+  ApiOrderingStatus,
+  ApiOrdersMeta,
+} from '@/store/Reducer/order-management-v2-api';
 import { DEFAULT_PAGE_LIMIT, DELIVERY_TYPE_CONFIG } from './constants';
-import { Order, OrderCustomer, OrderItem, OrderPagination, OrderRound, OrderTabCounts, OrderingStatus } from './types';
+import { MenuItemOption, Order, OrderCustomer, OrderItem, OrderPagination, OrderRound, OrderTabCounts, OrderingStatus } from './types';
 
 // ============================================================
 // Wire → view model
@@ -9,7 +16,7 @@ import { Order, OrderCustomer, OrderItem, OrderPagination, OrderRound, OrderTabC
 // `Order` alone.
 // ============================================================
 
-const EMPTY_CUSTOMER: OrderCustomer = { name: 'Unknown customer', username: '', email: '', tier: '', avatarUrl: null };
+const EMPTY_CUSTOMER: OrderCustomer = { id: '', name: 'Unknown customer', username: '', email: '', tier: '', avatarUrl: null };
 
 const mapCustomer = (order: ApiOrder): OrderCustomer => {
   const user = order.user;
@@ -18,6 +25,7 @@ const mapCustomer = (order: ApiOrder): OrderCustomer => {
   const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
 
   return {
+    id: user._id || '',
     name: fullName || user.username || EMPTY_CUSTOMER.name,
     username: user.username || '',
     email: user.email || '',
@@ -84,13 +92,13 @@ export const mapApiOrder = (order: ApiOrder): Order => {
     customer: mapCustomer(order),
     deliveryType: order.pickupType,
     deliveryLabel: mapDeliveryLabel(order),
+    tableNumber: order.tableNumber?.trim() || '',
     paymentType: order.paymentMethod,
     paymentStatus: order.paymentStatus,
     status: order.status,
     rounds: mapRounds(order),
     subtotal: breakdown?.itemsTotal ?? order.totalPrice ?? 0,
-    // No tip field on the wire yet — the summary row renders €0.00.
-    tipAmount: 0,
+    tipAmount: breakdown?.tip ?? 0,
     total: breakdown?.finalTotal ?? order.totalPrice ?? 0,
     // Not sent by the API yet; kept so the detail row lights up when it is.
     rejectionReason: undefined,
@@ -120,6 +128,39 @@ export const mapOrderingStatus = (status: ApiOrderingStatus | null | undefined):
     openedAt: null,
     venueName: '',
   };
+};
+
+// ---------- Menu catalogue → picker options ----------
+
+const mapMenuItemOption = (item: ApiMenuCatalogueItem, subCategory: string): MenuItemOption => ({
+  id: item._id,
+  name: item.title?.trim() || 'Unknown item',
+  // `salePrice` already has any active discount applied.
+  price: item.salePrice ?? item.basePrice ?? 0,
+  category: item.subCategory?.trim() || subCategory,
+  imageUrl: item.image || null,
+  isAvailable: item.status !== 'inactive' && item.isAvailableInStock !== false,
+});
+
+/**
+ * Flattens the grouped `menu` into one selectable list. `recommended` is
+ * skipped — its items all appear under `menu` too — and so are `combos`,
+ * which the update endpoint cannot express.
+ */
+export const mapMenuItemOptions = (catalogue: ApiMenuCatalogue | null | undefined): MenuItemOption[] => {
+  const seen = new Set<string>();
+  const options: MenuItemOption[] = [];
+
+  (catalogue?.menu ?? []).forEach((group) => {
+    (group.items ?? []).forEach((item) => {
+      if (!item?._id || seen.has(item._id)) return;
+
+      seen.add(item._id);
+      options.push(mapMenuItemOption(item, group.subCategory));
+    });
+  });
+
+  return options;
 };
 
 export const mapPagination = (meta: ApiOrdersMeta | null | undefined, fallbackPage: number, fallbackLimit: number): OrderPagination => ({

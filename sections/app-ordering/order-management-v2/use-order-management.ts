@@ -4,13 +4,23 @@ import type { GetOrdersV2Args, UpdateOrderV2Args } from '@/store/Reducer/order-m
 import {
   useGetOrderingStatusV2Query,
   useGetOrdersV2Query,
+  useUpdateOrderDetailsV2Mutation,
   useUpdateOrderV2Mutation,
   useUpdateOrderingStatusV2Mutation,
 } from '@/store/Reducer/order-management-v2-api';
 import { useCallback, useMemo, useState } from 'react';
 import { DEFAULT_PAGE_LIMIT, NEXT_STATUS_BY_ACTION, getRejectionReasonLabel } from './constants';
 import { mapApiOrders, mapOrderingStatus, mapPagination, mapTabCounts } from './mappers';
-import { DestructiveActionPayload, Order, OrderActionType, OrderFilters, OrderPagination, OrderTabCounts, OrderingStatus } from './types';
+import {
+  DestructiveActionPayload,
+  Order,
+  OrderActionType,
+  OrderFilters,
+  OrderPagination,
+  OrderTabCounts,
+  OrderUpdatePayload,
+  OrderingStatus,
+} from './types';
 
 // ============================================================
 // The module's single data seam.
@@ -43,7 +53,11 @@ interface UseOrderManagementReturn {
    */
   isListLoading: boolean;
   isTogglingOrdering: boolean;
+  /** The order currently being rewritten by the update modal, if any. */
+  updatingOrderId: string | null;
   pendingOrderId: string | null;
+  /** Which action is running on `pendingOrderId` — lets one button spin, not all. */
+  pendingAction: OrderActionType | null;
   /** The order currently having items marked delivered, if any. */
   deliveringOrderId: string | null;
   /**
@@ -55,6 +69,8 @@ interface UseOrderManagementReturn {
   refetchOrders: () => void;
   toggleOrdering: (isOpen: boolean) => Promise<string | undefined>;
   runOrderAction: (order: Order, action: OrderActionType, payload?: DestructiveActionPayload) => Promise<string | undefined>;
+  /** Rewrites a still-pending order's items and pickup details. */
+  updateOrderDetails: (order: Order, payload: OrderUpdatePayload) => Promise<string | undefined>;
 }
 
 /** `all` is a UI-only value — the param is simply left off. */
@@ -131,6 +147,35 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     [updateOrder, refetch]
   );
 
+  // ---- Rewriting a pending order ----
+  const [updateOrderDetailsMutation] = useUpdateOrderDetailsV2Mutation();
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+
+  const updateOrderDetails = useCallback(
+    async (order: Order, payload: OrderUpdatePayload) => {
+      setUpdatingOrderId(order.id);
+      try {
+        const response = await updateOrderDetailsMutation({
+          id: order.id,
+          // The endpoint keys lines on the menu item, so the draft maps
+          // straight across.
+          items: payload.items.map((item) => ({ menuItem: item.menuItemId, quantity: item.quantity })),
+          userId: order.customer.id || undefined,
+          pickupType: payload.deliveryType,
+          // Blanked by the modal for every pickup type other than table service.
+          tableNumber: payload.tableNumber || undefined,
+        }).unwrap();
+
+        await refetch();
+
+        return response?.message;
+      } finally {
+        setUpdatingOrderId(null);
+      }
+    },
+    [updateOrderDetailsMutation, refetch]
+  );
+
   // ---- Ordering switch (per organization) ----
   const { data: orderingStatusData } = useGetOrderingStatusV2Query({ organization: organizationId }, { skip: !organizationId });
 
@@ -153,6 +198,7 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
 
   // ---- Status actions ----
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<OrderActionType | null>(null);
 
   const runOrderAction: UseOrderManagementReturn['runOrderAction'] = useCallback(
     async (order, action, payload) => {
@@ -163,6 +209,7 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
       }
 
       setPendingOrderId(order.id);
+      setPendingAction(action);
       try {
         // `markAsPaid` settles payment; everything else writes the status.
         const args: UpdateOrderV2Args = action === 'markAsPaid' ? { id: order.id, paymentStatus: 'paid' } : { id: order.id, status: nextStatus };
@@ -193,6 +240,7 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
         return response?.message;
       } finally {
         setPendingOrderId(null);
+        setPendingAction(null);
       }
     },
     [updateOrder, refetch]
@@ -205,13 +253,16 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     orderingStatus,
     isLoading: isLoading && !data,
     isFetching,
-    isListLoading: isFetching && !deliveringOrderId && !pendingOrderId,
+    isListLoading: isFetching && !deliveringOrderId && !pendingOrderId && !updatingOrderId,
     isTogglingOrdering,
+    updatingOrderId,
     pendingOrderId,
+    pendingAction,
     deliveringOrderId,
     deliverItems,
     refetchOrders,
     toggleOrdering,
     runOrderAction,
+    updateOrderDetails,
   };
 };

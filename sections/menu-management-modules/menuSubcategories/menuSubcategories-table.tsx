@@ -1,5 +1,6 @@
 'use client';
 
+import { CustomDndProvider, restrictToBounds, restrictToVerticalAxis } from '@/components/providers/DndProvider';
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
@@ -8,18 +9,19 @@ import { Card } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
+import { DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Settings2 } from 'lucide-react';
-import { FC, useState } from 'react';
+import { FC, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import MenuSubcategoryTableRow from './menuSubcategories-table-row';
 import { SamplePageProps } from './types';
 
-type SortConfig = { key: string | null; direction: 'asc' | 'desc' | null };
-
 const HEAD_LABEL = [
-  { id: 'title', label: 'Name', align: 'left', sortable: true, sortKey: 'title' },
-  { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization' },
-  { id: 'createdAt', label: 'Created At', align: 'left', sortable: true, sortKey: 'createdAt' },
+  { id: 'drag', label: '', align: 'left' },
+  { id: 'title', label: 'Name', align: 'left' },
+  { id: 'organization', label: 'Organization', align: 'left' },
+  { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
 ];
@@ -30,6 +32,8 @@ const MenuSubcategoryTable: FC<SamplePageProps> = ({
   loading,
   handleDelete,
   handleEdit,
+  handleReorder,
+  reorderDisabled,
   onPageChange,
   limit = 10,
   search = '',
@@ -37,37 +41,28 @@ const MenuSubcategoryTable: FC<SamplePageProps> = ({
   status = '',
   onStatusChange = () => {},
   onResetFilters = () => {},
-  sortBy = '',
-  sortOrder = '',
-  onSortChange,
 }) => {
   const totalPages = meta?.totalPages || 1;
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
 
-  const sortConfig: SortConfig = {
-    key: sortBy || null,
-    direction: sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : null,
-  };
-
-  const handleSort = (key: string) => {
-    if (sortBy !== key) {
-      onSortChange?.(key, 'asc');
-    } else if (sortOrder === 'asc') {
-      onSortChange?.(key, 'desc');
-    } else if (sortOrder === 'desc') {
-      onSortChange?.('', '');
-    } else {
-      onSortChange?.(key, 'asc');
-    }
-  };
+  const tableWrapperRef = useRef<HTMLDivElement>(null);
+  const dragModifiers = useMemo(() => [restrictToVerticalAxis, restrictToBounds(tableWrapperRef)], []);
 
   const methods = useForm({
     defaultValues: {
       location: sheetLocation,
     },
   });
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    handleReorder?.(active.id as string, over.id as string);
+  };
+
+  const rowIds = data.map((item) => item._id);
 
   return (
     <div>
@@ -123,16 +118,26 @@ const MenuSubcategoryTable: FC<SamplePageProps> = ({
             </Sheet>
           </div>
 
-          <div className="mt-3 min-h-[45vh] rounded-lg border">
-            <Table className="w-full rounded-md border">
-              <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
+          <div ref={tableWrapperRef} className="mt-3 min-h-[45vh] rounded-lg border">
+            <CustomDndProvider onDragEnd={handleDragEnd} modifiers={dragModifiers} autoScroll={false}>
+              <Table className="w-full rounded-md border">
+                <TableHeadCustom headLabel={HEAD_LABEL} />
 
-              <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
-                {data?.map((item, idx) => (
-                  <MenuSubcategoryTableRow key={item?._id || idx} item={item} handleDelete={handleDelete} handleEdit={handleEdit} />
-                ))}
-              </TableBodyWrapper>
-            </Table>
+                <SortableContext items={rowIds} strategy={verticalListSortingStrategy}>
+                  <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={data?.length || 0}>
+                    {data?.map((item, idx) => (
+                      <MenuSubcategoryTableRow
+                        key={item?._id || idx}
+                        item={item}
+                        handleDelete={handleDelete}
+                        handleEdit={handleEdit}
+                        dragDisabled={reorderDisabled}
+                      />
+                    ))}
+                  </TableBodyWrapper>
+                </SortableContext>
+              </Table>
+            </CustomDndProvider>
           </div>
 
           <PaginationControls

@@ -15,7 +15,7 @@ export type ApiOrderStatus = 'pending' | 'confirmed' | 'sent' | 'pendingPayment'
 
 export type ApiPickupType = 'tableService' | 'counter' | 'togo';
 
-export type ApiPaymentMethod = 'applePay' | 'card' | 'cash';
+export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'payLater';
 
 export type ApiPaymentStatus = 'pending' | 'paid' | 'failed';
 
@@ -66,6 +66,8 @@ export interface ApiPriceBreakdown {
   tax: number;
   finalTotal: number;
   promoCode: string | null;
+  /** Booked separately as "Napojnica" at 0% tax. */
+  tip?: number;
 }
 
 export interface ApiOrderClubMemberInfo {
@@ -142,6 +144,49 @@ export interface UpdateOrderV2Args {
   noteForCancellation?: string;
 }
 
+/** Rewrites a still-pending order. `updateOrderV2` only advances its status. */
+export interface UpdateOrderDetailsV2Args {
+  /** The order `_id`. */
+  id: string;
+  items: { menuItem: string; quantity: number }[];
+  /** The `_id` of the user the order belongs to. */
+  userId?: string;
+  pickupType?: ApiPickupType;
+  /** Required by the backend when `pickupType` is `tableService`. */
+  tableNumber?: string;
+}
+
+// ---------- Menu catalogue (for the update modal's item picker) ----------
+
+/** The endpoint returns the full menu document; only what the picker reads is typed. */
+export interface ApiMenuCatalogueItem {
+  _id: string;
+  title?: string;
+  description?: string;
+  image?: string | null;
+  subCategory?: string;
+  basePrice?: number;
+  taxPercent?: number;
+  /** Price after any active discount — this is what an order line is billed at. */
+  salePrice?: number;
+  originalPrice?: number;
+  hasDiscount?: boolean;
+  status?: string;
+  isAvailableInStock?: boolean;
+}
+
+export interface ApiMenuCatalogueGroup {
+  subCategory: string;
+  items: ApiMenuCatalogueItem[];
+}
+
+export interface ApiMenuCatalogue {
+  organization?: { _id: string; basicInfo?: { name?: string } } | null;
+  recommended?: ApiMenuCatalogueItem[];
+  menu?: ApiMenuCatalogueGroup[];
+  combos?: unknown[];
+}
+
 // ---------- Query args ----------
 
 export interface GetOrdersV2Args {
@@ -161,7 +206,7 @@ export interface GetOrdersV2Args {
 export const orderManagementV2Api = createApi({
   reducerPath: 'orderManagementV2Api',
   baseQuery: customFetchBaseQueryWithRoleRouting(),
-  tagTypes: ['order-management-v2', 'order-management-v2-status'],
+  tagTypes: ['order-management-v2', 'order-management-v2-status', 'order-management-v2-menu'],
 
   endpoints: (builder) => ({
     getOrdersV2: builder.query<GetOrdersV2Response, GetOrdersV2Args>({
@@ -227,6 +272,39 @@ export const orderManagementV2Api = createApi({
       // for the whole round trip. Invalidating here would refetch a second time.
     }),
 
+    updateOrderDetailsV2: builder.mutation<{ message?: string; data?: ApiOrder }, UpdateOrderDetailsV2Args>({
+      query: ({ id, items, userId, pickupType, tableNumber }) => {
+        const body: Record<string, unknown> = { items };
+
+        if (userId) body.userId = userId;
+        if (pickupType) body.pickupType = pickupType;
+        if (tableNumber) body.tableNumber = tableNumber;
+
+        return {
+          url: '',
+          method: 'PUT',
+          body,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_ORDER_MANAGEMENT_UPDATE_ORDER(id),
+            organizerRoute: API_ROUTES.ORGANIZER_ORDER_MANAGEMENT_UPDATE_ORDER(id),
+          },
+        };
+      },
+
+      // No `invalidatesTags`, for the same reason as `updateOrderV2` above.
+    }),
+
+    /** Unpaginated, and not role-routed — `/app/...` is shared by both roles. */
+    getMenuItemsV2: builder.query<ApiMenuCatalogue | null, { organization?: string }>({
+      query: ({ organization }) => ({
+        url: API_ROUTES.APP_MENU_ITEMS_V2,
+        method: 'GET',
+        params: organization ? { organization } : {},
+      }),
+      transformResponse: (res: { data?: ApiMenuCatalogue }): ApiMenuCatalogue | null => res?.data ?? null,
+      providesTags: ['order-management-v2-menu'],
+    }),
+
     getOrderingStatusV2: builder.query<ApiOrderingStatus | null, { organization?: string }>({
       query: ({ organization }) => {
         const params: Record<string, string> = {};
@@ -261,4 +339,11 @@ export const orderManagementV2Api = createApi({
   }),
 });
 
-export const { useGetOrdersV2Query, useUpdateOrderV2Mutation, useGetOrderingStatusV2Query, useUpdateOrderingStatusV2Mutation } = orderManagementV2Api;
+export const {
+  useGetOrdersV2Query,
+  useUpdateOrderV2Mutation,
+  useUpdateOrderDetailsV2Mutation,
+  useGetMenuItemsV2Query,
+  useGetOrderingStatusV2Query,
+  useUpdateOrderingStatusV2Mutation,
+} = orderManagementV2Api;

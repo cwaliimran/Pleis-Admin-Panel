@@ -1,4 +1,6 @@
 export { OrderManagementViewV2 } from './order-management-view';
+export { MenuItemPicker } from './menu-item-picker';
+export { OrderUpdateModal } from './order-update-modal';
 export * from './constants';
 export * from './mappers';
 export * from './types';

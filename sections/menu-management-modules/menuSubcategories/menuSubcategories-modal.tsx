@@ -14,22 +14,26 @@ import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
 import { SubcategoryFormValues, SubcategoryModalProps } from './types';
 
-const defaultValues: SubcategoryFormValues = {
-  title: '',
-  organization: '',
-  status: 'active',
-};
-
 const schema = Yup.object().shape({
   title: Yup.string().required('Name is required'),
   organization: Yup.string().required('Organization is required'),
+  order: Yup.string()
+    .required('Order is required')
+    .test('is-integer', 'Order must be a whole number', (value) => !!value && Number.isInteger(Number(value)) && Number(value) > 0),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, companyId, userType }: SubcategoryModalProps) => {
+const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, companyId, userType, nextOrder }: SubcategoryModalProps) => {
   const [addSubcategory, { isLoading: addLoading }] = useAddMenuItemSubcategoryMutation();
   const [updateSubcategory, { isLoading: updateLoading }] = useUpdateMenuItemSubcategoryMutation();
   const submitting = addLoading || updateLoading;
+
+  const defaultValues: SubcategoryFormValues = {
+    title: '',
+    organization: '',
+    order: String(nextOrder),
+    status: 'active',
+  };
 
   const methods = useForm<SubcategoryFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<SubcategoryFormValues>),
@@ -46,17 +50,20 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
       reset({
         title: selectedData.title,
         organization: selectedData.organization?._id || '',
+        order: String(selectedData.order ?? nextOrder),
         status: selectedData.status,
       });
     } else if (!isEdit) {
-      reset(defaultValues);
+      reset({ ...defaultValues, order: String(nextOrder) });
     }
-  }, [open, isEdit, selectedData, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, isEdit, selectedData, reset, nextOrder]);
 
   const handleSubmit = async (formData: SubcategoryFormValues) => {
     const payload: any = {
       title: formData.title,
       organization: formData.organization,
+      order: Number(formData.order),
       status: formData.status,
     };
 
@@ -119,6 +126,8 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
                   getOptionValue={(organization) => organization._id}
                   getOptionLabel={(organization) => organization?.basicInfo?.name || 'Unknown Organization'}
                 />
+
+                <RHFTextField name="order" label="Order" type="number" step="1" min="1" />
 
                 {isEdit && (
                   <RHFSelectField

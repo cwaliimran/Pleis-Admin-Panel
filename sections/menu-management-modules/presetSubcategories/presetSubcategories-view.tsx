@@ -11,8 +11,9 @@ import {
 } from '@/store/Reducer/menu-subcategories-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
+import { arrayMove } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import SubcategoryModal from './presetSubcategories-modal';
 import MenuSubcategoryTable from './presetSubcategories-table';
 import { CategoryOption, MenuSubcategoryRecord } from './types';
@@ -42,18 +43,27 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
   const [deleteSubcategory, { isLoading: deleteLoading }] = useDeleteMenuSubcategoryMutation();
   const [updateSubcategoryOrder] = useUpdateMenuSubcategoryOrderMutation();
 
-  const subcategories: MenuSubcategoryRecord[] = data?.data || [];
+  const serverSubcategories: MenuSubcategoryRecord[] = data?.data || [];
   const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
   const categories: CategoryOption[] = categoriesData?.data || [];
+
+  // Holds the dragged-to order so the row stays where the user dropped it while the PUT and the
+  // refetch it invalidates run in the background. Cleared the moment fresh server data lands.
+  const [optimisticOrder, setOptimisticOrder] = useState<MenuSubcategoryRecord[] | null>(null);
+  const subcategories = optimisticOrder ?? serverSubcategories;
+
+  useEffect(() => {
+    setOptimisticOrder(null);
+  }, [data]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MenuSubcategoryRecord | null>(null);
 
   const hasActiveFilters = !!search.trim() || (!!status && status !== 'all') || (!!categoryId && categoryId !== 'all');
 
-  // Manual drag-and-drop reordering only makes sense on the full, unfiltered, single-page list —
-  // reordering a filtered/paginated subset would silently scramble the real order underneath it.
-  const reorderDisabled = hasActiveFilters || (meta?.totalPages || 1) > 1;
+  // Pagination is fine to reorder within — the page offset below maps a row index back to its real
+  // order. Filters are not: the visible rows aren't contiguous, so any index we compute is wrong.
+  const reorderDisabled = hasActiveFilters;
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -87,26 +97,28 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
   };
 
   const handleReorder = async (activeId: string, overId: string) => {
+    const activeIndex = subcategories.findIndex((item) => item._id === activeId);
     const overIndex = subcategories.findIndex((item) => item._id === overId);
-    if (overIndex === -1) return;
+    if (activeIndex === -1 || overIndex === -1) return;
+
+    const previousOrder = subcategories;
+    setOptimisticOrder(arrayMove(subcategories, activeIndex, overIndex));
+
+    // `order` is global, so the row's position on page N has to be offset by the pages before it.
+    const pageOffset = ((meta?.currentPage || page) - 1) * (meta?.limit || limit);
 
     try {
-      await updateSubcategoryOrder({ id: activeId, newOrder: overIndex + 1 }).unwrap();
+      await updateSubcategoryOrder({ id: activeId, newOrder: pageOffset + overIndex + 1 }).unwrap();
       showSuccess('Order updated');
     } catch (error) {
+      setOptimisticOrder(previousOrder);
       showError(getErrorMessage(error));
     }
   };
 
   return (
     <div>
-      {/* <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"> */}
       <div className="mt-3 flex w-full items-center justify-end md:mt-0">
-        {/* <div>
-          <h2 className="text-2xl font-semibold">Subcategories</h2>
-          <p className="text-muted-foreground text-sm">Manage your subcategories here.</p>
-        </div> */}
-
         <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
           <Plus />
           Create Subcategory
@@ -117,7 +129,7 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
         data={subcategories}
         meta={meta}
         categories={categories}
-        loading={isLoading || isFetching}
+        loading={isLoading || (isFetching && !optimisticOrder)}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         handleReorder={handleReorder}

@@ -1,6 +1,6 @@
 'use client';
 
-import { CustomDndProvider } from '@/components/providers/DndProvider';
+import { CustomDndProvider, restrictToBounds, restrictToVerticalAxis } from '@/components/providers/DndProvider';
 import { TableFilters } from '@/components/table-filters';
 import PaginationControls from '@/components/table/pagination-controls';
 import TableHeadCustom from '@/components/table/table-head-custom';
@@ -11,8 +11,8 @@ import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Info, Settings2 } from 'lucide-react';
-import { FC, useState } from 'react';
+import { Settings2 } from 'lucide-react';
+import { FC, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import MenuSubcategoryTableRow from './presetSubcategories-table-row';
 import { CategoryOption, SamplePageProps } from './types';
@@ -49,6 +49,9 @@ const MenuSubcategoryTable: FC<SamplePageProps & { categories: CategoryOption[] 
   const currentPage = meta?.currentPage || 1;
   const totalRecords = meta?.totalRecords || 0;
   const [sheetLocation] = useState<string[]>([]);
+
+  const tableWrapperRef = useRef<HTMLDivElement>(null);
+  const dragModifiers = useMemo(() => [restrictToVerticalAxis, restrictToBounds(tableWrapperRef)], []);
 
   const methods = useForm({
     defaultValues: {
@@ -129,15 +132,8 @@ const MenuSubcategoryTable: FC<SamplePageProps & { categories: CategoryOption[] 
             </Sheet>
           </div>
 
-          {reorderDisabled && (
-            <div className="text-muted-foreground mt-3 flex items-center gap-2 rounded-md bg-gray-50 px-3 py-2 text-xs dark:bg-gray-800">
-              <Info className="h-3.5 w-3.5 shrink-0" />
-              Clear search and filters, and view a single page, to drag-and-drop reorder subcategories.
-            </div>
-          )}
-
-          <div className="mt-3 min-h-[45vh] rounded-lg border">
-            <CustomDndProvider onDragEnd={handleDragEnd}>
+          <div ref={tableWrapperRef} className="mt-3 min-h-[45vh] rounded-lg border">
+            <CustomDndProvider onDragEnd={handleDragEnd} modifiers={dragModifiers} autoScroll={false}>
               <Table className="w-full rounded-md border">
                 <TableHeadCustom headLabel={HEAD_LABEL} />
 
