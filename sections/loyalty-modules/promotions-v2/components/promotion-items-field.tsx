@@ -15,10 +15,6 @@ interface PromotionItemsFieldProps {
   disabled?: boolean;
 }
 
-/**
- * An adder rather than a multi-select: pick an item and it becomes a chip.
- * Serves both the qualifying items and the items on discount.
- */
 export const PromotionItemsField: React.FC<PromotionItemsFieldProps> = ({
   name,
   label,
@@ -34,7 +30,6 @@ export const PromotionItemsField: React.FC<PromotionItemsFieldProps> = ({
       name={name}
       render={({ field, fieldState }) => {
         const selectedIds: string[] = field.value || [];
-        // Already-picked items drop out so they cannot be added twice.
         const available = options.filter((option) => !selectedIds.includes(option.id));
         const selected = selectedIds
           .map((id) => options.find((option) => option.id === id))
@@ -44,12 +39,7 @@ export const PromotionItemsField: React.FC<PromotionItemsFieldProps> = ({
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">{label}</label>
 
-            <Select
-              // Reset to the placeholder after each pick so the trigger can add again.
-              value=""
-              disabled={disabled || available.length === 0}
-              onValueChange={(value) => field.onChange([...selectedIds, value])}
-            >
+            <Select value="" disabled={disabled || available.length === 0} onValueChange={(value) => field.onChange([...selectedIds, value])}>
               <SelectTrigger className="h-10 w-full cursor-pointer">
                 <SelectValue placeholder={available.length === 0 ? 'All items added' : placeholder} />
               </SelectTrigger>

@@ -17,6 +17,7 @@ interface ReservationListRowProps {
 export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, disabled = false, onEdit, onSetStatus }) => {
   const statusConfig = RESERVATION_STATUS_CONFIG[item.status];
   const occasionOrEvent = [item.occasion, item.eventName].filter(Boolean).join(' · ');
+  const confirmStatus: ReservationStatus = (item.amount ?? 0) > 0 ? 'pendingPayment' : 'confirmed';
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
@@ -48,7 +49,7 @@ export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, di
                 title="Confirm reservation"
                 aria-label={`Confirm reservation for ${item.guestName}`}
                 disabled={disabled}
-                onClick={() => onSetStatus(item, 'confirmed')}
+                onClick={() => onSetStatus(item, confirmStatus)}
                 className="cursor-pointer rounded-md bg-green-100 p-1.5 transition hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-green-900 dark:hover:bg-green-800"
               >
                 <Check className="h-4 w-4 text-green-700 dark:text-green-300" />

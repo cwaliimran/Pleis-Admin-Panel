@@ -13,7 +13,6 @@ import {
   formatDateRange,
   formatMetric,
   getAvgPointsPerParticipant,
-  getMenuItemNames,
   getTypeDetailLabel,
   getViewToUseRate,
   isExpired,
@@ -50,7 +49,7 @@ export const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({ open
   if (!promotion) return null;
 
   const deprecated = isDeprecatedType(promotion.type);
-  const qualifyingItems = getMenuItemNames(promotion.qualifyingItemIds);
+  const qualifyingItems = promotion.qualifyingItems.map((item) => item.name);
   const activeTime = formatActiveTime(promotion);
   const expired = isExpired(promotion);
 
@@ -87,6 +86,10 @@ export const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({ open
             <InfoRow label="Extra Points per Purchase">{promotion.extraPointsPerPurchase.toLocaleString()}</InfoRow>
           )}
 
+          {promotion.type === 'happyHour' && <InfoRow label="Points Multiplier">{`${promotion.pointsMultiplier}x`}</InfoRow>}
+
+          {promotion.type === 'itemDiscount' && <InfoRow label="Discount">{`${promotion.discountPercent}% off`}</InfoRow>}
+
           {promotion.rewardName && <InfoRow label="Reward">{promotion.rewardName}</InfoRow>}
 
           <InfoRow label="Date Range">{formatDateRange(promotion)}</InfoRow>
@@ -102,8 +105,6 @@ export const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({ open
             <MetricTile label="Favorites" value={promotion.favorites.toLocaleString()} />
             <MetricTile label="View → Use" value={formatMetric(getViewToUseRate(promotion), '%')} />
 
-            {/* A legacy claim promotion counts claims and never awards points, so
-                the average would always read 0 — its lifecycle is the useful figure. */}
             {deprecated ? (
               <>
                 <MetricTile label="Total Claims" value={promotion.participations.toLocaleString()} />

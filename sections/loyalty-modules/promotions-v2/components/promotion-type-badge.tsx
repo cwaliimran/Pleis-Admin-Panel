@@ -10,10 +10,6 @@ interface PromotionTypeBadgeProps {
   className?: string;
 }
 
-/**
- * The type pill. A deprecated type is struck through and paired with a
- * DEPRECATED marker, so a legacy record reads as legacy at a glance.
- */
 export const PromotionTypeBadge: React.FC<PromotionTypeBadgeProps> = ({ type, className }) => {
   const deprecated = isDeprecatedType(type);
 
@@ -25,7 +21,7 @@ export const PromotionTypeBadge: React.FC<PromotionTypeBadgeProps> = ({ type, cl
           deprecated && 'line-through'
         )}
       >
-        {PROMOTION_TYPE_LABELS[type]}
+        {PROMOTION_TYPE_LABELS[type] ?? type}
       </span>
 
       {deprecated && (

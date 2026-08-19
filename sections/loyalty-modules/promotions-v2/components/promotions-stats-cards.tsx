@@ -13,7 +13,6 @@ interface Tile {
   label: string;
   value: string;
   hint?: string;
-  /** The "most engaged" tile reads as a title, not a figure. */
   compact?: boolean;
 }
 

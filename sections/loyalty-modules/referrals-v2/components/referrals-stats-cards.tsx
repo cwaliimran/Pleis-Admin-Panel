@@ -2,12 +2,10 @@
 
 import { Card } from '@/components/ui/card';
 import React from 'react';
-import { ReferralSettings, ReferralStats } from '../types';
-import { formatSettingsSummary } from '../utils';
+import { ReferralStats } from '../types';
 
 interface ReferralsStatsCardsProps {
   stats: ReferralStats;
-  settings: ReferralSettings;
   isLoading?: boolean;
 }
 
@@ -19,7 +17,7 @@ interface Tile {
   compact?: boolean;
 }
 
-export const ReferralsStatsCards: React.FC<ReferralsStatsCardsProps> = ({ stats, settings, isLoading = false }) => {
+export const ReferralsStatsCards: React.FC<ReferralsStatsCardsProps> = ({ stats, isLoading = false }) => {
   const tiles: Tile[] = [
     { label: 'Referrals Completed', value: stats.completed.toLocaleString() },
     { label: 'Pending', value: stats.pending.toLocaleString() },
@@ -29,11 +27,10 @@ export const ReferralsStatsCards: React.FC<ReferralsStatsCardsProps> = ({ stats,
       value: stats.topReferrer ? `${stats.topReferrer.username} · ${stats.topReferrer.referrals.toLocaleString()} referrals` : '—',
       compact: true,
     },
-    { label: 'Current Settings', value: formatSettingsSummary(settings), compact: true },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {tiles.map((tile) => (
         <Card key={tile.label} className="dark:bg-secondary gap-0 px-4 py-3 shadow-sm">
           <p className="text-[11px] font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">{tile.label}</p>

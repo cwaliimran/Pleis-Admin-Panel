@@ -1,15 +1,14 @@
 // ============================================================
 // Referrals V2 — domain types
 //
-// Served by `mock-data.ts` through `use-referrals-view.ts` until the real
-// endpoints exist. The query/meta shapes deliberately mirror the RTK Query
-// list contract (`{ data, meta }`) so swapping the hook for a generated
-// `useGetReferralsQuery` is a drop-in change.
+// The view model. `use-referrals-view.ts` maps the wire format in
+// `store/Reducer/referrals-v2-api.ts` onto these shapes, so nothing below the
+// hook ever sees the backend's field names.
 // ============================================================
 
-export type ReferralStatus = 'completed' | 'pending' | 'cancelled';
+export type ReferralStatus = 'active' | 'inactive';
 
-/** Column keys the table can sort by. Sent to the API as `sortBy`. */
+/** Column keys the table can sort by. Not wired to the API yet. */
 export type ReferralSortKey =
   | 'user'
   | 'referrer'
@@ -21,7 +20,7 @@ export type ReferralSortKey =
   | 'expiryDate'
   | 'status';
 
-/** Empty string means "no sort" and is omitted from the request. */
+/** Empty string means "no sort". */
 export type ReferralSortOrder = 'asc' | 'desc' | '';
 
 /**
@@ -30,36 +29,28 @@ export type ReferralSortOrder = 'asc' | 'desc' | '';
  */
 export interface Referral {
   id: string;
-  /** Username of the member who was invited. */
+  /** Display name of the member who was invited. */
   user: string;
-  /** Username of the member who invited them. */
+  /** Display name of the member who invited them. */
   referrer: string;
   /** How many referrals the referrer is allowed in total. */
   refLimit: number;
   /** How many the referrer has made so far. */
   refCount: number;
-  /** Points awarded to the invitee. Zero until the referral completes. */
+  /** Points awarded to the invitee. */
   userPoints: number;
-  /** Points awarded to the referrer. Zero until the referral completes. */
+  /** Points awarded to the referrer. */
   referrerPoints: number;
-  /** ISO `yyyy-MM-dd`. */
+  /** ISO datetime. */
   createdAt: string;
-  /** ISO `yyyy-MM-dd`. The referral is cancelled if it is not met by then. */
+  /** ISO datetime. */
   expiryDate: string;
   status: ReferralStatus;
 }
 
-/** Programme-wide settings, shown on the Current Settings tile. */
-export interface ReferralSettings {
-  /** Points each side earns when a referral completes. */
-  pointsPerReferral: number;
-  /** Maximum referrals one member may make. */
-  referralLimitPerUser: number;
-}
-
 /**
  * Header tiles. These are aggregates over every referral, not just the loaded
- * page, so the server owns them — the list alone cannot produce them.
+ * page, so they come from `meta.stats` rather than from the rows.
  */
 export interface ReferralStats {
   completed: number;
@@ -70,13 +61,11 @@ export interface ReferralStats {
 }
 
 export interface ReferralsQuery {
-  /** 1-based, as shown in the UI. */
+  /** 1-based, as shown in the UI and as the API expects it. */
   page: number;
   limit: number;
-  /** Substring match on the invitee's username. */
-  user: string;
-  /** Substring match on the referrer's username. */
-  referrer: string;
+  /** Free-text search, matched against both the invitee and the referrer. */
+  keyword: string;
   /** Empty string means every status. */
   status: ReferralStatus | '';
   sortBy: ReferralSortKey | '';

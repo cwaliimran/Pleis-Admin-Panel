@@ -22,10 +22,8 @@ interface ReferralsTableProps {
   sortOrder: ReferralSortOrder;
   onSortChange: (sortBy: ReferralSortKey | '', sortOrder: ReferralSortOrder) => void;
 
-  user: string;
-  onUserChange: (value: string) => void;
-  referrer: string;
-  onReferrerChange: (value: string) => void;
+  keyword: string;
+  onKeywordChange: (value: string) => void;
   status: ReferralStatus | '';
   onStatusChange: (value: ReferralStatus | '') => void;
   onResetFilters: () => void;
@@ -39,10 +37,8 @@ export const ReferralsTable: React.FC<ReferralsTableProps> = ({
   sortBy,
   sortOrder,
   onSortChange,
-  user,
-  onUserChange,
-  referrer,
-  onReferrerChange,
+  keyword,
+  onKeywordChange,
   status,
   onStatusChange,
   onResetFilters,
@@ -76,10 +72,8 @@ export const ReferralsTable: React.FC<ReferralsTableProps> = ({
 
         {/* No create button — members generate referrals by sharing their code. */}
         <ReferralsFilterSheet
-          user={user}
-          onUserChange={onUserChange}
-          referrer={referrer}
-          onReferrerChange={onReferrerChange}
+          keyword={keyword}
+          onKeywordChange={onKeywordChange}
           status={status}
           onStatusChange={onStatusChange}
           onReset={onResetFilters}

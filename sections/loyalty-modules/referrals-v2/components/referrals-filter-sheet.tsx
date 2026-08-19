@@ -14,43 +14,42 @@ import { ReferralStatus } from '../types';
 const ALL = 'all';
 
 interface ReferralsFilterSheetProps {
-  user: string;
-  onUserChange: (value: string) => void;
-  referrer: string;
-  onReferrerChange: (value: string) => void;
+  /**
+   * The endpoint takes a single `keyword`, so the User and Referrer inputs are
+   * two views of this one value — typing in either updates both.
+   */
+  keyword: string;
+  onKeywordChange: (value: string) => void;
   status: ReferralStatus | '';
   onStatusChange: (value: ReferralStatus | '') => void;
   onReset: () => void;
 }
 
-export const ReferralsFilterSheet: React.FC<ReferralsFilterSheetProps> = ({
-  user,
-  onUserChange,
-  referrer,
-  onReferrerChange,
-  status,
-  onStatusChange,
-  onReset,
-}) => {
-  const [localUser, setLocalUser] = useState(user);
-  const [localReferrer, setLocalReferrer] = useState(referrer);
+export const ReferralsFilterSheet: React.FC<ReferralsFilterSheetProps> = ({ keyword, onKeywordChange, status, onStatusChange, onReset }) => {
+  const [localKeyword, setLocalKeyword] = useState(keyword);
 
   // Keep the inputs in step when the parent resets the filters.
   useEffect(() => {
-    setLocalUser(user);
-  }, [user]);
+    setLocalKeyword(keyword);
+  }, [keyword]);
 
-  useEffect(() => {
-    setLocalReferrer(referrer);
-  }, [referrer]);
+  const debouncedKeyword = useMemo(() => debounce((value: string) => onKeywordChange(value), 400), [onKeywordChange]);
 
-  const debouncedUser = useMemo(() => debounce((value: string) => onUserChange(value), 400), [onUserChange]);
-  const debouncedReferrer = useMemo(() => debounce((value: string) => onReferrerChange(value), 400), [onReferrerChange]);
+  useEffect(() => () => debouncedKeyword.cancel(), [debouncedKeyword]);
 
-  useEffect(() => () => debouncedUser.cancel(), [debouncedUser]);
-  useEffect(() => () => debouncedReferrer.cancel(), [debouncedReferrer]);
+  const handleKeywordInput = (value: string) => {
+    setLocalKeyword(value);
+    debouncedKeyword(value);
+  };
 
-  const hasActiveFilters = Boolean(user || referrer || status);
+  const handleReset = () => {
+    // Without this a keystroke from just before the click still lands, and the
+    // cleared filter re-applies itself 400ms later.
+    debouncedKeyword.cancel();
+    onReset();
+  };
+
+  const hasActiveFilters = Boolean(keyword || status);
 
   return (
     <Sheet>
@@ -75,11 +74,8 @@ export const ReferralsFilterSheet: React.FC<ReferralsFilterSheetProps> = ({
             <Input
               id="referrals-user"
               placeholder="Filter by user..."
-              value={localUser}
-              onChange={(event) => {
-                setLocalUser(event.target.value);
-                debouncedUser(event.target.value);
-              }}
+              value={localKeyword}
+              onChange={(event) => handleKeywordInput(event.target.value)}
               className="h-10 w-full"
             />
           </div>
@@ -91,11 +87,8 @@ export const ReferralsFilterSheet: React.FC<ReferralsFilterSheetProps> = ({
             <Input
               id="referrals-referrer"
               placeholder="Filter by referrer..."
-              value={localReferrer}
-              onChange={(event) => {
-                setLocalReferrer(event.target.value);
-                debouncedReferrer(event.target.value);
-              }}
+              value={localKeyword}
+              onChange={(event) => handleKeywordInput(event.target.value)}
               className="h-10 w-full"
             />
           </div>
@@ -124,7 +117,7 @@ export const ReferralsFilterSheet: React.FC<ReferralsFilterSheetProps> = ({
           {hasActiveFilters && (
             <button
               type="button"
-              onClick={onReset}
+              onClick={handleReset}
               className="bg-muted text-foreground border-border hover:bg-muted/80 w-full cursor-pointer rounded-md border py-2 font-semibold transition"
             >
               Reset

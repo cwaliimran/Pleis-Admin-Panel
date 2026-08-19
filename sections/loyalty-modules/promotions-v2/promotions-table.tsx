@@ -69,7 +69,6 @@ export const PromotionsTable: React.FC<PromotionsTableProps> = ({
     direction: sortOrder || null,
   };
 
-  /** Cycle on the active column: asc → desc → off. A new column starts at asc. */
   const handleSort = (key: string) => {
     const nextKey = key as PromotionSortKey;
 

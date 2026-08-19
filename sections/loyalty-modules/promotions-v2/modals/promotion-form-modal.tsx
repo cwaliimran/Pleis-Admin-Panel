@@ -9,15 +9,23 @@ import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
+import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import type { ApiPromotionType, PromotionWriteBody } from '@/store/Reducer/promotions-v2-api';
+import { useCreatePromotionV2Mutation, useUpdatePromotionV2Mutation } from '@/store/Reducer/promotions-v2-api';
 import { getErrorMessage } from '@/utils/api';
-import { showError } from '@/utils/toast';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useEffect, useMemo, useState } from 'react';
+import { FieldErrors, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import PromotionItemsField from '../components/promotion-items-field';
 import {
+  OPTIONS_PAGE_LIMIT,
   POINTS_MULTIPLIER_OPTIONS,
   PROMOTION_ACTIVE_DAYS_OPTIONS,
   PROMOTION_ITEMS_FIELD_LABELS,
@@ -25,10 +33,8 @@ import {
   PROMOTION_TYPE_HINTS,
   WEEKDAY_OPTIONS,
 } from '../constants';
-import { MOCK_MENUS, MOCK_MENU_ITEMS } from '../mock-data';
-import { Promotion, PromotionActiveDaysMode, PromotionPayload, PromotionType, Weekday } from '../types';
+import { Promotion, PromotionActiveDaysMode, PromotionType, Weekday } from '../types';
 
-/** Numbers are held as strings so empty inputs stay empty rather than becoming 0. */
 interface PromotionFormValues {
   image: unknown;
   title: string;
@@ -48,19 +54,32 @@ interface PromotionFormValues {
   isActive: boolean;
 }
 
-/** The two types that draw items from a menu. */
 const ITEM_BASED_TYPES: PromotionType[] = ['extraPoints', 'itemDiscount'];
 
+const VIEW_TYPE_TO_API: Record<PromotionType, ApiPromotionType> = {
+  extraPoints: 'extraPointsForItem',
+  happyHour: 'happyHour',
+  itemDiscount: 'productSale',
+  claimPromotion: 'claimPromotion',
+};
+
+const toBlobKey = (url: string): string => (url.includes('/') ? (url.split('/').pop() ?? '') : url);
+
+const toDateOnly = (value: Date | string): string => {
+  if (value instanceof Date) {
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${value.getFullYear()}-${month}-${day}`;
+  }
+  return String(value).slice(0, 10);
+};
+
 const schema = yup.object({
-  image: yup.mixed().nullable(),
+  image: yup.mixed().required('Image is required'),
   title: yup.string().required('Title is required'),
   description: yup.string(),
   type: yup.string().required('Promotion type is required'),
-  menuId: yup.string().when('type', {
-    is: (value: PromotionType) => ITEM_BASED_TYPES.includes(value),
-    then: (current) => current.required('Menu is required'),
-    otherwise: (current) => current,
-  }),
+  menuId: yup.string(),
   qualifyingItemIds: yup
     .array()
     .of(yup.string().required())
@@ -107,8 +126,16 @@ const schema = yup.object({
       then: (current) => current.min(1, 'Pick at least one day'),
       otherwise: (current) => current,
     }),
-  startTime: yup.string(),
-  endTime: yup.string(),
+  startTime: yup.string().when('type', {
+    is: 'happyHour',
+    then: (current) => current.required('Start time is required'),
+    otherwise: (current) => current,
+  }),
+  endTime: yup.string().when('type', {
+    is: 'happyHour',
+    then: (current) => current.required('End time is required'),
+    otherwise: (current) => current,
+  }),
   isActive: yup.boolean(),
 });
 
@@ -133,15 +160,22 @@ const defaultValues: PromotionFormValues = {
 
 interface PromotionFormModalProps {
   open: boolean;
-  /** `null` opens the form in create mode. */
   promotion: Promotion | null;
-  isSubmitting?: boolean;
-  onSubmit: (payload: PromotionPayload) => Promise<void>;
   onClose: () => void;
+  onCreated?: () => void;
 }
 
-export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, promotion, isSubmitting = false, onSubmit, onClose }) => {
+export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, promotion, onClose, onCreated }) => {
   const isEdit = Boolean(promotion);
+
+  const { companyId } = useCompanySelectionState();
+  const { uploadImage, uploading } = useImageUpload();
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+
+  const [createPromotion, { isLoading: isCreating }] = useCreatePromotionV2Mutation();
+  const [updatePromotion, { isLoading: isUpdating }] = useUpdatePromotionV2Mutation();
+
+  const isSubmitting = isCreating || isUpdating || uploading || isCleaningUp;
 
   const methods = useForm<PromotionFormValues>({
     resolver: yupResolver(schema) as never,
@@ -155,7 +189,6 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
   const activeDaysMode = watch('activeDaysMode');
   const isActive = watch('isActive');
 
-  // Reload whenever the modal opens so a stale draft never leaks into the next use.
   useEffect(() => {
     if (!open) return;
 
@@ -168,8 +201,6 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
       image: promotion.image || null,
       title: promotion.title,
       description: promotion.description,
-      // A legacy record cannot be retyped, but its own type is not selectable —
-      // fall back so the dropdown still has a valid value.
       type: PROMOTION_TYPE_FORM_OPTIONS.some((option) => option.value === promotion.type) ? promotion.type : 'extraPoints',
       menuId: promotion.menuId || '',
       qualifyingItemIds: promotion.qualifyingItemIds,
@@ -186,8 +217,6 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
     });
   }, [open, promotion, reset]);
 
-  // Leaving a branch makes its selections meaningless — drop them so they
-  // cannot be submitted or trip validation from behind a hidden field.
   useEffect(() => {
     if (!ITEM_BASED_TYPES.includes(type)) {
       setValue('menuId', '');
@@ -201,46 +230,109 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
     if (activeDaysMode !== 'specific') setValue('activeWeekdays', []);
   }, [activeDaysMode, setValue]);
 
-  const menuOptions = useMemo(() => MOCK_MENUS.map((menu) => ({ value: menu.id, label: menu.name })), []);
+  const itemBased = ITEM_BASED_TYPES.includes(type);
+  const timeRequired = type === 'happyHour';
 
-  // Narrow to the chosen menu; before one is picked every item is fair game.
-  const itemOptions = useMemo(() => (menuId ? MOCK_MENU_ITEMS.filter((item) => item.menuId === menuId) : MOCK_MENU_ITEMS), [menuId]);
+  const { data: menuData, isFetching: menusFetching } = useGetMenuListQuery(
+    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: companyId || undefined },
+    { skip: !open || !itemBased || !companyId }
+  );
+
+  const { data: menuItemsData, isFetching: menuItemsFetching } = useGetMenuItemByMenuIdQuery({ menuId }, { skip: !menuId || !itemBased });
+
+  const menuOptions = useMemo(
+    () => (menuData?.data ?? []).map((menu: { _id: string; title: string }) => ({ value: menu._id, label: menu.title })),
+    [menuData]
+  );
+
+  const itemOptions = useMemo(() => {
+    const byId = new Map((promotion?.qualifyingItems ?? []).map((item) => [item.id, { id: item.id, menuId, name: item.name }]));
+
+    (menuItemsData?.data ?? []).forEach((item: { _id: string; title: string }) => {
+      byId.set(item._id, { id: item._id, menuId, name: item.title });
+    });
+
+    return Array.from(byId.values());
+  }, [menuItemsData, menuId, promotion]);
 
   const hint = PROMOTION_TYPE_HINTS[type];
   const itemsFieldLabel = PROMOTION_ITEMS_FIELD_LABELS[type];
 
-  const submit = async (values: PromotionFormValues) => {
-    try {
-      const itemBased = ITEM_BASED_TYPES.includes(values.type);
+  const resolveImageKey = async (value: unknown, uploaded: string[]): Promise<string> => {
+    if (typeof value === 'string' && value) return toBlobKey(value);
 
-      const payload: PromotionPayload = {
-        title: values.title.trim(),
-        image: typeof values.image === 'string' ? values.image : '',
-        description: values.description?.trim() || '',
-        type: values.type,
-        status: values.isActive ? 'active' : 'inactive',
-        menuId: itemBased ? values.menuId : undefined,
-        qualifyingItemIds: itemBased ? values.qualifyingItemIds : [],
-        extraPointsPerPurchase: values.type === 'extraPoints' ? Number(values.extraPointsPerPurchase) : 0,
-        pointsMultiplier: values.type === 'happyHour' ? Number(values.pointsMultiplier) : 1,
-        discountPercent: values.type === 'itemDiscount' ? Number(values.discountPercent) : 0,
-        startDate: values.startDate instanceof Date ? values.startDate.toISOString().slice(0, 10) : String(values.startDate),
-        endDate: values.endDate instanceof Date ? values.endDate.toISOString().slice(0, 10) : String(values.endDate),
-        activeDaysMode: values.activeDaysMode,
-        activeWeekdays: values.activeDaysMode === 'specific' ? values.activeWeekdays : [],
-        startTime: values.startTime || undefined,
-        endTime: values.endTime || undefined,
-      };
+    const file = value instanceof FileList ? value[0] : value instanceof File ? value : null;
+    if (!file) return '';
 
-      await onSubmit(payload);
-      reset(defaultValues);
-      onClose();
-    } catch (error) {
-      showError(getErrorMessage(error));
-    }
+    const key = await uploadImage(file);
+    if (!key) throw new Error('Image upload failed');
+
+    uploaded.push(key);
+    return key;
   };
 
+  const reportInvalid = (errors: FieldErrors<PromotionFormValues>) => {
+    const firstMessage = Object.values(errors).find((entry) => entry?.message)?.message;
+    showError(firstMessage ? String(firstMessage) : 'Please complete the highlighted fields.');
+  };
+
+  const submit = handleSubmit(async (values) => {
+    if (!companyId) {
+      showError('Please select a company first.');
+      return;
+    }
+
+    const uploaded: string[] = [];
+
+    try {
+      const image = await resolveImageKey(values.image, uploaded);
+      const isItemBased = ITEM_BASED_TYPES.includes(values.type);
+      const specificDays = values.activeDaysMode === 'specific';
+
+      const body: PromotionWriteBody = {
+        companyOrganizer: companyId,
+        image,
+        promotionType: VIEW_TYPE_TO_API[values.type],
+        title: values.title.trim(),
+        description: values.description?.trim() || '',
+        startDate: toDateOnly(values.startDate),
+        endDate: toDateOnly(values.endDate),
+        status: values.isActive ? 'active' : 'inactive',
+        activeDays: specificDays ? { mode: 'selective', days: values.activeWeekdays } : { mode: 'all' },
+      };
+
+      if (values.startTime) body.startTime = values.startTime;
+      if (values.endTime) body.endTime = values.endTime;
+
+      if (isItemBased) body.menuItem = values.qualifyingItemIds;
+
+      if (values.type === 'extraPoints') body.extraPoints = Number(values.extraPointsPerPurchase);
+      if (values.type === 'happyHour') body.pointsMultiplier = String(values.pointsMultiplier);
+      if (values.type === 'itemDiscount') body.discountedPercent = Number(values.discountPercent);
+
+      const response = promotion && isEdit ? await updatePromotion({ id: promotion.id, ...body }).unwrap() : await createPromotion(body).unwrap();
+
+      showSuccess(response?.message || (isEdit ? 'Promotion updated' : 'Promotion created'));
+      reset(defaultValues);
+      if (!isEdit) onCreated?.();
+      onClose();
+    } catch (error) {
+      if (uploaded.length > 0) {
+        setIsCleaningUp(true);
+        try {
+          await Promise.all(uploaded.map((key) => deleteFileFromAzure(key)));
+        } catch {
+        } finally {
+          setIsCleaningUp(false);
+        }
+      }
+
+      showError(getErrorMessage(error));
+    }
+  }, reportInvalid);
+
   const handleClose = () => {
+    if (isSubmitting) return;
     reset(defaultValues);
     onClose();
   };
@@ -252,7 +344,7 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
           <DialogTitle className="text-center text-lg font-semibold">{isEdit ? 'Edit Promotion' : 'Create Promotion'}</DialogTitle>
         </DialogHeader>
 
-        <FormProvider methods={methods} onSubmit={handleSubmit(submit)}>
+        <FormProvider methods={methods} onSubmit={submit}>
           <div className="flex flex-col gap-4">
             <RHFUploadAvatar name="image" label="Promotion Image" initialImage={promotion?.image || null} />
 
@@ -283,11 +375,23 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
               </div>
             )}
 
-            {ITEM_BASED_TYPES.includes(type) && (
+            {itemBased && (
               <>
-                <RHFCustomDropdown name="menuId" label="Select Menu" placeholder="Select menu" options={menuOptions} showNone={false} />
+                <RHFCustomDropdown
+                  name="menuId"
+                  label="Select Menu"
+                  placeholder={menusFetching ? 'Loading menus...' : 'Select menu'}
+                  options={menuOptions}
+                  showNone={false}
+                />
 
-                <PromotionItemsField name="qualifyingItemIds" label={itemsFieldLabel || 'Add Items'} options={itemOptions} />
+                <PromotionItemsField
+                  name="qualifyingItemIds"
+                  label={itemsFieldLabel || 'Add Items'}
+                  placeholder={!menuId ? 'Select a menu first...' : menuItemsFetching ? 'Loading items...' : 'Choose item to add...'}
+                  options={itemOptions}
+                  disabled={!menuId || menuItemsFetching}
+                />
               </>
             )}
 
@@ -321,10 +425,21 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
             )}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Editing an already-finished promotion must not be blocked by the "future dates only" rule. */}
-              <RHFDate name="startDate" label="Start Date" placeholder="Select start date" minDate={isEdit ? new Date(0) : new Date()} />
+              <RHFDate
+                name="startDate"
+                label="Start Date"
+                placeholder="Select start date"
+                displayFormat="dd/MM/yyyy"
+                minDate={isEdit ? new Date(0) : new Date()}
+              />
 
-              <RHFDate name="endDate" label="End Date" placeholder="Select end date" minDate={isEdit ? new Date(0) : new Date()} />
+              <RHFDate
+                name="endDate"
+                label="End Date"
+                placeholder="Select end date"
+                displayFormat="dd/MM/yyyy"
+                minDate={isEdit ? new Date(0) : new Date()}
+              />
             </div>
 
             <div className="flex flex-col gap-4">
@@ -341,8 +456,8 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
               {activeDaysMode === 'specific' && <RHFChipToggleGroup name="activeWeekdays" label="Days" options={WEEKDAY_OPTIONS} />}
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <RHFTimeField name="startTime" label="Start Time (optional)" />
-                <RHFTimeField name="endTime" label="End Time (optional)" />
+                <RHFTimeField name="startTime" label={timeRequired ? 'Start Time' : 'Start Time (optional)'} />
+                <RHFTimeField name="endTime" label={timeRequired ? 'End Time' : 'End Time (optional)'} />
               </div>
             </div>
 

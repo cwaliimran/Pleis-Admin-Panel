@@ -3,8 +3,9 @@
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
+import { getStatusVariant } from '@/utils/short-utils';
 import React from 'react';
-import { REFERRAL_STATUS_LABELS, REFERRAL_STATUS_VARIANT } from './constants';
+import { REFERRAL_STATUS_LABELS } from './constants';
 import { Referral } from './types';
 
 interface ReferralsTableRowProps {
@@ -31,7 +32,7 @@ export const ReferralsTableRow: React.FC<ReferralsTableRowProps> = ({ item }) =>
       <TableCell className="text-left whitespace-nowrap text-gray-700 dark:text-gray-300">{fDate(item.expiryDate, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">
-        <CustomBadge variant={REFERRAL_STATUS_VARIANT[item.status]}>{REFERRAL_STATUS_LABELS[item.status]}</CustomBadge>
+        <CustomBadge variant={getStatusVariant(item.status)}>{REFERRAL_STATUS_LABELS[item.status]}</CustomBadge>
       </TableCell>
     </TableRow>
   );

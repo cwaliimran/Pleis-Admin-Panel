@@ -11,27 +11,23 @@ import { useReferralsView } from './use-referrals-view';
 export const ReferralsViewV2: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
-  const [user, setUser] = useState('');
-  const [referrer, setReferrer] = useState('');
+  // The endpoint takes a single `keyword`, so the User and Referrer inputs
+  // share this one value.
+  const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<ReferralStatus | ''>('');
   const [sortBy, setSortBy] = useState<ReferralSortKey | ''>('');
   const [sortOrder, setSortOrder] = useState<ReferralSortOrder>('');
 
   const query: ReferralsQuery = useMemo(
-    () => ({ page, limit, user, referrer, status, sortBy, sortOrder }),
-    [page, limit, user, referrer, status, sortBy, sortOrder]
+    () => ({ page, limit, keyword, status, sortBy, sortOrder }),
+    [page, limit, keyword, status, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, settings, isLoading } = useReferralsView(query);
+  const { data, meta, stats, isLoading, isFetching } = useReferralsView(query);
 
   // Every filter and sort change invalidates the current offset.
-  const handleUserChange = (value: string) => {
-    setUser(value);
-    setPage(1);
-  };
-
-  const handleReferrerChange = (value: string) => {
-    setReferrer(value);
+  const handleKeywordChange = (value: string) => {
+    setKeyword(value);
     setPage(1);
   };
 
@@ -47,8 +43,7 @@ export const ReferralsViewV2: React.FC = () => {
   };
 
   const handleResetFilters = () => {
-    setUser('');
-    setReferrer('');
+    setKeyword('');
     setStatus('');
     setSortBy('');
     setSortOrder('');
@@ -57,20 +52,18 @@ export const ReferralsViewV2: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-2 pb-6">
-      <ReferralsStatsCards stats={stats} settings={settings} isLoading={isLoading} />
+      <ReferralsStatsCards stats={stats} isLoading={isLoading} />
 
       <ReferralsTable
         data={data}
         meta={meta}
-        loading={isLoading}
+        loading={isLoading || isFetching}
         onPageChange={setPage}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSortChange={handleSortChange}
-        user={user}
-        onUserChange={handleUserChange}
-        referrer={referrer}
-        onReferrerChange={handleReferrerChange}
+        keyword={keyword}
+        onKeywordChange={handleKeywordChange}
         status={status}
         onStatusChange={handleStatusChange}
         onResetFilters={handleResetFilters}

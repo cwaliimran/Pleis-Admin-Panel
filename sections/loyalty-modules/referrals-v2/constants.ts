@@ -1,34 +1,12 @@
 import { ReferralStatus } from './types';
 
+/** The chip itself comes from `CustomBadge` + `getStatusVariant`, as elsewhere. */
 export const REFERRAL_STATUS_LABELS: Record<ReferralStatus, string> = {
-  completed: 'Completed',
-  pending: 'Pending',
-  cancelled: 'Cancelled',
+  active: 'Active',
+  inactive: 'Inactive',
 };
 
-/**
- * Lifecycle order — also the order the filter lists them in, so sorting the
- * column ascending reads the same way as the dropdown.
- */
-export const REFERRAL_STATUS_ORDER: ReferralStatus[] = ['completed', 'pending', 'cancelled'];
-
-export const REFERRAL_STATUS_RANK: Record<ReferralStatus, number> = {
-  completed: 1,
-  pending: 2,
-  cancelled: 3,
-};
-
-/**
- * `getStatusVariant` only knows active/inactive/pending/…, so referral statuses
- * map to `CustomBadge` variants here instead.
- */
-export const REFERRAL_STATUS_VARIANT: Record<ReferralStatus, 'success' | 'warning' | 'error'> = {
-  completed: 'success',
-  pending: 'warning',
-  cancelled: 'error',
-};
-
-export const REFERRAL_STATUS_OPTIONS = REFERRAL_STATUS_ORDER.map((value) => ({
+export const REFERRAL_STATUS_OPTIONS = (Object.keys(REFERRAL_STATUS_LABELS) as ReferralStatus[]).map((value) => ({
   value,
   label: REFERRAL_STATUS_LABELS[value],
 }));

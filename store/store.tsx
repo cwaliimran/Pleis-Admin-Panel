@@ -81,6 +81,8 @@ import { userReservationsApi } from './Reducer/user-reservations-api';
 import { rewardsV2Api } from './Reducer/rewards-v2-api';
 import { challengesV2Api } from './Reducer/challenges-v2-api';
 import { streaksV2Api } from './Reducer/streaks-v2-api';
+import { referralsV2Api } from './Reducer/referrals-v2-api';
+import { promotionsV2Api } from './Reducer/promotions-v2-api';
 
 export const resetStore = createAction('RESET_STORE');
 
@@ -161,6 +163,8 @@ const appReducer = combineReducers({
   [rewardsV2Api.reducerPath]: rewardsV2Api.reducer,
   [challengesV2Api.reducerPath]: challengesV2Api.reducer,
   [streaksV2Api.reducerPath]: streaksV2Api.reducer,
+  [referralsV2Api.reducerPath]: referralsV2Api.reducer,
+  [promotionsV2Api.reducerPath]: promotionsV2Api.reducer,
 });
 
 const rootReducer = (state: any, action: any) => {
@@ -249,6 +253,8 @@ export const store = configureStore({
       rewardsV2Api.middleware,
       challengesV2Api.middleware,
       streaksV2Api.middleware,
+      referralsV2Api.middleware,
+      promotionsV2Api.middleware,
     ),
 });
 

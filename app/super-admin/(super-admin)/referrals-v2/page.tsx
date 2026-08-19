@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import ReferralsViewV2 from '@/sections/loyalty-modules/referrals-v2/referrals-view';
 import { Metadata } from 'next';
 
@@ -16,7 +17,9 @@ const Page = () => {
         ]}
       />
 
-      <ReferralsViewV2 />
+      <CompanyGuard>
+        <ReferralsViewV2 />
+      </CompanyGuard>
     </div>
   );
 };

@@ -1,87 +1,92 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { DEFAULT_PAGE_LIMIT, REFERRAL_STATUS_RANK } from './constants';
-import { MOCK_REFERRALS, MOCK_REFERRAL_SETTINGS, MOCK_REFERRAL_STATS } from './mock-data';
-import { Referral, ReferralSettings, ReferralSortKey, ReferralStats, ReferralsMeta, ReferralsQuery } from './types';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import type { ApiReferral, ApiReferralStats } from '@/store/Reducer/referrals-v2-api';
+import { useGetReferralsV2Query } from '@/store/Reducer/referrals-v2-api';
+import { useMemo } from 'react';
+import { Referral, ReferralStats, ReferralsMeta, ReferralsQuery } from './types';
 
-const compareBy = (key: ReferralSortKey, a: Referral, b: Referral): number => {
-  switch (key) {
-    case 'user':
-      return a.user.localeCompare(b.user);
-    case 'referrer':
-      return a.referrer.localeCompare(b.referrer);
-    case 'status':
-      return REFERRAL_STATUS_RANK[a.status] - REFERRAL_STATUS_RANK[b.status];
-    case 'createdAt':
-    case 'expiryDate':
-      return new Date(a[key]).getTime() - new Date(b[key]).getTime();
-    default:
-      return a[key] - b[key];
-  }
+const EMPTY_STATS: ReferralStats = {
+  completed: 0,
+  pending: 0,
+  pointsGiven: 0,
+  topReferrer: null,
+};
+
+/** The invitee arrives as split name parts; the referrer arrives pre-joined. */
+const toFullName = (firstName?: string, lastName?: string): string => [firstName, lastName].filter(Boolean).join(' ').trim();
+
+const toReferral = (item: ApiReferral): Referral => ({
+  id: item._id,
+  user: toFullName(item.firstName, item.lastName) || '—',
+  referrer: item.referrerUserName || '—',
+  refLimit: item.referralLimit ?? 0,
+  refCount: item.loyaltyReferralsCount ?? 0,
+  userPoints: item.userReward ?? 0,
+  referrerPoints: item.referrerReward ?? 0,
+  createdAt: item.createdAt ?? '',
+  expiryDate: item.expiryDate ?? '',
+  status: item.status,
+});
+
+const toStats = (stats?: ApiReferralStats | null): ReferralStats => {
+  if (!stats) return EMPTY_STATS;
+
+  const top = stats.topReferrer;
+
+  return {
+    completed: stats.totalCompleted ?? 0,
+    pending: stats.totalPending ?? 0,
+    pointsGiven: stats.totalPointsGiven ?? 0,
+    topReferrer: top?.referrer?.name ? { username: top.referrer.name, referrals: top.count ?? 0 } : null,
+  };
 };
 
 interface UseReferralsViewResult {
   data: Referral[];
   meta: ReferralsMeta;
   stats: ReferralStats;
-  settings: ReferralSettings;
   isLoading: boolean;
+  isFetching: boolean;
 }
 
 /**
- * Mock-backed data layer for Referrals V2. Filtering, sorting and paging happen
- * here so the view and table stay presentational — exactly where the server
- * will take over.
+ * Data layer for Referrals V2. Filtering and paging are done by the server;
+ * this only maps the wire format onto the view model.
  *
  * Referrals are read-only: members generate them by sharing their code, so
  * there are no mutations in this module.
  */
 export const useReferralsView = (query: ReferralsQuery): UseReferralsViewResult => {
-  const [referrals] = useState<Referral[]>(MOCK_REFERRALS);
-  const [isLoading, setIsLoading] = useState(false);
+  // Admin picks the company in the header; the page sits behind `CompanyGuard`.
+  const { companyId } = useCompanySelectionState();
 
-  const { page, limit, user, referrer, status, sortBy, sortOrder } = query;
+  const { page, limit, keyword, status } = query;
 
-  // Stands in for the request round-trip so the loading states are exercised.
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 250);
-    return () => clearTimeout(timer);
-  }, [page, limit, user, referrer, status, sortBy, sortOrder]);
+  const { data, isLoading, isFetching } = useGetReferralsV2Query(
+    {
+      companyOrganizer: companyId as string,
+      page,
+      limit,
+      keyword: keyword.trim() || undefined,
+      status: status || undefined,
+    },
+    { skip: !companyId, refetchOnMountOrArgChange: true }
+  );
 
-  const filtered = useMemo(() => {
-    const userKeyword = user.trim().toLowerCase();
-    const referrerKeyword = referrer.trim().toLowerCase();
+  const referrals = useMemo(() => (data?.data ?? []).map(toReferral), [data]);
 
-    return referrals.filter((referral) => {
-      if (userKeyword && !referral.user.toLowerCase().includes(userKeyword)) return false;
-      if (referrerKeyword && !referral.referrer.toLowerCase().includes(referrerKeyword)) return false;
-      if (status && referral.status !== status) return false;
-      return true;
-    });
-  }, [referrals, user, referrer, status]);
+  const meta = useMemo<ReferralsMeta>(
+    () => ({
+      currentPage: data?.meta?.currentPage ?? page,
+      totalPages: data?.meta?.totalPages ?? 1,
+      totalRecords: data?.meta?.totalRecords ?? 0,
+      limit: data?.meta?.limit ?? limit,
+    }),
+    [data, page, limit]
+  );
 
-  const sorted = useMemo(() => {
-    if (!sortBy || !sortOrder) return filtered;
+  const stats = useMemo(() => toStats(data?.meta?.stats), [data]);
 
-    const direction = sortOrder === 'asc' ? 1 : -1;
-    return [...filtered].sort((a, b) => compareBy(sortBy, a, b) * direction);
-  }, [filtered, sortBy, sortOrder]);
-
-  const totalRecords = sorted.length;
-  const pageSize = limit || DEFAULT_PAGE_LIMIT;
-  const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-  // Guards against landing past the end after a filter narrows the result set.
-  const currentPage = Math.min(page, totalPages);
-
-  const data = useMemo(() => sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize), [sorted, currentPage, pageSize]);
-
-  return {
-    data,
-    meta: { currentPage, totalPages, totalRecords, limit: pageSize },
-    stats: MOCK_REFERRAL_STATS,
-    settings: MOCK_REFERRAL_SETTINGS,
-    isLoading,
-  };
+  return { data: referrals, meta, stats, isLoading, isFetching };
 };

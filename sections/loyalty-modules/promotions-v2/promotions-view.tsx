@@ -2,6 +2,7 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeletePromotionV2Mutation } from '@/store/Reducer/promotions-v2-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
@@ -10,9 +11,8 @@ import { DEFAULT_PAGE_LIMIT } from './constants';
 import PromotionDetailModal from './modals/promotion-detail-modal';
 import PromotionFormModal from './modals/promotion-form-modal';
 import PromotionsTable from './promotions-table';
-import { Promotion, PromotionPayload, PromotionSortKey, PromotionSortOrder, PromotionType, PromotionsQuery } from './types';
+import { Promotion, PromotionSortKey, PromotionSortOrder, PromotionType, PromotionsQuery } from './types';
 import { usePromotionsView } from './use-promotions-view';
-
 
 export const PromotionsViewV2: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -37,9 +37,10 @@ export const PromotionsViewV2: React.FC = () => {
     [page, limit, search, type, startDateFrom, endDateTo, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, isLoading, isMutating, createPromotion, updatePromotion, deletePromotion } = usePromotionsView(query);
+  const { data, meta, stats, isLoading, isFetching } = usePromotionsView(query);
 
-  // Every filter and sort change invalidates the current offset.
+  const [deletePromotion, { isLoading: isDeleting }] = useDeletePromotionV2Mutation();
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
@@ -91,25 +92,12 @@ export const PromotionsViewV2: React.FC = () => {
     formModal.onTrue();
   };
 
-  const handleSubmit = async (payload: PromotionPayload) => {
-    if (editing) {
-      await updatePromotion(editing.id, payload);
-      showSuccess('Promotion updated');
-      return;
-    }
-
-    await createPromotion(payload);
-    showSuccess('Promotion created');
-    // A new promotion lands at the top of the unsorted list.
-    setPage(1);
-  };
-
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
 
     try {
-      await deletePromotion(pendingDelete.id);
-      showSuccess('Promotion deleted');
+      const response = await deletePromotion({ id: pendingDelete.id }).unwrap();
+      showSuccess(response?.message || 'Promotion deleted');
       deleteConfirm.onFalse();
       setPendingDelete(null);
     } catch (error) {
@@ -124,8 +112,8 @@ export const PromotionsViewV2: React.FC = () => {
       <PromotionsTable
         data={data}
         meta={meta}
-        loading={isLoading}
-        isMutating={isMutating}
+        loading={isLoading || isFetching}
+        isMutating={isDeleting}
         onCreate={handleCreate}
         onViewAnalytics={handleViewAnalytics}
         onEdit={handleEdit}
@@ -151,8 +139,7 @@ export const PromotionsViewV2: React.FC = () => {
       <PromotionFormModal
         open={formModal.value}
         promotion={editing}
-        isSubmitting={isMutating}
-        onSubmit={handleSubmit}
+        onCreated={() => setPage(1)}
         onClose={() => {
           formModal.onFalse();
           setEditing(null);
@@ -172,7 +159,7 @@ export const PromotionsViewV2: React.FC = () => {
         open={deleteConfirm.value}
         title="Delete Promotion"
         content={`Are you sure you want to delete "${pendingDelete?.title}"? This cannot be undone.`}
-        isLoading={isMutating}
+        isLoading={isDeleting}
         onClose={() => {
           deleteConfirm.onFalse();
           setPendingDelete(null);

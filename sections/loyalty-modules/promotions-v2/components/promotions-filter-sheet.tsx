@@ -13,7 +13,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { PROMOTION_TYPE_OPTIONS } from '../constants';
 import { PromotionType } from '../types';
 
-/** Radix `Select` cannot hold an empty string, so "everything" needs a token. */
 const ALL = 'all';
 
 interface DateFieldProps {
@@ -79,7 +78,6 @@ export const PromotionsFilterSheet: React.FC<PromotionsFilterSheetProps> = ({
 }) => {
   const [localSearch, setLocalSearch] = useState(search);
 
-  // Keep the input in step when the parent resets the filters.
   useEffect(() => {
     setLocalSearch(search);
   }, [search]);

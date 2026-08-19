@@ -358,6 +358,9 @@ export const API_ROUTES = {
   ORGANIZER_REFERRALS: `/organizer/loyalty/referral/user`,
   ADMIN_REFERRALS: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals/user' : '/admin/loyalty/referral/user'),
 
+  ADMIN_LOYALTY_REFERRALS_V2: `/admin/loyalty/referral/user`,
+  ORGANIZER_LOYALTY_REFERRALS_V2: `/organizer/loyalty/referral/user`,
+
   ADMIN_REFERRALS_SETTING: (isGlobal: boolean) => (isGlobal ? '/admin/global-loyalty/referrals' : '/admin/loyalty/referrals'),
 
   ADMIN_GLOBAL_REFERRAL_ANALYTICS: '/admin/global-loyalty/referral-analytics',
@@ -390,6 +393,11 @@ export const API_ROUTES = {
 
   ORGANIZER_LOYALTY_PROMOTION: `/organizer/loyalty/promotions`,
   ORGANIZER_LOYALTY_PROMOTION_BY_ID: (id: string, scope?: string) => `/organizer/loyalty/promotions/${id}?scope=${scope || ''}`,
+
+  ADMIN_LOYALTY_PROMOTIONS_V2: `/admin/loyalty/promotions`,
+  ADMIN_LOYALTY_PROMOTIONS_V2_BY_ID: (id: string) => `/admin/loyalty/promotions/${id}`,
+  ORGANIZER_LOYALTY_PROMOTIONS_V2: `/organizer/loyalty/promotions`,
+  ORGANIZER_LOYALTY_PROMOTIONS_V2_BY_ID: (id: string) => `/organizer/loyalty/promotions/${id}`,
 
   // ADMIN_LOYALTY_CHALLENGE: `/admin/loyalty/challenges`,
   // ADMIN_LOYALTY_CHALLENGE_BY_ID: (id: string) => `/admin/loyalty/challenges/${id}`,
