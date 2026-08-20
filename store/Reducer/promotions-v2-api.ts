@@ -24,6 +24,8 @@ export type ApiPromotionType = 'extraPointsForItem' | 'happyHour' | 'productSale
 export interface ApiPromotionMenuItem {
   _id: string;
   title: string;
+  /** The menu this item belongs to. Absent on older records. */
+  menu?: { _id: string; title: string };
 }
 
 export interface ApiPromotionActiveDaysObject {

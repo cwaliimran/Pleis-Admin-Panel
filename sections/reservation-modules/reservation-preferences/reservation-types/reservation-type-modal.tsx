@@ -44,6 +44,14 @@ const schema: Yup.ObjectSchema<ReservationTypePayload> = Yup.object().shape({
       'Select a condition type'
     )
     .required('Condition type is required'),
+  minimumSpend: Yup.number()
+    .transform((value, original) => (original === '' || original === null ? undefined : value))
+    .when('conditionType', {
+      is: 'minimumSpend',
+      then: (field) =>
+        field.typeError('Minimum spend must be a number').min(1, 'Minimum spend must be at least 1').required('Minimum spend is required'),
+      otherwise: (field) => field.notRequired(),
+    }),
   bonusPoints: numberField('Bonus points', 0),
   taxPercentage: Yup.mixed<TaxPercentage>()
     .oneOf(
@@ -72,6 +80,7 @@ const EMPTY_VALUES: ReservationTypePayload = {
   maxPartySize: EMPTY_NUMBER,
   maxCapacity: EMPTY_NUMBER,
   conditionType: 'free',
+  minimumSpend: EMPTY_NUMBER,
   bonusPoints: 0,
   taxPercentage: 25,
   requiresConfirmation: false,
@@ -109,13 +118,14 @@ export const ReservationTypeModal: React.FC<ReservationTypeModalProps> = ({
     mode: 'onChange',
   });
 
-  const { reset, control, watch, setValue, handleSubmit } = methods;
+  const { reset, control, watch, setValue, trigger, handleSubmit } = methods;
 
   /** Once max capacity is edited by hand, stop deriving it from quantity × party size. */
   const capacityOverriddenRef = useRef(false);
 
   const quantity = watch('quantity');
   const maxPartySize = watch('maxPartySize');
+  const conditionType = watch('conditionType');
   const notes = watch('importantInformation');
 
   // Seed on open so a reopened modal never shows the previous type's values.
@@ -132,6 +142,7 @@ export const ReservationTypeModal: React.FC<ReservationTypeModalProps> = ({
             maxPartySize: reservationType.maxPartySize,
             maxCapacity: reservationType.maxCapacity,
             conditionType: reservationType.conditionType,
+            minimumSpend: reservationType.minimumSpend ?? EMPTY_NUMBER,
             bonusPoints: reservationType.bonusPoints,
             taxPercentage: reservationType.taxPercentage,
             requiresConfirmation: reservationType.requiresConfirmation,
@@ -233,7 +244,13 @@ export const ReservationTypeModal: React.FC<ReservationTypeModalProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Condition type</FormLabel>
-                  <Select value={field.value || ''} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value || ''}
+                    onValueChange={(next) => {
+                      field.onChange(next);
+                      if (next !== 'minimumSpend') void trigger('minimumSpend');
+                    }}
+                  >
                     <FormControl>
                       <SelectTrigger className={SELECT_TRIGGER_CLASS}>
                         <SelectValue placeholder="Select condition type..." />
@@ -251,6 +268,13 @@ export const ReservationTypeModal: React.FC<ReservationTypeModalProps> = ({
                 </FormItem>
               )}
             />
+
+            {conditionType === 'minimumSpend' && (
+              <div>
+                <RHFTextField name="minimumSpend" type="number" min={1} step="0.01" label="Minimum spend *" placeholder="e.g. 500" />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Amount the guest must spend to keep this reservation.</p>
+              </div>
+            )}
 
             <RHFTextField name="bonusPoints" type="number" min={0} label="Bonus points" placeholder="0" />
 

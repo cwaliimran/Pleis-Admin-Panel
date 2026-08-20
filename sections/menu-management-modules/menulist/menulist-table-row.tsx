@@ -3,10 +3,11 @@
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import { fDate, formatStr } from '@/utils/format-time';
 import { CopyCheck, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
-import { getOrgLabel } from './menulist-utils';
+import { getOrgLabel, getVenueOptions } from './menulist-utils';
 import { MenuStatus, TableRowProps } from './types';
 
 const STATUS_BADGE_VARIANT: Record<MenuStatus, 'success' | 'error' | 'warning'> = {
@@ -15,20 +16,34 @@ const STATUS_BADGE_VARIANT: Record<MenuStatus, 'success' | 'error' | 'warning'> 
   draft: 'warning',
 };
 
+const VISIBLE_VENUES = 3;
+
+const VenueChip = ({ label, truncate = true }: { label: string; truncate?: boolean }) => (
+  <span
+    className={cn('bg-accent inline-block rounded-full px-2.5 py-1 text-xs font-medium', truncate && 'max-w-35 truncate')}
+    title={label}
+  >
+    {label}
+  </span>
+);
+
 const MenuItemTableRow: FC<TableRowProps> = ({ item, organizations, handleDelete, handleDuplicate, handleEdit }) => {
   const organizationLookup = new Map(organizations.map((org) => [org._id, org.name]));
   const organizationName = getOrgLabel(item.organization, organizationLookup);
+
+  const venues = getVenueOptions(item.venue);
+  const hiddenVenueCount = venues.length - VISIBLE_VENUES;
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left">{item?.title || '-'}</TableCell>
 
       <TableCell className="text-left capitalize">
-        {item.description && item.description.length > 30 ? (
+        {item.description && item.description.length > 20 ? (
           <Dialog>
             <DialogTrigger asChild>
               <span className="cursor-pointer capitalize hover:text-blue-600" title="Click to view full description">
-                {item?.description.slice(0, 30) + '...'}
+                {item?.description.slice(0, 20) + '...'}
               </span>
             </DialogTrigger>
             <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
@@ -46,6 +61,42 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, organizations, handleDelete
       </TableCell>
 
       <TableCell className="text-left capitalize">{organizationName}</TableCell>
+
+      <TableCell className="text-left">
+        {venues.length === 0 ? (
+          '-'
+        ) : (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {venues.slice(0, VISIBLE_VENUES).map((venue) => (
+              <VenueChip key={venue.value} label={venue.label} />
+            ))}
+
+            {hiddenVenueCount > 0 && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button
+                    type="button"
+                    title="Click to view all venues"
+                    className="cursor-pointer rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
+                  >
+                    +{hiddenVenueCount}
+                  </button>
+                </DialogTrigger>
+                <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Venues ({venues.length})</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex max-h-[50vh] flex-wrap gap-2 overflow-y-auto py-4">
+                    {venues.map((venue) => (
+                      <VenueChip key={venue.value} label={venue.label} truncate={false} />
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+        )}
+      </TableCell>
 
       <TableCell className="text-left">{fDate(item?.startDate, formatStr.split.date)}</TableCell>
 

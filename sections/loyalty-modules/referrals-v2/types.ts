@@ -8,19 +8,19 @@
 
 export type ReferralStatus = 'active' | 'inactive';
 
-/** Column keys the table can sort by. Not wired to the API yet. */
+/** Column keys the table can sort by. These are the API's own field names, sent as `sortBy`. */
 export type ReferralSortKey =
   | 'user'
-  | 'referrer'
-  | 'refLimit'
-  | 'refCount'
-  | 'userPoints'
-  | 'referrerPoints'
+  | 'referrerUserName'
+  | 'referralLimit'
+  | 'loyaltyReferralsCount'
+  | 'userReward'
+  | 'referrerReward'
   | 'createdAt'
   | 'expiryDate'
   | 'status';
 
-/** Empty string means "no sort". */
+/** Empty string means "no sort" and is omitted from the request. */
 export type ReferralSortOrder = 'asc' | 'desc' | '';
 
 /**

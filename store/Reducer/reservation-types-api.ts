@@ -31,6 +31,8 @@ export interface ApiReservationType {
   maxCapacity?: number;
   maxPartySize?: number;
   conditionType?: ApiConditionType;
+  /** Amount the guest must spend. Only sent/returned for `minimumSpend` types. */
+  minimumSpend?: number;
   /** Backend spelling of "bonus points". */
   bonosPoints?: number;
   isVisibleToGuest?: boolean;
@@ -92,6 +94,8 @@ export interface ReservationTypeBody {
   maxCapacity: number;
   tax: number;
   conditionType: ApiConditionType;
+  /** Required when `conditionType` is `minimumSpend`; omitted entirely for `free`. */
+  minimumSpend?: number;
   bonosPoints: number;
   requireConfirmationToApprove: boolean;
   occasionRequired: boolean;

@@ -1,41 +1,41 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import FormProvider, { RHFAsyncCombobox, RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFToggleField from '@/components/rhf/rhf-toggle-field';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
+import type { ChallengeRewardWriteBody, ChallengeWriteBody } from '@/store/Reducer/challenges-v2-api';
+import { useCreateChallengeV2Mutation, useUpdateChallengeV2Mutation } from '@/store/Reducer/challenges-v2-api';
+import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
+import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
+import { useGetRewardsV2Query } from '@/store/Reducer/rewards-v2-api';
+import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
 import { getErrorMessage } from '@/utils/api';
-import { showError } from '@/utils/toast';
+import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import ChallengeCalculatorPanel from '../components/challenge-calculator-panel';
-import ChallengeItemsField from '../components/challenge-items-field';
+
 import {
   CHALLENGE_REWARD_TYPE_HINTS,
+  CHALLENGE_REWARD_TYPE_LABELS,
   CHALLENGE_REWARD_TYPE_OPTIONS,
   CHALLENGE_TASK_TYPE_HINT,
   CHALLENGE_TASK_TYPE_OPTIONS,
 } from '../constants';
-import { Challenge, ChallengePayload, ChallengeRewardType, ChallengeTaskType, MenuItemOption } from '../types';
+import { Challenge, ChallengeItemRef, ChallengeRewardType, ChallengeTaskType } from '../types';
+import { getSharedMenu } from '../utils';
 
-/**
- * Reference data for the dropdowns. The mock lists were removed with the rest
- * of the mock layer; these are filled from the real option endpoints when the
- * write side of the module is wired.
- */
-const MENUS: { id: string; name: string }[] = [];
-const MENU_ITEMS: MenuItemOption[] = [];
-const TIERS: { id: string; name: string }[] = [];
-const LINKED_REWARDS: { id: string; name: string }[] = [];
-
-/** Numbers are held as strings so empty inputs stay empty rather than becoming 0. */
 interface ChallengeFormValues {
   image: unknown;
   name: string;
@@ -56,10 +56,30 @@ interface ChallengeFormValues {
   isActive: boolean;
 }
 
-const ANY_TIER = 'any';
+const WRITABLE_REWARD_TYPES: ChallengeRewardType[] = ['points', 'menuItem', 'linkedReward'];
+
+const useLinkedRewardOptionsQuery = (
+  args: { page: number; limit: number; search: string } & Record<string, string | undefined>,
+  options?: { skip?: boolean }
+) => {
+  const { data, isLoading, isFetching } = useGetRewardsV2Query(
+    {
+      companyOrganizer: args.companyOrganizer as string,
+      page: args.page + 1,
+      limit: args.limit,
+      keyword: args.search || undefined,
+      status: 'active',
+    },
+    options
+  );
+
+  const shaped = useMemo(() => (data ? { data: data.data, meta: data.meta ?? undefined } : undefined), [data]);
+
+  return { data: shaped, isLoading, isFetching };
+};
 
 const schema = yup.object({
-  image: yup.mixed().nullable(),
+  image: yup.mixed().required('Challenge image is required'),
   name: yup.string().required('Challenge name is required'),
   description: yup.string(),
   taskType: yup.string().required('Task type is required'),
@@ -67,11 +87,7 @@ const schema = yup.object({
     .string()
     .required('Task value is required')
     .test('is-positive', 'Task value must be greater than 0', (value) => Number(value) > 0),
-  qualifyingMenuId: yup.string().when('taskType', {
-    is: 'buyMenuItem',
-    then: (current) => current.required('Menu is required'),
-    otherwise: (current) => current,
-  }),
+  qualifyingMenuId: yup.string(),
   qualifyingItemIds: yup
     .array()
     .of(yup.string().required())
@@ -84,8 +100,12 @@ const schema = yup.object({
     if (!value) return true;
     return Number(value) > 0;
   }),
-  endDate: yup.mixed<Date | string>().required('End date is required'),
-  tierLimit: yup.string(),
+  // `mixed().required()` treats '' as present, so the emptiness needs its own test.
+  endDate: yup
+    .mixed<Date | string>()
+    .required('End date is required')
+    .test('is-set', 'End date is required', (value) => Boolean(value)),
+  tierLimit: yup.string().required('Tier limit is required'),
   rewardType: yup.string().required('Reward type is required'),
   pointReward: yup.string().when('rewardType', {
     is: 'points',
@@ -93,11 +113,7 @@ const schema = yup.object({
       current.required('Point reward is required').test('is-positive', 'Point reward must be greater than 0', (value) => Number(value) > 0),
     otherwise: (current) => current,
   }),
-  rewardMenuId: yup.string().when('rewardType', {
-    is: 'menuItem',
-    then: (current) => current.required('Menu is required'),
-    otherwise: (current) => current,
-  }),
+  rewardMenuId: yup.string(),
   rewardItemIds: yup
     .array()
     .of(yup.string().required())
@@ -107,7 +123,7 @@ const schema = yup.object({
       otherwise: (current) => current,
     }),
   linkedRewardId: yup.string().when('rewardType', {
-    is: 'customReward',
+    is: 'linkedReward',
     then: (current) => current.required('Reward is required'),
     otherwise: (current) => current,
   }),
@@ -125,7 +141,7 @@ const defaultValues: ChallengeFormValues = {
   qualifyingItemIds: [],
   claimLimit: '',
   endDate: '',
-  tierLimit: ANY_TIER,
+  tierLimit: '',
   rewardType: 'points',
   pointReward: '',
   rewardMenuId: '',
@@ -135,17 +151,39 @@ const defaultValues: ChallengeFormValues = {
   isActive: true,
 };
 
+/** The API stores an Azure blob key; a saved record hands back the full URL. */
+const toBlobKey = (url: string): string => (url.includes('/') ? (url.split('/').pop() ?? '') : url);
+
+const toDateOnly = (value: Date | string): string => {
+  if (value instanceof Date) {
+    // Local parts, so a late-evening pick does not roll back a day in UTC.
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${value.getFullYear()}-${month}-${day}`;
+  }
+  return String(value).slice(0, 10);
+};
+
+const toInitialSelected = (refs: ChallengeItemRef[]) => (refs.length > 0 ? refs.map((ref) => ({ value: ref.id, label: ref.name })) : undefined);
+
 interface ChallengeFormModalProps {
   open: boolean;
   /** `null` opens the form in create mode. */
   challenge: Challenge | null;
-  isSubmitting?: boolean;
-  onSubmit: (payload: ChallengePayload) => Promise<void>;
   onClose: () => void;
 }
 
-export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, challenge, isSubmitting = false, onSubmit, onClose }) => {
+export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, challenge, onClose }) => {
   const isEdit = Boolean(challenge);
+
+  const { companyId } = useCompanySelectionState();
+  const { uploadImage, uploading } = useImageUpload();
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+
+  const [createChallenge, { isLoading: isCreating }] = useCreateChallengeV2Mutation();
+  const [updateChallenge, { isLoading: isUpdating }] = useUpdateChallengeV2Mutation();
+
+  const isSubmitting = isCreating || isUpdating || uploading || isCleaningUp;
 
   const methods = useForm<ChallengeFormValues>({
     resolver: yupResolver(schema) as never,
@@ -159,6 +197,10 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
   const qualifyingMenuId = watch('qualifyingMenuId');
   const rewardMenuId = watch('rewardMenuId');
   const isActive = watch('isActive');
+
+  // Only seeded when every chosen item sits in one menu — see `getSharedMenu`.
+  const qualifyingMenu = useMemo(() => getSharedMenu(challenge?.taskMenuItems ?? []), [challenge]);
+  const rewardMenu = useMemo(() => getSharedMenu(challenge?.rewardMenuItems ?? []), [challenge]);
 
   // Reload whenever the modal opens so a stale draft never leaks into the next use.
   useEffect(() => {
@@ -175,20 +217,20 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
       description: challenge.description,
       taskType: challenge.taskType,
       taskValue: String(challenge.taskValue),
-      qualifyingMenuId: '',
-      qualifyingItemIds: [],
+      qualifyingMenuId: qualifyingMenu?.id ?? '',
+      qualifyingItemIds: challenge.taskMenuItems.map((item) => item.id),
       claimLimit: challenge.claimLimit === null ? '' : String(challenge.claimLimit),
       endDate: challenge.endDate ? new Date(challenge.endDate) : '',
-      tierLimit: challenge.tierId || ANY_TIER,
+      tierLimit: challenge.tierId,
       rewardType: challenge.rewardType,
       pointReward: challenge.pointReward ? String(challenge.pointReward) : '',
-      rewardMenuId: '',
-      rewardItemIds: [],
-      linkedRewardId: '',
+      rewardMenuId: rewardMenu?.id ?? '',
+      rewardItemIds: challenge.rewardMenuItems.map((item) => item.id),
+      linkedRewardId: challenge.linkedRewardId,
       repeatable: challenge.repeatable,
       isActive: challenge.status === 'active',
     });
-  }, [open, challenge, reset]);
+  }, [open, challenge, reset, qualifyingMenu, rewardMenu]);
 
   // Leaving a branch makes its selections meaningless — drop them so they
   // cannot be submitted or trip validation from behind a hidden field.
@@ -205,55 +247,116 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
       setValue('rewardMenuId', '');
       setValue('rewardItemIds', []);
     }
-    if (rewardType !== 'customReward') setValue('linkedRewardId', '');
+    if (rewardType !== 'linkedReward') setValue('linkedRewardId', '');
   }, [rewardType, setValue]);
 
-  const menuOptions = useMemo(() => MENUS.map((menu) => ({ value: menu.id, label: menu.name })), []);
-  const tierOptions = useMemo(() => [{ value: ANY_TIER, label: 'Any tier' }, ...TIERS.map((tier) => ({ value: tier.id, label: tier.name }))], []);
-  const linkedRewardOptions = useMemo(() => LINKED_REWARDS.map((reward) => ({ value: reward.id, label: reward.name })), []);
+  // Editing a legacy record must still show its own type rather than a blank select.
+  const rewardTypeOptions = useMemo(() => {
+    if (!challenge || WRITABLE_REWARD_TYPES.includes(challenge.rewardType)) return CHALLENGE_REWARD_TYPE_OPTIONS;
 
-  // Narrow to the chosen menu; before one is picked every item is fair game.
-  const qualifyingItemOptions = useMemo(
-    () => (qualifyingMenuId ? MENU_ITEMS.filter((item) => item.menuId === qualifyingMenuId) : MENU_ITEMS),
-    [qualifyingMenuId]
-  );
-
-  const rewardItemOptions = useMemo(
-    () => (rewardMenuId ? MENU_ITEMS.filter((item) => item.menuId === rewardMenuId) : MENU_ITEMS),
-    [rewardMenuId]
-  );
+    return [...CHALLENGE_REWARD_TYPE_OPTIONS, { value: challenge.rewardType, label: CHALLENGE_REWARD_TYPE_LABELS[challenge.rewardType] }];
+  }, [challenge]);
 
   const rewardHint = CHALLENGE_REWARD_TYPE_HINTS[rewardType];
 
-  const submit = async (values: ChallengeFormValues) => {
+  const companyArgs = useMemo(() => ({ companyOrganizer: companyId || undefined }), [companyId]);
+
+  const qualifyingItemArgs = useMemo(
+    () => ({ companyOrganizer: companyId || undefined, menu: qualifyingMenuId || undefined }),
+    [companyId, qualifyingMenuId]
+  );
+
+  const rewardItemArgs = useMemo(
+    () => ({ companyOrganizer: companyId || undefined, menu: rewardMenuId || undefined }),
+    [companyId, rewardMenuId]
+  );
+
+  /** Resolves an upload field to the blob key the API stores. */
+  const resolveImageKey = async (value: unknown, uploaded: string[]): Promise<string> => {
+    if (typeof value === 'string' && value) return toBlobKey(value);
+
+    const file = value instanceof FileList ? value[0] : value instanceof File ? value : null;
+    if (!file) return '';
+
+    const key = await uploadImage(file);
+    if (!key) throw new Error('Image upload failed');
+
+    uploaded.push(key);
+    return key;
+  };
+
+  const buildReward = (values: ChallengeFormValues): ChallengeRewardWriteBody => {
+    if (values.rewardType === 'points') return { rewardType: 'points', rewardValue: Number(values.pointReward) };
+    if (values.rewardType === 'menuItem') return { rewardType: 'menuItem', rewardMenuItem: values.rewardItemIds };
+    return { rewardType: 'linkedReward', linkedReward: values.linkedRewardId };
+  };
+
+  /**
+   * The dialog scrolls, so an inline error on a field above the fold is
+   * invisible from the buttons — a submit would appear to do nothing. Surface
+   * the first failure as a toast as well.
+   */
+  const reportInvalid = (errors: FieldErrors<ChallengeFormValues>) => {
+    const firstMessage = Object.values(errors).find((entry) => entry?.message)?.message;
+    showError(firstMessage ? String(firstMessage) : 'Please complete the highlighted fields.');
+  };
+
+  const submit = handleSubmit(async (values) => {
+    if (!companyId) {
+      showError('Please select a company first.');
+      return;
+    }
+
+    if (!WRITABLE_REWARD_TYPES.includes(values.rewardType)) {
+      showError(`${CHALLENGE_REWARD_TYPE_LABELS[values.rewardType]} challenges cannot be saved here — choose another reward type.`);
+      return;
+    }
+
+    // Tracked so a failed save does not leave orphaned blobs behind.
+    const uploaded: string[] = [];
+
     try {
-      const payload: ChallengePayload = {
-        name: values.name.trim(),
-        image: typeof values.image === 'string' ? values.image : '',
+      const image = await resolveImageKey(values.image, uploaded);
+
+      const body: ChallengeWriteBody = {
+        companyOrganizer: companyId,
+        image,
+        title: values.name.trim(),
         description: values.description?.trim() || '',
         taskType: values.taskType,
-        rewardType: values.rewardType,
-        status: values.isActive ? 'active' : 'inactive',
         taskValue: Number(values.taskValue),
-        qualifyingMenuId: values.taskType === 'buyMenuItem' ? values.qualifyingMenuId : undefined,
-        qualifyingItemIds: values.taskType === 'buyMenuItem' ? values.qualifyingItemIds : [],
-        pointReward: values.rewardType === 'points' ? Number(values.pointReward) : 0,
-        rewardMenuId: values.rewardType === 'menuItem' ? values.rewardMenuId : undefined,
-        rewardItemIds: values.rewardType === 'menuItem' ? values.rewardItemIds : [],
-        linkedRewardId: values.rewardType === 'customReward' ? values.linkedRewardId : undefined,
-        repeatable: values.repeatable,
-        claimLimit: values.claimLimit === '' ? null : Number(values.claimLimit),
-        endDate: values.endDate instanceof Date ? values.endDate.toISOString().slice(0, 10) : String(values.endDate),
-        tierLimit: values.tierLimit === ANY_TIER ? '' : values.tierLimit,
+        endDate: toDateOnly(values.endDate),
+        tierLimit: values.tierLimit,
+        repeatComplition: values.repeatable ? 'true' : 'false',
+        status: values.isActive ? 'active' : 'inactive',
+        reward: buildReward(values),
       };
 
-      await onSubmit(payload);
+      if (values.claimLimit !== '') body.claimLimit = Number(values.claimLimit);
+
+      if (values.taskType === 'buyMenuItem') body.taskMenuItem = values.qualifyingItemIds;
+
+      const response =
+        challenge && isEdit ? await updateChallenge({ id: challenge.id, ...body }).unwrap() : await createChallenge(body).unwrap();
+
+      showSuccess(response?.message || (isEdit ? 'Challenge updated' : 'Challenge created'));
       reset(defaultValues);
       onClose();
     } catch (error) {
+      if (uploaded.length > 0) {
+        setIsCleaningUp(true);
+        try {
+          await Promise.all(uploaded.map((key) => deleteFileFromAzure(key)));
+        } catch {
+          // The save already failed; a stranded blob is not worth a second error.
+        } finally {
+          setIsCleaningUp(false);
+        }
+      }
+
       showError(getErrorMessage(error));
     }
-  };
+  }, reportInvalid);
 
   const handleClose = () => {
     reset(defaultValues);
@@ -262,12 +365,12 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-160!">
+      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-180!">
         <DialogHeader>
           <DialogTitle className="text-center text-lg font-semibold">{isEdit ? 'Edit Challenge' : 'Create Challenge'}</DialogTitle>
         </DialogHeader>
 
-        <FormProvider methods={methods} onSubmit={handleSubmit(submit)}>
+        <FormProvider methods={methods} onSubmit={submit}>
           <div className="flex flex-col gap-4">
             <RHFUploadAvatar name="image" label="Challenge Image" initialImage={challenge?.image || null} />
 
@@ -276,11 +379,14 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
             <RHFTextField name="description" label="Description (optional)" placeholder="Enter Challenge Description" multiline rows={3} />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* The task defines what progress has already been recorded against
+                  the challenge, so it is fixed once the challenge exists. */}
               <RHFSelectField
                 name="taskType"
                 label="Task Type"
                 placeholder="Select task type"
                 className="w-full"
+                disabled={isEdit}
                 options={CHALLENGE_TASK_TYPE_OPTIONS}
               />
 
@@ -296,15 +402,36 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                   </p>
                 </div>
 
-                {/* Full width and stacked — the selected chips wrap freely instead
-                    of stretching a half-width column out of line. */}
-                <RHFCustomDropdown name="qualifyingMenuId" label="Select Menu" placeholder="Select menu" options={menuOptions} showNone={false} />
+                {/* Stacked, not side by side — the selected chips wrap freely
+                    instead of stretching a half-width column out of line. */}
+                <RHFAsyncCombobox
+                  name="qualifyingMenuId"
+                  label="Select Menu (optional)"
+                  placeholder="Select menu"
+                  searchPlaceholder="Search menus..."
+                  selectedLabel={qualifyingMenu?.name || undefined}
+                  useOptionsQuery={useGetMenuListQuery}
+                  queryArgs={companyArgs}
+                  skip={!companyId}
+                  getOptionValue={(menu) => menu._id}
+                  getOptionLabel={(menu) => menu.title}
+                  onValueChange={(value) => {
+                    if (value !== qualifyingMenuId) setValue('qualifyingItemIds', []);
+                  }}
+                />
 
-                <ChallengeItemsField
+                <RHFAsyncCombobox
                   name="qualifyingItemIds"
                   label="Add Qualifying Items"
-                  placeholder="Choose item to add..."
-                  options={qualifyingItemOptions}
+                  placeholder="Choose items to add..."
+                  searchPlaceholder="Search menu items..."
+                  multiple
+                  initialSelected={toInitialSelected(challenge?.taskMenuItems ?? [])}
+                  useOptionsQuery={useGetMenuItemsQuery}
+                  queryArgs={qualifyingItemArgs}
+                  skip={!companyId}
+                  getOptionValue={(item) => item._id}
+                  getOptionLabel={(item) => item.title}
                 />
               </>
             )}
@@ -313,10 +440,25 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
               <RHFTextField name="claimLimit" label="Claim Limit (optional)" placeholder="Max claims across all users" type="number" min="1" />
 
               {/* Editing an already-ended challenge must not be blocked by the "future dates only" rule. */}
-              <RHFDate name="endDate" label="End Date" placeholder="Select end date" minDate={isEdit ? new Date(0) : new Date()} />
+              <RHFDate
+                name="endDate"
+                label="End Date"
+                placeholder="Select end date"
+                displayFormat="dd/MM/yyyy"
+                minDate={isEdit ? new Date(0) : new Date()}
+              />
             </div>
 
-            <RHFCustomDropdown name="tierLimit" label="Tier Limit" placeholder="Select Tier Limit" options={tierOptions} showNone={false} />
+            <RHFAsyncCombobox
+              name="tierLimit"
+              label="Tier Limit"
+              placeholder="Minimum tier required"
+              searchPlaceholder="Search tiers..."
+              selectedLabel={challenge?.tierName || undefined}
+              useOptionsQuery={useGetTiersQuery}
+              getOptionValue={(tier) => tier._id}
+              getOptionLabel={(tier) => tier.title}
+            />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <RHFSelectField
@@ -324,7 +466,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                 label="Reward Type"
                 placeholder="Select reward type"
                 className="w-full"
-                options={CHALLENGE_REWARD_TYPE_OPTIONS}
+                options={rewardTypeOptions}
               />
 
               {rewardType === 'points' && <RHFTextField name="pointReward" label="Point Reward" placeholder="Enter points" type="number" min="1" />}
@@ -346,24 +488,50 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
 
             {rewardType === 'menuItem' && (
               <>
-                <RHFCustomDropdown name="rewardMenuId" label="Select Menu" placeholder="Select menu" options={menuOptions} showNone={false} />
+                <RHFAsyncCombobox
+                  name="rewardMenuId"
+                  label="Select Menu (optional)"
+                  placeholder="Select menu"
+                  searchPlaceholder="Search menus..."
+                  selectedLabel={rewardMenu?.name || undefined}
+                  useOptionsQuery={useGetMenuListQuery}
+                  queryArgs={companyArgs}
+                  skip={!companyId}
+                  getOptionValue={(menu) => menu._id}
+                  getOptionLabel={(menu) => menu.title}
+                  onValueChange={(value) => {
+                    if (value !== rewardMenuId) setValue('rewardItemIds', []);
+                  }}
+                />
 
-                <ChallengeItemsField
+                <RHFAsyncCombobox
                   name="rewardItemIds"
                   label="Add Reward Items"
-                  placeholder="Choose item to add..."
-                  options={rewardItemOptions}
+                  placeholder="Choose items to add..."
+                  searchPlaceholder="Search menu items..."
+                  multiple
+                  initialSelected={toInitialSelected(challenge?.rewardMenuItems ?? [])}
+                  useOptionsQuery={useGetMenuItemsQuery}
+                  queryArgs={rewardItemArgs}
+                  skip={!companyId}
+                  getOptionValue={(item) => item._id}
+                  getOptionLabel={(item) => item.title}
                 />
               </>
             )}
 
-            {rewardType === 'customReward' && (
-              <RHFCustomDropdown
+            {rewardType === 'linkedReward' && (
+              <RHFAsyncCombobox
                 name="linkedRewardId"
                 label="Select Reward"
                 placeholder="Choose existing reward..."
-                options={linkedRewardOptions}
-                showNone={false}
+                searchPlaceholder="Search rewards..."
+                selectedLabel={challenge?.linkedRewardName || undefined}
+                useOptionsQuery={useLinkedRewardOptionsQuery}
+                queryArgs={companyArgs}
+                skip={!companyId}
+                getOptionValue={(reward) => reward._id}
+                getOptionLabel={(reward) => reward.title}
               />
             )}
 
@@ -382,7 +550,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
               />
             </div>
 
-            <ChallengeCalculatorPanel />
+            <ChallengeCalculatorPanel companyOrganizer={companyId || undefined} />
           </div>
 
           <div className="mt-5 flex items-center justify-center gap-3">

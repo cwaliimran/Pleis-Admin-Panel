@@ -1,11 +1,10 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useAddMenuItemSubcategoryMutation, useUpdateMenuItemSubcategoryMutation } from '@/store/Reducer/menu-item-subcategories-api';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -16,7 +15,6 @@ import { SubcategoryFormValues, SubcategoryModalProps } from './types';
 
 const schema = Yup.object().shape({
   title: Yup.string().required('Name is required'),
-  organization: Yup.string().required('Organization is required'),
   order: Yup.string()
     .required('Order is required')
     .test('is-integer', 'Order must be a whole number', (value) => !!value && Number.isInteger(Number(value)) && Number(value) > 0),
@@ -30,7 +28,6 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
 
   const defaultValues: SubcategoryFormValues = {
     title: '',
-    organization: '',
     order: String(nextOrder),
     status: 'active',
   };
@@ -49,7 +46,6 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
     if (isEdit && selectedData) {
       reset({
         title: selectedData.title,
-        organization: selectedData.organization?._id || '',
         order: String(selectedData.order ?? nextOrder),
         status: selectedData.status,
       });
@@ -62,7 +58,6 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
   const handleSubmit = async (formData: SubcategoryFormValues) => {
     const payload: any = {
       title: formData.title,
-      organization: formData.organization,
       order: Number(formData.order),
       status: formData.status,
     };
@@ -105,27 +100,6 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, company
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-4">
                 <RHFTextField name="title" label="Name" placeholder="e.g. Beverages" />
-
-                {/*
-                  `getOrganization` is role-routed: super-admin hits /admin/organizations scoped by the
-                  selected company, organizers hit /organizer/organizations where `companyOrganizer` is
-                  stripped by `adminOnlyParams` and the token scopes the result.
-                */}
-                <RHFAsyncCombobox
-                  name="organization"
-                  label="Organization"
-                  placeholder="Select organization..."
-                  searchPlaceholder="Search organizations..."
-                  selectedLabel={selectedData?.organization?.basicInfo?.name}
-                  useOptionsQuery={useGetOrganizationQuery}
-                  queryArgs={{
-                    companyOrganizer: userType === 'super-admin' ? companyId || undefined : undefined,
-                    status: 'active',
-                  }}
-                  skip={userType === 'super-admin' && !companyId}
-                  getOptionValue={(organization) => organization._id}
-                  getOptionLabel={(organization) => organization?.basicInfo?.name || 'Unknown Organization'}
-                />
 
                 <RHFTextField name="order" label="Order" type="number" step="1" min="1" />
 

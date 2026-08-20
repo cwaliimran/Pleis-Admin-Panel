@@ -61,7 +61,7 @@ export const useReferralsView = (query: ReferralsQuery): UseReferralsViewResult 
   // Admin picks the company in the header; the page sits behind `CompanyGuard`.
   const { companyId } = useCompanySelectionState();
 
-  const { page, limit, keyword, status } = query;
+  const { page, limit, keyword, status, sortBy, sortOrder } = query;
 
   const { data, isLoading, isFetching } = useGetReferralsV2Query(
     {
@@ -70,6 +70,8 @@ export const useReferralsView = (query: ReferralsQuery): UseReferralsViewResult 
       limit,
       keyword: keyword.trim() || undefined,
       status: status || undefined,
+      sortBy: sortBy || undefined,
+      sortOrder: sortOrder || undefined,
     },
     { skip: !companyId, refetchOnMountOrArgChange: true }
   );

@@ -24,6 +24,7 @@ export const mapApiReservationType = (type: ApiReservationType): ReservationType
   maxPartySize: type.maxPartySize ?? 0,
   maxCapacity: type.maxCapacity ?? 0,
   conditionType: type.conditionType ?? 'free',
+  minimumSpend: type.minimumSpend,
   bonusPoints: type.bonosPoints ?? 0,
   // Cast rather than clamped: a value outside the dropdown's options is kept
   // as-is and simply fails the modal's `oneOf` check until the user picks one.
@@ -59,6 +60,7 @@ export const toReservationTypeBody = (payload: ReservationTypePayload): Reservat
   maxCapacity: Number(payload.maxCapacity),
   tax: Number(payload.taxPercentage),
   conditionType: payload.conditionType,
+  ...(payload.conditionType === 'minimumSpend' ? { minimumSpend: Number(payload.minimumSpend) } : {}),
   bonosPoints: Number(payload.bonusPoints),
   requireConfirmationToApprove: payload.requiresConfirmation,
   occasionRequired: payload.asksForOccasion,

@@ -19,7 +19,6 @@ import { useReservationTypes } from './use-reservation-types';
 const FILTER_TRIGGER_CLASS = 'h-10 w-full cursor-pointer bg-white shadow-none sm:w-auto sm:min-w-[180px] dark:bg-[#1a1a1a]';
 
 interface ReservationTypesSectionProps {
-  /** The section loads and writes its own data; this is all it needs from the page. */
   organizationId?: string;
 }
 

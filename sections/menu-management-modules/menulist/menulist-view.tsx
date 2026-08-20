@@ -36,6 +36,7 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
+  const [organization, setOrganization] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
@@ -55,6 +56,7 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
       limit,
       search,
       status: !status || status === 'all' ? undefined : status,
+      organizations: !organization || organization === 'all' ? undefined : organization,
       date: date ? formatDate(date) : undefined,
       companyOrganizer: scopedCompanyId,
       sortBy,
@@ -174,6 +176,11 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
           setStatus(val);
           setPage(1);
         }}
+        organization={organization}
+        onOrganizationChange={(val) => {
+          setOrganization(val);
+          setPage(1);
+        }}
         date={date}
         onDateChange={(val) => {
           setDate(val);
@@ -184,6 +191,7 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
         onSortChange={handleSortChange}
         onResetFilters={() => {
           setStatus('');
+          setOrganization('');
           setDate(undefined);
           setSearch('');
           setSortBy('');

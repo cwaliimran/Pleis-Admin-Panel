@@ -1,10 +1,10 @@
 'use client';
 
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import type { ApiChallenge, ApiChallengeStats } from '@/store/Reducer/challenges-v2-api';
+import type { ApiChallenge, ApiChallengeRef, ApiChallengeStats } from '@/store/Reducer/challenges-v2-api';
 import { useGetChallengesV2Query } from '@/store/Reducer/challenges-v2-api';
 import { useMemo } from 'react';
-import { Challenge, ChallengeStats, ChallengesMeta, ChallengesQuery } from './types';
+import { Challenge, ChallengeItemRef, ChallengeStats, ChallengesMeta, ChallengesQuery } from './types';
 
 const EMPTY_STATS: ChallengeStats = {
   totalViews: 0,
@@ -14,9 +14,41 @@ const EMPTY_STATS: ChallengeStats = {
   mostCompleted: null,
 };
 
+/**
+ * Reference fields arrive either populated or as a bare id, and singly or as a
+ * list. Everything is normalised to a list, with the id standing in for a name
+ * that was never populated.
+ */
+const toItemRefs = (value?: ApiChallengeRef[] | ApiChallengeRef | null): ChallengeItemRef[] => {
+  if (!value) return [];
+
+  const list = Array.isArray(value) ? value : [value];
+
+  return list.reduce<ChallengeItemRef[]>((refs, entry) => {
+    if (typeof entry === 'string') {
+      if (entry) refs.push({ id: entry, name: entry, menuId: '', menuName: '' });
+      return refs;
+    }
+
+    if (!entry?._id) return refs;
+
+    const menu = entry.menu;
+
+    refs.push({
+      id: entry._id,
+      name: entry.title || entry._id,
+      menuId: typeof menu === 'string' ? menu : (menu?._id ?? ''),
+      menuName: typeof menu === 'string' ? '' : (menu?.title ?? ''),
+    });
+
+    return refs;
+  }, []);
+};
+
 const toChallenge = (item: ApiChallenge): Challenge => {
   const reward = item.reward;
   const ticket = reward?.specialTicket;
+  const [linkedReward] = toItemRefs(reward?.linkedReward);
 
   return {
     id: item._id,
@@ -29,11 +61,13 @@ const toChallenge = (item: ApiChallenge): Challenge => {
 
     taskValue: item.taskValue ?? 0,
 
-    taskMenuItemId: item.taskMenuItem?._id,
-    taskMenuItemName: item.taskMenuItem?.title,
-    taskMenuId: item.taskMenuItem?.menu,
+    taskMenuItems: toItemRefs(item.taskMenuItem),
 
     pointReward: reward?.rewardValue ?? 0,
+    rewardMenuItems: toItemRefs(reward?.rewardMenuItem),
+    linkedRewardId: linkedReward?.id ?? '',
+    // The id doubles as the name when unpopulated, which is no use as a label.
+    linkedRewardName: linkedReward && linkedReward.name !== linkedReward.id ? linkedReward.name : '',
     customRewardTitle: reward?.customReward?.title,
     customRewardDescription: reward?.customReward?.description,
 
@@ -51,8 +85,7 @@ const toChallenge = (item: ApiChallenge): Challenge => {
         }
       : undefined,
 
-    // Write-only on the API; the list never echoes it back.
-    repeatable: false,
+    repeatable: item.repeatComplition ?? false,
     claimLimit: item.claimLimit ?? null,
     endDate: item.endDate ?? '',
     tierId: item.tierLimit?._id ?? '',

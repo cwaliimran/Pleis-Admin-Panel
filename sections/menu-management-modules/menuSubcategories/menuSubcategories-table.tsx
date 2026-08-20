@@ -20,7 +20,6 @@ import { SamplePageProps } from './types';
 const HEAD_LABEL = [
   { id: 'drag', label: '', align: 'left' },
   { id: 'title', label: 'Name', align: 'left' },
-  { id: 'organization', label: 'Organization', align: 'left' },
   { id: 'createdAt', label: 'Created At', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },

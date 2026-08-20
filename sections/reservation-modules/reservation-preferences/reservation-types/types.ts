@@ -33,6 +33,8 @@ export interface ReservationType {
   /** Total seats. Defaults to quantity × maxPartySize but can be overridden. */
   maxCapacity: number;
   conditionType: ConditionType;
+  /** Only meaningful when `conditionType` is `minimumSpend`. */
+  minimumSpend?: number;
   /** `bonosPoints` on the wire — the backend's spelling. */
   bonusPoints: number;
   /** `tax` on the wire. */

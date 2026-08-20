@@ -74,9 +74,17 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
 
           <InfoRow label="Goal (X)">{formatGoal(challenge)}</InfoRow>
 
-          {challenge.taskType === 'buyMenuItem' && <InfoRow label="Qualifying Item">{challenge.taskMenuItemName || '—'}</InfoRow>}
+          {challenge.taskType === 'buyMenuItem' && (
+            <InfoRow label="Qualifying Items">{challenge.taskMenuItems.map((item) => item.name).join(', ') || '—'}</InfoRow>
+          )}
 
           <InfoRow label="Reward Type">{rewardTypeValue}</InfoRow>
+
+          {challenge.rewardType === 'menuItem' && (
+            <InfoRow label="Reward Items">{challenge.rewardMenuItems.map((item) => item.name).join(', ') || '—'}</InfoRow>
+          )}
+
+          {challenge.rewardType === 'linkedReward' && <InfoRow label="Linked Reward">{challenge.linkedRewardName || '—'}</InfoRow>}
 
           {challenge.rewardType === 'customReward' && (
             <>
@@ -94,6 +102,8 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
           )}
 
           <InfoRow label="Claim Limit (total)">{challenge.claimLimit === null ? 'No limit' : challenge.claimLimit.toLocaleString()}</InfoRow>
+
+          <InfoRow label="Repeat Completions">{challenge.repeatable ? 'Allowed' : 'Not allowed'}</InfoRow>
 
           <InfoRow label="End Time">{fDate(challenge.endDate, formatStr.split.date)}</InfoRow>
 

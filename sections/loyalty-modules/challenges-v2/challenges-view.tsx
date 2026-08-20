@@ -2,8 +2,9 @@
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useDeleteChallengeV2Mutation } from '@/store/Reducer/challenges-v2-api';
 import { getErrorMessage } from '@/utils/api';
-import { showError } from '@/utils/toast';
+import { showError, showSuccess } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
 import ChallengesTable from './challenges-table';
 import ChallengesStatsCards from './components/challenges-stats-cards';
@@ -12,7 +13,6 @@ import ChallengeDetailModal from './modals/challenge-detail-modal';
 import ChallengeFormModal from './modals/challenge-form-modal';
 import {
   Challenge,
-  ChallengePayload,
   ChallengeRewardType,
   ChallengeSortKey,
   ChallengeSortOrder,
@@ -51,10 +51,7 @@ export const ChallengesViewV2: React.FC = () => {
 
   const { data, meta, stats, isLoading, isFetching } = useChallengesView(query);
 
-  // The write endpoints are wired in the next pass.
-  const notWired = async (): Promise<never> => {
-    throw new Error('Saving challenges is not connected yet.');
-  };
+  const [deleteChallenge, { isLoading: isDeleting }] = useDeleteChallengeV2Mutation();
 
   // Every filter and sort change invalidates the current offset.
   const handleSearchChange = (value: string) => {
@@ -108,16 +105,14 @@ export const ChallengesViewV2: React.FC = () => {
     detailModal.onTrue();
   };
 
-  const handleSubmit = async (payload: ChallengePayload) => {
-    void payload;
-    await notWired();
-  };
-
   const handleConfirmDelete = async () => {
     if (!pendingDelete) return;
 
     try {
-      await notWired();
+      const response = await deleteChallenge({ id: pendingDelete.id }).unwrap();
+      showSuccess(response?.message || 'Challenge deleted');
+      deleteConfirm.onFalse();
+      setPendingDelete(null);
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -131,7 +126,7 @@ export const ChallengesViewV2: React.FC = () => {
         data={data}
         meta={meta}
         loading={isLoading || isFetching}
-        isMutating={false}
+        isMutating={isDeleting}
         onCreate={handleCreate}
         onViewAnalytics={handleViewAnalytics}
         onEdit={handleEdit}
@@ -157,8 +152,6 @@ export const ChallengesViewV2: React.FC = () => {
       <ChallengeFormModal
         open={formModal.value}
         challenge={editing}
-        isSubmitting={false}
-        onSubmit={handleSubmit}
         onClose={() => {
           formModal.onFalse();
           setEditing(null);
@@ -178,7 +171,7 @@ export const ChallengesViewV2: React.FC = () => {
         open={deleteConfirm.value}
         title="Delete Challenge"
         content={`Are you sure you want to delete "${pendingDelete?.name}"? This cannot be undone.`}
-        isLoading={false}
+        isLoading={isDeleting}
         onClose={() => {
           deleteConfirm.onFalse();
           setPendingDelete(null);

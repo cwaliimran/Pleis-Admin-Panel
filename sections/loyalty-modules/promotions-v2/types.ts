@@ -19,6 +19,7 @@ export interface Promotion {
   status: PromotionStatus;
 
   menuId?: string;
+  menuName?: string;
   qualifyingItemIds: string[];
   qualifyingItems: { id: string; name: string }[];
   extraPointsPerPurchase: number;

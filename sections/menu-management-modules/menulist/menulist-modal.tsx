@@ -1,25 +1,27 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFAsyncCombobox, RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { useAddMenuListMutation, useUpdateMenuListMutation } from '@/store/Reducer/menu-list-api';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
-import { getOrgId } from './menulist-utils';
+import { getOrgId, getVenueIds, getVenueOptions } from './menulist-utils';
 import { MenuItemFormValues, MenuItemModalProps } from './types';
 
 const defaultValues: MenuItemFormValues = {
   title: '',
   description: '',
   organization: '',
+  venue: [],
   validFrom: undefined,
   status: 'draft',
 };
@@ -28,6 +30,7 @@ const schema = Yup.object().shape({
   title: Yup.string().required('Name is required'),
   description: Yup.string().optional(),
   organization: Yup.string().required('Organization is required'),
+  venue: Yup.array().of(Yup.string().required()).optional(),
   validFrom: Yup.date().required('Valid from date is required'),
   status: Yup.mixed<'draft' | 'active' | 'inactive'>().oneOf(['draft', 'active', 'inactive']).required('Status is required'),
 });
@@ -51,8 +54,9 @@ const MenuItemModal = ({
     defaultValues,
   });
 
-  const { reset, formState } = methods;
+  const { reset, formState, watch, setValue } = methods;
   const isDirty = formState?.isDirty;
+  const selectedOrganization = watch('organization');
 
   const prepareFormData = (data: any): MenuItemFormValues => {
     // API returns the date as `startDate`; the form field is named `validFrom`
@@ -63,6 +67,7 @@ const MenuItemModal = ({
       title: data?.title || '',
       description: data?.description || '',
       organization: getOrgId(data?.organization),
+      venue: getVenueIds(data?.venue),
       validFrom: parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate : undefined,
       status: data?.status || 'active',
     };
@@ -76,6 +81,16 @@ const MenuItemModal = ({
     }
   }, [open, isEdit, selectedData, reset]);
 
+  // Venues are scoped to the chosen organization, so a switch invalidates whatever was picked.
+  // The falsy guard keeps the initial edit-mode `reset` from wiping the record's own venues.
+  const previousOrganization = useRef(selectedOrganization);
+  useEffect(() => {
+    if (previousOrganization.current && previousOrganization.current !== selectedOrganization) {
+      setValue('venue', [], { shouldDirty: true });
+    }
+    previousOrganization.current = selectedOrganization;
+  }, [selectedOrganization, setValue]);
+
   const organizationOptions = organizations?.map((org) => ({ value: org._id, label: org.name })) || [];
 
   const handleSubmit = async (formData: MenuItemFormValues) => {
@@ -83,6 +98,7 @@ const MenuItemModal = ({
       title: formData.title,
       description: formData.description,
       organization: formData.organization,
+      venue: formData.venue || [],
       status: formData.status,
       startDate: formatDate(formData.validFrom),
     };
@@ -149,6 +165,21 @@ const MenuItemModal = ({
                   options={organizationOptions}
                   isLoading={organizationsLoading}
                   showNone={false}
+                />
+
+                <RHFAsyncCombobox
+                  name="venue"
+                  label="Venues"
+                  placeholder={selectedOrganization ? 'Select venues...' : 'Select an organization first'}
+                  searchPlaceholder="Search venues..."
+                  multiple
+                  disabled={!selectedOrganization}
+                  initialSelected={getVenueOptions(selectedData?.venue)}
+                  useOptionsQuery={useGetVenuesQuery}
+                  queryArgs={{ organization: selectedOrganization || undefined }}
+                  skip={!selectedOrganization}
+                  getOptionValue={(venue) => venue._id}
+                  getOptionLabel={(venue) => venue.title || venue.name || 'Unknown Venue'}
                 />
               </div>
 

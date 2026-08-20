@@ -1,0 +1,520 @@
+{
+    "message": "Challenges fetched successfully",
+    "data": [
+        {
+            "_id": "6a86af346c54e782bf589f4e",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/86213ea7-6a97-44f4-bbd2-2f885885e7fb.png",
+            "title": "By Item X Times - Linked Reward",
+            "description": "By Item X Times - Linked Reward",
+            "taskType": "buyMenuItem",
+            "claimLimit": 20,
+            "endDate": "2026-08-27",
+            "tierLimit": {
+                "_id": "6911c4546aca10eb719d6fdb",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/e94c25c6-17f0-4df8-b188-4d7d06506167.png",
+                "title": "Insider"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "linkedReward",
+                "rewardValue": 0,
+                "specialTicket": {
+                    "timeSlot": null,
+                    "isFastTrack": false
+                },
+                "rewardMenuItem": [],
+                "linkedReward": "6a7c4e1ddcb7f758f735da32",
+                "customReward": {
+                    "image": "",
+                    "title": "",
+                    "description": ""
+                }
+            },
+            "taskValue": 10,
+            "taskMenuItem": [
+                {
+                    "_id": "6a829ed75380ff9247bfc8c6",
+                    "title": "Beef Sandwich",
+                    "menu": {
+                        "_id": "6a6999ddca6d75187bbe7d24",
+                        "title": "Signature Specials"
+                    }
+                }
+            ],
+            "createdAt": "2026-08-20T07:39:32.785Z",
+            "updatedAt": "2026-08-20T11:57:42.636Z",
+            "__v": 2,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        },
+        {
+            "_id": "6a86aefc6c54e782bf589f35",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/f8cf7223-ecd0-44ce-b2b8-2f89dcff409b.png",
+            "title": "By Item X Times - Menu Item",
+            "description": "By Item X Times - Menu Item",
+            "taskType": "buyMenuItem",
+            "claimLimit": 10,
+            "endDate": "2026-08-26",
+            "tierLimit": {
+                "_id": "6911c43a6aca10eb719d6fd1",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/1028203d-15ff-4a71-9f07-730925eab6fd.png",
+                "title": "VIP"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "menuItem",
+                "rewardMenuItem": [
+                    {
+                        "_id": "6a82df8473e40a217345e39a",
+                        "title": "Coca-Cola",
+                        "menu": {
+                            "_id": "6a6999ddca6d75187bbe7d24",
+                            "title": "Signature Specials"
+                        }
+                    }
+                ],
+                "linkedReward": null
+            },
+            "taskValue": 10,
+            "taskMenuItem": [
+                {
+                    "_id": "6a829ed75380ff9247bfc8c6",
+                    "title": "Beef Sandwich",
+                    "menu": {
+                        "_id": "6a6999ddca6d75187bbe7d24",
+                        "title": "Signature Specials"
+                    }
+                },
+                {
+                    "_id": "6a82df8473e40a217345e39a",
+                    "title": "Coca-Cola",
+                    "menu": {
+                        "_id": "6a6999ddca6d75187bbe7d24",
+                        "title": "Signature Specials"
+                    }
+                },
+                {
+                    "_id": "6a830c2cf494c288627877f9",
+                    "title": "Zinger Sandwich",
+                    "menu": {
+                        "_id": "6a6999ddca6d75187bbe7d24",
+                        "title": "Signature Specials"
+                    }
+                }
+            ],
+            "createdAt": "2026-08-20T07:38:36.065Z",
+            "updatedAt": "2026-08-20T07:38:36.065Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        },
+        {
+            "_id": "6a86adc56c54e782bf589ed4",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/c977aa5a-3c22-4f81-8e00-cb3cc944eab5.png",
+            "title": "By Item X Times - Point Reward",
+            "description": "By Item X Times - Point Reward",
+            "taskType": "buyMenuItem",
+            "claimLimit": 10,
+            "endDate": "2026-08-27",
+            "tierLimit": {
+                "_id": "6911c41f6aca10eb719d6fc7",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/b6380abc-ebf0-4ee1-b44d-7ceb2bcf4407.png",
+                "title": "Elite"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "points",
+                "rewardValue": 10,
+                "specialTicket": {
+                    "timeSlot": null,
+                    "isFastTrack": false
+                },
+                "linkedReward": null
+            },
+            "taskValue": 10,
+            "taskMenuItem": [
+                {
+                    "_id": "6a82df8473e40a217345e39a",
+                    "title": "Coca-Cola",
+                    "menu": {
+                        "_id": "6a6999ddca6d75187bbe7d24",
+                        "title": "Signature Specials"
+                    }
+                },
+                {
+                    "_id": "6a830c2cf494c288627877f9",
+                    "title": "Zinger Sandwich",
+                    "menu": {
+                        "_id": "6a6999ddca6d75187bbe7d24",
+                        "title": "Signature Specials"
+                    }
+                }
+            ],
+            "createdAt": "2026-08-20T07:33:25.987Z",
+            "updatedAt": "2026-08-20T07:33:25.987Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        },
+        {
+            "_id": "6a86ad6e6c54e782bf589eab",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/559bfc84-0486-424e-938a-2dc233a3bc52.png",
+            "title": "Refer X Times - Linked Reward",
+            "description": "Refer X Times - Linked Reward",
+            "taskType": "referUsers",
+            "claimLimit": 10,
+            "endDate": "2026-08-23",
+            "tierLimit": {
+                "_id": "6911c4546aca10eb719d6fdb",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/e94c25c6-17f0-4df8-b188-4d7d06506167.png",
+                "title": "Insider"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "linkedReward",
+                "rewardValue": 0,
+                "specialTicket": {
+                    "timeSlot": null,
+                    "isFastTrack": false
+                },
+                "rewardMenuItem": [],
+                "linkedReward": "6a7c4e1ddcb7f758f735da32",
+                "customReward": {
+                    "image": "",
+                    "title": "",
+                    "description": ""
+                }
+            },
+            "taskValue": 10,
+            "createdAt": "2026-08-20T07:31:58.122Z",
+            "updatedAt": "2026-08-20T07:31:58.122Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        },
+        {
+            "_id": "6a86ad306c54e782bf589e8d",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/ef7c38c0-5372-43d4-a9e9-2d0b928afce8.png",
+            "title": "Refer X Times - Menu Item",
+            "description": "Refer X Times - Menu Item",
+            "taskType": "referUsers",
+            "claimLimit": 10,
+            "endDate": "2026-08-31",
+            "tierLimit": {
+                "_id": "6911c4546aca10eb719d6fdb",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/e94c25c6-17f0-4df8-b188-4d7d06506167.png",
+                "title": "Insider"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "menuItem",
+                "rewardMenuItem": [
+                    {
+                        "_id": "6a829ed75380ff9247bfc8c6",
+                        "title": "Beef Sandwich",
+                        "menu": {
+                            "_id": "6a6999ddca6d75187bbe7d24",
+                            "title": "Signature Specials"
+                        }
+                    }
+                ],
+                "linkedReward": null
+            },
+            "taskValue": 10,
+            "createdAt": "2026-08-20T07:30:56.153Z",
+            "updatedAt": "2026-08-20T07:30:56.153Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        },
+        {
+            "_id": "6a86ad006c54e782bf589e72",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/81623e41-e883-48b8-a543-18d907cf1307.png",
+            "title": "Refer X Times - Point Reward",
+            "description": "Refer X Times - Point Reward",
+            "taskType": "referUsers",
+            "claimLimit": 10,
+            "endDate": "2026-08-24",
+            "tierLimit": {
+                "_id": "6911c4546aca10eb719d6fdb",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/e94c25c6-17f0-4df8-b188-4d7d06506167.png",
+                "title": "Insider"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "points",
+                "rewardValue": 10,
+                "specialTicket": {
+                    "timeSlot": null,
+                    "isFastTrack": false
+                },
+                "linkedReward": null
+            },
+            "taskValue": 10,
+            "createdAt": "2026-08-20T07:30:08.847Z",
+            "updatedAt": "2026-08-20T07:30:08.847Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        },
+        {
+            "_id": "6a86acc26c54e782bf589e5a",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/55444a8e-e3cc-4af4-83e8-7fb99906018f.jpg",
+            "title": "Earn X Times - Linked Reward",
+            "description": "Earn X Times - Linked Reward",
+            "taskType": "earnPoints",
+            "claimLimit": 10,
+            "endDate": "2026-08-23",
+            "tierLimit": {
+                "_id": "6911c4546aca10eb719d6fdb",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/e94c25c6-17f0-4df8-b188-4d7d06506167.png",
+                "title": "Insider"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": false,
+            "status": "active",
+            "reward": {
+                "rewardType": "linkedReward",
+                "rewardValue": 0,
+                "specialTicket": {
+                    "timeSlot": null,
+                    "isFastTrack": false
+                },
+                "rewardMenuItem": [],
+                "linkedReward": "6a7c4d6cdcb7f758f735d9f7",
+                "customReward": {
+                    "image": "",
+                    "title": "",
+                    "description": ""
+                }
+            },
+            "taskValue": 10,
+            "createdAt": "2026-08-20T07:29:06.914Z",
+            "updatedAt": "2026-08-20T07:29:06.914Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 11,
+            "completed": 10,
+            "inProgress": 1,
+            "expired": 0,
+            "averageProgress": 90.91,
+            "participationRate": 0,
+            "completionRate": 90.91
+        },
+        {
+            "_id": "6a86ac946c54e782bf589e47",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/4645f576-0dda-4787-b461-10d8d8aaf5cf.jpg",
+            "title": "Earn X Times - Menu Item",
+            "description": "Earn X Times - Menu Item",
+            "taskType": "visit",
+            "claimLimit": 20,
+            "endDate": "2026-08-31",
+            "tierLimit": {
+                "_id": "6911c43a6aca10eb719d6fd1",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/1028203d-15ff-4a71-9f07-730925eab6fd.png",
+                "title": "VIP"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "menuItem",
+                "rewardMenuItem": [
+                    {
+                        "_id": "6a829ed75380ff9247bfc8c6",
+                        "title": "Beef Sandwich",
+                        "menu": {
+                            "_id": "6a6999ddca6d75187bbe7d24",
+                            "title": "Signature Specials"
+                        }
+                    },
+                    {
+                        "_id": "6a82df8473e40a217345e39a",
+                        "title": "Coca-Cola",
+                        "menu": {
+                            "_id": "6a6999ddca6d75187bbe7d24",
+                            "title": "Signature Specials"
+                        }
+                    },
+                    {
+                        "_id": "6a830c2cf494c288627877f9",
+                        "title": "Zinger Sandwich",
+                        "menu": {
+                            "_id": "6a6999ddca6d75187bbe7d24",
+                            "title": "Signature Specials"
+                        }
+                    }
+                ],
+                "linkedReward": null
+            },
+            "taskValue": 20,
+            "createdAt": "2026-08-20T07:28:20.221Z",
+            "updatedAt": "2026-08-20T12:02:46.651Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        },
+        {
+            "_id": "6a86ac6c6c54e782bf589e25",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/b97374f2-f899-4ba4-b7cb-643d62a29ee8.jpg",
+            "title": "Earn X Times - Point Reward",
+            "description": "Earn X Times - Point Reward",
+            "taskType": "earnPoints",
+            "claimLimit": 10,
+            "endDate": "2026-08-30",
+            "tierLimit": {
+                "_id": "6911c43a6aca10eb719d6fd1",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/1028203d-15ff-4a71-9f07-730925eab6fd.png",
+                "title": "VIP"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": true,
+            "status": "active",
+            "reward": {
+                "rewardType": "points",
+                "rewardValue": 10,
+                "specialTicket": {
+                    "timeSlot": null,
+                    "isFastTrack": false
+                },
+                "linkedReward": null
+            },
+            "taskValue": 10,
+            "createdAt": "2026-08-20T07:27:40.673Z",
+            "updatedAt": "2026-08-20T07:27:40.673Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 11,
+            "completed": 10,
+            "inProgress": 1,
+            "expired": 0,
+            "averageProgress": 90.91,
+            "participationRate": 0,
+            "completionRate": 90.91
+        },
+        {
+            "_id": "6a86ac336c54e782bf589df9",
+            "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/9d8c9cb8-f28c-4ada-8d21-ced28147fe6e.png",
+            "title": "Visit X Times - Linked Reward",
+            "description": "Visit X Times - Linked Reward",
+            "taskType": "visit",
+            "claimLimit": 10,
+            "endDate": "2026-08-22",
+            "tierLimit": {
+                "_id": "6911c41f6aca10eb719d6fc7",
+                "image": "https://pleis-images-ceeshqhnf7avgnan.z02.azurefd.net/pleisappcontainerdev/b6380abc-ebf0-4ee1-b44d-7ceb2bcf4407.png",
+                "title": "Elite"
+            },
+            "companyOrganizer": "6a0462c80dd707bc19cb03c0",
+            "repeatComplition": false,
+            "status": "active",
+            "reward": {
+                "rewardType": "linkedReward",
+                "rewardValue": 0,
+                "specialTicket": {
+                    "timeSlot": null,
+                    "isFastTrack": false
+                },
+                "rewardMenuItem": [],
+                "linkedReward": "6a7c4e1ddcb7f758f735da32",
+                "customReward": {
+                    "image": "",
+                    "title": "",
+                    "description": ""
+                }
+            },
+            "taskValue": 10,
+            "createdAt": "2026-08-20T07:26:43.221Z",
+            "updatedAt": "2026-08-20T07:26:43.221Z",
+            "__v": 0,
+            "views": 0,
+            "favoritesCount": 0,
+            "totalParticipants": 0,
+            "completed": 0,
+            "inProgress": 0,
+            "expired": 0,
+            "averageProgress": 0,
+            "participationRate": 0,
+            "completionRate": 0
+        }
+    ],
+    "meta": {
+        "currentPage": 1,
+        "totalPages": 2,
+        "totalRecords": 12,
+        "limit": 10,
+        "stats": {
+            "totalViews": 0,
+            "totalFavorites": 0,
+            "totalParticipants": 22,
+            "totalCompletions": 20,
+            "mostCompletedChallenge": {
+                "name": "Earn X Times - Point Reward",
+                "count": 10
+            }
+        }
+    }
+}

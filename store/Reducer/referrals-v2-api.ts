@@ -17,6 +17,20 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 export type ApiReferralStatus = 'active' | 'inactive';
 
+/** Accepted `sortBy` values — these are the response's own field names. */
+export type ApiReferralSortBy =
+  | 'user'
+  | 'referrerUserName'
+  | 'referralLimit'
+  | 'loyaltyReferralsCount'
+  | 'userReward'
+  | 'referrerReward'
+  | 'createdAt'
+  | 'expiryDate'
+  | 'status';
+
+export type ApiReferralSortOrder = 'asc' | 'desc';
+
 export interface ApiReferral {
   _id: string;
   /** Invitee's user id. The display name comes from `firstName`/`lastName`. */
@@ -85,6 +99,8 @@ export interface GetReferralsV2Args {
   /** Free-text search, matched against both the invitee and the referrer. */
   keyword?: string;
   status?: ApiReferralStatus;
+  sortBy?: ApiReferralSortBy;
+  sortOrder?: ApiReferralSortOrder;
 }
 
 export interface GetReferralsV2Response {
@@ -99,12 +115,17 @@ export const referralsV2Api = createApi({
 
   endpoints: (builder) => ({
     getReferralsV2: builder.query<GetReferralsV2Response, GetReferralsV2Args>({
-      query: ({ companyOrganizer, page, limit, keyword, status }) => {
+      query: ({ companyOrganizer, page, limit, keyword, status, sortBy, sortOrder }) => {
         const params: Record<string, string | number> = { companyOrganizer, page, limit };
 
         // Each is left off entirely when the filter is cleared.
         if (keyword) params.keyword = keyword;
         if (status) params.status = status;
+        // Only a complete pair is a sort; either half alone is meaningless.
+        if (sortBy && sortOrder) {
+          params.sortBy = sortBy;
+          params.sortOrder = sortOrder;
+        }
 
         return {
           url: '',

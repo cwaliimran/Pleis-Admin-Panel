@@ -18,7 +18,7 @@ export const menuListApi = createApi({
         };
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
-        if (organizations) params.organization = organizations;
+        if (organizations) params.organizations = organizations;
         if (sortBy) params.sortBy = sortBy;
         if (sortOrder) params.sortOrder = sortOrder;
 

@@ -240,10 +240,17 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
 
   const { data: menuItemsData, isFetching: menuItemsFetching } = useGetMenuItemByMenuIdQuery({ menuId }, { skip: !menuId || !itemBased });
 
-  const menuOptions = useMemo(
-    () => (menuData?.data ?? []).map((menu: { _id: string; title: string }) => ({ value: menu._id, label: menu.title })),
-    [menuData]
-  );
+  const menuOptions = useMemo(() => {
+    const byId = new Map<string, { value: string; label: string }>();
+
+    if (promotion?.menuId) byId.set(promotion.menuId, { value: promotion.menuId, label: promotion.menuName || 'Selected menu' });
+
+    (menuData?.data ?? []).forEach((menu: { _id: string; title: string }) => {
+      byId.set(menu._id, { value: menu._id, label: menu.title });
+    });
+
+    return Array.from(byId.values());
+  }, [menuData, promotion]);
 
   const itemOptions = useMemo(() => {
     const byId = new Map((promotion?.qualifyingItems ?? []).map((item) => [item.id, { id: item.id, menuId, name: item.name }]));
@@ -352,13 +359,21 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
 
             <RHFTextField name="description" label="Description (optional)" placeholder="Enter Description" multiline rows={3} />
 
-            <RHFSelectField
-              name="type"
-              label="Promotion Type"
-              placeholder="Select promotion type"
-              className="w-full"
-              options={PROMOTION_TYPE_FORM_OPTIONS}
-            />
+            <div>
+              <RHFSelectField
+                name="type"
+                label="Promotion Type"
+                placeholder="Select promotion type"
+                className="w-full"
+                options={PROMOTION_TYPE_FORM_OPTIONS}
+                disabled={isEdit}
+              />
+              {isEdit && (
+                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  Promotion type can&apos;t be changed after creation. Create a new promotion to use a different type.
+                </p>
+              )}
+            </div>
 
             {hint && (
               <div className={cn('rounded-lg border px-3 py-2.5', hint.className)}>

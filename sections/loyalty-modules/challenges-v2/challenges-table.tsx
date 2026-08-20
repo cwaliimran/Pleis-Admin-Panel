@@ -116,9 +116,9 @@ export const ChallengesTable: React.FC<ChallengesTableProps> = ({
           <TableHeadCustom headLabel={CHALLENGES_HEAD_LABEL} sortConfig={sortConfig} onSort={handleSort} />
 
           <TableBodyWrapper loading={loading} colSpan={CHALLENGES_HEAD_LABEL.length} dataLength={data.length} emptyMessage="No challenges found">
-            {data.map((item) => (
+            {data.map((item, index) => (
               <ChallengesTableRow
-                key={item.id}
+                key={`${item.id}-${index}`}
                 item={item}
                 disabled={isMutating}
                 onViewAnalytics={onViewAnalytics}

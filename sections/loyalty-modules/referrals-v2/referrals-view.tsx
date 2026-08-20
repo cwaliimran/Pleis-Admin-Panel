@@ -7,12 +7,10 @@ import ReferralsTable from './referrals-table';
 import { ReferralSortKey, ReferralSortOrder, ReferralStatus, ReferralsQuery } from './types';
 import { useReferralsView } from './use-referrals-view';
 
-
 export const ReferralsViewV2: React.FC = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
-  // The endpoint takes a single `keyword`, so the User and Referrer inputs
-  // share this one value.
+
   const [keyword, setKeyword] = useState('');
   const [status, setStatus] = useState<ReferralStatus | ''>('');
   const [sortBy, setSortBy] = useState<ReferralSortKey | ''>('');
@@ -25,7 +23,6 @@ export const ReferralsViewV2: React.FC = () => {
 
   const { data, meta, stats, isLoading, isFetching } = useReferralsView(query);
 
-  // Every filter and sort change invalidates the current offset.
   const handleKeywordChange = (value: string) => {
     setKeyword(value);
     setPage(1);

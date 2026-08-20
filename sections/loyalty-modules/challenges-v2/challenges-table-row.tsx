@@ -3,6 +3,7 @@
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
 import { BarChart3, Pencil, Trash2 } from 'lucide-react';
 import React from 'react';
@@ -33,7 +34,7 @@ export const ChallengesTableRow: React.FC<ChallengesTableRowProps> = ({ item, di
 
       {/* Names run long; the full text stays reachable through the tooltip. */}
       <TableCell className="text-left font-medium text-gray-900 dark:text-gray-100">
-        <span title={item.name} className="block max-w-[190px] truncate">
+        <span title={item.name} className="block max-w-[250px] truncate">
           {item.name}
         </span>
       </TableCell>
@@ -44,6 +45,10 @@ export const ChallengesTableRow: React.FC<ChallengesTableRowProps> = ({ item, di
 
       <TableCell className="text-left">
         <CustomBadge variant={getStatusVariant(item.status)}>{CHALLENGE_STATUS_LABELS[item.status]}</CustomBadge>
+      </TableCell>
+
+      <TableCell className="text-left whitespace-nowrap text-gray-700 dark:text-gray-300">
+        {fDate(item.endDate, formatStr.split.date) || '—'}
       </TableCell>
 
       <TableCell className={`text-left ${BROWSING_METRIC_CLASS}`}>{item.views.toLocaleString()}</TableCell>

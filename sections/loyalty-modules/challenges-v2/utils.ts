@@ -1,5 +1,18 @@
 import { CHALLENGE_GOAL_UNITS } from './constants';
-import { Challenge } from './types';
+import { Challenge, ChallengeItemRef } from './types';
+
+/**
+ * The menu the form's filter should open on. Only meaningful when every item
+ * shares one menu — a mixed selection returns `null` so the picker stays
+ * unfiltered and no already-chosen item is hidden behind the wrong menu.
+ */
+export const getSharedMenu = (items: ChallengeItemRef[]): { id: string; name: string } | null => {
+  const [first] = items;
+  if (!first?.menuId) return null;
+
+  const shared = items.every((item) => item.menuId === first.menuId);
+  return shared ? { id: first.menuId, name: first.menuName } : null;
+};
 
 /** Share of participants who finished. Computed server-side. */
 export const getCompletionRate = (challenge: Challenge): number | null =>

@@ -33,6 +33,15 @@ export interface ChallengeSpecialTicket {
   isFastTrack: boolean;
 }
 
+/** A menu item reference. `name` falls back to the id when unpopulated. */
+export interface ChallengeItemRef {
+  id: string;
+  name: string;
+  /** Parent menu, used to seed the form's menu filter. `''` when unpopulated. */
+  menuId: string;
+  menuName: string;
+}
+
 export interface Challenge {
   id: string;
   name: string;
@@ -46,24 +55,25 @@ export interface Challenge {
   /** Target the member must reach — 2 visits, 500 points, and so on. */
   taskValue: number;
 
-  // ---- `buyMenuItem` task only. The API links exactly one item. ----
-  taskMenuItemId?: string;
-  taskMenuItemName?: string;
-  taskMenuId?: string;
+  /** `buyMenuItem` task only — any one of these items counts toward the goal. */
+  taskMenuItems: ChallengeItemRef[];
 
   // ---- Reward branches ----
   /** `points` reward only. */
   pointReward: number;
-  /** `customReward` only — free text rather than a linked record. */
+  /** `menuItem` reward only. */
+  rewardMenuItems: ChallengeItemRef[];
+  /** `linkedReward` only — an existing reward record. */
+  linkedRewardId: string;
+  /** Empty while the endpoint returns the reward as a bare id. */
+  linkedRewardName: string;
+  /** `customReward` only — legacy free text rather than a linked record. */
   customRewardTitle?: string;
   customRewardDescription?: string;
-  /** `specialTicket` only. */
+  /** `specialTicket` only — legacy. */
   specialTicket?: ChallengeSpecialTicket;
 
-  /**
-   * Progress resets to 0 on completion so the challenge can be done again.
-   * Write-only — the list does not echo it, so it reads back as `false`.
-   */
+  /** Progress resets to 0 on completion so the challenge can be done again. */
   repeatable: boolean;
   /** Total claims across all users. `null` means unlimited. */
   claimLimit: number | null;
@@ -89,37 +99,6 @@ export interface Challenge {
   participationRate: number;
   /** Whole percent — share of participants who finished. */
   completionRate: number;
-}
-
-/**
- * Values the form collects. Still the pre-integration shape — it is rewritten
- * against the real body when the write endpoints land.
- */
-export interface ChallengePayload {
-  name: string;
-  image: string;
-  description: string;
-  taskType: ChallengeTaskType;
-  rewardType: ChallengeRewardType;
-  status: ChallengeStatus;
-  taskValue: number;
-  qualifyingMenuId?: string;
-  qualifyingItemIds: string[];
-  pointReward: number;
-  rewardMenuId?: string;
-  rewardItemIds: string[];
-  linkedRewardId?: string;
-  repeatable: boolean;
-  claimLimit: number | null;
-  endDate: string;
-  tierLimit: string;
-}
-
-/** Option shape the form's item pickers render. */
-export interface MenuItemOption {
-  id: string;
-  menuId: string;
-  name: string;
 }
 
 /** Header tiles. Computed by the server across every challenge, not the page. */

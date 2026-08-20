@@ -36,6 +36,7 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'organizationName',
   },
+  { id: 'venue', label: 'Venues', align: 'left' },
   {
     id: 'validFrom',
     label: 'Valid From',
@@ -69,6 +70,8 @@ const MenuItemTable: FC<SamplePageProps & { organizations: MenuOrganization[] }>
   onSearch = () => {},
   status = '',
   onStatusChange = () => {},
+  organization = '',
+  onOrganizationChange = () => {},
   date,
   onDateChange = () => {},
   onResetFilters = () => {},
@@ -104,6 +107,8 @@ const MenuItemTable: FC<SamplePageProps & { organizations: MenuOrganization[] }>
       location: sheetLocation,
     },
   });
+
+  const organizationOptions = [{ value: 'all', label: 'All' }, ...organizations.map((org) => ({ value: org._id, label: org.name }))];
 
   return (
     <div>
@@ -159,6 +164,14 @@ const MenuItemTable: FC<SamplePageProps & { organizations: MenuOrganization[] }>
                                   { value: 'active', label: 'Active' },
                                   { value: 'inactive', label: 'Inactive' },
                                 ],
+                              },
+                              {
+                                id: 'sheet-organization',
+                                label: 'Organization',
+                                placeholder: 'Select by Organization',
+                                value: organization,
+                                onChange: onOrganizationChange,
+                                options: organizationOptions,
                               },
                             ]}
                             resetFilter={{

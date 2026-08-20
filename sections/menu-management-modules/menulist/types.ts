@@ -10,11 +10,15 @@ export interface MenuOrganization {
 // list endpoints (`basicInfo.name` vs `title`). Never assume one shape — see menulist-utils.ts.
 export type OrganizationRef = string | { _id: string; basicInfo?: { name?: string }; title?: string; name?: string } | null | undefined;
 
+// Venues come back either as raw ids or populated `{ _id, title }` objects, same as `organization`.
+export type VenueRef = string | { _id: string; title?: string; name?: string } | null | undefined;
+
 export interface MenuListItem {
   _id: string;
   title: string;
   description?: string;
   organization: OrganizationRef;
+  venue?: VenueRef[];
   startDate: string;
   status: MenuStatus;
   createdAt: string;
@@ -42,6 +46,8 @@ export interface SamplePageProps {
   limit?: number;
   status?: string;
   onStatusChange?: (status: string) => void;
+  organization?: string;
+  onOrganizationChange?: (organization: string) => void;
   date?: Date;
   onDateChange?: (date: Date | undefined) => void;
   onResetFilters?: () => void;
@@ -62,6 +68,7 @@ export type MenuItemFormValues = {
   title?: string;
   description?: string;
   organization?: string;
+  venue?: string[];
   validFrom?: Date;
   status?: MenuStatus;
 };

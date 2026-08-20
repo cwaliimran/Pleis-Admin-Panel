@@ -53,6 +53,8 @@ const toSchedule = (activeDays?: ApiPromotionActiveDays): Schedule => {
 
 const toPromotion = (item: ApiPromotion): Promotion => {
   const menuItems = item.menuItem ?? [];
+  // The form scopes items to a single menu, so the first populated one wins.
+  const menu = menuItems.find((menuItem) => menuItem.menu?._id)?.menu;
 
   return {
     id: item._id,
@@ -62,7 +64,8 @@ const toPromotion = (item: ApiPromotion): Promotion => {
     type: toViewType(item.promotionType),
     status: item.status === 'inactive' ? 'inactive' : 'active',
 
-    menuId: undefined,
+    menuId: menu?._id,
+    menuName: menu?.title,
     qualifyingItemIds: menuItems.map((menuItem) => menuItem._id),
     qualifyingItems: menuItems.map((menuItem) => ({ id: menuItem._id, name: menuItem.title })),
 

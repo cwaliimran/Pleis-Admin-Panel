@@ -1,11 +1,5 @@
 export type SubcategoryStatus = 'active' | 'inactive';
 
-/** Populated on the list response; `null` for subcategories not tied to a single organization. */
-export interface SubcategoryOrganization {
-  _id: string;
-  basicInfo?: { name?: string };
-}
-
 export interface SubcategoryCompanyOrganizer {
   _id: string;
   firstName?: string;
@@ -15,7 +9,6 @@ export interface SubcategoryCompanyOrganizer {
 export interface MenuSubcategoryRecord {
   _id: string;
   title: string;
-  organization?: SubcategoryOrganization | null;
   companyOrganizer?: SubcategoryCompanyOrganizer | null;
   order?: number;
   status: SubcategoryStatus;
@@ -57,8 +50,6 @@ export interface TableRowProps {
 
 export type SubcategoryFormValues = {
   title: string;
-  /** Organization `_id`. */
-  organization: string;
   order: string;
   status: SubcategoryStatus;
 };
