@@ -37,6 +37,34 @@ export interface UpdateOrganizationV2Args {
   inAppOrderingSettings: ApiInAppOrderingSettings;
 }
 
+// ============================================================
+// Operating hours held on the organization document
+//
+// One entry per weekday, keyed by the lowercase English day name. Read with
+// `getOrganizationById`; written by the organization "other details" modal.
+//
+// A closed day still carries `from`/`to` — they are `"00:00"` placeholders,
+// so `isOpen` is the only reliable signal. `to` earlier than or equal to
+// `from` on an open day means the venue closes after midnight.
+// ============================================================
+
+export type ApiWeekdayKey = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
+
+export interface ApiOperatingHoursBreak {
+  from: string | null;
+  to: string | null;
+}
+
+export interface ApiOperatingHoursDay {
+  /** 24h `HH:mm`. */
+  from?: string;
+  to?: string;
+  break?: ApiOperatingHoursBreak | null;
+  isOpen?: boolean;
+}
+
+export type ApiOperatingHours = Partial<Record<ApiWeekdayKey, ApiOperatingHoursDay | null>>;
+
 export const organizationApi = createApi({
   reducerPath: 'organizationApi',
   baseQuery: customFetchBaseQueryWithRoleRouting(),

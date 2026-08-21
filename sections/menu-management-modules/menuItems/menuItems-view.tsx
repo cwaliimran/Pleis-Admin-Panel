@@ -4,7 +4,6 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
 import { useGetMenuItemSubcategoriesQuery } from '@/store/Reducer/menu-item-subcategories-api';
 import { useDeleteMenuItemMutation, useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
@@ -42,7 +41,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const [status, setStatus] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [menuId, setMenuId] = useState<string>('');
-  const [categoryId, setCategoryId] = useState<string>('');
+  const [subCategoryId, setSubCategoryId] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<string>('');
 
@@ -63,7 +62,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
       status: !status || status === 'all' ? undefined : status,
       date: date ? formatDate(date) : undefined,
       menu: !menuId || menuId === 'all' ? undefined : menuId,
-      category: !categoryId || categoryId === 'all' ? undefined : categoryId,
+      subCategory: !subCategoryId || subCategoryId === 'all' ? undefined : subCategoryId,
       companyOrganizer: scopedCompanyId,
       sortBy,
       sortOrder,
@@ -76,7 +75,6 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const menuItems: MenuItemRecord[] = data?.data || [];
   const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
 
-  const { data: categoriesData } = useGetItemsCategoryQuery({ page: 0, limit: LOOKUP_FETCH_LIMIT, search: '' });
   const { data: menusData } = useGetMenuListQuery(
     { page: 0, limit: LOOKUP_FETCH_LIMIT, search: '', status: '', companyOrganizer: scopedCompanyId },
     { skip: companySkip }
@@ -90,8 +88,8 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
     { skip: companySkip }
   );
 
-  const categories = categoriesData?.data || [];
   const menus = menusData?.data || [];
+  const subCategories = subCategoriesData?.data || [];
 
   const lookups: MenuItemLookups = useMemo(
     () => ({
@@ -152,7 +150,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
         meta={meta}
         lookups={lookups}
         menus={menus}
-        categories={categories}
+        subCategories={subCategories}
         loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
@@ -182,9 +180,9 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           setMenuId(val);
           setPage(1);
         }}
-        categoryId={categoryId}
-        onCategoryChange={(val) => {
-          setCategoryId(val);
+        subCategoryId={subCategoryId}
+        onSubCategoryChange={(val) => {
+          setSubCategoryId(val);
           setPage(1);
         }}
         sortBy={sortBy}
@@ -195,7 +193,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           setDate(undefined);
           setSearch('');
           setMenuId('');
-          setCategoryId('');
+          setSubCategoryId('');
           setSortBy('');
           setSortOrder('');
           setPage(1);

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
-import { ChevronDown, Loader2, NotebookPen, PackageCheck, Pencil, User } from 'lucide-react';
+import { ChevronDown, Loader2, NotebookPen, Package, PackageCheck, Pencil, User } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import type { BadgeConfig } from './constants';
 import {
@@ -17,16 +17,19 @@ import {
   SECONDARY_ACTION_BY_STATUS,
   formatCurrency,
   formatOrderTime,
+  getComboPriceModeLabel,
   getDeliveryTypeConfig,
   getLoyaltyTierConfig,
+  getOrderComboCount,
   getOrderItemCount,
   getOrderStatusConfig,
+  getOrderSummaryLines,
   getPaymentStatusConfig,
   getPaymentTypeLabel,
   getRoundDeliveryConfig,
   isOrderEditable,
 } from './constants';
-import { DestructiveActionType, Order, OrderActionType } from './types';
+import { DestructiveActionType, Order, OrderActionType, OrderCombo } from './types';
 import type { DeliverItemsPayload } from './use-order-management';
 
 export const ORDER_TABLE_COLUMN_COUNT = 10;
@@ -71,6 +74,68 @@ const RoundStatusBadge: React.FC<{ isDelivered: boolean; className?: string }> =
   <StatusBadge {...getRoundDeliveryConfig(isDelivered)} className={className} />
 );
 
+const ComboLine: React.FC<{
+  combo: OrderCombo;
+  isSelectable: boolean;
+  isSelected: boolean;
+  isDelivering: boolean;
+  onToggle: () => void;
+}> = ({ combo, isSelectable, isSelected, isDelivering, onToggle }) => {
+  const priceModeLabel = getComboPriceModeLabel(combo.priceMode);
+  const originalTotal = combo.unitPrice * combo.quantity;
+  const hasSaving = originalTotal > combo.lineTotal;
+
+  return (
+    <li
+      onClick={isSelectable && !isDelivering ? onToggle : undefined}
+      className={cn(
+        'border-b border-gray-100 px-4 py-3 transition-colors last:border-0 dark:border-gray-800',
+        isSelectable && 'cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a]',
+        isSelected && 'bg-blue-50/60 dark:bg-blue-950/20'
+      )}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-2.5">
+          {isSelectable && (
+            <Checkbox
+              checked={isSelected}
+              disabled={isDelivering}
+              onCheckedChange={onToggle}
+              onClick={(event) => event.stopPropagation()}
+              aria-label={`Mark ${combo.name} delivered`}
+              className="mt-0.5 cursor-pointer"
+            />
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {combo.quantity}× {combo.name}
+              </span>
+              {combo.isDelivered && <RoundStatusBadge isDelivered className="px-2 py-0.5 text-[11px]" />}
+            </div>
+            {priceModeLabel && <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{priceModeLabel}</div>}
+          </div>
+        </div>
+
+        <div className="shrink-0 text-right">
+          <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(combo.lineTotal)}</div>
+          {hasSaving && <div className="text-xs text-gray-400 line-through dark:text-gray-500">{formatCurrency(originalTotal)}</div>}
+        </div>
+      </div>
+
+      {combo.items.length > 0 && (
+        <ul className={cn('mt-2 border-l border-dashed border-gray-200 pl-3 dark:border-gray-700', isSelectable ? 'ml-7' : 'ml-1')}>
+          {combo.items.map((item) => (
+            <li key={item.id} className="py-0.5 text-xs text-gray-600 dark:text-gray-400">
+              {item.name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+};
+
 const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex items-baseline justify-between gap-6 border-b border-dashed border-gray-200 py-2 dark:border-gray-800">
     <span className="shrink-0 text-sm text-gray-500 dark:text-gray-400">{label}</span>
@@ -103,8 +168,13 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   // is unaffected — it only ever appears before an order is accepted.
   const showSecondaryAction = Boolean(secondaryAction) && !(secondaryAction?.type === 'cancel' && order.paymentStatus === 'paid');
 
+  const summaryLines = getOrderSummaryLines(order);
+
   const itemCount = getOrderItemCount(order);
   const roundCount = order.rounds.length;
+  const comboCount = getOrderComboCount(order);
+  const hasCombos = order.combos.length > 0;
+  const isOrderEmpty = order.rounds.length === 0 && !hasCombos;
 
   // ---- Item delivery ----
   //
@@ -123,7 +193,22 @@ export const OrderRow: React.FC<OrderRowProps> = ({
     setSelectedMenuItemIds((current) => current.filter((id) => undeliveredMenuItemIds.includes(id)));
   }, [undeliveredMenuItemIds]);
 
-  const canDeliver = DELIVERABLE_STATUSES.includes(order.status) && undeliveredMenuItemIds.length > 0;
+  // A combo is handed over whole, so selection is keyed on the order-combo
+  // line id — which is exactly what `deliveredCombo` carries.
+  const undeliveredComboIds = useMemo(() => order.combos.filter((combo) => !combo.isDelivered).map((combo) => combo.id), [order.combos]);
+
+  const [selectedComboIds, setSelectedComboIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedComboIds((current) => current.filter((id) => undeliveredComboIds.includes(id)));
+  }, [undeliveredComboIds]);
+
+  const isDeliverableStatus = DELIVERABLE_STATUSES.includes(order.status);
+  const canDeliver = isDeliverableStatus && undeliveredMenuItemIds.length > 0;
+  const canDeliverCombos = isDeliverableStatus && undeliveredComboIds.length > 0;
+  const canDeliverAny = canDeliver || canDeliverCombos;
+
+  const selectedCount = selectedMenuItemIds.length + selectedComboIds.length;
 
   const canUpdate = isOrderEditable(order);
 
@@ -140,11 +225,27 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   );
 
   const isAllSelected = undeliveredMenuItemIds.length > 0 && selectedMenuItemIds.length === undeliveredMenuItemIds.length;
+  const isAllCombosSelected = undeliveredComboIds.length > 0 && selectedComboIds.length === undeliveredComboIds.length;
 
   const handleToggleItem = (menuItemId: string) =>
     setSelectedMenuItemIds((current) => (current.includes(menuItemId) ? current.filter((id) => id !== menuItemId) : [...current, menuItemId]));
 
   const handleToggleAll = () => setSelectedMenuItemIds(isAllSelected ? [] : undeliveredMenuItemIds);
+
+  const handleToggleCombo = (comboId: string) =>
+    setSelectedComboIds((current) => (current.includes(comboId) ? current.filter((id) => id !== comboId) : [...current, comboId]));
+
+  const handleToggleAllCombos = () => setSelectedComboIds(isAllCombosSelected ? [] : undeliveredComboIds);
+
+  const selectionSummary = () => {
+    if (selectedCount === 0) return canDeliver && canDeliverCombos ? 'Select items or combos to deliver' : 'Select what to deliver';
+
+    const parts: string[] = [];
+    if (selectedMenuItemIds.length > 0) parts.push(`${selectedMenuItemIds.length} of ${undeliveredMenuItemIds.length} items`);
+    if (selectedComboIds.length > 0) parts.push(`${selectedComboIds.length} of ${undeliveredComboIds.length} combos`);
+
+    return `${parts.join(' · ')} selected`;
+  };
 
   return (
     <>
@@ -206,6 +307,11 @@ export const OrderRow: React.FC<OrderRowProps> = ({
         <TableCell>
           <span className="font-semibold text-gray-900 dark:text-gray-100">{itemCount}</span>
           {roundCount > 1 && <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">· {roundCount} rounds</span>}
+          {comboCount > 0 && (
+            <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">
+              · {comboCount} {comboCount === 1 ? 'combo' : 'combos'}
+            </span>
+          )}
         </TableCell>
 
         <TableCell className="text-sm text-gray-600 dark:text-gray-400">{getPaymentTypeLabel(order.paymentType)}</TableCell>
@@ -303,7 +409,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                       </Button>
                     )}
 
-                    {canDeliver && (
+                    {canDeliverAny && (
                       <Button
                         type="button"
                         size="sm"
@@ -325,7 +431,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                   </div>
 
                   <div className="flex flex-col gap-3">
-                    {order.rounds.length === 0 && (
+                    {isOrderEmpty && (
                       <div className="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
                         No items on this order
                       </div>
@@ -398,27 +504,65 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                           })}
                         </ul>
 
-                        {canDeliver && !round.isDelivered && (
-                          <div className="flex items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-800 dark:bg-[#1a1a1a]">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {selectedMenuItemIds.length > 0
-                                ? `${selectedMenuItemIds.length} of ${undeliveredMenuItemIds.length} selected`
-                                : 'Select items to deliver'}
-                            </span>
-
-                            <Button
-                              type="button"
-                              size="sm"
-                              disabled={selectedMenuItemIds.length === 0 || isDelivering}
-                              onClick={() => onDeliver(order, { menuItemIds: selectedMenuItemIds })}
-                              className="h-8 cursor-pointer text-xs font-semibold"
-                            >
-                              {isDelivering ? <ButtonLoading title="Delivering" /> : 'Deliver selected'}
-                            </Button>
-                          </div>
-                        )}
                       </div>
                     ))}
+
+                    {hasCombos && (
+                      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-[#222121]">
+                        <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-800 dark:bg-[#1a1a1a]">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            {canDeliverCombos && (
+                              <Checkbox
+                                checked={isAllCombosSelected}
+                                disabled={isDelivering}
+                                onCheckedChange={handleToggleAllCombos}
+                                aria-label="Select all undelivered combos"
+                                className="cursor-pointer"
+                              />
+                            )}
+                            <span className="truncate text-xs font-bold tracking-wide text-gray-600 uppercase dark:text-gray-300">Combos</span>
+                          </div>
+                          <span
+                            className={cn(
+                              'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap',
+                              BADGE_TONE_CLASS.indigo
+                            )}
+                          >
+                            <Package className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+                            {comboCount} {comboCount === 1 ? 'combo' : 'combos'}
+                          </span>
+                        </div>
+
+                        <ul>
+                          {order.combos.map((combo) => (
+                            <ComboLine
+                              key={combo.id}
+                              combo={combo}
+                              isSelectable={canDeliverCombos && !combo.isDelivered}
+                              isSelected={selectedComboIds.includes(combo.id)}
+                              isDelivering={isDelivering}
+                              onToggle={() => handleToggleCombo(combo.id)}
+                            />
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {canDeliverAny && (
+                      <div className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 dark:border-gray-800 dark:bg-[#1a1a1a]">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{selectionSummary()}</span>
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={selectedCount === 0 || isDelivering}
+                          onClick={() => onDeliver(order, { menuItemIds: selectedMenuItemIds, comboIds: selectedComboIds })}
+                          className="h-8 cursor-pointer text-xs font-semibold"
+                        >
+                          {isDelivering ? <ButtonLoading title="Delivering" /> : 'Deliver selected'}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -444,10 +588,17 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                       <span className="text-sm text-gray-600 dark:text-gray-400">Subtotal</span>
                       <span className="text-sm text-gray-900 dark:text-gray-100">{formatCurrency(order.subtotal)}</span>
                     </div>
-                    <div className="flex items-baseline justify-between gap-6">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Napojnica (0% tax)</span>
-                      <span className="text-sm text-gray-900 dark:text-gray-100">{formatCurrency(order.tipAmount)}</span>
-                    </div>
+
+                    {summaryLines.map((line) => (
+                      <div key={line.key} className="flex items-baseline justify-between gap-6">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{line.label}</span>
+                        <span className={cn('text-sm', line.isDeduction ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100')}>
+                          {line.isDeduction ? '−' : ''}
+                          {formatCurrency(line.amount)}
+                        </span>
+                      </div>
+                    ))}
+
                     <div className="pt-2">
                       <div className="text-base font-bold text-gray-900 dark:text-gray-100">Total</div>
                       <div className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(order.total)}</div>

@@ -11,14 +11,29 @@ import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { cn } from '@/lib/utils';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as Yup from 'yup';
 import { DiscountTypeCards, ItemsPicker } from './discounts-modal-fields';
-import { DiscountFormValues, DiscountModalProps } from './types';
+import { DiscountFormValues, DiscountModalProps, DiscountType } from './types';
 import { buildDiscountDateTime, parseDiscountDateTime } from './utils';
 
 const NO_MIN_DATE = new Date(0);
+
+type DiscountValidationContext = {
+  itemsTotal: number;
+  itemsTotalKnown: boolean;
+  ignorePastStart: boolean;
+  ignorePastEnd: boolean;
+};
+
+const startOfToday = (): Date => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+};
+
+const isPastDate = (date?: Date) => !!date && date.getTime() < startOfToday().getTime();
 
 const defaultValues: DiscountFormValues = {
   name: '',
@@ -47,12 +62,39 @@ const schema = Yup.object().shape({
   type: Yup.mixed<'percentage' | 'fixed'>().oneOf(['percentage', 'fixed']).required(),
   value: Yup.string()
     .required('Value is required')
-    .test('is-decimal', 'Value must be a valid number greater than 0', (value) => !!value && !isNaN(Number(value)) && Number(value) > 0),
+    .test('is-decimal', 'Value must be a valid number greater than 0', (value) => !!value && !isNaN(Number(value)) && Number(value) > 0)
+    .test('within-items-total', 'Value is too high for the selected items', function (value) {
+      const amount = Number(value);
+      if (!value || isNaN(amount) || amount <= 0) return true;
+
+      const type = this.parent.type as DiscountType;
+      const context = this.options.context as DiscountValidationContext | undefined;
+
+      if (type === 'percentage') {
+        return amount > 100 ? this.createError({ message: 'Percentage cannot be more than 100%' }) : true;
+      }
+
+      if (!context?.itemsTotalKnown || context.itemsTotal <= 0) return true;
+      return amount > context.itemsTotal
+        ? this.createError({ message: `Cannot be more than the selected items' total (€${context.itemsTotal.toFixed(2)})` })
+        : true;
+    }),
   menuItems: Yup.array().of(Yup.string().required()).min(1, 'Select at least one menu item').required(),
-  startDateDate: Yup.date().required('Start date is required'),
+  startDateDate: Yup.date()
+    .required('Start date is required')
+    .test('not-past', 'Start date cannot be in the past', function (value) {
+      const context = this.options.context as DiscountValidationContext | undefined;
+      if (context?.ignorePastStart) return true;
+      return !isPastDate(value);
+    }),
   startTime: Yup.string().required('Start time is required').test('valid-time', 'Invalid time format', isValidTime),
   endDateDate: Yup.date()
     .required('End date is required')
+    .test('not-past', 'End date cannot be in the past', function (value) {
+      const context = this.options.context as DiscountValidationContext | undefined;
+      if (context?.ignorePastEnd) return true;
+      return !isPastDate(value);
+    })
     .test('after-start', 'End date/time must be after the start date/time', function (value) {
       const { startDateDate, startTime, endTime } = this.parent;
       const start = combineDateTime(startDateDate, startTime);
@@ -69,24 +111,56 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, companyId,
   const [updateDiscount, { isLoading: updateLoading }] = useUpdateDiscountMutation();
   const submitting = addLoading || updateLoading;
 
+  const validationContext = useRef<DiscountValidationContext>({
+    itemsTotal: 0,
+    itemsTotalKnown: false,
+    ignorePastStart: false,
+    ignorePastEnd: false,
+  }).current;
+
   const methods = useForm<DiscountFormValues>({
     resolver: yupResolver(schema as Yup.ObjectSchema<DiscountFormValues>),
     defaultValues,
+    context: validationContext,
   });
 
   const { reset, control, trigger, formState } = methods;
   const isDirty = formState?.isDirty;
   const type = useWatch({ control, name: 'type' });
+  const value = useWatch({ control, name: 'value' });
   const startDateDate = useWatch({ control, name: 'startDateDate' });
   const startTime = useWatch({ control, name: 'startTime' });
+  const endDateDate = useWatch({ control, name: 'endDateDate' });
   const endTime = useWatch({ control, name: 'endTime' });
+
+  const [itemsTotal, setItemsTotal] = useState({ total: 0, allPricesKnown: false });
+
+  const handleItemsTotalChange = useCallback((total: number, allPricesKnown: boolean) => {
+    setItemsTotal((prev) => (prev.total === total && prev.allPricesKnown === allPricesKnown ? prev : { total, allPricesKnown }));
+  }, []);
+
+  validationContext.itemsTotal = itemsTotal.total;
+  validationContext.itemsTotalKnown = itemsTotal.allPricesKnown;
+  // A pre-existing schedule the user hasn't touched is left alone — the past-date rule only applies
+  // to a date they actually pick, so editing an old discount doesn't open with two red fields.
+  validationContext.ignorePastStart = isEdit && !formState.dirtyFields.startDateDate;
+  validationContext.ignorePastEnd = isEdit && !formState.dirtyFields.endDateDate;
 
   // Re-check the end-after-start rule live as the surrounding fields change, not just on submit.
   useEffect(() => {
-    if (formState.touchedFields.endDateDate || formState.submitCount > 0) {
+    if (endDateDate || formState.touchedFields.endDateDate || formState.submitCount > 0) {
       trigger('endDateDate');
     }
-  }, [startDateDate, startTime, endTime, trigger, formState.touchedFields.endDateDate, formState.submitCount]);
+  }, [startDateDate, startTime, endDateDate, endTime, trigger, formState.touchedFields.endDateDate, formState.submitCount]);
+
+  // Surface the past-date and items-total errors as soon as the user picks/types, not on submit.
+  useEffect(() => {
+    if (startDateDate) trigger('startDateDate');
+  }, [startDateDate, trigger]);
+
+  useEffect(() => {
+    if (value) trigger('value');
+  }, [value, type, itemsTotal, trigger]);
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
@@ -182,7 +256,13 @@ const DiscountModal = ({ open, onClose, isEdit = false, selectedData, companyId,
                     Applies To <span className="normal-case">· select a menu, then one or more of its items</span>
                   </h4>
 
-                  <ItemsPicker name="menuItems" companyId={companyId} userType={userType} initialItemRefs={selectedData?.menuItems} />
+                  <ItemsPicker
+                    name="menuItems"
+                    companyId={companyId}
+                    userType={userType}
+                    initialItemRefs={selectedData?.menuItems}
+                    onTotalChange={handleItemsTotalChange}
+                  />
                 </div>
 
                 {/* SCHEDULE */}

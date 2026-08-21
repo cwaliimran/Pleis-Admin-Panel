@@ -12,7 +12,7 @@ import {
   SubCategoryRef,
 } from './types';
 
-type RefLike = string | { _id: string; name?: string; title?: string } | null | undefined;
+type RefLike = string | { _id: string; title?: string } | null | undefined;
 
 export const getRefId = (value: SubCategoryRef | ComboMenuItemRef): string => {
   if (!value) return '';
@@ -22,7 +22,7 @@ export const getRefId = (value: SubCategoryRef | ComboMenuItemRef): string => {
 export const getRefLabel = (value: RefLike, lookup?: Map<string, string>): string => {
   if (!value) return '-';
   if (typeof value === 'string') return lookup?.get(value) || '-';
-  return value.name || value.title || (lookup?.get(value._id) ?? '-');
+  return value.title || (lookup?.get(value._id) ?? '-');
 };
 
 export const getMenuItemPrice = (value: ComboMenuItemRef): number => (value && typeof value !== 'string' ? value.basePrice || 0 : 0);

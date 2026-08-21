@@ -4,6 +4,48 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 const ADMIN_ACCESS_TOKEN = process.env.NEXT_PUBLIC_ADMIN_ACCESS_TOKEN;
 
+// ============================================================
+// User details lookup — `GET /{role}/users/details`
+//
+// Takes exactly one identifier: either `email`, or the `code` + `number`
+// pair. Only the fields the reservation form reads are typed here; the
+// record carries more than this.
+// ============================================================
+
+export interface GetUserDetailsArgs {
+  email?: string;
+  /** Dial code including the plus, e.g. "+92". Paired with `number`. */
+  code?: string;
+  /** National number without the dial code. */
+  number?: string;
+}
+
+export interface ApiUserDetailsPhoneNumber {
+  code?: string;
+  number?: string;
+}
+
+export interface ApiUserDetailsBasicInfo {
+  _id?: string;
+  profileIcon?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: ApiUserDetailsPhoneNumber | null;
+  /** Populated for organizer accounts only; `null` for ordinary guests. */
+  companyDetails?: unknown | null;
+}
+
+export interface ApiUserDetailsAccountState {
+  status?: string;
+  userType?: string;
+}
+
+export interface ApiUserDetails {
+  basicInfo?: ApiUserDetailsBasicInfo | null;
+  accountState?: ApiUserDetailsAccountState | null;
+}
+
 export const userListApi = createApi({
   reducerPath: 'userListApi',
   baseQuery: customFetchBaseQueryWithRoleRouting(),
@@ -78,6 +120,38 @@ export const userListApi = createApi({
         },
       }),
       transformResponse: (res) => res.data,
+    }),
+
+    /* ─────────────────────────────────────────────
+     * User lookup by contact detail
+     *
+     * Resolves a single Pleis account from an email, or from a dial
+     * code + national number pair. Used by the reservation form to link a
+     * booking to an existing account and prefill the guest fields.
+     *
+     * A contact detail nobody is registered with is not an error case: the
+     * backend answers 200 with an empty `data`, which is transformed to
+     * `null` so callers can treat "no account" as an ordinary result.
+     * ───────────────────────────────────────────── */
+    getUserDetails: builder.query<ApiUserDetails | null, GetUserDetailsArgs>({
+      query: ({ email, code, number }) => {
+        const params: Record<string, string> = {};
+
+        if (email) params.email = email;
+        if (code) params.code = code;
+        if (number) params.number = number;
+
+        return {
+          url: '',
+          method: 'GET',
+          params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_USER_DETAILS,
+            organizerRoute: API_ROUTES.ORGANIZER_USER_DETAILS,
+          },
+        };
+      },
+      transformResponse: (res: { data?: ApiUserDetails | null }): ApiUserDetails | null => res?.data ?? null,
     }),
 
     addUser: builder.mutation({
@@ -211,6 +285,7 @@ export const {
   useGetUserListQuery,
   useGetUsersForCompanyFilterQuery,
   useGetUserByIdQuery,
+  useGetUserDetailsQuery,
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
   useUpdateUserMutation,

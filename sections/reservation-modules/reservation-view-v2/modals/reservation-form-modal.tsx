@@ -39,11 +39,15 @@ import {
   SELECT_TRIGGER_CLASS,
   USER_RESERVATION_STATUS_OPTIONS,
   deriveEndTime,
+  formatDuration,
   fromIsoTime,
   toIsoDateTime,
   toStatusOption,
 } from '../constants';
 import { Reservation } from '../types';
+import { useGuestLookup } from '../use-guest-lookup';
+import type { ReservationTimeRules } from '../use-reservation-time-rules';
+import { useReservationTimeRules } from '../use-reservation-time-rules';
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
@@ -99,7 +103,7 @@ const plural = (count: number, word: string) => `${count} ${word}${count === 1 ?
 
 const BOUNDED_FIELDS = ['partySize', 'numberOfTables', 'amount', 'occasion'] as const;
 
-const makeSchema = (getLimits: () => FormLimits) =>
+const makeSchema = (getLimits: () => FormLimits, getRules: () => ReservationTimeRules | null) =>
   Yup.object().shape({
     firstName: Yup.string().trim().required('First name is required').max(40, 'First name must be 40 characters or fewer').default(''),
     lastName: Yup.string().trim().required('Last name is required').max(40, 'Last name must be 40 characters or fewer').default(''),
@@ -140,8 +144,20 @@ const makeSchema = (getLimits: () => FormLimits) =>
       }),
 
     date: Yup.string().required('Date is required').default(''),
-    startTime: Yup.string().matches(TIME_PATTERN, 'Use 24h time, e.g. 19:30').required('Time is required').default(''),
-    endTime: Yup.string().matches(TIME_PATTERN, 'Use 24h time, e.g. 21:00').required('End time is required').default(''),
+
+    startTime: Yup.string()
+      .default('')
+      .test('start-time', '', function (value) {
+        const message = getRules()?.checkStartTime(value ?? '');
+        return message ? this.createError({ message }) : true;
+      }),
+
+    endTime: Yup.string()
+      .default('')
+      .test('end-time', '', function (value) {
+        const message = getRules()?.checkEndTime(this.parent.startTime ?? '', value ?? '');
+        return message ? this.createError({ message }) : true;
+      }),
 
     amount: Yup.number()
       .transform(emptyToUndefined)
@@ -188,8 +204,6 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   const [showUserInfo, setShowUserInfo] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-  const guestProfile = reservation?.guestProfile;
-
   const { companyId } = useCompanySelectionState();
 
   const { data: typesResponse, isFetching: isLoadingTypes } = useGetReservationTypesQuery(
@@ -214,7 +228,8 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   const isSubmitting = isCreating || isUpdating;
 
   const limitsRef = useRef<FormLimits>(NO_LIMITS);
-  const schema = useMemo(() => makeSchema(() => limitsRef.current), []);
+  const rulesRef = useRef<ReservationTimeRules | null>(null);
+  const schema = useMemo(() => makeSchema(() => limitsRef.current, () => rulesRef.current), []);
 
   const methods = useForm<ReservationFormValues>({
     resolver: yupResolver(schema) as Resolver<ReservationFormValues>,
@@ -225,6 +240,16 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
   const reservationTypeId = watch('reservationType');
   const startTime = watch('startTime');
+  const selectedDate = watch('date');
+  const emailValue = watch('email');
+
+  const timeRules = useReservationTimeRules({ organizationId, date: selectedDate, enabled: open });
+  rulesRef.current = timeRules;
+
+  const isTimeDisabled = !timeRules.slotsEnabled;
+
+  const guestLookup = useGuestLookup({ email: emailValue || '', enabled: open });
+  const guestProfile = guestLookup.match?.profile ?? null;
 
   const selectedType = useMemo(
     () => reservationTypes.find((type) => type._id === reservationTypeId),
@@ -235,6 +260,8 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   limitsRef.current = limits;
 
   const endTimeOverriddenRef = useRef(false);
+  const startTimeSeedRef = useRef(false);
+  const prefilledEmailRef = useRef<string | null>(null);
 
   const defaultsRef = useRef(defaults);
   defaultsRef.current = defaults;
@@ -244,6 +271,8 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
     const seed = defaultsRef.current;
     endTimeOverriddenRef.current = Boolean(reservation);
+    startTimeSeedRef.current = !reservation;
+    prefilledEmailRef.current = reservation?.email?.trim().toLowerCase() || null;
     setShowUserInfo(false);
 
     if (reservation) {
@@ -297,9 +326,56 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
   }, [open, reservation, reservationTypes, getValues, setValue]);
 
   useEffect(() => {
-    if (!open || endTimeOverriddenRef.current || !TIME_PATTERN.test(startTime || '')) return;
-    setValue('endTime', deriveEndTime(startTime), { shouldValidate: true });
-  }, [open, startTime, setValue]);
+    const match = guestLookup.match;
+    if (!open || !match) return;
+    if (prefilledEmailRef.current === match.email) return;
+
+    prefilledEmailRef.current = match.email;
+
+    if (match.firstName) setValue('firstName', match.firstName, { shouldValidate: true });
+    if (match.lastName) setValue('lastName', match.lastName, { shouldValidate: true });
+    if (match.phoneNumber) {
+      setValue('phoneCode', match.phoneCode || DEFAULT_PHONE_CODE, { shouldValidate: true });
+      setValue('phone', match.phoneNumber, { shouldValidate: true });
+    }
+  }, [open, guestLookup.match, setValue]);
+
+  useEffect(() => {
+    if (!open || !timeRules.isSettingKnown || timeRules.slotsEnabled) return;
+    if (!getValues('startTime') && !getValues('endTime')) return;
+
+    setValue('startTime', '', { shouldValidate: true });
+    setValue('endTime', '', { shouldValidate: true });
+  }, [open, timeRules.isSettingKnown, timeRules.slotsEnabled, getValues, setValue]);
+
+  useEffect(() => {
+    if (!open || !startTimeSeedRef.current) return;
+    if (!timeRules.isReady || !timeRules.slotsEnabled || !timeRules.isOpenDay || !timeRules.isWindowUsable) return;
+
+    const current = getValues('startTime');
+    if (current && timeRules.isStartTimeAllowed(current)) return;
+
+    endTimeOverriddenRef.current = false;
+    setValue('startTime', timeRules.earliestStartTime, { shouldValidate: true });
+  }, [open, timeRules, getValues, setValue]);
+
+  useEffect(() => {
+    if (!open || !timeRules.slotsEnabled) return;
+
+    if (endTimeOverriddenRef.current || !TIME_PATTERN.test(startTime || '')) {
+      if (getValues('endTime')) trigger('endTime');
+      return;
+    }
+
+    setValue('endTime', deriveEndTime(startTime, timeRules.maxDurationMinutes), { shouldValidate: true });
+  }, [open, startTime, timeRules.slotsEnabled, timeRules.maxDurationMinutes, getValues, setValue, trigger]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!getValues('startTime') && !getValues('endTime')) return;
+
+    trigger(['startTime', 'endTime']);
+  }, [open, timeRules.signature, getValues, trigger]);
 
   const previousTypeRef = useRef('');
 
@@ -338,15 +414,14 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
             date: values.date,
             timeSlots: [
               {
-                startTime: toIsoDateTime(values.date, values.startTime),
-                endTime: toIsoDateTime(values.date, values.endTime),
+                startTime: timeRules.slotsEnabled ? toIsoDateTime(values.date, values.startTime) : '',
+                endTime: timeRules.slotsEnabled ? toIsoDateTime(values.date, values.endTime) : '',
               },
             ],
           },
         ],
       },
       conditionType: limits.conditionType,
-      status: values.status,
     };
 
     if (limits.conditionType === 'minimumSpend') body.amount = Number(values.amount);
@@ -357,7 +432,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
       let message: string | undefined;
 
       if (reservation) {
-        const response = await updateUserReservation({ id: reservation.id, ...body }).unwrap();
+        const response = await updateUserReservation({ id: reservation.id, ...body, status: values.status }).unwrap();
         message = response?.message || 'Reservation updated';
       } else {
         if (!organizationId) {
@@ -453,7 +528,48 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
     return [toStatusOption(current), ...USER_RESERVATION_STATUS_OPTIONS];
   }, [reservation]);
 
-  const isSaveDisabled = isSubmitting || isLoadingTypes || Object.keys(formState.errors).length > 0;
+  const profileRows = useMemo(() => {
+    if (!guestProfile) return [];
+
+    const fields: { label: string; value: string }[] = [
+      { label: 'Full name', value: guestProfile.fullName },
+      { label: 'Email', value: guestProfile.email },
+    ];
+
+    if (guestProfile.phoneNumber) fields.push({ label: 'Phone number', value: guestProfile.phoneNumber });
+    if (guestProfile.accountStatus) fields.push({ label: 'Account status', value: guestProfile.accountStatus });
+    if (guestProfile.loyaltyTier) fields.push({ label: 'Loyalty status', value: guestProfile.loyaltyTier });
+
+    if (guestProfile.reservationsMade !== undefined || guestProfile.reservationsUsed !== undefined) {
+      fields.push({
+        label: 'Reservations (made / used)',
+        value: `${guestProfile.reservationsMade ?? 0} / ${guestProfile.reservationsUsed ?? 0}`,
+      });
+    }
+
+    const rows: { label: string; value: string }[][] = [];
+    for (let index = 0; index < fields.length; index += 2) rows.push(fields.slice(index, index + 2));
+
+    return rows;
+  }, [guestProfile]);
+
+  const timeHint = useMemo(() => {
+    if (timeRules.isLoading) return "Checking the organization's time slot settings...";
+
+    if (!timeRules.slotsEnabled) {
+      return 'Time slots are disabled in Reservation Preferences — this reservation is saved without a time.';
+    }
+
+    if (!timeRules.isOpenDay) return `The organization is closed on ${timeRules.dayLabel}.`;
+
+    const maxLabel = `max ${formatDuration(timeRules.maxDurationMinutes)} per reservation`;
+
+    if (!timeRules.isWindowUsable) return `No booking window is available on ${timeRules.dayLabel} · ${maxLabel}`;
+
+    return `${timeRules.dayLabel} working hours ${timeRules.openTime} – ${timeRules.closeTime} · bookings from ${timeRules.earliestStartTime} to ${timeRules.latestStartTime} · ${maxLabel}`;
+  }, [timeRules]);
+
+  const isSaveDisabled = isSubmitting || isLoadingTypes || timeRules.isLoading || Object.keys(formState.errors).length > 0;
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -523,19 +639,25 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
               </button>
 
               {showUserInfo &&
-                (guestProfile ? (
+                (guestLookup.isLooking ? (
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-gray-400">
+                    Looking up the Pleis account...
+                  </div>
+                ) : guestProfile ? (
                   <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-1 dark:border-gray-700 dark:bg-[#1a1a1a]">
-                    <div className="grid gap-x-8 border-b border-dashed border-gray-300 py-2.5 sm:grid-cols-2 dark:border-gray-700">
-                      <ProfileField label="Full name" value={guestProfile.fullName} />
-                      <ProfileField label="E-mail" value={guestProfile.email} />
-                    </div>
-                    <div className="grid gap-x-8 py-2.5 sm:grid-cols-2">
-                      <ProfileField label="Loyalty status" value={guestProfile.loyaltyTier} />
-                      <ProfileField
-                        label="Reservations (made / used)"
-                        value={`${guestProfile.reservationsMade} / ${guestProfile.reservationsUsed}`}
-                      />
-                    </div>
+                    {profileRows.map((row, index) => (
+                      <div
+                        key={row[0].label}
+                        className={cn(
+                          'grid gap-x-8 py-2.5 sm:grid-cols-2',
+                          index < profileRows.length - 1 && 'border-b border-dashed border-gray-300 dark:border-gray-700'
+                        )}
+                      >
+                        {row.map((field) => (
+                          <ProfileField key={field.label} label={field.label} value={field.value} />
+                        ))}
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-gray-400">
@@ -604,9 +726,18 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                   name="startTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Time *</FormLabel>
+                      <FormLabel>{timeRules.slotsEnabled ? 'Time *' : 'Time'}</FormLabel>
                       <FormControl>
-                        <Time24hInput title="Start time" value={field.value || ''} onChange={field.onChange} className="h-10" />
+                        <Time24hInput
+                          title="Start time"
+                          value={field.value || ''}
+                          onChange={(next) => {
+                            startTimeSeedRef.current = false;
+                            field.onChange(next);
+                          }}
+                          disabled={isTimeDisabled}
+                          className="h-10"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -614,13 +745,17 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                 />
               </div>
 
+              <p className="-mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">{timeHint}</p>
+
               <FormField
                 control={control}
                 name="endTime"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>End time (internal)</FormLabel>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Time + average slot duration. Not shown to the guest.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Time + {formatDuration(timeRules.maxDurationMinutes)}. Not shown to the guest.
+                    </p>
                     <FormControl>
                       <Time24hInput
                         title="End time"
@@ -629,6 +764,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                           endTimeOverriddenRef.current = true;
                           field.onChange(next);
                         }}
+                        disabled={isTimeDisabled}
                         className="h-10"
                       />
                     </FormControl>

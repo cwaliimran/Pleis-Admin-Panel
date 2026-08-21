@@ -29,9 +29,11 @@ export interface TypeOccupancy {
 export interface GuestProfile {
   fullName: string;
   email: string;
-  loyaltyTier: string;
-  reservationsMade: number;
-  reservationsUsed: number;
+  phoneNumber?: string;
+  accountStatus?: string;
+  loyaltyTier?: string;
+  reservationsMade?: number;
+  reservationsUsed?: number;
 }
 
 export interface Reservation {

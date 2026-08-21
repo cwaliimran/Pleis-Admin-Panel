@@ -1,3 +1,4 @@
+import type { ApiWeekdayKey } from '@/store/Reducer/organization';
 import type { ApiReservationCondition } from '@/store/Reducer/user-reservations-api';
 import { USER_RESERVATION_STATUSES } from '@/store/Reducer/user-reservations-api';
 import { CapacityLevel, ListFilter, ReservationStatus } from './types';
@@ -124,6 +125,44 @@ export const deriveEndTime = (time: string, durationMinutes = AVERAGE_SLOT_DURAT
 
   const total = Math.min(hours * 60 + minutes + durationMinutes, 23 * 60 + 59);
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+};
+
+export const MINUTES_PER_DAY = 24 * 60;
+
+export const WEEKDAY_KEYS: ApiWeekdayKey[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+export const WEEKDAY_LABELS: Record<ApiWeekdayKey, string> = {
+  sunday: 'Sunday',
+  monday: 'Monday',
+  tuesday: 'Tuesday',
+  wednesday: 'Wednesday',
+  thursday: 'Thursday',
+  friday: 'Friday',
+  saturday: 'Saturday',
+};
+
+export const toMinutes = (time?: string): number | null => {
+  if (!time) return null;
+
+  const match = time.trim().match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+  if (!match) return null;
+
+  return Number(match[1]) * 60 + Number(match[2]);
+};
+
+export const fromMinutes = (total: number): string => {
+  const normalized = ((total % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+  return `${String(Math.floor(normalized / 60)).padStart(2, '0')}:${String(normalized % 60).padStart(2, '0')}`;
+};
+
+export const formatDuration = (minutes: number): string => {
+  if (minutes < 60) return `${minutes} min`;
+
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const hourLabel = `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+
+  return rest === 0 ? hourLabel : `${hourLabel} ${rest} min`;
 };
 
 export const toSlotKey = (time: string): string => `${time.split(':')[0]}:00`;

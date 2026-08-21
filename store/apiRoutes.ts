@@ -628,10 +628,12 @@ export const API_ROUTES = {
   ADMIN_USER_LIST: `/admin/users`,
   ADMIN_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,
   ADMIN_PENDING_USER_LIST_BY_ID: (id: string) => `/admin/users/${id}`,
+  ADMIN_USER_DETAILS: `/admin/users/details`,
 
   ORGANIZER_USER_LIST: `/organizer/users`,
   ORGANIZER_USER_LIST_BY_ID: (id: string) => `/organizer/users/${id}`,
   ORGANIZER_PENDING_USER_LIST_BY_ID: (id: string) => `/organizer/users/${id}`,
+  ORGANIZER_USER_DETAILS: `/organizer/users/details`,
 
   // ── FEED CONFIG ───────────────────────────────────
   QUICK_ACTION_CONFIG: `/admin/feed-config/quick-action`,

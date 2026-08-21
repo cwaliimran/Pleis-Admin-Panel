@@ -10,10 +10,11 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 // form's own value shape and the mapping between the two live in
 // `sections/reservation-modules/reservation-view-v2/modals`.
 //
-// Create and update take the same body apart from the ownership fields:
+// Create and update take the same body apart from three fields:
 // `organizationId` / `companyOrganizer` are sent on create only — on update
 // the record already belongs to an organization and the ids in the path
-// identify it.
+// identify it — while `status` is sent on update only, since a new
+// reservation opens on a status the backend assigns.
 // ============================================================
 
 export type ApiReservationCondition = 'free' | 'minimumSpend';
@@ -84,7 +85,6 @@ export interface UserReservationBody {
   amount?: number;
   /** Occasion `_id`. Omitted when the guest picked none. */
   occasion?: string;
-  status: ApiUserReservationStatus;
   /** Backend spelling — plural, unlike the singular label in the UI. */
   notes?: string;
 }
@@ -97,6 +97,11 @@ export interface CreateUserReservationArgs extends UserReservationBody {
 export interface UpdateUserReservationArgs extends UserReservationBody {
   /** The reservation `_id` — addressed in the path, not the body. */
   id: string;
+  /**
+   * Update only. A new reservation has no status to choose — the backend
+   * assigns the opening one — so create leaves the field off entirely.
+   */
+  status: ApiUserReservationStatus;
 }
 
 export interface UserReservationMutationResponse {

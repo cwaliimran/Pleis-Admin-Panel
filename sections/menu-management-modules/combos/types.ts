@@ -2,7 +2,7 @@ export type ComboStatus = 'active' | 'inactive' | 'draft';
 
 export type PriceMode = 'fixed_combo_price' | 'percentage_off_sum' | 'fixed_amount_off_sum';
 
-export type SubCategoryRef = string | { _id: string; name?: string; category?: string; status?: string } | null | undefined;
+export type SubCategoryRef = string | { _id: string; title?: string; status?: string } | null | undefined;
 
 export interface ComboMenuRef {
   _id: string;

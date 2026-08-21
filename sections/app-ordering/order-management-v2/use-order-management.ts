@@ -29,8 +29,12 @@ import {
 // work with the view model only and never see the wire shape.
 // ============================================================
 
-/** Either a specific set of menu items, or every outstanding one. */
-export type DeliverItemsPayload = { all: true } | { all?: false; menuItemIds: string[] };
+/**
+ * Either a specific selection, or every outstanding item at once. A partial
+ * delivery carries menu items and combos independently — either list may be
+ * empty, but not both.
+ */
+export type DeliverItemsPayload = { all: true } | { all?: false; menuItemIds: string[]; comboIds: string[] };
 
 interface UseOrderManagementArgs {
   organizationId?: string;
@@ -117,17 +121,33 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     async (order: Order, payload: DeliverItemsPayload) => {
       setDeliveringOrderId(order.id);
       try {
-        // One field at a time: `deliveredall` for the whole order, otherwise
-        // just the id list. The backend derives the new status from either.
-        const args: UpdateOrderV2Args = {
-          id: order.id,
-          ...(payload.all ? { deliveredall: true } : { deliveredMenuItem: payload.menuItemIds.join(',') }),
-        };
+        const args: UpdateOrderV2Args = { id: order.id };
+
+        if (payload.all) {
+          // `deliveredall` settles the whole order — the backend works out
+          // which items and combos are still outstanding.
+          args.deliveredall = true;
+        } else {
+          // Combos go over as the order-combo line ids themselves — unlike
+          // `deliveredMenuItem`, which is keyed on the menu item definition.
+          //
+          // Empty strings are dropped by the slice, so a combo-only delivery
+          // sends `deliveredCombo` alone, and vice versa.
+          args.deliveredMenuItem = payload.menuItemIds.join(',');
+          args.deliveredCombo = payload.comboIds.join(',');
+        }
 
         // Once nothing is left to hand over the order moves on: `completed`
-        // if it is already settled, otherwise `sent` to await payment.
-        const outstanding = order.rounds.filter((round) => !round.isDelivered).flatMap((round) => round.items.map((item) => item.menuItemId));
-        const deliversEverything = payload.all || outstanding.every((id) => payload.menuItemIds.includes(id));
+        // if it is already settled, otherwise `sent` to await payment. Combos
+        // count as outstanding until the API gives them a delivery state, so
+        // a mixed order only advances when its combos are selected too.
+        const outstandingItems = order.rounds.filter((round) => !round.isDelivered).flatMap((round) => round.items.map((item) => item.menuItemId));
+        const outstandingCombos = order.combos.filter((combo) => !combo.isDelivered).map((combo) => combo.id);
+
+        const deliversEverything =
+          payload.all ||
+          (outstandingItems.every((id) => payload.menuItemIds.includes(id)) &&
+            outstandingCombos.every((id) => payload.comboIds.includes(id)));
 
         if (deliversEverything) {
           args.status = order.paymentStatus === 'paid' ? 'completed' : 'sent';
@@ -160,6 +180,14 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
           // The endpoint keys lines on the menu item, so the draft maps
           // straight across.
           items: payload.items.map((item) => ({ menuItem: item.menuItemId, quantity: item.quantity })),
+          // Always sent, empty array included — the endpoint replaces the whole
+          // list, so omitting it is how a removed combo would come back. Note
+          // the backend wants `quantity` as a string here, unlike `items`.
+          combos: payload.combos.map((combo) => ({
+            combo: combo.comboId,
+            items: combo.menuItemIds,
+            quantity: String(combo.quantity),
+          })),
           userId: order.customer.id || undefined,
           pickupType: payload.deliveryType,
           // Blanked by the modal for every pickup type other than table service.

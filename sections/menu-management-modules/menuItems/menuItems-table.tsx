@@ -27,9 +27,9 @@ const HEAD_LABEL = [
 ];
 
 type Menu = { _id: string; title: string };
-type Category = { _id: string; title: string };
+type SubCategory = { _id: string; title: string };
 
-const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; categories: Category[] }> = ({
+const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; subCategories: SubCategory[] }> = ({
   data = [],
   meta,
   lookups,
@@ -39,7 +39,7 @@ const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; categories: Category[
   onPageChange,
   limit = 10,
   menus,
-  categories,
+  subCategories,
   search = '',
   onSearch = () => {},
   status = '',
@@ -48,8 +48,8 @@ const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; categories: Category[
   onDateChange = () => {},
   menuId = '',
   onMenuChange = () => {},
-  categoryId = '',
-  onCategoryChange = () => {},
+  subCategoryId = '',
+  onSubCategoryChange = () => {},
   onResetFilters = () => {},
   sortBy = '',
   sortOrder = '',
@@ -140,14 +140,14 @@ const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; categories: Category[
                           options: [{ value: 'all', label: 'All menus' }, ...menus.map((menu) => ({ value: menu._id, label: menu.title }))],
                         },
                         {
-                          id: 'menu-item-category',
-                          label: 'Category',
-                          placeholder: 'All categories',
-                          value: categoryId,
-                          onChange: onCategoryChange,
+                          id: 'menu-item-sub-category',
+                          label: 'Subcategory',
+                          placeholder: 'All subcategories',
+                          value: subCategoryId,
+                          onChange: onSubCategoryChange,
                           options: [
-                            { value: 'all', label: 'All categories' },
-                            ...categories.map((category) => ({ value: category._id, label: category.title })),
+                            { value: 'all', label: 'All subcategories' },
+                            ...subCategories.map((subCategory) => ({ value: subCategory._id, label: subCategory.title })),
                           ],
                         },
                       ]}

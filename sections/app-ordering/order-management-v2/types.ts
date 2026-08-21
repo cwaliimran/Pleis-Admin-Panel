@@ -7,6 +7,7 @@
 // ============================================================
 
 import type {
+  ApiComboPriceMode,
   ApiDateRange,
   ApiOrderStatus,
   ApiOrderTab,
@@ -74,6 +75,32 @@ export interface OrderRound {
   items: OrderItem[];
 }
 
+export type ComboPriceMode = ApiComboPriceMode;
+
+export interface OrderComboItem {
+  id: string;
+  menuItemId: string;
+  name: string;
+}
+
+/** A combo line on an order. It sits beside the rounds rather than inside one. */
+export interface OrderCombo {
+  id: string;
+  comboId: string;
+  name: string;
+  description: string;
+  quantity: number;
+  /** Always `false` until the API starts returning a delivery state for combos. */
+  isDelivered: boolean;
+  priceMode: ComboPriceMode | '';
+  /** Member-item sum for one unit, before the combo rule. */
+  unitPrice: number;
+  unitFinalPrice: number;
+  /** Line total for the whole quantity. */
+  lineTotal: number;
+  items: OrderComboItem[];
+}
+
 export interface OrderCustomer {
   /** The user `_id`. Sent back as `userId` when the order is rewritten. */
   id: string;
@@ -100,8 +127,17 @@ export interface Order {
   paymentStatus: PaymentStatus;
   status: OrderStatus;
   rounds: OrderRound[];
+  /** Empty for orders placed without one. Not editable — no backend flow yet. */
+  combos: OrderCombo[];
+  /** `itemsTotal` — already includes combos, at their pre-discount price. */
   subtotal: number;
-  /** Tip — booked separately as "Napojnica" at 0% tax. Not yet sent by the API. */
+  saleDiscount: number;
+  promoDiscount: number;
+  voucherDiscount: number;
+  tax: number;
+  /** Empty unless a promo code was applied; shown against the promo discount. */
+  promoCode: string;
+  /** Tip — booked separately as "Napojnica" at 0% tax. Adds to the total. */
   tipAmount: number;
   total: number;
   rejectionReason?: RejectionReason;
@@ -161,6 +197,20 @@ export interface MenuItemOption {
   isAvailable?: boolean;
 }
 
+/** One selectable combo in the add-combo picker. */
+export interface ComboOption {
+  id: string;
+  name: string;
+  description: string;
+  priceMode: ComboPriceMode | '';
+  /** What one unit is billed at. The admin never edits it. */
+  price: number;
+  /** Member-item sum before the combo rule, for the struck-through price. */
+  originalPrice: number;
+  isAvailable: boolean;
+  items: { id: string; name: string }[];
+}
+
 /** A line as the update modal holds it. Keyed on the menu item, like every write here. */
 export interface OrderDraftItem {
   menuItemId: string;
@@ -172,10 +222,28 @@ export interface OrderDraftItem {
   isNew: boolean;
 }
 
+/**
+ * A combo line as the update modal holds it. Only the quantity is editable —
+ * the member items are fixed by the combo definition.
+ */
+export interface OrderDraftCombo {
+  comboId: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  /** Member-item sum for one unit; equals `unitPrice` when there is no saving. */
+  originalUnitPrice: number;
+  priceMode: ComboPriceMode | '';
+  menuItemIds: string[];
+  itemNames: string[];
+  isNew: boolean;
+}
+
 /** Prices and payment method are absent on purpose — the backend owns both. */
 export interface OrderUpdatePayload {
   deliveryType: DeliveryType;
   /** Empty unless `deliveryType` is `tableService`. */
   tableNumber: string;
   items: { menuItemId: string; quantity: number }[];
+  combos: { comboId: string; menuItemIds: string[]; quantity: number }[];
 }

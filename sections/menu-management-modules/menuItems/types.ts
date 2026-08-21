@@ -94,8 +94,8 @@ export interface SamplePageProps {
   onDateChange?: (date: Date | undefined) => void;
   menuId?: string;
   onMenuChange?: (menuId: string) => void;
-  categoryId?: string;
-  onCategoryChange?: (categoryId: string) => void;
+  subCategoryId?: string;
+  onSubCategoryChange?: (subCategoryId: string) => void;
   onResetFilters?: () => void;
   sortBy?: string;
   sortOrder?: string;

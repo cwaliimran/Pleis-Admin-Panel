@@ -1,13 +1,28 @@
 import type {
+  ApiComboCatalogueEntry,
   ApiMenuCatalogue,
   ApiMenuCatalogueItem,
   ApiOrder,
+  ApiOrderCombo,
+  ApiOrderComboItem,
   ApiOrderItem,
   ApiOrderingStatus,
   ApiOrdersMeta,
 } from '@/store/Reducer/order-management-v2-api';
 import { DEFAULT_PAGE_LIMIT, DELIVERY_TYPE_CONFIG } from './constants';
-import { MenuItemOption, Order, OrderCustomer, OrderItem, OrderPagination, OrderRound, OrderTabCounts, OrderingStatus } from './types';
+import {
+  ComboOption,
+  MenuItemOption,
+  Order,
+  OrderCombo,
+  OrderComboItem,
+  OrderCustomer,
+  OrderItem,
+  OrderPagination,
+  OrderRound,
+  OrderTabCounts,
+  OrderingStatus,
+} from './types';
 
 // ============================================================
 // Wire → view model
@@ -82,6 +97,39 @@ const mapRounds = (order: ApiOrder): OrderRound[] => {
   return [...buckets.values()];
 };
 
+const mapComboItem = (item: ApiOrderComboItem): OrderComboItem => ({
+  id: item._id,
+  menuItemId: item.menuItem,
+  name: item.menuItemSnapShot?.title?.trim() || 'Unknown item',
+});
+
+/**
+ * Combos are listed beside the rounds rather than bucketed into one — they
+ * carry a single delivery state, not one per member item. The snapshot is
+ * the fallback for pricing because it is what the customer saw.
+ */
+const mapCombo = (combo: ApiOrderCombo): OrderCombo => {
+  const snapshot = combo.comboSnapShot;
+  const quantity = combo.quantity ?? 0;
+  const unitFinalPrice = combo.unitFinalPrice ?? snapshot?.salePrice ?? 0;
+
+  return {
+    id: combo._id,
+    comboId: combo.combo,
+    name: snapshot?.name?.trim() || 'Unknown combo',
+    description: snapshot?.description?.trim() || '',
+    quantity,
+    isDelivered: Boolean(combo.isdelivered),
+    priceMode: snapshot?.priceMode || '',
+    unitPrice: combo.unitPrice ?? snapshot?.originalPrice ?? 0,
+    unitFinalPrice,
+    lineTotal: combo.finalPrice ?? unitFinalPrice * quantity,
+    items: (combo.items ?? []).map(mapComboItem),
+  };
+};
+
+const mapCombos = (order: ApiOrder): OrderCombo[] => (order.combos ?? []).map(mapCombo);
+
 export const mapApiOrder = (order: ApiOrder): Order => {
   const breakdown = order.priceBreakdown;
 
@@ -97,7 +145,13 @@ export const mapApiOrder = (order: ApiOrder): Order => {
     paymentStatus: order.paymentStatus,
     status: order.status,
     rounds: mapRounds(order),
+    combos: mapCombos(order),
     subtotal: breakdown?.itemsTotal ?? order.totalPrice ?? 0,
+    saleDiscount: breakdown?.saleDiscount ?? 0,
+    promoDiscount: breakdown?.promoDiscount ?? 0,
+    voucherDiscount: breakdown?.voucherDiscount ?? 0,
+    tax: breakdown?.tax ?? 0,
+    promoCode: breakdown?.promoCode?.trim() || '',
     tipAmount: breakdown?.tip ?? 0,
     total: breakdown?.finalTotal ?? order.totalPrice ?? 0,
     // Not sent by the API yet; kept so the detail row lights up when it is.
@@ -144,8 +198,8 @@ const mapMenuItemOption = (item: ApiMenuCatalogueItem, subCategory: string): Men
 
 /**
  * Flattens the grouped `menu` into one selectable list. `recommended` is
- * skipped — its items all appear under `menu` too — and so are `combos`,
- * which the update endpoint cannot express.
+ * skipped — its items all appear under `menu` too — and `combos` are their
+ * own list, mapped by `mapComboOptions`.
  */
 export const mapMenuItemOptions = (catalogue: ApiMenuCatalogue | null | undefined): MenuItemOption[] => {
   const seen = new Set<string>();
@@ -158,6 +212,41 @@ export const mapMenuItemOptions = (catalogue: ApiMenuCatalogue | null | undefine
       seen.add(item._id);
       options.push(mapMenuItemOption(item, group.subCategory));
     });
+  });
+
+  return options;
+};
+
+/**
+ * Combos the admin can add. A combo is billed at `salePrice`, whatever its
+ * price mode; `originalPrice` is only ever shown struck through.
+ */
+const mapComboOption = (combo: ApiComboCatalogueEntry): ComboOption => {
+  const originalPrice = combo.originalPrice ?? 0;
+
+  return {
+    id: combo._id,
+    name: combo.name?.trim() || 'Unknown combo',
+    description: combo.description?.trim() || '',
+    priceMode: combo.priceMode || '',
+    price: combo.salePrice ?? originalPrice,
+    originalPrice,
+    isAvailable: combo.status !== 'inactive',
+    items: (combo.menuItems ?? [])
+      .filter((item) => item?._id)
+      .map((item) => ({ id: item._id, name: item.title?.trim() || 'Unknown item' })),
+  };
+};
+
+export const mapComboOptions = (catalogue: ApiMenuCatalogue | null | undefined): ComboOption[] => {
+  const seen = new Set<string>();
+  const options: ComboOption[] = [];
+
+  (catalogue?.combos ?? []).forEach((combo) => {
+    if (!combo?._id || seen.has(combo._id)) return;
+
+    seen.add(combo._id);
+    options.push(mapComboOption(combo));
   });
 
   return options;

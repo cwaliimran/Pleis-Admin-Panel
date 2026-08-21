@@ -4,6 +4,7 @@ import isYesterday from 'dayjs/plugin/isYesterday';
 import { Ban, CalendarClock, CircleAlert, CircleCheck, CircleCheckBig, CircleDashed, CircleX, Clock, CreditCard, Truck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
+  ComboPriceMode,
   DateRangeFilter,
   DeliveryType,
   LoyaltyTier,
@@ -85,6 +86,27 @@ export const ROUND_DELIVERY_CONFIG: Record<'delivered' | 'pending', BadgeConfig>
 };
 
 export const getRoundDeliveryConfig = (isDelivered: boolean) => (isDelivered ? ROUND_DELIVERY_CONFIG.delivered : ROUND_DELIVERY_CONFIG.pending);
+
+// ============================================================
+// Combos
+//
+// Display-only for now — a combo carries no delivery flag and the update
+// endpoint cannot express one, so nothing here writes.
+// ============================================================
+
+export const COMBO_PRICE_MODE_LABEL: Record<ComboPriceMode, string> = {
+  fixed_amount_off_sum: 'Fixed amount off',
+  fixed_combo_price: 'Fixed combo price',
+  percentage_off_sum: 'Percentage off',
+};
+
+export const getComboPriceModeLabel = (mode: ComboPriceMode | '') => {
+  if (!mode) return '';
+  return COMBO_PRICE_MODE_LABEL[mode] || humanizeKey(mode.replace(/_/g, ' '));
+};
+
+export const getOrderComboCount = (order: { combos?: { quantity: number }[] }) =>
+  (order.combos ?? []).reduce((total, combo) => total + combo.quantity, 0);
 
 // ============================================================
 // Delivery / payment / loyalty
@@ -304,3 +326,37 @@ export const formatOpenedAt = (value: string | null) => {
 
 export const getOrderItemCount = (order: { rounds: { items: { quantity: number }[] }[] }) =>
   order.rounds.reduce((total, round) => total + round.items.reduce((sum, item) => sum + item.quantity, 0), 0);
+
+// ============================================================
+// Price breakdown
+//
+// The backend owns every figure here — nothing is recomputed. Lines that
+// come back as 0 are simply not part of this order, so they are dropped
+// rather than shown as "€0.00". `subtotal` and `total` always render.
+// ============================================================
+
+type BreakdownKey = 'saleDiscount' | 'promoDiscount' | 'voucherDiscount' | 'tax' | 'tipAmount';
+
+export interface OrderSummaryLine {
+  key: BreakdownKey;
+  label: string;
+  amount: number;
+  /** Subtracted from the subtotal, so it renders with a leading minus. */
+  isDeduction: boolean;
+}
+
+const SUMMARY_LINE_CONFIG: { key: BreakdownKey; label: string; isDeduction: boolean }[] = [
+  { key: 'saleDiscount', label: 'Sale discount', isDeduction: true },
+  { key: 'promoDiscount', label: 'Promo discount', isDeduction: true },
+  { key: 'voucherDiscount', label: 'Voucher', isDeduction: true },
+  { key: 'tax', label: 'Tax', isDeduction: false },
+  { key: 'tipAmount', label: 'Napojnica (0% tax)', isDeduction: false },
+];
+
+export const getOrderSummaryLines = (order: Record<BreakdownKey, number> & { promoCode?: string }): OrderSummaryLine[] =>
+  SUMMARY_LINE_CONFIG.filter(({ key }) => Number.isFinite(order[key]) && order[key] !== 0).map(({ key, label, isDeduction }) => ({
+    key,
+    label: key === 'promoDiscount' && order.promoCode ? `${label} · ${order.promoCode}` : label,
+    amount: order[key],
+    isDeduction,
+  }));

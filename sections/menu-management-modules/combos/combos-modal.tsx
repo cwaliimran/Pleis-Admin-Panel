@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from 
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import { useAddComboMutation, useUpdateComboMutation } from '@/store/Reducer/combos-api';
+import { useGetMenuItemSubcategoriesQuery } from '@/store/Reducer/menu-item-subcategories-api';
 import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
-import { useGetMenuSubcategoriesQuery } from '@/store/Reducer/menu-subcategories-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -242,9 +242,14 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
                       placeholder="Select subcategory..."
                       searchPlaceholder="Search subcategories..."
                       selectedLabel={selectedData?.subCategory ? getRefLabel(selectedData.subCategory) : undefined}
-                      useOptionsQuery={useGetMenuSubcategoriesQuery}
+                      useOptionsQuery={useGetMenuItemSubcategoriesQuery}
+                      queryArgs={{
+                        companyOrganizer: userType === 'super-admin' ? companyId || undefined : undefined,
+                        status: 'active',
+                      }}
+                      skip={companySkip}
                       getOptionValue={(subCategory) => subCategory._id}
-                      getOptionLabel={(subCategory) => subCategory.name}
+                      getOptionLabel={(subCategory) => subCategory.title}
                     />
                   </div>
 

@@ -59,10 +59,58 @@ export interface ApiOrderItem {
   menuItemSnapShot?: ApiMenuItemSnapShot | null;
 }
 
+/** How a combo prices itself against the sum of its member items. */
+export type ApiComboPriceMode = 'fixed_amount_off_sum' | 'fixed_combo_price' | 'percentage_off_sum';
+
+/** A member item of a combo. It carries no quantity — one of each per combo unit. */
+export interface ApiOrderComboItem {
+  _id: string;
+  menuItem: string;
+  menuItemSnapShot?: ApiMenuItemSnapShot | null;
+}
+
+export interface ApiComboSnapShot {
+  _id: string;
+  name?: string;
+  description?: string;
+  priceMode?: ApiComboPriceMode;
+  /** The price-mode's operand: an amount off, a percentage, or the fixed price. */
+  price?: number;
+  status?: string;
+  /** Sum of the member items before the combo rule is applied. */
+  originalPrice?: number;
+  salePrice?: number;
+  hasDiscount?: boolean;
+}
+
+/** Combos sit alongside `items` on an order, not inside it. */
+export interface ApiOrderCombo {
+  _id: string;
+  /** The combo definition `_id`. */
+  combo: string;
+  quantity: number;
+  /**
+   * Not sent by the API yet — combos come back without any delivery state.
+   * Read optimistically so the UI lights up the moment the backend adds it.
+   */
+  isdelivered?: boolean;
+  items: ApiOrderComboItem[];
+  /** Member-item sum for one unit, before the combo rule. */
+  unitPrice: number;
+  /** What one unit is actually billed at. */
+  unitFinalPrice: number;
+  saleDiscountPerUnit?: number;
+  /** Line total for the whole quantity. */
+  finalPrice: number;
+  comboSnapShot?: ApiComboSnapShot | null;
+}
+
 export interface ApiPriceBreakdown {
+  /** Already includes combos, counted at their pre-discount `unitPrice`. */
   itemsTotal: number;
   saleDiscount: number;
   promoDiscount: number;
+  voucherDiscount?: number;
   tax: number;
   finalTotal: number;
   promoCode: string | null;
@@ -80,6 +128,8 @@ export interface ApiOrder {
   organization: string;
   user: ApiOrderUser | null;
   items: ApiOrderItem[];
+  /** Absent on older orders; an order can also be combos-only with `items: []`. */
+  combos?: ApiOrderCombo[];
   totalPrice: number;
   priceBreakdown?: ApiPriceBreakdown | null;
   status: ApiOrderStatus;
@@ -135,6 +185,12 @@ export interface UpdateOrderV2Args {
   paymentStatus?: ApiPaymentStatus;
   /** Comma-separated **menuItem** ids — not the order-item `_id`s. */
   deliveredMenuItem?: string;
+  /**
+   * Comma-separated order-combo line ids — the `combos[]._id`s on this order,
+   * not the combo definition ids and not their member menu items. Note this
+   * is keyed differently from `deliveredMenuItem` just above.
+   */
+  deliveredCombo?: string;
   deliveredall?: boolean;
   /** Sent with `status: 'rejected'` only. */
   reasonForRejection?: string;
@@ -144,11 +200,26 @@ export interface UpdateOrderV2Args {
   noteForCancellation?: string;
 }
 
+/**
+ * One combo line on the update payload. `items` is the combo's member menu
+ * item ids, and the backend expects `quantity` as a string.
+ */
+export interface UpdateOrderComboV2 {
+  combo: string;
+  items: string[];
+  quantity: string;
+}
+
 /** Rewrites a still-pending order. `updateOrderV2` only advances its status. */
 export interface UpdateOrderDetailsV2Args {
   /** The order `_id`. */
   id: string;
   items: { menuItem: string; quantity: number }[];
+  /**
+   * Sent on every rewrite, empty array included — the endpoint replaces the
+   * whole list, so omitting it is how combos would be lost.
+   */
+  combos?: UpdateOrderComboV2[];
   /** The `_id` of the user the order belongs to. */
   userId?: string;
   pickupType?: ApiPickupType;
@@ -180,11 +251,33 @@ export interface ApiMenuCatalogueGroup {
   items: ApiMenuCatalogueItem[];
 }
 
+/**
+ * A combo as the catalogue offers it, before it is put on an order. Its
+ * `menuItems` are fixed by the definition — the admin picks the combo as a
+ * whole and sets a quantity, never its members.
+ */
+export interface ApiComboCatalogueEntry {
+  _id: string;
+  name?: string;
+  description?: string;
+  /** An object once populated, `null` for combos not tied to a sub-category. */
+  subCategory?: { _id: string; title?: string; status?: string } | null;
+  priceMode?: ApiComboPriceMode;
+  price?: number;
+  status?: string;
+  menuItems?: ApiMenuCatalogueItem[];
+  /** Sum of the member items before the combo rule. */
+  originalPrice?: number;
+  /** What one unit is billed at, after the rule. */
+  salePrice?: number;
+  hasDiscount?: boolean;
+}
+
 export interface ApiMenuCatalogue {
   organization?: { _id: string; basicInfo?: { name?: string } } | null;
   recommended?: ApiMenuCatalogueItem[];
   menu?: ApiMenuCatalogueGroup[];
-  combos?: unknown[];
+  combos?: ApiComboCatalogueEntry[];
 }
 
 // ---------- Query args ----------
@@ -242,12 +335,13 @@ export const orderManagementV2Api = createApi({
     }),
 
     updateOrderV2: builder.mutation<{ message?: string; data?: ApiOrder }, UpdateOrderV2Args>({
-      query: ({ id, status, paymentStatus, deliveredMenuItem, deliveredall, ...reasons }) => {
+      query: ({ id, status, paymentStatus, deliveredMenuItem, deliveredCombo, deliveredall, ...reasons }) => {
         const body: Record<string, unknown> = {};
 
         if (status) body.status = status;
         if (paymentStatus) body.paymentStatus = paymentStatus;
         if (deliveredMenuItem) body.deliveredMenuItem = deliveredMenuItem;
+        if (deliveredCombo) body.deliveredCombo = deliveredCombo;
         if (deliveredall !== undefined) body.deliveredall = deliveredall;
 
         // Checked against `undefined`, not truthiness — an empty note is a
@@ -273,9 +367,12 @@ export const orderManagementV2Api = createApi({
     }),
 
     updateOrderDetailsV2: builder.mutation<{ message?: string; data?: ApiOrder }, UpdateOrderDetailsV2Args>({
-      query: ({ id, items, userId, pickupType, tableNumber }) => {
+      query: ({ id, items, combos, userId, pickupType, tableNumber }) => {
         const body: Record<string, unknown> = { items };
 
+        // Checked against `undefined` rather than length — an empty array is
+        // the caller saying "this order has no combos any more".
+        if (combos !== undefined) body.combos = combos;
         if (userId) body.userId = userId;
         if (pickupType) body.pickupType = pickupType;
         if (tableNumber) body.tableNumber = tableNumber;

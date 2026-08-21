@@ -1,9 +1,16 @@
 export type DiscountType = 'percentage' | 'fixed';
 export type DiscountStatus = 'active' | 'inactive' | 'expired';
 
+export interface DiscountMenuRef {
+  _id: string;
+  title: string;
+}
+
 export interface DiscountMenuItemRef {
   _id: string;
   title: string;
+  basePrice?: number;
+  menu?: DiscountMenuRef;
   status?: string;
 }
 

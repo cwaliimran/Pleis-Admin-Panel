@@ -8,17 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { ComboPicker } from './combo-picker';
 import {
   DELIVERY_TYPE_CONFIG,
   MAX_ITEM_QUANTITY,
   MIN_ITEM_QUANTITY,
   formatCurrency,
   formatOrderTime,
+  getComboPriceModeLabel,
   getDeliveryTypeConfig,
   getPaymentTypeLabel,
 } from './constants';
 import { MenuItemPicker } from './menu-item-picker';
-import { DeliveryType, MenuItemOption, Order, OrderDraftItem, OrderUpdatePayload } from './types';
+import { ComboOption, DeliveryType, MenuItemOption, Order, OrderDraftCombo, OrderDraftItem, OrderUpdatePayload } from './types';
 
 interface OrderUpdateModalProps {
   open: boolean;
@@ -58,9 +60,43 @@ const toDraftItems = (order: Order): OrderDraftItem[] => {
   return [...byMenuItem.values()];
 };
 
+/** Same merge for combos — the payload carries one entry per combo. */
+const toDraftCombos = (order: Order): OrderDraftCombo[] => {
+  const byCombo = new Map<string, OrderDraftCombo>();
+
+  order.combos.forEach((combo) => {
+    const existing = byCombo.get(combo.comboId);
+
+    if (existing) {
+      existing.quantity += combo.quantity;
+      return;
+    }
+
+    byCombo.set(combo.comboId, {
+      comboId: combo.comboId,
+      name: combo.name,
+      quantity: combo.quantity,
+      unitPrice: combo.unitFinalPrice,
+      originalUnitPrice: combo.unitPrice,
+      priceMode: combo.priceMode,
+      menuItemIds: combo.items.map((item) => item.menuItemId),
+      itemNames: combo.items.map((item) => item.name),
+      isNew: false,
+    });
+  });
+
+  return [...byCombo.values()];
+};
+
 const itemsSignature = (items: OrderDraftItem[]) =>
   items
     .map((item) => `${item.menuItemId}:${item.quantity}`)
+    .sort()
+    .join('|');
+
+const combosSignature = (combos: OrderDraftCombo[]) =>
+  combos
+    .map((combo) => `${combo.comboId}:${combo.quantity}`)
     .sort()
     .join('|');
 
@@ -79,12 +115,80 @@ const ReadOnlyRow: React.FC<{ label: string; value: React.ReactNode }> = ({ labe
   </div>
 );
 
+const NewBadge: React.FC = () => (
+  <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
+    NEW
+  </span>
+);
+
+const SectionHeading: React.FC<{ title: string; count: React.ReactNode }> = ({ title, count }) => (
+  <div className="mb-3 flex items-center justify-between gap-3">
+    <span className="text-xs font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">{title}</span>
+    <span className="text-xs text-gray-500 dark:text-gray-400">{count}</span>
+  </div>
+);
+
+const QuantityStepper: React.FC<{
+  quantity: number;
+  label: string;
+  disabled?: boolean;
+  onStep: (delta: number) => void;
+  onChange: (quantity: number) => void;
+}> = ({ quantity, label, disabled = false, onStep, onChange }) => (
+  <div className="flex items-center rounded-md border border-gray-200 dark:border-gray-700">
+    <button
+      type="button"
+      aria-label={`Decrease quantity of ${label}`}
+      disabled={disabled || quantity <= MIN_ITEM_QUANTITY}
+      onClick={() => onStep(-1)}
+      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-l-md text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800"
+    >
+      <Minus className="h-3.5 w-3.5" />
+    </button>
+
+    <input
+      inputMode="numeric"
+      value={quantity}
+      disabled={disabled}
+      aria-label={`Quantity of ${label}`}
+      onChange={(event) => {
+        const digits = event.target.value.replace(/\D/g, '');
+        onChange(digits ? Number(digits) : MIN_ITEM_QUANTITY);
+      }}
+      className="h-8 w-10 border-x border-gray-200 bg-transparent text-center text-sm font-semibold text-gray-900 outline-none dark:border-gray-700 dark:text-gray-100"
+    />
+
+    <button
+      type="button"
+      aria-label={`Increase quantity of ${label}`}
+      disabled={disabled || quantity >= MAX_ITEM_QUANTITY}
+      onClick={() => onStep(1)}
+      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-r-md text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800"
+    >
+      <Plus className="h-3.5 w-3.5" />
+    </button>
+  </div>
+);
+
+const RemoveButton: React.FC<{ label: string; disabled?: boolean; onClick: () => void }> = ({ label, disabled = false, onClick }) => (
+  <button
+    type="button"
+    aria-label={`Remove ${label}`}
+    disabled={disabled}
+    onClick={onClick}
+    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+  >
+    <Trash2 className="h-4 w-4" />
+  </button>
+);
+
 export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order, organizationId, isSubmitting, onClose, onConfirm }) => {
   const [deliveryType, setDeliveryType] = useState<DeliveryType>('tableService');
   const [tableNumber, setTableNumber] = useState('');
   const [items, setItems] = useState<OrderDraftItem[]>([]);
+  const [combos, setCombos] = useState<OrderDraftCombo[]>([]);
 
-  // The picker portals its panel here so the scrolling body cannot clip it.
+  // The pickers portal their panels here so the scrolling body cannot clip them.
   const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(null);
 
   // Seeded on open so a reopened modal never carries the previous edit, and so
@@ -95,6 +199,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
     setDeliveryType(order.deliveryType);
     setTableNumber(order.tableNumber);
     setItems(toDraftItems(order));
+    setCombos(toDraftCombos(order));
   }, [open, order?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isTableService = deliveryType === 'tableService';
@@ -124,21 +229,65 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
       return [...current, { menuItemId: option.id, name: option.name, quantity: 1, unitPrice: option.price, isNew: true }];
     });
 
-  const selectedMenuItemIds = useMemo(() => items.map((item) => item.menuItemId), [items]);
+  const handleComboQuantityChange = (comboId: string, quantity: number) =>
+    setCombos((current) => current.map((combo) => (combo.comboId === comboId ? { ...combo, quantity: clampQuantity(quantity) } : combo)));
 
-  // Items only — tax and discounts are the backend's to recalculate, so
-  // nothing here tries to predict the new total.
-  const subtotal = useMemo(() => items.reduce((total, item) => total + item.unitPrice * item.quantity, 0), [items]);
+  const handleComboStep = (comboId: string, delta: number) =>
+    setCombos((current) =>
+      current.map((combo) => (combo.comboId === comboId ? { ...combo, quantity: clampQuantity(combo.quantity + delta) } : combo))
+    );
+
+  const handleRemoveCombo = (comboId: string) => setCombos((current) => current.filter((combo) => combo.comboId !== comboId));
+
+  const handleAddCombo = (option: ComboOption) =>
+    setCombos((current) => {
+      const existing = current.find((combo) => combo.comboId === option.id);
+
+      if (existing) {
+        return current.map((combo) => (combo.comboId === option.id ? { ...combo, quantity: clampQuantity(combo.quantity + 1) } : combo));
+      }
+
+      return [
+        ...current,
+        {
+          comboId: option.id,
+          name: option.name,
+          quantity: 1,
+          unitPrice: option.price,
+          originalUnitPrice: option.originalPrice,
+          priceMode: option.priceMode,
+          menuItemIds: option.items.map((item) => item.id),
+          itemNames: option.items.map((item) => item.name),
+          isNew: true,
+        },
+      ];
+    });
+
+  const selectedMenuItemIds = useMemo(() => items.map((item) => item.menuItemId), [items]);
+  const selectedComboIds = useMemo(() => combos.map((combo) => combo.comboId), [combos]);
+
+  // Items and combos only — tax and discounts are the backend's to recalculate,
+  // so nothing here tries to predict the new total.
+  const subtotal = useMemo(
+    () =>
+      items.reduce((total, item) => total + item.unitPrice * item.quantity, 0) +
+      combos.reduce((total, combo) => total + combo.unitPrice * combo.quantity, 0),
+    [items, combos]
+  );
+
+  const comboCount = useMemo(() => combos.reduce((total, combo) => total + combo.quantity, 0), [combos]);
 
   const isDirty = Boolean(
     order &&
       (deliveryType !== order.deliveryType ||
         tableNumber.trim() !== order.tableNumber ||
-        itemsSignature(items) !== itemsSignature(toDraftItems(order)))
+        itemsSignature(items) !== itemsSignature(toDraftItems(order)) ||
+        combosSignature(combos) !== combosSignature(toDraftCombos(order)))
   );
 
   const isTableNumberMissing = isTableService && !tableNumber.trim();
-  const canSave = isDirty && items.length > 0 && !isTableNumberMissing && !isSubmitting;
+  const isOrderEmpty = items.length === 0 && combos.length === 0;
+  const canSave = isDirty && !isOrderEmpty && !isTableNumberMissing && !isSubmitting;
 
   const handleConfirm = () => {
     if (!canSave) return;
@@ -147,6 +296,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
       deliveryType,
       tableNumber: isTableService ? tableNumber.trim() : '',
       items: items.map((item) => ({ menuItemId: item.menuItemId, quantity: item.quantity })),
+      combos: combos.map((combo) => ({ comboId: combo.comboId, menuItemIds: combo.menuItemIds, quantity: combo.quantity })),
     });
   };
 
@@ -156,7 +306,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
         <DialogHeader className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
           <DialogTitle className="text-lg font-bold">Update order #{order?.orderNumber}</DialogTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            This order has not been confirmed or paid yet, so it can still be changed. Item prices come from the menu and cannot be edited.
+            This order has not been confirmed or paid yet, so it can still be changed. Prices come from the menu and cannot be edited.
           </p>
         </DialogHeader>
 
@@ -206,14 +356,9 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
             </div>
           </div>
 
-          {/* Items */}
+          {/* Items and combos */}
           <div className="px-6 py-5">
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <span className="text-xs font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">Items</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {items.length} {items.length === 1 ? 'line' : 'lines'}
-              </span>
-            </div>
+            <SectionHeading title="Items" count={`${items.length} ${items.length === 1 ? 'line' : 'lines'}`} />
 
             <div className="mb-3">
               <MenuItemPicker
@@ -225,93 +370,124 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
               />
             </div>
 
-            <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
-              {items.length === 0 && (
-                <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                  An order needs at least one item. Add one to continue.
-                </div>
-              )}
-
-              {items.map((item) => (
-                <div
-                  key={item.menuItemId}
-                  className="flex items-center justify-between gap-4 border-b border-gray-100 px-4 py-3 last:border-0 dark:border-gray-800"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{item.name}</span>
-                      {item.isNew && (
-                        <span className="shrink-0 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-blue-600 dark:bg-blue-950/50 dark:text-blue-300">
-                          NEW
-                        </span>
-                      )}
+            {items.length > 0 && (
+              <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
+                {items.map((item) => (
+                  <div
+                    key={item.menuItemId}
+                    className="flex items-center justify-between gap-4 border-b border-gray-100 px-4 py-3 last:border-0 dark:border-gray-800"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{item.name}</span>
+                        {item.isNew && <NewBadge />}
+                      </div>
+                      <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{formatCurrency(item.unitPrice)} each</div>
                     </div>
-                    <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{formatCurrency(item.unitPrice)} each</div>
-                  </div>
 
-                  <div className="flex shrink-0 items-center gap-3">
-                    <div className="flex items-center rounded-md border border-gray-200 dark:border-gray-700">
-                      <button
-                        type="button"
-                        aria-label={`Decrease quantity of ${item.name}`}
-                        disabled={isSubmitting || item.quantity <= MIN_ITEM_QUANTITY}
-                        onClick={() => handleStep(item.menuItemId, -1)}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-l-md text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800"
-                      >
-                        <Minus className="h-3.5 w-3.5" />
-                      </button>
-
-                      <input
-                        inputMode="numeric"
-                        value={item.quantity}
+                    <div className="flex shrink-0 items-center gap-3">
+                      <QuantityStepper
+                        quantity={item.quantity}
+                        label={item.name}
                         disabled={isSubmitting}
-                        aria-label={`Quantity of ${item.name}`}
-                        onChange={(event) => {
-                          const digits = event.target.value.replace(/\D/g, '');
-                          handleQuantityChange(item.menuItemId, digits ? Number(digits) : MIN_ITEM_QUANTITY);
-                        }}
-                        className="h-8 w-10 border-x border-gray-200 bg-transparent text-center text-sm font-semibold text-gray-900 outline-none dark:border-gray-700 dark:text-gray-100"
+                        onStep={(delta) => handleStep(item.menuItemId, delta)}
+                        onChange={(quantity) => handleQuantityChange(item.menuItemId, quantity)}
                       />
 
-                      <button
-                        type="button"
-                        aria-label={`Increase quantity of ${item.name}`}
-                        disabled={isSubmitting || item.quantity >= MAX_ITEM_QUANTITY}
-                        onClick={() => handleStep(item.menuItemId, 1)}
-                        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-r-md text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-gray-300 dark:hover:bg-gray-800"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </button>
+                      <span className="w-20 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        {formatCurrency(item.unitPrice * item.quantity)}
+                      </span>
+
+                      <RemoveButton label={item.name} disabled={isSubmitting} onClick={() => handleRemove(item.menuItemId)} />
                     </div>
-
-                    <span className="w-20 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">
-                      {formatCurrency(item.unitPrice * item.quantity)}
-                    </span>
-
-                    <button
-                      type="button"
-                      aria-label={`Remove ${item.name}`}
-                      disabled={isSubmitting}
-                      onClick={() => handleRemove(item.menuItemId)}
-                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-red-950/40 dark:hover:text-red-400"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
                   </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-6">
+              <SectionHeading title="Combos" count={comboCount > 0 ? `${comboCount} ${comboCount === 1 ? 'combo' : 'combos'}` : 'None'} />
+
+              <div className="mb-3">
+                <ComboPicker
+                  organizationId={organizationId}
+                  selectedIds={selectedComboIds}
+                  disabled={isSubmitting}
+                  portalContainer={dialogElement}
+                  onSelect={handleAddCombo}
+                />
+              </div>
+
+              {combos.length > 0 && (
+                <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
+                  {combos.map((combo) => {
+                    const priceModeLabel = getComboPriceModeLabel(combo.priceMode);
+                    const originalTotal = combo.originalUnitPrice * combo.quantity;
+                    const lineTotal = combo.unitPrice * combo.quantity;
+
+                    return (
+                      <div
+                        key={combo.comboId}
+                        className="flex items-center justify-between gap-4 border-b border-gray-100 px-4 py-3 last:border-0 dark:border-gray-800"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{combo.name}</span>
+                            {combo.isNew && <NewBadge />}
+                          </div>
+                          {combo.itemNames.length > 0 && (
+                            <div className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{combo.itemNames.join(' + ')}</div>
+                          )}
+                          <div className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                            {formatCurrency(combo.unitPrice)} each{priceModeLabel && ` · ${priceModeLabel}`}
+                          </div>
+                        </div>
+
+                        <div className="flex shrink-0 items-center gap-3">
+                          <QuantityStepper
+                            quantity={combo.quantity}
+                            label={combo.name}
+                            disabled={isSubmitting}
+                            onStep={(delta) => handleComboStep(combo.comboId, delta)}
+                            onChange={(quantity) => handleComboQuantityChange(combo.comboId, quantity)}
+                          />
+
+                          <span className="w-20 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            {formatCurrency(lineTotal)}
+                            {originalTotal > lineTotal && (
+                              <span className="block text-xs font-normal text-gray-400 line-through dark:text-gray-500">
+                                {formatCurrency(originalTotal)}
+                              </span>
+                            )}
+                          </span>
+
+                          <RemoveButton label={combo.name} disabled={isSubmitting} onClick={() => handleRemoveCombo(combo.comboId)} />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
             </div>
+
+            {isOrderEmpty && (
+              <div className="mt-4 rounded-lg border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
+                An order needs at least one item or combo. Add one to continue.
+              </div>
+            )}
 
             <div className="mt-4 space-y-2 border-t border-gray-200 pt-4 dark:border-gray-800">
               <div className="flex items-baseline justify-between gap-6">
-                <span className="text-base font-bold text-gray-900 dark:text-gray-100">New items subtotal</span>
+                <span className="text-base font-bold text-gray-900 dark:text-gray-100">New subtotal</span>
                 <span className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatCurrency(subtotal)}</span>
               </div>
 
-              <div className="flex items-baseline justify-between gap-6">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Napojnica (0% tax)</span>
-                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(order?.tipAmount ?? 0)}</span>
-              </div>
+              {Boolean(order?.tipAmount) && (
+                <div className="flex items-baseline justify-between gap-6">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Napojnica (0% tax)</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(order?.tipAmount ?? 0)}</span>
+                </div>
+              )}
 
               <div className="flex items-baseline justify-between gap-6">
                 <span className="text-sm text-gray-500 dark:text-gray-400">Current order total</span>

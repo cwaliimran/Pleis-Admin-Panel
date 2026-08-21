@@ -9,9 +9,11 @@ import { cn } from '@/lib/utils';
 import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react';
-import { FC, useEffect, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { DiscountMenuItemRef } from './types';
+import { FC, useEffect, useMemo, useState } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { DiscountMenuItemRef, DiscountMenuRef } from './types';
+
+const EMPTY_ITEM_REFS: DiscountMenuItemRef[] = [];
 
 const DISCOUNT_TYPE_OPTIONS = [
   { value: 'percentage', label: '% Percentage' },
@@ -58,11 +60,13 @@ interface ItemsPickerProps {
   userType: 'organizer' | 'super-admin';
   /** Items already selected before the modal opened (edit mode) — kept visible/checkable even if their menu isn't currently browsed. */
   initialItemRefs?: DiscountMenuItemRef[];
+  /** Reports the summed base price of the selected items, and whether a price is known for every one of them. */
+  onTotalChange?: (total: number, allPricesKnown: boolean) => void;
 }
 
-export const ItemsPicker: FC<ItemsPickerProps> = ({ name, companyId, userType, initialItemRefs = [] }) => {
+export const ItemsPicker: FC<ItemsPickerProps> = ({ name, companyId, userType, initialItemRefs = EMPTY_ITEM_REFS, onTotalChange }) => {
   const { control } = useFormContext();
-  const [menuId, setMenuId] = useState('');
+  const [menuId, setMenuId] = useState(() => initialItemRefs.find((item) => item.menu?._id)?.menu?._id || '');
   const [open, setOpen] = useState(false);
 
   const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
@@ -75,7 +79,16 @@ export const ItemsPicker: FC<ItemsPickerProps> = ({ name, companyId, userType, i
     },
     { skip: userType === 'super-admin' && !companyId }
   );
-  const menus = menuData?.data || [];
+  const menus: DiscountMenuRef[] = useMemo(() => menuData?.data || [], [menuData]);
+
+  const menuOptions = useMemo(() => {
+    const byId = new Map<string, DiscountMenuRef>();
+    menus.forEach((menu) => byId.set(menu._id, menu));
+    initialItemRefs.forEach((item) => {
+      if (item.menu?._id && !byId.has(item.menu._id)) byId.set(item.menu._id, item.menu);
+    });
+    return Array.from(byId.values());
+  }, [menus, initialItemRefs]);
 
   const { data: menuItemsData, isFetching: itemsLoading } = useGetMenuItemByMenuIdQuery({ menuId }, { skip: !menuId });
   const browsableItems: DiscountMenuItemRef[] = menuItemsData?.data || [];
@@ -95,7 +108,8 @@ export const ItemsPicker: FC<ItemsPickerProps> = ({ name, companyId, userType, i
       const next = new Map(prev);
       let changed = false;
       browsableItems.forEach((item) => {
-        if (next.get(item._id)?.title !== item.title) {
+        const existing = next.get(item._id);
+        if (existing?.title !== item.title || existing?.basePrice !== item.basePrice) {
           next.set(item._id, item);
           changed = true;
         }
@@ -104,6 +118,24 @@ export const ItemsPicker: FC<ItemsPickerProps> = ({ name, companyId, userType, i
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [browsableItems]);
+
+  const watchedIds = useWatch({ control, name });
+  const selectedIds: string[] = useMemo(() => watchedIds || [], [watchedIds]);
+
+  const totals = useMemo(() => {
+    let total = 0;
+    let allPricesKnown = true;
+    selectedIds.forEach((id) => {
+      const price = knownItems.get(id)?.basePrice;
+      if (typeof price === 'number' && !isNaN(price)) total += price;
+      else allPricesKnown = false;
+    });
+    return { total, allPricesKnown: allPricesKnown && selectedIds.length > 0 };
+  }, [selectedIds, knownItems]);
+
+  useEffect(() => {
+    onTotalChange?.(totals.total, totals.allPricesKnown);
+  }, [totals, onTotalChange]);
 
   return (
     <FormField
@@ -124,18 +156,27 @@ export const ItemsPicker: FC<ItemsPickerProps> = ({ name, companyId, userType, i
             <div className="flex flex-col gap-3">
               <div>
                 <FormLabel>Menu</FormLabel>
-                <Select value={menuId} onValueChange={setMenuId} disabled={menuLoading}>
+                <Select
+                  value={menuId}
+                  onValueChange={(nextMenuId) => {
+                    if (nextMenuId === menuId) return;
+                    setMenuId(nextMenuId);
+                    field.onChange([]);
+                  }}
+                  disabled={menuLoading}
+                >
                   <SelectTrigger className="mt-2 w-full">
                     <SelectValue placeholder={menuLoading ? 'Loading menus...' : 'Select a menu to browse its items'} />
                   </SelectTrigger>
                   <SelectContent className="dark:bg-secondary">
-                    {menus.map((menu: { _id: string; title: string }) => (
+                    {menuOptions.map((menu) => (
                       <SelectItem key={menu._id} value={menu._id}>
                         {menu.title}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-muted-foreground mt-1.5 text-xs">Changing the menu clears the selected items.</p>
               </div>
 
               <div>
@@ -209,6 +250,13 @@ export const ItemsPicker: FC<ItemsPickerProps> = ({ name, companyId, userType, i
                       </span>
                     ))}
                   </div>
+                )}
+
+                {selected.length > 0 && (
+                  <p className="text-muted-foreground mt-2 text-xs">
+                    Items total: <span className="text-foreground font-medium tabular-nums">€{totals.total.toFixed(2)}</span>
+                    {!totals.allPricesKnown ? ' · some item prices unavailable' : ''}
+                  </p>
                 )}
               </div>
             </div>
