@@ -181,14 +181,24 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.loyalty.default,
         icon: Tags,
       },
+      // {
+      //   title: 'Rewards',
+      //   url: paths.superAdmin.rewards,
+      //   icon: Tags,
+      // },
       {
         title: 'Rewards',
-        url: paths.superAdmin.rewards,
+        url: paths.superAdmin.rewardsV2,
         icon: Tags,
       },
+      // {
+      //   title: 'Streaks',
+      //   url: paths.superAdmin.streak,
+      //   icon: ListOrdered,
+      // },
       {
         title: 'Streaks',
-        url: paths.superAdmin.streak,
+        url: paths.superAdmin.streakV2,
         icon: ListOrdered,
       },
       {
@@ -196,19 +206,34 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.members,
         icon: Tags,
       },
+      // {
+      //   title: 'Challenges',
+      //   url: paths.superAdmin.challenges,
+      //   icon: Tags,
+      // },
       {
         title: 'Challenges',
-        url: paths.superAdmin.challenges,
+        url: paths.superAdmin.challengesV2,
         icon: Tags,
       },
+      // {
+      //   title: 'Promotions',
+      //   url: paths.superAdmin.promotions,
+      //   icon: Tags,
+      // },
       {
         title: 'Promotions',
-        url: paths.superAdmin.promotions,
+        url: paths.superAdmin.promotionsV2,
         icon: Tags,
       },
+      // {
+      //   title: 'Referrals',
+      //   url: paths.superAdmin.referrals,
+      //   icon: Tags,
+      // },
       {
         title: 'Referrals',
-        url: paths.superAdmin.referrals,
+        url: paths.superAdmin.referralsV2,
         icon: Tags,
       },
       {
@@ -228,38 +253,38 @@ export const menuGroups: MenuGroup[] = [
       },
     ],
   },
-  {
-    label: 'Loyalty v2',
-    key: paths.superAdmin.loyaltyV2.default,
-    icon: Handshake,
-    items: [
-      {
-        title: 'Rewards v2',
-        url: paths.superAdmin.rewardsV2,
-        icon: Tags,
-      },
-      {
-        title: 'Challenges  v2',
-        url: paths.superAdmin.challengesV2,
-        icon: Tags,
-      },
-      {
-        title: 'Promotions  v2',
-        url: paths.superAdmin.promotionsV2,
-        icon: Tags,
-      },
-      {
-        title: 'Streaks  v2',
-        url: paths.superAdmin.streakV2,
-        icon: ListOrdered,
-      },
-      {
-        title: 'Referrals  v2',
-        url: paths.superAdmin.referralsV2,
-        icon: Tags,
-      },
-    ],
-  },
+  // {
+  //   label: 'Loyalty v2',
+  //   key: paths.superAdmin.loyaltyV2.default,
+  //   icon: Handshake,
+  //   items: [
+  //     {
+  //       title: 'Rewards v2',
+  //       url: paths.superAdmin.rewardsV2,
+  //       icon: Tags,
+  //     },
+  //     {
+  //       title: 'Challenges  v2',
+  //       url: paths.superAdmin.challengesV2,
+  //       icon: Tags,
+  //     },
+  //     {
+  //       title: 'Promotions  v2',
+  //       url: paths.superAdmin.promotionsV2,
+  //       icon: Tags,
+  //     },
+  //     {
+  //       title: 'Streaks  v2',
+  //       url: paths.superAdmin.streakV2,
+  //       icon: ListOrdered,
+  //     },
+  //     {
+  //       title: 'Referrals  v2',
+  //       url: paths.superAdmin.referralsV2,
+  //       icon: Tags,
+  //     },
+  //   ],
+  // },
   {
     label: 'Global Loyalty',
     key: paths.superAdmin.globalLoyalty.default,
@@ -344,13 +369,14 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.reservation,
     icon: CalendarDays,
     items: [
+      // {
+      //   title: 'Reservations v1',
+      //   url: paths.superAdmin.reservation,
+      //   icon: CalendarDays,
+      // },
       {
-        title: 'Reservations v1',
-        url: paths.superAdmin.reservation,
-        icon: CalendarDays,
-      },
-      {
-        title: 'Reservations v2',
+        title: 'Reservations',
+        // title: 'Reservations v2',
         url: paths.superAdmin.reservationV2,
         icon: CalendarDays,
       },
@@ -450,13 +476,14 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.orderManagement,
     icon: ShoppingBasket,
     items: [
+      // {
+      //   title: 'Order Management v1',
+      //   url: paths.superAdmin.orderManagement,
+      //   icon: CalendarDays,
+      // },
       {
-        title: 'Order Management v1',
-        url: paths.superAdmin.orderManagement,
-        icon: CalendarDays,
-      },
-      {
-        title: 'Order Management v2',
+        title: 'Order Management',
+        // title: 'Order Management v2',
         url: paths.superAdmin.orderManagementV2,
         icon: CalendarDays,
       },
@@ -475,13 +502,14 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.orderTransactions,
         icon: ChartBar,
       },
+      // {
+      //   title: 'Settings',
+      //   url: paths.superAdmin.orderSettings,
+      //   icon: CalendarDays,
+      // },
       {
         title: 'Settings',
-        url: paths.superAdmin.orderSettings,
-        icon: CalendarDays,
-      },
-      {
-        title: 'Settings v2',
+        // title: 'Settings v2',
         url: paths.superAdmin.orderSettingsV2,
         icon: CalendarDays,
       },

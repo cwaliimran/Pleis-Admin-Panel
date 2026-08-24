@@ -59,7 +59,7 @@ export const WeekViewSection: React.FC<WeekViewSectionProps> = ({ days, selected
               type="button"
               className="flex cursor-pointer items-center justify-center gap-1 rounded-xl border border-dashed border-gray-300 px-3 py-3 text-sm font-semibold text-blue-600 transition-colors hover:border-blue-500 hover:bg-blue-50/50 dark:border-gray-600 dark:text-blue-400 dark:hover:bg-blue-950/20"
             >
-              Pick week
+              Pick a date
               <ChevronDown className="h-3.5 w-3.5" />
             </button>
           </PopoverTrigger>

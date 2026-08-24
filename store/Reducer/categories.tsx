@@ -9,7 +9,7 @@ export const categoriesApi = createApi({
 
   endpoints: (builder) => ({
     getCategories: builder.query({
-      query: ({ search, page, status, date, limit }) => {
+      query: ({ search, page, status, date, limit, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -17,6 +17,9 @@ export const categoriesApi = createApi({
           limit,
         };
         if (date) (params as any).date = date;
+        // Only sent when a caller asks for a sort, so other category lists keep the backend default order.
+        if (sortBy) (params as any).sortBy = sortBy;
+        if (sortOrder) (params as any).sortOrder = sortOrder;
         return {
           url: API_ROUTES.CATEGORIES,
           method: 'GET',

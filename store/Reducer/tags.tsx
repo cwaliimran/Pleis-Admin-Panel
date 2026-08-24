@@ -9,7 +9,7 @@ export const tagsApi = createApi({
 
   endpoints: (builder) => ({
     getTags: builder.query({
-      query: ({ search, page, status, date, limit,tagType }) => {
+      query: ({ search, page, status, date, limit, tagType, sortBy, sortOrder }) => {
         const params: any = {
           keyword: search,
           status,
@@ -18,6 +18,9 @@ export const tagsApi = createApi({
         };
         if (date) (params as any).date = date;
         if (tagType) (params as any).tagType = tagType;
+        // Only sent when a caller asks for a sort, so other tag lists keep the backend default order.
+        if (sortBy) (params as any).sortBy = sortBy;
+        if (sortOrder) (params as any).sortOrder = sortOrder;
         return {
           url: API_ROUTES.TAGS,
           method: 'GET',

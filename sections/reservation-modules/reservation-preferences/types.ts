@@ -10,7 +10,7 @@ export type UserType = 'organizer' | 'super-admin';
 
 // ---------- Time slots ----------
 
-export type SlotDurationMinutes = 60 | 90 | 120;
+export type SlotDurationMinutes = 30 | 60 | 90 | 120;
 
 /** Offsets are expressed in minutes from opening / before closing. */
 export type OffsetMinutes = 0 | 15 | 30 | 45 | 60 | 75 | 90;

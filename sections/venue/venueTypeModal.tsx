@@ -1,14 +1,11 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import FieldSkeleton from '@/components/ui/field-skeleton';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useGetOrganizationByIdQuery, useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useAddVenueMutation, useUpdateVenueMutation } from '@/store/Reducer/venue';
 import { useGetVenueTypesQuery } from '@/store/Reducer/venueType';
 import { getErrorMessage } from '@/utils/api';
@@ -33,6 +30,8 @@ interface VenueTypeModalProps {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries: 'places'[] = ['places'];
+
+const ORGANIZATION_QUERY_ARGS = { sortBy: 'organizationName', sortOrder: 'asc' };
 
 const defaultValues = {
   title: '',
@@ -155,37 +154,25 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
     }
   };
 
-  const { data: apiData, isLoading: venueLoading } = useGetVenueTypesQuery({
-    page: 0,
-    search: '',
-    limit: '100',
-    status: '',
-  });
+  const orgIdForLabel =
+    orgId || (typeof selectedVenueData?.organization === 'string' ? selectedVenueData.organization : null);
 
-  const { data: orgData, isLoading: orgLoading } = useGetOrganizationQuery({
-    page: 0,
-    search: '',
-    limit: '100',
-    status: '',
-  });
+  const { data: lookedUpOrgData } = useGetOrganizationByIdQuery({ id: orgIdForLabel }, { skip: !orgIdForLabel });
 
-  const venueTypeOptions = React.useMemo(
-    () =>
-      (apiData?.data || []).map((v: any) => ({
-        value: v._id.toString(),
-        label: v.title,
-      })),
-    [apiData]
-  );
+  const selectedVenueTypes = React.useMemo(() => {
+    const raw = selectedVenueData?.venueType;
+    const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
-  const organizationOptions = React.useMemo(
-    () =>
-      orgData?.data?.map((org: any) => ({
-        value: org._id,
-        label: org?.basicInfo?.name,
-      })) || [],
-    [orgData]
-  );
+    return list
+      .filter((vt: any) => vt && typeof vt === 'object' && vt._id)
+      .map((vt: any) => ({ value: vt._id.toString(), label: vt.title }));
+  }, [selectedVenueData]);
+
+  const selectedOrgLabel = React.useMemo(() => {
+    const org = selectedVenueData?.organization;
+    if (org && typeof org === 'object' && org?.basicInfo?.name) return org.basicInfo.name;
+    return lookedUpOrgData?.data?.basicInfo?.name;
+  }, [selectedVenueData, lookedUpOrgData]);
 
   // CREATE/UPDATE VENUE
   const onSubmit = handleSubmit(async (formData) => {
@@ -300,33 +287,32 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
                 className={methods.formState.errors.title ? 'border-red-400' : ''}
               />
 
-              {venueLoading ? (
-                <FieldSkeleton />
-              ) : (
-                <RHFCustomCombobox
-                  name="venueType"
-                  label="Venue Type"
-                  placeholder="Select Venue Type"
-                  className="w-full flex-1"
-                  multiple={true}
-                  allowCustom={false}
-                  options={venueTypeOptions}
-                />
-              )}
+              <RHFAsyncCombobox
+                name="venueType"
+                label="Venue Type"
+                placeholder="Select Venue Type"
+                searchPlaceholder="Search venue types..."
+                className="w-full flex-1"
+                multiple
+                initialSelected={selectedVenueTypes}
+                useOptionsQuery={useGetVenueTypesQuery}
+                getOptionValue={(venueType: any) => venueType._id.toString()}
+                getOptionLabel={(venueType: any) => venueType.title}
+              />
 
-              {orgLoading ? (
-                <FieldSkeleton />
-              ) : (
-                <RHFCustomDropdown
-                  name="organization"
-                  label="Organization"
-                  placeholder="Select Organization"
-                  options={organizationOptions}
-                  isLoading={orgLoading}
-                  showNone={false}
-                  disabled={!!orgId}
-                />
-              )}
+              <RHFAsyncCombobox
+                name="organization"
+                label="Organization"
+                placeholder="Select Organization"
+                searchPlaceholder="Search organizations..."
+                selectedLabel={selectedOrgLabel}
+                disabled={!!orgId}
+                skip={!!orgId}
+                useOptionsQuery={useGetOrganizationQuery}
+                queryArgs={ORGANIZATION_QUERY_ARGS}
+                getOptionValue={(org: any) => org._id}
+                getOptionLabel={(org: any) => org?.basicInfo?.name}
+              />
 
               {isEditMode && (
                 <RHFSelectField

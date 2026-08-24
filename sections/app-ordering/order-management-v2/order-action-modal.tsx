@@ -12,7 +12,6 @@ import { DestructiveActionPayload, DestructiveActionType, Order, RejectionReason
 
 interface OrderActionModalProps {
   open: boolean;
-  /** `reject` for orders never accepted, `cancel` for ones already in progress. */
   action: DestructiveActionType;
   order: Order | null;
   isSubmitting: boolean;
@@ -26,7 +25,6 @@ export const OrderActionModal: React.FC<OrderActionModalProps> = ({ open, action
 
   const copy = DESTRUCTIVE_ACTION_COPY[action];
 
-  // Reset on open so a reopened modal never carries the previous answer.
   useEffect(() => {
     if (!open) return;
     setReason('');
@@ -58,8 +56,6 @@ export const OrderActionModal: React.FC<OrderActionModalProps> = ({ open, action
             {REJECTION_REASON_OPTIONS.map((option) => (
               <div
                 key={option.value}
-                // Clicking anywhere in the row picks it; the item itself stays
-                // focusable so the group is still keyboard navigable.
                 onClick={() => setReason(option.value)}
                 className={cn(
                   'flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors',

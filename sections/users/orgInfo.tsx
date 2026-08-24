@@ -4,18 +4,51 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
+import { cn } from '@/lib/utils';
+import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
 import { useGetVenuesByCompanyQuery } from '@/store/Reducer/venue';
+import { showError } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   MapPin,
   Pencil,
-  //  Shirt, UserPlus
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import AddOtherDetailsModal from '../organization-section/add-other-details-modal';
 import VenueTypeModalV2 from '../venue/venueTypeModal';
-import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
-import { showError } from '@/utils/toast';
+
+const COLLAPSED_BADGE_COUNT = 5;
+
+const BADGE_CLASSES = 'text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white';
+
+const BadgeList = ({ items, capitalize = false }: { items?: any[]; capitalize?: boolean }) => {
+  const expanded = useBoolean();
+
+  if (!items || items.length === 0) return null;
+
+  const visibleItems = expanded.value ? items : items.slice(0, COLLAPSED_BADGE_COUNT);
+  const hiddenCount = items.length - visibleItems.length;
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2">
+      {visibleItems.map((item: any, index: number) => (
+        <Badge key={item?._id || item?.id || index} className={cn(BADGE_CLASSES, capitalize && 'capitalize')}>
+          {item?.title}
+        </Badge>
+      ))}
+
+      {(hiddenCount > 0 || expanded.value) && (
+        <button
+          type="button"
+          onClick={expanded.onToggle}
+          className="text-md cursor-pointer rounded-full px-2 py-1 font-medium text-slate-500 underline-offset-2 transition-colors hover:text-slate-700 hover:underline dark:hover:text-slate-300"
+        >
+          {hiddenCount > 0 ? `+${hiddenCount} more` : 'Show less'}
+        </button>
+      )}
+    </div>
+  );
+};
 
 const OrgInfo = ({ organizationData, userType }: any) => {
   // SUPER ADMIN VENUES OF THE ORGANIZATION
@@ -126,31 +159,13 @@ const OrgInfo = ({ organizationData, userType }: any) => {
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">CATEGORIES</h1>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {(organizationData as any)?.otherInfo?.categories?.map((item: any, index: number) => (
-                  <Badge
-                    key={index}
-                    className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
-                  >
-                    {item?.title}
-                  </Badge>
-                ))}
-              </div>
+              <BadgeList items={(organizationData as any)?.otherInfo?.categories} />
             </CardHeader>
           </Card>
           <Card className="dark:bg-secondary mt-4 shadow-lg">
             <CardHeader>
               <h1 className="font-semibold text-slate-500">TAGS</h1>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {(organizationData as any)?.otherInfo?.tags?.map((item: any, index: number) => (
-                  <Badge
-                    key={index}
-                    className="text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 capitalize transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white"
-                  >
-                    {item?.title}
-                  </Badge>
-                ))}
-              </div>
+              <BadgeList items={(organizationData as any)?.otherInfo?.tags} capitalize />
             </CardHeader>
           </Card>
         </div>

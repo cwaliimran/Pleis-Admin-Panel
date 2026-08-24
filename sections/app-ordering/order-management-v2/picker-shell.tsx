@@ -27,7 +27,6 @@ export interface PickerShellProps<T> {
   endLabel: string;
   disabled?: boolean;
   portalContainer?: HTMLElement | null;
-  /** Lets the caller hold its query back until the panel is first opened. */
   onOpenChange?: (open: boolean) => void;
   onRetry: () => void;
   onSelect: (option: T) => void;

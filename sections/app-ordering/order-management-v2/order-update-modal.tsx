@@ -31,10 +31,8 @@ interface OrderUpdateModalProps {
   onConfirm: (payload: OrderUpdatePayload) => void;
 }
 
-/** Lines carry a total for the whole quantity, so divide the unit price back out. */
 const toUnitPrice = (lineTotal: number, quantity: number) => (quantity > 0 ? lineTotal / quantity : lineTotal);
 
-/** Two lines of the same menu item merge — the update is expressed per menu item. */
 const toDraftItems = (order: Order): OrderDraftItem[] => {
   const byMenuItem = new Map<string, OrderDraftItem>();
 
@@ -60,7 +58,6 @@ const toDraftItems = (order: Order): OrderDraftItem[] => {
   return [...byMenuItem.values()];
 };
 
-/** Same merge for combos — the payload carries one entry per combo. */
 const toDraftCombos = (order: Order): OrderDraftCombo[] => {
   const byCombo = new Map<string, OrderDraftCombo>();
 
@@ -188,11 +185,8 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
   const [items, setItems] = useState<OrderDraftItem[]>([]);
   const [combos, setCombos] = useState<OrderDraftCombo[]>([]);
 
-  // The pickers portal their panels here so the scrolling body cannot clip them.
   const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(null);
 
-  // Seeded on open so a reopened modal never carries the previous edit, and so
-  // a background refetch cannot rewrite what is being typed.
   useEffect(() => {
     if (!open || !order) return;
 
@@ -266,8 +260,6 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
   const selectedMenuItemIds = useMemo(() => items.map((item) => item.menuItemId), [items]);
   const selectedComboIds = useMemo(() => combos.map((combo) => combo.comboId), [combos]);
 
-  // Items and combos only — tax and discounts are the backend's to recalculate,
-  // so nothing here tries to predict the new total.
   const subtotal = useMemo(
     () =>
       items.reduce((total, item) => total + item.unitPrice * item.quantity, 0) +

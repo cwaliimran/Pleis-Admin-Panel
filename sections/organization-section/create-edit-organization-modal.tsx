@@ -1,8 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
@@ -51,6 +50,8 @@ type OrganizationFormValues = {
 
 const URL_REGEX = /^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
 const PHONE_REGEX = /^\+?[1-9]\d{1,14}$/;
+
+const COMPANY_QUERY_ARGS = { userType: 'organizer', sortBy: 'companyName', sortOrder: 'asc' };
 
 // ============================================================
 // VALIDATION SCHEMA
@@ -221,41 +222,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
   const [addOrganization, { isLoading: isAdding }] = useAddOrganizationMutation();
   const [updateOrganization, { isLoading: isUpdating }] = useUpdateOrganizationMutation();
 
-  const { data: apiData, isLoading: isUserLoading } = useGetUserListQuery(
-    {
-      page: 0,
-      search: '',
-      limit: 100,
-      userType: 'organizer',
-      status: undefined,
-      date: undefined,
-    },
-    {
-      skip: userType === 'organizer',
-    }
-  );
-
-  const selectedCompanyId = getSelectedUserId(organization);
   const selectedCompanyLabel = getCompanyName(organization) || 'Current Company';
-
-  const userOptions = useMemo(() => {
-    const mappedOptions =
-      apiData?.data
-        ?.map((user: any) => ({
-          label: getCompanyName(user),
-          value: user?._id || user?.basicInfo?._id,
-        }))
-        .filter((option: any) => option?.value) || [];
-
-    if (selectedCompanyId && !mappedOptions.some((option: any) => option.value === selectedCompanyId)) {
-      mappedOptions.unshift({
-        label: selectedCompanyLabel,
-        value: selectedCompanyId,
-      });
-    }
-
-    return mappedOptions;
-  }, [apiData, selectedCompanyId, selectedCompanyLabel]);
 
   const isLoading = isAdding || isUpdating;
 
@@ -397,13 +364,16 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                         <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
                       </div>
                       {isSuperAdmin && (
-                        <RHFCustomDropdown
+                        <RHFAsyncCombobox
                           name="user"
                           label="Company Name"
                           placeholder="Select Company"
-                          options={userOptions}
-                          isLoading={isUserLoading}
-                          showNone={false}
+                          searchPlaceholder="Search companies..."
+                          selectedLabel={selectedCompanyLabel}
+                          useOptionsQuery={useGetUserListQuery}
+                          queryArgs={COMPANY_QUERY_ARGS}
+                          getOptionValue={(user: any) => user?._id || user?.basicInfo?._id}
+                          getOptionLabel={(user: any) => getCompanyName(user)}
                         />
                       )}
                     </>
@@ -412,13 +382,16 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                       <RHFTextField name="name" label="Organization Name" placeholder="Enter Organization Name" />
 
                       {userType !== 'organizer' && (
-                        <RHFCustomDropdown
+                        <RHFAsyncCombobox
                           name="user"
                           label="Company Name"
                           placeholder="Select Company"
-                          options={userOptions}
-                          isLoading={isUserLoading}
-                          showNone={false}
+                          searchPlaceholder="Search companies..."
+                          selectedLabel={selectedCompanyLabel}
+                          useOptionsQuery={useGetUserListQuery}
+                          queryArgs={COMPANY_QUERY_ARGS}
+                          getOptionValue={(user: any) => user?._id || user?.basicInfo?._id}
+                          getOptionLabel={(user: any) => getCompanyName(user)}
                         />
                       )}
                     </>

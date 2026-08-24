@@ -44,6 +44,10 @@ const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handle
         <span className="font-semibold">{item.title || '-'}</span>
       </TableCell>
 
+      <TableCell className="text-left">
+        <span className="font-semibold">{item.order || '-'}</span>
+      </TableCell>
+
       <TableCell className="text-left">{fDate(item.createdAt, formatStr.split.date)}</TableCell>
 
       <TableCell className="text-left">

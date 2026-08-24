@@ -68,8 +68,6 @@ interface OrderManagementViewProps {
 }
 
 export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ userType }) => {
-  // Single source of truth for the organization id — super-admin resolves it from
-  // the company selector in the header, organizer from the dropdown this renders.
   const { organizationId, OrganizationDropdown } = useOrganizerOrganization({
     userType,
     storageKey: 'order-management-v2-organization',
@@ -314,24 +312,6 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
                     <span className={cn('h-2 w-2 shrink-0 rounded-full', isOpen ? 'bg-green-500' : 'bg-gray-400')} />
                     <span className="font-bold text-gray-900 dark:text-gray-100">In-app ordering is {isOpen ? 'open' : 'closed'}</span>
                   </div>
-
-                  {/* The status endpoint returns only `isOrderingEnabled` — it has no
-                      `openedBy`, `openedAt` or venue name. Restore this once the
-                      backend sends them, along with `formatOpenedAt` in the imports.
-
-                  {isOpen ? (
-                    <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
-                      Opened by <span className="font-semibold text-gray-700 dark:text-gray-200">{orderingStatus.openedBy}</span> ·{' '}
-                      {formatOpenedAt(orderingStatus.openedAt)} · applies to{' '}
-                      <span className="font-semibold text-gray-700 dark:text-gray-200">{venueName}</span> only
-                    </p>
-                  ) : (
-                    <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
-                      Customers cannot place new orders at <span className="font-semibold text-gray-700 dark:text-gray-200">{venueName}</span> right
-                      now.
-                    </p>
-                  )}
-                  */}
 
                   {!isOpen && (
                     <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400">Customers cannot place new orders right now.</p>

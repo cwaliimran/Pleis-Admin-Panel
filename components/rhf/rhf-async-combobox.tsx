@@ -103,6 +103,26 @@ const RHFAsyncCombobox = ({
   );
 
   const queryArgsKey = JSON.stringify(queryArgs || {});
+  const initialSelectedKey = JSON.stringify(initialSelected || []);
+
+  // `initialSelected` often arrives after mount (a modal rendered before its record has loaded, or
+  // one kept mounted across opens), so the lazy useState seed above can miss it entirely. Merge
+  // later arrivals in rather than letting those chips fall back to raw ids.
+  useEffect(() => {
+    if (!initialSelected?.length) return;
+    setKnownLabels((prev) => {
+      const next = new Map(prev);
+      let changed = false;
+      initialSelected.forEach((option) => {
+        if (next.get(option.value) !== option.label) {
+          next.set(option.value, option.label);
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSelectedKey]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

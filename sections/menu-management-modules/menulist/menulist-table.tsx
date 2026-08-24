@@ -36,7 +36,6 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'organizationName',
   },
-  { id: 'venue', label: 'Venues', align: 'left' },
   {
     id: 'validFrom',
     label: 'Valid From',

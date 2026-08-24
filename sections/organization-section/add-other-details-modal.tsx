@@ -1,6 +1,5 @@
 import Time24hInput from '@/components/common/time-24h-input';
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
-import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
@@ -19,10 +18,8 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 
 import { ALLOWED_IMAGE_TYPES, DAYS_OF_WEEK, MAX_IMAGE_SIZE, OPEN_CLOSED_OPTIONS } from './constants';
 import {
-  buildCategoryOptions,
   buildFormDefaultValues,
   buildOperatingHoursPayload,
-  buildTagOptions,
   buildVenueOptions,
   extractFilenameFromUrl,
   getRemovedGalleryItems,
@@ -31,6 +28,9 @@ import {
   validateAndUploadImages,
 } from './org-helpers';
 import type { AddOtherDetailsModalProps, FormValues, GalleryItem, GalleryModalProps } from './types';
+
+const TAGS_QUERY_ARGS = { sortBy: 'title', sortOrder: 'asc' };
+const CATEGORIES_QUERY_ARGS = { sortBy: 'title', sortOrder: 'asc' };
 
 const GalleryModal: React.FC<GalleryModalProps> = ({ open, onClose, initialExisting, initialNewFiles, onSave }) => {
   const [images, setImages] = useState<GalleryItem[]>([]);
@@ -185,27 +185,26 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
   const initialGalleryMedia = useMemo<string[]>(() => newOrganization?.otherInfo?.galleryMedia || [], [newOrganization?.otherInfo?.galleryMedia]);
 
   // API Queries
-  const { data: tagData } = useGetTagsQuery({
-    page: 0,
-    search: '',
-    limit: '1000',
-    status: '',
-  });
-
   // No longer fetching venues from API; using venueList prop only
 
-  const { data: categoryData } = useGetCategoriesQuery({
-    page: 0,
-    search: '',
-    limit: '100',
-    status: '',
-    date: undefined,
-  });
+  const selectedCategories = useMemo(
+    () =>
+      (newOrganization?.otherInfo?.categories || [])
+        .filter((category: any) => category && typeof category === 'object' && category._id)
+        .map((category: any) => ({ value: category._id, label: category.title })),
+    [newOrganization]
+  );
+
+  const selectedTags = useMemo(
+    () =>
+      (newOrganization?.otherInfo?.tags || [])
+        .filter((tag: any) => tag && typeof tag === 'object' && (tag._id || tag.id))
+        .map((tag: any) => ({ value: tag._id || tag.id, label: tag.title })),
+    [newOrganization]
+  );
 
   // Memoized Options
-  const tagOptions = useMemo(() => buildTagOptions(tagData), [tagData]);
   const venueOptions = useMemo(() => buildVenueOptions(venueList, undefined), [venueList]);
-  const categoryOptions = useMemo(() => buildCategoryOptions(categoryData), [categoryData]);
 
   // Form Setup
   const formDefaultValues = useMemo<FormValues>(
@@ -393,24 +392,32 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
               <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
                 <RHFCustomDropdown name="venue" label="Venue" placeholder="Select Venue" options={venueOptions} isLoading={false} showNone={false} />
 
-                <RHFCustomCombobox
+                <RHFAsyncCombobox
                   name="tags"
                   label="Select Tags"
                   placeholder="Select tags"
+                  searchPlaceholder="Search tags..."
                   className="w-full flex-1"
-                  multiple={true}
-                  allowCustom={false}
-                  options={tagOptions}
+                  multiple
+                  initialSelected={selectedTags}
+                  useOptionsQuery={useGetTagsQuery}
+                  queryArgs={TAGS_QUERY_ARGS}
+                  getOptionValue={(tag: any) => tag?._id}
+                  getOptionLabel={(tag: any) => tag?.title}
                 />
 
-                <RHFCustomCombobox
+                <RHFAsyncCombobox
                   name="categories"
                   label="Select Categories"
                   placeholder="Select categories"
+                  searchPlaceholder="Search categories..."
                   className="w-full flex-1"
-                  multiple={true}
-                  allowCustom={false}
-                  options={categoryOptions}
+                  multiple
+                  initialSelected={selectedCategories}
+                  useOptionsQuery={useGetCategoriesQuery}
+                  queryArgs={CATEGORIES_QUERY_ARGS}
+                  getOptionValue={(category: any) => category?._id}
+                  getOptionLabel={(category: any) => category?.title}
                 />
               </div>
 

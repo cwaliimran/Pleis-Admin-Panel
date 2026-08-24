@@ -292,12 +292,6 @@ export const buildFormDefaultValues = (organization: any, initialGalleryMedia: s
 // OPTIONS BUILDERS
 // ============================================================
 
-export const buildTagOptions = (tagData: any) =>
-  tagData?.data?.map((tag: any) => ({
-    label: tag?.title,
-    value: tag?._id,
-  })) || [];
-
 export const buildVenueOptions = (venueList: any[], venueData: any) =>
   (venueList && venueList.length > 0
     ? venueList.map((venue: any) => ({
@@ -309,8 +303,3 @@ export const buildVenueOptions = (venueList: any[], venueData: any) =>
         value: venue?._id,
       }))) || [];
 
-export const buildCategoryOptions = (categoryData: any) =>
-  categoryData?.data?.map((category: any) => ({
-    label: category?.title,
-    value: category?._id,
-  })) || [];
