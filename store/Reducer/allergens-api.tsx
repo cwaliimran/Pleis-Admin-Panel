@@ -1,10 +1,10 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
-import { customFetchBaseQuery } from '../customFetchBaseQuery';
+import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
 export const allergensApi = createApi({
   reducerPath: 'allergensApi',
-  baseQuery: customFetchBaseQuery(),
+  baseQuery: customFetchBaseQueryWithRoleRouting(),
   tagTypes: ['allergens'],
 
   endpoints: (builder) => ({
@@ -21,9 +21,13 @@ export const allergensApi = createApi({
         if (sortBy) params.sortBy = sortBy;
         if (sortOrder) params.sortOrder = sortOrder;
         return {
-          url: API_ROUTES.ADMIN_PRESET_MENU_ALLERGEN,
+          url: '',
           method: 'GET',
           params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_PRESET_MENU_ALLERGEN,
+            organizerRoute: API_ROUTES.ORGANIZER_PRESET_MENU_ALLERGEN,
+          },
         };
       },
       transformResponse: (res: any) => ({

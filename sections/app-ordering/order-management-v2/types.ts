@@ -116,6 +116,10 @@ export interface Order {
   id: string;
   /** Display reference without the leading "#", e.g. "ORD-C352Y8". */
   orderNumber: string;
+  deliveryOption: {
+    id: string;
+    title: string;
+  };
   placedAt: string;
   customer: OrderCustomer;
   deliveryType: DeliveryType;
@@ -239,11 +243,11 @@ export interface OrderDraftCombo {
   isNew: boolean;
 }
 
-/** Prices and payment method are absent on purpose — the backend owns both. */
+/**
+ * Prices, payment method and the delivery option are absent on purpose —
+ * the backend owns all three. Only the lines are editable.
+ */
 export interface OrderUpdatePayload {
-  deliveryType: DeliveryType;
-  /** Empty unless `deliveryType` is `tableService`. */
-  tableNumber: string;
   items: { menuItemId: string; quantity: number }[];
   combos: { comboId: string; menuItemIds: string[]; quantity: number }[];
 }

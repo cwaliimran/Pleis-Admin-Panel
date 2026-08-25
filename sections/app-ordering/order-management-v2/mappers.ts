@@ -50,10 +50,14 @@ const mapCustomer = (order: ApiOrder): OrderCustomer => {
 };
 
 /**
- * `tableNumber` is only sent for table service; the other pickup types
- * carry their meaning in the type itself.
+ * `deliveryOption.title` is the backend's own wording and wins when present.
+ * The `pickupType` lookup stays as the fallback for orders placed before
+ * delivery options existed.
  */
 const mapDeliveryLabel = (order: ApiOrder): string => {
+  const optionTitle = order.deliveryOption?.title?.trim();
+  if (optionTitle) return optionTitle;
+
   const typeLabel = DELIVERY_TYPE_CONFIG[order.pickupType]?.label || 'Delivery';
   if (order.pickupType !== 'tableService') return typeLabel;
   return order.tableNumber?.trim() || typeLabel;
@@ -139,6 +143,10 @@ export const mapApiOrder = (order: ApiOrder): Order => {
     placedAt: order.createdAt,
     customer: mapCustomer(order),
     deliveryType: order.pickupType,
+    deliveryOption: {
+      id: order.deliveryOption?._id || '',
+      title: order.deliveryOption?.title?.trim() || '',
+    },
     deliveryLabel: mapDeliveryLabel(order),
     tableNumber: order.tableNumber?.trim() || '',
     paymentType: order.paymentMethod,

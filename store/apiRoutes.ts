@@ -444,6 +444,14 @@ export const API_ROUTES = {
   ADMIN_PRESET_MENU_DAYPART_BY_ID: (id: string) => `/admin/preset-menu/daypart/${id}`,
   ADMIN_PRESET_MENU_DAYPART_CODE: `/admin/preset-menu/daypart/code`,
 
+  // Read-only mirrors of the preset-menu catalogs above. Organizers pick from these in the menu
+  // item form; creating and editing them stays on the admin-only management screens.
+  ORGANIZER_PRESET_MENU_BRAND: `/organizer/preset-menu/brand`,
+  ORGANIZER_PRESET_MENU_SERVING: `/organizer/preset-menu/serving`,
+  ORGANIZER_PRESET_MENU_DIET_TAG: `/organizer/preset-menu/diet-tag`,
+  ORGANIZER_PRESET_MENU_ALLERGEN: `/organizer/preset-menu/allergen`,
+  ORGANIZER_PRESET_MENU_DAYPART: `/organizer/preset-menu/daypart`,
+
   ADMIN_MENU_CATEGORIES: `/admin/menu/categories`,
   ADMIN_MENU_CATEGORIES_BY_ID: (id: string) => `/admin/menu/categories/${id}`,
 
@@ -466,6 +474,7 @@ export const API_ROUTES = {
   ADMIN_MENU_SUB_CATEGORY_TYPES: `/admin/menu/sub-categories/types`,
   ADMIN_MENU_SUB_CATEGORY_TYPES_BY_ID: (id: string) => `/admin/menu/sub-categories/types/${id}`,
 
+  ORGANIZER_MENU_PRESET_TYPE: `/organizer/menu/preset-type`,
   ADMIN_MENU_PRESET_TYPE: `/admin/menu/preset-type`,
   ADMIN_MENU_PRESET_TYPE_BY_ID: (id: string) => `/admin/menu/preset-type/${id}`,
   ADMIN_MENU_PRESET_TYPE_CODE: `/admin/menu/preset-type/code`,

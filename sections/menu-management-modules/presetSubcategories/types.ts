@@ -15,7 +15,6 @@ export interface MenuSubcategoryRecord {
   _id: string;
   name: string;
   category: SubcategoryCategory | null;
-  order: number;
   status: SubcategoryStatus;
   createdAt: string;
 }
@@ -33,8 +32,6 @@ export interface SamplePageProps {
   loading?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
-  handleReorder?: (activeId: string, overId: string) => void;
-  reorderDisabled?: boolean;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -44,6 +41,9 @@ export interface SamplePageProps {
   onStatusChange?: (status: string) => void;
   categoryId?: string;
   onCategoryChange?: (categoryId: string) => void;
+  sortBy?: string;
+  sortOrder?: string;
+  onSortChange?: (sortBy: string, sortOrder: string) => void;
   onResetFilters?: () => void;
 }
 
@@ -51,13 +51,11 @@ export interface TableRowProps {
   item: MenuSubcategoryRecord;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
-  dragDisabled?: boolean;
 }
 
 export type SubcategoryFormValues = {
   name: string;
   category: string;
-  order: string;
   status: SubcategoryStatus;
 };
 
@@ -66,5 +64,4 @@ export type SubcategoryModalProps = {
   onClose: () => void;
   isEdit?: boolean;
   selectedData?: MenuSubcategoryRecord | null;
-  nextOrder: number;
 };

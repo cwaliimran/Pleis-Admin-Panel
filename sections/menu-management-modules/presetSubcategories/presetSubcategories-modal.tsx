@@ -17,13 +17,10 @@ import { SubcategoryFormValues, SubcategoryModalProps } from './types';
 const schema = Yup.object().shape({
   name: Yup.string().required('Name is required'),
   category: Yup.string().required('Category is required'),
-  order: Yup.string()
-    .required('Order is required')
-    .test('is-integer', 'Order must be a whole number', (value) => !!value && Number.isInteger(Number(value)) && Number(value) > 0),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
 
-const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, nextOrder }: SubcategoryModalProps) => {
+const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData }: SubcategoryModalProps) => {
   const [addSubcategory, { isLoading: addLoading }] = useAddMenuSubcategoryMutation();
   const [updateSubcategory, { isLoading: updateLoading }] = useUpdateMenuSubcategoryMutation();
   const submitting = addLoading || updateLoading;
@@ -31,7 +28,6 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, nextOrd
   const defaultValues: SubcategoryFormValues = {
     name: '',
     category: '',
-    order: String(nextOrder),
     status: 'active',
   };
 
@@ -48,20 +44,18 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, nextOrd
       reset({
         name: selectedData.name,
         category: selectedData.category?._id || '',
-        order: String(selectedData.order),
         status: selectedData.status,
       });
     } else if (open && !isEdit) {
-      reset({ ...defaultValues, order: String(nextOrder) });
+      reset(defaultValues);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, isEdit, selectedData, reset, nextOrder]);
+  }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: SubcategoryFormValues) => {
     const payload = {
       name: formData.name,
       category: formData.category,
-      order: Number(formData.order),
       status: formData.status,
     };
 
@@ -111,8 +105,6 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData, nextOrd
                   getOptionValue={(category) => category._id}
                   getOptionLabel={(category) => category.title}
                 />
-
-                <RHFTextField name="order" label="Order" type="number" step="1" min="1" />
 
                 {isEdit && (
                   <RHFSelectField

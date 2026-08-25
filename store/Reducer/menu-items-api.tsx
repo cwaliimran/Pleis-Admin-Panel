@@ -132,8 +132,12 @@ export const menuItemsApi = createApi({
      * ───────────────────────────────────────────── */
     getMenuItemByMenuId: builder.query({
       query: ({ menuId }) => ({
-        url: API_ROUTES.ADMIN_MENU_ITEMS_BY_MENU_ID(menuId),
+        url: '',
         method: 'GET',
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_MENU_ITEMS_BY_MENU_ID(menuId),
+          organizerRoute: API_ROUTES.ORGANIZER_MENU_ITEMS_BY_MENU_ID(menuId),
+        },
       }),
       transformResponse: (res) => ({
         data: res.data,

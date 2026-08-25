@@ -137,6 +137,12 @@ export interface ApiOrder {
   paymentStatus: ApiPaymentStatus;
   orderType: string;
   pickupType: ApiPickupType;
+  /**
+   * The delivery option the customer chose, e.g. "Table Delivery". The
+   * backend owns the list, so this is display-only and read straight through
+   * rather than matched against a local enum.
+   */
+  deliveryOption?: { _id: string; title?: string } | null;
   /** Present only when `pickupType` is `tableService`. */
   tableNumber?: string;
   orderNumber: string;
@@ -222,9 +228,6 @@ export interface UpdateOrderDetailsV2Args {
   combos?: UpdateOrderComboV2[];
   /** The `_id` of the user the order belongs to. */
   userId?: string;
-  pickupType?: ApiPickupType;
-  /** Required by the backend when `pickupType` is `tableService`. */
-  tableNumber?: string;
 }
 
 // ---------- Menu catalogue (for the update modal's item picker) ----------
@@ -367,15 +370,13 @@ export const orderManagementV2Api = createApi({
     }),
 
     updateOrderDetailsV2: builder.mutation<{ message?: string; data?: ApiOrder }, UpdateOrderDetailsV2Args>({
-      query: ({ id, items, combos, userId, pickupType, tableNumber }) => {
+      query: ({ id, items, combos, userId }) => {
         const body: Record<string, unknown> = { items };
 
         // Checked against `undefined` rather than length — an empty array is
         // the caller saying "this order has no combos any more".
         if (combos !== undefined) body.combos = combos;
         if (userId) body.userId = userId;
-        if (pickupType) body.pickupType = pickupType;
-        if (tableNumber) body.tableNumber = tableNumber;
 
         return {
           url: '',

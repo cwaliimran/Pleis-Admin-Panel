@@ -1,5 +1,6 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
@@ -10,7 +11,7 @@ import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DuplicateMenuModal from './duplicate-menu-modal';
 import MenuItemModal from './menulist-modal';
 import MenuItemTable from './menulist-table';
@@ -32,6 +33,9 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
   const companySkip = userType === 'super-admin' && !companyId;
 
+  // Organizers scope the page from the header's multi-select; super-admin has no such control.
+  const { organizerOrganizationIds } = useCompanySelection();
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
@@ -50,13 +54,26 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MenuListItem | null>(null);
 
+  // The in-table filter narrows to a single organization. With it cleared, an organizer still falls
+  // back to the header's selection so the page never shows organizations they filtered out up top.
+  const pickedOrganization = !organization || organization === 'all' ? undefined : organization;
+  const headerOrganizations = organizerOrganizationIds.length > 0 ? organizerOrganizationIds : undefined;
+  const scopedOrganizations = userType === 'organizer' ? pickedOrganization || headerOrganizations : pickedOrganization;
+
+  // Changing the header selection changes the result set, so the current page number is stale.
+  const headerOrganizationsKey = organizerOrganizationIds.join(',');
+  useEffect(() => {
+    if (userType !== 'organizer') return;
+    setPage(1);
+  }, [headerOrganizationsKey, userType]);
+
   const { data, isLoading, isFetching } = useGetMenuListQuery(
     {
       page: page - 1,
       limit,
       search,
       status: !status || status === 'all' ? undefined : status,
-      organizations: !organization || organization === 'all' ? undefined : organization,
+      organizations: scopedOrganizations,
       date: date ? formatDate(date) : undefined,
       companyOrganizer: scopedCompanyId,
       sortBy,

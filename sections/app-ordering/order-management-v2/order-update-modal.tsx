@@ -3,24 +3,20 @@
 import ButtonLoading from '@/components/common/button-loading';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ComboPicker } from './combo-picker';
 import {
-  DELIVERY_TYPE_CONFIG,
   MAX_ITEM_QUANTITY,
   MIN_ITEM_QUANTITY,
   formatCurrency,
   formatOrderTime,
   getComboPriceModeLabel,
-  getDeliveryTypeConfig,
   getPaymentTypeLabel,
 } from './constants';
 import { MenuItemPicker } from './menu-item-picker';
-import { ComboOption, DeliveryType, MenuItemOption, Order, OrderDraftCombo, OrderDraftItem, OrderUpdatePayload } from './types';
+import { ComboOption, MenuItemOption, Order, OrderDraftCombo, OrderDraftItem, OrderUpdatePayload } from './types';
 
 interface OrderUpdateModalProps {
   open: boolean;
@@ -99,12 +95,6 @@ const combosSignature = (combos: OrderDraftCombo[]) =>
 
 const clampQuantity = (value: number) => Math.min(MAX_ITEM_QUANTITY, Math.max(MIN_ITEM_QUANTITY, value));
 
-const FieldLabel: React.FC<{ children: React.ReactNode; htmlFor?: string }> = ({ children, htmlFor }) => (
-  <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold text-gray-900 dark:text-gray-100">
-    {children}
-  </label>
-);
-
 const ReadOnlyRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex items-baseline justify-between gap-4 border-b border-dashed border-gray-200 py-2 last:border-0 dark:border-gray-800">
     <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">{label}</span>
@@ -180,8 +170,6 @@ const RemoveButton: React.FC<{ label: string; disabled?: boolean; onClick: () =>
 );
 
 export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order, organizationId, isSubmitting, onClose, onConfirm }) => {
-  const [deliveryType, setDeliveryType] = useState<DeliveryType>('tableService');
-  const [tableNumber, setTableNumber] = useState('');
   const [items, setItems] = useState<OrderDraftItem[]>([]);
   const [combos, setCombos] = useState<OrderDraftCombo[]>([]);
 
@@ -190,18 +178,9 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
   useEffect(() => {
     if (!open || !order) return;
 
-    setDeliveryType(order.deliveryType);
-    setTableNumber(order.tableNumber);
     setItems(toDraftItems(order));
     setCombos(toDraftCombos(order));
   }, [open, order?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const isTableService = deliveryType === 'tableService';
-
-  const handleDeliveryTypeChange = (next: DeliveryType) => {
-    setDeliveryType(next);
-    if (next !== 'tableService') setTableNumber('');
-  };
 
   const handleQuantityChange = (menuItemId: string, quantity: number) =>
     setItems((current) => current.map((item) => (item.menuItemId === menuItemId ? { ...item, quantity: clampQuantity(quantity) } : item)));
@@ -271,22 +250,17 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
 
   const isDirty = Boolean(
     order &&
-      (deliveryType !== order.deliveryType ||
-        tableNumber.trim() !== order.tableNumber ||
-        itemsSignature(items) !== itemsSignature(toDraftItems(order)) ||
+      (itemsSignature(items) !== itemsSignature(toDraftItems(order)) ||
         combosSignature(combos) !== combosSignature(toDraftCombos(order)))
   );
 
-  const isTableNumberMissing = isTableService && !tableNumber.trim();
   const isOrderEmpty = items.length === 0 && combos.length === 0;
-  const canSave = isDirty && !isOrderEmpty && !isTableNumberMissing && !isSubmitting;
+  const canSave = isDirty && !isOrderEmpty && !isSubmitting;
 
   const handleConfirm = () => {
     if (!canSave) return;
 
     onConfirm({
-      deliveryType,
-      tableNumber: isTableService ? tableNumber.trim() : '',
       items: items.map((item) => ({ menuItemId: item.menuItemId, quantity: item.quantity })),
       combos: combos.map((combo) => ({ comboId: combo.comboId, menuItemIds: combo.menuItemIds, quantity: combo.quantity })),
     });
@@ -307,43 +281,11 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
           <div className="border-b border-gray-200 px-6 py-5 lg:border-r lg:border-b-0 dark:border-gray-800">
             <div className="mb-4 text-xs font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">Order details</div>
 
-            <div className="mb-4">
-              <FieldLabel>Pickup type</FieldLabel>
-              <Select value={deliveryType} onValueChange={(next) => handleDeliveryTypeChange(next as DeliveryType)} disabled={isSubmitting}>
-                <SelectTrigger className="h-10 w-full cursor-pointer bg-white shadow-none dark:bg-[#1a1a1a]" aria-label="Pickup type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(DELIVERY_TYPE_CONFIG) as DeliveryType[]).map((type) => (
-                    <SelectItem key={type} value={type} className="cursor-pointer">
-                      {getDeliveryTypeConfig(type).label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {isTableService && (
-              <div className="mb-4">
-                <FieldLabel htmlFor="order-table-number">
-                  Table number <span className="font-normal text-gray-500 dark:text-gray-400">· required</span>
-                </FieldLabel>
-                <Input
-                  id="order-table-number"
-                  value={tableNumber}
-                  disabled={isSubmitting}
-                  onChange={(event) => setTableNumber(event.target.value)}
-                  placeholder="e.g. Table 5"
-                  className="h-10 bg-white dark:bg-[#1a1a1a]"
-                />
-                {isTableNumberMissing && <p className="mt-1.5 text-xs font-medium text-red-500">Table service needs a table number.</p>}
-              </div>
-            )}
-
-            <div className="mt-5 border-t border-gray-200 pt-4 dark:border-gray-800">
+            <div>
               <ReadOnlyRow label="Customer" value={order?.customer.name || '-'} />
               <ReadOnlyRow label="Placed" value={order ? formatOrderTime(order.placedAt) : '-'} />
               <ReadOnlyRow label="Order ID" value={order?.orderNumber || '-'} />
+              <ReadOnlyRow label="Delivery Option" value={order?.deliveryOption?.title || '-'} />
               <ReadOnlyRow label="Payment method" value={order ? getPaymentTypeLabel(order.paymentType) : '-'} />
             </div>
           </div>

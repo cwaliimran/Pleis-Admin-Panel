@@ -4,16 +4,11 @@ import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useGetItemsCategoryQuery } from '@/store/Reducer/items-category-api';
-import {
-  useDeleteMenuSubcategoryMutation,
-  useGetMenuSubcategoriesQuery,
-  useUpdateMenuSubcategoryOrderMutation,
-} from '@/store/Reducer/menu-subcategories-api';
+import { useDeleteMenuSubcategoryMutation, useGetMenuSubcategoriesQuery } from '@/store/Reducer/menu-subcategories-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
-import { arrayMove } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import SubcategoryModal from './presetSubcategories-modal';
 import MenuSubcategoryTable from './presetSubcategories-table';
 import { CategoryOption, MenuSubcategoryRecord } from './types';
@@ -29,6 +24,8 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<string>('');
 
   const { data, isLoading, isFetching } = useGetMenuSubcategoriesQuery({
     page: page - 1,
@@ -36,34 +33,26 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
     search,
     status: !status || status === 'all' ? undefined : status,
     category: !categoryId || categoryId === 'all' ? undefined : categoryId,
+    sortBy,
+    sortOrder,
   });
 
   const { data: categoriesData } = useGetItemsCategoryQuery({ page: 0, limit: 1000, search: '' });
 
   const [deleteSubcategory, { isLoading: deleteLoading }] = useDeleteMenuSubcategoryMutation();
-  const [updateSubcategoryOrder] = useUpdateMenuSubcategoryOrderMutation();
 
-  const serverSubcategories: MenuSubcategoryRecord[] = data?.data || [];
+  const subcategories: MenuSubcategoryRecord[] = data?.data || [];
   const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
   const categories: CategoryOption[] = categoriesData?.data || [];
 
-  // Holds the dragged-to order so the row stays where the user dropped it while the PUT and the
-  // refetch it invalidates run in the background. Cleared the moment fresh server data lands.
-  const [optimisticOrder, setOptimisticOrder] = useState<MenuSubcategoryRecord[] | null>(null);
-  const subcategories = optimisticOrder ?? serverSubcategories;
-
-  useEffect(() => {
-    setOptimisticOrder(null);
-  }, [data]);
+  const handleSortChange = (newSortBy: string, newSortOrder: string) => {
+    setSortBy(newSortBy);
+    setSortOrder(newSortOrder);
+    setPage(1);
+  };
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MenuSubcategoryRecord | null>(null);
-
-  const hasActiveFilters = !!search.trim() || (!!status && status !== 'all') || (!!categoryId && categoryId !== 'all');
-
-  // Pagination is fine to reorder within — the page offset below maps a row index back to its real
-  // order. Filters are not: the visible rows aren't contiguous, so any index we compute is wrong.
-  const reorderDisabled = hasActiveFilters;
 
   const handleCreateNew = () => {
     setSelectedRecord(null);
@@ -96,26 +85,6 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
     }
   };
 
-  const handleReorder = async (activeId: string, overId: string) => {
-    const activeIndex = subcategories.findIndex((item) => item._id === activeId);
-    const overIndex = subcategories.findIndex((item) => item._id === overId);
-    if (activeIndex === -1 || overIndex === -1) return;
-
-    const previousOrder = subcategories;
-    setOptimisticOrder(arrayMove(subcategories, activeIndex, overIndex));
-
-    // `order` is global, so the row's position on page N has to be offset by the pages before it.
-    const pageOffset = ((meta?.currentPage || page) - 1) * (meta?.limit || limit);
-
-    try {
-      await updateSubcategoryOrder({ id: activeId, newOrder: pageOffset + overIndex + 1 }).unwrap();
-      showSuccess('Order updated');
-    } catch (error) {
-      setOptimisticOrder(previousOrder);
-      showError(getErrorMessage(error));
-    }
-  };
-
   return (
     <div>
       <div className="mt-3 flex w-full items-center justify-end md:mt-0">
@@ -129,11 +98,9 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
         data={subcategories}
         meta={meta}
         categories={categories}
-        loading={isLoading || (isFetching && !optimisticOrder)}
+        loading={isLoading || isFetching}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
-        handleReorder={handleReorder}
-        reorderDisabled={reorderDisabled}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -155,22 +122,21 @@ const PresetSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-
           setCategoryId(val);
           setPage(1);
         }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSortChange={handleSortChange}
         onResetFilters={() => {
           setStatus('');
           setCategoryId('');
           setSearch('');
+          setSortBy('');
+          setSortOrder('');
           setPage(1);
         }}
       />
 
       {openModal.value && (
-        <SubcategoryModal
-          open={openModal.value}
-          onClose={openModal.onFalse}
-          isEdit={editModal.value}
-          selectedData={selectedRecord}
-          nextOrder={(meta?.totalRecords || 0) + 1}
-        />
+        <SubcategoryModal open={openModal.value} onClose={openModal.onFalse} isEdit={editModal.value} selectedData={selectedRecord} />
       )}
 
       <ConfirmDialog

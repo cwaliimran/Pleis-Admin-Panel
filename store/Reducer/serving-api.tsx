@@ -1,10 +1,10 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
-import { customFetchBaseQuery } from '../customFetchBaseQuery';
+import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
 export const servingApi = createApi({
   reducerPath: 'servingApi',
-  baseQuery: customFetchBaseQuery(),
+  baseQuery: customFetchBaseQueryWithRoleRouting(),
   tagTypes: ['serving'],
 
   endpoints: (builder) => ({
@@ -21,9 +21,13 @@ export const servingApi = createApi({
         if (sortBy) params.sortBy = sortBy;
         if (sortOrder) params.sortOrder = sortOrder;
         return {
-          url: API_ROUTES.ADMIN_PRESET_MENU_SERVING,
+          url: '',
           method: 'GET',
           params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_PRESET_MENU_SERVING,
+            organizerRoute: API_ROUTES.ORGANIZER_PRESET_MENU_SERVING,
+          },
         };
       },
       transformResponse: (res: any) => ({

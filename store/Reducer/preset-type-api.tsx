@@ -1,10 +1,10 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
-import { customFetchBaseQuery } from '../customFetchBaseQuery';
+import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
 export const presetTypeApi = createApi({
   reducerPath: 'presetTypeApi',
-  baseQuery: customFetchBaseQuery(),
+  baseQuery: customFetchBaseQueryWithRoleRouting(),
   tagTypes: ['presetType'],
 
   endpoints: (builder) => ({
@@ -22,9 +22,13 @@ export const presetTypeApi = createApi({
         if (sortBy) params.sortBy = sortBy;
         if (sortOrder) params.sortOrder = sortOrder;
         return {
-          url: API_ROUTES.ADMIN_MENU_PRESET_TYPE,
+          url: '',
           method: 'GET',
           params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.ADMIN_MENU_PRESET_TYPE,
+            organizerRoute: API_ROUTES.ORGANIZER_MENU_PRESET_TYPE,
+          },
         };
       },
       transformResponse: (res: any) => ({

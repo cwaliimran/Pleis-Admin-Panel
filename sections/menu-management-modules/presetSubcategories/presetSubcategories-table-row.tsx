@@ -3,43 +3,13 @@
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { cn } from '@/lib/utils';
-import { GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, dragDisabled }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item._id,
-    disabled: dragDisabled,
-  });
-
-  const dragStyle = transform ? { transform: CSS.Transform.toString(transform), transition } : undefined;
-
+const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) => {
   return (
-    <TableRow
-      ref={setNodeRef}
-      style={dragStyle}
-      className={cn('h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50', isDragging && 'opacity-50')}
-    >
-      <TableCell className="w-10">
-        <button
-          type="button"
-          title={dragDisabled ? 'Clear filters to reorder' : 'Drag to reorder'}
-          disabled={dragDisabled}
-          {...attributes}
-          {...listeners}
-          className={cn(
-            'rounded p-1 text-gray-400 transition hover:bg-gray-100 dark:hover:bg-gray-700',
-            dragDisabled ? 'cursor-not-allowed opacity-40' : 'cursor-grab hover:cursor-grabbing'
-          )}
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-      </TableCell>
-
+    <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell className="text-left">
         <span className="font-semibold">{item.name}</span>
       </TableCell>

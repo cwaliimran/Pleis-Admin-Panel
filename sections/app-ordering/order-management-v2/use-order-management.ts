@@ -189,9 +189,6 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
             quantity: String(combo.quantity),
           })),
           userId: order.customer.id || undefined,
-          pickupType: payload.deliveryType,
-          // Blanked by the modal for every pickup type other than table service.
-          tableNumber: payload.tableNumber || undefined,
         }).unwrap();
 
         await refetch();
