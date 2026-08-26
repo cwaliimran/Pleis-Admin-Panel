@@ -85,8 +85,6 @@ export const CONDITION_TYPE_LABELS: Record<ApiReservationCondition, string> = {
 
 export const NO_OCCASION_VALUE = '__none__';
 
-export const toIsoDateTime = (date: string, time: string): string => `${date}T${time}:00.000Z`;
-
 export const fromIsoTime = (value?: string): string => {
   if (!value) return '';
 

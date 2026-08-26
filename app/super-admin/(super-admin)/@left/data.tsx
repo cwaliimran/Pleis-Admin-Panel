@@ -385,11 +385,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.reservationPreferences,
         icon: CalendarDays,
       },
-      {
-        title: 'Calendar view',
-        url: paths.superAdmin.calendar,
-        icon: CalendarDays,
-      },
+      // {
+      //   title: 'Calendar view',
+      //   url: paths.superAdmin.calendar,
+      //   icon: CalendarDays,
+      // },
       {
         title: 'Analytics',
         url: paths.superAdmin.analytics,

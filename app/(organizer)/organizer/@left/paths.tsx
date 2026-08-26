@@ -83,15 +83,19 @@ export const paths = {
     transactionsHistory: '/organizer/transactions-history',
 
     reservation: '/organizer/reservation',
+    reservationV2: '/organizer/reservation-v2',
+    reservationPreferences: '/organizer/reservation-preferences',
     reservationCalendar: '/organizer/calendar',
     reservationAnalytics: '/organizer/analytics',
     reservationTransactions: '/organizer/reservation-transactions',
 
     orderManagement: '/organizer/app-ordering/order-management',
+    orderManagementV2: '/organizer/app-ordering/order-management-v2',
     menuManagement: '/organizer/app-ordering/menu-management',
     orderAnalytics: '/organizer/app-ordering/order-analytics',
     orderTransactions: '/organizer/app-ordering/order-transactions',
     orderSettings: '/organizer/app-ordering/order-settings',
+    orderSettingsV2: '/organizer/app-ordering/order-settings-v2',
 
     qrCodes: '/organizer/qr-codes',
 

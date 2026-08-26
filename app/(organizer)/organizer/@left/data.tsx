@@ -198,14 +198,19 @@ export const menuGroups: MenuGroup[] = [
     items: [
       {
         title: 'Reservations',
-        url: paths.organizer.reservation,
+        url: paths.organizer.reservationV2,
         icon: CalendarDays,
       },
       {
-        title: 'Calendar view',
-        url: paths.organizer.reservationCalendar,
+        title: 'Reservation Preferences',
+        url: paths.organizer.reservationPreferences,
         icon: CalendarDays,
       },
+      // {
+      //   title: 'Calendar view',
+      //   url: paths.organizer.reservationCalendar,
+      //   icon: CalendarDays,
+      // },
       {
         title: 'Analytics',
         url: paths.organizer.reservationAnalytics,
@@ -226,7 +231,7 @@ export const menuGroups: MenuGroup[] = [
     items: [
       {
         title: 'Order Management',
-        url: paths.organizer.orderManagement,
+        url: paths.organizer.orderManagementV2,
         icon: CalendarDays,
       },
       {
@@ -246,7 +251,7 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Settings',
-        url: paths.organizer.orderSettings,
+        url: paths.organizer.orderSettingsV2,
         icon: CalendarDays,
       },
     ],

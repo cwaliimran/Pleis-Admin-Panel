@@ -14,7 +14,7 @@ import ComboTable from './combos-table';
 import { ComboRecord } from './types';
 
 type ComboViewProps = {
-  userType: 'super-admin' | 'organizer';
+userType: 'super-admin' | 'organizer';
 };
 
 const ComboView = ({ userType }: ComboViewProps) => {

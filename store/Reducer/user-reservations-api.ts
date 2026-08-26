@@ -39,7 +39,12 @@ export const USER_RESERVATION_STATUSES: ApiUserReservationStatus[] = [
   'completed',
 ];
 
-/** A single start/end pair. Both are full ISO-8601 UTC strings. */
+/**
+ * A single start/end pair, each a bare 24h wall-clock time — `"10:00"`, not a
+ * full ISO datetime. The day they belong to is the enclosing
+ * `ApiDateTimeSlot.date`. Both are `""` when the organization has time slots
+ * disabled.
+ */
 export interface ApiTimeSlot {
   startTime: string;
   endTime: string;

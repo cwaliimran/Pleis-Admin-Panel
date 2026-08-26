@@ -41,7 +41,6 @@ import {
   deriveEndTime,
   formatDuration,
   fromIsoTime,
-  toIsoDateTime,
   toStatusOption,
 } from '../constants';
 import { Reservation } from '../types';
@@ -414,8 +413,8 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
             date: values.date,
             timeSlots: [
               {
-                startTime: timeRules.slotsEnabled ? toIsoDateTime(values.date, values.startTime) : '',
-                endTime: timeRules.slotsEnabled ? toIsoDateTime(values.date, values.endTime) : '',
+                startTime: timeRules.slotsEnabled ? values.startTime : '',
+                endTime: timeRules.slotsEnabled ? values.endTime : '',
               },
             ],
           },
