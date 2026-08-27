@@ -16,6 +16,7 @@ import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import type { ApiPromotionType, PromotionWriteBody } from '@/store/Reducer/promotions-v2-api';
 import { useCreatePromotionV2Mutation, useUpdatePromotionV2Mutation } from '@/store/Reducer/promotions-v2-api';
+import { LoyaltyUserType } from '../../types';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -163,12 +164,16 @@ interface PromotionFormModalProps {
   promotion: Promotion | null;
   onClose: () => void;
   onCreated?: () => void;
+  userType?: LoyaltyUserType;
 }
 
-export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, promotion, onClose, onCreated }) => {
+export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, promotion, onClose, onCreated, userType = 'super-admin' }) => {
   const isEdit = Boolean(promotion);
 
+  // Organizers send no company — their token scopes the request.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
   const { uploadImage, uploading } = useImageUpload();
   const [isCleaningUp, setIsCleaningUp] = useState(false);
 
@@ -230,12 +235,20 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
     if (activeDaysMode !== 'specific') setValue('activeWeekdays', []);
   }, [activeDaysMode, setValue]);
 
+  // Items belong to the menu they were picked from, so switching menus invalidates the selection.
+  // Driven off the dropdown's change event rather than a `menuId` effect, which would also fire on
+  // the edit-mode `reset` and wipe the promotion's saved items before the user touched anything.
+  const handleMenuChange = (nextMenuId: string | undefined) => {
+    if (nextMenuId === menuId) return;
+    setValue('qualifyingItemIds', [], { shouldDirty: true, shouldValidate: false });
+  };
+
   const itemBased = ITEM_BASED_TYPES.includes(type);
   const timeRequired = type === 'happyHour';
 
   const { data: menuData, isFetching: menusFetching } = useGetMenuListQuery(
-    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: companyId || undefined },
-    { skip: !open || !itemBased || !companyId }
+    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: scopedCompanyId },
+    { skip: !open || !itemBased || companySkip }
   );
 
   const { data: menuItemsData, isFetching: menuItemsFetching } = useGetMenuItemByMenuIdQuery({ menuId }, { skip: !menuId || !itemBased });
@@ -284,7 +297,7 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
   };
 
   const submit = handleSubmit(async (values) => {
-    if (!companyId) {
+    if (companySkip) {
       showError('Please select a company first.');
       return;
     }
@@ -297,7 +310,7 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
       const specificDays = values.activeDaysMode === 'specific';
 
       const body: PromotionWriteBody = {
-        companyOrganizer: companyId,
+        companyOrganizer: scopedCompanyId,
         image,
         promotionType: VIEW_TYPE_TO_API[values.type],
         title: values.title.trim(),
@@ -398,6 +411,7 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
                   placeholder={menusFetching ? 'Loading menus...' : 'Select menu'}
                   options={menuOptions}
                   showNone={false}
+                  onValueChange={handleMenuChange}
                 />
 
                 <PromotionItemsField

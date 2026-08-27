@@ -5,6 +5,7 @@ import { useBoolean } from '@/hooks/useBoolean';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
+import { LoyaltyViewProps } from '../types';
 import { DEFAULT_PAGE_LIMIT } from './constants';
 import RewardDetailModal from './reward-detail-modal';
 import RewardFormModal from './reward-form-modal';
@@ -18,7 +19,7 @@ import { useDeleteRewardV2Mutation } from '@/store/Reducer/rewards-v2-api';
  * Rewards V2 — owns every piece of list state and hands the table plain props.
  * Data comes from `useRewardsView`, which is backed by the v2 rewards API.
  */
-export const RewardsViewV2: React.FC = () => {
+export const RewardsViewV2: React.FC<LoyaltyViewProps> = ({ userType = 'super-admin' }) => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
   const [search, setSearch] = useState('');
@@ -40,7 +41,7 @@ export const RewardsViewV2: React.FC = () => {
     [page, limit, search, type, status, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, typeOptions, isLoading, isFetching } = useRewardsView(query);
+  const { data, meta, stats, typeOptions, isLoading, isFetching } = useRewardsView(query, userType);
 
   const [deleteReward, { isLoading: isDeleting }] = useDeleteRewardV2Mutation();
 
@@ -136,6 +137,7 @@ export const RewardsViewV2: React.FC = () => {
       <RewardFormModal
         open={formModal.value}
         reward={editing}
+        userType={userType}
         onClose={() => {
           formModal.onFalse();
           setEditing(null);

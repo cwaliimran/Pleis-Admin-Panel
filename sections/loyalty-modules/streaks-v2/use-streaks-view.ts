@@ -85,15 +85,18 @@ interface UseStreaksViewResult {
  * Streak records are read-only — the app maintains them as members visit. The
  * only thing an admin can change is the global rule set.
  */
-export const useStreaksView = (query: StreaksQuery): UseStreaksViewResult => {
-  // Admin picks the company in the header; the page sits behind `CompanyGuard`.
+export const useStreaksView = (query: StreaksQuery, userType: 'organizer' | 'super-admin' = 'super-admin'): UseStreaksViewResult => {
+  // Admin picks the company in the header; the page sits behind `CompanyGuard`. Organizers have no
+  // company control — their token scopes the request, so the param is omitted and nothing is skipped.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
 
   const { page, limit, search, badge, lastVisitFrom, sortBy, sortOrder } = query;
 
   const { data, isLoading, isFetching } = useGetUsersStreaksQuery(
     {
-      companyOrganizer: companyId as string,
+      companyOrganizer: scopedCompanyId as string,
       page,
       limit,
       keyword: search.trim() || undefined,
@@ -103,12 +106,12 @@ export const useStreaksView = (query: StreaksQuery): UseStreaksViewResult => {
       sortBy: sortBy || undefined,
       sortOrder: sortOrder || undefined,
     },
-    { skip: !companyId, refetchOnMountOrArgChange: true }
+    { skip: companySkip, refetchOnMountOrArgChange: true }
   );
 
   const { data: rulesData, isLoading: isRulesLoading } = useGetStreakRulesQuery(
-    { companyOrganizer: companyId as string },
-    { skip: !companyId }
+    { companyOrganizer: scopedCompanyId as string },
+    { skip: companySkip }
   );
 
   const [updateStreakRules, { isLoading: isMutating }] = useUpdateStreakRulesMutation();
@@ -131,17 +134,17 @@ export const useStreaksView = (query: StreaksQuery): UseStreaksViewResult => {
 
   const saveRules = useCallback(
     async (next: StreakRules) => {
-      if (!companyId) throw new Error('Please select a company first.');
+      if (companySkip) throw new Error('Please select a company first.');
 
       // Always a PUT — the endpoint upserts, so a first-time save and an edit
       // are the same request.
       await updateStreakRules({
-        companyOrganizer: companyId,
+        ...(scopedCompanyId ? { companyOrganizer: scopedCompanyId } : {}),
         countBase: next.countBase,
         badges: STREAK_BADGE_ORDER.map((badge) => ({ title: badge, visits: next.thresholds[badge] })),
       }).unwrap();
     },
-    [companyId, updateStreakRules]
+    [companySkip, scopedCompanyId, updateStreakRules]
   );
 
   return { data: members, meta, stats, rules, isLoading, isFetching, isRulesLoading, isMutating, saveRules };

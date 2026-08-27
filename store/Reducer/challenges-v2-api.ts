@@ -145,7 +145,8 @@ export interface ApiChallengesMeta {
 }
 
 export interface GetChallengesV2Args {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   /** 1-based, matching what the API returns in `meta.currentPage`. */
   page: number;
   limit: number;
@@ -189,7 +190,8 @@ export interface ChallengeRewardWriteBody {
 }
 
 export interface ChallengeWriteBody {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   /** Azure blob key, not a full URL. */
   image: string;
   title: string;
@@ -224,7 +226,9 @@ export const challengesV2Api = createApi({
   endpoints: (builder) => ({
     getChallengesV2: builder.query<GetChallengesV2Response, GetChallengesV2Args>({
       query: ({ companyOrganizer, page, limit, keyword, status, taskType, rewardType, sortBy, sortOrder }) => {
-        const params: Record<string, string | number> = { companyOrganizer, page, limit };
+        const params: Record<string, string | number> = { page, limit };
+        // Omitted for organizers — the token identifies the company.
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         // Each is left off entirely when the filter is cleared.
         if (keyword) params.keyword = keyword;

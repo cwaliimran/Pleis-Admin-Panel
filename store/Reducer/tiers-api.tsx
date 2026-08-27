@@ -1,10 +1,10 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import API_ROUTES from '../apiRoutes';
-import { customFetchBaseQuery } from '../customFetchBaseQuery';
+import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
 export const tiersApi = createApi({
   reducerPath: 'tiersApi',
-  baseQuery: customFetchBaseQuery(),
+  baseQuery: customFetchBaseQueryWithRoleRouting(),
   tagTypes: ['tier'],
 
   endpoints: (builder) => ({
@@ -18,9 +18,13 @@ export const tiersApi = createApi({
         };
         if (date) (params as any).date = date;
         return {
-          url: API_ROUTES.TIERS,
+          url: '',
           method: 'GET',
           params,
+          roleBasedRouting: {
+            adminRoute: API_ROUTES.TIERS,
+            organizerRoute: API_ROUTES.ORGANIZER_GENERAL_TIERS,
+          },
         };
       },
       transformResponse: (res) => ({

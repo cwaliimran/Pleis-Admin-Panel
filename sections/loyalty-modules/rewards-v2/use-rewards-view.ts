@@ -84,15 +84,18 @@ interface UseRewardsViewResult {
  * Data layer for Rewards V2. Filtering, sorting and paging are all done by the
  * server; this only maps the wire format onto the view model.
  */
-export const useRewardsView = (query: RewardsQuery): UseRewardsViewResult => {
-  // Admin picks the company in the header; the page sits behind `CompanyGuard`.
+export const useRewardsView = (query: RewardsQuery, userType: 'organizer' | 'super-admin' = 'super-admin'): UseRewardsViewResult => {
+  // Admin picks the company in the header; the page sits behind `CompanyGuard`. Organizers have no
+  // company control — their token scopes the request, so the param is omitted and nothing is skipped.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
 
   const { page, limit, search, type, status, sortBy, sortOrder } = query;
 
   const { data, isLoading, isFetching } = useGetRewardsV2Query(
     {
-      companyOrganizer: companyId as string,
+      companyOrganizer: scopedCompanyId as string,
       page,
       limit,
       keyword: search.trim() || undefined,
@@ -101,12 +104,12 @@ export const useRewardsView = (query: RewardsQuery): UseRewardsViewResult => {
       sortBy: sortBy || undefined,
       sortOrder: sortOrder || undefined,
     },
-    { skip: !companyId, refetchOnMountOrArgChange: true }
+    { skip: companySkip, refetchOnMountOrArgChange: true }
   );
 
   const { data: rewardTypes } = useGetRewardTypesQuery(
-    { companyOrganizer: companyId as string, limit: REWARD_TYPE_OPTIONS_LIMIT },
-    { skip: !companyId }
+    { companyOrganizer: scopedCompanyId as string, limit: REWARD_TYPE_OPTIONS_LIMIT },
+    { skip: companySkip }
   );
 
   const rewards = useMemo(() => (data?.data ?? []).map(toReward), [data]);

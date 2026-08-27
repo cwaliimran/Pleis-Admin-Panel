@@ -83,7 +83,8 @@ export interface ApiUsersStreaksMeta {
 }
 
 export interface GetUsersStreaksArgs {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   /** 1-based, matching what the API returns in `meta.currentPage`. */
   page: number;
   limit: number;
@@ -126,7 +127,8 @@ export interface ApiStreakRules {
 }
 
 export interface UpdateStreakRulesArgs {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   countBase: ApiStreakCountBase;
   /** Sent in tier order; `_id` is read-only and deliberately not echoed back. */
   badges: { title: ApiStreakBadge; visits: number }[];
@@ -145,7 +147,9 @@ export const streaksV2Api = createApi({
   endpoints: (builder) => ({
     getUsersStreaks: builder.query<GetUsersStreaksResponse, GetUsersStreaksArgs>({
       query: ({ companyOrganizer, page, limit, keyword, badge, lastVisitedFrom, sortBy, sortOrder }) => {
-        const params: Record<string, string | number> = { companyOrganizer, page, limit };
+        const params: Record<string, string | number> = { page, limit };
+        // Omitted for organizers — the token identifies the company.
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         // Each is left off entirely when the filter is cleared.
         if (keyword) params.keyword = keyword;
@@ -175,7 +179,7 @@ export const streaksV2Api = createApi({
       providesTags: ['users-streaks'],
     }),
 
-    getStreakRules: builder.query<ApiStreakRules | null, { companyOrganizer: string }>({
+    getStreakRules: builder.query<ApiStreakRules | null, { companyOrganizer?: string }>({
       query: ({ companyOrganizer }) => ({
         url: '',
         method: 'GET',

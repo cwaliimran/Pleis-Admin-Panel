@@ -18,6 +18,7 @@ import type { ApiBooleanString, RewardWriteBody } from '@/store/Reducer/rewards-
 import { useCreateRewardV2Mutation, useUpdateRewardV2Mutation } from '@/store/Reducer/rewards-v2-api';
 import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
+import { LoyaltyUserType } from '../types';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -159,12 +160,16 @@ interface RewardFormModalProps {
   /** `null` opens the form in create mode. */
   reward: Reward | null;
   onClose: () => void;
+  userType?: LoyaltyUserType;
 }
 
-export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, onClose }) => {
+export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, onClose, userType = 'super-admin' }) => {
   const isEdit = Boolean(reward);
 
+  // Organizers send no company — their token scopes the request.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
   const { uploadImage, uploading } = useImageUpload();
   const [isCleaningUp, setIsCleaningUp] = useState(false);
 
@@ -193,7 +198,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
   );
 
   const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
-    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: companyId || undefined },
+    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: scopedCompanyId },
     { skip: !open || creationMethod !== 'buyMenuItemReward' }
   );
 
@@ -203,7 +208,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
   );
 
   const { data: eventData, isLoading: eventsLoading } = useGetEventsByCompanyOrganizerQuery(
-    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, companyOrganizer: companyId || undefined },
+    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, companyOrganizer: scopedCompanyId },
     { skip: !open || creationMethod !== 'ticketReward' }
   );
 
@@ -316,7 +321,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
   };
 
   const submit = handleSubmit(async (values) => {
-    if (!companyId) {
+    if (companySkip) {
       showError('Please select a company first.');
       return;
     }
@@ -357,8 +362,8 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
 
       const response =
         reward && isEdit
-          ? await updateReward({ id: reward.id, companyOrganizer: companyId, ...body }).unwrap()
-          : await createReward({ companyOrganizer: companyId, ...body }).unwrap();
+          ? await updateReward({ id: reward.id, ...(scopedCompanyId ? { companyOrganizer: scopedCompanyId } : {}), ...body }).unwrap()
+          : await createReward({ ...(scopedCompanyId ? { companyOrganizer: scopedCompanyId } : {}), ...body }).unwrap();
 
       showSuccess(response?.message || (isEdit ? 'Reward updated' : 'Reward created'));
       reset(defaultValues);
@@ -530,7 +535,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
 
             <RHFTextField name="description" label="Description (optional)" placeholder="Enter reward details" multiline rows={3} />
 
-            <RewardCalculatorPanel companyOrganizer={companyId || undefined} />
+            <RewardCalculatorPanel companyOrganizer={scopedCompanyId} userType={userType} />
           </div>
 
           <div className="mt-5 flex items-center justify-center gap-3">

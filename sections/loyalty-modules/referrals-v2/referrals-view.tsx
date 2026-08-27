@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { LoyaltyViewProps } from '../types';
 import ReferralsStatsCards from './components/referrals-stats-cards';
 import { DEFAULT_PAGE_LIMIT } from './constants';
 import ReferralsTable from './referrals-table';
 import { ReferralSortKey, ReferralSortOrder, ReferralStatus, ReferralsQuery } from './types';
 import { useReferralsView } from './use-referrals-view';
 
-export const ReferralsViewV2: React.FC = () => {
+export const ReferralsViewV2: React.FC<LoyaltyViewProps> = ({ userType = 'super-admin' }) => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
 
@@ -21,7 +22,7 @@ export const ReferralsViewV2: React.FC = () => {
     [page, limit, keyword, status, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, isLoading, isFetching } = useReferralsView(query);
+  const { data, meta, stats, isLoading, isFetching } = useReferralsView(query, userType);
 
   const handleKeywordChange = (value: string) => {
     setKeyword(value);

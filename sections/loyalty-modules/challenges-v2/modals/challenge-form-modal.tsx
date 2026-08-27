@@ -16,6 +16,7 @@ import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useGetRewardsV2Query } from '@/store/Reducer/rewards-v2-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
+import { LoyaltyUserType } from '../../types';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -171,12 +172,16 @@ interface ChallengeFormModalProps {
   /** `null` opens the form in create mode. */
   challenge: Challenge | null;
   onClose: () => void;
+  userType?: LoyaltyUserType;
 }
 
-export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, challenge, onClose }) => {
+export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, challenge, onClose, userType = 'super-admin' }) => {
   const isEdit = Boolean(challenge);
 
+  // Organizers send no company — their token scopes the request.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
   const { uploadImage, uploading } = useImageUpload();
   const [isCleaningUp, setIsCleaningUp] = useState(false);
 
@@ -259,16 +264,16 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
 
   const rewardHint = CHALLENGE_REWARD_TYPE_HINTS[rewardType];
 
-  const companyArgs = useMemo(() => ({ companyOrganizer: companyId || undefined }), [companyId]);
+  const companyArgs = useMemo(() => ({ companyOrganizer: scopedCompanyId }), [scopedCompanyId]);
 
   const qualifyingItemArgs = useMemo(
-    () => ({ companyOrganizer: companyId || undefined, menu: qualifyingMenuId || undefined }),
-    [companyId, qualifyingMenuId]
+    () => ({ companyOrganizer: scopedCompanyId, menu: qualifyingMenuId || undefined }),
+    [scopedCompanyId, qualifyingMenuId]
   );
 
   const rewardItemArgs = useMemo(
-    () => ({ companyOrganizer: companyId || undefined, menu: rewardMenuId || undefined }),
-    [companyId, rewardMenuId]
+    () => ({ companyOrganizer: scopedCompanyId, menu: rewardMenuId || undefined }),
+    [scopedCompanyId, rewardMenuId]
   );
 
   /** Resolves an upload field to the blob key the API stores. */
@@ -302,7 +307,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
   };
 
   const submit = handleSubmit(async (values) => {
-    if (!companyId) {
+    if (companySkip) {
       showError('Please select a company first.');
       return;
     }
@@ -319,7 +324,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
       const image = await resolveImageKey(values.image, uploaded);
 
       const body: ChallengeWriteBody = {
-        companyOrganizer: companyId,
+        companyOrganizer: scopedCompanyId,
         image,
         title: values.name.trim(),
         description: values.description?.trim() || '',
@@ -412,7 +417,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                   selectedLabel={qualifyingMenu?.name || undefined}
                   useOptionsQuery={useGetMenuListQuery}
                   queryArgs={companyArgs}
-                  skip={!companyId}
+                  skip={companySkip}
                   getOptionValue={(menu) => menu._id}
                   getOptionLabel={(menu) => menu.title}
                   onValueChange={(value) => {
@@ -429,7 +434,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                   initialSelected={toInitialSelected(challenge?.taskMenuItems ?? [])}
                   useOptionsQuery={useGetMenuItemsQuery}
                   queryArgs={qualifyingItemArgs}
-                  skip={!companyId}
+                  skip={companySkip}
                   getOptionValue={(item) => item._id}
                   getOptionLabel={(item) => item.title}
                 />
@@ -496,7 +501,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                   selectedLabel={rewardMenu?.name || undefined}
                   useOptionsQuery={useGetMenuListQuery}
                   queryArgs={companyArgs}
-                  skip={!companyId}
+                  skip={companySkip}
                   getOptionValue={(menu) => menu._id}
                   getOptionLabel={(menu) => menu.title}
                   onValueChange={(value) => {
@@ -513,7 +518,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                   initialSelected={toInitialSelected(challenge?.rewardMenuItems ?? [])}
                   useOptionsQuery={useGetMenuItemsQuery}
                   queryArgs={rewardItemArgs}
-                  skip={!companyId}
+                  skip={companySkip}
                   getOptionValue={(item) => item._id}
                   getOptionLabel={(item) => item.title}
                 />
@@ -529,7 +534,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                 selectedLabel={challenge?.linkedRewardName || undefined}
                 useOptionsQuery={useLinkedRewardOptionsQuery}
                 queryArgs={companyArgs}
-                skip={!companyId}
+                skip={companySkip}
                 getOptionValue={(reward) => reward._id}
                 getOptionLabel={(reward) => reward.title}
               />
@@ -550,7 +555,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
               />
             </div>
 
-            <ChallengeCalculatorPanel companyOrganizer={companyId || undefined} />
+            <ChallengeCalculatorPanel companyOrganizer={scopedCompanyId} userType={userType} />
           </div>
 
           <div className="mt-5 flex items-center justify-center gap-3">

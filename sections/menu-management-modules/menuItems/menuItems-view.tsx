@@ -1,5 +1,6 @@
 'use client';
 
+import { useCompanySelection } from '@/app/common/header/company-selection-storage';
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
@@ -12,7 +13,7 @@ import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MenuItemModal from './menuItems-modal-v2';
 import MenuItemTable from './menuItems-table';
 import { formatServingLabel } from './menuItems-utils';
@@ -35,6 +36,9 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
   const companySkip = userType === 'super-admin' && !companyId;
 
+  const { organizerOrganizationIds } = useCompanySelection();
+  const scopedOrganizations = userType === 'organizer' && organizerOrganizationIds.length > 0 ? organizerOrganizationIds : undefined;
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState('');
@@ -54,6 +58,12 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MenuItemRecord | null>(null);
 
+  const headerOrganizationsKey = organizerOrganizationIds.join(',');
+  useEffect(() => {
+    if (userType !== 'organizer') return;
+    setPage(1);
+  }, [headerOrganizationsKey, userType]);
+
   const { data, isLoading, isFetching } = useGetMenuItemsQuery(
     {
       page: page - 1,
@@ -63,6 +73,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
       date: date ? formatDate(date) : undefined,
       menu: !menuId || menuId === 'all' ? undefined : menuId,
       subCategory: !subCategoryId || subCategoryId === 'all' ? undefined : subCategoryId,
+      organizations: scopedOrganizations,
       companyOrganizer: scopedCompanyId,
       sortBy,
       sortOrder,

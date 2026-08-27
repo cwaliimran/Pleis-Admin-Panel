@@ -24,6 +24,12 @@ interface Props {
   disabled?: boolean;
   isLoading?: boolean;
   showNone?: boolean;
+  /**
+   * Fires only when a user picks an option — never on a programmatic `reset`/`setValue`.
+   * Use it to clear dependent cascading fields. Receives the same value written to the form
+   * (`undefined` when "None" is picked).
+   */
+  onValueChange?: (value: string | undefined) => void;
 }
 
 // Custom debounce hook
@@ -60,6 +66,7 @@ const RHFCustomDropdown: FC<Props> = ({
   disabled = false,
   isLoading = false,
   showNone = true,
+  onValueChange,
 }) => {
   const { control } = useFormContext();
   const [open, setOpen] = useState(false);
@@ -101,7 +108,9 @@ const RHFCustomDropdown: FC<Props> = ({
                 onOpenChange={setOpen}
                 value={field.value || ''}
                 onValueChange={(value) => {
-                  field.onChange(value === 'none' ? undefined : value);
+                  const next = value === 'none' ? undefined : value;
+                  field.onChange(next);
+                  onValueChange?.(next);
                 }}
                 disabled={disabled}
               >

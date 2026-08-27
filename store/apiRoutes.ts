@@ -471,6 +471,13 @@ export const API_ROUTES = {
   ORGANIZER_MENU_ITEM_SUBCATEGORIES_BY_ID: (id: string) => `/organizer/menu/menu-sub-categories/${id}`,
   ORGANIZER_MENU_ITEM_SUBCATEGORIES_ORDER_BY_ID: (id: string) => `/organizer/menu/menu-sub-categories/order/${id}`,
 
+  // Menu items belonging to one subcategory — read before a delete to decide whether the items
+  // have to be moved elsewhere first. The bulk route reassigns them all in a single call.
+  ADMIN_MENU_ITEM_SUBCATEGORY_ITEMS: `/admin/menu/menu-sub-categories/items`,
+  ORGANIZER_MENU_ITEM_SUBCATEGORY_ITEMS: `/organizer/menu/menu-sub-categories/items`,
+  ADMIN_MENU_ITEMS_BULK: `/admin/menu/items/bulk`,
+  ORGANIZER_MENU_ITEMS_BULK: `/organizer/menu/items/bulk`,
+
   ADMIN_MENU_SUB_CATEGORY_TYPES: `/admin/menu/sub-categories/types`,
   ADMIN_MENU_SUB_CATEGORY_TYPES_BY_ID: (id: string) => `/admin/menu/sub-categories/types/${id}`,
 

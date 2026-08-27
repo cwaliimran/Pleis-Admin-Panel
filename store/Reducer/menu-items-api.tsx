@@ -13,7 +13,21 @@ export const menuItemsApi = createApi({
      * ───────────────────────────────────────────── */
 
     getMenuItems: builder.query({
-      query: ({ search, page, status, date, limit, companyOrganizer, organization, menu, category, subCategory, sortBy, sortOrder }) => {
+      query: ({
+        search,
+        page,
+        status,
+        date,
+        limit,
+        companyOrganizer,
+        organization,
+        organizations,
+        menu,
+        category,
+        subCategory,
+        sortBy,
+        sortOrder,
+      }) => {
         const params: any = {
           keyword: search,
           status,
@@ -24,6 +38,8 @@ export const menuItemsApi = createApi({
         if (date) params.date = date;
         if (companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (organization) params.organization = organization;
+        // Organizer header multi-select — mirrors the `organizations` param the menu list takes.
+        if (organizations?.length) params.organizations = organizations;
         if (menu) params.menu = menu;
         if (category) params.category = category;
         if (subCategory) params.subCategory = subCategory;
@@ -37,7 +53,7 @@ export const menuItemsApi = createApi({
           roleBasedRouting: {
             adminRoute: API_ROUTES.ADMIN_MENU_ITEMS,
             organizerRoute: API_ROUTES.ORGANIZER_MENU_ITEMS,
-            organizerOnlyParams: ['organization'],
+            organizerOnlyParams: ['organization', 'organizations'],
           },
         };
       },

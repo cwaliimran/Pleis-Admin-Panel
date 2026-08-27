@@ -3,6 +3,7 @@
 import { useBoolean } from '@/hooks/useBoolean';
 import { showSuccess } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
+import { LoyaltyViewProps } from '../types';
 import StreaksStatsCards from './components/streaks-stats-cards';
 import { DEFAULT_PAGE_LIMIT } from './constants';
 import StreakDetailModal from './modals/streak-detail-modal';
@@ -12,7 +13,7 @@ import { StreakBadge, StreakMember, StreakRules, StreakSortKey, StreakSortOrder,
 import { useStreaksView } from './use-streaks-view';
 
 
-export const StreaksViewV2: React.FC = () => {
+export const StreaksViewV2: React.FC<LoyaltyViewProps> = ({ userType = 'super-admin' }) => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
   const [search, setSearch] = useState('');
@@ -31,7 +32,7 @@ export const StreaksViewV2: React.FC = () => {
     [page, limit, search, badge, lastVisitFrom, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, rules, isLoading, isFetching, isRulesLoading, isMutating, saveRules } = useStreaksView(query);
+  const { data, meta, stats, rules, isLoading, isFetching, isRulesLoading, isMutating, saveRules } = useStreaksView(query, userType);
 
   // Every filter and sort change invalidates the current offset.
   const handleSearchChange = (value: string) => {

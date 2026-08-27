@@ -112,14 +112,17 @@ interface UsePromotionsViewResult {
   isFetching: boolean;
 }
 
-export const usePromotionsView = (query: PromotionsQuery): UsePromotionsViewResult => {
+export const usePromotionsView = (query: PromotionsQuery, userType: 'organizer' | 'super-admin' = 'super-admin'): UsePromotionsViewResult => {
+  // Organizers have no company control — their token scopes the request, so the param is omitted.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
 
   const { page, limit, search, type, startDateFrom, endDateTo } = query;
 
   const { data, isLoading, isFetching } = useGetPromotionsV2Query(
     {
-      companyOrganizer: companyId as string,
+      companyOrganizer: scopedCompanyId as string,
       page,
       limit,
       keyword: search.trim() || undefined,
@@ -127,7 +130,7 @@ export const usePromotionsView = (query: PromotionsQuery): UsePromotionsViewResu
       startDate: toDateParam(startDateFrom),
       endDate: toDateParam(endDateTo),
     },
-    { skip: !companyId, refetchOnMountOrArgChange: true }
+    { skip: companySkip, refetchOnMountOrArgChange: true }
   );
 
   const promotions = useMemo(() => (data?.data ?? []).map(toPromotion), [data]);

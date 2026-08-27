@@ -37,7 +37,8 @@ export interface ApiReferral {
   user: string;
   /** Referrer's user id. The display name comes from `referrerUserName`. */
   referrer: string;
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   type: string;
   purchases: number;
   purchased: boolean;
@@ -92,7 +93,8 @@ export interface ApiReferralsMeta {
 }
 
 export interface GetReferralsV2Args {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   /** 1-based, matching what the API returns in `meta.currentPage`. */
   page: number;
   limit: number;
@@ -116,7 +118,9 @@ export const referralsV2Api = createApi({
   endpoints: (builder) => ({
     getReferralsV2: builder.query<GetReferralsV2Response, GetReferralsV2Args>({
       query: ({ companyOrganizer, page, limit, keyword, status, sortBy, sortOrder }) => {
-        const params: Record<string, string | number> = { companyOrganizer, page, limit };
+        const params: Record<string, string | number> = { page, limit };
+        // Omitted for organizers — the token identifies the company.
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         // Each is left off entirely when the filter is cleared.
         if (keyword) params.keyword = keyword;

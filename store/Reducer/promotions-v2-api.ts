@@ -109,7 +109,8 @@ export interface ApiPromotionsMeta {
 }
 
 export interface GetPromotionsV2Args {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   /** 1-based, matching what the API expects. */
   page: number;
   limit: number;
@@ -146,7 +147,8 @@ export interface PromotionActiveDaysBody {
 }
 
 export interface PromotionWriteBody {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   /** Azure blob key, not a full URL. */
   image: string;
   promotionType: ApiPromotionType;
@@ -190,7 +192,9 @@ export const promotionsV2Api = createApi({
   endpoints: (builder) => ({
     getPromotionsV2: builder.query<GetPromotionsV2Response, GetPromotionsV2Args>({
       query: ({ companyOrganizer, page, limit, keyword, status, startDate, endDate, promotionType }) => {
-        const params: Record<string, string | number> = { companyOrganizer, page, limit };
+        const params: Record<string, string | number> = { page, limit };
+        // Omitted for organizers — the token identifies the company.
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         // Each is left off entirely when the filter is cleared.
         if (keyword) params.keyword = keyword;

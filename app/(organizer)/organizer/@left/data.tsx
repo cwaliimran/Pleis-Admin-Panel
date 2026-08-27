@@ -122,12 +122,12 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Rewards',
-        url: paths.organizer.rewards,
+        url: paths.organizer.rewardsV2,
         icon: Tags,
       },
       {
         title: 'Streaks',
-        url: paths.organizer.streak,
+        url: paths.organizer.streakV2,
         icon: ListOrdered,
       },
       {
@@ -137,17 +137,17 @@ export const menuGroups: MenuGroup[] = [
       },
       {
         title: 'Challenges',
-        url: paths.organizer.challenges,
+        url: paths.organizer.challengesV2,
         icon: Tags,
       },
       {
         title: 'Promotions',
-        url: paths.organizer.promotions,
+        url: paths.organizer.promotionsV2,
         icon: Tags,
       },
       {
         title: 'Referrals',
-        url: paths.organizer.referrals,
+        url: paths.organizer.referralsV2,
         icon: Tags,
       },
       {

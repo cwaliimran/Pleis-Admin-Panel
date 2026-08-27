@@ -34,6 +34,7 @@ const MenuSubcategoryTable: FC<SamplePageProps> = ({
   handleEdit,
   handleReorder,
   reorderDisabled,
+  checkingId,
   onPageChange,
   limit = 10,
   search = '',
@@ -132,6 +133,7 @@ const MenuSubcategoryTable: FC<SamplePageProps> = ({
                         handleDelete={handleDelete}
                         handleEdit={handleEdit}
                         dragDisabled={reorderDisabled}
+                        deleteChecking={checkingId === item?._id}
                       />
                     ))}
                   </TableBodyWrapper>

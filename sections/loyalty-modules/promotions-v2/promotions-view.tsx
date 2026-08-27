@@ -6,6 +6,7 @@ import { useDeletePromotionV2Mutation } from '@/store/Reducer/promotions-v2-api'
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
+import { LoyaltyViewProps } from '../types';
 import PromotionsStatsCards from './components/promotions-stats-cards';
 import { DEFAULT_PAGE_LIMIT } from './constants';
 import PromotionDetailModal from './modals/promotion-detail-modal';
@@ -14,7 +15,7 @@ import PromotionsTable from './promotions-table';
 import { Promotion, PromotionSortKey, PromotionSortOrder, PromotionType, PromotionsQuery } from './types';
 import { usePromotionsView } from './use-promotions-view';
 
-export const PromotionsViewV2: React.FC = () => {
+export const PromotionsViewV2: React.FC<LoyaltyViewProps> = ({ userType = 'super-admin' }) => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
   const [search, setSearch] = useState('');
@@ -37,7 +38,7 @@ export const PromotionsViewV2: React.FC = () => {
     [page, limit, search, type, startDateFrom, endDateTo, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, isLoading, isFetching } = usePromotionsView(query);
+  const { data, meta, stats, isLoading, isFetching } = usePromotionsView(query, userType);
 
   const [deletePromotion, { isLoading: isDeleting }] = useDeletePromotionV2Mutation();
 
@@ -139,6 +140,7 @@ export const PromotionsViewV2: React.FC = () => {
       <PromotionFormModal
         open={formModal.value}
         promotion={editing}
+        userType={userType}
         onCreated={() => setPage(1)}
         onClose={() => {
           formModal.onFalse();

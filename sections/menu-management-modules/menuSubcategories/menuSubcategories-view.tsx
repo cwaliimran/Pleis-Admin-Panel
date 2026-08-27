@@ -7,6 +7,8 @@ import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import {
   useDeleteMenuItemSubcategoryMutation,
   useGetMenuItemSubcategoriesQuery,
+  useLazyGetMenuItemSubcategoriesQuery,
+  useLazyGetMenuItemSubcategoryItemsQuery,
   useUpdateMenuItemSubcategoryOrderMutation,
 } from '@/store/Reducer/menu-item-subcategories-api';
 import { getErrorMessage } from '@/utils/api';
@@ -16,12 +18,14 @@ import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import SubcategoryModal from './menuSubcategories-modal';
 import MenuSubcategoryTable from './menuSubcategories-table';
+import SubcategoryTransferModal, { TRANSFER_TARGET_QUERY_ARGS } from './menuSubcategories-transfer-modal';
 import { MenuSubcategoryRecord } from './types';
 
 const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-admin' }) => {
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const transferModal = useBoolean();
 
   const { companyId } = useCompanySelectionState();
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
@@ -45,6 +49,9 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
 
   const [deleteSubcategory, { isLoading: deleteLoading }] = useDeleteMenuItemSubcategoryMutation();
   const [updateSubcategoryOrder] = useUpdateMenuItemSubcategoryOrderMutation();
+  const [fetchSubcategoryItems] = useLazyGetMenuItemSubcategoryItemsQuery();
+  const [fetchSubcategories] = useLazyGetMenuItemSubcategoriesQuery();
+  const [checkingId, setCheckingId] = useState<string | null>(null);
 
   const serverSubcategories: MenuSubcategoryRecord[] = data?.data || [];
   const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
@@ -82,9 +89,41 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
     openModal.onTrue();
   };
 
-  const handleDelete = (id: string) => {
+  // A subcategory can only be deleted outright when nothing points at it. If it still holds menu
+  // items they have to be moved first, which needs somewhere to move them to.
+  const handleDelete = async (id: string) => {
+    if (checkingId) return;
+
+    const record = subcategories.find((item) => item._id === id) || null;
     setSelectedId(id);
-    deleteModal.onTrue();
+    setSelectedRecord(record);
+    setCheckingId(id);
+
+    try {
+      const items = await fetchSubcategoryItems({ subCategory: id, page: 0, limit: 1 }).unwrap();
+      const itemCount = items?.meta?.totalRecords ?? items?.data?.length ?? 0;
+
+      if (itemCount === 0) {
+        deleteModal.onTrue();
+        return;
+      }
+
+      // Same args the transfer modal's target dropdown uses, so both share one cache entry and the
+      // list is fetched once rather than per consumer.
+      const actives = await fetchSubcategories(TRANSFER_TARGET_QUERY_ARGS(scopedCompanyId)).unwrap();
+      const hasTarget = (actives?.data || []).some((item: MenuSubcategoryRecord) => item._id !== id);
+
+      if (!hasTarget) {
+        showError('Create another active subcategory first, so these menu items have somewhere to move to.');
+        return;
+      }
+
+      transferModal.onTrue();
+    } catch (error) {
+      showError(getErrorMessage(error));
+    } finally {
+      setCheckingId(null);
+    }
   };
 
   const onDelete = async () => {
@@ -135,6 +174,7 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
         handleEdit={handleEdit}
         handleReorder={handleReorder}
         reorderDisabled={reorderDisabled}
+        checkingId={checkingId}
         onPageChange={setPage}
         onLimitChange={(l) => {
           setLimit(l);
@@ -167,6 +207,20 @@ const MenuSubcategoriesView = ({ userType }: { userType: 'organizer' | 'super-ad
           companyId={scopedCompanyId}
           userType={userType}
           nextOrder={(meta?.totalRecords || 0) + 1}
+        />
+      )}
+
+      {transferModal.value && (
+        <SubcategoryTransferModal
+          open={transferModal.value}
+          onClose={transferModal.onFalse}
+          subcategory={selectedRecord}
+          companyId={scopedCompanyId}
+          userType={userType}
+          onTransferred={() => {
+            setSelectedId(null);
+            setSelectedRecord(null);
+          }}
         />
       )}
 

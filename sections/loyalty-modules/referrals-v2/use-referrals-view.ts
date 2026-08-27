@@ -57,15 +57,18 @@ interface UseReferralsViewResult {
  * Referrals are read-only: members generate them by sharing their code, so
  * there are no mutations in this module.
  */
-export const useReferralsView = (query: ReferralsQuery): UseReferralsViewResult => {
-  // Admin picks the company in the header; the page sits behind `CompanyGuard`.
+export const useReferralsView = (query: ReferralsQuery, userType: 'organizer' | 'super-admin' = 'super-admin'): UseReferralsViewResult => {
+  // Admin picks the company in the header; the page sits behind `CompanyGuard`. Organizers have no
+  // company control — their token scopes the request, so the param is omitted and nothing is skipped.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
 
   const { page, limit, keyword, status, sortBy, sortOrder } = query;
 
   const { data, isLoading, isFetching } = useGetReferralsV2Query(
     {
-      companyOrganizer: companyId as string,
+      companyOrganizer: scopedCompanyId as string,
       page,
       limit,
       keyword: keyword.trim() || undefined,
@@ -73,7 +76,7 @@ export const useReferralsView = (query: ReferralsQuery): UseReferralsViewResult 
       sortBy: sortBy || undefined,
       sortOrder: sortOrder || undefined,
     },
-    { skip: !companyId, refetchOnMountOrArgChange: true }
+    { skip: companySkip, refetchOnMountOrArgChange: true }
   );
 
   const referrals = useMemo(() => (data?.data ?? []).map(toReferral), [data]);

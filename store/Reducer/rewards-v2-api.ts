@@ -105,7 +105,8 @@ export interface ApiRewardsMeta {
 }
 
 export interface GetRewardsV2Args {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   /** 1-based, matching what the API returns in `meta.currentPage`. */
   page: number;
   limit: number;
@@ -161,12 +162,14 @@ export interface RewardWriteBody {
 }
 
 export interface CreateRewardArgs extends RewardWriteBody {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
 }
 
 export interface UpdateRewardArgs extends RewardWriteBody {
   id: string;
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
 }
 
 export interface RewardMutationResponse {
@@ -180,7 +183,8 @@ export interface ApiRewardTypeOption {
 }
 
 export interface GetRewardTypesArgs {
-  companyOrganizer: string;
+  /** Admin only — an organizer's token identifies the company, so it is omitted. */
+  companyOrganizer?: string;
   limit?: number;
 }
 
@@ -192,7 +196,9 @@ export const rewardsV2Api = createApi({
   endpoints: (builder) => ({
     getRewardsV2: builder.query<GetRewardsV2Response, GetRewardsV2Args>({
       query: ({ companyOrganizer, page, limit, keyword, status, sortingType, sortBy, sortOrder }) => {
-        const params: Record<string, string | number> = { companyOrganizer, page, limit };
+        const params: Record<string, string | number> = { page, limit };
+        // Omitted for organizers — the token identifies the company.
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
 
         // Each is left off entirely when the filter is cleared.
         if (keyword) params.keyword = keyword;
@@ -224,7 +230,9 @@ export const rewardsV2Api = createApi({
 
     getRewardTypes: builder.query<ApiRewardTypeOption[], GetRewardTypesArgs>({
       query: ({ companyOrganizer, limit }) => {
-        const params: Record<string, string | number> = { companyOrganizer };
+        const params: Record<string, string | number> = {};
+        // Omitted for organizers — the token identifies the company.
+        if (companyOrganizer) params.companyOrganizer = companyOrganizer;
         if (limit !== undefined) params.limit = limit;
 
         return {

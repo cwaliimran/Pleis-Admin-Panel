@@ -6,11 +6,11 @@ import { cn } from '@/lib/utils';
 import { fDate, formatStr } from '@/utils/format-time';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { GripVertical, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { TableRowProps } from './types';
 
-const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, dragDisabled }) => {
+const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit, dragDisabled, deleteChecking }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item._id,
     disabled: dragDisabled,
@@ -69,15 +69,23 @@ const MenuSubcategoryTableRow: FC<TableRowProps> = ({ item, handleDelete, handle
           </button>
 
           <button
-            title="Delete Subcategory"
+            title={deleteChecking ? 'Checking menu items...' : 'Delete Subcategory'}
             type="button"
+            disabled={deleteChecking}
             onClick={(e) => {
               e.stopPropagation();
               handleDelete?.(item._id);
             }}
-            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+            className={cn(
+              'rounded-md bg-red-100 p-1.5 transition dark:bg-red-900',
+              deleteChecking ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-red-200 dark:hover:bg-red-800'
+            )}
           >
-            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+            {deleteChecking ? (
+              <Loader2 className="h-4 w-4 animate-spin text-red-600 dark:text-red-300" />
+            ) : (
+              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+            )}
           </button>
         </div>
       </TableCell>

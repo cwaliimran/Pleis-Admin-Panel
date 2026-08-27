@@ -75,8 +75,8 @@ const schema = Yup.object().shape({
       if (mode === 'percentage_off_sum' && price > 100) {
         return this.createError({ message: 'Cannot charge more than 100% of the sum' });
       }
-      if (mode === 'fixed_amount_off_sum' && sumOfParts > 0 && price >= sumOfParts) {
-        return this.createError({ message: `Must be less than the sum of parts (€${sumOfParts.toFixed(2)})` });
+      if (mode === 'fixed_amount_off_sum' && sumOfParts > 0 && price > sumOfParts) {
+        return this.createError({ message: `Must be less than or equal to the sum of parts (€${sumOfParts.toFixed(2)})` });
       }
       return true;
     }),
@@ -139,10 +139,12 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
 
   const availability = useMemo(() => deriveAvailability(components), [components]);
 
+  // The form validates on submit, so a price corrected after a failed attempt would keep showing the
+  // old message until the next submit — revalidate as the value, the mode or the sum changes.
   useEffect(() => {
-    if (priceValue) methods.trigger('price');
+    if (priceValue || formState.errors.price) methods.trigger('price');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [priceModeValue, sumOfParts]);
+  }, [priceValue, priceModeValue, sumOfParts]);
 
   const priceInput = PRICE_INPUT_CONFIG[priceModeValue as PriceMode] || PRICE_INPUT_CONFIG.fixed_combo_price;
   const finalPrice = getComboFinalPrice(priceModeValue as PriceMode, sumOfParts, Number(priceValue));

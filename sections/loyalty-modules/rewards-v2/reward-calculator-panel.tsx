@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input';
 import { useRewardPointCalculatorMutation } from '@/store/Reducer/rewards-api';
 import { getErrorMessage } from '@/utils/api';
+import { LoyaltyUserType } from '../types';
 import { AlertCircle } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { CALCULATOR_DEBOUNCE_MS } from './constants';
@@ -17,6 +18,7 @@ interface CalculatorResponse {
 
 interface RewardCalculatorPanelProps {
   companyOrganizer?: string;
+  userType?: LoyaltyUserType;
 }
 
 interface CalculatorResult {
@@ -30,7 +32,9 @@ interface CalculatorResult {
  * endpoint as the v1 reward modal. Debounced so typing a price does not fire a
  * request per keystroke.
  */
-export const RewardCalculatorPanel: React.FC<RewardCalculatorPanelProps> = ({ companyOrganizer }) => {
+export const RewardCalculatorPanel: React.FC<RewardCalculatorPanelProps> = ({ companyOrganizer, userType = 'super-admin' }) => {
+  // Only admins pick a company; an organizer's token already identifies theirs.
+  const requiresCompany = userType === 'super-admin';
   const [itemPrice, setItemPrice] = useState('');
   const [result, setResult] = useState<CalculatorResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +51,7 @@ export const RewardCalculatorPanel: React.FC<RewardCalculatorPanelProps> = ({ co
 
     if (!itemPrice) return;
 
-    if (!companyOrganizer) {
+    if (requiresCompany && !companyOrganizer) {
       setError('Please select a company first');
       return;
     }
@@ -61,7 +65,7 @@ export const RewardCalculatorPanel: React.FC<RewardCalculatorPanelProps> = ({ co
     timerRef.current = setTimeout(async () => {
       try {
         const response = (await calculateRewardPoints({
-          data: { companyOrganizer, itemPrice },
+          data: { ...(companyOrganizer ? { companyOrganizer } : {}), itemPrice },
         }).unwrap()) as CalculatorResponse;
 
         // The endpoint has been seen returning the figures both nested and flat.
@@ -83,7 +87,7 @@ export const RewardCalculatorPanel: React.FC<RewardCalculatorPanelProps> = ({ co
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [itemPrice, companyOrganizer, calculateRewardPoints]);
+  }, [itemPrice, companyOrganizer, requiresCompany, calculateRewardPoints]);
 
   return (
     <div className="rounded-lg border border-gray-200 px-4 py-3 dark:border-gray-700/60">
@@ -101,9 +105,9 @@ export const RewardCalculatorPanel: React.FC<RewardCalculatorPanelProps> = ({ co
             type="number"
             step="0.01"
             min="0"
-            placeholder={companyOrganizer ? 'Enter item price' : 'Select a company first'}
+            placeholder={!requiresCompany || companyOrganizer ? 'Enter item price' : 'Select a company first'}
             value={itemPrice}
-            disabled={!companyOrganizer}
+            disabled={requiresCompany && !companyOrganizer}
             onChange={(event) => setItemPrice(event.target.value)}
             className="h-10 w-full"
           />

@@ -129,15 +129,18 @@ interface UseChallengesViewResult {
  * Data layer for Challenges V2. Filtering, sorting and paging are all done by
  * the server; this only maps the wire format onto the view model.
  */
-export const useChallengesView = (query: ChallengesQuery): UseChallengesViewResult => {
-  // Admin picks the company in the header; the page sits behind `CompanyGuard`.
+export const useChallengesView = (query: ChallengesQuery, userType: 'organizer' | 'super-admin' = 'super-admin'): UseChallengesViewResult => {
+  // Admin picks the company in the header; the page sits behind `CompanyGuard`. Organizers have no
+  // company control — their token scopes the request, so the param is omitted and nothing is skipped.
   const { companyId } = useCompanySelectionState();
+  const scopedCompanyId = userType === 'super-admin' ? (companyId ?? undefined) : undefined;
+  const companySkip = userType === 'super-admin' && !companyId;
 
   const { page, limit, search, taskType, rewardType, status, sortBy, sortOrder } = query;
 
   const { data, isLoading, isFetching } = useGetChallengesV2Query(
     {
-      companyOrganizer: companyId as string,
+      companyOrganizer: scopedCompanyId as string,
       page,
       limit,
       keyword: search.trim() || undefined,
@@ -147,7 +150,7 @@ export const useChallengesView = (query: ChallengesQuery): UseChallengesViewResu
       sortBy: sortBy || undefined,
       sortOrder: sortOrder || undefined,
     },
-    { skip: !companyId, refetchOnMountOrArgChange: true }
+    { skip: companySkip, refetchOnMountOrArgChange: true }
   );
 
   const challenges = useMemo(() => (data?.data ?? []).map(toChallenge), [data]);

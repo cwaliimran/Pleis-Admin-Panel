@@ -10,6 +10,7 @@ import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { format } from 'date-fns';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
@@ -24,12 +25,36 @@ const defaultValues: MenuItemFormValues = {
   status: 'draft',
 };
 
+const STATUS_OPTIONS = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' },
+];
+
+const isFutureDate = (value?: Date | string | null) => {
+  if (!value) return false;
+
+  const selected = new Date(value);
+  if (isNaN(selected.getTime())) return false;
+
+  selected.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return selected.getTime() > today.getTime();
+};
+
 const schema = Yup.object().shape({
   title: Yup.string().required('Name is required'),
   description: Yup.string().optional(),
   organization: Yup.string().required('Organization is required'),
   validFrom: Yup.date().required('Valid from date is required'),
-  status: Yup.mixed<'draft' | 'active' | 'inactive'>().oneOf(['draft', 'active', 'inactive']).required('Status is required'),
+  status: Yup.mixed<'draft' | 'active' | 'inactive'>()
+    .oneOf(['draft', 'active', 'inactive'])
+    .required('Status is required')
+    .test('status-allowed-for-date', 'A menu starting in the future cannot be set to Active', function (value) {
+      return !(value === 'active' && isFutureDate(this.parent?.validFrom));
+    }),
 });
 
 const MenuItemModal = ({
@@ -51,8 +76,12 @@ const MenuItemModal = ({
     defaultValues,
   });
 
-  const { reset, formState } = methods;
+  const { reset, watch, setValue, getValues, formState } = methods;
   const isDirty = formState?.isDirty;
+
+  const validFrom = watch('validFrom');
+  const startsInFuture = isFutureDate(validFrom);
+  const statusOptions = startsInFuture ? STATUS_OPTIONS.filter((option) => option.value !== 'active') : STATUS_OPTIONS;
 
   const prepareFormData = (data: any): MenuItemFormValues => {
     // API returns the date as `startDate`; the form field is named `validFrom`
@@ -75,6 +104,12 @@ const MenuItemModal = ({
       reset(defaultValues);
     }
   }, [open, isEdit, selectedData, reset]);
+
+  useEffect(() => {
+    if (open && startsInFuture && getValues('status') === 'active') {
+      setValue('status', 'draft', { shouldDirty: true, shouldValidate: true });
+    }
+  }, [open, startsInFuture, getValues, setValue]);
 
   const organizationOptions = organizations?.map((org) => ({ value: org._id, label: org.name })) || [];
 
@@ -127,20 +162,25 @@ const MenuItemModal = ({
                 <RHFTextField name="description" label="Description" placeholder="Brief description of this menu" multiline rows={2} />
 
                 <div className="grid w-full grid-cols-1 gap-x-4 gap-y-5 md:grid-cols-2">
-                  <RHFDate name="validFrom" label="Valid From" placeholder="Select date" />
+                  <RHFDate name="validFrom" label="Valid From" placeholder="Select date" displayFormat="dd/MM/yyyy" />
 
                   <RHFSelectField
                     name="status"
                     label="Status"
                     placeholder="Select Status"
                     className="w-full flex-1"
-                    options={[
-                      { value: 'draft', label: 'Draft' },
-                      { value: 'active', label: 'Active' },
-                      { value: 'inactive', label: 'Inactive' },
-                    ]}
+                    options={statusOptions}
                   />
                 </div>
+
+                {validFrom && startsInFuture && (
+                  <div className="-mt-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-blue-800 dark:border-blue-900/60 dark:bg-blue-900/20 dark:text-blue-200">
+                    <p className="text-xs leading-relaxed">
+                      💡 A menu starting in the future can&apos;t be set Active yet. Save it as <span className="font-semibold">Draft</span> and it
+                      will activate automatically on <span className="font-semibold">{format(validFrom, 'dd/MM/yyyy')}</span>.
+                    </p>
+                  </div>
+                )}
 
                 <RHFCustomDropdown
                   name="organization"

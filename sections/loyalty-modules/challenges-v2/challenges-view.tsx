@@ -6,6 +6,7 @@ import { useDeleteChallengeV2Mutation } from '@/store/Reducer/challenges-v2-api'
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import React, { useMemo, useState } from 'react';
+import { LoyaltyViewProps } from '../types';
 import ChallengesTable from './challenges-table';
 import ChallengesStatsCards from './components/challenges-stats-cards';
 import { DEFAULT_PAGE_LIMIT } from './constants';
@@ -26,7 +27,7 @@ import { useChallengesView } from './use-challenges-view';
  * Challenges V2 — owns every piece of list state and hands the table plain
  * props. Data comes from `useChallengesView`, backed by the v2 challenges API.
  */
-export const ChallengesViewV2: React.FC = () => {
+export const ChallengesViewV2: React.FC<LoyaltyViewProps> = ({ userType = 'super-admin' }) => {
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
   const [search, setSearch] = useState('');
@@ -49,7 +50,7 @@ export const ChallengesViewV2: React.FC = () => {
     [page, limit, search, taskType, rewardType, status, sortBy, sortOrder]
   );
 
-  const { data, meta, stats, isLoading, isFetching } = useChallengesView(query);
+  const { data, meta, stats, isLoading, isFetching } = useChallengesView(query, userType);
 
   const [deleteChallenge, { isLoading: isDeleting }] = useDeleteChallengeV2Mutation();
 
@@ -152,6 +153,7 @@ export const ChallengesViewV2: React.FC = () => {
       <ChallengeFormModal
         open={formModal.value}
         challenge={editing}
+        userType={userType}
         onClose={() => {
           formModal.onFalse();
           setEditing(null);

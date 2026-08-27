@@ -51,6 +51,11 @@ type RHFAsyncComboboxProps = {
   /** Skip fetching entirely — e.g. a dependent field before its parent field has a value. */
   skip?: boolean;
   /**
+   * Hides fetched options the caller can't offer (e.g. the record being deleted). Applied to the
+   * rendered list only — paging and search still run against the full server result.
+   */
+  filterOption?: (item: any) => boolean;
+  /**
    * Any RTK Query list hook following the project convention:
    * accepts { page (0-based, slice adds +1), limit, search, ...queryArgs } and an optional
    * `{ skip }` options object, returning { data: { data, meta } }.
@@ -82,6 +87,7 @@ const RHFAsyncCombobox = ({
   initialSelected,
   queryArgs,
   skip = false,
+  filterOption,
   useOptionsQuery,
   getOptionValue,
   getOptionLabel,
@@ -190,6 +196,7 @@ const RHFAsyncCombobox = ({
       control={control}
       name={name}
       render={({ field }) => {
+        const visibleItems = filterOption ? items.filter(filterOption) : items;
         const selectedValues: string[] = multiple ? (Array.isArray(field.value) ? field.value : []) : [];
         const selectedItem = !multiple ? items.find((item) => getOptionValue(item) === field.value) : undefined;
         const triggerLabel = multiple
@@ -250,10 +257,10 @@ const RHFAsyncCombobox = ({
                   <CommandInput placeholder={searchPlaceholder} value={search} onValueChange={setSearch} />
 
                   <CommandList className="max-h-55 overflow-y-auto" onScroll={handleScroll}>
-                    {!isLoading && !isFetching && items.length === 0 && <CommandEmpty>No results found.</CommandEmpty>}
+                    {!isLoading && !isFetching && visibleItems.length === 0 && <CommandEmpty>No results found.</CommandEmpty>}
 
                     <CommandGroup>
-                      {items.map((item) => {
+                      {visibleItems.map((item) => {
                         const value = getOptionValue(item);
                         const checked = multiple ? selectedValues.includes(value) : field.value === value;
                         return (

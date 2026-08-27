@@ -31,6 +31,7 @@ export interface SamplePageProps {
   handleEdit?: (id: string) => void;
   handleReorder?: (activeId: string, overId: string) => void;
   reorderDisabled?: boolean;
+  checkingId?: string | null;
   onPageChange?: (page: number) => void;
   onLimitChange?: (limit: number) => void;
   onSearch?: (search: string) => void;
@@ -46,12 +47,32 @@ export interface TableRowProps {
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
   dragDisabled?: boolean;
+  deleteChecking?: boolean;
 }
 
 export type SubcategoryFormValues = {
   title: string;
   order: string;
   status: SubcategoryStatus;
+};
+
+export interface SubcategoryMenuItem {
+  _id: string;
+  title: string;
+  status?: string;
+}
+
+export type SubcategoryTransferFormValues = {
+  targetSubCategory: string;
+};
+
+export type SubcategoryTransferModalProps = {
+  open: boolean;
+  onClose: () => void;
+  subcategory: MenuSubcategoryRecord | null;
+  companyId?: string | null;
+  userType: 'organizer' | 'super-admin';
+  onTransferred?: () => void;
 };
 
 export type SubcategoryModalProps = {
