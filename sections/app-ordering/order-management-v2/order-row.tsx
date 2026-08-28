@@ -10,9 +10,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { BadgeConfig } from './constants';
 import {
   BADGE_TONE_CLASS,
-  DELIVERABLE_STATUSES,
+  canDeliverOrderItems,
   MARK_AS_PAID_ACTION,
-  MARK_AS_PAID_STATUSES,
+  canMarkOrderAsPaid,
   PRIMARY_ACTION_BY_STATUS,
   SECONDARY_ACTION_BY_STATUS,
   formatCurrency,
@@ -162,7 +162,12 @@ export const OrderRow: React.FC<OrderRowProps> = ({
 
   // A failed payment has to be settled before the order can be accepted.
   const isConfirmBlocked = primaryAction?.type === 'confirm' && order.paymentStatus === 'failed';
-  const canMarkAsPaid = order.paymentStatus !== 'paid' && MARK_AS_PAID_STATUSES.includes(order.status);
+  const canMarkAsPaid = canMarkOrderAsPaid(order);
+
+  // Gates the row's "Delivered" button as well as the panel's controls — it
+  // is the same hand-over, just triggered from the row.
+  const isDeliverable = canDeliverOrderItems(order);
+  const showPrimaryAction = Boolean(primaryAction) && !(primaryAction?.type === 'delivered' && !isDeliverable);
 
   // Money has already changed hands, so cancelling is off the table. Reject
   // is unaffected — it only ever appears before an order is accepted.
@@ -203,9 +208,8 @@ export const OrderRow: React.FC<OrderRowProps> = ({
     setSelectedComboIds((current) => current.filter((id) => undeliveredComboIds.includes(id)));
   }, [undeliveredComboIds]);
 
-  const isDeliverableStatus = DELIVERABLE_STATUSES.includes(order.status);
-  const canDeliver = isDeliverableStatus && undeliveredMenuItemIds.length > 0;
-  const canDeliverCombos = isDeliverableStatus && undeliveredComboIds.length > 0;
+  const canDeliver = isDeliverable && undeliveredMenuItemIds.length > 0;
+  const canDeliverCombos = isDeliverable && undeliveredComboIds.length > 0;
   const canDeliverAny = canDeliver || canDeliverCombos;
 
   const selectedCount = selectedMenuItemIds.length + selectedComboIds.length;
@@ -329,7 +333,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
         {/* Buttons here act on the order, so they must not toggle the panel. */}
         <TableCell className="pr-4" onClick={(event) => event.stopPropagation()}>
           <div className="flex justify-end gap-2">
-            {primaryAction && (
+            {primaryAction && showPrimaryAction && (
               <Button
                 type="button"
                 size="sm"
@@ -368,7 +372,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
               </Button>
             )}
 
-            {!primaryAction && !canMarkAsPaid && !showSecondaryAction && (
+            {!showPrimaryAction && !canMarkAsPaid && !showSecondaryAction && (
               <Button type="button" size="sm" variant="outline" onClick={onToggle} className="cursor-pointer font-semibold">
                 View detail
               </Button>

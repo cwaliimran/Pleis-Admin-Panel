@@ -4,14 +4,15 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
-import { Pencil, Tag, Trash2, TrendingUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Loader2, Pencil, Tag, Trash2, TrendingUp } from 'lucide-react';
 import { FC } from 'react';
 import { getRefLabel, getServingLabel } from './menuItems-utils';
 import { TableRowProps } from './types';
 
 const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlDevCap];
 
-const MenuItemTableRow: FC<TableRowProps> = ({ item, lookups, handleDelete, handleEdit }) => {
+const MenuItemTableRow: FC<TableRowProps> = ({ item, lookups, deleteChecking, handleDelete, handleEdit }) => {
   const menuTitle = getRefLabel(item.menu, lookups.menus);
   const subCategoryTitle = getRefLabel(item.subCategory, lookups.subCategories);
   const servingLabel = getServingLabel(item.serving) || getRefLabel(item.servingSize, lookups.servingSizes);
@@ -94,15 +95,23 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, lookups, handleDelete, hand
           </button>
 
           <button
-            title="Delete Menu Item"
+            title={deleteChecking ? 'Checking where this item is used...' : 'Delete Menu Item'}
             type="button"
+            disabled={deleteChecking}
             onClick={(e) => {
               e.stopPropagation();
               handleDelete?.(item?._id);
             }}
-            className="cursor-pointer rounded-md bg-red-100 p-1.5 transition hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+            className={cn(
+              'rounded-md bg-red-100 p-1.5 transition dark:bg-red-900',
+              deleteChecking ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-red-200 dark:hover:bg-red-800'
+            )}
           >
-            <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+            {deleteChecking ? (
+              <Loader2 className="h-4 w-4 animate-spin text-red-600 dark:text-red-300" />
+            ) : (
+              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-300" />
+            )}
           </button>
         </div>
       </TableCell>

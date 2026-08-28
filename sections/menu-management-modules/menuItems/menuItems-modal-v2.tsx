@@ -74,6 +74,10 @@ const schema = Yup.object().shape({
   endTime: Yup.string()
     .optional()
     .test('valid-time', 'Invalid time format', isValidTime)
+    .test('required-with-start', 'End time is required when a start time is set', function (value) {
+      const { startTime } = this.parent;
+      return !startTime || !!value;
+    })
     .test('after-start', 'End time must be after start time', function (value) {
       const { startTime } = this.parent;
       if (!value || !startTime) return true;
@@ -84,7 +88,7 @@ const schema = Yup.object().shape({
   brand: Yup.string().optional(),
   amountQuantity: Yup.string().optional(),
   servingSize: Yup.string().optional(),
-  availableDays: Yup.array().of(Yup.string().required()).optional(),
+  availableDays: Yup.array().of(Yup.string().required()).min(1, 'Select at least one day').required(),
   dayparts: Yup.array().of(Yup.string().required()).optional(),
   dietTags: Yup.array().of(Yup.string().required()).optional(),
   allergens: Yup.array().of(Yup.string().required()).optional(),
@@ -106,7 +110,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
     defaultValues,
   });
 
-  const { reset, control, setValue, formState } = methods;
+  const { reset, control, setValue, trigger, formState } = methods;
   const isDirty = formState?.isDirty;
 
   const { data: dietTagsData, isFetching: dietTagsLoading } = useGetDietTagsQuery({ page: 0, limit: 100, search: '', summary: true });
@@ -251,6 +255,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
     onClose();
   };
 
+  
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
@@ -386,7 +391,15 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
                         <FormItem>
                           <FormLabel>Start time</FormLabel>
                           <FormControl>
-                            <Time24hInput value={field.value || ''} onChange={field.onChange} placeholder="HH:mm" title="Start Time" />
+                            <Time24hInput
+                              value={field.value || ''}
+                              onChange={(value) => {
+                                field.onChange(value);
+                                if (formState.isSubmitted) trigger('endTime');
+                              }}
+                              placeholder="HH:mm"
+                              title="Start Time"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

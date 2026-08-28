@@ -103,6 +103,22 @@ export const menuItemsApi = createApi({
       invalidatesTags: ['menu-item'],
     }),
 
+    // Read-only preview of what deleting one menu item would cascade into. Deliberately NOT tagged
+    // with 'menu-item': it is fetched on demand right before a delete, and a cached result would go
+    // stale the moment anything else started referencing the item.
+    getMenuItemDeleteImpact: builder.query({
+      query: (id) => ({
+        url: '',
+        method: 'GET',
+        roleBasedRouting: {
+          adminRoute: API_ROUTES.ADMIN_MENU_ITEM_DELETE_IMPACT(id),
+          organizerRoute: API_ROUTES.ORGANIZER_MENU_ITEM_DELETE_IMPACT(id),
+        },
+      }),
+      transformResponse: (res: any) => res.data,
+      keepUnusedDataFor: 0,
+    }),
+
     deleteMenuItem: builder.mutation({
       query: (id) => ({
         url: '',
@@ -165,6 +181,8 @@ export const menuItemsApi = createApi({
 
 export const {
   useGetMenuItemsQuery,
+  useGetMenuItemDeleteImpactQuery,
+  useLazyGetMenuItemDeleteImpactQuery,
   useGetMenuMinifyDataQuery,
   useGetMenuItemByMenuIdQuery,
   useAddMenuItemMutation,

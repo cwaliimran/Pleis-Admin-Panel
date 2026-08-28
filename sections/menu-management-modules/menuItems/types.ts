@@ -76,11 +76,37 @@ export interface MenuItemLookups {
   servingSizes: Map<string, string>;
 }
 
+export interface DeleteImpactReference {
+  _id: string;
+  title: string;
+  status?: string;
+}
+
+export type DeleteImpactReferenceTree = Record<string, DeleteImpactReference[] | Record<string, DeleteImpactReference[]> | undefined>;
+
+export interface MenuItemDeleteImpact {
+  menuItem: { _id: string; title: string; status?: string };
+  hasReferences: boolean;
+  totalReferences: number;
+  counts?: Record<string, number>;
+  references?: DeleteImpactReferenceTree;
+  willCascadeOnDelete?: boolean;
+}
+
+export type DeleteImpactModalProps = {
+  open: boolean;
+  onClose: () => void;
+  impact: MenuItemDeleteImpact | null;
+  isDeleting?: boolean;
+  onConfirm: () => void;
+};
+
 export interface SamplePageProps {
   data: MenuItemRecord[];
   meta: SampleMeta;
   lookups: MenuItemLookups;
   loading?: boolean;
+  checkingId?: string | null;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
   onPageChange?: (page: number) => void;
@@ -105,6 +131,7 @@ export interface SamplePageProps {
 export interface TableRowProps {
   item: MenuItemRecord;
   lookups: MenuItemLookups;
+  deleteChecking?: boolean;
   handleDelete?: (id: string) => void;
   handleEdit?: (id: string) => void;
 }

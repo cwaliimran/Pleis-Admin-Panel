@@ -164,3 +164,21 @@ export const formatDuration = (minutes: number): string => {
 };
 
 export const toSlotKey = (time: string): string => `${time.split(':')[0]}:00`;
+
+export const getCoveredSlotKeys = (startTime: string, endTime: string): string[] => {
+  const startMinutes = toMinutes(startTime);
+  if (startMinutes === null) return [];
+
+  const endMinutes = toMinutes(endTime);
+  if (endMinutes === null) return [toSlotKey(startTime)];
+
+  const normalizedEnd = endMinutes <= startMinutes ? endMinutes + MINUTES_PER_DAY : endMinutes;
+
+  const keys: string[] = [];
+
+  for (let bucket = Math.floor(startMinutes / 60) * 60; bucket < normalizedEnd; bucket += 60) {
+    keys.push(fromMinutes(bucket));
+  }
+
+  return keys.length > 0 ? keys : [toSlotKey(startTime)];
+};

@@ -3,7 +3,7 @@
 import type { ApiCalendarDay } from '@/store/Reducer/user-reservations-api';
 import { useGetReservationCalendarQuery } from '@/store/Reducer/user-reservations-api';
 import { useMemo } from 'react';
-import { TIME_SLOTS, fromIsoTime, toSlotKey } from './constants';
+import { TIME_SLOTS, fromIsoTime, getCoveredSlotKeys } from './constants';
 import { DaySummary, SlotSummary } from './types';
 
 interface UseReservationCalendarArgs {
@@ -46,11 +46,14 @@ export const useReservationCalendar = ({ organizationId, date, weekDates }: UseR
 
     (selectedDay?.timeSlots ?? []).forEach((reservation) => {
       (reservation.timeSlots ?? []).forEach((slot) => {
-        const time = fromIsoTime(slot.startTime);
-        if (!time) return;
+        const startTime = fromIsoTime(slot.startTime);
+        if (!startTime) return;
 
-        const key = toSlotKey(time);
-        bookedBySlot.set(key, (bookedBySlot.get(key) ?? 0) + (reservation.partySize || 0));
+        const seats = reservation.partySize || 0;
+
+        getCoveredSlotKeys(startTime, fromIsoTime(slot.endTime)).forEach((key) => {
+          bookedBySlot.set(key, (bookedBySlot.get(key) ?? 0) + seats);
+        });
       });
     });
 

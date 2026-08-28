@@ -150,11 +150,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.organizer.referralsV2,
         icon: Tags,
       },
-      {
-        title: 'Referrals Analytics',
-        url: paths.organizer.referralsAnalytics,
-        icon: Tags,
-      },
+      // {
+      //   title: 'Referrals Analytics',
+      //   url: paths.organizer.referralsAnalytics,
+      //   icon: Tags,
+      // },
       {
         title: 'Transactions',
         url: paths.organizer.transactions.default,
@@ -234,11 +234,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.organizer.orderManagementV2,
         icon: CalendarDays,
       },
-      {
-        title: 'Menu Management',
-        url: paths.organizer.menuManagement,
-        icon: CalendarDays,
-      },
+      // {
+      //   title: 'Menu Management',
+      //   url: paths.organizer.menuManagement,
+      //   icon: CalendarDays,
+      // },
       {
         title: 'Analytics',
         url: paths.organizer.orderAnalytics,

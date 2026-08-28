@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useGetMenuItemSubcategoriesQuery } from '@/store/Reducer/menu-item-subcategories-api';
-import { useDeleteMenuItemMutation, useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
+import { useDeleteMenuItemMutation, useGetMenuItemsQuery, useLazyGetMenuItemDeleteImpactQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useGetServingsQuery } from '@/store/Reducer/serving-api';
 import { getErrorMessage } from '@/utils/api';
@@ -14,10 +14,11 @@ import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import MenuItemDeleteImpactModal from './menuItems-delete-impact-modal';
 import MenuItemModal from './menuItems-modal-v2';
 import MenuItemTable from './menuItems-table';
 import { formatServingLabel } from './menuItems-utils';
-import { MenuItemLookups, MenuItemRecord } from './types';
+import { MenuItemDeleteImpact, MenuItemLookups, MenuItemRecord } from './types';
 
 const LOOKUP_FETCH_LIMIT = 1000;
 
@@ -31,6 +32,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const openModal = useBoolean();
   const editModal = useBoolean();
   const deleteModal = useBoolean();
+  const impactModal = useBoolean();
 
   const { companyId } = useCompanySelectionState();
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
@@ -82,6 +84,9 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   );
 
   const [deleteMenuItem, { isLoading: deleteLoading }] = useDeleteMenuItemMutation();
+  const [fetchDeleteImpact] = useLazyGetMenuItemDeleteImpactQuery();
+  const [checkingId, setCheckingId] = useState<string | null>(null);
+  const [deleteImpact, setDeleteImpact] = useState<MenuItemDeleteImpact | null>(null);
 
   const menuItems: MenuItemRecord[] = data?.data || [];
   const meta = data?.meta || { currentPage: page, totalPages: 1, totalRecords: 0, limit };
@@ -126,17 +131,44 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
     openModal.onTrue();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (checkingId) return;
+
     setSelectedId(id);
-    deleteModal.onTrue();
+    setCheckingId(id);
+
+    try {
+      const impact = await fetchDeleteImpact(id).unwrap();
+
+      if (impact?.hasReferences) {
+        setDeleteImpact(impact);
+        impactModal.onTrue();
+      } else {
+        setDeleteImpact(null);
+        deleteModal.onTrue();
+      }
+    } catch (error) {
+      showError(getErrorMessage(error));
+    } finally {
+      setCheckingId(null);
+    }
   };
 
   const onDelete = async () => {
     try {
-      await deleteMenuItem(selectedId).unwrap();
-      showSuccess('Menu item deleted successfully');
+      const response = await deleteMenuItem(selectedId).unwrap();
+      const cascaded = response?.data?.totalCascaded ?? 0;
+
+      showSuccess(
+        cascaded > 0
+          ? `Menu item deleted and removed from ${cascaded} ${cascaded === 1 ? 'place' : 'places'}`
+          : 'Menu item deleted successfully'
+      );
+
       setSelectedId(null);
+      setDeleteImpact(null);
       deleteModal.onFalse();
+      impactModal.onFalse();
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -163,6 +195,7 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
         menus={menus}
         subCategories={subCategories}
         loading={isLoading || isFetching}
+        checkingId={checkingId}
         handleDelete={handleDelete}
         handleEdit={handleEdit}
         onPageChange={setPage}
@@ -220,6 +253,20 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           companyId={scopedCompanyId}
           userType={userType}
           lookups={lookups}
+        />
+      )}
+
+      {impactModal.value && (
+        <MenuItemDeleteImpactModal
+          open={impactModal.value}
+          impact={deleteImpact}
+          isDeleting={deleteLoading}
+          onClose={() => {
+            impactModal.onFalse();
+            setDeleteImpact(null);
+            setSelectedId(null);
+          }}
+          onConfirm={onDelete}
         />
       )}
 

@@ -325,11 +325,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.globalReferrals,
         icon: Tags,
       },
-      {
-        title: 'Referral Analytics',
-        url: paths.superAdmin.globalReferralsAnalytics,
-        icon: Tags,
-      },
+      // {
+      //   title: 'Referral Analytics',
+      //   url: paths.superAdmin.globalReferralsAnalytics,
+      //   icon: Tags,
+      // },
       {
         title: 'Reward category',
         url: paths.superAdmin.rewardCategory,
@@ -487,11 +487,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.orderManagementV2,
         icon: CalendarDays,
       },
-      {
-        title: 'Menu Management',
-        url: paths.superAdmin.menuManagement,
-        icon: CalendarDays,
-      },
+      // {
+      //   title: 'Menu Management',
+      //   url: paths.superAdmin.menuManagement,
+      //   icon: CalendarDays,
+      // },
       {
         title: 'Analytics',
         url: paths.superAdmin.orderAnalytics,

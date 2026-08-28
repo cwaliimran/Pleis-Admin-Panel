@@ -162,12 +162,20 @@ export const ORDER_TAB_CONFIG: { id: OrderTab; label: string }[] = [
   { id: 'past', label: 'Past Orders' },
 ];
 
+/**
+ * Statuses an order can hold but that are not offered as a filter. They keep
+ * their badge in the table — this only controls the dropdown.
+ */
+export const NON_FILTERABLE_STATUSES: OrderStatus[] = ['preorder'];
+
 export const STATUS_FILTER_OPTIONS: { value: OrderStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'All statuses' },
-  ...([...ACTIVE_ORDER_STATUSES, ...PAST_ORDER_STATUSES] as OrderStatus[]).map((status) => ({
-    value: status,
-    label: ORDER_STATUS_CONFIG[status].label,
-  })),
+  ...([...ACTIVE_ORDER_STATUSES, ...PAST_ORDER_STATUSES] as OrderStatus[])
+    .filter((status) => !NON_FILTERABLE_STATUSES.includes(status))
+    .map((status) => ({
+      value: status,
+      label: ORDER_STATUS_CONFIG[status].label,
+    })),
 ];
 
 export const DELIVERY_FILTER_OPTIONS: { value: DeliveryType | 'all'; label: string }[] = [
@@ -236,11 +244,33 @@ export const MARK_AS_PAID_STATUSES: OrderStatus[] = ['confirmed', 'sent', 'pendi
 
 /**
  * Items can only be handed over once the order has been accepted — nothing
- * is prepared before that, and terminal orders are done with.
+ * is prepared before that, and terminal orders are done with. Cash only:
+ * every other method has the stricter rule below.
  */
 export const DELIVERABLE_STATUSES: OrderStatus[] = ['confirmed', 'sent', 'pendingPayment'];
 
+/**
+ * Cash is collected at handover, so a cash order is delivered while still
+ * unpaid and settled afterwards. Every other method is paid up front, so
+ * nothing is handed over until the provider has actually settled — an
+ * `pendingPayment` / `pending` order has not been paid for.
+ */
+export const canDeliverOrderItems = (order: { status: OrderStatus; paymentStatus: PaymentStatus; paymentType: PaymentType }) => {
+  if (order.paymentType === 'cash') return DELIVERABLE_STATUSES.includes(order.status);
+  return order.status === 'confirmed' && order.paymentStatus === 'paid';
+};
+
 export const MARK_AS_PAID_ACTION: ActionConfig = { type: 'markAsPaid', label: 'Mark as Paid' };
+
+/**
+ * Cash only. Every other method is settled by the payment provider, so staff
+ * have nothing to confirm and the button would let them mark an order paid
+ * that never was.
+ */
+export const MARK_AS_PAID_PAYMENT_TYPES: PaymentType[] = ['cash'];
+
+export const canMarkOrderAsPaid = (order: { status: OrderStatus; paymentStatus: PaymentStatus; paymentType: PaymentType }) =>
+  order.paymentStatus !== 'paid' && MARK_AS_PAID_STATUSES.includes(order.status) && MARK_AS_PAID_PAYMENT_TYPES.includes(order.paymentType);
 
 /** Only rewritable while nothing is committed — unaccepted and unpaid. */
 export const isOrderEditable = (order: { status: OrderStatus; paymentStatus: PaymentStatus }) =>

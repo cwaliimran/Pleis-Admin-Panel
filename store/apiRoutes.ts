@@ -564,6 +564,12 @@ export const API_ROUTES = {
   ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
   // ORGANIZER_MENU_ITEMS_MINIFY_DATA: `/organizer/menu/items/bundles`,
 
+  // Everything that references a menu item (combos, discounts, sales, challenges, promotions,
+  // rewards) — read before a delete so the user can see what the cascade will strip the item from.
+  // The organizer path mirrors what the delete mutation uses, i.e. ORGANIZER_MENU_ITEMS + /:id.
+  ADMIN_MENU_ITEM_DELETE_IMPACT: (id: string) => `/admin/menu/items/${id}/delete-impact`,
+  ORGANIZER_MENU_ITEM_DELETE_IMPACT: (id: string) => `/organizer/menu-management/items/${id}/delete-impact`,
+
   ORGANIZER_MENU_ITEMS: `/organizer/menu-management/items`,
   ORGANIZER_IMPORT_PRESET_MENU_ITEMS: `/organizer/menu/items/import`,
   ORGANIZER_MENU_ITEMS_BY_ID: (id: string) => `/organizer/menu/items/${id}`,

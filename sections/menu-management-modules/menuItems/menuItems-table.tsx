@@ -34,6 +34,7 @@ const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; subCategories: SubCat
   meta,
   lookups,
   loading,
+  checkingId,
   handleDelete,
   handleEdit,
   onPageChange,
@@ -173,6 +174,7 @@ const MenuItemTable: FC<SamplePageProps & { menus: Menu[]; subCategories: SubCat
                     key={`${item?._id || 'row'}-${idx}`}
                     item={item}
                     lookups={lookups}
+                    deleteChecking={checkingId === item?._id}
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}
                   />
