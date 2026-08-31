@@ -1,3 +1,5 @@
+import { IMAGE_ACCEPT_ATTRIBUTE, IMAGE_ONLY_ERROR, isImageFile } from '@/utils/fileUpload';
+import { showError } from '@/utils/toast';
 import { useEffect, useState } from 'react';
 import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import { Camera, X } from 'lucide-react';
@@ -97,12 +99,19 @@ const RHFUploadAvatar: React.FC<RHFUploadAvatarProps> = ({
                 <input
                   id={`avatar-upload-${name}`}
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT_ATTRIBUTE}
                   onChange={(e) => {
                     const files = e.target.files;
-                    if (files && files.length > 0) {
-                      onChange(files); 
+                    if (!files || files.length === 0) return;
+
+                    if (!isImageFile(files[0])) {
+                      showError(IMAGE_ONLY_ERROR);
+                      // Clearing the input lets the same rejected file fire onChange again on a retry.
+                      e.target.value = '';
+                      return;
                     }
+
+                    onChange(files);
                   }}
                   ref={ref}
                   className="hidden"

@@ -93,12 +93,13 @@ export const formatDaypartLabel = (daypart: DaypartRef): string => {
   const name = daypart.name || '';
   if (daypart.isAllDay || daypart.startTime == null || daypart.endTime == null) return name;
 
-  const toHour = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins === 0 ? `${hours}` : `${hours}:${String(mins).padStart(2, '0')}`;
-  };
-  return `${name} ${toHour(daypart.startTime)}–${toHour(daypart.endTime)}`;
+  // const toHour = (minutes: number) => {
+  //   const hours = Math.floor(minutes / 60);
+  //   const mins = minutes % 60;
+  //   return mins === 0 ? `${hours}` : `${hours}:${String(mins).padStart(2, '0')}`;
+  // };
+  // return `${name} ${toHour(daypart.startTime)}–${toHour(daypart.endTime)}`;
+  return `${name}`;
 };
 
 const restrictsDays = (component: ComboComponent) => (component.availableDays?.length || 0) > 0;

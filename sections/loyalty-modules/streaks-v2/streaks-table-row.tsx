@@ -17,8 +17,8 @@ interface StreaksTableRowProps {
 export const StreaksTableRow: React.FC<StreaksTableRowProps> = ({ item, onViewDetail }) => {
   return (
     <TableRow
-      onClick={() => onViewDetail(item)}
-      className="h-14 w-full cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
+      // onClick={() => onViewDetail(item)}
+      className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50"
     >
       <TableCell>
         <Avatar className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-gray-100 shadow-sm dark:bg-gray-800">

@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
@@ -32,11 +33,24 @@ export const ChallengesTableRow: React.FC<ChallengesTableRowProps> = ({ item, di
         </Avatar>
       </TableCell>
 
-      {/* Names run long; the full text stays reachable through the tooltip. */}
       <TableCell className="text-left font-medium text-gray-900 dark:text-gray-100">
-        <span title={item.name} className="block max-w-[250px] truncate">
-          {item.name}
-        </span>
+        <Dialog>
+          <DialogTrigger asChild>
+            <button
+              type="button"
+              title="Click to view full name"
+              className="block max-w-[200px] cursor-pointer truncate text-left font-medium hover:text-blue-600 hover:underline"
+            >
+              {item.name}
+            </button>
+          </DialogTrigger>
+          <DialogContent aria-describedby={undefined} className="dark:bg-secondary max-w-md">
+            <DialogHeader className="text-left">
+              <DialogTitle>Challenge Name</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm leading-relaxed break-words text-gray-700 dark:text-gray-300">{item.name}</p>
+          </DialogContent>
+        </Dialog>
       </TableCell>
 
       <TableCell className="text-left text-gray-700 dark:text-gray-300">{CHALLENGE_TASK_TYPE_LABELS[item.taskType]}</TableCell>

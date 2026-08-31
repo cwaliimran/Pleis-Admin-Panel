@@ -68,6 +68,22 @@ export const toImageKey = (image: string): string => {
   return image.split(/[?#]/)[0].split('/').pop() || '';
 };
 
+/**
+ * Taxonomy names come back in snake_case ("gluten_free"), so they're title-cased for display:
+ * "gluten_free" → "Gluten Free". Already-spaced names ("All Day") pass through unchanged.
+ */
+export const formatTagLabel = (value?: string): string => {
+  if (!value) return '';
+  return value
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(' ');
+};
+
+/** Compares taxonomy names irrespective of casing and snake_case vs spaced formatting. */
+export const normalizeTagName = (value?: string): string => (value || '').trim().toLowerCase().replace(/[_\s]+/g, ' ');
+
 /** Normalizes a field the API sometimes sends as an array and sometimes as a single bare object. */
 export const toRefArray = (value: RefValue[] | RefValue): RefValue[] => {
   if (!value) return [];

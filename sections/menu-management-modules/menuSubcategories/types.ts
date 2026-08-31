@@ -11,6 +11,7 @@ export interface MenuSubcategoryRecord {
   title: string;
   companyOrganizer?: SubcategoryCompanyOrganizer | null;
   order?: number;
+  menuItemsCount?: number;
   status: SubcategoryStatus;
   createdAt: string;
   updatedAt?: string;

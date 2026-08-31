@@ -23,8 +23,12 @@ const defaultValues: DietTagFormValues = {
   status: 'active',
 };
 
+const SNAKE_CASE_REGEX = /^[a-z0-9]+(_[a-z0-9]+)*$/;
+
 const schema = Yup.object().shape({
-  name: Yup.string().required('Name is required'),
+  name: Yup.string()
+    .required('Name is required')
+    .matches(SNAKE_CASE_REGEX, 'Name must be lowercase and in snake_case format (e.g. raw_food)'),
   description: Yup.string().required('Description is required'),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
 });
@@ -40,8 +44,14 @@ const DietTagModal = ({ open, onClose, isEdit = false, selectedData }: DietTagMo
     defaultValues,
   });
 
-  const { reset, control, formState } = methods;
+  const { reset, control, setValue, formState } = methods;
   const isDirty = formState?.isDirty;
+
+  const toSnakeCase = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+/, '');
 
   useEffect(() => {
     if (open && isEdit && selectedData) {
@@ -52,7 +62,7 @@ const DietTagModal = ({ open, onClose, isEdit = false, selectedData }: DietTagMo
   }, [open, isEdit, selectedData, reset]);
 
   const handleSubmit = async (formData: DietTagFormValues) => {
-    const payload = { ...formData, name: formData.name };
+    const payload = { ...formData, name: toSnakeCase(formData.name).replace(/_+$/, '') };
 
     try {
       if (isEdit && selectedData?._id) {
@@ -98,7 +108,15 @@ const DietTagModal = ({ open, onClose, isEdit = false, selectedData }: DietTagMo
                   <p className="text-muted-foreground text-xs">Auto-generated</p>
                 </div>
 
-                <RHFTextField name="name" label="Name" placeholder="e.g. Raw Food" />
+                <div className="flex flex-col gap-1">
+                  <RHFTextField
+                    name="name"
+                    label="Name"
+                    placeholder="e.g. raw_food"
+                    onChange={(e) => setValue('name', toSnakeCase(e.target.value), { shouldDirty: true, shouldValidate: true })}
+                  />
+                  <p className="text-muted-foreground text-xs">Lowercase snake_case only (letters, numbers and underscores)</p>
+                </div>
 
                 <RHFTextField name="description" label="Description" placeholder="e.g. No cooked or processed ingredients" multiline rows={2} />
 

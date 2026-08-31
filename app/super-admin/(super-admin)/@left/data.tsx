@@ -236,11 +236,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.referralsV2,
         icon: Tags,
       },
-      {
-        title: 'Referral Analytics',
-        url: paths.superAdmin.referralsAnalytics,
-        icon: Tags,
-      },
+      // {
+      //   title: 'Referral Analytics',
+      //   url: paths.superAdmin.referralsAnalytics,
+      //   icon: Tags,
+      // },
       {
         title: 'Transactions',
         url: paths.superAdmin.transactions.default,
@@ -325,11 +325,11 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.globalReferrals,
         icon: Tags,
       },
-      // {
-      //   title: 'Referral Analytics',
-      //   url: paths.superAdmin.globalReferralsAnalytics,
-      //   icon: Tags,
-      // },
+      {
+        title: 'Referral Analytics',
+        url: paths.superAdmin.globalReferralsAnalytics,
+        icon: Tags,
+      },
       {
         title: 'Reward category',
         url: paths.superAdmin.rewardCategory,

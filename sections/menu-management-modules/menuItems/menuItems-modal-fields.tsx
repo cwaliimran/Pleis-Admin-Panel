@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react';
 import { FC, ReactNode, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { formatTagLabel, normalizeTagName } from './menuItems-utils';
 import { SummaryOption } from './types';
 
 interface ToggleRowProps {
@@ -57,12 +58,27 @@ interface SummaryMultiSelectProps {
   placeholder?: string;
   options: SummaryOption[];
   loading?: boolean;
+  /** Option names that can't coexist with any other selection — picking one clears the rest, e.g. "All Day". */
+  exclusiveOptionNames?: string[];
 }
 
 /** Multi-select dropdown + removable chips for a fully-fetched, bounded taxonomy list (diet tags, allergens). */
-export const SummaryMultiSelect: FC<SummaryMultiSelectProps> = ({ name, label, placeholder = 'Select...', options, loading }) => {
+export const SummaryMultiSelect: FC<SummaryMultiSelectProps> = ({
+  name,
+  label,
+  placeholder = 'Select...',
+  options,
+  loading,
+  exclusiveOptionNames = [],
+}) => {
   const { control } = useFormContext();
   const [open, setOpen] = useState(false);
+
+  const exclusiveNames = exclusiveOptionNames.map(normalizeTagName);
+  const isExclusive = (id: string) => {
+    const option = options.find((item) => item._id === id);
+    return !!option && exclusiveNames.includes(normalizeTagName(option.name));
+  };
 
   return (
     <FormField
@@ -73,8 +89,12 @@ export const SummaryMultiSelect: FC<SummaryMultiSelectProps> = ({ name, label, p
         const selected: string[] = (field.value || []).filter(Boolean);
 
         const toggle = (id: string) => {
-          const next = selected.includes(id) ? selected.filter((v) => v !== id) : [...selected, id];
-          field.onChange(next);
+          if (selected.includes(id)) {
+            field.onChange(selected.filter((v) => v !== id));
+            return;
+          }
+          // An exclusive pick replaces everything; any other pick drops a previously selected exclusive one.
+          field.onChange(isExclusive(id) ? [id] : [...selected.filter((v) => !isExclusive(v)), id]);
         };
 
         const remove = (id: string) => field.onChange(selected.filter((v) => v !== id));
@@ -118,10 +138,11 @@ export const SummaryMultiSelect: FC<SummaryMultiSelectProps> = ({ name, label, p
                       <CommandGroup>
                         {options.map((option) => {
                           const checked = selected.includes(option._id);
+                          const optionLabel = formatTagLabel(option.name);
                           return (
-                            <CommandItem key={option._id} value={option.name} className="cursor-pointer" onSelect={() => toggle(option._id)}>
+                            <CommandItem key={option._id} value={optionLabel} className="cursor-pointer" onSelect={() => toggle(option._id)}>
                               <Check className={cn('mr-2 h-4 w-4', checked ? 'opacity-100' : 'opacity-0')} />
-                              {option.name}
+                              {optionLabel}
                             </CommandItem>
                           );
                         })}
@@ -136,7 +157,7 @@ export const SummaryMultiSelect: FC<SummaryMultiSelectProps> = ({ name, label, p
               <div className="mt-2 flex flex-wrap gap-2">
                 {selected.map((id) => (
                   <span key={id} className="bg-accent flex items-center gap-1.5 rounded-full py-1 pr-1.5 pl-3 text-xs font-medium">
-                    {options.find((option) => option._id === id)?.name || id}
+                    {formatTagLabel(options.find((option) => option._id === id)?.name) || id}
                     <button
                       type="button"
                       onClick={() => remove(id)}

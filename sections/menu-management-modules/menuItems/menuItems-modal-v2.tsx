@@ -19,6 +19,7 @@ import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useGetPresetTypesQuery } from '@/store/Reducer/preset-type-api';
 import { useGetServingsQuery } from '@/store/Reducer/serving-api';
 import { getErrorMessage } from '@/utils/api';
+import { IMAGE_ONLY_ERROR, isImageFile } from '@/utils/fileUpload';
 import { convertTimeFormat } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -61,7 +62,12 @@ const defaultValues: MenuItemFormValues = {
 };
 
 const schema = Yup.object().shape({
-  image: Yup.mixed().nullable(),
+  image: Yup.mixed()
+    .nullable()
+    .test('is-image', IMAGE_ONLY_ERROR, (value) => {
+      if (!(value instanceof FileList) || value.length === 0) return true;
+      return isImageFile(value[0]);
+    }),
   title: Yup.string().required('Name is required'),
   description: Yup.string().optional(),
   subCategory: Yup.string().required('Sub category is required'),
@@ -381,7 +387,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
                 <div className="flex flex-col gap-4">
                   <h4 className="text-muted-foreground border-b pb-2 text-xs font-semibold tracking-wide uppercase">Availability</h4>
 
-                  <RHFChipToggleGroup name="availableDays" label="Available Days" options={DAY_OPTIONS} />
+                  <RHFChipToggleGroup name="availableDays" label="Available Days" options={DAY_OPTIONS} showSelectAll />
 
                   <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
                     <FormField
@@ -432,6 +438,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
                     placeholder="Select dayparts..."
                     options={daypartsData?.data || []}
                     loading={daypartsLoading}
+                    exclusiveOptionNames={['all day']}
                   />
                 </div>
 
