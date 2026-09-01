@@ -109,8 +109,8 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     counts,
     pagination,
     orderingStatus,
-    isFetching,
     isListLoading,
+    isRefreshing,
     isTogglingOrdering,
     updatingOrderId,
     pendingOrderId,
@@ -283,11 +283,11 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
               type="button"
               title="Refresh orders"
               aria-label="Refresh orders"
-              disabled={!organizationId || isFetching}
+              disabled={!organizationId || isRefreshing}
               onClick={refetchOrders}
               className="flex h-8 w-8 cursor-pointer items-center justify-center text-gray-500 transition disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-400"
             >
-              <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
+              <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
             </button>
           </div>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">

@@ -28,12 +28,9 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   const deleteModal = useBoolean();
 
   const { companyId } = useCompanySelectionState();
-  // Organizer requests are scoped to the logged-in organizer's own company server-side;
-  // only super-admin needs the header's selected company sent explicitly.
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
   const companySkip = userType === 'super-admin' && !companyId;
 
-  // Organizers scope the page from the header's multi-select; super-admin has no such control.
   const { organizerOrganizationIds } = useCompanySelection();
 
   const [page, setPage] = useState(1);
@@ -54,13 +51,10 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<MenuListItem | null>(null);
 
-  // The in-table filter narrows to a single organization. With it cleared, an organizer still falls
-  // back to the header's selection so the page never shows organizations they filtered out up top.
   const pickedOrganization = !organization || organization === 'all' ? undefined : organization;
   const headerOrganizations = organizerOrganizationIds.length > 0 ? organizerOrganizationIds : undefined;
   const scopedOrganizations = userType === 'organizer' ? pickedOrganization || headerOrganizations : pickedOrganization;
 
-  // Changing the header selection changes the result set, so the current page number is stale.
   const headerOrganizationsKey = organizerOrganizationIds.join(',');
   useEffect(() => {
     if (userType !== 'organizer') return;
@@ -82,9 +76,6 @@ const MenuListView = ({ userType }: MenuListViewProps) => {
     { skip: companySkip }
   );
 
-  // Organizations belonging to the selected company (super-admin) or the organizer's own
-  // organizations — used both to populate the create/edit/duplicate dropdowns and to resolve
-  // the organization name shown in the table.
   const { data: adminOrganizationsData, isFetching: adminOrgFetching } = useGetOrganizationByCompanyQuery(
     { companyOrganizer: companyId },
     { skip: userType !== 'super-admin' || !companyId }

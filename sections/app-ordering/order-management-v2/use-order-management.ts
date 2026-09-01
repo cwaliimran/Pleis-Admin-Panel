@@ -52,10 +52,14 @@ interface UseOrderManagementReturn {
   isLoading: boolean;
   isFetching: boolean;
   /**
-   * `isFetching` minus the refetch that follows a write. Drives the table's
-   * loading bar, so a single-row update never blanks the whole list.
+   * True only while there is nothing to show for the current filters — a
+   * first load or a filter change. Drives the table's loading bar, so a
+   * background poll, a manual refresh and a single-row write all leave the
+   * rows on screen untouched.
    */
   isListLoading: boolean;
+  /** The manual refresh button's own spinner. A poll never sets it. */
+  isRefreshing: boolean;
   isTogglingOrdering: boolean;
   /** The order currently being rewritten by the update modal, if any. */
   updatingOrderId: string | null;
@@ -76,6 +80,9 @@ interface UseOrderManagementReturn {
   /** Rewrites a still-pending order's items and pickup details. */
   updateOrderDetails: (order: Order, payload: OrderUpdatePayload) => Promise<string | undefined>;
 }
+
+/** How often the list re-reads itself while the tab is focused. */
+export const ORDERS_POLL_INTERVAL_MS = 30_000;
 
 /** `all` is a UI-only value — the param is simply left off. */
 const omitAll = <T extends string>(value: T | 'all'): T | undefined => (value === 'all' ? undefined : (value as T));
@@ -99,14 +106,30 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
 
   // `refetchOnMountOrArgChange` because orders are live — switching tab or
   // filter must hit the API rather than replay a cached page.
-  const { data, isLoading, isFetching, refetch } = useGetOrdersV2Query(queryArgs, {
+  //
+  // The poll keeps the board current without anyone touching it. It stops
+  // while the tab is in the background, and `skip` already halts it when no
+  // organization is selected.
+  const { currentData, data, isLoading, isFetching, refetch } = useGetOrdersV2Query(queryArgs, {
     skip: !organizationId,
     refetchOnMountOrArgChange: true,
+    pollingInterval: ORDERS_POLL_INTERVAL_MS,
+    skipPollingIfUnfocused: true,
   });
 
-  const refetchOrders = useCallback(() => {
+  // Only the refresh button's own spinner — a background poll must leave the
+  // screen completely still, so it never sets this.
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refetchOrders = useCallback(async () => {
     if (!organizationId) return;
-    refetch();
+
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
   }, [organizationId, refetch]);
 
   const orders = useMemo(() => mapApiOrders(data?.data ?? []), [data]);
@@ -278,7 +301,10 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     orderingStatus,
     isLoading: isLoading && !data,
     isFetching,
-    isListLoading: isFetching && !deliveringOrderId && !pendingOrderId && !updatingOrderId,
+    // `currentData` is undefined only until the current args have landed, so
+    // it separates "nothing to show yet" from "re-reading what is already up".
+    isListLoading: isFetching && !currentData,
+    isRefreshing,
     isTogglingOrdering,
     updatingOrderId,
     pendingOrderId,

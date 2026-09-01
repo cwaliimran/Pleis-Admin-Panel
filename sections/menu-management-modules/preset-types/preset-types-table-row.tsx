@@ -20,7 +20,7 @@ const PresetTypeTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
 
       <TableCell className="text-left font-mono font-semibold">{item.code}</TableCell>
       
-      <TableCell className="text-left">{item.type?.name || '-'}</TableCell>
+      <TableCell className="text-left font-semibold">{item.name}</TableCell>
 
       <TableCell className="text-left">
         <CustomBadge variant="warning">{item.category?.title || '-'}</CustomBadge>
@@ -30,8 +30,11 @@ const PresetTypeTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit 
         <CustomBadge variant="info">{item.subCategory?.name || '-'}</CustomBadge>
       </TableCell>
 
+      <TableCell className="text-left">
+        <CustomBadge variant="default">{item.type?.name || '-'}</CustomBadge>
+      </TableCell>
 
-      <TableCell className="text-left font-semibold">{item.name}</TableCell>
+      {/* <TableCell className="text-left">{item.type?.name || '-'}</TableCell> */}
 
       <TableCell className="text-left">{fDate(item.createdAt, formatStr.split.date)}</TableCell>
 

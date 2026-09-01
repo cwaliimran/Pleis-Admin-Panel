@@ -53,6 +53,34 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
     setOpenGroup((prev) => (prev === groupKey ? null : groupKey));
   }, []);
 
+  const activeGroupKey = useMemo(() => {
+    const isMatch = (url?: string) => !!url && (pathname === url || pathname.startsWith(`${url}/`));
+
+    const longestMatch = (item: any): number => {
+      let best = isMatch(item.url) ? item.url.length : 0;
+      item.items?.forEach((child: any) => {
+        best = Math.max(best, longestMatch(child));
+      });
+      return best;
+    };
+
+    let matchedKey: string | null = null;
+    let matchedLength = 0;
+
+    menuGroups.forEach((group: any) => {
+      let length = group.items?.length ? 0 : isMatch(group.key) ? group.key.length : 0;
+      group.items?.forEach((item: any) => {
+        length = Math.max(length, longestMatch(item));
+      });
+      if (length > matchedLength) {
+        matchedLength = length;
+        matchedKey = group.key;
+      }
+    });
+
+    return matchedKey as string | null;
+  }, [menuGroups, pathname]);
+
   const handleGroupClick = useCallback(
     (group: any) => {
       const hasItems = group.items?.length > 0;
@@ -77,6 +105,8 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
       const isOpen = openGroup === group.key;
       const hasItems = group.items?.length > 0;
       const isDisabled = group.disabled;
+      const isActiveGroup = activeGroupKey === group.key;
+      const showActiveHighlight = isActiveGroup && !isDisabled && (!hasItems || !isOpen);
 
       return (
         <SidebarGroup
@@ -93,8 +123,8 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
             onClick={() => !isDisabled && handleGroupClick(group)}
             disabled={isDisabled}
             className={cn(
-              'sidebar-nav-item hover:bg-muted flex cursor-pointer items-center rounded-md text-sm font-medium transition-all duration-100',
-              pathname === group.key ? 'bg-muted dark:bg-black' : '',
+              'sidebar-nav-item hover:bg-muted flex cursor-pointer items-center rounded-lg text-sm font-medium transition-all duration-100',
+              showActiveHighlight ? 'bg-muted font-semibold' : '',
               isCollapsed ? 'min-w-[36px] justify-center px-2 py-2' : 'w-full justify-between px-3 py-2',
               isDisabled && 'cursor-not-allowed opacity-50 hover:bg-transparent'
             )}
@@ -170,8 +200,8 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
                     setHoveredGroup(null);
                   }}
                   className={cn(
-                    'hover:bg-muted block w-full cursor-pointer rounded-md px-3 py-2 text-start text-sm transition',
-                    pathname === item.url ? 'bg-muted font-semibold' : ''
+                    'hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition',
+                    pathname === item.url ? 'bg-muted font-medium' : ''
                   )}
                 >
                   {item.title}
@@ -182,7 +212,7 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
         </SidebarGroup>
       );
     });
-  }, [menuGroups, openGroup, pathname, isCollapsed, hoveredGroup, handleGroupClick, navigate, toggleSidebar, isMobile, hoverTimeout]);
+  }, [menuGroups, openGroup, pathname, activeGroupKey, isCollapsed, hoveredGroup, handleGroupClick, navigate, toggleSidebar, isMobile, hoverTimeout]);
 
   return (
     <Sidebar className="a-50 relative z-10 overflow-visible" collapsible="icon">

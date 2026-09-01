@@ -1,4 +1,4 @@
-// Type definitions
+
 export interface TabData {
   value: string;
   label: string;
@@ -72,22 +72,22 @@ export const tabsData: TabData[] = [
   },
   {
     value: 'rewards',
-    link: 'rewards',
+    link: 'rewards-v2',
     label: 'Rewards',
   },
   {
     value: 'tiers',
-    link: 'tiers',
+    link: 'tiers-v2',
     label: 'Tiers',
   },
   {
     value: 'promotions',
-    link: 'promotions',
+    link: 'promotions-v2',
     label: 'Promotions',
   },
   {
     value: 'challenges',
-    link: 'challenges',
+    link: 'challenges-v2',
     label: 'Challenges',
   },
 ];

@@ -4,7 +4,7 @@ import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/
 import { useQuickNavigation } from '@/hooks/useQuickNavigation';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { FC, memo, useCallback, useState } from 'react';
+import { FC, memo, useCallback, useMemo, useState } from 'react';
 
 type MenuItem = {
   title: string;
@@ -28,6 +28,21 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
 
+  const activeUrl = useMemo(() => {
+    const isMatch = (url?: string) => !!url && (pathname === url || pathname.startsWith(`${url}/`));
+
+    let best: string | null = null;
+    const walk = (list: MenuItem[]) => {
+      list.forEach((item) => {
+        if (isMatch(item.url) && (!best || item.url!.length > best.length)) best = item.url!;
+        if (item.items?.length) walk(item.items);
+      });
+    };
+    walk(items);
+
+    return best as string | null;
+  }, [items, pathname]);
+
   const toggleSubMenu = useCallback((itemKey: string) => {
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
   }, []);
@@ -47,12 +62,12 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
       {items.map((item, idx) => {
         const itemKey = `${parentKey}-${item.title}-${idx}`;
         const hasChildren = item.items && item.items.length > 0;
-        const isActive = item.url && pathname === item.url;
+        const isActive = !!item.url && item.url === activeUrl;
         const isHovered = isCollapsed && hoveredItem === itemKey;
 
         const ButtonContent = (
           <div
-            className={`sidebar-nav-item hover:bg-muted flex w-full items-center justify-between gap-2 rounded px-3 py-1 text-sm transition-colors duration-100 ${
+            className={`sidebar-nav-item hover:bg-muted flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm transition-colors duration-100 ${
               isActive ? 'bg-muted font-medium' : isHovered ? 'bg-muted' : ''
             } cursor-pointer`}
           >
