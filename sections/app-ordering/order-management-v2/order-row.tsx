@@ -46,6 +46,8 @@ interface OrderRowProps {
   /** Which action is mid-flight, so only that button shows a spinner. */
   pendingAction?: OrderActionType | null;
   isDelivering?: boolean;
+  /** Arrived over the socket while this view has been open. */
+  isLive?: boolean;
 }
 
 const StatusBadge: React.FC<BadgeConfig & { className?: string }> = ({ label, icon: Icon, tone, className }) => (
@@ -154,6 +156,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   isPending = false,
   pendingAction = null,
   isDelivering = false,
+  isLive = false,
 }) => {
   const deliveryConfig = getDeliveryTypeConfig(order.deliveryType);
   const tierConfig = order.customer.tier ? getLoyaltyTierConfig(order.customer.tier) : null;
@@ -257,7 +260,10 @@ export const OrderRow: React.FC<OrderRowProps> = ({
         onClick={onToggle}
         className={cn(
           'cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50',
-          isExpanded && 'bg-[#fafafa] dark:bg-[#272727]/30'
+          isExpanded && 'bg-[#fafafa] dark:bg-[#272727]/30',
+          // A live arrival is worth spotting across the room, so it keeps a
+          // tint and a marker until the list is filtered or paged away from.
+          isLive && !isExpanded && 'bg-blue-50/70 dark:bg-blue-950/25'
         )}
       >
         <TableCell className="w-12 pl-4">
@@ -278,7 +284,12 @@ export const OrderRow: React.FC<OrderRowProps> = ({
         </TableCell>
 
         <TableCell>
-          <div className="font-bold text-gray-900 dark:text-gray-100">#{order.orderNumber}</div>
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-gray-900 dark:text-gray-100">#{order.orderNumber}</span>
+            {isLive && (
+              <span className="shrink-0 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white dark:bg-blue-500">NEW</span>
+            )}
+          </div>
           <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{formatOrderTime(order.placedAt)}</div>
         </TableCell>
 

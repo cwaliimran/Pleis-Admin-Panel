@@ -9,6 +9,7 @@
 import type {
   ApiComboPriceMode,
   ApiDateRange,
+  ApiOrder,
   ApiOrderStatus,
   ApiOrderTab,
   ApiPaymentMethod,
@@ -251,3 +252,28 @@ export interface OrderUpdatePayload {
   items: { menuItemId: string; quantity: number }[];
   combos: { comboId: string; menuItemIds: string[]; quantity: number }[];
 }
+
+// ---------- Live updates (Socket.IO) ----------
+
+/** Events the orders namespace emits. Both carry the same envelope. */
+export type OrderSocketEventName = 'NEW_ORDER' | 'ORDER_UPDATE';
+
+/**
+ * One realtime message.
+ *
+ * `data` is the order as the socket serialises it, which is *not* the same
+ * shape the list endpoint returns — `deliveryOption` arrives as a bare id
+ * rather than `{ _id, title }`, `pickupType` uses a wider vocabulary, and
+ * `clubMemberInfo` is absent. It is therefore only logged and used for its
+ * ids; the rows themselves always come from a refetch of the list.
+ */
+export interface OrderSocketMessage {
+  event: OrderSocketEventName;
+  orderId: string;
+  organizationId: string;
+  data?: Partial<ApiOrder> & Record<string, unknown>;
+  timestamp?: number;
+}
+
+/** Drives the header's live indicator. */
+export type OrderSocketStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';

@@ -8,7 +8,7 @@ import {
   useUpdateOrderV2Mutation,
   useUpdateOrderingStatusV2Mutation,
 } from '@/store/Reducer/order-management-v2-api';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_PAGE_LIMIT, NEXT_STATUS_BY_ACTION, getRejectionReasonLabel } from './constants';
 import { mapApiOrders, mapOrderingStatus, mapPagination, mapTabCounts } from './mappers';
 import {
@@ -17,10 +17,14 @@ import {
   OrderActionType,
   OrderFilters,
   OrderPagination,
+  OrderSocketMessage,
+  OrderSocketStatus,
   OrderTabCounts,
   OrderUpdatePayload,
   OrderingStatus,
+  UserType,
 } from './types';
+import { ORDER_SOCKET_LOG_PREFIX, useOrderSocket } from './use-order-socket';
 
 // ============================================================
 // The module's single data seam.
@@ -37,6 +41,8 @@ import {
 export type DeliverItemsPayload = { all: true } | { all?: false; menuItemIds: string[]; comboIds: string[] };
 
 interface UseOrderManagementArgs {
+  /** Picks the socket namespace, the way it picks the REST route. */
+  userType: UserType;
   organizationId?: string;
   filters: OrderFilters;
   /** 1-based, as shown in the UI. */
@@ -54,11 +60,11 @@ interface UseOrderManagementReturn {
   /**
    * True only while there is nothing to show for the current filters — a
    * first load or a filter change. Drives the table's loading bar, so a
-   * background poll, a manual refresh and a single-row write all leave the
-   * rows on screen untouched.
+   * socket-driven refetch, a manual refresh and a single-row write all
+   * leave the rows on screen untouched.
    */
   isListLoading: boolean;
-  /** The manual refresh button's own spinner. A poll never sets it. */
+  /** The manual refresh button's own spinner. A socket refetch never sets it. */
   isRefreshing: boolean;
   isTogglingOrdering: boolean;
   /** The order currently being rewritten by the update modal, if any. */
@@ -68,6 +74,15 @@ interface UseOrderManagementReturn {
   pendingAction: OrderActionType | null;
   /** The order currently having items marked delivered, if any. */
   deliveringOrderId: string | null;
+  /** Live-connection state, for the header indicator. */
+  socketStatus: OrderSocketStatus;
+  /**
+   * Orders that arrived over the socket during this session, newest last.
+   * Only used to mark rows as new — the rows themselves come from the list.
+   */
+  liveOrderIds: string[];
+  /** Drops the "new" marks, e.g. once the user moves to another view of the list. */
+  clearLiveOrders: () => void;
   /**
    * Marks specific menu items delivered, or the whole order at once.
    * Resolves with the backend's message so the caller can surface it.
@@ -81,13 +96,84 @@ interface UseOrderManagementReturn {
   updateOrderDetails: (order: Order, payload: OrderUpdatePayload) => Promise<string | undefined>;
 }
 
-/** How often the list re-reads itself while the tab is focused. */
-export const ORDERS_POLL_INTERVAL_MS = 30_000;
+/**
+ * A burst of socket events — an order placed, then immediately confirmed —
+ * collapses into a single refetch fired at the end of this window.
+ */
+export const SOCKET_REFETCH_COALESCE_MS = 400;
 
 /** `all` is a UI-only value — the param is simply left off. */
 const omitAll = <T extends string>(value: T | 'all'): T | undefined => (value === 'all' ? undefined : (value as T));
 
-export const useOrderManagement = ({ organizationId, filters, page, limit }: UseOrderManagementArgs): UseOrderManagementReturn => {
+export const useOrderManagement = ({ userType, organizationId, filters, page, limit }: UseOrderManagementArgs): UseOrderManagementReturn => {
+  // ---- Live updates ----
+  //
+  // The socket is a signal, never a source of rows. Its payload is a
+  // different serialisation of an order than the list endpoint's — see
+  // `OrderSocketMessage` — so acting on it means re-reading the list, which
+  // keeps one shape on screen and brings the tab counts and paging with it.
+  const [liveOrderIds, setLiveOrderIds] = useState<string[]>([]);
+
+  // The query is declared below this point, so its `refetch` is reached
+  // through a ref rather than by reordering the hook around the socket.
+  const refetchRef = useRef<() => void>(() => {});
+  const coalesceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // What the list held when the event arrived, which is how an arrival is
+  // told apart from a change to something already on screen.
+  const listedOrderIdsRef = useRef<Set<string>>(new Set());
+
+  const scheduleRefetch = useCallback(() => {
+    // Already queued — this event rides along with the pending refetch.
+    if (coalesceTimerRef.current) return;
+
+    coalesceTimerRef.current = setTimeout(() => {
+      coalesceTimerRef.current = null;
+      refetchRef.current();
+    }, SOCKET_REFETCH_COALESCE_MS);
+  }, []);
+
+  const handleSocketEvent = useCallback(
+    (message: OrderSocketMessage) => {
+      // The namespace is already scoped by organization; this only guards
+      // against a frame arriving as the selection is being switched.
+      if (message.organizationId && organizationId && message.organizationId !== organizationId) return;
+
+      // `NEW_ORDER` does not always mean a new order. The backend also emits
+      // it when an existing one changes hands — an `ORDER_UPDATE` for the
+      // same id lands milliseconds earlier — so taking it at face value puts
+      // a "NEW" badge, a toast and a chime on a row that has been on screen
+      // for minutes. An id the list is already showing is therefore treated
+      // as the update it is.
+      if (message.event === 'NEW_ORDER' && message.orderId) {
+        if (listedOrderIdsRef.current.has(message.orderId)) {
+          console.log(`${ORDER_SOCKET_LOG_PREFIX} NEW_ORDER for an order already listed — treating as an update`, message.orderId);
+        } else {
+          setLiveOrderIds((current) => (current.includes(message.orderId) ? current : [...current, message.orderId]));
+        }
+      }
+
+      scheduleRefetch();
+    },
+    [organizationId, scheduleRefetch]
+  );
+
+  const { status: socketStatus } = useOrderSocket({
+    userType,
+    organizationId,
+    onEvent: handleSocketEvent,
+  });
+
+  const clearLiveOrders = useCallback(() => setLiveOrderIds([]), []);
+
+  // A pending refetch belongs to the connection that asked for it.
+  useEffect(
+    () => () => {
+      if (coalesceTimerRef.current) clearTimeout(coalesceTimerRef.current);
+    },
+    []
+  );
+
   // ---- Orders list ----
   const queryArgs: GetOrdersV2Args = useMemo(
     () => ({
@@ -107,18 +193,24 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
   // `refetchOnMountOrArgChange` because orders are live — switching tab or
   // filter must hit the API rather than replay a cached page.
   //
-  // The poll keeps the board current without anyone touching it. It stops
-  // while the tab is in the background, and `skip` already halts it when no
-  // organization is selected.
+  // There is no timed poll: the list re-reads itself when the socket says
+  // something changed, when a write lands, and when the refresh button is
+  // pressed. Nothing else moves it. While the socket is down the list is
+  // therefore static until refreshed by hand, which is what the header's
+  // "Offline" indicator is there to say.
   const { currentData, data, isLoading, isFetching, refetch } = useGetOrdersV2Query(queryArgs, {
     skip: !organizationId,
     refetchOnMountOrArgChange: true,
-    pollingInterval: ORDERS_POLL_INTERVAL_MS,
-    skipPollingIfUnfocused: true,
   });
 
-  // Only the refresh button's own spinner — a background poll must leave the
-  // screen completely still, so it never sets this.
+  // Kept current so a socket event fired from the callback above always
+  // re-reads through the query as it stands now.
+  useEffect(() => {
+    refetchRef.current = refetch;
+  }, [refetch]);
+
+  // Only the refresh button's own spinner — a socket-driven refetch must
+  // leave the screen completely still, so it never sets this.
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refetchOrders = useCallback(async () => {
@@ -133,6 +225,14 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
   }, [organizationId, refetch]);
 
   const orders = useMemo(() => mapApiOrders(data?.data ?? []), [data]);
+
+  // Tracks what is currently listed so a `NEW_ORDER` for one of these reads
+  // as an update rather than an arrival. Scoped to the page in view, so an
+  // order on another page or behind a filter still counts as new — which is
+  // the right way round: better a badge than a missed order.
+  useEffect(() => {
+    listedOrderIdsRef.current = new Set(orders.map((order) => order.id));
+  }, [orders]);
   const counts = useMemo(() => mapTabCounts(data?.meta), [data]);
   const pagination = useMemo(() => mapPagination(data?.meta, page, limit || DEFAULT_PAGE_LIMIT), [data, page, limit]);
 
@@ -310,6 +410,9 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     pendingOrderId,
     pendingAction,
     deliveringOrderId,
+    socketStatus,
+    liveOrderIds,
+    clearLiveOrders,
     deliverItems,
     refetchOrders,
     toggleOrdering,
