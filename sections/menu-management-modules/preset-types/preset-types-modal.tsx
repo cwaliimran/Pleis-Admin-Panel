@@ -18,12 +18,20 @@ import { useGetSubcategoryTypesQuery } from '@/store/Reducer/subcategory-types-a
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as Yup from 'yup';
 import { PresetTypeFormValues, PresetTypeModalProps } from './types';
 
 const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlDevCap];
+
+const CODE_PREFIX_LENGTH = 3;
+
+const getCodePrefix = (typeName?: string) =>
+  (typeName || '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .slice(0, CODE_PREFIX_LENGTH)
+    .toUpperCase();
 
 const defaultValues: PresetTypeFormValues = {
   image: null,
@@ -48,6 +56,7 @@ const schema = Yup.object().shape({
 });
 
 const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: PresetTypeModalProps) => {
+  const [selectedTypeName, setSelectedTypeName] = useState('');
   const { uploadImage, uploading: imageUploading } = useImageUpload();
   const { data: codeData, isLoading: codeLoading } = useGetPresetTypeCodeQuery(undefined, { skip: isEdit });
   const [addPresetType, { isLoading: addLoading }] = useAddPresetTypeMutation();
@@ -64,8 +73,11 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
   const categoryValue = useWatch({ control, name: 'category' });
   const subCategoryValue = useWatch({ control, name: 'subCategory' });
 
+  const generatedCode = codeData?.code ? `${getCodePrefix(selectedTypeName)}${codeData.code}` : '';
+
   useEffect(() => {
     if (open && isEdit && selectedData) {
+      setSelectedTypeName(selectedData.type?.name || '');
       const imageValue = selectedData.image && !PLACEHOLDER_IMAGE_URLS.includes(selectedData.image) ? selectedData.image : null;
       reset({
         image: imageValue,
@@ -78,6 +90,7 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
         status: selectedData.status,
       });
     } else if (open && !isEdit) {
+      setSelectedTypeName('');
       reset(defaultValues);
     }
   }, [open, isEdit, selectedData, reset]);
@@ -107,9 +120,10 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
         await updatePresetType({ id: selectedData._id, ...payload }).unwrap();
         showSuccess('Preset type updated successfully');
       } else {
-        await addPresetType({ ...payload, code: codeData?.code }).unwrap();
+        await addPresetType({ ...payload, code: generatedCode || undefined }).unwrap();
         showSuccess('Preset type created successfully');
       }
+      setSelectedTypeName('');
       reset(defaultValues);
       onClose();
     } catch (error) {
@@ -118,6 +132,7 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
   };
 
   const handleClose = () => {
+    setSelectedTypeName('');
     reset(defaultValues);
     onClose();
   };
@@ -154,6 +169,8 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
                       label="Category"
                       placeholder="Select category..."
                       searchPlaceholder="Search categories..."
+                      disabled={isEdit}
+                      skip={isEdit}
                       selectedLabel={selectedData?.category?.title}
                       useOptionsQuery={useGetItemsCategoryQuery}
                       getOptionValue={(category) => category._id}
@@ -161,6 +178,7 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
                       onValueChange={() => {
                         setValue('subCategory', '', { shouldDirty: true });
                         setValue('type', '', { shouldDirty: true });
+                        setSelectedTypeName('');
                       }}
                     />
 
@@ -169,14 +187,17 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
                       label="Subcategory"
                       placeholder={categoryValue ? 'Select subcategory...' : 'Select category first...'}
                       searchPlaceholder="Search subcategories..."
-                      disabled={!categoryValue}
-                      skip={!categoryValue}
+                      disabled={isEdit || !categoryValue}
+                      skip={isEdit || !categoryValue}
                       queryArgs={{ category: categoryValue }}
                       selectedLabel={selectedData?.subCategory?.name}
                       useOptionsQuery={useGetMenuSubcategoriesQuery}
                       getOptionValue={(subcategory) => subcategory._id}
                       getOptionLabel={(subcategory) => subcategory.name}
-                      onValueChange={() => setValue('type', '', { shouldDirty: true })}
+                      onValueChange={() => {
+                        setValue('type', '', { shouldDirty: true });
+                        setSelectedTypeName('');
+                      }}
                     />
 
                     <RHFAsyncCombobox
@@ -184,13 +205,14 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
                       label="Type"
                       placeholder={subCategoryValue ? 'Select type...' : 'Select subcategory first...'}
                       searchPlaceholder="Search types..."
-                      disabled={!subCategoryValue}
-                      skip={!subCategoryValue}
+                      disabled={isEdit || !subCategoryValue}
+                      skip={isEdit || !subCategoryValue}
                       queryArgs={{ subCategory: subCategoryValue }}
                       selectedLabel={selectedData?.type?.name}
                       useOptionsQuery={useGetSubcategoryTypesQuery}
                       getOptionValue={(type) => type._id}
                       getOptionLabel={(type) => type.name}
+                      onValueChange={(_, type) => setSelectedTypeName(type?.name || '')}
                     />
                   </div>
                 </div>
@@ -205,7 +227,7 @@ const PresetTypeModal = ({ open, onClose, isEdit = false, selectedData }: Preset
                         Code <span className="text-[11px] text-gray-500 dark:text-gray-300">(Auto-generated)</span>
                       </Label>
                       <Input
-                        value={isEdit ? selectedData?.code || '' : codeLoading ? 'Loading...' : codeData?.code || ''}
+                        value={isEdit ? selectedData?.code || '' : codeLoading ? 'Loading...' : generatedCode}
                         disabled
                         className="h-10 bg-gray-50 dark:bg-gray-800"
                       />
