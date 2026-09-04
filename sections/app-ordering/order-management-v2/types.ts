@@ -147,11 +147,20 @@ export interface OrderingStatus {
 
 // ---------- Filters ----------
 
+/** One entry in the delivery filter — the organization's own configured options. */
+export interface DeliveryOptionFilter {
+  id: string;
+  title: string;
+  method: DeliveryType;
+  isActive: boolean;
+}
+
 export interface OrderFilters {
   tab: OrderTab;
   search: string;
   status: OrderStatus | 'all';
-  deliveryType: DeliveryType | 'all';
+  /** A `DeliveryOptionFilter.id`, sent as `pickupFilter`. */
+  deliveryOptionId: string;
   paymentType: PaymentType | 'all';
   /** `all` sends no `range` param at all — the backend then decides the window. */
   dateRange: DateRangeFilter | 'all';

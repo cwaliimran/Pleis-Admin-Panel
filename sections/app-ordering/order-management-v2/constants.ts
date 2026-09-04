@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
-import { Ban, BellRing, CalendarClock, CircleAlert, CircleCheck, CircleCheckBig, CircleDashed, CircleX, Clock, CreditCard, Truck } from 'lucide-react';
+import { Ban, BellRing, CalendarClock, CircleAlert, CircleCheck, CircleCheckBig, CircleDashed, CircleX, Clock, CreditCard, PackageCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ComboPriceMode,
@@ -48,7 +48,9 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, BadgeConfig> = {
   pending: { label: 'Pending', icon: Clock, tone: 'amber' },
   confirmed: { label: 'Confirmed', icon: CircleCheck, tone: 'blue' },
   ready: { label: 'Ready', icon: BellRing, tone: 'teal' },
-  sent: { label: 'Sent', icon: Truck, tone: 'purple' },
+  // `sent` is the wire name; it means every item is handed over and only the
+  // payment is outstanding, so staff see it as "Delivered".
+  sent: { label: 'Delivered', icon: PackageCheck, tone: 'purple' },
   pendingPayment: { label: 'Pending Payment', icon: CreditCard, tone: 'orange' },
   completed: { label: 'Completed', icon: CircleCheckBig, tone: 'green' },
   cancelled: { label: 'Cancelled', icon: Ban, tone: 'gray' },
@@ -163,14 +165,6 @@ export const STATUS_FILTER_OPTIONS: { value: OrderStatus | 'all'; label: string 
     })),
 ];
 
-export const DELIVERY_FILTER_OPTIONS: { value: DeliveryType | 'all'; label: string }[] = [
-  { value: 'all', label: 'All delivery types' },
-  ...(Object.keys(DELIVERY_TYPE_CONFIG) as DeliveryType[]).map((type) => ({
-    value: type,
-    label: DELIVERY_TYPE_CONFIG[type].label,
-  })),
-];
-
 export const PAYMENT_FILTER_OPTIONS: { value: PaymentType | 'all'; label: string }[] = [
   { value: 'all', label: 'All payment types' },
   ...(Object.keys(PAYMENT_TYPE_CONFIG) as PaymentType[]).map((type) => ({
@@ -189,11 +183,14 @@ export const DATE_RANGE_OPTIONS: { value: DateRangeFilter | 'all'; label: string
 
 export const DEFAULT_PAGE_LIMIT = 20;
 
+/** The delivery-option list is a filter dropdown, so it is fetched in one go. */
+export const DELIVERY_OPTIONS_FETCH_LIMIT = 100;
+
 /** What the view boots with, and what "Clear filters" restores. */
 export const DEFAULT_ORDER_FILTERS = {
   search: '',
   status: 'all',
-  deliveryType: 'all',
+  deliveryOptionId: 'all',
   paymentType: 'all',
   dateRange: 'all',
 } as const;

@@ -9,9 +9,11 @@ import type {
   ApiOrderingStatus,
   ApiOrdersMeta,
 } from '@/store/Reducer/order-management-v2-api';
+import type { ApiDeliveryOption } from '@/store/Reducer/delivery-options-api';
 import { DEFAULT_PAGE_LIMIT, DELIVERY_TYPE_CONFIG } from './constants';
 import {
   ComboOption,
+  DeliveryOptionFilter,
   DeliveryType,
   MenuItemOption,
   Order,
@@ -256,6 +258,20 @@ export const mapComboOptions = (catalogue: ApiMenuCatalogue | null | undefined):
 
   return options;
 };
+
+/**
+ * Inactive options are kept — an option can be retired while orders placed
+ * against it are still in the list, and those have to stay filterable.
+ */
+export const mapDeliveryOptionFilters = (options: ApiDeliveryOption[] | null | undefined): DeliveryOptionFilter[] =>
+  (options ?? [])
+    .filter((option) => option?._id)
+    .map((option) => ({
+      id: option._id,
+      title: option.title?.trim() || 'Untitled option',
+      method: option.deliveryMethod,
+      isActive: option.status !== 'inactive',
+    }));
 
 export const mapPagination = (meta: ApiOrdersMeta | null | undefined, fallbackPage: number, fallbackLimit: number): OrderPagination => ({
   currentPage: meta?.currentPage ?? fallbackPage,

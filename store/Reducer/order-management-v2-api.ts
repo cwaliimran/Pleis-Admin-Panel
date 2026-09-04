@@ -316,7 +316,11 @@ export interface GetOrdersV2Args {
   limit: number;
   keyword?: string;
   orderStatus?: ApiOrderStatus;
-  pickupFilter?: ApiPickupType;
+  /**
+   * A delivery option `_id`, not a pickup type — the filter lists the
+   * organization's own configured options rather than the three methods.
+   */
+  pickupFilter?: string;
   paymentMethod?: ApiPaymentMethod;
   range?: ApiDateRange;
 }

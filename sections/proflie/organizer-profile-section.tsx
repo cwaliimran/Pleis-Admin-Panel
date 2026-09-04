@@ -15,12 +15,13 @@ import { useUpdateUserMutation } from '@/store/Reducer/user-list';
 import { setUser } from '@/store/slice/userSlice';
 import { RootState } from '@/store/store';
 import { getErrorMessage } from '@/utils/api';
+import { applyBillkoKey } from '@/utils/billko';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useRouter } from 'next/navigation';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -256,7 +257,7 @@ const OrganizerProfileSection = () => {
         key: process.env.NEXT_PUBLIC_PROJECT_KEY,
       };
 
-      dispatch(setUser(newUser));
+      dispatch(setUser(dirtyFields.billkoApiKey ? applyBillkoKey(newUser, formData.billkoApiKey) : newUser));
 
       // Reset form with updated values to reflect new default state
       reset({
@@ -317,6 +318,15 @@ const OrganizerProfileSection = () => {
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'personal' | 'business'>('personal');
+
+  // Deep link support: `?tab=business` opens straight into Business Details,
+  // which is where the Billko API key warning sends the user. Read after mount
+  // rather than in the initial state so server and client render the same tab.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('tab') === 'business') {
+      setActiveTab('business');
+    }
+  }, []);
 
   return (
     <div className="mt-5 min-h-[87vh] md:mt-0 md:p-6">

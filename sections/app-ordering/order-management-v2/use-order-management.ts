@@ -8,10 +8,12 @@ import {
   useUpdateOrderV2Mutation,
   useUpdateOrderingStatusV2Mutation,
 } from '@/store/Reducer/order-management-v2-api';
+import { useGetDeliveryOptionsQuery } from '@/store/Reducer/delivery-options-api';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DEFAULT_PAGE_LIMIT, NEXT_STATUS_BY_ACTION, getRejectionReasonLabel } from './constants';
-import { mapApiOrders, mapOrderingStatus, mapPagination, mapTabCounts } from './mappers';
+import { DEFAULT_PAGE_LIMIT, DELIVERY_OPTIONS_FETCH_LIMIT, NEXT_STATUS_BY_ACTION, getRejectionReasonLabel } from './constants';
+import { mapApiOrders, mapDeliveryOptionFilters, mapOrderingStatus, mapPagination, mapTabCounts } from './mappers';
 import {
+  DeliveryOptionFilter,
   DestructiveActionPayload,
   Order,
   OrderActionType,
@@ -44,6 +46,9 @@ interface UseOrderManagementArgs {
 
 interface UseOrderManagementReturn {
   orders: Order[];
+  /** Populates the delivery filter — the organization's own configured options. */
+  deliveryOptions: DeliveryOptionFilter[];
+  isDeliveryOptionsLoading: boolean;
   counts: OrderTabCounts;
   pagination: OrderPagination;
   orderingStatus: OrderingStatus | null;
@@ -160,7 +165,7 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
       limit,
       keyword: filters.search.trim() || undefined,
       orderStatus: omitAll(filters.status),
-      pickupFilter: omitAll(filters.deliveryType),
+      pickupFilter: omitAll(filters.deliveryOptionId),
       paymentMethod: omitAll(filters.paymentType),
       range: omitAll(filters.dateRange),
     }),
@@ -287,6 +292,17 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
     [updateOrderDetailsMutation, refetch]
   );
 
+  // ---- Delivery options (filter dropdown) ----
+  //
+  // Fetched in one page rather than paged: it is a dropdown, and an
+  // organization has a handful of options, not hundreds.
+  const { data: deliveryOptionsData, isFetching: isDeliveryOptionsLoading } = useGetDeliveryOptionsQuery(
+    { organizationId: organizationId as string, limit: DELIVERY_OPTIONS_FETCH_LIMIT },
+    { skip: !organizationId }
+  );
+
+  const deliveryOptions = useMemo(() => mapDeliveryOptionFilters(deliveryOptionsData), [deliveryOptionsData]);
+
   // ---- Ordering switch (per organization) ----
   const { data: orderingStatusData } = useGetOrderingStatusV2Query({ organization: organizationId }, { skip: !organizationId });
 
@@ -358,6 +374,8 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
 
   return {
     orders,
+    deliveryOptions,
+    isDeliveryOptionsLoading,
     counts,
     pagination,
     orderingStatus,

@@ -22,7 +22,6 @@ import {
   DATE_RANGE_OPTIONS,
   DEFAULT_ORDER_FILTERS,
   DEFAULT_PAGE_LIMIT,
-  DELIVERY_FILTER_OPTIONS,
   ORDER_TAB_CONFIG,
   PAYMENT_FILTER_OPTIONS,
   STATUS_FILTER_OPTIONS,
@@ -32,7 +31,6 @@ import { ORDER_TABLE_COLUMN_COUNT, OrderRow } from './order-row';
 import { OrderUpdateModal } from './order-update-modal';
 import {
   DateRangeFilter,
-  DeliveryType,
   DestructiveActionPayload,
   DestructiveActionType,
   Order,
@@ -128,7 +126,7 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   const [activeTab, setActiveTab] = useState<OrderTab>('active');
   const [searchQuery, setSearchQuery] = useState<string>(DEFAULT_ORDER_FILTERS.search);
   const [status, setStatus] = useState<OrderStatus | 'all'>(DEFAULT_ORDER_FILTERS.status);
-  const [deliveryType, setDeliveryType] = useState<DeliveryType | 'all'>(DEFAULT_ORDER_FILTERS.deliveryType);
+  const [deliveryOptionId, setDeliveryOptionId] = useState<string>(DEFAULT_ORDER_FILTERS.deliveryOptionId);
   const [paymentType, setPaymentType] = useState<PaymentType | 'all'>(DEFAULT_ORDER_FILTERS.paymentType);
   const [dateRange, setDateRange] = useState<DateRangeFilter | 'all'>(DEFAULT_ORDER_FILTERS.dateRange);
   const [page, setPage] = useState(1);
@@ -158,12 +156,14 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
 
   // Memoised — the data hook re-fetches whenever this object changes.
   const filters: OrderFilters = useMemo(
-    () => ({ tab: activeTab, search: debouncedSearch, status, deliveryType, paymentType, dateRange }),
-    [activeTab, debouncedSearch, status, deliveryType, paymentType, dateRange]
+    () => ({ tab: activeTab, search: debouncedSearch, status, deliveryOptionId, paymentType, dateRange }),
+    [activeTab, debouncedSearch, status, deliveryOptionId, paymentType, dateRange]
   );
 
   const {
     orders,
+    deliveryOptions,
+    isDeliveryOptionsLoading,
     counts,
     pagination,
     orderingStatus,
@@ -194,14 +194,14 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   const hasActiveFilters =
     searchQuery !== DEFAULT_ORDER_FILTERS.search ||
     status !== DEFAULT_ORDER_FILTERS.status ||
-    deliveryType !== DEFAULT_ORDER_FILTERS.deliveryType ||
+    deliveryOptionId !== DEFAULT_ORDER_FILTERS.deliveryOptionId ||
     paymentType !== DEFAULT_ORDER_FILTERS.paymentType ||
     dateRange !== DEFAULT_ORDER_FILTERS.dateRange;
 
   const handleClearFilters = () => {
     setSearchQuery(DEFAULT_ORDER_FILTERS.search);
     setStatus(DEFAULT_ORDER_FILTERS.status);
-    setDeliveryType(DEFAULT_ORDER_FILTERS.deliveryType);
+    setDeliveryOptionId(DEFAULT_ORDER_FILTERS.deliveryOptionId);
     setPaymentType(DEFAULT_ORDER_FILTERS.paymentType);
     setDateRange(DEFAULT_ORDER_FILTERS.dateRange);
   };
@@ -522,14 +522,18 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
               </SelectContent>
             </Select>
 
-            <Select value={deliveryType} onValueChange={(next) => setDeliveryType(next as DeliveryType | 'all')}>
-              <SelectTrigger className={SELECT_TRIGGER_CLASS} aria-label="Filter by delivery type">
+            <Select value={deliveryOptionId} onValueChange={setDeliveryOptionId} disabled={isDeliveryOptionsLoading}>
+              <SelectTrigger className={SELECT_TRIGGER_CLASS} aria-label="Filter by delivery option">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DELIVERY_FILTER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className={SELECT_ITEM_CLASS}>
-                    {option.label}
+                <SelectItem value="all" className={SELECT_ITEM_CLASS}>
+                  All delivery options
+                </SelectItem>
+                {deliveryOptions.map((option) => (
+                  <SelectItem key={option.id} value={option.id} className={SELECT_ITEM_CLASS}>
+                    {option.title}
+                    {!option.isActive && ' · inactive'}
                   </SelectItem>
                 ))}
               </SelectContent>

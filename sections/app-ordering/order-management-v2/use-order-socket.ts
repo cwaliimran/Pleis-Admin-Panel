@@ -111,8 +111,12 @@ export const useOrderSocket = ({ userType, organizationId, onEvent }: UseOrderSo
       setStatus('disconnected');
     });
 
+    // `warn`, not `error`: socket.io retries on its own and the header's
+    // "Offline" indicator already reports it, so this is a recoverable
+    // condition. `console.error` would also throw the Next dev overlay over
+    // the whole screen every time a websocket blipped.
     socket.on('connect_error', (error) => {
-      console.error(`${LOG_PREFIX} ❌ connection error —`, error?.message || error, { url });
+      console.warn(`${LOG_PREFIX} ⚠️ connection error —`, error?.message || error, { url });
       setStatus('error');
     });
 
@@ -122,7 +126,7 @@ export const useOrderSocket = ({ userType, organizationId, onEvent }: UseOrderSo
     });
 
     socket.io.on('reconnect_failed', () => {
-      console.error(`${LOG_PREFIX} gave up after ${RECONNECTION_ATTEMPTS} attempts`, { url });
+      console.warn(`${LOG_PREFIX} gave up after ${RECONNECTION_ATTEMPTS} attempts`, { url });
       setStatus('error');
     });
 
