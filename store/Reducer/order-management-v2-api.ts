@@ -11,11 +11,31 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 // ---------- Wire enums ----------
 
-export type ApiOrderStatus = 'pending' | 'confirmed' | 'sent' | 'pendingPayment' | 'completed' | 'cancelled' | 'rejected' | 'preorder';
+export type ApiOrderStatus =
+  | 'pending'
+  | 'confirmed'
+  /** Prepared and waiting to be collected. Only reached by `payLater` pickups. */
+  | 'ready'
+  | 'sent'
+  | 'pendingPayment'
+  | 'completed'
+  | 'cancelled'
+  | 'rejected'
+  | 'preorder';
 
-export type ApiPickupType = 'tableService' | 'counter' | 'togo';
+export type ApiPickupType = 'tableDelivery' | 'counterPickup' | 'toGo';
+
+/** Pre-rename spellings still carried by older orders; `mapPickupType` folds them in. */
+export type ApiLegacyPickupType = 'tableService' | 'counter' | 'togo';
 
 export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'payLater';
+
+/**
+ * When the customer settles up. `payNow` is paid before anything is handed
+ * over; `payLater` is collected at handover. Added late — orders placed
+ * before it exists come back without the field.
+ */
+export type ApiPaymentTiming = 'payNow' | 'payLater';
 
 export type ApiPaymentStatus = 'pending' | 'paid' | 'failed';
 
@@ -134,16 +154,18 @@ export interface ApiOrder {
   priceBreakdown?: ApiPriceBreakdown | null;
   status: ApiOrderStatus;
   paymentMethod: ApiPaymentMethod;
+  /** Absent on orders placed before the field was introduced. */
+  paymentTiming?: ApiPaymentTiming;
   paymentStatus: ApiPaymentStatus;
   orderType: string;
-  pickupType: ApiPickupType;
+  pickupType: ApiPickupType | ApiLegacyPickupType;
   /**
    * The delivery option the customer chose, e.g. "Table Delivery". The
    * backend owns the list, so this is display-only and read straight through
    * rather than matched against a local enum.
    */
   deliveryOption?: { _id: string; title?: string } | null;
-  /** Present only when `pickupType` is `tableService`. */
+  /** Present only when `pickupType` is `tableDelivery`. */
   tableNumber?: string;
   orderNumber: string;
   createdAt: string;

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
-import { Ban, CalendarClock, CircleAlert, CircleCheck, CircleCheckBig, CircleDashed, CircleX, Clock, CreditCard, Truck } from 'lucide-react';
+import { Ban, BellRing, CalendarClock, CircleAlert, CircleCheck, CircleCheckBig, CircleDashed, CircleX, Clock, CreditCard, Truck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ComboPriceMode,
@@ -12,6 +12,7 @@ import {
   OrderStatus,
   OrderTab,
   PaymentStatus,
+  PaymentTiming,
   PaymentType,
   RejectionReason,
 } from './types';
@@ -19,14 +20,9 @@ import {
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
 
-// ============================================================
-// Badge system
-//
-// Soft-tinted pill, hairline border, leading icon. One tone table keeps
-// every badge in the table visually consistent in both themes.
-// ============================================================
+// ---------- Badges ----------
 
-export type BadgeTone = 'green' | 'amber' | 'red' | 'blue' | 'purple' | 'orange' | 'indigo' | 'gray';
+export type BadgeTone = 'green' | 'amber' | 'red' | 'blue' | 'purple' | 'orange' | 'indigo' | 'teal' | 'gray';
 
 export const BADGE_TONE_CLASS: Record<BadgeTone, string> = {
   green: 'border-green-200 bg-green-50 text-green-700 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-300',
@@ -36,6 +32,7 @@ export const BADGE_TONE_CLASS: Record<BadgeTone, string> = {
   purple: 'border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300',
   orange: 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/40 dark:text-orange-300',
   indigo: 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300',
+  teal: 'border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-900/60 dark:bg-teal-950/40 dark:text-teal-300',
   gray: 'border-gray-200 bg-gray-50 text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400',
 };
 
@@ -45,13 +42,12 @@ export interface BadgeConfig {
   tone: BadgeTone;
 }
 
-// ============================================================
-// Status
-// ============================================================
+// ---------- Status ----------
 
 export const ORDER_STATUS_CONFIG: Record<OrderStatus, BadgeConfig> = {
   pending: { label: 'Pending', icon: Clock, tone: 'amber' },
   confirmed: { label: 'Confirmed', icon: CircleCheck, tone: 'blue' },
+  ready: { label: 'Ready', icon: BellRing, tone: 'teal' },
   sent: { label: 'Sent', icon: Truck, tone: 'purple' },
   pendingPayment: { label: 'Pending Payment', icon: CreditCard, tone: 'orange' },
   completed: { label: 'Completed', icon: CircleCheckBig, tone: 'green' },
@@ -65,7 +61,7 @@ export const getOrderStatusConfig = (status: OrderStatus): BadgeConfig =>
   ORDER_STATUS_CONFIG[status] || { label: humanizeKey(status), icon: CircleDashed, tone: 'gray' };
 
 /** Which statuses live under which tab. */
-export const ACTIVE_ORDER_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'sent', 'pendingPayment', 'preorder'];
+export const ACTIVE_ORDER_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'ready', 'sent', 'pendingPayment', 'preorder'];
 export const PAST_ORDER_STATUSES: OrderStatus[] = ['completed', 'cancelled', 'rejected'];
 
 export const STATUS_BY_TAB: Record<OrderTab, OrderStatus[]> = {
@@ -73,12 +69,7 @@ export const STATUS_BY_TAB: Record<OrderTab, OrderStatus[]> = {
   past: PAST_ORDER_STATUSES,
 };
 
-// ============================================================
-// Round delivery state
-//
-// The API tracks delivery per item, so a round is the set of items sharing
-// one delivery state rather than a batch with its own status.
-// ============================================================
+// ---------- Round delivery state ----------
 
 export const ROUND_DELIVERY_CONFIG: Record<'delivered' | 'pending', BadgeConfig> = {
   delivered: { label: 'Delivered', icon: CircleCheck, tone: 'green' },
@@ -87,12 +78,7 @@ export const ROUND_DELIVERY_CONFIG: Record<'delivered' | 'pending', BadgeConfig>
 
 export const getRoundDeliveryConfig = (isDelivered: boolean) => (isDelivered ? ROUND_DELIVERY_CONFIG.delivered : ROUND_DELIVERY_CONFIG.pending);
 
-// ============================================================
-// Combos
-//
-// Display-only for now — a combo carries no delivery flag and the update
-// endpoint cannot express one, so nothing here writes.
-// ============================================================
+// ---------- Combos ----------
 
 export const COMBO_PRICE_MODE_LABEL: Record<ComboPriceMode, string> = {
   fixed_amount_off_sum: 'Fixed amount off',
@@ -108,14 +94,12 @@ export const getComboPriceModeLabel = (mode: ComboPriceMode | '') => {
 export const getOrderComboCount = (order: { combos?: { quantity: number }[] }) =>
   (order.combos ?? []).reduce((total, combo) => total + combo.quantity, 0);
 
-// ============================================================
-// Delivery / payment / loyalty
-// ============================================================
+// ---------- Delivery / payment / loyalty ----------
 
 export const DELIVERY_TYPE_CONFIG: Record<DeliveryType, { label: string; chipClass: string }> = {
-  tableService: { label: 'Table service', chipClass: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' },
-  counter: { label: 'Counter pickup', chipClass: 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300' },
-  togo: { label: 'To go', chipClass: 'bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300' },
+  tableDelivery: { label: 'Table delivery', chipClass: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' },
+  counterPickup: { label: 'Counter pickup', chipClass: 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300' },
+  toGo: { label: 'To go', chipClass: 'bg-orange-50 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300' },
 };
 
 export const getDeliveryTypeConfig = (type: DeliveryType) =>
@@ -130,6 +114,15 @@ export const PAYMENT_TYPE_CONFIG: Record<PaymentType, { label: string }> = {
 
 export const getPaymentTypeLabel = (type: PaymentType) => PAYMENT_TYPE_CONFIG[type]?.label || humanizeKey(type);
 
+/** Tinted by what it means for the staff: green is settled up front, amber is still owed. */
+export const PAYMENT_TIMING_CONFIG: Record<PaymentTiming, { label: string; chipClass: string }> = {
+  payNow: { label: 'Pay now', chipClass: 'bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-300' },
+  payLater: { label: 'Pay later', chipClass: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' },
+};
+
+export const getPaymentTimingConfig = (timing: PaymentTiming) =>
+  PAYMENT_TIMING_CONFIG[timing] || { label: humanizeKey(timing), chipClass: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' };
+
 export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, BadgeConfig> = {
   paid: { label: 'Paid', icon: CircleCheck, tone: 'green' },
   pending: { label: 'Pending', icon: Clock, tone: 'amber' },
@@ -139,10 +132,7 @@ export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, BadgeConfig> = {
 export const getPaymentStatusConfig = (status: PaymentStatus): BadgeConfig =>
   PAYMENT_STATUS_CONFIG[status] || { label: humanizeKey(status), icon: CircleDashed, tone: 'gray' };
 
-/**
- * Tier keys come from the loyalty club, so the list is open-ended. Known
- * keys get their own colour, anything else falls back to a neutral chip.
- */
+/** Open-ended — the loyalty club owns the keys, so unknowns get a neutral chip. */
 export const LOYALTY_TIER_CONFIG: Record<string, { label: string; chipClass: string }> = {
   essential: { label: 'ESSENTIAL', chipClass: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300' },
   blue: { label: 'BLUE', chipClass: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300' },
@@ -153,19 +143,14 @@ export const LOYALTY_TIER_CONFIG: Record<string, { label: string; chipClass: str
 export const getLoyaltyTierConfig = (tier: LoyaltyTier) =>
   LOYALTY_TIER_CONFIG[tier] || { label: tier.toUpperCase(), chipClass: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' };
 
-// ============================================================
-// Tabs & filter dropdowns
-// ============================================================
+// ---------- Tabs & filter dropdowns ----------
 
 export const ORDER_TAB_CONFIG: { id: OrderTab; label: string }[] = [
   { id: 'active', label: 'Active Orders' },
   { id: 'past', label: 'Past Orders' },
 ];
 
-/**
- * Statuses an order can hold but that are not offered as a filter. They keep
- * their badge in the table — this only controls the dropdown.
- */
+/** Not offered as a filter; they keep their badge in the table. */
 export const NON_FILTERABLE_STATUSES: OrderStatus[] = ['preorder'];
 
 export const STATUS_FILTER_OPTIONS: { value: OrderStatus | 'all'; label: string }[] = [
@@ -213,64 +198,118 @@ export const DEFAULT_ORDER_FILTERS = {
   dateRange: 'all',
 } as const;
 
-// ============================================================
-// Actions
+// ---------- Actions ----------
 //
-// Staff advance an order with one primary button; the secondary button is
-// always the destructive escape hatch. Terminal statuses have neither.
-// ============================================================
+// Staff advance an order with one primary button; the secondary is always
+// the destructive escape hatch. Terminal statuses have neither.
 
 interface ActionConfig {
   type: OrderActionType;
   label: string;
 }
 
-export const PRIMARY_ACTION_BY_STATUS: Partial<Record<OrderStatus, ActionConfig>> = {
-  pending: { type: 'confirm', label: 'Confirm' },
-  confirmed: { type: 'delivered', label: 'Delivered' },
-  // `sent` is already out for delivery — anything still outstanding is
-  // handed over per item from the expanded panel, not from the row.
-};
-
 export const SECONDARY_ACTION_BY_STATUS: Partial<Record<OrderStatus, ActionConfig>> = {
   pending: { type: 'reject', label: 'Reject' },
   confirmed: { type: 'cancel', label: 'Cancel' },
+  ready: { type: 'cancel', label: 'Cancel' },
   sent: { type: 'cancel', label: 'Cancel' },
   pendingPayment: { type: 'cancel', label: 'Cancel' },
-};
-
-/** Statuses where an unpaid order can still be settled. */
-export const MARK_AS_PAID_STATUSES: OrderStatus[] = ['confirmed', 'sent', 'pendingPayment'];
-
-/**
- * Items can only be handed over once the order has been accepted — nothing
- * is prepared before that, and terminal orders are done with. Cash only:
- * every other method has the stricter rule below.
- */
-export const DELIVERABLE_STATUSES: OrderStatus[] = ['confirmed', 'sent', 'pendingPayment'];
-
-/**
- * Cash is collected at handover, so a cash order is delivered while still
- * unpaid and settled afterwards. Every other method is paid up front, so
- * nothing is handed over until the provider has actually settled — an
- * `pendingPayment` / `pending` order has not been paid for.
- */
-export const canDeliverOrderItems = (order: { status: OrderStatus; paymentStatus: PaymentStatus; paymentType: PaymentType }) => {
-  if (order.paymentType === 'cash') return DELIVERABLE_STATUSES.includes(order.status);
-  return order.status === 'confirmed' && order.paymentStatus === 'paid';
 };
 
 export const MARK_AS_PAID_ACTION: ActionConfig = { type: 'markAsPaid', label: 'Mark as Paid' };
 
 /**
- * Cash only. Every other method is settled by the payment provider, so staff
- * have nothing to confirm and the button would let them mark an order paid
- * that never was.
+ * Only these can be settled by hand. Every other method is settled by the
+ * payment provider, so staff have nothing to confirm and the button would
+ * let them mark an order paid that never was.
  */
-export const MARK_AS_PAID_PAYMENT_TYPES: PaymentType[] = ['cash'];
+export const MARK_AS_PAID_PAYMENT_TYPES: PaymentType[] = ['card', 'cash'];
 
-export const canMarkOrderAsPaid = (order: { status: OrderStatus; paymentStatus: PaymentStatus; paymentType: PaymentType }) =>
-  order.paymentStatus !== 'paid' && MARK_AS_PAID_STATUSES.includes(order.status) && MARK_AS_PAID_PAYMENT_TYPES.includes(order.paymentType);
+/**
+ * A `payLater` order that is collected rather than carried to the customer.
+ * These get called "Ready" first, so whoever is waiting can be told.
+ */
+export const PICKUP_TYPES_NEEDING_READY: DeliveryType[] = ['toGo', 'counterPickup'];
+
+/**
+ * Items can only be handed over once the order has been accepted — nothing
+ * is prepared before that, and terminal orders are done with.
+ */
+export const DELIVERABLE_STATUSES: OrderStatus[] = ['confirmed', 'ready', 'sent', 'pendingPayment'];
+
+/** Everything the flow rules read. Narrower than `Order` so it stays testable. */
+type ActionableOrder = {
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentType: PaymentType;
+  paymentTiming: PaymentTiming;
+  deliveryType: DeliveryType;
+};
+
+/**
+ * A collected order is called Ready before it is handed over. `payNow` has
+ * to clear payment first — nothing is prepared for collection until the
+ * money has landed — whereas `payLater` is collected at handover.
+ */
+const needsReadyFirst = (order: ActionableOrder) =>
+  order.status === 'confirmed' &&
+  PICKUP_TYPES_NEEDING_READY.includes(order.deliveryType) &&
+  (order.paymentTiming === 'payLater' || order.paymentStatus === 'paid');
+
+/**
+ * `payNow` means exactly that: the money lands before anything leaves the
+ * counter, so an unpaid order cannot be handed over at all. `payLater` is
+ * collected at handover, so it delivers while still unpaid. Either way a
+ * pickup order has to be called Ready first.
+ */
+export const canDeliverOrderItems = (order: ActionableOrder) => {
+  if (!DELIVERABLE_STATUSES.includes(order.status)) return false;
+  if (needsReadyFirst(order)) return false;
+
+  return order.paymentTiming === 'payLater' || order.paymentStatus === 'paid';
+};
+
+/**
+ * `payNow` settles before handover, so the button appears as soon as the
+ * order is confirmed. `payLater` settles after, so it waits until the order
+ * is actually out — `sent` is what delivering everything leaves behind.
+ */
+export const canMarkOrderAsPaid = (order: ActionableOrder) => {
+  if (order.paymentStatus === 'paid') return false;
+  if (!MARK_AS_PAID_PAYMENT_TYPES.includes(order.paymentType)) return false;
+
+  const settleableStatuses: OrderStatus[] =
+    order.paymentTiming === 'payLater' ? ['sent', 'pendingPayment'] : ['confirmed', 'ready', 'sent', 'pendingPayment'];
+
+  return settleableStatuses.includes(order.status);
+};
+
+/**
+ * The one button that moves the order along — a matrix, not a status lookup:
+ *
+ *   payNow,   table delivery  → Confirm → (Mark as Paid) → Delivered
+ *   payNow,   to go / counter → Confirm → (Mark as Paid) → Ready → Delivered
+ *   payLater, table delivery  → Confirm → Delivered → (Mark as Paid)
+ *   payLater, to go / counter → Confirm → Ready → Delivered → (Mark as Paid)
+ *
+ * Mark as Paid is bracketed because it renders separately, beside this one —
+ * see `canMarkOrderAsPaid`. On a `payNow` order it is the only thing offered
+ * until payment lands, and for a provider-settled method (applePay) not even
+ * that: the row waits, showing nothing but Cancel.
+ *
+ * `sent` has no primary action of its own — anything still outstanding is
+ * handed over per item from the expanded panel, not from the row.
+ */
+export const getPrimaryAction = (order: ActionableOrder): ActionConfig | null => {
+  if (order.status === 'pending') return { type: 'confirm', label: 'Confirm' };
+  if (needsReadyFirst(order)) return { type: 'ready', label: 'Ready' };
+
+  // Only ever offered on the row while there is a whole order to hand over.
+  const canHandOver = order.status === 'confirmed' || order.status === 'ready';
+  if (canHandOver && canDeliverOrderItems(order)) return { type: 'delivered', label: 'Delivered' };
+
+  return null;
+};
 
 /** Only rewritable while nothing is committed — unaccepted and unpaid. */
 export const isOrderEditable = (order: { status: OrderStatus; paymentStatus: PaymentStatus }) =>
@@ -288,12 +327,14 @@ export const MAX_ITEM_QUANTITY = 99;
  */
 export const NEXT_STATUS_BY_ACTION: Partial<Record<OrderActionType, OrderStatus>> = {
   confirm: 'confirmed',
+  ready: 'ready',
   reject: 'rejected',
   cancel: 'cancelled',
 };
 
 export const ACTION_SUCCESS_MESSAGE: Record<OrderActionType, string> = {
   confirm: 'Order confirmed',
+  ready: 'Order marked as ready',
   delivered: 'All items marked as delivered',
   markAsPaid: 'Order marked as paid',
   reject: 'Order rejected',
@@ -325,9 +366,7 @@ export const DESTRUCTIVE_ACTION_COPY = {
   },
 } as const;
 
-// ============================================================
-// Formatting helpers
-// ============================================================
+// ---------- Formatting helpers ----------
 
 /** "pendingPayment" → "Pending Payment". Last resort for unmapped keys. */
 export function humanizeKey(value: string) {
@@ -357,13 +396,11 @@ export const formatOpenedAt = (value: string | null) => {
 export const getOrderItemCount = (order: { rounds: { items: { quantity: number }[] }[] }) =>
   order.rounds.reduce((total, round) => total + round.items.reduce((sum, item) => sum + item.quantity, 0), 0);
 
-// ============================================================
-// Price breakdown
+// ---------- Price breakdown ----------
 //
-// The backend owns every figure here — nothing is recomputed. Lines that
-// come back as 0 are simply not part of this order, so they are dropped
-// rather than shown as "€0.00". `subtotal` and `total` always render.
-// ============================================================
+// The backend owns every figure — nothing is recomputed. A line that comes
+// back as 0 is not part of this order, so it is dropped rather than shown
+// as "€0.00". `subtotal` and `total` always render.
 
 type BreakdownKey = 'saleDiscount' | 'promoDiscount' | 'voucherDiscount' | 'tax' | 'tipAmount';
 

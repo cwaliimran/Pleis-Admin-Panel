@@ -53,6 +53,7 @@ const defaultValues = {
   oib: '',
   bankAccountNumber: '',
   representativeName: '',
+  billkoApiKey: '',
   location: {
     fullAddress: '',
     country: '',
@@ -189,6 +190,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, on
               oib: data.oib,
               bankAccountNumber: data.bankAccountNumber,
               representativeName: data.representativeName,
+              billkoApiKey: data.billkoApiKey || '',
               location: {
                 coordinates: [0, 0], // Default coordinates since we're not using Google Places
                 fullAddress: data.location?.fullAddress || '',

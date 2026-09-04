@@ -26,13 +26,6 @@ import {
 } from './types';
 import { ORDER_SOCKET_LOG_PREFIX, useOrderSocket } from './use-order-socket';
 
-// ============================================================
-// The module's single data seam.
-//
-// Everything here is served by RTK Query. Components consuming this hook
-// work with the view model only and never see the wire shape.
-// ============================================================
-
 /**
  * Either a specific selection, or every outstanding item at once. A partial
  * delivery carries menu items and combos independently — either list may be
@@ -41,7 +34,6 @@ import { ORDER_SOCKET_LOG_PREFIX, useOrderSocket } from './use-order-socket';
 export type DeliverItemsPayload = { all: true } | { all?: false; menuItemIds: string[]; comboIds: string[] };
 
 interface UseOrderManagementArgs {
-  /** Picks the socket namespace, the way it picks the REST route. */
   userType: UserType;
   organizationId?: string;
   filters: OrderFilters;
@@ -67,32 +59,20 @@ interface UseOrderManagementReturn {
   /** The manual refresh button's own spinner. A socket refetch never sets it. */
   isRefreshing: boolean;
   isTogglingOrdering: boolean;
-  /** The order currently being rewritten by the update modal, if any. */
   updatingOrderId: string | null;
   pendingOrderId: string | null;
   /** Which action is running on `pendingOrderId` — lets one button spin, not all. */
   pendingAction: OrderActionType | null;
-  /** The order currently having items marked delivered, if any. */
   deliveringOrderId: string | null;
-  /** Live-connection state, for the header indicator. */
   socketStatus: OrderSocketStatus;
-  /**
-   * Orders that arrived over the socket during this session, newest last.
-   * Only used to mark rows as new — the rows themselves come from the list.
-   */
+  /** Orders that arrived over the socket this session. Only marks rows as new. */
   liveOrderIds: string[];
-  /** Drops the "new" marks, e.g. once the user moves to another view of the list. */
   clearLiveOrders: () => void;
-  /**
-   * Marks specific menu items delivered, or the whole order at once.
-   * Resolves with the backend's message so the caller can surface it.
-   */
+  /** Resolves with the backend's message so the caller can surface it. */
   deliverItems: (order: Order, payload: DeliverItemsPayload) => Promise<string | undefined>;
-  /** Re-reads the current page without changing any filter state. */
   refetchOrders: () => void;
   toggleOrdering: (isOpen: boolean) => Promise<string | undefined>;
   runOrderAction: (order: Order, action: OrderActionType, payload?: DestructiveActionPayload) => Promise<string | undefined>;
-  /** Rewrites a still-pending order's items and pickup details. */
   updateOrderDetails: (order: Order, payload: OrderUpdatePayload) => Promise<string | undefined>;
 }
 
@@ -114,17 +94,15 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
   // keeps one shape on screen and brings the tab counts and paging with it.
   const [liveOrderIds, setLiveOrderIds] = useState<string[]>([]);
 
-  // The query is declared below this point, so its `refetch` is reached
-  // through a ref rather than by reordering the hook around the socket.
+  // The query is declared below, so its `refetch` is reached through a ref.
   const refetchRef = useRef<() => void>(() => {});
   const coalesceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // What the list held when the event arrived, which is how an arrival is
-  // told apart from a change to something already on screen.
+  // What the list held when the event arrived — how an arrival is told apart
+  // from a change to something already on screen.
   const listedOrderIdsRef = useRef<Set<string>>(new Set());
 
   const scheduleRefetch = useCallback(() => {
-    // Already queued — this event rides along with the pending refetch.
     if (coalesceTimerRef.current) return;
 
     coalesceTimerRef.current = setTimeout(() => {
@@ -166,7 +144,6 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
 
   const clearLiveOrders = useCallback(() => setLiveOrderIds([]), []);
 
-  // A pending refetch belongs to the connection that asked for it.
   useEffect(
     () => () => {
       if (coalesceTimerRef.current) clearTimeout(coalesceTimerRef.current);
@@ -191,26 +168,20 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
   );
 
   // `refetchOnMountOrArgChange` because orders are live — switching tab or
-  // filter must hit the API rather than replay a cached page.
-  //
-  // There is no timed poll: the list re-reads itself when the socket says
-  // something changed, when a write lands, and when the refresh button is
-  // pressed. Nothing else moves it. While the socket is down the list is
-  // therefore static until refreshed by hand, which is what the header's
-  // "Offline" indicator is there to say.
+  // filter must hit the API rather than replay a cached page. There is no
+  // timed poll: the list moves only on a socket event, a write, or the
+  // refresh button, which is what the "Offline" indicator is there to say.
   const { currentData, data, isLoading, isFetching, refetch } = useGetOrdersV2Query(queryArgs, {
     skip: !organizationId,
     refetchOnMountOrArgChange: true,
   });
 
-  // Kept current so a socket event fired from the callback above always
-  // re-reads through the query as it stands now.
   useEffect(() => {
     refetchRef.current = refetch;
   }, [refetch]);
 
   // Only the refresh button's own spinner — a socket-driven refetch must
-  // leave the screen completely still, so it never sets this.
+  // leave the screen still, so it never sets this.
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refetchOrders = useCallback(async () => {
@@ -226,10 +197,8 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
 
   const orders = useMemo(() => mapApiOrders(data?.data ?? []), [data]);
 
-  // Tracks what is currently listed so a `NEW_ORDER` for one of these reads
-  // as an update rather than an arrival. Scoped to the page in view, so an
-  // order on another page or behind a filter still counts as new — which is
-  // the right way round: better a badge than a missed order.
+  // Scoped to the page in view, so an order on another page or behind a
+  // filter still counts as new — better a spurious badge than a missed order.
   useEffect(() => {
     listedOrderIdsRef.current = new Set(orders.map((order) => order.id));
   }, [orders]);
@@ -253,17 +222,13 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
         } else {
           // Combos go over as the order-combo line ids themselves — unlike
           // `deliveredMenuItem`, which is keyed on the menu item definition.
-          //
-          // Empty strings are dropped by the slice, so a combo-only delivery
-          // sends `deliveredCombo` alone, and vice versa.
+          // Empty strings are dropped by the slice.
           args.deliveredMenuItem = payload.menuItemIds.join(',');
           args.deliveredCombo = payload.comboIds.join(',');
         }
 
         // Once nothing is left to hand over the order moves on: `completed`
-        // if it is already settled, otherwise `sent` to await payment. Combos
-        // count as outstanding until the API gives them a delivery state, so
-        // a mixed order only advances when its combos are selected too.
+        // if it is already settled, otherwise `sent` to await payment.
         const outstandingItems = order.rounds.filter((round) => !round.isDelivered).flatMap((round) => round.items.map((item) => item.menuItemId));
         const outstandingCombos = order.combos.filter((combo) => !combo.isDelivered).map((combo) => combo.id);
 
@@ -279,7 +244,7 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
         const response = await updateOrder(args).unwrap();
 
         // Awaited inside the pending window, so the button stays busy until
-        // the fresh list has landed and the table never flashes its loader.
+        // the fresh list lands and the table never flashes its loader.
         await refetch();
 
         return response?.message;
@@ -300,12 +265,10 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
       try {
         const response = await updateOrderDetailsMutation({
           id: order.id,
-          // The endpoint keys lines on the menu item, so the draft maps
-          // straight across.
           items: payload.items.map((item) => ({ menuItem: item.menuItemId, quantity: item.quantity })),
           // Always sent, empty array included — the endpoint replaces the whole
-          // list, so omitting it is how a removed combo would come back. Note
-          // the backend wants `quantity` as a string here, unlike `items`.
+          // list, so omitting it is how a removed combo would come back. The
+          // backend wants `quantity` as a string here, unlike `items`.
           combos: payload.combos.map((combo) => ({
             combo: combo.comboId,
             items: combo.menuItemIds,
@@ -335,8 +298,7 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
     async (isOpen: boolean) => {
       if (!organizationId) throw new Error('No organization selected');
 
-      // Unwrapped so a failed request rejects and the view can toast it;
-      // the mutation invalidates the status tag, which refetches the switch.
+      // Unwrapped so a failed request rejects and the view can toast it.
       const response = await updateOrderingStatus({ organization: organizationId, isOrderingEnabled: isOpen }).unwrap();
 
       return response?.message;

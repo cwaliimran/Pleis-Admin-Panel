@@ -65,6 +65,7 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
           // .min(1, 'At least one supplier is required')
           // .required(),
           .optional(),
+        billkoApiKey: Yup.string().optional(),
       };
       break;
     case 'manager':

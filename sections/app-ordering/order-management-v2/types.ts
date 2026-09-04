@@ -1,11 +1,3 @@
-// ============================================================
-// Order Management V2 — domain types
-//
-// The status / pickup / payment vocabularies are the backend's, aliased
-// here so the section reads naturally and there is exactly one source of
-// truth. `mappers.ts` turns the wire shape into the view model below.
-// ============================================================
-
 import type {
   ApiComboPriceMode,
   ApiDateRange,
@@ -14,35 +6,31 @@ import type {
   ApiOrderTab,
   ApiPaymentMethod,
   ApiPaymentStatus,
+  ApiPaymentTiming,
   ApiPickupType,
 } from '@/store/Reducer/order-management-v2-api';
 
 export type UserType = 'organizer' | 'super-admin';
 
-/**
- * The full order lifecycle as the backend models it. Staff advance it left
- * to right: pending → confirmed → sent → pendingPayment → completed.
- * `rejected` leaves from `pending`, `cancelled` from anywhere after it.
- */
 export type OrderStatus = ApiOrderStatus;
 
 export type DeliveryType = ApiPickupType;
 
 export type PaymentType = ApiPaymentMethod;
 
+/** Decides the whole action flow — see `getPrimaryAction` in `constants.ts`. */
+export type PaymentTiming = ApiPaymentTiming;
+
 export type PaymentStatus = ApiPaymentStatus;
 
-/** Loyalty tier key as the backend sends it, e.g. "essential". */
 export type LoyaltyTier = string;
 
 export type OrderTab = ApiOrderTab;
 
 export type DateRangeFilter = ApiDateRange;
 
-/** Actions that advance the order. `reject`/`cancel` are the destructive pair. */
-export type OrderActionType = 'confirm' | 'delivered' | 'markAsPaid' | 'reject' | 'cancel';
+export type OrderActionType = 'confirm' | 'ready' | 'delivered' | 'markAsPaid' | 'reject' | 'cancel';
 
-/** Destructive actions collect a reason; the two differ only in copy. */
 export type DestructiveActionType = Extract<OrderActionType, 'reject' | 'cancel'>;
 
 export type RejectionReason = 'itemOutOfStock' | 'venueTooBusy' | 'customerRequest' | 'customerNotFound' | 'other';
@@ -60,14 +48,13 @@ export interface OrderItem {
   quantity: number;
   /** Line total for the whole quantity, not the unit price. */
   lineTotal: number;
-  /** Customer instruction, e.g. "No sugar, extra hot". Not yet sent by the API. */
+  /** Not yet sent by the API. */
   note?: string;
 }
 
 /**
- * Orders can be added to after they're placed, so staff can deliver one
- * batch while another is still being prepared. The API tracks delivery per
- * item, so a round here is the set of items sharing a delivery state.
+ * The API has no round/batch field — delivery is tracked per item — so a
+ * round is the set of items sharing a delivery state.
  */
 export interface OrderRound {
   id: string;
@@ -115,7 +102,7 @@ export interface OrderCustomer {
 
 export interface Order {
   id: string;
-  /** Display reference without the leading "#", e.g. "ORD-C352Y8". */
+  /** Without the leading "#", e.g. "ORD-C352Y8". */
   orderNumber: string;
   deliveryOption: {
     id: string;
@@ -126,13 +113,14 @@ export interface Order {
   deliveryType: DeliveryType;
   /** The specific delivery option chosen, e.g. "Table 5" or "Counter pickup". */
   deliveryLabel: string;
-  /** Raw table number, empty unless `tableService`. `deliveryLabel` folds it in for display. */
+  /** Raw table number, empty unless `tableDelivery`. `deliveryLabel` folds it in for display. */
   tableNumber: string;
   paymentType: PaymentType;
+  /** Defaults to `payNow` when the API omits it — the stricter of the two flows. */
+  paymentTiming: PaymentTiming;
   paymentStatus: PaymentStatus;
   status: OrderStatus;
   rounds: OrderRound[];
-  /** Empty for orders placed without one. Not editable — no backend flow yet. */
   combos: OrderCombo[];
   /** `itemsTotal` — already includes combos, at their pre-discount price. */
   subtotal: number;
@@ -140,7 +128,6 @@ export interface Order {
   promoDiscount: number;
   voucherDiscount: number;
   tax: number;
-  /** Empty unless a promo code was applied; shown against the promo discount. */
   promoCode: string;
   /** Tip — booked separately as "Napojnica" at 0% tax. Adds to the total. */
   tipAmount: number;
@@ -175,7 +162,6 @@ export interface OrderTabCounts {
   past: number;
 }
 
-/** Server-side paging state, mirrored from the list response `meta`. */
 export interface OrderPagination {
   currentPage: number;
   totalPages: number;
@@ -190,19 +176,16 @@ export interface DestructiveActionPayload {
 
 // ---------- Updating an order ----------
 
-/** One selectable menu item in the add-item picker. */
 export interface MenuItemOption {
   id: string;
   name: string;
   /** Unit price after any discount. The admin never edits it. */
   price: number;
-  /** Sub-category the menu groups it under, e.g. "Fast Food". */
   category?: string;
   imageUrl?: string | null;
   isAvailable?: boolean;
 }
 
-/** One selectable combo in the add-combo picker. */
 export interface ComboOption {
   id: string;
   name: string;
@@ -221,16 +204,11 @@ export interface OrderDraftItem {
   menuItemId: string;
   name: string;
   quantity: number;
-  /** Read-only — derived from the order line, or from the picked menu item. */
   unitPrice: number;
-  /** Added during this edit rather than already on the order. */
   isNew: boolean;
 }
 
-/**
- * A combo line as the update modal holds it. Only the quantity is editable —
- * the member items are fixed by the combo definition.
- */
+/** Only the quantity is editable — the member items are fixed by the combo definition. */
 export interface OrderDraftCombo {
   comboId: string;
   name: string;
@@ -255,17 +233,14 @@ export interface OrderUpdatePayload {
 
 // ---------- Live updates (Socket.IO) ----------
 
-/** Events the orders namespace emits. Both carry the same envelope. */
 export type OrderSocketEventName = 'NEW_ORDER' | 'ORDER_UPDATE';
 
 /**
- * One realtime message.
- *
  * `data` is the order as the socket serialises it, which is *not* the same
  * shape the list endpoint returns — `deliveryOption` arrives as a bare id
  * rather than `{ _id, title }`, `pickupType` uses a wider vocabulary, and
- * `clubMemberInfo` is absent. It is therefore only logged and used for its
- * ids; the rows themselves always come from a refetch of the list.
+ * `clubMemberInfo` is absent. It is therefore only used for its ids; the
+ * rows themselves always come from a refetch of the list.
  */
 export interface OrderSocketMessage {
   event: OrderSocketEventName;
@@ -275,5 +250,4 @@ export interface OrderSocketMessage {
   timestamp?: number;
 }
 
-/** Drives the header's live indicator. */
 export type OrderSocketStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';

@@ -41,6 +41,7 @@ type ProfileFormData = {
   bankAccountNumber: string;
   representativeName: string;
   subscriptionStatus: string;
+  billkoApiKey: string;
   location: {
     fullAddress: string;
     country: string;
@@ -81,6 +82,7 @@ const profileSchema = Yup.object({
     }),
   representativeName: Yup.string().required('Representative name is required'),
   subscriptionStatus: Yup.string(),
+  billkoApiKey: Yup.string(),
   location: Yup.object({
     fullAddress: Yup.string().required('Full address is required'),
     country: Yup.string().required('Country is required'),
@@ -137,6 +139,7 @@ const OrganizerProfileSection = () => {
       bankAccountNumber: user?.basicInfo?.companyDetails?.bankAccountNumber || '',
       representativeName: user?.basicInfo?.companyDetails?.representativeName || '',
       subscriptionStatus: 'Basic',
+      billkoApiKey: user?.basicInfo?.companyDetails?.billkoApiKey || '',
       location: {
         fullAddress: user?.basicInfo?.companyDetails?.location?.fullAddress || '',
         city: user?.basicInfo?.companyDetails?.location?.city || '',
@@ -170,7 +173,14 @@ const OrganizerProfileSection = () => {
     try {
       const payload: any = {};
 
-      const companyDetailsFields: (keyof ProfileFormData)[] = ['companyName', 'oib', 'bankAccountNumber', 'representativeName', 'suppliers'];
+      const companyDetailsFields: (keyof ProfileFormData)[] = [
+        'companyName',
+        'oib',
+        'bankAccountNumber',
+        'representativeName',
+        'suppliers',
+        'billkoApiKey',
+      ];
 
       companyDetailsFields.forEach((field) => {
         if (dirtyFields[field]) {
@@ -226,8 +236,6 @@ const OrganizerProfileSection = () => {
         }
       }
 
-      console.log('payload before submission', payload);
-
       const response = await updateUser({
         id: user?.basicInfo?._id,
         body: payload,
@@ -264,6 +272,7 @@ const OrganizerProfileSection = () => {
         bankAccountNumber: updatedUser?.basicInfo?.companyDetails?.bankAccountNumber || formData.bankAccountNumber,
         representativeName: updatedUser?.basicInfo?.companyDetails?.representativeName || formData.representativeName,
         subscriptionStatus: formData.subscriptionStatus,
+        billkoApiKey: updatedUser?.basicInfo?.companyDetails?.billkoApiKey ?? formData.billkoApiKey,
         location: {
           fullAddress: updatedUser?.basicInfo?.companyDetails?.location?.fullAddress || formData.location.fullAddress,
           city: updatedUser?.basicInfo?.companyDetails?.location?.city || formData.location.city,
@@ -448,6 +457,7 @@ const OrganizerProfileSection = () => {
                     <RHFIBANField name="bankAccountNumber" label="Bank Account Number" />
                     <RHFTextField name="representativeName" label="Representative Full Name" placeholder="Enter representative full name" />
                     <RHFTextField name="subscriptionStatus" label="Current Subscription" placeholder="Subscription status" disabled />
+                    <RHFTextField name="billkoApiKey" label="Billko API Key" placeholder="Enter Billko API key" />
                     <div className="col-span-1 space-y-4 md:col-span-2">
                       {/* Full Address */}
                       <RHFTextField name="location.fullAddress" label="Full Address" placeholder="Enter full address" />

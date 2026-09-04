@@ -12,6 +12,7 @@ import type {
 import { DEFAULT_PAGE_LIMIT, DELIVERY_TYPE_CONFIG } from './constants';
 import {
   ComboOption,
+  DeliveryType,
   MenuItemOption,
   Order,
   OrderCombo,
@@ -24,12 +25,7 @@ import {
   OrderingStatus,
 } from './types';
 
-// ============================================================
-// Wire → view model
-//
-// The only place that knows both shapes. Everything downstream works with
-// `Order` alone.
-// ============================================================
+// Wire → view model. The only place that knows both shapes.
 
 const EMPTY_CUSTOMER: OrderCustomer = { id: '', name: 'Unknown customer', username: '', email: '', tier: '', avatarUrl: null };
 
@@ -50,6 +46,19 @@ const mapCustomer = (order: ApiOrder): OrderCustomer => {
 };
 
 /**
+ * The backend renamed the pickup vocabulary; older orders still carry the
+ * old spelling, so both are folded onto the current set here. Everything
+ * downstream — the badges, the filters, the action rules — sees one set.
+ */
+const LEGACY_PICKUP_TYPE: Record<string, DeliveryType> = {
+  tableService: 'tableDelivery',
+  counter: 'counterPickup',
+  togo: 'toGo',
+};
+
+const mapPickupType = (value: ApiOrder['pickupType']): DeliveryType => (LEGACY_PICKUP_TYPE[value] ?? value) as DeliveryType;
+
+/**
  * `deliveryOption.title` is the backend's own wording and wins when present.
  * The `pickupType` lookup stays as the fallback for orders placed before
  * delivery options existed.
@@ -58,8 +67,9 @@ const mapDeliveryLabel = (order: ApiOrder): string => {
   const optionTitle = order.deliveryOption?.title?.trim();
   if (optionTitle) return optionTitle;
 
-  const typeLabel = DELIVERY_TYPE_CONFIG[order.pickupType]?.label || 'Delivery';
-  if (order.pickupType !== 'tableService') return typeLabel;
+  const pickupType = mapPickupType(order.pickupType);
+  const typeLabel = DELIVERY_TYPE_CONFIG[pickupType]?.label || 'Delivery';
+  if (pickupType !== 'tableDelivery') return typeLabel;
   return order.tableNumber?.trim() || typeLabel;
 };
 
@@ -74,9 +84,8 @@ const mapItem = (item: ApiOrderItem): OrderItem => ({
 });
 
 /**
- * The API has no round/batch field — delivery is tracked per item — so a
- * round is the set of items sharing a delivery state. Buckets keep the
- * order the API returned them in, which puts the earliest batch first.
+ * A round is the set of items sharing a delivery state — the API has no
+ * batch field. Buckets keep API order, which puts the earliest batch first.
  */
 const mapRounds = (order: ApiOrder): OrderRound[] => {
   const buckets = new Map<boolean, OrderRound>();
@@ -107,11 +116,7 @@ const mapComboItem = (item: ApiOrderComboItem): OrderComboItem => ({
   name: item.menuItemSnapShot?.title?.trim() || 'Unknown item',
 });
 
-/**
- * Combos are listed beside the rounds rather than bucketed into one — they
- * carry a single delivery state, not one per member item. The snapshot is
- * the fallback for pricing because it is what the customer saw.
- */
+/** The snapshot is the pricing fallback because it is what the customer saw. */
 const mapCombo = (combo: ApiOrderCombo): OrderCombo => {
   const snapshot = combo.comboSnapShot;
   const quantity = combo.quantity ?? 0;
@@ -142,7 +147,7 @@ export const mapApiOrder = (order: ApiOrder): Order => {
     orderNumber: order.orderNumber || '',
     placedAt: order.createdAt,
     customer: mapCustomer(order),
-    deliveryType: order.pickupType,
+    deliveryType: mapPickupType(order.pickupType),
     deliveryOption: {
       id: order.deliveryOption?._id || '',
       title: order.deliveryOption?.title?.trim() || '',
@@ -150,6 +155,9 @@ export const mapApiOrder = (order: ApiOrder): Order => {
     deliveryLabel: mapDeliveryLabel(order),
     tableNumber: order.tableNumber?.trim() || '',
     paymentType: order.paymentMethod,
+    // The stricter flow, so a missing value never allows handing an order
+    // over before it has been paid for.
+    paymentTiming: order.paymentTiming || 'payNow',
     paymentStatus: order.paymentStatus,
     status: order.status,
     rounds: mapRounds(order),
@@ -170,17 +178,13 @@ export const mapApiOrder = (order: ApiOrder): Order => {
 
 export const mapApiOrders = (orders: ApiOrder[]): Order[] => (orders ?? []).map(mapApiOrder);
 
-/** Tab badges come from `constantData`, which is returned for both tabs. */
+/** Returned for both tabs, so the badges are always in sync. */
 export const mapTabCounts = (meta: ApiOrdersMeta | null | undefined): OrderTabCounts => ({
   active: meta?.constantData?.activeCount ?? 0,
   past: meta?.constantData?.rejectedCompletedCount ?? 0,
 });
 
-/**
- * The status endpoint returns only `{ _id, isOrderingEnabled }`. `openedBy`,
- * `openedAt` and `venueName` have no source yet — they stay empty and the
- * copy that used them is commented out in the view.
- */
+/** The endpoint returns only `{ _id, isOrderingEnabled }` — the rest has no source yet. */
 export const mapOrderingStatus = (status: ApiOrderingStatus | null | undefined): OrderingStatus | null => {
   if (!status) return null;
 
@@ -204,11 +208,7 @@ const mapMenuItemOption = (item: ApiMenuCatalogueItem, subCategory: string): Men
   isAvailable: item.status !== 'inactive' && item.isAvailableInStock !== false,
 });
 
-/**
- * Flattens the grouped `menu` into one selectable list. `recommended` is
- * skipped — its items all appear under `menu` too — and `combos` are their
- * own list, mapped by `mapComboOptions`.
- */
+/** `recommended` is skipped — its items all appear under `menu` too. */
 export const mapMenuItemOptions = (catalogue: ApiMenuCatalogue | null | undefined): MenuItemOption[] => {
   const seen = new Set<string>();
   const options: MenuItemOption[] = [];
@@ -225,10 +225,7 @@ export const mapMenuItemOptions = (catalogue: ApiMenuCatalogue | null | undefine
   return options;
 };
 
-/**
- * Combos the admin can add. A combo is billed at `salePrice`, whatever its
- * price mode; `originalPrice` is only ever shown struck through.
- */
+/** Billed at `salePrice` whatever the price mode; `originalPrice` only ever renders struck through. */
 const mapComboOption = (combo: ApiComboCatalogueEntry): ComboOption => {
   const originalPrice = combo.originalPrice ?? 0;
 

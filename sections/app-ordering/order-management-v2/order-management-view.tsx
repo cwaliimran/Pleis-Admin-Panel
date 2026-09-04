@@ -52,6 +52,8 @@ const TABLE_HEAD = [
   { id: 'expand', label: '', align: 'left' },
   { id: 'order', label: 'Order', align: 'left' },
   { id: 'customer', label: 'Customer', align: 'left' },
+  { id: 'paymentTiming', label: 'Payment Timing', align: 'left' },
+  { id: 'pickupType', label: 'Pickup Type', align: 'left' },
   { id: 'delivery', label: 'Delivery', align: 'left' },
   { id: 'items', label: 'Items', align: 'left' },
   { id: 'payment', label: 'Method', align: 'left' },
@@ -122,12 +124,12 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     storageKey: 'order-management-v2-organization',
   });
 
+
   const [activeTab, setActiveTab] = useState<OrderTab>('active');
   const [searchQuery, setSearchQuery] = useState<string>(DEFAULT_ORDER_FILTERS.search);
   const [status, setStatus] = useState<OrderStatus | 'all'>(DEFAULT_ORDER_FILTERS.status);
   const [deliveryType, setDeliveryType] = useState<DeliveryType | 'all'>(DEFAULT_ORDER_FILTERS.deliveryType);
   const [paymentType, setPaymentType] = useState<PaymentType | 'all'>(DEFAULT_ORDER_FILTERS.paymentType);
-  // Starts as `all` so the first load sends no `range` param at all.
   const [dateRange, setDateRange] = useState<DateRangeFilter | 'all'>(DEFAULT_ORDER_FILTERS.dateRange);
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
@@ -154,7 +156,7 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     isBlocked: isSoundBlocked,
   } = useNotificationSound({ storageKey: 'order-management-v2-sound-muted' });
 
-  // Memoised because the data hook re-fetches whenever this object changes.
+  // Memoised — the data hook re-fetches whenever this object changes.
   const filters: OrderFilters = useMemo(
     () => ({ tab: activeTab, search: debouncedSearch, status, deliveryType, paymentType, dateRange }),
     [activeTab, debouncedSearch, status, deliveryType, paymentType, dateRange]
@@ -205,17 +207,15 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   };
 
   // A narrowed result set rarely has the page the user was on, and an
-  // expanded row that filters away would stay "open" invisibly. The "new"
-  // marks go with them — they refer to this view of the list.
+  // expanded row that filters away would stay "open" invisibly.
   useEffect(() => {
     setPage(1);
     setExpandedOrderId(null);
     clearLiveOrders();
   }, [filters, organizationId, clearLiveOrders]);
 
-  // Announces orders that arrived over the socket. Compared against the
-  // previous length rather than fired per event, so a burst is one toast and
-  // clearing the marks is silent.
+  // Compared against the previous length rather than fired per event, so a
+  // burst is one toast and clearing the marks is silent.
   const announcedLiveCount = useRef(0);
 
   useEffect(() => {
@@ -224,14 +224,13 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
 
     if (arrived > 0) {
       showInfo(arrived === 1 ? 'New order received' : `${arrived} new orders received`);
-      // One chime for the batch — three arrivals at once must not
-      // overlap into a single unpleasant noise.
+      // One chime for the batch, not one per arrival.
       playNewOrderChime();
     }
   }, [liveOrderIds, playNewOrderChime]);
 
-  // Empty until the status endpoint returns a venue/organization name — every
-  // sentence that uses it degrades to not naming one.
+  // Empty until the status endpoint returns one; the copy degrades to not
+  // naming a venue.
   const venueName = orderingStatus?.venueName || '';
   const venueSuffix = venueName ? ` at ${venueName}` : '';
 
@@ -562,7 +561,6 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
               </SelectContent>
             </Select>
 
-            {/* Only worth showing once there is something to clear. */}
             {hasActiveFilters && (
               <button
                 type="button"
