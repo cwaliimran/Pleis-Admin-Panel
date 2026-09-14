@@ -10,18 +10,18 @@ import { Table } from '@/components/ui/table';
 import TableBodyWrapper from '@/components/ui/table-body-wrapper';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { useOrganizerOrganization } from '@/hooks/useOrganizerOrganization';
 import { cn } from '@/lib/utils';
 import { getErrorMessage } from '@/utils/api';
-import { showError, showSuccess } from '@/utils/toast';
-import { RefreshCw, Search, X } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { showError, showInfo, showSuccess } from '@/utils/toast';
+import { RefreshCw, Search, Volume2, VolumeX, X } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ACTION_SUCCESS_MESSAGE,
   DATE_RANGE_OPTIONS,
   DEFAULT_ORDER_FILTERS,
   DEFAULT_PAGE_LIMIT,
-  DELIVERY_FILTER_OPTIONS,
   ORDER_TAB_CONFIG,
   PAYMENT_FILTER_OPTIONS,
   STATUS_FILTER_OPTIONS,
@@ -31,12 +31,12 @@ import { ORDER_TABLE_COLUMN_COUNT, OrderRow } from './order-row';
 import { OrderUpdateModal } from './order-update-modal';
 import {
   DateRangeFilter,
-  DeliveryType,
   DestructiveActionPayload,
   DestructiveActionType,
   Order,
   OrderActionType,
   OrderFilters,
+  OrderSocketStatus,
   OrderStatus,
   OrderTab,
   OrderUpdatePayload,
@@ -50,6 +50,8 @@ const TABLE_HEAD = [
   { id: 'expand', label: '', align: 'left' },
   { id: 'order', label: 'Order', align: 'left' },
   { id: 'customer', label: 'Customer', align: 'left' },
+  { id: 'paymentTiming', label: 'Payment Timing', align: 'left' },
+  { id: 'pickupType', label: 'Pickup Type', align: 'left' },
   { id: 'delivery', label: 'Delivery', align: 'left' },
   { id: 'items', label: 'Items', align: 'left' },
   { id: 'payment', label: 'Method', align: 'left' },
@@ -63,6 +65,53 @@ const SELECT_TRIGGER_CLASS = 'h-11 w-full cursor-pointer bg-white shadow-none md
 
 const SELECT_ITEM_CLASS = 'cursor-pointer';
 
+/**
+ * `idle` is deliberately absent — before an organization is picked there is
+ * nothing to be connected to, so the indicator does not render at all.
+ */
+const SOCKET_STATUS_CONFIG: Partial<Record<OrderSocketStatus, { label: string; title: string; dotClass: string; textClass: string }>> = {
+  connected: {
+    label: 'Live',
+    title: 'Connected — new orders appear automatically',
+    dotClass: 'bg-green-500',
+    textClass: 'text-green-600 dark:text-green-400',
+  },
+  connecting: {
+    label: 'Connecting',
+    title: 'Connecting to the live order feed',
+    dotClass: 'bg-amber-500 animate-pulse',
+    textClass: 'text-amber-600 dark:text-amber-400',
+  },
+  disconnected: {
+    label: 'Offline',
+    title: 'Not connected — new orders will not appear until you refresh',
+    dotClass: 'bg-gray-400',
+    textClass: 'text-gray-500 dark:text-gray-400',
+  },
+  error: {
+    label: 'Offline',
+    title: 'Live feed unavailable — new orders will not appear until you refresh',
+    dotClass: 'bg-red-500',
+    textClass: 'text-red-600 dark:text-red-400',
+  },
+};
+
+const LiveIndicator: React.FC<{ status: OrderSocketStatus }> = ({ status }) => {
+  const config = SOCKET_STATUS_CONFIG[status];
+  if (!config) return null;
+
+  return (
+    <span
+      title={config.title}
+      aria-live="polite"
+      className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-2 py-0.5 text-[11px] font-bold tracking-wide uppercase dark:border-gray-700"
+    >
+      <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', config.dotClass)} />
+      <span className={config.textClass}>{config.label}</span>
+    </span>
+  );
+};
+
 interface OrderManagementViewProps {
   userType: UserType;
 }
@@ -73,12 +122,12 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     storageKey: 'order-management-v2-organization',
   });
 
+
   const [activeTab, setActiveTab] = useState<OrderTab>('active');
   const [searchQuery, setSearchQuery] = useState<string>(DEFAULT_ORDER_FILTERS.search);
   const [status, setStatus] = useState<OrderStatus | 'all'>(DEFAULT_ORDER_FILTERS.status);
-  const [deliveryType, setDeliveryType] = useState<DeliveryType | 'all'>(DEFAULT_ORDER_FILTERS.deliveryType);
+  const [deliveryOptionId, setDeliveryOptionId] = useState<string>(DEFAULT_ORDER_FILTERS.deliveryOptionId);
   const [paymentType, setPaymentType] = useState<PaymentType | 'all'>(DEFAULT_ORDER_FILTERS.paymentType);
-  // Starts as `all` so the first load sends no `range` param at all.
   const [dateRange, setDateRange] = useState<DateRangeFilter | 'all'>(DEFAULT_ORDER_FILTERS.dateRange);
   const [page, setPage] = useState(1);
   const [limit] = useState(DEFAULT_PAGE_LIMIT);
@@ -98,14 +147,23 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
 
   const debouncedSearch = useDebounce(searchQuery, 500);
 
-  // Memoised because the data hook re-fetches whenever this object changes.
+  const {
+    play: playNewOrderChime,
+    isMuted: isSoundMuted,
+    toggleMute: toggleSound,
+    isBlocked: isSoundBlocked,
+  } = useNotificationSound({ storageKey: 'order-management-v2-sound-muted' });
+
+  // Memoised — the data hook re-fetches whenever this object changes.
   const filters: OrderFilters = useMemo(
-    () => ({ tab: activeTab, search: debouncedSearch, status, deliveryType, paymentType, dateRange }),
-    [activeTab, debouncedSearch, status, deliveryType, paymentType, dateRange]
+    () => ({ tab: activeTab, search: debouncedSearch, status, deliveryOptionId, paymentType, dateRange }),
+    [activeTab, debouncedSearch, status, deliveryOptionId, paymentType, dateRange]
   );
 
   const {
     orders,
+    deliveryOptions,
+    isDeliveryOptionsLoading,
     counts,
     pagination,
     orderingStatus,
@@ -116,12 +174,16 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
     pendingOrderId,
     pendingAction,
     deliveringOrderId,
+    socketStatus,
+    liveOrderIds,
+    clearLiveOrders,
     deliverItems,
     refetchOrders,
     toggleOrdering,
     runOrderAction,
     updateOrderDetails,
   } = useOrderManagement({
+    userType,
     organizationId,
     filters,
     page,
@@ -132,14 +194,14 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   const hasActiveFilters =
     searchQuery !== DEFAULT_ORDER_FILTERS.search ||
     status !== DEFAULT_ORDER_FILTERS.status ||
-    deliveryType !== DEFAULT_ORDER_FILTERS.deliveryType ||
+    deliveryOptionId !== DEFAULT_ORDER_FILTERS.deliveryOptionId ||
     paymentType !== DEFAULT_ORDER_FILTERS.paymentType ||
     dateRange !== DEFAULT_ORDER_FILTERS.dateRange;
 
   const handleClearFilters = () => {
     setSearchQuery(DEFAULT_ORDER_FILTERS.search);
     setStatus(DEFAULT_ORDER_FILTERS.status);
-    setDeliveryType(DEFAULT_ORDER_FILTERS.deliveryType);
+    setDeliveryOptionId(DEFAULT_ORDER_FILTERS.deliveryOptionId);
     setPaymentType(DEFAULT_ORDER_FILTERS.paymentType);
     setDateRange(DEFAULT_ORDER_FILTERS.dateRange);
   };
@@ -149,10 +211,26 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   useEffect(() => {
     setPage(1);
     setExpandedOrderId(null);
-  }, [filters, organizationId]);
+    clearLiveOrders();
+  }, [filters, organizationId, clearLiveOrders]);
 
-  // Empty until the status endpoint returns a venue/organization name — every
-  // sentence that uses it degrades to not naming one.
+  // Compared against the previous length rather than fired per event, so a
+  // burst is one toast and clearing the marks is silent.
+  const announcedLiveCount = useRef(0);
+
+  useEffect(() => {
+    const arrived = liveOrderIds.length - announcedLiveCount.current;
+    announcedLiveCount.current = liveOrderIds.length;
+
+    if (arrived > 0) {
+      showInfo(arrived === 1 ? 'New order received' : `${arrived} new orders received`);
+      // One chime for the batch, not one per arrival.
+      playNewOrderChime();
+    }
+  }, [liveOrderIds, playNewOrderChime]);
+
+  // Empty until the status endpoint returns one; the copy degrades to not
+  // naming a venue.
   const venueName = orderingStatus?.venueName || '';
   const venueSuffix = venueName ? ` at ${venueName}` : '';
 
@@ -289,6 +367,33 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
             >
               <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
             </button>
+
+            {organizationId && <LiveIndicator status={socketStatus} />}
+
+            {organizationId && (
+              <button
+                type="button"
+                aria-label={isSoundMuted ? 'Turn on new order sound' : 'Turn off new order sound'}
+                aria-pressed={!isSoundMuted}
+                title={
+                  isSoundBlocked
+                    ? 'Click anywhere on the page to let the browser play the new order sound'
+                    : isSoundMuted
+                      ? 'New order sound is off'
+                      : 'New order sound is on'
+                }
+                onClick={toggleSound}
+                className={cn(
+                  'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md transition',
+                  'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800',
+                  // Blocked is not the same as muted: the preference is on,
+                  // the browser is simply waiting to be allowed.
+                  isSoundBlocked && !isSoundMuted && 'text-amber-500 dark:text-amber-400'
+                )}
+              >
+                {isSoundMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              </button>
+            )}
           </div>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Live in-app orders
@@ -417,14 +522,18 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
               </SelectContent>
             </Select>
 
-            <Select value={deliveryType} onValueChange={(next) => setDeliveryType(next as DeliveryType | 'all')}>
-              <SelectTrigger className={SELECT_TRIGGER_CLASS} aria-label="Filter by delivery type">
+            <Select value={deliveryOptionId} onValueChange={setDeliveryOptionId} disabled={isDeliveryOptionsLoading}>
+              <SelectTrigger className={SELECT_TRIGGER_CLASS} aria-label="Filter by delivery option">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DELIVERY_FILTER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value} className={SELECT_ITEM_CLASS}>
-                    {option.label}
+                <SelectItem value="all" className={SELECT_ITEM_CLASS}>
+                  All delivery options
+                </SelectItem>
+                {deliveryOptions.map((option) => (
+                  <SelectItem key={option.id} value={option.id} className={SELECT_ITEM_CLASS}>
+                    {option.title}
+                    {!option.isActive && ' · inactive'}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -456,7 +565,6 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
               </SelectContent>
             </Select>
 
-            {/* Only worth showing once there is something to clear. */}
             {hasActiveFilters && (
               <button
                 type="button"
@@ -482,6 +590,7 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
                     key={order.id}
                     order={order}
                     isExpanded={expandedOrderId === order.id}
+                    isLive={liveOrderIds.includes(order.id)}
                     isPending={pendingOrderId === order.id}
                     pendingAction={pendingAction}
                     isDelivering={deliveringOrderId === order.id}

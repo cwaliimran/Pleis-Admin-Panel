@@ -2,7 +2,8 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import CustomBadge from '@/components/ui/custom-badge';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
 import { fDate, formatStr } from '@/utils/format-time';
 import { m } from 'framer-motion';
@@ -10,7 +11,6 @@ import { CalendarDays, Eye, Globe, Heart, MapPin, Pencil, Share2 } from 'lucide-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import UserBusinessInfo from './userBusinessInfo';
-import CustomBadge from '@/components/ui/custom-badge';
 
 // Reusable Badge List Component with "See more" functionality
 const ITEMS_LIMIT = 10;
@@ -79,18 +79,36 @@ const UserOverView: React.FC<{
 
   const methods = useForm({
     defaultValues: {
-      role: '',
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      password: '',
+      globalStatus: '',
+      globalPoints: '',
+      globalSpent: '',
       clubName: '',
       points: '',
       tier: '',
       spent: '',
     },
   });
+
+  // Clubs the user has actually joined, shaped for the Club Name select.
+  const clubOptions = React.useMemo(() => {
+    const clubs = Array.isArray(apiData?.joinedClubs) ? apiData.joinedClubs : [];
+
+    return clubs.map((club: any, index: number) => ({
+      label: club?.companyOrganizer?.companyDetails?.name || 'Unnamed club',
+      // Response is untyped, so fall through the ids it may carry — the value
+      // must be unique and non-empty or the select silently drops the option.
+      value: club?._id || club?.companyOrganizer?._id || `club-${index}`,
+    }));
+  }, [apiData?.joinedClubs]);
+
+  const hasClubs = clubOptions.length > 0;
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open) {
+      methods.reset();
+      openModal.onFalse();
+    }
+  };
 
   const interactions = [
     {
@@ -342,10 +360,10 @@ const UserOverView: React.FC<{
                               <td className="px-2 py-1">{club?.companyOrganizer?.companyDetails?.name || 'N/A'}</td>
                               <td className="px-2 py-1">{club?.points?.toFixed(0) || 'N/A'} pts</td>
                               <td className="px-2 py-1">
-                                {/* <Badge className={`bg-green-800 text-white`}>{club?.level?.title || 'N/A'}</Badge> */}
-                                <CustomBadge variant={club.status === 'active' ? 'success' : club.status === 'inactive' ? 'error' : 'info'}>
+                                <Badge className={`bg-green-800 text-white`}>{club?.level?.title || 'N/A'}</Badge>
+                                {/* <CustomBadge variant={club.status === 'active' ? 'success' : club.status === 'inactive' ? 'error' : 'info'}>
                                   {club.status}
-                                </CustomBadge>
+                                </CustomBadge> */}
                               </td>
                               <td className="px-2 py-1">{club?.spent || 'N/A'}</td>
                             </tr>
@@ -408,73 +426,75 @@ const UserOverView: React.FC<{
         </div>
       </div>
 
-      {/* update Organization */}
-      <Dialog open={openModal.value} onOpenChange={openModal.onFalse}>
-        <DialogOverlay className="bg-opacity-30 fixed inset-0">
-          <DialogContent className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[45vh] w-full flex-col items-center overflow-y-auto md:!max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>Edit Loyalty Program</DialogTitle>
-            </DialogHeader>
-            <FormProvider methods={methods} onSubmit={methods.handleSubmit(() => {})}>
-              <div className="mt-4 flex w-full flex-col gap-4">
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFSelectField
-                    name="globalStatus"
-                    label="Global Status"
-                    placeholder="Select Global Status"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'Gold', value: 'gold' },
-                      { label: 'Silver', value: 'silver' },
-                      { label: 'Bronze', value: 'bronze' },
-                    ]}
-                  />
+      {/* EDIT LOYALTY PROGRAM */}
+      <Dialog open={openModal.value} onOpenChange={handleModalOpenChange}>
+        <DialogContent
+          aria-describedby={undefined}
+          className="dark:bg-secondary flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-[560px]"
+        >
+          <DialogHeader className="border-b px-6 py-4">
+            <DialogTitle className="pr-8 text-base font-semibold">Edit Loyalty Program</DialogTitle>
+            <p className="text-muted-foreground text-sm">Update the global loyalty standing and per-club balances for this user.</p>
+          </DialogHeader>
 
-                  <RHFTextField name="globalPoints" label="Global Points" placeholder="Enter Global Points" />
+          <FormProvider methods={methods} onSubmit={methods.handleSubmit(() => {})} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
+              {/* GLOBAL */}
+              <section className="space-y-4">
+                <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Global</h3>
 
-                  <RHFTextField name="globalSpent" label="Global Spent" placeholder="Enter Global Spent" />
+                <RHFSelectField
+                  name="globalStatus"
+                  label="Global Status"
+                  placeholder="Select status"
+                  options={[
+                    { label: 'Gold', value: 'gold' },
+                    { label: 'Silver', value: 'silver' },
+                    { label: 'Bronze', value: 'bronze' },
+                  ]}
+                />
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <RHFTextField name="globalPoints" label="Global Points" type="number" min={0} placeholder="0" />
+                  <RHFTextField name="globalSpent" label="Global Spent" type="number" min={0} placeholder="0" />
                 </div>
+              </section>
 
-                <div className="flex border-t border-gray-300 pt-4">
-                  <h3 className="font-bold">Loyalty</h3>
-                </div>
+              {/* PER-CLUB */}
+              <section className="space-y-4 border-t pt-5">
+                <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Club Loyalty</h3>
 
-                <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFSelectField
-                    name="clubName"
-                    label="Club Name"
-                    placeholder="Select Club Name"
-                    className="w-full flex-1"
-                    options={[
-                      { label: 'Premium Club', value: 'PremiumClub' },
-                      { label: 'EventPlus', value: 'EventPlus' },
-                      { label: 'Music Lovers', value: 'MusicLovers' },
-                    ]}
-                  />
+                <RHFSelectField
+                  name="clubName"
+                  label="Club Name"
+                  placeholder={hasClubs ? 'Select a club' : 'No clubs joined'}
+                  disabled={!hasClubs}
+                  options={clubOptions}
+                />
 
-                  {/* Show next 3 fields only if a club name is selected */}
-                  {methods.watch('clubName') && (
-                    <>
-                      <RHFTextField name="points" label="Points" placeholder="Enter Points" />
+                {/* Club-level fields only apply once a club is chosen */}
+                {methods.watch('clubName') ? (
+                  <div className="bg-muted/40 grid grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-3">
+                    <RHFTextField name="points" label="Points" type="number" min={0} placeholder="0" />
+                    <RHFTextField name="tier" label="Tier" placeholder="e.g. Gold" />
+                    <RHFTextField name="spent" label="Spent" type="number" min={0} placeholder="0" />
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    {hasClubs ? 'Select a club to edit its points, tier and spend.' : 'This user has not joined any clubs yet.'}
+                  </p>
+                )}
+              </section>
+            </div>
 
-                      <RHFTextField name="tier" label="Tier" placeholder="Enter Tier" />
-
-                      <RHFTextField name="spent" label="Spent" placeholder="Enter Spent" />
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-end gap-2">
-                <div className="flex w-full items-center justify-center">
-                  <Button type="button" className="bg-primary hover:bg-primary mt-3 cursor-pointer px-7 text-white">
-                    Save
-                  </Button>
-                </div>
-              </div>
-            </FormProvider>
-          </DialogContent>
-        </DialogOverlay>
+            <DialogFooter className="flex-row justify-end gap-2 border-t px-6 py-4">
+              <Button type="button" variant="outline" onClick={() => handleModalOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Save changes</Button>
+            </DialogFooter>
+          </FormProvider>
+        </DialogContent>
       </Dialog>
     </div>
   );
