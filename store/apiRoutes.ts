@@ -300,6 +300,8 @@ export const API_ROUTES = {
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL: `/admin/global-loyalty/status-levels`,
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL_BY_ID: (id: string) => `/admin/global-loyalty/status-levels/${id}`,
 
+  ADMIN_GLOBAL_LOYALTY_AWARD_POINTS: `/admin/global-loyalty/club-members/award-points`,
+
   ORGANIZER_VENUES_TYPES: `/organizer/venue-types`,
   ORGANIZER_VENUES_TYPE_BY_ID: (id: string) => `/organizer/venue-types/${id}`,
 

@@ -1,13 +1,18 @@
-import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useBoolean } from '@/hooks/useBoolean';
+import { useGetLevelStatusQuery } from '@/store/Reducer/level-status-api';
+import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
+import { useAwardLoyaltyPointsMutation } from '@/store/Reducer/user-list';
+import { getErrorMessage } from '@/utils/api';
 import { fDate, formatStr } from '@/utils/format-time';
+import { showError, showSuccess } from '@/utils/toast';
 import { m } from 'framer-motion';
-import { CalendarDays, Eye, Globe, Heart, MapPin, Pencil, Share2 } from 'lucide-react';
+import { CalendarDays, Eye, Globe, Heart, Loader2, MapPin, Pencil, Share2 } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import UserBusinessInfo from './userBusinessInfo';
@@ -67,7 +72,8 @@ const UserOverView: React.FC<{
   userType: string | null;
   user: any;
   apiData: any;
-}> = ({ userType, apiData }) => {
+  onUpdateSuccess?: () => void;
+}> = ({ userType, apiData, onUpdateSuccess }) => {
   const permissionLabels: Record<string, string> = {
     inAppOrdering: 'InApp ordering',
     reservationManagement: 'Reservation management',
@@ -76,16 +82,15 @@ const UserOverView: React.FC<{
   };
 
   const openModal = useBoolean();
+  const [awardLoyaltyPoints, { isLoading: isAwardingPoints }] = useAwardLoyaltyPointsMutation();
 
   const methods = useForm({
     defaultValues: {
       globalStatus: '',
       globalPoints: '',
-      globalSpent: '',
       clubName: '',
       points: '',
       tier: '',
-      spent: '',
     },
   });
 
@@ -107,6 +112,66 @@ const UserOverView: React.FC<{
     if (!open) {
       methods.reset();
       openModal.onFalse();
+    }
+  };
+
+  const handleOpenLoyaltyModal = () => {
+    const globalLevel = apiData?.globalPoints?.global;
+
+    methods.reset({
+      globalStatus: globalLevel?.level?._id || '',
+      globalPoints: globalLevel?.points != null ? String(globalLevel.points) : '',
+      clubName: '',
+      points: '',
+      tier: '',
+    });
+    openModal.onTrue();
+  };
+
+  const onSubmitLoyalty = async (data: {
+    globalStatus: string;
+    globalPoints: string;
+    clubName: string;
+    points: string;
+    tier: string;
+  }) => {
+    const userId = apiData?.basicInfo?._id;
+    if (!userId) {
+      showError('User not found');
+      return;
+    }
+
+    const globalLoyalty: Record<string, any> = {};
+    if (data.globalStatus) globalLoyalty.status = data.globalStatus;
+    if (data.globalPoints !== '') globalLoyalty.points = Number(data.globalPoints);
+
+    const loyalty: Record<string, any> = {};
+    if (data.clubName) {
+      const clubs = Array.isArray(apiData?.joinedClubs) ? apiData.joinedClubs : [];
+      const selectedClub = clubs.find(
+        (club: any, index: number) => (club?._id || club?.companyOrganizer?._id || `club-${index}`) === data.clubName
+      );
+      if (selectedClub?.companyOrganizer?._id) loyalty.companyOrganizer = selectedClub.companyOrganizer._id;
+      if (data.tier) loyalty.tier = data.tier;
+      if (data.points !== '') loyalty.points = Number(data.points);
+    }
+
+    if (Object.keys(globalLoyalty).length === 0 && Object.keys(loyalty).length === 0) {
+      showError('Nothing to update');
+      return;
+    }
+
+    const payload: Record<string, any> = { user: userId };
+    if (Object.keys(globalLoyalty).length > 0) payload.globalLoyalty = globalLoyalty;
+    if (Object.keys(loyalty).length > 0) payload.loyalty = loyalty;
+
+    try {
+      const response = await awardLoyaltyPoints(payload).unwrap();
+      showSuccess(response?.message || 'Loyalty points updated successfully');
+      handleModalOpenChange(false);
+      onUpdateSuccess?.();
+    } catch (error) {
+      showError(getErrorMessage(error));
     }
   };
 
@@ -325,7 +390,7 @@ const UserOverView: React.FC<{
                   <h1 className="font-semibold text-slate-500">Loyalty Program Participation</h1>
 
                   <div className="flex gap-3">
-                    <Pencil className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition" onClick={openModal.onTrue} />
+                    <Pencil className="hover:text-primary h-5 w-5 cursor-pointer text-gray-500 transition" onClick={handleOpenLoyaltyModal} />
                   </div>
                 </div>
 
@@ -437,27 +502,24 @@ const UserOverView: React.FC<{
             <p className="text-muted-foreground text-sm">Update the global loyalty standing and per-club balances for this user.</p>
           </DialogHeader>
 
-          <FormProvider methods={methods} onSubmit={methods.handleSubmit(() => {})} className="flex min-h-0 flex-1 flex-col">
+          <FormProvider methods={methods} onSubmit={methods.handleSubmit(onSubmitLoyalty)} className="flex min-h-0 flex-1 flex-col">
             <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 py-5">
               {/* GLOBAL */}
               <section className="space-y-4">
                 <h3 className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Global</h3>
 
-                <RHFSelectField
+                <RHFAsyncCombobox
                   name="globalStatus"
                   label="Global Status"
                   placeholder="Select status"
-                  options={[
-                    { label: 'Gold', value: 'gold' },
-                    { label: 'Silver', value: 'silver' },
-                    { label: 'Bronze', value: 'bronze' },
-                  ]}
+                  searchPlaceholder="Search status levels..."
+                  selectedLabel={apiData?.globalPoints?.global?.level?.title}
+                  useOptionsQuery={useGetLevelStatusQuery}
+                  getOptionValue={(item) => item._id}
+                  getOptionLabel={(item) => item.title}
                 />
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <RHFTextField name="globalPoints" label="Global Points" type="number" min={0} placeholder="0" />
-                  <RHFTextField name="globalSpent" label="Global Spent" type="number" min={0} placeholder="0" />
-                </div>
+                <RHFTextField name="globalPoints" label="Global Points" type="number" min={0} placeholder="0" />
               </section>
 
               {/* PER-CLUB */}
@@ -474,10 +536,17 @@ const UserOverView: React.FC<{
 
                 {/* Club-level fields only apply once a club is chosen */}
                 {methods.watch('clubName') ? (
-                  <div className="bg-muted/40 grid grid-cols-1 gap-4 rounded-lg border p-4 sm:grid-cols-3">
+                  <div className="bg-muted/40 space-y-4 rounded-lg border p-4">
+                    <RHFAsyncCombobox
+                      name="tier"
+                      label="Tier"
+                      placeholder="Select tier"
+                      searchPlaceholder="Search tiers..."
+                      useOptionsQuery={useGetTiersQuery}
+                      getOptionValue={(item) => item._id}
+                      getOptionLabel={(item) => item.title}
+                    />
                     <RHFTextField name="points" label="Points" type="number" min={0} placeholder="0" />
-                    <RHFTextField name="tier" label="Tier" placeholder="e.g. Gold" />
-                    <RHFTextField name="spent" label="Spent" type="number" min={0} placeholder="0" />
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-sm">
@@ -488,10 +557,13 @@ const UserOverView: React.FC<{
             </div>
 
             <DialogFooter className="flex-row justify-end gap-2 border-t px-6 py-4">
-              <Button type="button" variant="outline" onClick={() => handleModalOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => handleModalOpenChange(false)} disabled={isAwardingPoints}>
                 Cancel
               </Button>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" disabled={isAwardingPoints}>
+                {isAwardingPoints ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Save changes
+              </Button>
             </DialogFooter>
           </FormProvider>
         </DialogContent>
