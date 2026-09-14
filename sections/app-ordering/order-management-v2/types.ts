@@ -29,7 +29,7 @@ export type OrderTab = ApiOrderTab;
 
 export type DateRangeFilter = ApiDateRange;
 
-export type OrderActionType = 'confirm' | 'ready' | 'delivered' | 'markAsPaid' | 'reject' | 'cancel';
+export type OrderActionType = 'confirm' | 'ready' | 'delivered' | 'markAsPaid' | 'markAsUnpaid' | 'reject' | 'cancel';
 
 export type DestructiveActionType = Extract<OrderActionType, 'reject' | 'cancel'>;
 

@@ -137,12 +137,14 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
   const [pendingOrderingState, setPendingOrderingState] = useState<boolean | null>(null);
   const [deliverAllOrder, setDeliverAllOrder] = useState<Order | null>(null);
   const [markAsPaidOrder, setMarkAsPaidOrder] = useState<Order | null>(null);
+  const [markAsUnpaidOrder, setMarkAsUnpaidOrder] = useState<Order | null>(null);
   const [updatingOrder, setUpdatingOrder] = useState<Order | null>(null);
 
   const actionModal = useBoolean();
   const orderingConfirm = useBoolean();
   const deliverAllConfirm = useBoolean();
   const markAsPaidConfirm = useBoolean();
+  const markAsUnpaidConfirm = useBoolean();
   const updateModal = useBoolean();
 
   const debouncedSearch = useDebounce(searchQuery, 500);
@@ -242,10 +244,16 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
       return;
     }
 
-    // Settling payment is irreversible, so it asks too.
+    // Settling or expiring payment is irreversible, so it asks too.
     if (action === 'markAsPaid') {
       setMarkAsPaidOrder(order);
       markAsPaidConfirm.onTrue();
+      return;
+    }
+
+    if (action === 'markAsUnpaid') {
+      setMarkAsUnpaidOrder(order);
+      markAsUnpaidConfirm.onTrue();
       return;
     }
 
@@ -294,6 +302,19 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
       showSuccess(message || ACTION_SUCCESS_MESSAGE.markAsPaid);
       markAsPaidConfirm.onFalse();
       setMarkAsPaidOrder(null);
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
+
+  const handleConfirmMarkAsUnpaid = async () => {
+    if (!markAsUnpaidOrder) return;
+
+    try {
+      const message = await runOrderAction(markAsUnpaidOrder, 'markAsUnpaid');
+      showSuccess(message || ACTION_SUCCESS_MESSAGE.markAsUnpaid);
+      markAsUnpaidConfirm.onFalse();
+      setMarkAsUnpaidOrder(null);
     } catch (error) {
       showError(getErrorMessage(error));
     }
@@ -652,6 +673,18 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
           setMarkAsPaidOrder(null);
         }}
         onConfirm={handleConfirmMarkAsPaid}
+      />
+
+      <ConfirmDialog
+        open={markAsUnpaidConfirm.value}
+        title="Mark order as unpaid?"
+        content={`Mark payment for order #${markAsUnpaidOrder?.orderNumber ?? ''} as unpaid. This cannot be undone.`}
+        isLoading={Boolean(markAsUnpaidOrder && pendingOrderId === markAsUnpaidOrder.id)}
+        onClose={() => {
+          markAsUnpaidConfirm.onFalse();
+          setMarkAsUnpaidOrder(null);
+        }}
+        onConfirm={handleConfirmMarkAsUnpaid}
       />
 
       <ConfirmDialog

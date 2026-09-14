@@ -28,6 +28,7 @@ import {
   getRoundDeliveryConfig,
   isOrderEditable,
   MARK_AS_PAID_ACTION,
+  MARK_AS_UNPAID_ACTION,
   SECONDARY_ACTION_BY_STATUS,
 } from './constants';
 import { DestructiveActionType, Order, OrderActionType, OrderCombo } from './types';
@@ -385,16 +386,29 @@ export const OrderRow: React.FC<OrderRowProps> = ({
             )}
 
             {canMarkAsPaid && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={isPending}
-                onClick={() => onAdvance(order, MARK_AS_PAID_ACTION.type)}
-                className="cursor-pointer font-semibold"
-              >
-                {actionLabel(MARK_AS_PAID_ACTION.type, MARK_AS_PAID_ACTION.label)}
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isPending}
+                  onClick={() => onAdvance(order, MARK_AS_PAID_ACTION.type)}
+                  className="cursor-pointer font-semibold"
+                >
+                  {actionLabel(MARK_AS_PAID_ACTION.type, MARK_AS_PAID_ACTION.label)}
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isPending}
+                  onClick={() => onAdvance(order, MARK_AS_UNPAID_ACTION.type)}
+                  className="cursor-pointer font-semibold"
+                >
+                  {actionLabel(MARK_AS_UNPAID_ACTION.type, MARK_AS_UNPAID_ACTION.label)}
+                </Button>
+              </>
             )}
 
             {secondaryAction && showSecondaryAction && (

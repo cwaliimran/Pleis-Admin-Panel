@@ -287,11 +287,11 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
         {/* 4. AVERAGE ORDER VALUE OVER TIME (NEW REQUIREMENT - Repurposing ViewsOverTime) */}
         {/* Requirement: Tracks changes in average spend per order */}
         <div className="col-span-12 md:col-span-12">
-          <Card className="dark:bg-secondary col-span-12 shadow-md">
+          <Card className="dark:bg-secondary col-span-12 shadow-md px-3">
             <CardHeader>
-              <h3 className="text-md mb-3 font-medium">Average Order Value (AOV) Over Time</h3>
+            <h3 className="text-xl font-semibold">Average Order Value (AOV) Over Time</h3>
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold">€15.90</h3>
+                {/* <h3 className="text-xl font-bold">€15.90</h3> */}
                 <h3 className="text-md font-[400] text-gray-400">{/* Last 30 Days <span className="ml-1 text-red-500">-1.5%</span> */}</h3>
               </div>
             </CardHeader>

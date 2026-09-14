@@ -21,7 +21,8 @@ export type ApiOrderStatus =
   | 'completed'
   | 'cancelled'
   | 'rejected'
-  | 'preorder';
+  | 'preorder'
+  | 'expired';
 
 export type ApiPickupType = 'tableDelivery' | 'counterPickup' | 'toGo';
 

@@ -23,7 +23,8 @@ const MenuItemTableRow: FC<{ item: any }> = ({ item }) => {
       <TableCell className="text-start">{item.categoryName || '-'}</TableCell>
       <TableCell className="text-start">{item.salesCount ?? '-'}</TableCell>
       <TableCell className="text-start font-semibold">
-        {item.totalPrice !== undefined ? `€${item.totalPrice}` : '-'}
+        {/* {item.totalPrice !== undefined ? `€${item.totalPrice}` : '-'} */}
+        {item.totalPrice !== undefined ? `€${item.totalPrice.toFixed(2)}` : '-'}
       </TableCell>
       <TableCell className="text-start">
         <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClasses(item.availabilityStatus)}`}>

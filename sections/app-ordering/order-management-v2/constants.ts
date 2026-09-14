@@ -55,6 +55,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, BadgeConfig> = {
   completed: { label: 'Completed', icon: CircleCheckBig, tone: 'green' },
   cancelled: { label: 'Cancelled', icon: Ban, tone: 'gray' },
   rejected: { label: 'Rejected', icon: CircleX, tone: 'red' },
+  expired: { label: 'Expired', icon: CircleX, tone: 'gray' },
   preorder: { label: 'Preorder', icon: CalendarClock, tone: 'indigo' },
 };
 
@@ -64,7 +65,7 @@ export const getOrderStatusConfig = (status: OrderStatus): BadgeConfig =>
 
 /** Which statuses live under which tab. */
 export const ACTIVE_ORDER_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'ready', 'sent', 'pendingPayment', 'preorder'];
-export const PAST_ORDER_STATUSES: OrderStatus[] = ['completed', 'cancelled', 'rejected'];
+export const PAST_ORDER_STATUSES: OrderStatus[] = ['completed', 'cancelled', 'rejected', 'expired'];
 
 export const STATUS_BY_TAB: Record<OrderTab, OrderStatus[]> = {
   active: ACTIVE_ORDER_STATUSES,
@@ -214,6 +215,7 @@ export const SECONDARY_ACTION_BY_STATUS: Partial<Record<OrderStatus, ActionConfi
 };
 
 export const MARK_AS_PAID_ACTION: ActionConfig = { type: 'markAsPaid', label: 'Mark as Paid' };
+export const MARK_AS_UNPAID_ACTION: ActionConfig = { type: 'markAsUnpaid', label: 'Mark as Unpaid' };
 
 /**
  * Only these can be settled by hand. Every other method is settled by the
@@ -327,6 +329,7 @@ export const NEXT_STATUS_BY_ACTION: Partial<Record<OrderActionType, OrderStatus>
   ready: 'ready',
   reject: 'rejected',
   cancel: 'cancelled',
+  markAsUnpaid: 'expired',
 };
 
 export const ACTION_SUCCESS_MESSAGE: Record<OrderActionType, string> = {
@@ -334,6 +337,7 @@ export const ACTION_SUCCESS_MESSAGE: Record<OrderActionType, string> = {
   ready: 'Order marked as ready',
   delivered: 'All items marked as delivered',
   markAsPaid: 'Order marked as paid',
+  markAsUnpaid: 'Order marked as unpaid',
   reject: 'Order rejected',
   cancel: 'Order canceled',
 };
