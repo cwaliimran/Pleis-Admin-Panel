@@ -259,9 +259,9 @@ export const buildFormDefaultValues = (organization: any, initialGalleryMedia: s
   }
 
   // Location priority:
-  // 1. organization.location (already saved location)
-  // 2. organization.venue.location (fallback from populated venue object)
-  const location = organization.location?.fullAddress ? organization.location : organization.venue?.location;
+  // 1. organization.venue.location (populated venue object)
+  // 2. organization.location (fallback when no venue is linked)
+  const location = organization.venue?.location?.fullAddress ? organization.venue.location : organization.location;
 
   return {
     description: organization.otherInfo.description || '',

@@ -20,7 +20,7 @@ const MenuItemTableRow: FC<{ item: any }> = ({ item }) => {
   return (
     <TableRow className="h-14">
       <TableCell className="font-semibold">{item.itemName || '-'}</TableCell>
-      <TableCell className="text-start">{item.categoryName || '-'}</TableCell>
+      <TableCell className="text-start">{item.subCategoryName || '-'}</TableCell>
       <TableCell className="text-start">{item.salesCount ?? '-'}</TableCell>
       <TableCell className="text-start font-semibold">
         {/* {item.totalPrice !== undefined ? `€${item.totalPrice}` : '-'} */}

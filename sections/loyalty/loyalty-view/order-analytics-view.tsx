@@ -16,18 +16,19 @@ import { useCompanySelection } from '@/app/common/header/company-selection-stora
 const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; userType: string }) => {
   const openModal = useBoolean();
 
+  console.log(isGlobal);
+
   const { organizerOrganizationIds } = useCompanySelection();
 
   const { data: analyticsRaw, isLoading, isFetching } = useGetOrdersAnalyticsQuery(
     { organizations: userType === 'organizer' ? organizerOrganizationIds : undefined }, { refetchOnMountOrArgChange: true });
   if (isLoading || isFetching) return null;
-  console.log('analyticsRaw', analyticsRaw);
-  console.log('userType', userType);
 
   // const activePercent = 75;
   // const inactivePercent = 25;
   // const thirdPercent = 40;
 
+  
   const loyaltyOrderFrequency = 75; // 75% of high frequency orders are from loyalty
   // const nonLoyaltyOrderFrequency = 25;
   const loyaltyAvgSpend = 60; // Loyalty users spend 60% more than non-loyalty

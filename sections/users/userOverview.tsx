@@ -120,7 +120,7 @@ const UserOverView: React.FC<{
 
     methods.reset({
       globalStatus: globalLevel?.level?._id || '',
-      globalPoints: globalLevel?.points != null ? String(globalLevel.points) : '',
+      globalPoints: '',
       clubName: '',
       points: '',
       tier: '',
@@ -415,7 +415,7 @@ const UserOverView: React.FC<{
                           <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Club Name</th>
                           <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Points</th>
                           <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Tier</th>
-                          <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Spent</th>
+                          {/* <th className="px-2 py-1 font-semibold text-gray-600 dark:text-gray-300">Spent</th> */}
                         </tr>
                       </thead>
                       <tbody>
@@ -430,7 +430,7 @@ const UserOverView: React.FC<{
                                   {club.status}
                                 </CustomBadge> */}
                               </td>
-                              <td className="px-2 py-1">{club?.spent || 'N/A'}</td>
+                              {/* <td className="px-2 py-1">{club?.spent || 'N/A'}</td> */}
                             </tr>
                           ))
                         ) : (

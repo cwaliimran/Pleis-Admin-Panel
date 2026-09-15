@@ -174,7 +174,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ open, onClose, initialExist
 // MAIN COMPONENT
 // ============================================================
 
-const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganization, onClose, open, venueList }) => {
+const AddOtherDetailsForm: React.FC<Omit<AddOtherDetailsModalProps, 'open'>> = ({ newOrganization, onClose, venueList }) => {
   const router = useRouter();
 
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -218,29 +218,21 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
     mode: 'onChange',
   });
 
-  const { handleSubmit, reset, setValue, getValues } = methods;
+  const { handleSubmit, setValue, getValues } = methods;
 
   // Watchers
   const watchGalleryImages = useWatch({ control: methods.control, name: 'galleryImages' }) || [];
   const watchExistingGallery = useWatch({ control: methods.control, name: 'existingGallery' }) || [];
   const watchVenue = useWatch({ control: methods.control, name: 'venue' });
 
-  // Reset form when modal opens
-  useEffect(() => {
-    if (open) {
-      reset(formDefaultValues);
-    }
-  }, [open, formDefaultValues, reset]);
-
   useEffect(() => {
     if (!watchVenue || !venueList) return;
 
     const selectedVenue = venueList.find((v: any) => v._id === watchVenue);
 
-    // Only auto-populate if location fields are currently empty
-    // (avoids overwriting data on edit)
+    // Location is derived from the selected venue, so keep it in sync
     const currentAddress = getValues('location.address');
-    if (selectedVenue?.location && !currentAddress) {
+    if (selectedVenue?.location && selectedVenue.location.fullAddress !== currentAddress) {
       setValue('location.address', selectedVenue.location.fullAddress || '', {
         shouldValidate: true,
         shouldDirty: true,
@@ -262,7 +254,7 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
         shouldDirty: true,
       });
     }
-  }, [watchVenue, venueList, setValue, getValues, open]);
+  }, [watchVenue, venueList, setValue, getValues]);
 
   // Form Submit Handler
   const onSubmit = handleSubmit(async (formData) => {
@@ -333,7 +325,6 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
       showSuccess(response?.message || 'Details updated successfully');
 
       setImageUploading(false);
-      reset();
       onClose();
 
       if (typeof window !== 'undefined') {
@@ -364,148 +355,132 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
     setGalleryOpen(false);
   };
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogOverlay className="bg-opacity-30 fixed inset-0" />
-      <DialogContent
-        aria-describedby={undefined}
-        className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
-        onInteractOutside={(event) => {
-          const target = event.target as HTMLElement;
-          if (target.closest('.pac-container')) {
-            event.preventDefault();
-          }
-        }}
-      >
-        <DialogHeader>
-          <DialogTitle>Add Other Details</DialogTitle>
-        </DialogHeader>
+    <>
+      <div className="w-full px-4">
+        <FormProvider methods={methods} onSubmit={onSubmit}>
+          <div className="mt-4 flex w-full flex-col gap-4">
+            <RHFTextField name="description" label="Description" placeholder="Enter Description" rows={2} multiline />
 
-        <div className="w-full px-4">
-          <FormProvider methods={methods} onSubmit={onSubmit}>
-            <div className="mt-4 flex w-full flex-col gap-4">
-              <RHFTextField name="description" label="Description" placeholder="Enter Description" rows={2} multiline />
+            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+              <RHFTextField type="number" name="minAge" label="Age (optional)" placeholder="Min Age 5" />
+            </div>
 
-              <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
-                <RHFTextField type="number" name="minAge" label="Age (optional)" placeholder="Min Age 5" />
-              </div>
+            <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
+              <RHFCustomDropdown name="venue" label="Venue" placeholder="Select Venue" options={venueOptions} isLoading={false} showNone={false} />
 
-              <div className="grid w-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-1">
-                <RHFCustomDropdown name="venue" label="Venue" placeholder="Select Venue" options={venueOptions} isLoading={false} showNone={false} />
+              <RHFAsyncCombobox
+                name="tags"
+                label="Select Tags"
+                placeholder="Select tags"
+                searchPlaceholder="Search tags..."
+                className="w-full flex-1"
+                multiple
+                initialSelected={selectedTags}
+                useOptionsQuery={useGetTagsQuery}
+                queryArgs={TAGS_QUERY_ARGS}
+                getOptionValue={(tag: any) => tag?._id}
+                getOptionLabel={(tag: any) => tag?.title}
+              />
 
-                <RHFAsyncCombobox
-                  name="tags"
-                  label="Select Tags"
-                  placeholder="Select tags"
-                  searchPlaceholder="Search tags..."
-                  className="w-full flex-1"
-                  multiple
-                  initialSelected={selectedTags}
-                  useOptionsQuery={useGetTagsQuery}
-                  queryArgs={TAGS_QUERY_ARGS}
-                  getOptionValue={(tag: any) => tag?._id}
-                  getOptionLabel={(tag: any) => tag?.title}
-                />
-
-                <RHFAsyncCombobox
-                  name="categories"
-                  label="Select Categories"
-                  placeholder="Select categories"
-                  searchPlaceholder="Search categories..."
-                  className="w-full flex-1"
-                  multiple
-                  initialSelected={selectedCategories}
-                  useOptionsQuery={useGetCategoriesQuery}
-                  queryArgs={CATEGORIES_QUERY_ARGS}
-                  getOptionValue={(category: any) => category?._id}
-                  getOptionLabel={(category: any) => category?.title}
-                />
-              </div>
-
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gallery Images</label>
-                <Button type="button" onClick={() => setGalleryOpen(true)} className="mt-2">
-                  Manage Gallery
-                </Button>
-              </div>
-
-              <div className="w-full">
-                <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">Operating Hours</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100 dark:bg-[#272727]">
-                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Day</th>
-                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Opening</th>
-                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Closing</th>
-                        <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {DAYS_OF_WEEK.map((dayInfo) => (
-                        <tr key={dayInfo.dayKey} className="border-t dark:border-gray-700">
-                          <td className="p-2 text-sm text-gray-700 dark:text-gray-300">{dayInfo.day}</td>
-                          <td className="p-2">
-                            <Controller
-                              name={`${dayInfo.dayKey}.from`}
-                              control={methods.control}
-                              render={({ field }) => (
-                                <Time24hInput
-                                  title={`${dayInfo.day} opening time`}
-                                  value={field.value || ''}
-                                  onChange={field.onChange}
-                                  placeholder="HH:mm"
-                                  className="w-full"
-                                />
-                              )}
-                            />
-                          </td>
-                          <td className="p-2">
-                            <Controller
-                              name={`${dayInfo.dayKey}.to`}
-                              control={methods.control}
-                              render={({ field }) => (
-                                <Time24hInput
-                                  title={`${dayInfo.day} closing time`}
-                                  value={field.value || ''}
-                                  onChange={field.onChange}
-                                  placeholder="HH:mm"
-                                  className="w-full"
-                                />
-                              )}
-                            />
-                          </td>
-                          <td className="p-2">
-                            <RHFSelectField name={`${dayInfo.dayKey}.isOpen`} className="w-full rounded border p-1" options={OPEN_CLOSED_OPTIONS} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <RHFTextField
-                name="location.address"
-                label="Location (from selected venue)"
-                placeholder="Select a venue to see location"
-                disabled={true}
-                multiline
-                rows={2}
+              <RHFAsyncCombobox
+                name="categories"
+                label="Select Categories"
+                placeholder="Select categories"
+                searchPlaceholder="Search categories..."
+                className="w-full flex-1"
+                multiple
+                initialSelected={selectedCategories}
+                useOptionsQuery={useGetCategoriesQuery}
+                queryArgs={CATEGORIES_QUERY_ARGS}
+                getOptionValue={(category: any) => category?._id}
+                getOptionLabel={(category: any) => category?.title}
               />
             </div>
 
-            <div className="mt-2 flex w-full items-center justify-center">
-              <Button
-                type="submit"
-                className="bg-primary hover:bg-primary/80 mt-3 h-10 cursor-pointer px-10 text-white"
-                disabled={isLoading || imageUploading || !methods.formState.isValid}
-              >
-                {isLoading || imageUploading ? 'Saving...' : 'Save'}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Gallery Images</label>
+              <Button type="button" onClick={() => setGalleryOpen(true)} className="mt-2">
+                Manage Gallery
               </Button>
             </div>
-          </FormProvider>
-        </div>
-      </DialogContent>
+
+            <div className="w-full">
+              <h3 className="mb-4 text-lg font-semibold text-gray-700 dark:text-gray-300">Operating Hours</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 dark:bg-[#272727]">
+                      <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Day</th>
+                      <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Opening</th>
+                      <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Closing</th>
+                      <th className="p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DAYS_OF_WEEK.map((dayInfo) => (
+                      <tr key={dayInfo.dayKey} className="border-t dark:border-gray-700">
+                        <td className="p-2 text-sm text-gray-700 dark:text-gray-300">{dayInfo.day}</td>
+                        <td className="p-2">
+                          <Controller
+                            name={`${dayInfo.dayKey}.from`}
+                            control={methods.control}
+                            render={({ field }) => (
+                              <Time24hInput
+                                title={`${dayInfo.day} opening time`}
+                                value={field.value || ''}
+                                onChange={field.onChange}
+                                placeholder="HH:mm"
+                                className="w-full"
+                              />
+                            )}
+                          />
+                        </td>
+                        <td className="p-2">
+                          <Controller
+                            name={`${dayInfo.dayKey}.to`}
+                            control={methods.control}
+                            render={({ field }) => (
+                              <Time24hInput
+                                title={`${dayInfo.day} closing time`}
+                                value={field.value || ''}
+                                onChange={field.onChange}
+                                placeholder="HH:mm"
+                                className="w-full"
+                              />
+                            )}
+                          />
+                        </td>
+                        <td className="p-2">
+                          <RHFSelectField name={`${dayInfo.dayKey}.isOpen`} className="w-full rounded border p-1" options={OPEN_CLOSED_OPTIONS} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <RHFTextField
+              name="location.address"
+              label="Location (from selected venue)"
+              placeholder="Select a venue to see location"
+              disabled={true}
+              multiline
+              rows={2}
+            />
+          </div>
+
+          <div className="mt-2 flex w-full items-center justify-center">
+            <Button
+              type="submit"
+              className="bg-primary hover:bg-primary/80 mt-3 h-10 cursor-pointer px-10 text-white"
+              disabled={isLoading || imageUploading || !methods.formState.isValid}
+            >
+              {isLoading || imageUploading ? 'Saving...' : 'Save'}
+            </Button>
+          </div>
+        </FormProvider>
+      </div>
 
       <GalleryModal
         open={galleryOpen}
@@ -514,8 +489,30 @@ const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ newOrganiza
         initialNewFiles={watchGalleryImages}
         onSave={handleGallerySave}
       />
-    </Dialog>
+    </>
   );
 };
+
+const AddOtherDetailsModal: React.FC<AddOtherDetailsModalProps> = ({ open, onClose, ...formProps }) => (
+  <Dialog open={open} onOpenChange={onClose}>
+    <DialogOverlay className="bg-opacity-30 fixed inset-0" />
+    <DialogContent
+      aria-describedby={undefined}
+      className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[50vh] w-full flex-col items-center overflow-y-auto md:!max-w-[630px]"
+      onInteractOutside={(event) => {
+        const target = event.target as HTMLElement;
+        if (target.closest('.pac-container')) {
+          event.preventDefault();
+        }
+      }}
+    >
+      <DialogHeader>
+        <DialogTitle>Add Other Details</DialogTitle>
+      </DialogHeader>
+
+      <AddOtherDetailsForm {...formProps} onClose={onClose} />
+    </DialogContent>
+  </Dialog>
+);
 
 export default AddOtherDetailsModal;
