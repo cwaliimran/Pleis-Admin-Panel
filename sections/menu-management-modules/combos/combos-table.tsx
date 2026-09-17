@@ -15,7 +15,7 @@ import ComboTableRow from './combos-table-row';
 import { SamplePageProps } from './types';
 
 const HEAD_LABEL = [
-  { id: 'image', label: '', align: 'left' },
+  { id: 'image', label: 'Image', align: 'left' },
   { id: 'name', label: 'Name', align: 'left', sortable: true, sortKey: 'name' },
   { id: 'components', label: 'Components', align: 'left' },
   { id: 'sumOfParts', label: 'Sum of Parts', align: 'left' },

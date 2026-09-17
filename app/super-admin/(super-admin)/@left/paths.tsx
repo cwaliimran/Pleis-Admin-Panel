@@ -134,6 +134,13 @@ export const paths = {
     reservationTransactions: '/super-admin/res-transactions',
     // reservationTransactions: '/super-admin/reservations/transactions',
     transactionsHistory: '/super-admin/transactions-history',
+    transactionsHistoryV2: '/super-admin/transactions-history-v2',
+    payoutsBatches: '/super-admin/payouts-batches',
+    ticketingHistory: '/super-admin/ticketing-history',
+    ticketingHistoryV2: '/super-admin/ticketing-history-v2',
+    reservationHistory: '/super-admin/reservation-history',
+    orderingHistory: '/super-admin/ordering-history',
+    loyaltyHistory: '/super-admin/loyalty-history',
     bundles: '/super-admin/bundles',
 
     // App Ordering Paths

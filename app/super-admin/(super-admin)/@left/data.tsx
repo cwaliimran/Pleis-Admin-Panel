@@ -543,10 +543,57 @@ export const menuGroups: MenuGroup[] = [
       },
     ],
   },
+  // {
+  //   label: 'Transaction history',
+  //   key: paths.superAdmin.transactionsHistory,
+  //   icon: FileClock,
+  // },
   {
-    label: 'Transaction history',
+    label: 'Transactions',
     key: paths.superAdmin.transactionsHistory,
     icon: FileClock,
+    items: [
+      {
+        title: 'Transactions list v1',
+        url: paths.superAdmin.transactionsHistory,
+        icon: UsersRound,
+      },
+      {
+        title: 'Transactions list v2',
+        url: paths.superAdmin.transactionsHistoryV2,
+        icon: UsersRound,
+      },
+      {
+        title: 'Payouts & batches',
+        url: paths.superAdmin.payoutsBatches,
+        icon: UsersRound,
+      },
+      {
+        title: 'Ticketing history v1',
+        url: paths.superAdmin.ticketingHistory,
+        icon: UsersRound,
+      },
+      {
+        title: 'Ticketing history v2',
+        url: paths.superAdmin.ticketingHistoryV2,
+        icon: UsersRound,
+      },
+      {
+        title: 'Reservation history',
+        url: paths.superAdmin.reservationHistory,
+        icon: UsersRound,
+      },
+      {
+        title: 'Ordering history',
+        url: paths.superAdmin.orderingHistory,
+        icon: UsersRound,
+      },
+      {
+        title: 'Loyalty history',
+        url: paths.superAdmin.loyaltyHistory,
+        icon: UsersRound,
+      },
+    ],
   },
   {
     label: 'Bundles',
