@@ -1,6 +1,6 @@
 import {
   ArrowBigUp,
-  Box,
+  // Box,
   Building,
   CalendarDays,
   ChartBar,
@@ -553,73 +553,73 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.transactionsHistory,
     icon: FileClock,
     items: [
-      // {
-      //   title: 'Transactions list v1',
-      //   url: paths.superAdmin.transactionsHistory,
-      //   icon: UsersRound,
-      // },
       {
         title: 'Transactions list',
-        url: paths.superAdmin.transactionsHistoryV2,
+        url: paths.superAdmin.transactionsHistory,
         icon: UsersRound,
       },
+      // {
+      //   title: 'Transactions list',
+      //   url: paths.superAdmin.transactionsHistoryV2,
+      //   icon: UsersRound,
+      // },
       // {
       //   title: 'Payouts & batches v1',
       //   url: paths.superAdmin.payoutsBatches,
       //   icon: UsersRound,
       // },
-      {
-        title: 'Payouts & batches v2',
-        url: paths.superAdmin.payoutsBatchesV2,
-        icon: UsersRound,
-      },
+      // {
+      //   title: 'Payouts & batches v2',
+      //   url: paths.superAdmin.payoutsBatchesV2,
+      //   icon: UsersRound,
+      // },
       // {
       //   title: 'Ticketing history v1',
       //   url: paths.superAdmin.ticketingHistory,
       //   icon: UsersRound,
       // },
-      {
-        title: 'Ticketing history',
-        url: paths.superAdmin.ticketingHistoryV2,
-        icon: UsersRound,
-      },
+      // {
+      //   title: 'Ticketing history',
+      //   url: paths.superAdmin.ticketingHistoryV2,
+      //   icon: UsersRound,
+      // },
       // {
       //   title: 'Reservation history v1',
       //   url: paths.superAdmin.reservationHistory,
       //   icon: UsersRound,
       // },
-      {
-        title: 'Reservation history',
-        url: paths.superAdmin.reservationHistoryV2,
-        icon: UsersRound,
-      },
+      // {
+      //   title: 'Reservation history',
+      //   url: paths.superAdmin.reservationHistoryV2,
+      //   icon: UsersRound,
+      // },
       // {
       //   title: 'Ordering history v1',
       //   url: paths.superAdmin.orderingHistory,
       //   icon: UsersRound,
       // },
-      {
-        title: 'Ordering history',
-        url: paths.superAdmin.orderingHistoryV2,
-        icon: UsersRound,
-      },
+      // {
+      //   title: 'Ordering history',
+      //   url: paths.superAdmin.orderingHistoryV2,
+      //   icon: UsersRound,
+      // },
       // {
       //   title: 'Loyalty history v1',
       //   url: paths.superAdmin.loyaltyHistory,
       //   icon: UsersRound,
       // },
-      {
-        title: 'Loyalty history',
-        url: paths.superAdmin.loyaltyHistoryV2,
-        icon: UsersRound,
-      },
+      // {
+      //   title: 'Loyalty history',
+      //   url: paths.superAdmin.loyaltyHistoryV2,
+      //   icon: UsersRound,
+      // },
     ],
   },
-  {
-    label: 'Bundles',
-    key: paths.superAdmin.bundles,
-    icon: Box,
-  },
+  // {
+  //   label: 'Bundles',
+  //   key: paths.superAdmin.bundles,
+  //   icon: Box,
+  // },
   {
     label: 'Promo codes',
     key: paths.superAdmin.promoCodes,
