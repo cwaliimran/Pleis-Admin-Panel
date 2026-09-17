@@ -136,6 +136,7 @@ export const paths = {
     transactionsHistory: '/super-admin/transactions-history',
     transactionsHistoryV2: '/super-admin/transactions-history-v2',
     payoutsBatches: '/super-admin/payouts-batches',
+    payoutsBatchesV2: '/super-admin/payouts-batches-v2',
     ticketingHistory: '/super-admin/ticketing-history',
     ticketingHistoryV2: '/super-admin/ticketing-history-v2',
     reservationHistory: '/super-admin/reservation-history',

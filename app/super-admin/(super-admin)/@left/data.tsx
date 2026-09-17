@@ -563,9 +563,14 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.transactionsHistoryV2,
         icon: UsersRound,
       },
+      // {
+      //   title: 'Payouts & batches v1',
+      //   url: paths.superAdmin.payoutsBatches,
+      //   icon: UsersRound,
+      // },
       {
-        title: 'Payouts & batches',
-        url: paths.superAdmin.payoutsBatches,
+        title: 'Payouts & batches v2',
+        url: paths.superAdmin.payoutsBatchesV2,
         icon: UsersRound,
       },
       // {
@@ -598,13 +603,13 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.orderingHistoryV2,
         icon: UsersRound,
       },
+      // {
+      //   title: 'Loyalty history v1',
+      //   url: paths.superAdmin.loyaltyHistory,
+      //   icon: UsersRound,
+      // },
       {
-        title: 'Loyalty history v1',
-        url: paths.superAdmin.loyaltyHistory,
-        icon: UsersRound,
-      },
-      {
-        title: 'Loyalty history v2',
+        title: 'Loyalty history',
         url: paths.superAdmin.loyaltyHistoryV2,
         icon: UsersRound,
       },
