@@ -30,12 +30,6 @@ export interface TicketDocument {
   subtitle: string;
 }
 
-export interface ScanAttempt {
-  index: number;
-  result: ScanResult;
-  detail: string;
-}
-
 export interface TicketDetail {
   ticket: {
     type: string;
@@ -47,8 +41,6 @@ export interface TicketDetail {
   parties: {
     currentOwner: TicketParty;
     originalBuyer: TicketParty;
-    assignedHolder?: TicketParty;
-    organizer?: TicketParty;
   };
   moneySplit: {
     basePrice: number;
@@ -62,11 +54,8 @@ export interface TicketDetail {
   };
   settlement: {
     status: SettlementStatus;
-    batch?: string;
-    eligibility?: string;
   };
   documents: TicketDocument[];
-  scans: ScanAttempt[];
 }
 
 export interface Ticket {
@@ -103,6 +92,7 @@ export interface Ticket {
   organization: string;
   venue: string;
   settlementStatus: SettlementStatus;
+  linkedTransactionId?: string;
   invoiceStatus: string[];
   missingFiscalNumber: boolean;
   billkoErrors: boolean;

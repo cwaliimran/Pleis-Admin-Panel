@@ -139,8 +139,11 @@ export const paths = {
     ticketingHistory: '/super-admin/ticketing-history',
     ticketingHistoryV2: '/super-admin/ticketing-history-v2',
     reservationHistory: '/super-admin/reservation-history',
+    reservationHistoryV2: '/super-admin/reservation-history-v2',
     orderingHistory: '/super-admin/ordering-history',
+    orderingHistoryV2: '/super-admin/ordering-history-v2',
     loyaltyHistory: '/super-admin/loyalty-history',
+    loyaltyHistoryV2: '/super-admin/loyalty-history-v2',
     bundles: '/super-admin/bundles',
 
     // App Ordering Paths

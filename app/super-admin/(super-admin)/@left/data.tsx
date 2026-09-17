@@ -553,13 +553,13 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.transactionsHistory,
     icon: FileClock,
     items: [
+      // {
+      //   title: 'Transactions list v1',
+      //   url: paths.superAdmin.transactionsHistory,
+      //   icon: UsersRound,
+      // },
       {
-        title: 'Transactions list v1',
-        url: paths.superAdmin.transactionsHistory,
-        icon: UsersRound,
-      },
-      {
-        title: 'Transactions list v2',
+        title: 'Transactions list',
         url: paths.superAdmin.transactionsHistoryV2,
         icon: UsersRound,
       },
@@ -568,29 +568,44 @@ export const menuGroups: MenuGroup[] = [
         url: paths.superAdmin.payoutsBatches,
         icon: UsersRound,
       },
+      // {
+      //   title: 'Ticketing history v1',
+      //   url: paths.superAdmin.ticketingHistory,
+      //   icon: UsersRound,
+      // },
       {
-        title: 'Ticketing history v1',
-        url: paths.superAdmin.ticketingHistory,
-        icon: UsersRound,
-      },
-      {
-        title: 'Ticketing history v2',
+        title: 'Ticketing history',
         url: paths.superAdmin.ticketingHistoryV2,
         icon: UsersRound,
       },
+      // {
+      //   title: 'Reservation history v1',
+      //   url: paths.superAdmin.reservationHistory,
+      //   icon: UsersRound,
+      // },
       {
         title: 'Reservation history',
-        url: paths.superAdmin.reservationHistory,
+        url: paths.superAdmin.reservationHistoryV2,
         icon: UsersRound,
       },
+      // {
+      //   title: 'Ordering history v1',
+      //   url: paths.superAdmin.orderingHistory,
+      //   icon: UsersRound,
+      // },
       {
         title: 'Ordering history',
-        url: paths.superAdmin.orderingHistory,
+        url: paths.superAdmin.orderingHistoryV2,
         icon: UsersRound,
       },
       {
-        title: 'Loyalty history',
+        title: 'Loyalty history v1',
         url: paths.superAdmin.loyaltyHistory,
+        icon: UsersRound,
+      },
+      {
+        title: 'Loyalty history v2',
+        url: paths.superAdmin.loyaltyHistoryV2,
         icon: UsersRound,
       },
     ],

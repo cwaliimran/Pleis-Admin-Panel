@@ -5,7 +5,7 @@ import { showSuccess } from '@/utils/toast';
 import { FC } from 'react';
 import { formatEuro, formatPercent } from '../../forms/format';
 import { Ticket } from '../../types/types';
-import { DocumentCard, InfoLine, ScanAttemptRow, SectionHeading } from '../table/detail-parts';
+import { DocumentCard, InfoLine, SectionHeading } from '../table/detail-parts';
 
 interface TicketDetailModalProps {
   open: boolean;
@@ -13,10 +13,13 @@ interface TicketDetailModalProps {
   ticket: Ticket | null;
 }
 
+const getChainId = (ticketId: string): string => ticketId.replace('TCK-', 'C-');
+
 const TicketDetailModal: FC<TicketDetailModalProps> = ({ open, onClose, ticket }) => {
   if (!ticket) return null;
 
-  const { ticket: ticketInfo, parties, moneySplit, settlement, documents, scans } = ticket.detail;
+  const { ticket: ticketInfo, parties, moneySplit, settlement, documents } = ticket.detail;
+  const eventTime = ticket.eventScheduleNote.split(' · ')[0];
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -25,7 +28,7 @@ const TicketDetailModal: FC<TicketDetailModalProps> = ({ open, onClose, ticket }
           <DialogHeader className="shrink-0 border-b pb-3 dark:border-gray-700">
             <DialogTitle>Ticket {ticket.ticketId}</DialogTitle>
             <p className="text-muted-foreground text-sm">
-              {ticketInfo.type} · {ticket.createdAt} · {ticket.eventName}
+              {ticket.eventName} · {eventTime}
             </p>
           </DialogHeader>
 
@@ -33,44 +36,47 @@ const TicketDetailModal: FC<TicketDetailModalProps> = ({ open, onClose, ticket }
             <section>
               <SectionHeading title="Ticket" />
               <InfoLine label="Type" value={ticketInfo.type} />
-              <InfoLine label="Resale protection" value={ticketInfo.resaleProtection} />
+              <InfoLine label="Action / status" value={`${ticket.action} · ${ticket.status}`} />
+              <InfoLine label="Source" value={ticket.source} />
+              <InfoLine label="Chain" value={`${getChainId(ticket.ticketId)} · ${ticket.isLatestState ? 'latest state' : 'superseded'}`} />
               <InfoLine label="Repeatable" value={ticketInfo.repeatable ? 'Yes' : 'No'} />
-              <InfoLine label="Usage" value={ticketInfo.usageNote} />
-              <InfoLine label="Fast track" value={ticketInfo.fastTrack ? 'Yes' : 'No'} />
+              <InfoLine label="Resale protection" value={ticketInfo.resaleProtection} />
+              <InfoLine label="Billko item code" value={ticket.billkoItemCode} />
+              {ticketInfo.fastTrack && <InfoLine label="Fast track" value="Yes" />}
+              {ticketInfo.usageNote && <InfoLine label="Usage" value={ticketInfo.usageNote} />}
             </section>
 
             <section>
-              <SectionHeading title="Parties" />
-              <InfoLine label="Current owner" value={`${parties.currentOwner.name} · ${parties.currentOwner.subtitle}`} />
-              <InfoLine label="Original buyer" value={`${parties.originalBuyer.name} · ${parties.originalBuyer.subtitle}`} />
-              {parties.assignedHolder && <InfoLine label="Assigned holder" value={`${parties.assignedHolder.name} · ${parties.assignedHolder.subtitle}`} />}
-              {parties.organizer && <InfoLine label="Organizer" value={`${parties.organizer.name} · ${parties.organizer.subtitle}`} />}
+              <SectionHeading title="Ownership" />
+              <InfoLine label="Current owner" value={parties.currentOwner.name} />
+              <InfoLine label="Original buyer" value={parties.originalBuyer.name} />
+              <InfoLine label="Ownership changed" value={ticket.ownershipChanged ? 'Yes' : 'No'} />
             </section>
 
             <section>
               <SectionHeading title="Money" />
-              <InfoLine label="Base price" value={formatEuro(moneySplit.basePrice)} />
               <InfoLine label="Price paid" value={formatEuro(moneySplit.pricePaid)} />
+              <InfoLine label="Base price" value={formatEuro(moneySplit.basePrice)} />
               {moneySplit.transferFee !== undefined && <InfoLine label="Transfer fee" value={formatEuro(moneySplit.transferFee)} />}
               {moneySplit.fastTrackFee !== undefined && <InfoLine label="Fast track fee" value={formatEuro(moneySplit.fastTrackFee)} />}
               {moneySplit.serviceFee !== undefined && <InfoLine label="Service fee" value={formatEuro(moneySplit.serviceFee)} />}
-              {moneySplit.taxRate !== undefined && (
-                <InfoLine label="Tax" value={`${formatPercent(moneySplit.taxRate)} · ${moneySplit.taxLabel}`} />
-              )}
+              {moneySplit.taxRate !== undefined && <InfoLine label="Tax" value={`${moneySplit.taxRate}% · ${moneySplit.taxLabel}`} />}
               {moneySplit.commissionRate !== undefined && <InfoLine label="Commission rate" value={formatPercent(moneySplit.commissionRate)} />}
             </section>
 
             <section>
-              <SectionHeading title="Settlement" />
-              <InfoLine label="Status" value={settlement.status || '—'} />
-              <InfoLine label="Batch" value={settlement.batch} />
-              <InfoLine label="Eligibility" value={settlement.eligibility} />
+              <SectionHeading title="Scans" />
+              <InfoLine label="Scan count" value={ticket.scanCount} />
+              <InfoLine label="Last scan" value={ticket.scanNote || 'Never scanned'} />
             </section>
 
-            {documents.length > 0 && (
-              <section>
-                <SectionHeading title="Documents" />
-                <div className="space-y-2">
+            <section>
+              <SectionHeading title="Settlement & documents" />
+              <InfoLine label="Settlement" value={settlement.status || '—'} />
+              <InfoLine label="Transaction" value={ticket.linkedTransactionId} />
+
+              {documents.length > 0 && (
+                <div className="mt-3 space-y-2">
                   {documents.map((document, idx) => (
                     <DocumentCard
                       key={`${document.code}-${idx}`}
@@ -80,19 +86,6 @@ const TicketDetailModal: FC<TicketDetailModalProps> = ({ open, onClose, ticket }
                     />
                   ))}
                 </div>
-              </section>
-            )}
-
-            <section>
-              <SectionHeading title="Scan history" />
-              {scans.length > 0 ? (
-                <div className="space-y-2">
-                  {scans.map((scan) => (
-                    <ScanAttemptRow key={scan.index} scan={scan} />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Never scanned.</p>
               )}
             </section>
           </div>
