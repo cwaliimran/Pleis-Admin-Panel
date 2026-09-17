@@ -2,12 +2,13 @@
 
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { getStatusVariant } from '@/utils/short-utils';
 import { BarChart3, Pencil, Trash2 } from 'lucide-react';
 import React from 'react';
-import { BROWSING_METRIC_CLASS, REWARD_STATUS_LABELS } from './constants';
+import { BROWSING_METRIC_CLASS, REWARD_NAME_TRUNCATE_LENGTH, REWARD_STATUS_LABELS } from './constants';
 import { Reward } from './types';
 import { formatMetric, getBrowsingMetric, getConversion } from './utils';
 
@@ -24,6 +25,10 @@ export const RewardsTableRow: React.FC<RewardsTableRowProps> = ({ item, disabled
   const favorites = getBrowsingMetric(item, item.favorites);
   const conversion = getConversion(item);
 
+  const [showFullName, setShowFullName] = React.useState(false);
+  const isNameTruncated = item.name.length > REWARD_NAME_TRUNCATE_LENGTH;
+  const displayName = isNameTruncated ? `${item.name.slice(0, REWARD_NAME_TRUNCATE_LENGTH)}…` : item.name;
+
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
@@ -36,7 +41,20 @@ export const RewardsTableRow: React.FC<RewardsTableRowProps> = ({ item, disabled
         </Avatar>
       </TableCell>
 
-      <TableCell className="text-left font-medium text-gray-900 dark:text-gray-100">{item.name}</TableCell>
+      <TableCell className="text-left font-medium text-gray-900 dark:text-gray-100">
+        {isNameTruncated ? (
+          <button
+            type="button"
+            onClick={() => setShowFullName(true)}
+            className="cursor-pointer text-left hover:underline"
+            title="Click to view full name"
+          >
+            {displayName}
+          </button>
+        ) : (
+          displayName
+        )}
+      </TableCell>
 
       <TableCell className="text-left text-gray-700 capitalize dark:text-gray-300">{item.type || '—'}</TableCell>
 
@@ -96,6 +114,17 @@ export const RewardsTableRow: React.FC<RewardsTableRowProps> = ({ item, disabled
           </button>
         </div>
       </TableCell>
+
+      {isNameTruncated && (
+        <Dialog open={showFullName} onOpenChange={setShowFullName}>
+          <DialogContent aria-describedby={undefined} className="dark:bg-secondary sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reward name</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm break-words text-gray-700 dark:text-gray-300">{item.name}</p>
+          </DialogContent>
+        </Dialog>
+      )}
     </TableRow>
   );
 };
