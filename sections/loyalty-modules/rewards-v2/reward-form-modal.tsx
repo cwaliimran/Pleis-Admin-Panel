@@ -8,6 +8,7 @@ import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
@@ -18,16 +19,17 @@ import type { ApiBooleanString, RewardWriteBody } from '@/store/Reducer/rewards-
 import { useCreateRewardV2Mutation, useUpdateRewardV2Mutation } from '@/store/Reducer/rewards-v2-api';
 import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
-import { LoyaltyUserType } from '../types';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
+import { fDate, formatStr } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Check } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import { LoyaltyUserType } from '../types';
 import {
   OPTIONS_PAGE_LIMIT,
   REWARD_CREATION_METHOD_HINTS,
@@ -45,6 +47,7 @@ interface RewardFormValues {
   menuItemId: string;
   eventId: string;
   ticketId: string;
+  timeSlotId: string;
   name: string;
   type: string;
   pointCost: string;
@@ -91,6 +94,7 @@ const schema = yup.object({
     then: (current) => current.required('Ticket is required'),
     otherwise: (current) => current,
   }),
+  timeSlotId: yup.string(),
 
   name: yup.string().required('Reward name is required'),
   type: yup.string().required('Type is required'),
@@ -125,6 +129,7 @@ const defaultValues: RewardFormValues = {
   menuItemId: '',
   eventId: '',
   ticketId: '',
+  timeSlotId: '',
   name: '',
   type: '',
   pointCost: '',
@@ -142,6 +147,26 @@ const defaultValues: RewardFormValues = {
 
 /** The API stores an Azure blob key; a saved record hands back the full URL. */
 const toBlobKey = (url: string): string => (url.includes('/') ? (url.split('/').pop() ?? '') : url);
+
+interface EventTicketTimeSlot {
+  _id?: string;
+  startTime?: string;
+  endTime?: string;
+}
+
+interface EventTicketDateTimeSlot {
+  date?: string;
+  timeSlots?: EventTicketTimeSlot[];
+}
+
+interface EventTicket {
+  _id: string;
+  title: string;
+  timingSlots?: {
+    enabled?: boolean;
+    dateTimeSlots?: EventTicketDateTimeSlot[];
+  };
+}
 
 const asBooleanString = (value: boolean): ApiBooleanString => (value ? 'true' : 'false');
 
@@ -183,11 +208,12 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
     defaultValues,
   });
 
-  const { watch, reset, setValue, handleSubmit } = methods;
+  const { watch, reset, setValue, handleSubmit, control, setError } = methods;
 
   const creationMethod = watch('creationMethod');
   const selectedMenuId = watch('menuId');
   const selectedEventId = watch('eventId');
+  const selectedTicketId = watch('ticketId');
   const isActive = watch('isActive');
 
   // ---------- Reference data ----------
@@ -237,10 +263,35 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
     [eventData]
   );
 
+  const tickets = useMemo(() => (ticketData?.data ?? []) as EventTicket[], [ticketData]);
+
   const ticketOptions = useMemo(
-    () => (ticketData?.data ?? []).map((ticket: { _id: string; title: string }) => ({ value: ticket._id, label: ticket.title })),
-    [ticketData]
+    () => tickets.map((ticket) => ({ value: ticket._id, label: ticket.title })),
+    [tickets]
   );
+
+  const selectedTicket = useMemo(
+    () => tickets.find((ticket) => ticket._id === selectedTicketId),
+    [tickets, selectedTicketId]
+  );
+
+  const timeSlotOptions = useMemo(() => {
+    if (!selectedTicket?.timingSlots?.enabled) return [];
+
+    return (selectedTicket.timingSlots.dateTimeSlots ?? []).flatMap((dateSlot) => {
+      const dateLabel = fDate(dateSlot.date, formatStr.date) || dateSlot.date || '';
+
+      return (dateSlot.timeSlots ?? [])
+        .filter((slot): slot is EventTicketTimeSlot & { _id: string } => Boolean(slot._id))
+        .map((slot) => ({
+          value: slot._id,
+          dateLabel,
+          timeLabel: [slot.startTime, slot.endTime].filter(Boolean).join(' – '),
+        }));
+    });
+  }, [selectedTicket]);
+
+  const hasTimeSlots = timeSlotOptions.length > 0;
 
   // ---------- Seeding ----------
 
@@ -259,6 +310,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
       menuItemId: reward.menuItemId || '',
       eventId: reward.eventId || '',
       ticketId: reward.ticketId || '',
+      timeSlotId: reward.timeSlotId || '',
       name: reward.name,
       type: reward.type,
       pointCost: String(reward.pointCost),
@@ -284,6 +336,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
     if (creationMethod !== 'ticketReward') {
       setValue('eventId', '');
       setValue('ticketId', '');
+      setValue('timeSlotId', '');
     }
   }, [creationMethod, setValue]);
 
@@ -292,7 +345,15 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
     if (creationMethod !== 'ticketReward') return;
     if (reward?.eventId && reward.eventId === selectedEventId) return;
     setValue('ticketId', '');
+    setValue('timeSlotId', '');
   }, [selectedEventId, creationMethod, reward, setValue]);
+
+  // A time slot belongs to one ticket, so changing the ticket invalidates the pick.
+  useEffect(() => {
+    if (creationMethod !== 'ticketReward') return;
+    if (reward?.ticketId && reward.ticketId === selectedTicketId) return;
+    setValue('timeSlotId', '');
+  }, [selectedTicketId, creationMethod, reward, setValue]);
 
   // ---------- Submit ----------
 
@@ -323,6 +384,12 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
   const submit = handleSubmit(async (values) => {
     if (companySkip) {
       showError('Please select a company first.');
+      return;
+    }
+
+    if (values.creationMethod === 'ticketReward' && hasTimeSlots && !values.timeSlotId) {
+      setError('timeSlotId', { type: 'manual', message: 'Time slot is required' });
+      showError('Time slot is required');
       return;
     }
 
@@ -358,6 +425,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
       if (values.creationMethod === 'ticketReward') {
         body.event = values.eventId;
         body.ticket = values.ticketId;
+        if (values.timeSlotId) body.timeSlot = values.timeSlotId;
       }
 
       const response =
@@ -464,6 +532,60 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
                   showNone={false}
                   disabled={!selectedEventId}
                 />
+
+                {hasTimeSlots && (
+                  <FormField
+                    control={control}
+                    name="timeSlotId"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <FormLabel>Time Slot</FormLabel>
+                        <div
+                          role="listbox"
+                          aria-label="Time slot"
+                          className="border-input divide-border max-h-40 divide-y overflow-y-auto rounded-md border"
+                        >
+                          {timeSlotOptions.map((option) => {
+                            const isSelected = field.value === option.value;
+
+                            return (
+                              <button
+                                key={option.value}
+                                type="button"
+                                role="option"
+                                aria-selected={isSelected}
+                                onClick={() => field.onChange(option.value)}
+                                className={cn(
+                                  'flex w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors',
+                                  isSelected
+                                    ? 'bg-blue-50 text-gray-900 dark:bg-blue-500/20 dark:text-white'
+                                    : 'text-foreground hover:bg-muted/60'
+                                )}
+                              >
+                                <span className="min-w-0 flex-1 font-medium">{option.dateLabel}</span>
+                                <span
+                                  className={cn(
+                                    'shrink-0 tabular-nums',
+                                    isSelected ? 'text-blue-700 dark:text-blue-200' : 'text-muted-foreground'
+                                  )}
+                                >
+                                  {option.timeLabel}
+                                </span>
+                                <Check
+                                  className={cn(
+                                    'h-4 w-4 shrink-0',
+                                    isSelected ? 'text-blue-700 opacity-100 dark:text-blue-200' : 'opacity-0'
+                                  )}
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
             )}
 

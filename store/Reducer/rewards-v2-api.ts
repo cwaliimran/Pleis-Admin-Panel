@@ -159,6 +159,8 @@ export interface RewardWriteBody {
   /** `ticketReward` only. */
   event?: string;
   ticket?: string;
+  /** Nested slot `_id` when the ticket has `timingSlots.enabled`. */
+  timeSlot?: string;
 }
 
 export interface CreateRewardArgs extends RewardWriteBody {
