@@ -126,6 +126,26 @@ export const PAYMENT_TYPE_CONFIG: Record<PaymentType, { label: string }> = {
 
 export const getPaymentTypeLabel = (type: PaymentType) => PAYMENT_TYPE_CONFIG[type]?.label || humanizeKey(type);
 
+/**
+ * Update-order modal only — not a wire enum and not sent on save.
+ * `googlePay` does not exist on `PaymentType` yet.
+ */
+export const UPDATE_ORDER_PAYMENT_METHOD_OPTIONS = [
+  { value: 'cash', label: 'Cash' },
+  { value: 'card', label: 'Card' },
+  { value: 'applePay', label: 'Apple Pay' },
+  { value: 'googlePay', label: 'Google Pay' },
+] as const;
+
+export type UpdateOrderPaymentMethod = (typeof UPDATE_ORDER_PAYMENT_METHOD_OPTIONS)[number]['value'];
+
+export const DEFAULT_UPDATE_ORDER_PAYMENT_METHOD: UpdateOrderPaymentMethod = 'cash';
+
+export const toUpdateOrderPaymentMethod = (type: PaymentType | undefined): UpdateOrderPaymentMethod =>
+  UPDATE_ORDER_PAYMENT_METHOD_OPTIONS.some((option) => option.value === type)
+    ? (type as UpdateOrderPaymentMethod)
+    : DEFAULT_UPDATE_ORDER_PAYMENT_METHOD;
+
 /** Tinted by what it means for the staff: green is settled up front, amber is still owed. */
 export const PAYMENT_TIMING_CONFIG: Record<PaymentTiming, { label: string; chipClass: string }> = {
   payNow: { label: 'Pay now', chipClass: 'bg-green-50 text-green-700 dark:bg-green-950/50 dark:text-green-300' },
