@@ -12,6 +12,7 @@ import {
   BADGE_TONE_CLASS,
   canDeliverOrderItems,
   canMarkOrderAsPaid,
+  canMarkOrderAsUnpaid,
   formatCurrency,
   formatOrderTime,
   getComboPriceModeLabel,
@@ -199,6 +200,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   // A failed payment has to be settled before the order can be accepted.
   const isConfirmBlocked = primaryAction?.type === 'confirm' && order.paymentStatus === 'failed';
   const canMarkAsPaid = canMarkOrderAsPaid(order);
+  const canMarkAsUnpaid = canMarkOrderAsUnpaid(order);
 
   // Gates the panel's per-item controls. The row's own "Delivered" button is
   // already gated by `getPrimaryAction`, which reads the same rule.
@@ -386,29 +388,29 @@ export const OrderRow: React.FC<OrderRowProps> = ({
             )}
 
             {canMarkAsPaid && (
-              <>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={isPending}
-                  onClick={() => onAdvance(order, MARK_AS_PAID_ACTION.type)}
-                  className="cursor-pointer font-semibold"
-                >
-                  {actionLabel(MARK_AS_PAID_ACTION.type, MARK_AS_PAID_ACTION.label)}
-                </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => onAdvance(order, MARK_AS_PAID_ACTION.type)}
+                className="cursor-pointer font-semibold"
+              >
+                {actionLabel(MARK_AS_PAID_ACTION.type, MARK_AS_PAID_ACTION.label)}
+              </Button>
+            )}
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={isPending}
-                  onClick={() => onAdvance(order, MARK_AS_UNPAID_ACTION.type)}
-                  className="cursor-pointer font-semibold"
-                >
-                  {actionLabel(MARK_AS_UNPAID_ACTION.type, MARK_AS_UNPAID_ACTION.label)}
-                </Button>
-              </>
+            {canMarkAsUnpaid && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => onAdvance(order, MARK_AS_UNPAID_ACTION.type)}
+                className="cursor-pointer font-semibold"
+              >
+                {actionLabel(MARK_AS_UNPAID_ACTION.type, MARK_AS_UNPAID_ACTION.label)}
+              </Button>
             )}
 
             {secondaryAction && showSecondaryAction && (
@@ -424,7 +426,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
               </Button>
             )}
 
-            {!showPrimaryAction && !canMarkAsPaid && !showSecondaryAction && (
+            {!showPrimaryAction && !canMarkAsPaid && !canMarkAsUnpaid && !showSecondaryAction && (
               <Button type="button" size="sm" variant="outline" onClick={onToggle} className="cursor-pointer font-semibold">
                 View detail
               </Button>

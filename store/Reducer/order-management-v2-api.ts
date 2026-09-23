@@ -16,6 +16,8 @@ export type ApiOrderStatus =
   | 'confirmed'
   /** Prepared and waiting to be collected. Only reached by `payLater` pickups. */
   | 'ready'
+  /** Doc fulfilment terminal — handed over (prefer over legacy `sent` / `completed`). */
+  | 'delivered'
   | 'sent'
   | 'pendingPayment'
   | 'completed'
@@ -38,7 +40,7 @@ export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'payLater';
  */
 export type ApiPaymentTiming = 'payNow' | 'payLater';
 
-export type ApiPaymentStatus = 'pending' | 'paid' | 'failed';
+export type ApiPaymentStatus = 'pending' | 'paid' | 'failed' | 'unpaidClosed';
 
 /** Which bucket of statuses to list — the backend decides the membership. */
 export type ApiOrderTab = 'active' | 'past';

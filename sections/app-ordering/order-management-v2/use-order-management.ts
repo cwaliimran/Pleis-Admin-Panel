@@ -233,7 +233,8 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
         }
 
         // Once nothing is left to hand over the order moves on: `completed`
-        // if it is already settled, otherwise `sent` to await payment.
+        // if already settled, otherwise `delivered` (doc) so Mark Paid /
+        // Mark Unpaid can close the payment axis. Legacy rows may still be `sent`.
         const outstandingItems = order.rounds.filter((round) => !round.isDelivered).flatMap((round) => round.items.map((item) => item.menuItemId));
         const outstandingCombos = order.combos.filter((combo) => !combo.isDelivered).map((combo) => combo.id);
 
@@ -243,7 +244,7 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
             outstandingCombos.every((id) => payload.comboIds.includes(id)));
 
         if (deliversEverything) {
-          args.status = order.paymentStatus === 'paid' ? 'completed' : 'sent';
+          args.status = order.paymentStatus === 'paid' ? 'completed' : 'delivered';
         }
 
         const response = await updateOrder(args).unwrap();
@@ -330,15 +331,20 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
     async (order, action, payload) => {
       const nextStatus = NEXT_STATUS_BY_ACTION[action];
 
-      if (action !== 'markAsPaid' && !nextStatus) {
+      if (action !== 'markAsPaid' && action !== 'markAsUnpaid' && !nextStatus) {
         throw new Error('This action is not connected yet.');
       }
 
       setPendingOrderId(order.id);
       setPendingAction(action);
       try {
-        // `markAsPaid` settles payment; everything else writes the status.
-        const args: UpdateOrderV2Args = action === 'markAsPaid' ? { id: order.id, paymentStatus: 'paid' } : { id: order.id, status: nextStatus };
+        // Payment-axis actions write paymentStatus; fulfilment actions write status.
+        const args: UpdateOrderV2Args =
+          action === 'markAsPaid'
+            ? { id: order.id, paymentStatus: 'paid' }
+            : action === 'markAsUnpaid'
+              ? { id: order.id, paymentStatus: 'unpaidClosed' }
+              : { id: order.id, status: nextStatus };
 
         // A `sent` order has nothing left to hand over, so settling the
         // payment is the last step — it completes the order outright.

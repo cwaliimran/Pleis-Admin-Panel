@@ -48,8 +48,8 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, BadgeConfig> = {
   pending: { label: 'Pending', icon: Clock, tone: 'amber' },
   confirmed: { label: 'Confirmed', icon: CircleCheck, tone: 'blue' },
   ready: { label: 'Ready', icon: BellRing, tone: 'teal' },
-  // `sent` is the wire name; it means every item is handed over and only the
-  // payment is outstanding, so staff see it as "Delivered".
+  delivered: { label: 'Delivered', icon: PackageCheck, tone: 'purple' },
+  // Legacy wire name for unpaid hand-over; same badge as delivered.
   sent: { label: 'Delivered', icon: PackageCheck, tone: 'purple' },
   pendingPayment: { label: 'Pending Payment', icon: CreditCard, tone: 'orange' },
   completed: { label: 'Completed', icon: CircleCheckBig, tone: 'green' },
@@ -64,7 +64,15 @@ export const getOrderStatusConfig = (status: OrderStatus): BadgeConfig =>
   ORDER_STATUS_CONFIG[status] || { label: humanizeKey(status), icon: CircleDashed, tone: 'gray' };
 
 /** Which statuses live under which tab. */
-export const ACTIVE_ORDER_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'ready', 'sent', 'pendingPayment', 'preorder'];
+export const ACTIVE_ORDER_STATUSES: OrderStatus[] = [
+  'pending',
+  'confirmed',
+  'ready',
+  'delivered',
+  'sent',
+  'pendingPayment',
+  'preorder',
+];
 export const PAST_ORDER_STATUSES: OrderStatus[] = ['completed', 'cancelled', 'rejected', 'expired'];
 
 export const STATUS_BY_TAB: Record<OrderTab, OrderStatus[]> = {
@@ -130,6 +138,7 @@ export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, BadgeConfig> = {
   paid: { label: 'Paid', icon: CircleCheck, tone: 'green' },
   pending: { label: 'Pending', icon: Clock, tone: 'amber' },
   failed: { label: 'Failed', icon: CircleAlert, tone: 'red' },
+  unpaidClosed: { label: 'Unpaid closed', icon: CircleAlert, tone: 'red' },
 };
 
 export const getPaymentStatusConfig = (status: PaymentStatus): BadgeConfig =>
@@ -246,58 +255,63 @@ type ActionableOrder = {
 };
 
 /**
- * A collected order is called Ready before it is handed over. `payNow` has
- * to clear payment first — nothing is prepared for collection until the
- * money has landed — whereas `payLater` is collected at handover.
+ * Payment settles independently of fulfilment. Staff may Mark as Paid /
+ * Mark as Unpaid from Confirmed onward (before or after Delivered).
+ * Pending still uses Confirm / Reject only.
  */
-const needsReadyFirst = (order: ActionableOrder) =>
-  order.status === 'confirmed' &&
-  PICKUP_TYPES_NEEDING_READY.includes(order.deliveryType) &&
-  (order.paymentTiming === 'payLater' || order.paymentStatus === 'paid');
+const PAYMENT_ACTION_STATUSES: OrderStatus[] = [
+  'confirmed',
+  'ready',
+  'delivered',
+  'completed',
+  'sent',
+  'pendingPayment',
+];
 
 /**
- * `payNow` means exactly that: the money lands before anything leaves the
- * counter, so an unpaid order cannot be handed over at all. `payLater` is
- * collected at handover, so it delivers while still unpaid. Either way a
- * pickup order has to be called Ready first.
+ * Doc §3.1 / §4: Counter / To go always go Confirmed → Ready before Delivered,
+ * whether payment is already settled (pay now) or still open (pay later).
+ */
+const needsReadyFirst = (order: ActionableOrder) =>
+  order.status === 'confirmed' && PICKUP_TYPES_NEEDING_READY.includes(order.deliveryType);
+
+/**
+ * Delivered is offered on Confirmed (table) or Ready (pickup). Payment does
+ * not gate handover — axes are independent.
  */
 export const canDeliverOrderItems = (order: ActionableOrder) => {
   if (!DELIVERABLE_STATUSES.includes(order.status)) return false;
   if (needsReadyFirst(order)) return false;
-
-  return order.paymentTiming === 'payLater' || order.paymentStatus === 'paid';
+  return true;
 };
 
 /**
- * `payNow` settles before handover, so the button appears as soon as the
- * order is confirmed. `payLater` settles after, so it waits until the order
- * is actually out — `sent` is what delivering everything leaves behind.
+ * Mark as Paid — unpaid + cash/card, from Confirmed through Delivered.
+ * (Card/Apple Pay gateway settlement does not use this button.)
  */
 export const canMarkOrderAsPaid = (order: ActionableOrder) => {
-  if (order.paymentStatus === 'paid') return false;
+  if (order.paymentStatus !== 'pending') return false;
   if (!MARK_AS_PAID_PAYMENT_TYPES.includes(order.paymentType)) return false;
-
-  const settleableStatuses: OrderStatus[] =
-    order.paymentTiming === 'payLater' ? ['sent', 'pendingPayment'] : ['confirmed', 'ready', 'sent', 'pendingPayment'];
-
-  return settleableStatuses.includes(order.status);
+  return PAYMENT_ACTION_STATUSES.includes(order.status);
 };
 
 /**
- * The one button that moves the order along — a matrix, not a status lookup:
+ * Mark as Unpaid — same window as Mark as Paid (before or after Delivered).
+ */
+export const canMarkOrderAsUnpaid = (order: ActionableOrder) => {
+  if (order.paymentStatus !== 'pending') return false;
+  return PAYMENT_ACTION_STATUSES.includes(order.status);
+};
+
+/**
+ * Primary fulfilment button only:
  *
- *   payNow,   table delivery  → Confirm → (Mark as Paid) → Delivered
- *   payNow,   to go / counter → Confirm → (Mark as Paid) → Ready → Delivered
- *   payLater, table delivery  → Confirm → Delivered → (Mark as Paid)
- *   payLater, to go / counter → Confirm → Ready → Delivered → (Mark as Paid)
+ *   Pending                          → Confirm
+ *   Confirmed + table                → Delivered
+ *   Confirmed + to go / counter      → Ready
+ *   Ready                            → Delivered
  *
- * Mark as Paid is bracketed because it renders separately, beside this one —
- * see `canMarkOrderAsPaid`. On a `payNow` order it is the only thing offered
- * until payment lands, and for a provider-settled method (applePay) not even
- * that: the row waits, showing nothing but Cancel.
- *
- * `sent` has no primary action of its own — anything still outstanding is
- * handed over per item from the expanded panel, not from the row.
+ * Mark as Paid / Mark as Unpaid render beside this whenever unpaid.
  */
 export const getPrimaryAction = (order: ActionableOrder): ActionConfig | null => {
   if (order.status === 'pending') return { type: 'confirm', label: 'Confirm' };
@@ -321,15 +335,14 @@ export const MIN_ITEM_QUANTITY = 1;
 export const MAX_ITEM_QUANTITY = 99;
 
 /**
- * Only these write `status` directly. `markAsPaid` writes `paymentStatus`
- * and `delivered` goes through the delivery endpoint, so neither is here.
+ * Only these write `status` directly. `markAsPaid` / `markAsUnpaid` write
+ * `paymentStatus`, and `delivered` goes through the delivery endpoint.
  */
 export const NEXT_STATUS_BY_ACTION: Partial<Record<OrderActionType, OrderStatus>> = {
   confirm: 'confirmed',
   ready: 'ready',
   reject: 'rejected',
   cancel: 'cancelled',
-  markAsUnpaid: 'expired',
 };
 
 export const ACTION_SUCCESS_MESSAGE: Record<OrderActionType, string> = {
