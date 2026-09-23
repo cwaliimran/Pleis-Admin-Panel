@@ -3,8 +3,8 @@
 import {
   combineReducers,
   configureStore,
-  createAction,
 } from '@reduxjs/toolkit';
+import { resetStore } from './resetStore';
 import { categoriesApi } from './Reducer/categories';
 import { eventApi } from './Reducer/events';
 import { highlightsApi } from './Reducer/highlights';
@@ -84,7 +84,7 @@ import { streaksV2Api } from './Reducer/streaks-v2-api';
 import { referralsV2Api } from './Reducer/referrals-v2-api';
 import { promotionsV2Api } from './Reducer/promotions-v2-api';
 
-export const resetStore = createAction('RESET_STORE');
+export { resetStore };
 
 const appReducer = combineReducers({
   userSlice: userSlice.reducer,

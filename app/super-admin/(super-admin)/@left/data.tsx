@@ -423,12 +423,12 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
-        title: 'Venue types',
+        title: 'Venue Types',
         url: paths.superAdmin.venueType.default,
         icon: ChartBar,
       },
       {
-        title: 'Browser control',
+        title: 'Browser Control',
         url: paths.superAdmin.browserControl.default,
         icon: ChartBar,
       },
@@ -438,7 +438,7 @@ export const menuGroups: MenuGroup[] = [
         icon: ChartBar,
       },
       {
-        title: 'Notification center',
+        title: 'Notification Center',
         url: paths.superAdmin.globalNotification,
         icon: CalendarDays,
       },
@@ -526,7 +526,7 @@ export const menuGroups: MenuGroup[] = [
         icon: UsersRound,
       },
       {
-        title: 'Pending user list',
+        title: 'Pending User List',
         url: paths.superAdmin.users.pendingList,
         icon: UsersRound,
       },
@@ -537,7 +537,7 @@ export const menuGroups: MenuGroup[] = [
         icon: UsersRound,
       },
       {
-        title: 'Terms of service',
+        title: 'Terms of Service',
         url: paths.superAdmin.terms.default,
         icon: UsersRound,
       },
