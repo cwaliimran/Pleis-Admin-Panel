@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useOrderingSettingsRecord } from '../use-ordering-settings-record';
-import { mapApiPaymentMethods } from './mappers';
+import { mapApiPaymentMethods, toApiPaymentMethods } from './mappers';
 import { PaymentSettings } from './types';
 
 // ============================================================
@@ -28,7 +28,7 @@ export const usePaymentMethods = (organizationId?: string): UsePaymentMethodsRet
 
   const settings = useMemo(() => mapApiPaymentMethods(record), [record]);
 
-  const save = useCallback((values: PaymentSettings) => saveRecord({ paymentMethod: values }), [saveRecord]);
+  const save = useCallback((values: PaymentSettings) => saveRecord({ paymentMethod: toApiPaymentMethods(values) }), [saveRecord]);
 
   return { settings, isLoading, isFetching, isSaving, save };
 };

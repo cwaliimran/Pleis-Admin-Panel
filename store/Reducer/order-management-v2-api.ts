@@ -318,7 +318,7 @@ export interface GetOrdersV2Args {
   page: number;
   limit: number;
   keyword?: string;
-  orderStatus?: ApiOrderStatus;
+  orderStatus?: ApiOrderStatus | 'unpaidClosed';
   /**
    * A delivery option `_id`, not a pickup type — the filter lists the
    * organization's own configured options rather than the three methods.

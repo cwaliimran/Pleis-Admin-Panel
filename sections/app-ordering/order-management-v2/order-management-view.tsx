@@ -37,8 +37,8 @@ import {
   OrderActionType,
   OrderFilters,
   OrderSocketStatus,
-  OrderStatus,
   OrderTab,
+  StatusFilterValue,
   OrderUpdatePayload,
   PaymentType,
   UserType,
@@ -125,7 +125,7 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
 
   const [activeTab, setActiveTab] = useState<OrderTab>('active');
   const [searchQuery, setSearchQuery] = useState<string>(DEFAULT_ORDER_FILTERS.search);
-  const [status, setStatus] = useState<OrderStatus | 'all'>(DEFAULT_ORDER_FILTERS.status);
+  const [status, setStatus] = useState<StatusFilterValue>(DEFAULT_ORDER_FILTERS.status);
   const [deliveryOptionId, setDeliveryOptionId] = useState<string>(DEFAULT_ORDER_FILTERS.deliveryOptionId);
   const [paymentType, setPaymentType] = useState<PaymentType | 'all'>(DEFAULT_ORDER_FILTERS.paymentType);
   const [dateRange, setDateRange] = useState<DateRangeFilter | 'all'>(DEFAULT_ORDER_FILTERS.dateRange);
@@ -530,7 +530,7 @@ export const OrderManagementViewV2: React.FC<OrderManagementViewProps> = ({ user
               />
             </div>
 
-            <Select value={status} onValueChange={(next) => setStatus(next as OrderStatus | 'all')}>
+            <Select value={status} onValueChange={(next) => setStatus(next as StatusFilterValue)}>
               <SelectTrigger className={SELECT_TRIGGER_CLASS} aria-label="Filter by status">
                 <SelectValue />
               </SelectTrigger>

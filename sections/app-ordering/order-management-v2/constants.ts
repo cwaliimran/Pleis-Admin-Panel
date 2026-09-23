@@ -12,6 +12,7 @@ import {
   OrderStatus,
   OrderTab,
   PaymentStatus,
+  StatusFilterValue,
   PaymentTiming,
   PaymentType,
   RejectionReason,
@@ -138,7 +139,7 @@ export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, BadgeConfig> = {
   paid: { label: 'Paid', icon: CircleCheck, tone: 'green' },
   pending: { label: 'Pending', icon: Clock, tone: 'amber' },
   failed: { label: 'Failed', icon: CircleAlert, tone: 'red' },
-  unpaidClosed: { label: 'Unpaid closed', icon: CircleAlert, tone: 'red' },
+  unpaidClosed: { label: 'Unpaid Closed', icon: CircleAlert, tone: 'red' },
 };
 
 export const getPaymentStatusConfig = (status: PaymentStatus): BadgeConfig =>
@@ -162,10 +163,14 @@ export const ORDER_TAB_CONFIG: { id: OrderTab; label: string }[] = [
   { id: 'past', label: 'Past Orders' },
 ];
 
-/** Not offered as a filter; they keep their badge in the table. */
-export const NON_FILTERABLE_STATUSES: OrderStatus[] = ['preorder'];
+/**
+ * Not offered as a filter; they keep their badge in the table.
+ * `sent` is the legacy delivered status — same label as `delivered`.
+ * `expired` is replaced in the dropdown by payment status `unpaidClosed`.
+ */
+export const NON_FILTERABLE_STATUSES: OrderStatus[] = ['preorder', 'sent', 'pendingPayment', 'expired'];
 
-export const STATUS_FILTER_OPTIONS: { value: OrderStatus | 'all'; label: string }[] = [
+export const STATUS_FILTER_OPTIONS: { value: StatusFilterValue; label: string }[] = [
   { value: 'all', label: 'All statuses' },
   ...([...ACTIVE_ORDER_STATUSES, ...PAST_ORDER_STATUSES] as OrderStatus[])
     .filter((status) => !NON_FILTERABLE_STATUSES.includes(status))
@@ -173,6 +178,7 @@ export const STATUS_FILTER_OPTIONS: { value: OrderStatus | 'all'; label: string 
       value: status,
       label: ORDER_STATUS_CONFIG[status].label,
     })),
+  { value: 'unpaidClosed', label: 'Unpaid Closed' },
 ];
 
 export const PAYMENT_FILTER_OPTIONS: { value: PaymentType | 'all'; label: string }[] = [

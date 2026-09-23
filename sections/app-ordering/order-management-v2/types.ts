@@ -14,6 +14,9 @@ export type UserType = 'organizer' | 'super-admin';
 
 export type OrderStatus = ApiOrderStatus;
 
+/** Status dropdown values — `unpaidClosed` is a payment status, not an order status. */
+export type StatusFilterValue = OrderStatus | 'unpaidClosed' | 'all';
+
 export type DeliveryType = ApiPickupType;
 
 export type PaymentType = ApiPaymentMethod;
@@ -158,7 +161,7 @@ export interface DeliveryOptionFilter {
 export interface OrderFilters {
   tab: OrderTab;
   search: string;
-  status: OrderStatus | 'all';
+  status: StatusFilterValue;
   /** A `DeliveryOptionFilter.id`, sent as `pickupFilter`. */
   deliveryOptionId: string;
   paymentType: PaymentType | 'all';
