@@ -31,7 +31,7 @@ export type ApiPickupType = 'tableDelivery' | 'counterPickup' | 'toGo';
 /** Pre-rename spellings still carried by older orders; `mapPickupType` folds them in. */
 export type ApiLegacyPickupType = 'tableService' | 'counter' | 'togo';
 
-export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'payLater';
+export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'googlePay';
 
 /**
  * When the customer settles up. `payNow` is paid before anything is handed

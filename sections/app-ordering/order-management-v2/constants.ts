@@ -1,7 +1,19 @@
 import dayjs from 'dayjs';
 import isToday from 'dayjs/plugin/isToday';
 import isYesterday from 'dayjs/plugin/isYesterday';
-import { Ban, BellRing, CalendarClock, CircleAlert, CircleCheck, CircleCheckBig, CircleDashed, CircleX, Clock, CreditCard, PackageCheck } from 'lucide-react';
+import {
+  Ban,
+  BellRing,
+  CalendarClock,
+  CircleAlert,
+  CircleCheck,
+  CircleCheckBig,
+  CircleDashed,
+  CircleX,
+  Clock,
+  CreditCard,
+  PackageCheck,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ComboPriceMode,
@@ -65,15 +77,7 @@ export const getOrderStatusConfig = (status: OrderStatus): BadgeConfig =>
   ORDER_STATUS_CONFIG[status] || { label: humanizeKey(status), icon: CircleDashed, tone: 'gray' };
 
 /** Which statuses live under which tab. */
-export const ACTIVE_ORDER_STATUSES: OrderStatus[] = [
-  'pending',
-  'confirmed',
-  'ready',
-  'delivered',
-  'sent',
-  'pendingPayment',
-  'preorder',
-];
+export const ACTIVE_ORDER_STATUSES: OrderStatus[] = ['pending', 'confirmed', 'ready', 'delivered', 'sent', 'pendingPayment', 'preorder'];
 export const PAST_ORDER_STATUSES: OrderStatus[] = ['completed', 'cancelled', 'rejected', 'expired'];
 
 export const STATUS_BY_TAB: Record<OrderTab, OrderStatus[]> = {
@@ -118,10 +122,11 @@ export const getDeliveryTypeConfig = (type: DeliveryType) =>
   DELIVERY_TYPE_CONFIG[type] || { label: humanizeKey(type), chipClass: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' };
 
 export const PAYMENT_TYPE_CONFIG: Record<PaymentType, { label: string }> = {
-  applePay: { label: 'Apple Pay' },
-  card: { label: 'Card' },
   cash: { label: 'Cash' },
-  payLater: { label: 'Pay Later' },
+  card: { label: 'Card' },
+  applePay: { label: 'Apple Pay' },
+  googlePay: { label: 'Google Pay' },
+  // payLater: { label: 'Pay Later' },
 };
 
 export const getPaymentTypeLabel = (type: PaymentType) => PAYMENT_TYPE_CONFIG[type]?.label || humanizeKey(type);
@@ -285,21 +290,13 @@ type ActionableOrder = {
  * Mark as Unpaid from Confirmed onward (before or after Delivered).
  * Pending still uses Confirm / Reject only.
  */
-const PAYMENT_ACTION_STATUSES: OrderStatus[] = [
-  'confirmed',
-  'ready',
-  'delivered',
-  'completed',
-  'sent',
-  'pendingPayment',
-];
+const PAYMENT_ACTION_STATUSES: OrderStatus[] = ['confirmed', 'ready', 'delivered', 'completed', 'sent', 'pendingPayment'];
 
 /**
  * Doc §3.1 / §4: Counter / To go always go Confirmed → Ready before Delivered,
  * whether payment is already settled (pay now) or still open (pay later).
  */
-const needsReadyFirst = (order: ActionableOrder) =>
-  order.status === 'confirmed' && PICKUP_TYPES_NEEDING_READY.includes(order.deliveryType);
+const needsReadyFirst = (order: ActionableOrder) => order.status === 'confirmed' && PICKUP_TYPES_NEEDING_READY.includes(order.deliveryType);
 
 /**
  * Delivered is offered on Confirmed (table) or Ready (pickup). Payment does
