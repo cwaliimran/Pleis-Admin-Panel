@@ -1,12 +1,16 @@
 'use client';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, useSidebar } from '@/components/ui/sidebar';
-import { useQuickNavigation } from '@/hooks/useQuickNavigation';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion as m } from 'framer-motion';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { FC, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import MenuItem from './menuItem';
+
+function isModifiedNavigationClick(event: MouseEvent<HTMLAnchorElement>) {
+  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
+}
 
 interface PageProps {
   menuGroups: any;
@@ -14,7 +18,6 @@ interface PageProps {
 
 const MenuList: FC<PageProps> = ({ menuGroups }) => {
   const pathname = usePathname();
-  const { navigate } = useQuickNavigation();
   const { isMobile, toggleSidebar, state } = useSidebar();
 
   const isCollapsed = state === 'collapsed';
@@ -83,21 +86,23 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
 
   const handleGroupClick = useCallback(
     (group: any) => {
-      const hasItems = group.items?.length > 0;
-
-      if (hasItems) {
-        if (!isCollapsed) {
-          toggleGroup(group.key);
-        }
-      } else {
-        navigate(group.key);
-        if (isMobile) {
-          setOpenGroup(null);
-          toggleSidebar();
-        }
+      if (group.items?.length > 0 && !isCollapsed) {
+        toggleGroup(group.key);
       }
     },
-    [navigate, isMobile, toggleSidebar, toggleGroup, isCollapsed]
+    [toggleGroup, isCollapsed]
+  );
+
+  const handleLinkClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      if (isModifiedNavigationClick(event)) return;
+      if (isMobile) {
+        setOpenGroup(null);
+        toggleSidebar();
+      }
+      setHoveredGroup(null);
+    },
+    [isMobile, toggleSidebar]
   );
 
   const memoizedMenuItems = useMemo(() => {
@@ -107,6 +112,37 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
       const isDisabled = group.disabled;
       const isActiveGroup = activeGroupKey === group.key;
       const showActiveHighlight = isActiveGroup && !isDisabled && (!hasItems || !isOpen);
+      const isDirectLink = !hasItems && !isDisabled && !!group.key;
+      const groupClassName = cn(
+        'sidebar-nav-item hover:bg-muted flex cursor-pointer items-center rounded-lg text-sm font-medium transition-all duration-100',
+        showActiveHighlight ? 'bg-muted font-semibold' : '',
+        isCollapsed ? 'min-w-[36px] justify-center px-2 py-2' : 'w-full justify-between px-3 py-2',
+        isDisabled && 'cursor-not-allowed opacity-50 hover:bg-transparent'
+      );
+      const groupContent = (
+        <>
+          <div
+            className={cn(
+              'group relative flex items-center transition-all duration-100',
+              isCollapsed ? 'min-h-[40px] w-full justify-center px-0 py-1' : 'gap-2 px-0'
+            )}
+          >
+            <div className="flex h-8 w-8 items-center justify-center">
+              <group.icon className="h-5 w-5" />
+            </div>
+
+            {!isCollapsed && <span className="truncate transition-all duration-100">{group.label}</span>}
+
+            {isCollapsed && hasItems && !isDisabled && (
+              <div className="absolute right-[-10px] transition-opacity duration-200 group-hover:opacity-100">
+                <ChevronRight className="text-muted-foreground h-3 w-3" />
+              </div>
+            )}
+          </div>
+
+          {!isCollapsed && hasItems && !isDisabled && (isOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />)}
+        </>
+      );
 
       return (
         <SidebarGroup
@@ -118,41 +154,15 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
             if (!isDisabled) setHoveredGroup(group.key);
           }}
         >
-          <button
-            type="button"
-            onClick={() => !isDisabled && handleGroupClick(group)}
-            disabled={isDisabled}
-            className={cn(
-              'sidebar-nav-item hover:bg-muted flex cursor-pointer items-center rounded-lg text-sm font-medium transition-all duration-100',
-              showActiveHighlight ? 'bg-muted font-semibold' : '',
-              isCollapsed ? 'min-w-[36px] justify-center px-2 py-2' : 'w-full justify-between px-3 py-2',
-              isDisabled && 'cursor-not-allowed opacity-50 hover:bg-transparent'
-            )}
-          >
-            <div
-              className={cn(
-                'group relative flex items-center transition-all duration-100',
-                isCollapsed ? 'min-h-[40px] w-full justify-center px-0 py-1' : 'gap-2 px-0'
-              )}
-            >
-              {/* Icon wrapper */}
-              <div className="flex h-8 w-8 items-center justify-center">
-                <group.icon className="h-5 w-5" />
-              </div>
-
-              {/* Label (visible only if expanded) */}
-              {!isCollapsed && <span className="truncate transition-all duration-100">{group.label}</span>}
-
-              {/* Chevron appears on hover (collapsed only, and has children) */}
-              {isCollapsed && hasItems && !isDisabled && (
-                <div className="absolute right-[-10px] transition-opacity duration-200 group-hover:opacity-100">
-                  <ChevronRight className="text-muted-foreground h-3 w-3" />
-                </div>
-              )}
-            </div>
-
-            {!isCollapsed && hasItems && !isDisabled && (isOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />)}
-          </button>
+          {isDirectLink ? (
+            <Link href={group.key} prefetch={false} onClick={handleLinkClick} className={groupClassName}>
+              {groupContent}
+            </Link>
+          ) : (
+            <button type="button" onClick={() => !isDisabled && handleGroupClick(group)} disabled={isDisabled} className={groupClassName}>
+              {groupContent}
+            </button>
+          )}
 
           {/* Inline submenu (for expanded sidebar) */}
           <AnimatePresence initial={false}>
@@ -191,28 +201,36 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
               }}
               className="fixed left-[70px] z-50 ml-2 max-h-60 space-y-1 overflow-y-auto rounded-md border border-gray-200 bg-white p-2 shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
             >
-              {group.items.map((item: any, index: number) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    if (isMobile) toggleSidebar();
-                    navigate(item.url);
-                    setHoveredGroup(null);
-                  }}
-                  className={cn(
-                    'hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition',
-                    pathname === item.url ? 'bg-muted font-medium' : ''
-                  )}
-                >
-                  {item.title}
-                </button>
-              ))}
+              {group.items.map((item: any, index: number) =>
+                item.url ? (
+                  <Link
+                    key={index}
+                    href={item.url}
+                    prefetch={false}
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition',
+                      pathname === item.url ? 'bg-muted font-medium' : ''
+                    )}
+                  >
+                    {item.title}
+                  </Link>
+                ) : (
+                  <button
+                    key={index}
+                    type="button"
+                    className="hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition"
+                  >
+                    {item.title}
+                  </button>
+                )
+              )}
             </m.div>
           )}
         </SidebarGroup>
       );
     });
-  }, [menuGroups, openGroup, pathname, activeGroupKey, isCollapsed, hoveredGroup, handleGroupClick, navigate, toggleSidebar, isMobile, hoverTimeout]);
+  }, [menuGroups, openGroup, pathname, activeGroupKey, isCollapsed, hoveredGroup, handleGroupClick, handleLinkClick, hoverTimeout]);
 
   return (
     <Sidebar className="a-50 relative z-10 overflow-visible" collapsible="icon">

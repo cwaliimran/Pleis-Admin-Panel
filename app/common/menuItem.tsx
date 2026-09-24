@@ -1,10 +1,14 @@
 'use client';
 
 import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
-import { useQuickNavigation } from '@/hooks/useQuickNavigation';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FC, memo, useCallback, useMemo, useState } from 'react';
+import { FC, memo, MouseEvent, useCallback, useMemo, useState } from 'react';
+
+function isModifiedNavigationClick(event: MouseEvent<HTMLAnchorElement>) {
+  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
+}
 
 type MenuItem = {
   title: string;
@@ -21,7 +25,6 @@ interface MenuItemsProps {
 
 const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false }) => {
   const pathname = usePathname();
-  const { navigate } = useQuickNavigation();
 
   const { toggleSidebar, isMobile } = useSidebar();
 
@@ -47,14 +50,12 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
   }, []);
 
-  const handleClick = useCallback(
-    (url: string) => {
-      if (isMobile) {
-        toggleSidebar();
-      }
-      navigate(url);
+  const handleLinkClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      if (isModifiedNavigationClick(event)) return;
+      if (isMobile) toggleSidebar();
     },
-    [navigate, isMobile, toggleSidebar]
+    [isMobile, toggleSidebar]
   );
 
   return (
@@ -88,9 +89,9 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
                     {ButtonContent}
                   </button>
                 ) : item.url ? (
-                  <button type="button" onClick={() => handleClick(item.url!)} className="w-full text-left">
+                  <Link href={item.url} prefetch={false} onClick={handleLinkClick} className="w-full text-left">
                     {ButtonContent}
-                  </button>
+                  </Link>
                 ) : (
                   <button type="button" disabled>
                     {ButtonContent}
