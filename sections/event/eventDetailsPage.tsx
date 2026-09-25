@@ -14,7 +14,6 @@ import { tabsData } from '@/sections/event/data';
 import EventAnalytics from '@/sections/event/eventAnalytics';
 import EventNotification from '@/sections/event/eventNotification';
 import EventOverView from '@/sections/event/eventOverview';
-import EventReservation from '@/sections/event/eventReservation';
 import EventTicket from '@/sections/event/eventTicket';
 import LastTransaction from '@/sections/event/lastTransaction';
 import { useCloneeventMutation, useDeleteeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
@@ -24,7 +23,6 @@ import { Copy, Loader2, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
-// import EventFeedbackView from '../event-feedback/event-feedback-view';
 import CustomBadge from '@/components/ui/custom-badge';
 import { getErrorMessage } from '@/utils/api';
 import { showError } from '@/utils/toast';
@@ -110,7 +108,6 @@ const EventDetailsPage = () => {
         refetch();
       }
     } catch (error) {
-      // console.log('Failed to request feedback', error);
       showError(getErrorMessage(error));
     } finally {
       setFeedbackLoading(false);
@@ -177,7 +174,7 @@ const EventDetailsPage = () => {
       ) : (
         <div className="space-y-6 pb-12">
           <div className="mt-10 h-full">
-            <div className="grid grid-cols-12 md:gap-7">
+            <div className="grid grid-cols-12 md:gap-3">
               <div className="col-span-12 lg:col-span-9">
                 {/* ---------------- INFO CARD ---------------- */}
                 <Card className="pb-0 shadow-md dark:bg-[#171717]">
@@ -411,7 +408,7 @@ const EventDetailsPage = () => {
 
                   {active === 'tickets' && <EventTicket event={event} />}
 
-                  {active === 'reservations' && <EventReservation event={event} userType={userType} />}
+                  {/* {active === 'reservations' && <EventReservation event={event} userType={userType} />} */}
 
                   {active === 'notifications' && <EventNotification id={id} />}
 
@@ -429,7 +426,7 @@ const EventDetailsPage = () => {
               </div>
 
               {/* Sidebar or Additional Panel */}
-              <div className="col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-2 lg:col-span-3">
+              <div className="col-span-12 mt-3 space-y-3 md:mt-0 md:space-y-3 lg:col-span-3">
                 {/* Total Revenue */}
                 <Card className="dark:bg-secondary">
                   <CardHeader>
@@ -484,28 +481,6 @@ const EventDetailsPage = () => {
                 <CapacityGaugeChart data={event} />
 
                 <LastTransaction data={event} />
-
-                {/* <Card className="col-span-12 shadow-lg dark:bg-[#171717]">
-                  <CardContent>
-                    <div className="w-full flex-wrap items-start justify-between gap-y-6 px-2 md:flex md:px-0">
-                      <div className="flex min-w-35 flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">START DATE</p>
-                        </div>
-                        <p className="text-sm font-medium text-black dark:text-white">{fDate(event?.schedule?.startDateTime) || 'N/A'}</p>
-                      </div>
-
-                      <div className="mt-4 flex min-w-35 flex-col gap-1 md:mt-0">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-gray-600 dark:text-white" />
-                          <p className="text-xs font-semibold text-gray-600 dark:text-white">END DATE</p>
-                        </div>
-                        <p className="text-sm font-medium text-black dark:text-white">{fDate(event?.schedule?.endDateTime) || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card> */}
               </div>
             </div>
           </div>

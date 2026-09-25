@@ -189,7 +189,7 @@ const AdminProfileSection = () => {
               {/* Avatar Section */}
               <div className="flex items-center space-x-2 border-b border-gray-200 pb-6 md:space-x-8">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={avatarUrl} />
+                  <AvatarImage src={avatarUrl ?? undefined} />
                   <AvatarFallback className="bg-gray-100 text-gray-700">
                     <span className="text-2xl font-semibold">{user?.basicInfo?.firstName[0]}</span>
                   </AvatarFallback>

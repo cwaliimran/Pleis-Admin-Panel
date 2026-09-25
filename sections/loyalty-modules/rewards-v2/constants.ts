@@ -77,6 +77,9 @@ export const REWARDS_HEAD_LABEL = [
   { id: 'actions', label: 'Actions', align: 'left' },
 ];
 
+/** Names longer than this are truncated in the table and shown in full via a dialog. */
+export const REWARD_NAME_TRUNCATE_LENGTH = 40;
+
 export const DEFAULT_PAGE_LIMIT = 10;
 
 /**

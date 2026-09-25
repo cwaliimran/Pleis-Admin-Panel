@@ -7,7 +7,7 @@ import { getStatusVariant } from '@/utils/short-utils';
 import React from 'react';
 import { REWARD_CREATION_METHOD_LABELS, REWARD_STATUS_LABELS } from './constants';
 import { Reward } from './types';
-import { formatMetric, getBrowsingMetric, getConversion, getPointsSpent, getRedemptionRate, getRemainingClaims, getTierName } from './utils';
+import { formatMetric, getPointsSpent, getRemainingClaims, getTierName } from './utils';
 
 interface RewardDetailModalProps {
   open: boolean;
@@ -83,8 +83,8 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
 
           {reward.creationMethod === 'buyMenuItemReward' && (
             <>
-              <InfoRow label="Menu">{reward.menuName || '—'}</InfoRow>
-              <InfoRow label="Linked Item">{reward.menuItemName || '—'}</InfoRow>
+              <InfoRow label="Menu">{reward.menuName}</InfoRow>
+              <InfoRow label="Linked Item">{reward.menuItemName}</InfoRow>
             </>
           )}
 
@@ -105,27 +105,25 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
           </InfoRow>
 
           <InfoRow label="Challenge Only">{reward.challengeOnly ? 'Yes' : 'No'}</InfoRow>
-
-          <InfoRow label="Promotion Only">{reward.isPromotionOnly ? 'Yes' : 'No'}</InfoRow>
         </section>
 
         <section>
           <h4 className="mb-2 text-[11px] font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Performance</h4>
 
           <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-3')}>
-            <MetricTile label="Views" value={formatMetric(getBrowsingMetric(reward, reward.views))} />
-            <MetricTile label="Favorites" value={formatMetric(getBrowsingMetric(reward, reward.favorites))} />
-            <MetricTile label="Conversion" value={formatMetric(getConversion(reward), '%')} />
+            <MetricTile label="Views" value={formatMetric(reward.views)} />
+            <MetricTile label="Favorites" value={formatMetric(reward.favorites)} />
+            <MetricTile label="Conversion" value={formatMetric(reward.conversion, '%')} />
 
-            <MetricTile label="Total Claims" value={reward.claims.toLocaleString()} />
-            <MetricTile label="Total Redemptions" value={reward.redeemed.toLocaleString()} />
-            <MetricTile label="Redemption Rate" value={formatMetric(getRedemptionRate(reward), '%')} />
+            <MetricTile label="Total Claims" value={formatMetric(reward.claims)} />
+            <MetricTile label="Total Redemptions" value={formatMetric(reward.redeemed)} />
+            <MetricTile label="Redemption Rate" value={formatMetric(reward.redemptionRate, '%')} />
           </div>
 
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <MetricTile
               label="Remaining Claims (Total)"
-              value={remainingClaims === null ? '— (no limit)' : `${remainingClaims.toLocaleString()} / ${reward.totalLimit?.toLocaleString()}`}
+              value={remainingClaims === null ? 'No limit' : formatMetric(remainingClaims)}
             />
             <MetricTile label="Points Spent On This Reward" value={`${getPointsSpent(reward).toLocaleString()} pts`} />
           </div>

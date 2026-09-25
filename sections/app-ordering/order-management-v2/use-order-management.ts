@@ -8,26 +8,25 @@ import {
   useUpdateOrderV2Mutation,
   useUpdateOrderingStatusV2Mutation,
 } from '@/store/Reducer/order-management-v2-api';
-import { useCallback, useMemo, useState } from 'react';
-import { DEFAULT_PAGE_LIMIT, NEXT_STATUS_BY_ACTION, getRejectionReasonLabel } from './constants';
-import { mapApiOrders, mapOrderingStatus, mapPagination, mapTabCounts } from './mappers';
+import { useGetDeliveryOptionsQuery } from '@/store/Reducer/delivery-options-api';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { DEFAULT_PAGE_LIMIT, DELIVERY_OPTIONS_FETCH_LIMIT, NEXT_STATUS_BY_ACTION, getRejectionReasonLabel } from './constants';
+import { mapApiOrders, mapDeliveryOptionFilters, mapOrderingStatus, mapPagination, mapTabCounts } from './mappers';
 import {
+  DeliveryOptionFilter,
   DestructiveActionPayload,
   Order,
   OrderActionType,
   OrderFilters,
   OrderPagination,
+  OrderSocketMessage,
+  OrderSocketStatus,
   OrderTabCounts,
   OrderUpdatePayload,
   OrderingStatus,
+  UserType,
 } from './types';
-
-// ============================================================
-// The module's single data seam.
-//
-// Everything here is served by RTK Query. Components consuming this hook
-// work with the view model only and never see the wire shape.
-// ============================================================
+import { ORDER_SOCKET_LOG_PREFIX, useOrderSocket } from './use-order-socket';
 
 /**
  * Either a specific selection, or every outstanding item at once. A partial
@@ -37,6 +36,7 @@ import {
 export type DeliverItemsPayload = { all: true } | { all?: false; menuItemIds: string[]; comboIds: string[] };
 
 interface UseOrderManagementArgs {
+  userType: UserType;
   organizationId?: string;
   filters: OrderFilters;
   /** 1-based, as shown in the UI. */
@@ -46,6 +46,9 @@ interface UseOrderManagementArgs {
 
 interface UseOrderManagementReturn {
   orders: Order[];
+  /** Populates the delivery filter — the organization's own configured options. */
+  deliveryOptions: DeliveryOptionFilter[];
+  isDeliveryOptionsLoading: boolean;
   counts: OrderTabCounts;
   pagination: OrderPagination;
   orderingStatus: OrderingStatus | null;
@@ -54,40 +57,105 @@ interface UseOrderManagementReturn {
   /**
    * True only while there is nothing to show for the current filters — a
    * first load or a filter change. Drives the table's loading bar, so a
-   * background poll, a manual refresh and a single-row write all leave the
-   * rows on screen untouched.
+   * socket-driven refetch, a manual refresh and a single-row write all
+   * leave the rows on screen untouched.
    */
   isListLoading: boolean;
-  /** The manual refresh button's own spinner. A poll never sets it. */
+  /** The manual refresh button's own spinner. A socket refetch never sets it. */
   isRefreshing: boolean;
   isTogglingOrdering: boolean;
-  /** The order currently being rewritten by the update modal, if any. */
   updatingOrderId: string | null;
   pendingOrderId: string | null;
   /** Which action is running on `pendingOrderId` — lets one button spin, not all. */
   pendingAction: OrderActionType | null;
-  /** The order currently having items marked delivered, if any. */
   deliveringOrderId: string | null;
-  /**
-   * Marks specific menu items delivered, or the whole order at once.
-   * Resolves with the backend's message so the caller can surface it.
-   */
+  socketStatus: OrderSocketStatus;
+  /** Orders that arrived over the socket this session. Only marks rows as new. */
+  liveOrderIds: string[];
+  clearLiveOrders: () => void;
+  /** Resolves with the backend's message so the caller can surface it. */
   deliverItems: (order: Order, payload: DeliverItemsPayload) => Promise<string | undefined>;
-  /** Re-reads the current page without changing any filter state. */
   refetchOrders: () => void;
   toggleOrdering: (isOpen: boolean) => Promise<string | undefined>;
   runOrderAction: (order: Order, action: OrderActionType, payload?: DestructiveActionPayload) => Promise<string | undefined>;
-  /** Rewrites a still-pending order's items and pickup details. */
   updateOrderDetails: (order: Order, payload: OrderUpdatePayload) => Promise<string | undefined>;
 }
 
-/** How often the list re-reads itself while the tab is focused. */
-export const ORDERS_POLL_INTERVAL_MS = 30_000;
+/**
+ * A burst of socket events — an order placed, then immediately confirmed —
+ * collapses into a single refetch fired at the end of this window.
+ */
+export const SOCKET_REFETCH_COALESCE_MS = 400;
 
 /** `all` is a UI-only value — the param is simply left off. */
 const omitAll = <T extends string>(value: T | 'all'): T | undefined => (value === 'all' ? undefined : (value as T));
 
-export const useOrderManagement = ({ organizationId, filters, page, limit }: UseOrderManagementArgs): UseOrderManagementReturn => {
+export const useOrderManagement = ({ userType, organizationId, filters, page, limit }: UseOrderManagementArgs): UseOrderManagementReturn => {
+  // ---- Live updates ----
+  //
+  // The socket is a signal, never a source of rows. Its payload is a
+  // different serialisation of an order than the list endpoint's — see
+  // `OrderSocketMessage` — so acting on it means re-reading the list, which
+  // keeps one shape on screen and brings the tab counts and paging with it.
+  const [liveOrderIds, setLiveOrderIds] = useState<string[]>([]);
+
+  // The query is declared below, so its `refetch` is reached through a ref.
+  const refetchRef = useRef<() => void>(() => {});
+  const coalesceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // What the list held when the event arrived — how an arrival is told apart
+  // from a change to something already on screen.
+  const listedOrderIdsRef = useRef<Set<string>>(new Set());
+
+  const scheduleRefetch = useCallback(() => {
+    if (coalesceTimerRef.current) return;
+
+    coalesceTimerRef.current = setTimeout(() => {
+      coalesceTimerRef.current = null;
+      refetchRef.current();
+    }, SOCKET_REFETCH_COALESCE_MS);
+  }, []);
+
+  const handleSocketEvent = useCallback(
+    (message: OrderSocketMessage) => {
+      // The namespace is already scoped by organization; this only guards
+      // against a frame arriving as the selection is being switched.
+      if (message.organizationId && organizationId && message.organizationId !== organizationId) return;
+
+      // `NEW_ORDER` does not always mean a new order. The backend also emits
+      // it when an existing one changes hands — an `ORDER_UPDATE` for the
+      // same id lands milliseconds earlier — so taking it at face value puts
+      // a "NEW" badge, a toast and a chime on a row that has been on screen
+      // for minutes. An id the list is already showing is therefore treated
+      // as the update it is.
+      if (message.event === 'NEW_ORDER' && message.orderId) {
+        if (listedOrderIdsRef.current.has(message.orderId)) {
+          console.log(`${ORDER_SOCKET_LOG_PREFIX} NEW_ORDER for an order already listed — treating as an update`, message.orderId);
+        } else {
+          setLiveOrderIds((current) => (current.includes(message.orderId) ? current : [...current, message.orderId]));
+        }
+      }
+
+      scheduleRefetch();
+    },
+    [organizationId, scheduleRefetch]
+  );
+
+  const { status: socketStatus } = useOrderSocket({
+    userType,
+    organizationId,
+    onEvent: handleSocketEvent,
+  });
+
+  const clearLiveOrders = useCallback(() => setLiveOrderIds([]), []);
+
+  useEffect(
+    () => () => {
+      if (coalesceTimerRef.current) clearTimeout(coalesceTimerRef.current);
+    },
+    []
+  );
+
   // ---- Orders list ----
   const queryArgs: GetOrdersV2Args = useMemo(
     () => ({
@@ -97,7 +165,7 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
       limit,
       keyword: filters.search.trim() || undefined,
       orderStatus: omitAll(filters.status),
-      pickupFilter: omitAll(filters.deliveryType),
+      pickupFilter: omitAll(filters.deliveryOptionId),
       paymentMethod: omitAll(filters.paymentType),
       range: omitAll(filters.dateRange),
     }),
@@ -105,20 +173,20 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
   );
 
   // `refetchOnMountOrArgChange` because orders are live — switching tab or
-  // filter must hit the API rather than replay a cached page.
-  //
-  // The poll keeps the board current without anyone touching it. It stops
-  // while the tab is in the background, and `skip` already halts it when no
-  // organization is selected.
+  // filter must hit the API rather than replay a cached page. There is no
+  // timed poll: the list moves only on a socket event, a write, or the
+  // refresh button, which is what the "Offline" indicator is there to say.
   const { currentData, data, isLoading, isFetching, refetch } = useGetOrdersV2Query(queryArgs, {
     skip: !organizationId,
     refetchOnMountOrArgChange: true,
-    pollingInterval: ORDERS_POLL_INTERVAL_MS,
-    skipPollingIfUnfocused: true,
   });
 
-  // Only the refresh button's own spinner — a background poll must leave the
-  // screen completely still, so it never sets this.
+  useEffect(() => {
+    refetchRef.current = refetch;
+  }, [refetch]);
+
+  // Only the refresh button's own spinner — a socket-driven refetch must
+  // leave the screen still, so it never sets this.
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const refetchOrders = useCallback(async () => {
@@ -133,6 +201,12 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
   }, [organizationId, refetch]);
 
   const orders = useMemo(() => mapApiOrders(data?.data ?? []), [data]);
+
+  // Scoped to the page in view, so an order on another page or behind a
+  // filter still counts as new — better a spurious badge than a missed order.
+  useEffect(() => {
+    listedOrderIdsRef.current = new Set(orders.map((order) => order.id));
+  }, [orders]);
   const counts = useMemo(() => mapTabCounts(data?.meta), [data]);
   const pagination = useMemo(() => mapPagination(data?.meta, page, limit || DEFAULT_PAGE_LIMIT), [data, page, limit]);
 
@@ -153,17 +227,14 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
         } else {
           // Combos go over as the order-combo line ids themselves — unlike
           // `deliveredMenuItem`, which is keyed on the menu item definition.
-          //
-          // Empty strings are dropped by the slice, so a combo-only delivery
-          // sends `deliveredCombo` alone, and vice versa.
+          // Empty strings are dropped by the slice.
           args.deliveredMenuItem = payload.menuItemIds.join(',');
           args.deliveredCombo = payload.comboIds.join(',');
         }
 
         // Once nothing is left to hand over the order moves on: `completed`
-        // if it is already settled, otherwise `sent` to await payment. Combos
-        // count as outstanding until the API gives them a delivery state, so
-        // a mixed order only advances when its combos are selected too.
+        // if already settled, otherwise `delivered` (doc) so Mark Paid /
+        // Mark Unpaid can close the payment axis. Legacy rows may still be `sent`.
         const outstandingItems = order.rounds.filter((round) => !round.isDelivered).flatMap((round) => round.items.map((item) => item.menuItemId));
         const outstandingCombos = order.combos.filter((combo) => !combo.isDelivered).map((combo) => combo.id);
 
@@ -173,13 +244,13 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
             outstandingCombos.every((id) => payload.comboIds.includes(id)));
 
         if (deliversEverything) {
-          args.status = order.paymentStatus === 'paid' ? 'completed' : 'sent';
+          args.status = order.paymentStatus === 'paid' ? 'completed' : 'delivered';
         }
 
         const response = await updateOrder(args).unwrap();
 
         // Awaited inside the pending window, so the button stays busy until
-        // the fresh list has landed and the table never flashes its loader.
+        // the fresh list lands and the table never flashes its loader.
         await refetch();
 
         return response?.message;
@@ -200,12 +271,10 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
       try {
         const response = await updateOrderDetailsMutation({
           id: order.id,
-          // The endpoint keys lines on the menu item, so the draft maps
-          // straight across.
           items: payload.items.map((item) => ({ menuItem: item.menuItemId, quantity: item.quantity })),
           // Always sent, empty array included — the endpoint replaces the whole
-          // list, so omitting it is how a removed combo would come back. Note
-          // the backend wants `quantity` as a string here, unlike `items`.
+          // list, so omitting it is how a removed combo would come back. The
+          // backend wants `quantity` as a string here, unlike `items`.
           combos: payload.combos.map((combo) => ({
             combo: combo.comboId,
             items: combo.menuItemIds,
@@ -224,6 +293,17 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     [updateOrderDetailsMutation, refetch]
   );
 
+  // ---- Delivery options (filter dropdown) ----
+  //
+  // Fetched in one page rather than paged: it is a dropdown, and an
+  // organization has a handful of options, not hundreds.
+  const { data: deliveryOptionsData, isFetching: isDeliveryOptionsLoading } = useGetDeliveryOptionsQuery(
+    { organizationId: organizationId as string, limit: DELIVERY_OPTIONS_FETCH_LIMIT },
+    { skip: !organizationId }
+  );
+
+  const deliveryOptions = useMemo(() => mapDeliveryOptionFilters(deliveryOptionsData), [deliveryOptionsData]);
+
   // ---- Ordering switch (per organization) ----
   const { data: orderingStatusData } = useGetOrderingStatusV2Query({ organization: organizationId }, { skip: !organizationId });
 
@@ -235,8 +315,7 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     async (isOpen: boolean) => {
       if (!organizationId) throw new Error('No organization selected');
 
-      // Unwrapped so a failed request rejects and the view can toast it;
-      // the mutation invalidates the status tag, which refetches the switch.
+      // Unwrapped so a failed request rejects and the view can toast it.
       const response = await updateOrderingStatus({ organization: organizationId, isOrderingEnabled: isOpen }).unwrap();
 
       return response?.message;
@@ -252,15 +331,20 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     async (order, action, payload) => {
       const nextStatus = NEXT_STATUS_BY_ACTION[action];
 
-      if (action !== 'markAsPaid' && !nextStatus) {
+      if (action !== 'markAsPaid' && action !== 'markAsUnpaid' && !nextStatus) {
         throw new Error('This action is not connected yet.');
       }
 
       setPendingOrderId(order.id);
       setPendingAction(action);
       try {
-        // `markAsPaid` settles payment; everything else writes the status.
-        const args: UpdateOrderV2Args = action === 'markAsPaid' ? { id: order.id, paymentStatus: 'paid' } : { id: order.id, status: nextStatus };
+        // Payment-axis actions write paymentStatus; fulfilment actions write status.
+        const args: UpdateOrderV2Args =
+          action === 'markAsPaid'
+            ? { id: order.id, paymentStatus: 'paid' }
+            : action === 'markAsUnpaid'
+              ? { id: order.id, paymentStatus: 'unpaidClosed' }
+              : { id: order.id, status: nextStatus };
 
         // A `sent` order has nothing left to hand over, so settling the
         // payment is the last step — it completes the order outright.
@@ -296,6 +380,8 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
 
   return {
     orders,
+    deliveryOptions,
+    isDeliveryOptionsLoading,
     counts,
     pagination,
     orderingStatus,
@@ -310,6 +396,9 @@ export const useOrderManagement = ({ organizationId, filters, page, limit }: Use
     pendingOrderId,
     pendingAction,
     deliveringOrderId,
+    socketStatus,
+    liveOrderIds,
+    clearLiveOrders,
     deliverItems,
     refetchOrders,
     toggleOrdering,

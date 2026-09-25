@@ -54,6 +54,7 @@ const defaultValues = {
   oib: '',
   bankAccountNumber: '',
   representativeName: '',
+  billkoApiKey: '',
   location: {
     fullAddress: '',
     country: '',
@@ -167,6 +168,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, selectedId
         oib: userData?.basicInfo?.companyDetails?.oib || '',
         bankAccountNumber: userData?.basicInfo?.companyDetails?.bankAccountNumber || '',
         representativeName: userData?.basicInfo?.companyDetails?.representativeName || '',
+        billkoApiKey: userData?.basicInfo?.companyDetails?.billkoApiKey || '',
         location: {
           fullAddress: userData?.basicInfo?.companyDetails?.location?.fullAddress || '',
           country: userData?.basicInfo?.companyDetails?.location?.country || '',
@@ -304,6 +306,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ open, onClose, selectedId
               oib: data.oib,
               bankAccountNumber: data.bankAccountNumber,
               representativeName: data.representativeName,
+              billkoApiKey: data.billkoApiKey || '',
               location: {
                 fullAddress: data.location.fullAddress || '',
                 country: data.location.country || '',

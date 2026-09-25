@@ -41,6 +41,9 @@ export interface ApiRewardMenuItem {
   menu?: ApiRewardMenu | null;
 }
 
+/** A count or rate. Rewards with no activity often come back as `""` or `[]` instead of `0`. */
+export type ApiMetric = number | string | unknown[] | null;
+
 export interface ApiReward {
   _id: string;
   title: string;
@@ -63,7 +66,6 @@ export interface ApiReward {
   /** Absent on older records; treated as browsable when missing. */
   availableAsReward?: boolean;
   challengeOnly?: boolean;
-  isPromotionOnly?: boolean;
 
   menuItem?: ApiRewardMenuItem | null;
 
@@ -77,14 +79,15 @@ export interface ApiReward {
   updatedAt?: string;
 
   // ---- Server-computed metrics ----
-  views?: number;
-  favoritesCount?: number;
-  claimed?: number;
-  redeemed?: number;
+  // A number, `0`, `""`, or an empty array. Empty values are shown as 0.
+  views?: ApiMetric;
+  favoritesCount?: ApiMetric;
+  claimed?: ApiMetric;
+  redeemed?: ApiMetric;
   /** Whole percent. */
-  conversion?: number;
+  conversion?: ApiMetric;
   /** Whole percent. */
-  redemptionRate?: number;
+  redemptionRate?: ApiMetric;
 }
 
 export interface ApiRewardStats {
@@ -127,10 +130,8 @@ export interface GetRewardsV2Response {
 // ============================================================
 // Write shape
 //
-// Two quirks the backend expects and that are deliberate here:
-//  - `availableAsReward` and `challengeOnly` go over as the strings "true" /
-//    "false", even though the read side returns real booleans.
-//  - `isPromotionOnly` is a real boolean.
+// The backend expects `availableAsReward` and `challengeOnly` as the strings
+// "true" / "false", even though the read side returns real booleans.
 // ============================================================
 
 export type ApiBooleanString = 'true' | 'false';
@@ -150,7 +151,6 @@ export interface RewardWriteBody {
   percentOff?: number;
   tierLimit: string;
   status: ApiRewardStatus;
-  isPromotionOnly: boolean;
   availableAsReward: ApiBooleanString;
   challengeOnly: ApiBooleanString;
 
@@ -159,6 +159,8 @@ export interface RewardWriteBody {
   /** `ticketReward` only. */
   event?: string;
   ticket?: string;
+  /** Nested slot `_id` when the ticket has `timingSlots.enabled`. */
+  timeSlot?: string;
 }
 
 export interface CreateRewardArgs extends RewardWriteBody {

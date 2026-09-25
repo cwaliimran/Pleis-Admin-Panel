@@ -25,14 +25,11 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
     methods,
     watch,
     setValue,
-    organizations,
-    orgLoading,
-    venues,
-    venuesLoading,
-    categoriesData,
-    categoriesLoading,
-    tagsd,
-    tagsLoading,
+    selectedOrgLabel,
+    selectedPartnerOrgLabel,
+    selectedVenueLabel,
+    selectedCategories,
+    selectedTags,
     isAddingEvent,
     isUpdatingEvent,
     toggleRecurringDay,
@@ -69,14 +66,11 @@ const CreateEventView = ({ title = 'Create', userType }: CreateEventViewProps) =
                     methods={methods}
                     watch={watch}
                     setValue={setValue}
-                    organizations={organizations}
-                    orgLoading={orgLoading}
-                    venues={venues}
-                    venuesLoading={venuesLoading}
-                    categoriesData={categoriesData}
-                    categoriesLoading={categoriesLoading}
-                    tagsd={tagsd}
-                    tagsLoading={tagsLoading}
+                    selectedOrgLabel={selectedOrgLabel}
+                    selectedPartnerOrgLabel={selectedPartnerOrgLabel}
+                    selectedVenueLabel={selectedVenueLabel}
+                    selectedCategories={selectedCategories}
+                    selectedTags={selectedTags}
                     file={file}
                     setFile={setFile}
                     showPartnerOrganizer={showPartnerOrganizer}

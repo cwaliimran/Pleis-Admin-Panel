@@ -204,6 +204,9 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
   const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
   const [copyFromDate, setCopyFromDate] = React.useState<string | null>(null);
   const [isCopyModalOpen, setIsCopyModalOpen] = React.useState(false);
+  const pendingDateChipsRef = React.useRef<HTMLDivElement>(null);
+  // Set before Cancel or Escape so closing the picker discards the selection instead of saving it.
+  const discardPendingDatesRef = React.useRef(false);
 
   // React.useEffect(() => {
   //   if (open) {
@@ -327,6 +330,30 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
     }
 
     setSelectedDates([]);
+    setIsDatePickerOpen(false);
+  };
+
+  // Clicking outside, or toggling Select Dates closed, should save the dates the user already picked.
+  // Cancel and Escape set discardPendingDatesRef so they still throw the selection away.
+  const handleDatePickerOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      discardPendingDatesRef.current = false;
+      setIsDatePickerOpen(true);
+      return;
+    }
+
+    if (discardPendingDatesRef.current) {
+      discardPendingDatesRef.current = false;
+      setSelectedDates([]);
+      setIsDatePickerOpen(false);
+      return;
+    }
+
+    if (selectedDates.length > 0) {
+      addDates();
+      return;
+    }
+
     setIsDatePickerOpen(false);
   };
 
@@ -748,7 +775,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
             <div>
               <label className="mb-2 block text-sm font-medium">Add Dates</label>
               <div className="flex flex-wrap items-start gap-3">
-                <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                <Popover open={isDatePickerOpen} onOpenChange={handleDatePickerOpenChange}>
                   <PopoverTrigger asChild>
                     <Button
                       type="button"
@@ -762,7 +789,19 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent
+                    className="w-auto p-0"
+                    align="start"
+                    onEscapeKeyDown={() => {
+                      discardPendingDatesRef.current = true;
+                    }}
+                    onInteractOutside={(event) => {
+                      const target = event.target as Node | null;
+                      if (target && pendingDateChipsRef.current?.contains(target)) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
                     <div className="p-3">
                       <CalendarComponent
                         mode="multiple"
@@ -787,6 +826,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
                           variant="outline"
                           size="sm"
                           onClick={() => {
+                            discardPendingDatesRef.current = true;
                             setSelectedDates([]);
                             setIsDatePickerOpen(false);
                           }}
@@ -810,7 +850,7 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
 
                 {/* Selected dates preview */}
                 {selectedDates.length > 0 && (
-                  <div className="flex flex-1 flex-wrap gap-2">
+                  <div ref={pendingDateChipsRef} className="flex flex-1 flex-wrap gap-2">
                     {selectedDates
                       .sort((a, b) => a.getTime() - b.getTime())
                       .map((date) => (

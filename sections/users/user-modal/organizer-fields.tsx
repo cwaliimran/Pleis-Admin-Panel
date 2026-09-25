@@ -48,6 +48,14 @@ const OrganizerFields: React.FC<OrganizerFieldsProps> = ({
 
       <div className="md:col-span-2">
         <RHFTextField
+          name="billkoApiKey"
+          label="Billko API Key"
+          placeholder="Enter Billko API key"
+        />
+      </div>
+
+      <div className="md:col-span-2">
+        <RHFTextField
           name="location.fullAddress"
           label="Full Address"
           placeholder="Enter full address"

@@ -4,6 +4,13 @@ import * as Yup from 'yup';
 
 type RoleKey = 'admin' | 'organizer' | 'manager' | 'staff' | 'guest' | 'user';
 
+/**
+ * Person-name pattern. Must start with a letter, then allows any Unicode letter
+ * (`\p{L}`), combining mark (`\p{M}`, for decomposed input like `c` + ́ ), space,
+ * hyphen, apostrophe (straight or curly) and period.
+ */
+const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s'’.-]*$/u;
+
 export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false) => {
   const common = {
     image: Yup.mixed().nullable(),
@@ -48,7 +55,9 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
           }),
         representativeName: Yup.string()
           .required('Representative Name is required')
-          .matches(/^[A-Za-z\s]+$/, 'Representative Name must only contain letters and spaces')
+          // Accepts any Unicode letter so Croatian diacritics (č, ć, ž, š, đ) and other
+          // non-ASCII names pass, plus the hyphens/apostrophes/periods real names carry.
+          .matches(NAME_PATTERN, 'Representative Name must only contain letters, spaces, hyphens, apostrophes and periods')
           .max(100, 'Representative Name must be at most 100 characters'),
         location: Yup.object()
           .shape({
@@ -65,6 +74,7 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
           // .min(1, 'At least one supplier is required')
           // .required(),
           .optional(),
+        billkoApiKey: Yup.string().optional(),
       };
       break;
     case 'manager':
