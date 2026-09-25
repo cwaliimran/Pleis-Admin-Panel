@@ -6,6 +6,7 @@ import { useGetRewardTypesQuery, useGetRewardsV2Query } from '@/store/Reducer/re
 import { useMemo } from 'react';
 import { REWARD_TYPE_OPTIONS_LIMIT } from './constants';
 import { Reward, RewardStats, RewardsMeta, RewardsQuery } from './types';
+import { toMetric } from './utils';
 
 const EMPTY_STATS: RewardStats = {
   totalViews: 0,
@@ -27,7 +28,6 @@ const toReward = (item: ApiReward): Reward => ({
   // normal browsable one, so metrics stay meaningful.
   availableAsReward: item.availableAsReward ?? true,
   challengeOnly: item.challengeOnly ?? false,
-  isPromotionOnly: item.isPromotionOnly ?? false,
 
   menuId: item.menuItem?.menu?._id,
   menuName: item.menuItem?.menu?.title,
@@ -48,12 +48,12 @@ const toReward = (item: ApiReward): Reward => ({
   endDate: item.endDate ?? '',
   description: item.description ?? '',
 
-  views: item.views ?? 0,
-  favorites: item.favoritesCount ?? 0,
-  claims: item.claimed ?? 0,
-  redeemed: item.redeemed ?? 0,
-  conversion: item.conversion ?? 0,
-  redemptionRate: item.redemptionRate ?? 0,
+  views: toMetric(item.views),
+  favorites: toMetric(item.favoritesCount),
+  claims: toMetric(item.claimed),
+  redeemed: toMetric(item.redeemed),
+  conversion: toMetric(item.conversion),
+  redemptionRate: toMetric(item.redemptionRate),
 });
 
 const toStats = (stats?: ApiRewardStats | null): RewardStats => {

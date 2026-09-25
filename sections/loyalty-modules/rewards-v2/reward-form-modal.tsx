@@ -59,7 +59,6 @@ interface RewardFormValues {
   isActive: boolean;
   availableAsReward: boolean;
   challengeOnly: boolean;
-  isPromotionOnly: boolean;
   description: string;
 }
 
@@ -118,7 +117,6 @@ const schema = yup.object({
   isActive: yup.boolean(),
   availableAsReward: yup.boolean(),
   challengeOnly: yup.boolean(),
-  isPromotionOnly: yup.boolean(),
   description: yup.string(),
 });
 
@@ -141,7 +139,6 @@ const defaultValues: RewardFormValues = {
   isActive: true,
   availableAsReward: true,
   challengeOnly: false,
-  isPromotionOnly: false,
   description: '',
 };
 
@@ -322,7 +319,6 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
       isActive: reward.status === 'active',
       availableAsReward: reward.availableAsReward,
       challengeOnly: reward.challengeOnly,
-      isPromotionOnly: reward.isPromotionOnly,
       description: reward.description,
     });
   }, [open, reward, reset]);
@@ -410,7 +406,6 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
         percentOff: values.percentOff === '' ? 0 : Number(values.percentOff),
         tierLimit: values.tierLimit,
         status: values.isActive ? 'active' : 'inactive',
-        isPromotionOnly: values.isPromotionOnly,
         availableAsReward: asBooleanString(values.availableAsReward),
         challengeOnly: asBooleanString(values.challengeOnly),
       };
@@ -646,12 +641,6 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
                 name="challengeOnly"
                 title="Challenge Only"
                 description="Reward can only be obtained by completing a challenge, not by spending points directly."
-              />
-
-              <RHFToggleField
-                name="isPromotionOnly"
-                title="Promotion Only"
-                description="Reward is surfaced through promotions rather than the general rewards list."
               />
             </div>
 
