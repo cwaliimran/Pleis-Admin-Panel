@@ -45,7 +45,7 @@ export const systemLogsApi = createApi({
   tagTypes: ['systemLogs'],
 
   endpoints: (builder) => ({
-    getSystemLogFiles: builder.query({
+    getSystemLogFiles: builder.query<{ files: SystemLogFile[]; retentionDays: number }, void>({
       query: () => ({
         url: API_ROUTES.ADMIN_SYSTEM_LOGS_FILES,
         method: 'GET',
