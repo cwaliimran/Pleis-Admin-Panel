@@ -210,6 +210,9 @@ export const API_ROUTES = {
   ADMIN_FAQS: `/admin/faqs`,
   ADMIN_FAQS_BY_ID: (id: string) => `/admin/faqs/${id}`,
 
+  ADMIN_SYSTEM_LOGS: `/admin/system-logs`,
+  ADMIN_SYSTEM_LOGS_FILES: `/admin/system-logs/files`,
+
   ADMIN_HELP_SUPPORT: `/admin/support`,
   ADMIN_HELP_SUPPORT_BY_ID: (id: string) => `/admin/support/${id}`,
 

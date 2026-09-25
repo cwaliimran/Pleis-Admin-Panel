@@ -201,30 +201,53 @@ const MenuList: FC<PageProps> = ({ menuGroups }) => {
               }}
               className="fixed left-[70px] z-50 ml-2 max-h-60 space-y-1 overflow-y-auto rounded-md border border-gray-200 bg-white p-2 shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
             >
-              {group.items.map((item: any, index: number) =>
-                item.url ? (
-                  <Link
-                    key={index}
-                    href={item.url}
-                    prefetch={false}
-                    onClick={handleLinkClick}
-                    className={cn(
-                      'hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition',
-                      pathname === item.url ? 'bg-muted font-medium' : ''
-                    )}
-                  >
-                    {item.title}
-                  </Link>
-                ) : (
-                  <button
-                    key={index}
-                    type="button"
-                    className="hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition"
-                  >
-                    {item.title}
-                  </button>
-                )
-              )}
+              {group.items.flatMap((item: any, index: number) => {
+                if (item.url) {
+                  return [
+                    <Link
+                      key={index}
+                      href={item.url}
+                      prefetch={false}
+                      onClick={handleLinkClick}
+                      className={cn(
+                        'hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition',
+                        pathname === item.url ? 'bg-muted font-medium' : ''
+                      )}
+                    >
+                      {item.title}
+                    </Link>,
+                  ];
+                }
+
+                if (item.items?.length) {
+                  return [
+                    <div
+                      key={`cat-${index}`}
+                      className="text-muted-foreground px-3 pt-2 pb-1 text-[11px] font-semibold tracking-wide uppercase"
+                    >
+                      {item.title}
+                    </div>,
+                    ...item.items
+                      .filter((child: any) => child.url)
+                      .map((child: any, childIdx: number) => (
+                        <Link
+                          key={`${index}-${childIdx}`}
+                          href={child.url}
+                          prefetch={false}
+                          onClick={handleLinkClick}
+                          className={cn(
+                            'hover:bg-muted block w-full cursor-pointer rounded-lg px-3 py-2 text-start text-sm transition',
+                            pathname === child.url ? 'bg-muted font-medium' : ''
+                          )}
+                        >
+                          {child.title}
+                        </Link>
+                      )),
+                  ];
+                }
+
+                return [];
+              })}
             </m.div>
           )}
         </SidebarGroup>

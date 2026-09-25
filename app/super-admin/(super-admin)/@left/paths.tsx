@@ -163,6 +163,12 @@ export const paths = {
     reviews: '/super-admin/reviews',
 
     faqs: '/super-admin/faqs',
+    systemLogs: {
+      default: '/super-admin/system-logs',
+      access: '/super-admin/system-logs/access',
+      app: '/super-admin/system-logs/app',
+      errors: '/super-admin/system-logs/errors',
+    },
     streak: '/super-admin/streaks',
     helpSupport: '/super-admin/help-support',
     updates: '/super-admin/updates',

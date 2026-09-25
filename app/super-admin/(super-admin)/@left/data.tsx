@@ -22,6 +22,11 @@ import {
   ListFilter,
   BadgeInfo,
   ClipboardList,
+  ScrollText,
+  Terminal,
+  Activity,
+  AlertTriangle,
+  Globe,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -639,6 +644,45 @@ export const menuGroups: MenuGroup[] = [
     label: 'FAQs',
     key: paths.superAdmin.faqs,
     icon: ListFilter,
+  },
+  {
+    label: 'System Logs',
+    key: paths.superAdmin.systemLogs.default,
+    icon: ScrollText,
+    items: [
+      {
+        title: 'Live Stream',
+        url: paths.superAdmin.systemLogs.default,
+        icon: Activity,
+      },
+      {
+        title: 'Access',
+        icon: Globe,
+        items: [
+          {
+            title: 'HTTP Requests',
+            url: paths.superAdmin.systemLogs.access,
+            icon: Globe,
+          },
+        ],
+      },
+      {
+        title: 'Application',
+        icon: Terminal,
+        items: [
+          {
+            title: 'Server Info',
+            url: paths.superAdmin.systemLogs.app,
+            icon: Terminal,
+          },
+          {
+            title: 'Errors & Warnings',
+            url: paths.superAdmin.systemLogs.errors,
+            icon: AlertTriangle,
+          },
+        ],
+      },
+    ],
   },
   // {
   //   label: 'Giveaways',

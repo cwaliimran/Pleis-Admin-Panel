@@ -4,7 +4,7 @@ import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FC, memo, MouseEvent, useCallback, useMemo, useState } from 'react';
+import { FC, memo, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 function isModifiedNavigationClick(event: MouseEvent<HTMLAnchorElement>) {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
@@ -45,6 +45,32 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
 
     return best as string | null;
   }, [items, pathname]);
+
+  const itemContainsActive = useCallback(
+    (item: MenuItem): boolean => {
+      if (item.url && item.url === activeUrl) return true;
+      return !!item.items?.some((child) => itemContainsActive(child));
+    },
+    [activeUrl]
+  );
+
+  // Keep category open when a child route is active
+  useEffect(() => {
+    const next: Record<string, boolean> = {};
+    const walk = (list: MenuItem[], keyPrefix?: string) => {
+      list.forEach((item, idx) => {
+        const itemKey = `${keyPrefix}-${item.title}-${idx}`;
+        if (item.items?.length && itemContainsActive(item)) {
+          next[itemKey] = true;
+        }
+        if (item.items?.length) walk(item.items, itemKey);
+      });
+    };
+    walk(items, parentKey);
+    if (Object.keys(next).length) {
+      setOpenSubMenus((prev) => ({ ...prev, ...next }));
+    }
+  }, [items, parentKey, itemContainsActive]);
 
   const toggleSubMenu = useCallback((itemKey: string) => {
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
@@ -129,12 +155,10 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
               </AnimatePresence>
             )} */}
 
-            {/* 📦 Inline children if expanded */}
+            {/* Inline children if expanded */}
             {hasChildren && !isCollapsed && openSubMenus[itemKey] && (
-              <div className="ml-5 border-l pl-3">
-                <SidebarMenuButton>
-                  <MenuItem items={item.items!} parentKey={itemKey} isCollapsed={false} />
-                </SidebarMenuButton>
+              <div className="ml-5 border-l border-border/60 pl-2">
+                <MenuItem items={item.items!} parentKey={itemKey} isCollapsed={false} />
               </div>
             )}
           </div>
