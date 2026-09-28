@@ -25,7 +25,7 @@ import {
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfDay } from 'date-fns';
 import { CalendarIcon, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Resolver } from 'react-hook-form';
@@ -50,6 +50,10 @@ import type { ReservationTimeRules } from '../use-reservation-time-rules';
 import { useReservationTimeRules } from '../use-reservation-time-rules';
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+const DATE_ISO = 'yyyy-MM-dd';
+
+const todayIso = () => format(startOfDay(new Date()), DATE_ISO);
 
 const DEFAULT_PHONE_CODE = '+385';
 
@@ -145,7 +149,10 @@ const makeSchema = (getLimits: () => FormLimits, getRules: () => ReservationTime
         });
       }),
 
-    date: Yup.string().required('Date is required').default(''),
+    date: Yup.string()
+      .required('Date is required')
+      .test('not-past', 'Date cannot be in the past', (value) => !value || value >= todayIso())
+      .default(''),
 
     startTime: Yup.string()
       .default('')
@@ -182,7 +189,7 @@ const makeSchema = (getLimits: () => FormLimits, getRules: () => ReservationTime
       .test('occasion-required', 'This reservation type requires an occasion', (value) => !getLimits().occasionRequired || Boolean(value)),
 
     notes: Yup.string().default(''),
-    status: Yup.mixed<ApiUserReservationStatus>().oneOf(USER_RESERVATION_STATUSES).required(),
+    status: Yup.mixed<ApiUserReservationStatus>().oneOf([...USER_RESERVATION_STATUSES, 'new']).required(),
   });
 
 const ProfileField: React.FC<{ label: string; value: string }> = ({ label, value }) => (
@@ -316,7 +323,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
       reservationType: '',
       partySize: EMPTY_NUMBER,
       numberOfTables: EMPTY_NUMBER,
-      date: seed.date,
+      date: seed.date >= todayIso() ? seed.date : todayIso(),
       startTime: seed.time,
       endTime: deriveEndTime(seed.time),
       amount: EMPTY_NUMBER,
@@ -738,9 +745,10 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                             mode="single"
                             weekStartsOn={1}
                             selected={field.value ? parseISO(field.value) : undefined}
+                            disabled={{ before: startOfDay(new Date()) }}
                             onSelect={(date) => {
-                              if (!date) return;
-                              field.onChange(format(date, 'yyyy-MM-dd'));
+                              if (!date || date < startOfDay(new Date())) return;
+                              field.onChange(format(date, DATE_ISO));
                               setDatePickerOpen(false);
                             }}
                           />

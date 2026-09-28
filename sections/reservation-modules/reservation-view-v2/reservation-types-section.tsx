@@ -9,11 +9,12 @@ interface ReservationTypesSectionProps {
   types: TypeOccupancy[];
   selectedTypeId: string | null;
   onSelectType: (typeId: string | null) => void;
+  disabled?: boolean;
 }
 
-export const ReservationTypesSection: React.FC<ReservationTypesSectionProps> = ({ types, selectedTypeId, onSelectType }) => {
+export const ReservationTypesSection: React.FC<ReservationTypesSectionProps> = ({ types, selectedTypeId, onSelectType, disabled = false }) => {
   return (
-    <SectionCard title="Reservation types" caption="Occupancy for selected day / slot">
+    <SectionCard title="Reservation types" caption="Occupancy for selected day / slot" disabled={disabled}>
       <div className="flex flex-wrap gap-3">
         {types.map((type) => {
           const isSelected = selectedTypeId === type.typeId;
