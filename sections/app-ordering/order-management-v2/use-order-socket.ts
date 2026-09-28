@@ -70,7 +70,7 @@ export const useOrderSocket = ({ userType, organizationId, onEvent }: UseOrderSo
     // than one that has not been asked to start yet.
     if (!SocketUrl || !userId || !organizationId) {
       const missing = [
-        !SocketUrl && 'socket URL (NEXT_PUBLIC_SOCKET_URL, or NEXT_PUBLIC_LIVE_URL to derive it from)',
+        !SocketUrl && 'socket URL (NEXT_PUBLIC_SOCKET_URL, or NEXT_PUBLIC_API_URL to derive it from)',
         !userId && 'signed-in user id (userSlice.user.basicInfo._id)',
         !organizationId && 'selected organization',
       ].filter(Boolean);
