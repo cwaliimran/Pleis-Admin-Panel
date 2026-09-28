@@ -24,8 +24,11 @@ export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, di
       <TableCell>
         <div className="font-bold text-gray-900 dark:text-gray-100">{item.guestName}</div>
         <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-          {item.pleisId || item.sourceLabel || '—'} · {item?.time} - {item?.endTime}
+          {item?.time && item?.endTime
+            ? `${item.pleisId || item.sourceLabel || '—'} · ${item.time} - ${item.endTime}`
+            : item.pleisId || item.sourceLabel || '—'}
         </div>
+   
       </TableCell>
 
       <TableCell className="text-gray-700 dark:text-gray-300">{item.venueName}</TableCell>

@@ -83,7 +83,8 @@ export const toReservationPreferencesBody = (preferences: ReservationPreferences
   automaticResponse: {
     autoAccept: preferences.automaticResponse.autoConfirmWhenCapacity,
     autoReject: preferences.automaticResponse.autoRejectWhenNoCapacity,
-    maxGuestPerReservationForAutoAccept: Number(preferences.automaticResponse.maxGuestsForAutoConfirm),
+    maxGuestPerReservationForAutoAccept:
+      preferences.automaticResponse.maxGuestsForAutoConfirm === '' ? 0 : preferences.automaticResponse.maxGuestsForAutoConfirm,
   },
   cancellationPolicy: {
     // The single dropdown carries both fields: 0 means the policy is off.
