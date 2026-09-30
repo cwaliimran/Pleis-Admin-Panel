@@ -84,7 +84,7 @@ const SubcategoryModal = ({ open, onClose, isEdit = false, selectedData }: Subca
       <DialogOverlay className="bg-opacity-30 fixed inset-0">
         <DialogContent
           aria-describedby={undefined}
-          className="dark:bg-secondary mx-auto flex max-h-[90vh] min-h-[30vh] w-full flex-col items-center overflow-y-auto md:max-w-[550px]!"
+          className="dark:bg-secondary mx-auto flex h-auto max-h-[calc(100dvh-2rem)] w-full flex-col overflow-y-auto sm:max-h-[85vh] md:max-w-[550px]!"
         >
           <DialogHeader>
             <DialogTitle>{isEdit ? 'Edit Subcategory' : 'Create Subcategory'}</DialogTitle>

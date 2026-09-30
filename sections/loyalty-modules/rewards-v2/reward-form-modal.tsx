@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFAsyncCombobox, RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import RHFToggleField from '@/components/rhf/rhf-toggle-field';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
@@ -13,7 +13,7 @@ import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
 import { useGetEventsByCompanyOrganizerQuery } from '@/store/Reducer/events';
-import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
+import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import type { ApiBooleanString, RewardWriteBody } from '@/store/Reducer/rewards-v2-api';
 import { useCreateRewardV2Mutation, useUpdateRewardV2Mutation } from '@/store/Reducer/rewards-v2-api';
@@ -29,6 +29,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import { formatMenuItemOptionLabel } from '../challenges-v2/utils';
 import { LoyaltyUserType } from '../types';
 import {
   OPTIONS_PAGE_LIMIT,
@@ -44,7 +45,7 @@ interface RewardFormValues {
   image: unknown;
   creationMethod: RewardCreationMethod;
   menuId: string;
-  menuItemId: string;
+  menuItemIds: string[];
   eventId: string;
   ticketId: string;
   timeSlotId: string;
@@ -77,11 +78,14 @@ const schema = yup.object({
     then: (current) => current.required('Menu is required'),
     otherwise: (current) => current,
   }),
-  menuItemId: yup.string().when('creationMethod', {
-    is: 'buyMenuItemReward',
-    then: (current) => current.required('Menu item is required'),
-    otherwise: (current) => current,
-  }),
+  menuItemIds: yup
+    .array()
+    .of(yup.string().required())
+    .when('creationMethod', {
+      is: 'buyMenuItemReward',
+      then: (current) => current.min(1, 'Add at least one menu item'),
+      otherwise: (current) => current,
+    }),
 
   eventId: yup.string().when('creationMethod', {
     is: 'ticketReward',
@@ -124,7 +128,7 @@ const defaultValues: RewardFormValues = {
   image: null,
   creationMethod: 'customReward',
   menuId: '',
-  menuItemId: '',
+  menuItemIds: [],
   eventId: '',
   ticketId: '',
   timeSlotId: '',
@@ -166,6 +170,9 @@ interface EventTicket {
 }
 
 const asBooleanString = (value: boolean): ApiBooleanString => (value ? 'true' : 'false');
+
+const toInitialSelected = (items: { id: string; name: string }[]) =>
+  items.length > 0 ? items.map((item) => ({ value: item.id, label: item.name })) : undefined;
 
 const toDateOnly = (value: Date | string): string => {
   if (value instanceof Date) {
@@ -220,16 +227,6 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
     { skip: !open }
   );
 
-  const { data: menuData, isLoading: menuLoading } = useGetMenuListQuery(
-    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: scopedCompanyId },
-    { skip: !open || creationMethod !== 'buyMenuItemReward' }
-  );
-
-  const { data: menuItemsData, isLoading: menuItemsLoading } = useGetMenuItemByMenuIdQuery(
-    { menuId: selectedMenuId },
-    { skip: !selectedMenuId || creationMethod !== 'buyMenuItemReward' }
-  );
-
   const { data: eventData, isLoading: eventsLoading } = useGetEventsByCompanyOrganizerQuery(
     { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, companyOrganizer: scopedCompanyId },
     { skip: !open || creationMethod !== 'ticketReward' }
@@ -245,14 +242,11 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
     [tiersData]
   );
 
-  const menuOptions = useMemo(
-    () => (menuData?.data ?? []).map((menu: { _id: string; title: string }) => ({ value: menu._id, label: menu.title })),
-    [menuData]
-  );
+  const companyArgs = useMemo(() => ({ companyOrganizer: scopedCompanyId }), [scopedCompanyId]);
 
-  const menuItemOptions = useMemo(
-    () => (menuItemsData?.data ?? []).map((item: { _id: string; title: string }) => ({ value: item._id, label: item.title })),
-    [menuItemsData]
+  const menuItemArgs = useMemo(
+    () => ({ companyOrganizer: scopedCompanyId, menu: selectedMenuId || undefined }),
+    [scopedCompanyId, selectedMenuId]
   );
 
   const eventOptions = useMemo(
@@ -304,7 +298,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
       image: reward.image || null,
       creationMethod: reward.creationMethod,
       menuId: reward.menuId || '',
-      menuItemId: reward.menuItemId || '',
+      menuItemIds: reward.menuItems.map((item) => item.id),
       eventId: reward.eventId || '',
       ticketId: reward.ticketId || '',
       timeSlotId: reward.timeSlotId || '',
@@ -327,7 +321,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
   useEffect(() => {
     if (creationMethod !== 'buyMenuItemReward') {
       setValue('menuId', '');
-      setValue('menuItemId', '');
+      setValue('menuItemIds', []);
     }
     if (creationMethod !== 'ticketReward') {
       setValue('eventId', '');
@@ -414,7 +408,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
       if (values.maxClaimsPerUser !== '') body.maxLimitPerUser = Number(values.maxClaimsPerUser);
 
       if (values.creationMethod === 'buyMenuItemReward') {
-        body.menuItem = values.menuItemId;
+        body.menuItem = values.menuItemIds;
       }
 
       if (values.creationMethod === 'ticketReward') {
@@ -456,7 +450,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-160!">
+      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-180!">
         <DialogHeader>
           <DialogTitle className="text-center text-lg font-semibold">{isEdit ? 'Edit Reward' : 'Create Reward'}</DialogTitle>
         </DialogHeader>
@@ -487,23 +481,38 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({ open, reward, 
             </div>
 
             {creationMethod === 'buyMenuItemReward' && (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <RHFCustomDropdown
+              <div className="flex w-full flex-col gap-4">
+                <RHFAsyncCombobox
                   name="menuId"
                   label="Select Menu"
                   placeholder="Select menu"
-                  options={menuOptions}
-                  isLoading={menuLoading}
-                  showNone={false}
+                  searchPlaceholder="Search menus..."
+                  className="w-full"
+                  selectedLabel={reward?.menuName || undefined}
+                  useOptionsQuery={useGetMenuListQuery}
+                  queryArgs={companyArgs}
+                  skip={companySkip}
+                  getOptionValue={(menu) => menu._id}
+                  getOptionLabel={(menu) => menu.title}
+                  onValueChange={(value) => {
+                    if (value !== selectedMenuId) setValue('menuItemIds', []);
+                  }}
                 />
-                <RHFCustomDropdown
-                  name="menuItemId"
-                  label="Select Menu Item"
-                  placeholder="Select menu item"
-                  options={menuItemOptions}
-                  isLoading={menuItemsLoading}
-                  showNone={false}
+
+                <RHFAsyncCombobox
+                  name="menuItemIds"
+                  label="Add Menu Items"
+                  placeholder={selectedMenuId ? 'Choose items to add...' : 'Select a menu first'}
+                  searchPlaceholder="Search menu items..."
+                  className="w-full"
+                  multiple
                   disabled={!selectedMenuId}
+                  initialSelected={toInitialSelected(reward?.menuItems ?? [])}
+                  useOptionsQuery={useGetMenuItemsQuery}
+                  queryArgs={menuItemArgs}
+                  skip={companySkip || !selectedMenuId}
+                  getOptionValue={(item) => item._id}
+                  getOptionLabel={formatMenuItemOptionLabel}
                 />
               </div>
             )}

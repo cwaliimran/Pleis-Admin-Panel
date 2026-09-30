@@ -45,11 +45,10 @@ export interface Reward {
   challengeOnly: boolean;
 
   // ---- `buyMenuItemReward` only ----
-  /** The API links exactly one menu item, and nests its menu inside it. */
+  /** Shared parent menu, when every linked item sits in one. `''` when they do not. */
   menuId?: string;
   menuName?: string;
-  menuItemId?: string;
-  menuItemName?: string;
+  menuItems: { id: string; name: string; presetTypeName: string; amountQuantity: string }[];
 
   // ---- `ticketReward` only ----
   /** Ids only — the API does not populate these. */

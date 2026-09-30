@@ -34,11 +34,13 @@ export interface ApiRewardMenu {
   title: string;
 }
 
-/** Populated on `buyMenuItemReward` only, and only ever one item. */
+/** Populated on `buyMenuItemReward`. A single object on older records, a list once more than one item is linked. */
 export interface ApiRewardMenuItem {
   _id: string;
   title: string;
   menu?: ApiRewardMenu | null;
+  presetType?: { _id?: string; name?: string; title?: string } | string | null;
+  amountQuantity?: string;
 }
 
 /** A count or rate. Rewards with no activity often come back as `""` or `[]` instead of `0`. */
@@ -67,7 +69,7 @@ export interface ApiReward {
   availableAsReward?: boolean;
   challengeOnly?: boolean;
 
-  menuItem?: ApiRewardMenuItem | null;
+  menuItem?: ApiRewardMenuItem | ApiRewardMenuItem[] | null;
 
   /** Ticket rewards. Ids only — not populated. */
   event?: string | null;
@@ -154,8 +156,8 @@ export interface RewardWriteBody {
   availableAsReward: ApiBooleanString;
   challengeOnly: ApiBooleanString;
 
-  /** `buyMenuItemReward` only. */
-  menuItem?: string;
+  /** `buyMenuItemReward` only. Every linked item id; a bare string used to be accepted for one item. */
+  menuItem?: string[];
   /** `ticketReward` only. */
   event?: string;
   ticket?: string;

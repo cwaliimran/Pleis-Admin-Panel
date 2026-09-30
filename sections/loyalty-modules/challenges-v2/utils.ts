@@ -44,3 +44,18 @@ export const formatMetric = (value: number | null, suffix = ''): string => (valu
 
 /** `''` means the challenge is open to every tier. */
 export const getTierName = (challenge: Challenge): string => challenge.tierName || 'Any tier';
+
+/**
+ * Menu-item picker label: "soft drink, Coca-Cola, 400g".
+ * Amount is the backend string unchanged. A bare id for `presetType` is skipped.
+ */
+export const formatMenuItemOptionLabel = (item: {
+  title?: string;
+  amountQuantity?: string;
+  presetType?: { name?: string; title?: string } | string | null;
+}): string => {
+  const presetName = item.presetType && typeof item.presetType === 'object' ? item.presetType.name || item.presetType.title || '' : '';
+  const amount = item.amountQuantity?.trim() ?? '';
+
+  return [presetName, item.title, amount].filter(Boolean).join(', ');
+};

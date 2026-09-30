@@ -1,7 +1,7 @@
 'use client';
 
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import type { ApiReward, ApiRewardStats } from '@/store/Reducer/rewards-v2-api';
+import type { ApiReward, ApiRewardMenuItem, ApiRewardStats } from '@/store/Reducer/rewards-v2-api';
 import { useGetRewardTypesQuery, useGetRewardsV2Query } from '@/store/Reducer/rewards-v2-api';
 import { useMemo } from 'react';
 import { REWARD_TYPE_OPTIONS_LIMIT } from './constants';
@@ -16,7 +16,38 @@ const EMPTY_STATS: RewardStats = {
   mostClaimed: null,
 };
 
-const toReward = (item: ApiReward): Reward => ({
+/** Older records return one item; newer ones return the whole list. */
+const toMenuItems = (
+  value?: ApiRewardMenuItem | ApiRewardMenuItem[] | null
+): { id: string; name: string; menuId: string; menuName: string; presetTypeName: string; amountQuantity: string }[] => {
+  if (!value) return [];
+
+  const list = Array.isArray(value) ? value : [value];
+
+  return list.flatMap((entry) => {
+    if (!entry?._id) return [];
+
+    const preset = entry.presetType;
+
+    return [
+      {
+        id: entry._id,
+        name: entry.title || entry._id,
+        menuId: entry.menu?._id ?? '',
+        menuName: entry.menu?.title ?? '',
+        presetTypeName: preset && typeof preset === 'object' ? preset.name || preset.title || '' : '',
+        amountQuantity: entry.amountQuantity?.trim() ?? '',
+      },
+    ];
+  });
+};
+
+const toReward = (item: ApiReward): Reward => {
+  const menuItems = toMenuItems(item.menuItem);
+  const [first] = menuItems;
+  const sharedMenu = first?.menuId && menuItems.every((entry) => entry.menuId === first.menuId) ? first : null;
+
+  return {
   id: item._id,
   name: item.title ?? '',
   image: item.image ?? '',
@@ -29,10 +60,9 @@ const toReward = (item: ApiReward): Reward => ({
   availableAsReward: item.availableAsReward ?? true,
   challengeOnly: item.challengeOnly ?? false,
 
-  menuId: item.menuItem?.menu?._id,
-  menuName: item.menuItem?.menu?.title,
-  menuItemId: item.menuItem?._id,
-  menuItemName: item.menuItem?.title,
+  menuId: sharedMenu?.menuId,
+  menuName: sharedMenu?.menuName,
+  menuItems: menuItems.map(({ id, name, presetTypeName, amountQuantity }) => ({ id, name, presetTypeName, amountQuantity })),
 
   eventId: item.event ?? undefined,
   ticketId: item.ticket ?? undefined,
@@ -54,7 +84,8 @@ const toReward = (item: ApiReward): Reward => ({
   redeemed: toMetric(item.redeemed),
   conversion: toMetric(item.conversion),
   redemptionRate: toMetric(item.redemptionRate),
-});
+  };
+};
 
 const toStats = (stats?: ApiRewardStats | null): RewardStats => {
   if (!stats) return EMPTY_STATS;
