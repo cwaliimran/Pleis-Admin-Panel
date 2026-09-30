@@ -103,13 +103,16 @@
 
 'use client';
 
-import React from 'react';
+import { RHFAsyncCombobox } from '@/components/rhf';
 import { RHFMultiSelect } from '@/components/rhf/rhf-multiselect';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import React, { useMemo } from 'react';
 import type { Option } from './types';
-import { RHFCustomCombobox } from '@/components/rhf/rhf-custom-combobox';
+
+const ORGANIZATION_QUERY_ARGS = { sortBy: 'organizationName', sortOrder: 'asc' };
 
 interface StaffFieldsProps {
-  organizationOptions: Option[];
+  userData?: any;
 }
 
 const moduleOptions: Option[] = [
@@ -119,18 +122,36 @@ const moduleOptions: Option[] = [
   { value: 'ticketing', label: 'Ticketing' },
 ];
 
-const StaffFields: React.FC<StaffFieldsProps> = ({ organizationOptions }) => {
+const StaffFields: React.FC<StaffFieldsProps> = ({ userData }) => {
+  const initialSelected = useMemo(
+    () =>
+      userData?.organizations?.length
+        ? userData.organizations
+            .filter((org: any) => org?._id)
+            .map((org: any) => ({
+              value: org._id,
+              label: org?.basicInfo?.name || org?.name || '',
+            }))
+        : undefined,
+    [userData]
+  );
+
   return (
     <>
       <div className="md:col-span-2">
-        <RHFCustomCombobox
+        <RHFAsyncCombobox
           name="organizations"
           label="Select Organizations"
           placeholder="Select organizations"
-          className="w-full flex-1"
-          multiple={true}
-          allowCustom={false}
-          options={organizationOptions}
+          searchPlaceholder="Search organizations..."
+          className="w-full"
+          limit={100}
+          multiple
+          initialSelected={initialSelected}
+          useOptionsQuery={useGetOrganizationQuery}
+          queryArgs={ORGANIZATION_QUERY_ARGS}
+          getOptionValue={(org) => org._id}
+          getOptionLabel={(org) => org?.basicInfo?.name}
         />
       </div>
 
