@@ -1,13 +1,16 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 import { getStatusVariant } from '@/utils/short-utils';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { formatMenuItemOptionLabel } from '../challenges-v2/utils';
 import { REWARD_CREATION_METHOD_LABELS, REWARD_STATUS_LABELS } from './constants';
 import { Reward } from './types';
-import { formatMetric, getBrowsingMetric, getConversion, getPointsSpent, getRedemptionRate, getRemainingClaims, getTierName } from './utils';
+import { formatMetric, getPointsSpent, getRemainingClaims, getTierName } from './utils';
 
 interface RewardDetailModalProps {
   open: boolean;
@@ -42,16 +45,50 @@ const OnOffValue: React.FC<{ on: boolean }> = ({ on }) =>
   );
 
 export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, reward, onClose }) => {
+  const [itemsOpen, setItemsOpen] = useState(false);
+
+  // The reward record only stores the item title, so sizes that share a name
+  // look identical until we read preset type and amount off the menu.
+  const { data: menuItemsData } = useGetMenuItemByMenuIdQuery(
+    { menuId: reward?.menuId ?? '' },
+    { skip: !open || !reward?.menuId || reward.creationMethod !== 'buyMenuItemReward' }
+  );
+
+  const linkedLabels = useMemo(() => {
+    const byId = new Map<string, { title?: string; amountQuantity?: string; presetType?: { name?: string; title?: string } | string | null }>(
+      (menuItemsData?.data ?? []).map((item: { _id: string; title?: string; amountQuantity?: string; presetType?: { name?: string; title?: string } | string | null }) => [
+        item._id,
+        item,
+      ])
+    );
+
+    return (reward?.menuItems ?? []).map((item) => {
+      const fetched = byId.get(item.id);
+
+      return formatMenuItemOptionLabel({
+        title: fetched?.title || item.name,
+        amountQuantity: fetched?.amountQuantity || item.amountQuantity,
+        presetType: fetched?.presetType ?? (item.presetTypeName ? { name: item.presetTypeName } : null),
+      });
+    });
+  }, [menuItemsData, reward]);
+
   if (!reward) return null;
 
   const remainingClaims = getRemainingClaims(reward);
+  const linkedItemsLabel = linkedLabels.length === 1 ? linkedLabels[0] : '';
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent
-        aria-describedby={undefined}
-        className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-160!"
-      >
+    <>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) return;
+        setItemsOpen(false);
+        onClose();
+      }}
+    >
+      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-160!">
         <DialogHeader className="space-y-2 text-left">
           <div className="flex flex-wrap items-center gap-2 pr-6">
             <DialogTitle className="text-xl leading-tight font-bold">{reward.name}</DialogTitle>
@@ -83,8 +120,23 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
 
           {reward.creationMethod === 'buyMenuItemReward' && (
             <>
-              <InfoRow label="Menu">{reward.menuName || '—'}</InfoRow>
-              <InfoRow label="Linked Item">{reward.menuItemName || '—'}</InfoRow>
+              <InfoRow label="Menu">{reward.menuName}</InfoRow>
+              <InfoRow label="Linked Items">
+                {linkedLabels.length === 0 ? (
+                  '—'
+                ) : linkedLabels.length === 1 ? (
+                  linkedItemsLabel
+                ) : (
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto cursor-pointer p-0 text-sm font-semibold underline underline-offset-4 dark:text-blue-300"
+                    onClick={() => setItemsOpen(true)}
+                  >
+                    {linkedLabels.length} items
+                  </Button>
+                )}
+              </InfoRow>
             </>
           )}
 
@@ -105,33 +157,48 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, rewa
           </InfoRow>
 
           <InfoRow label="Challenge Only">{reward.challengeOnly ? 'Yes' : 'No'}</InfoRow>
-
-          <InfoRow label="Promotion Only">{reward.isPromotionOnly ? 'Yes' : 'No'}</InfoRow>
         </section>
 
         <section>
           <h4 className="mb-2 text-[11px] font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Performance</h4>
 
           <div className={cn('grid gap-3', 'grid-cols-1 sm:grid-cols-3')}>
-            <MetricTile label="Views" value={formatMetric(getBrowsingMetric(reward, reward.views))} />
-            <MetricTile label="Favorites" value={formatMetric(getBrowsingMetric(reward, reward.favorites))} />
-            <MetricTile label="Conversion" value={formatMetric(getConversion(reward), '%')} />
+            <MetricTile label="Views" value={formatMetric(reward.views)} />
+            <MetricTile label="Favorites" value={formatMetric(reward.favorites)} />
+            <MetricTile label="Conversion" value={formatMetric(reward.conversion, '%')} />
 
-            <MetricTile label="Total Claims" value={reward.claims.toLocaleString()} />
-            <MetricTile label="Total Redemptions" value={reward.redeemed.toLocaleString()} />
-            <MetricTile label="Redemption Rate" value={formatMetric(getRedemptionRate(reward), '%')} />
+            <MetricTile label="Total Claims" value={formatMetric(reward.claims)} />
+            <MetricTile label="Total Redemptions" value={formatMetric(reward.redeemed)} />
+            <MetricTile label="Redemption Rate" value={formatMetric(reward.redemptionRate, '%')} />
           </div>
 
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <MetricTile
               label="Remaining Claims (Total)"
-              value={remainingClaims === null ? '— (no limit)' : `${remainingClaims.toLocaleString()} / ${reward.totalLimit?.toLocaleString()}`}
+              value={remainingClaims === null ? 'No limit' : formatMetric(remainingClaims)}
             />
             <MetricTile label="Points Spent On This Reward" value={`${getPointsSpent(reward).toLocaleString()} pts`} />
           </div>
         </section>
       </DialogContent>
     </Dialog>
+
+    <Dialog open={itemsOpen} onOpenChange={setItemsOpen}>
+      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Linked Items</DialogTitle>
+        </DialogHeader>
+
+        <ul className="flex flex-col gap-2">
+          {reward.menuItems.map((item, index) => (
+            <li key={item.id} className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 dark:border-gray-700/60 dark:text-gray-100">
+              {linkedLabels[index]}
+            </li>
+          ))}
+        </ul>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 

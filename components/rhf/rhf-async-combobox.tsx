@@ -30,6 +30,8 @@ type RHFAsyncComboboxProps = {
   searchPlaceholder?: string;
   disabled?: boolean;
   className?: string;
+  /** Applied to the trigger button. */
+  triggerClassName?: string;
   /** Records fetched per page. */
   limit?: number;
   /** Label shown for the current value when it isn't in the loaded pages (e.g. edit mode). Single-select only. */
@@ -81,6 +83,7 @@ const RHFAsyncCombobox = ({
   searchPlaceholder = 'Search...',
   disabled = false,
   className = '',
+  triggerClassName,
   limit = 50,
   selectedLabel,
   multiple = false,
@@ -240,7 +243,11 @@ const RHFAsyncCombobox = ({
                     role="combobox"
                     aria-expanded={open}
                     disabled={disabled}
-                    className={cn('h-9 w-full justify-between font-normal', !triggerLabel && 'text-muted-foreground')}
+                    className={cn(
+                      'h-9 w-full justify-between font-normal',
+                      !triggerLabel && 'text-muted-foreground',
+                      triggerClassName
+                    )}
                   >
                     <span className="truncate">{triggerLabel || placeholder}</span>
                     {isLoading || isFetching ? (

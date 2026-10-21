@@ -40,6 +40,8 @@ export interface DeliveryOptionBody {
 
 export interface GetDeliveryOptionsArgs {
   organizationId: string;
+  /** Omitted by the settings screen, which shows whatever the endpoint defaults to. */
+  limit?: number;
 }
 
 export interface CreateDeliveryOptionArgs {
@@ -71,15 +73,16 @@ export const deliveryOptionsApi = createApi({
 
   endpoints: (builder) => ({
     getDeliveryOptions: builder.query<ApiDeliveryOption[], GetDeliveryOptionsArgs>({
-      query: ({ organizationId }) => ({
+      query: ({ organizationId, limit }) => ({
         url: '',
         method: 'GET',
+        params: limit ? { limit } : {},
         roleBasedRouting: {
           adminRoute: API_ROUTES.ADMIN_DELIVERY_OPTIONS(organizationId),
           organizerRoute: API_ROUTES.ORGANIZER_DELIVERY_OPTIONS(organizationId),
         },
       }),
-      // The list is unpaginated — the response carries no `meta`.
+      // The response carries no `meta` — `limit` just widens the page.
       transformResponse: (res: { data?: ApiDeliveryOption[] }): ApiDeliveryOption[] => res?.data ?? [],
       providesTags: ['delivery-options'],
     }),

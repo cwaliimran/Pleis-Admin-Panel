@@ -10,6 +10,7 @@ import { SettingRow } from '../common/setting-row';
 import { SettingRowSkeleton } from '../common/setting-row-skeleton';
 import { SettingsCard } from '../common/settings-card';
 import { ToggleSwitch } from '../common/toggle-switch';
+import { toApiPaymentMethods } from './mappers';
 import { PaymentSettings } from './types';
 import { usePaymentMethods } from './use-payment-methods';
 
@@ -58,8 +59,9 @@ export const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ or
     }
 
     try {
-      const message = await save(formValues);
-      reset(formValues);
+      const payload = toApiPaymentMethods(formValues);
+      const message = await save(payload);
+      reset(payload);
       showSuccess(message || 'Payment settings saved');
     } catch (error) {
       showError(getErrorMessage(error));
@@ -98,7 +100,10 @@ export const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ or
                 ariaLabel="In-app payment"
                 checked={inAppPayment}
                 disabled={isBusy}
-                onChange={(next) => setValue('inAppPayment', next, { shouldDirty: true })}
+                onChange={(next) => {
+                  setValue('inAppPayment', next, { shouldDirty: true });
+                  if (!next) setValue('payNow', false, { shouldDirty: true });
+                }}
               />
             }
           />

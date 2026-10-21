@@ -1,5 +1,6 @@
 'use client';
 
+import BillkoKeyWarning from '@/app/common/billko-key-warning';
 import SidebarToggleButton from '@/app/common/siebarToggleButton';
 import { OrganizerGuard } from '@/components/guards';
 import { Button } from '@/components/ui/button';
@@ -85,6 +86,9 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ left, right, children }) =>
 
   return (
     <OrganizerGuard>
+      {/* Persistent top-centre warning while the Billko API key is unset */}
+      <BillkoKeyWarning />
+
       <div className="flex min-h-screen">
         <SidebarProvider>
           {/* Sidebar */}

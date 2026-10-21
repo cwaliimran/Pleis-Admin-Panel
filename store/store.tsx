@@ -3,8 +3,8 @@
 import {
   combineReducers,
   configureStore,
-  createAction,
 } from '@reduxjs/toolkit';
+import { resetStore } from './resetStore';
 import { categoriesApi } from './Reducer/categories';
 import { eventApi } from './Reducer/events';
 import { highlightsApi } from './Reducer/highlights';
@@ -65,6 +65,7 @@ import { tagTypeApi } from './Reducer/tag-type-api';
 import { reviewsApi } from './Reducer/reviews-api';
 import { notificationsApi } from './Reducer/notifications-api';
 import { faqsApi } from './Reducer/faqs-api';
+import { systemLogsApi } from './Reducer/system-logs-api';
 import { helpSupportApi } from './Reducer/help-support-api';
 import { appOrderingApi } from './Reducer/app-ordering-api';
 import { menuManagementApi } from './Reducer/menu-management-api';
@@ -84,7 +85,7 @@ import { streaksV2Api } from './Reducer/streaks-v2-api';
 import { referralsV2Api } from './Reducer/referrals-v2-api';
 import { promotionsV2Api } from './Reducer/promotions-v2-api';
 
-export const resetStore = createAction('RESET_STORE');
+export { resetStore };
 
 const appReducer = combineReducers({
   userSlice: userSlice.reducer,
@@ -148,6 +149,7 @@ const appReducer = combineReducers({
   [reviewsApi.reducerPath]: reviewsApi.reducer,
   [notificationsApi.reducerPath]: notificationsApi.reducer,
   [faqsApi.reducerPath]: faqsApi.reducer,
+  [systemLogsApi.reducerPath]: systemLogsApi.reducer,
   [helpSupportApi.reducerPath]: helpSupportApi.reducer,
   [appOrderingApi.reducerPath]: appOrderingApi.reducer,
   [menuManagementApi.reducerPath]: menuManagementApi.reducer,
@@ -237,6 +239,7 @@ export const store = configureStore({
       reviewsApi.middleware,
       notificationsApi.middleware,
       faqsApi.middleware,
+      systemLogsApi.middleware,
       helpSupportApi.middleware,
       appOrderingApi.middleware,
       menuManagementApi.middleware,

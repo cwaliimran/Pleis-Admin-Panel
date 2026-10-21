@@ -1,4 +1,5 @@
 import Header from '@/app/common/header/header';
+import CompanyGuard from '@/components/guards/CompanyGuard';
 import OrderAnalyticsView from '@/sections/loyalty/loyalty-view/order-analytics-view';
 import { Metadata } from 'next';
 
@@ -15,8 +16,9 @@ const Page = () => {
           { name: 'Order Analytics', href: '' },
         ]}
       />
-
-      <OrderAnalyticsView global={false} userType="super-admin" />
+      <CompanyGuard>
+        <OrderAnalyticsView global={false} userType="super-admin" />
+      </CompanyGuard>
     </div>
   );
 };

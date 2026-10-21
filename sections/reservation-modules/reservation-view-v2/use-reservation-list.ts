@@ -8,7 +8,7 @@ import { ListFilter, Reservation, ReservationPagination, TypeOccupancy } from '.
 
 interface UseReservationListArgs {
   organizationId?: string;
-  date: string;
+  date?: string;
   slot: string | null;
   typeId: string | null;
   filter: ListFilter;
@@ -81,7 +81,7 @@ export const useReservationList = ({
   const { data, isLoading, isFetching } = useGetReservationsV2Query(
     {
       organizationsId: organizationId as string,
-      date,
+      date: date || undefined,
       page: page - 1,
       limit,
       startTime: slot || undefined,

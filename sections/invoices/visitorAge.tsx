@@ -129,7 +129,7 @@ const VisitorAgeChart: FC<VisitorAgeProps> = ({
                   return (
                     <g>
                       <title>{showTooltip ? label : undefined}</title>
-                      <text x={x} y={y + 4} textAnchor="end" fill="#cbd5e1" fontSize="12">
+                      <text x={x} y={Number(y) + 4} textAnchor="end" fill="#cbd5e1" fontSize="12">
                         {display}
                       </text>
                     </g>

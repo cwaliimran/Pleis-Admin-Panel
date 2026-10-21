@@ -53,8 +53,23 @@ const NavigationSearch: FC = () => {
   const allRoutes = useMemo<SearchableRoute[]>(() => {
     const routes: SearchableRoute[] = [];
 
+    const walkItems = (items: typeof menuGroups[number]['items'], groupLabel: string, groupIcon: any) => {
+      items?.forEach((item) => {
+        if (item.url) {
+          routes.push({
+            label: item.title,
+            url: item.url,
+            group: groupLabel,
+            icon: item.icon || groupIcon,
+          });
+        }
+        if (item.items?.length) {
+          walkItems(item.items, `${groupLabel} › ${item.title}`, item.icon || groupIcon);
+        }
+      });
+    };
+
     menuGroups.forEach((group) => {
-      // If the group has no items, it's a direct link
       if (!group.items || group.items.length === 0) {
         routes.push({
           label: group.label,
@@ -63,17 +78,7 @@ const NavigationSearch: FC = () => {
           icon: group.icon,
         });
       } else {
-        // Add all sub-items with their parent group label
-        group.items.forEach((item) => {
-          if (item.url) {
-            routes.push({
-              label: item.title,
-              url: item.url,
-              group: group.label,
-              icon: item.icon || group.icon,
-            });
-          }
-        });
+        walkItems(group.items, group.label, group.icon);
       }
     });
 

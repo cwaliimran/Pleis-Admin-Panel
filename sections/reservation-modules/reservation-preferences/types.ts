@@ -27,8 +27,11 @@ export interface TimeSlotSettings {
 
 export interface AutomaticResponseSettings {
   autoConfirmWhenCapacity: boolean;
-  /** Requests above this party size always require manual review. */
-  maxGuestsForAutoConfirm: number;
+  /**
+   * Requests above this party size always require manual review.
+   * `''` is the in-progress empty field — a cleared input must not snap back to 0.
+   */
+  maxGuestsForAutoConfirm: number | '';
   autoRejectWhenNoCapacity: boolean;
 }
 

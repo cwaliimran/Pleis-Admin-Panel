@@ -1,11 +1,15 @@
 'use client';
 
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
 import { CirclePlus, Pencil, Trash2 } from 'lucide-react';
 import { FC } from 'react';
 import { formatComboPrice, getComboLines, getPriceModeLabel, getRefLabel } from './combos-utils';
 import { TableRowProps } from './types';
+
+const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlDevCap];
 
 const STATUS_BADGE: Record<string, { variant: 'success' | 'error' | 'warning'; label: string }> = {
   active: { variant: 'success', label: 'Active' },
@@ -19,6 +23,16 @@ const ComboTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit }) =>
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
+      <TableCell>
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
+          {item?.image && !PLACEHOLDER_IMAGE_URLS.includes(item.image) ? (
+            <AvatarImage src={item.image} alt={item?.name} className="h-full w-full object-cover" />
+          ) : (
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.name?.[0]?.toUpperCase() || ''}</span>
+          )}
+        </Avatar>
+      </TableCell>
+
       <TableCell className="text-left">
         <div className="flex items-center gap-2">
           <span className="font-medium">{item.name}</span>

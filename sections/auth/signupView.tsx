@@ -223,7 +223,7 @@ function SignUpView() {
       password: data.password,
       deviceType,
       userType: 'organizer',
-      deviceId: '123',
+      deviceId: 'test',
       timezone,
       companyDetails: {
         name: data.companyName.trim(),

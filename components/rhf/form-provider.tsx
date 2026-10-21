@@ -6,12 +6,13 @@ interface FormProviderProps {
     children: React.ReactNode;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     methods: any;
+    className?: string;
 }
 
-const FormProvider: FC<FormProviderProps> = ({ children, onSubmit, methods }) => {
+const FormProvider: FC<FormProviderProps> = ({ children, onSubmit, methods, className }) => {
     return (
         <ReactFormProvider {...methods}>
-            <form onSubmit={onSubmit}>
+            <form onSubmit={onSubmit} className={className}>
                 {children}
             </form>
         </ReactFormProvider>

@@ -1,10 +1,10 @@
+import BadgeList, { BADGE_CLASSES } from '@/components/common/badge-list';
 import OrgGallery from '@/components/common/organization-img';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader } from '@/components/ui/card';
 import { useBoolean } from '@/hooks/useBoolean';
 import { defaultValues, schema } from '@/lib/schemas/organization-schema';
-import { cn } from '@/lib/utils';
 import { useGetAllCompanyVenueQuery } from '@/store/Reducer/helpers-api';
 import { useGetVenuesByCompanyQuery } from '@/store/Reducer/venue';
 import { showError } from '@/utils/toast';
@@ -16,39 +16,6 @@ import {
 import { useForm } from 'react-hook-form';
 import AddOtherDetailsModal from '../organization-section/add-other-details-modal';
 import VenueTypeModalV2 from '../venue/venueTypeModal';
-
-const COLLAPSED_BADGE_COUNT = 5;
-
-const BADGE_CLASSES = 'text-md rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white';
-
-const BadgeList = ({ items, capitalize = false }: { items?: any[]; capitalize?: boolean }) => {
-  const expanded = useBoolean();
-
-  if (!items || items.length === 0) return null;
-
-  const visibleItems = expanded.value ? items : items.slice(0, COLLAPSED_BADGE_COUNT);
-  const hiddenCount = items.length - visibleItems.length;
-
-  return (
-    <div className="mt-2 flex flex-wrap items-center gap-2">
-      {visibleItems.map((item: any, index: number) => (
-        <Badge key={item?._id || item?.id || index} className={cn(BADGE_CLASSES, capitalize && 'capitalize')}>
-          {item?.title}
-        </Badge>
-      ))}
-
-      {(hiddenCount > 0 || expanded.value) && (
-        <button
-          type="button"
-          onClick={expanded.onToggle}
-          className="text-md cursor-pointer rounded-full px-2 py-1 font-medium text-slate-500 underline-offset-2 transition-colors hover:text-slate-700 hover:underline dark:hover:text-slate-300"
-        >
-          {hiddenCount > 0 ? `+${hiddenCount} more` : 'Show less'}
-        </button>
-      )}
-    </div>
-  );
-};
 
 const OrgInfo = ({ organizationData, userType }: any) => {
   // SUPER ADMIN VENUES OF THE ORGANIZATION
@@ -102,6 +69,8 @@ const OrgInfo = ({ organizationData, userType }: any) => {
 
   const venueList = userType === 'organizer' ? OrgVenues?.data : venueData?.data;
 
+  const venueLocation = organizationData?.venue?.location;
+
   const handleEditClick = () => {
     if (!venueList || venueList.length === 0) {
       showVenueRequiredToast();
@@ -134,7 +103,7 @@ const OrgInfo = ({ organizationData, userType }: any) => {
 
               {organizationData?.otherInfo?.minAge !== 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge className="text-md h-8 rounded-full border border-gray-400 bg-white px-4 py-1 font-medium text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-800 dark:bg-black dark:hover:text-white">
+                  <Badge className={BADGE_CLASSES}>
                     {organizationData?.otherInfo?.minAge || 'N/A'}
                   </Badge>
                 </div>
@@ -151,7 +120,7 @@ const OrgInfo = ({ organizationData, userType }: any) => {
                 </Button>
               </div>
               <div className="flex items-center gap-2">
-                <p className="mt-1 text-lg capitalize">{organizationData?.venue?.title || '-'}</p>
+                <p className="mt-1 text-md capitalize">{organizationData?.venue?.title || '-'}</p>
               </div>
             </CardHeader>
           </Card>
@@ -179,19 +148,19 @@ const OrgInfo = ({ organizationData, userType }: any) => {
                 <span className="capitalize">{organizationData?.venue?.title || '-'}</span>
               </div>
 
-              {organizationData?.location?.fullAddress && (
+              {venueLocation?.fullAddress && (
                 <div className="mt-2 flex items-center gap-2">
                   <MapPin />
-                  <span>{organizationData?.location?.fullAddress || '-'}</span>
+                  <span>{venueLocation.fullAddress}</span>
                 </div>
               )}
 
               <div className="mt-3 w-full">
                 <div className="h-[250px] w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
-                  {organizationData?.location?.coordinates?.length === 2 ? (
+                  {venueLocation?.coordinates?.length === 2 ? (
                     <iframe
                       title="Venue Location Map"
-                      src={`https://www.google.com/maps?q=${organizationData?.location?.coordinates[1]},${organizationData?.location?.coordinates[0]}&hl=es;z=14&output=embed`}
+                      src={`https://www.google.com/maps?q=${venueLocation.coordinates[1]},${venueLocation.coordinates[0]}&hl=es;z=14&output=embed`}
                       className="h-full w-full border-0"
                       referrerPolicy="no-referrer-when-downgrade"
                     ></iframe>

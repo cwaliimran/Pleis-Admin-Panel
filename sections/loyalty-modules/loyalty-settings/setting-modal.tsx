@@ -8,7 +8,6 @@ import RHFUploadButton from '@/components/rhf/rhf-upload-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import FieldSkeleton from '@/components/ui/field-skeleton';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
@@ -85,15 +84,11 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
   const methods = useForm<SettingsFormValues>({
     resolver: yupResolver(schema),
     defaultValues,
-    mode: 'onChange',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
   });
 
-  const {
-    reset,
-    watch,
-    setValue,
-    formState: { isDirty, isValid },
-  } = methods;
+  const { reset, watch, setValue } = methods;
 
   const selectedModel = watch('model');
 
@@ -276,26 +271,22 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                 </div>
 
                 {/* Club Title */}
-                <RHFTextField name="title" label="Club Title" placeholder="e.g., Pearl Continental Lahore" />
+                <RHFTextField name="title" label="Club Title *" placeholder="e.g., Pearl Continental Lahore" />
 
                 {/* Description */}
-                <RHFTextField name="description" label="Description" placeholder="Enter club description..." multiline rows={3} />
+                <RHFTextField name="description" label="Description *" placeholder="Enter club description..." multiline rows={3} />
 
                 {/* Category */}
                 {/* <RHFSelectField name="category" label="Category" placeholder="Select category" options={categoryOptions} /> */}
 
-                {categoriesLoading ? (
-                  <FieldSkeleton />
-                ) : (
-                  <RHFCustomDropdown
-                    name="category"
-                    label="Category"
-                    placeholder="Select category"
-                    options={categoryOptions}
-                    isLoading={categoriesLoading}
-                    showNone={false}
-                  />
-                )}
+                <RHFCustomDropdown
+                  name="category"
+                  label="Category *"
+                  placeholder="Select category"
+                  options={categoryOptions}
+                  isLoading={categoriesLoading}
+                  showNone={false}
+                />
                 <RHFSelectField
                   name="status"
                   label="Select Status"
@@ -386,7 +377,7 @@ const SettingsModal = ({ open, onClose, selectedCompanyId, companyDetails, handl
                     <ButtonLoading title="Saving" />
                   </Button>
                 ) : (
-                  <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-6 text-white" disabled={!isDirty || !isValid}>
+                  <Button type="submit" className="bg-primary hover:bg-primary-dark cursor-pointer px-6 text-white">
                     Save Settings
                   </Button>
                 )}

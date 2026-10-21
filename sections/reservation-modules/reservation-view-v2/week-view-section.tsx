@@ -15,13 +15,14 @@ interface WeekViewSectionProps {
   onSelectDate: (date: string) => void;
   onPickWeek: (date: Date) => void;
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
-export const WeekViewSection: React.FC<WeekViewSectionProps> = ({ days, selectedDate, onSelectDate, onPickWeek, isLoading = false }) => {
+export const WeekViewSection: React.FC<WeekViewSectionProps> = ({ days, selectedDate, onSelectDate, onPickWeek, isLoading = false, disabled = false }) => {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
-    <SectionCard title="Week view" caption="Today + 7 days">
+    <SectionCard title="Week view" caption="Today + 7 days" disabled={disabled}>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {days.map((day) => {
           const date = parseISO(day.date);

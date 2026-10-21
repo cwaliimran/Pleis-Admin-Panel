@@ -134,6 +134,17 @@ export const paths = {
     reservationTransactions: '/super-admin/res-transactions',
     // reservationTransactions: '/super-admin/reservations/transactions',
     transactionsHistory: '/super-admin/transactions-history',
+    transactionsHistoryV2: '/super-admin/transactions-history-v2',
+    payoutsBatches: '/super-admin/payouts-batches',
+    payoutsBatchesV2: '/super-admin/payouts-batches-v2',
+    ticketingHistory: '/super-admin/ticketing-history',
+    ticketingHistoryV2: '/super-admin/ticketing-history-v2',
+    reservationHistory: '/super-admin/reservation-history',
+    reservationHistoryV2: '/super-admin/reservation-history-v2',
+    orderingHistory: '/super-admin/ordering-history',
+    orderingHistoryV2: '/super-admin/ordering-history-v2',
+    loyaltyHistory: '/super-admin/loyalty-history',
+    loyaltyHistoryV2: '/super-admin/loyalty-history-v2',
     bundles: '/super-admin/bundles',
 
     // App Ordering Paths
@@ -152,6 +163,12 @@ export const paths = {
     reviews: '/super-admin/reviews',
 
     faqs: '/super-admin/faqs',
+    systemLogs: {
+      default: '/super-admin/system-logs',
+      access: '/super-admin/system-logs/access',
+      app: '/super-admin/system-logs/app',
+      errors: '/super-admin/system-logs/errors',
+    },
     streak: '/super-admin/streaks',
     helpSupport: '/super-admin/help-support',
     updates: '/super-admin/updates',

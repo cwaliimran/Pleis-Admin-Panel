@@ -50,20 +50,20 @@ const OrderTransactionTableRow: FC<{ item: TransactionItem }> = ({ item }) => {
 
       {/* Payment Status */}
       <TableCell className="text-start">
-        <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClasses(item.paymentStatus)}`}>
+        <span className={`rounded-full capitalize px-2 py-1 text-xs font-medium ${getStatusClasses(item.paymentStatus)}`}>
           {item.paymentStatus}
         </span>
       </TableCell>
 
       {/* Payment Method */}
-      <TableCell className="text-start">{item.paymentMethod}</TableCell>
+      <TableCell className="text-start capitalize">{item.paymentMethod}</TableCell>
 
       {/* Total Amount */}
       <TableCell className="text-start font-semibold">{item.totalAmount}</TableCell>
 
       {/* Order Status */}
       <TableCell className="text-start">
-        <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClasses(item.orderStatus)}`}>
+        <span className={`rounded-full capitalize px-2 py-1 text-xs font-medium ${getStatusClasses(item.orderStatus)}`}>
           {item.orderStatus}
         </span>
       </TableCell>

@@ -11,10 +11,8 @@ import type { BadgeConfig } from './constants';
 import {
   BADGE_TONE_CLASS,
   canDeliverOrderItems,
-  MARK_AS_PAID_ACTION,
   canMarkOrderAsPaid,
-  PRIMARY_ACTION_BY_STATUS,
-  SECONDARY_ACTION_BY_STATUS,
+  canMarkOrderAsUnpaid,
   formatCurrency,
   formatOrderTime,
   getComboPriceModeLabel,
@@ -25,14 +23,19 @@ import {
   getOrderStatusConfig,
   getOrderSummaryLines,
   getPaymentStatusConfig,
+  getPaymentTimingConfig,
   getPaymentTypeLabel,
+  getPrimaryAction,
   getRoundDeliveryConfig,
   isOrderEditable,
+  MARK_AS_PAID_ACTION,
+  MARK_AS_UNPAID_ACTION,
+  SECONDARY_ACTION_BY_STATUS,
 } from './constants';
 import { DestructiveActionType, Order, OrderActionType, OrderCombo } from './types';
 import type { DeliverItemsPayload } from './use-order-management';
 
-export const ORDER_TABLE_COLUMN_COUNT = 10;
+export const ORDER_TABLE_COLUMN_COUNT = 12;
 
 interface OrderRowProps {
   order: Order;
@@ -46,6 +49,8 @@ interface OrderRowProps {
   /** Which action is mid-flight, so only that button shows a spinner. */
   pendingAction?: OrderActionType | null;
   isDelivering?: boolean;
+  /** Arrived over the socket while this view has been open. */
+  isLive?: boolean;
 }
 
 const StatusBadge: React.FC<BadgeConfig & { className?: string }> = ({ label, icon: Icon, tone, className }) => (
@@ -136,6 +141,36 @@ const ComboLine: React.FC<{
   );
 };
 
+const AVATAR_TONES = [
+  'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+  'bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300',
+  'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+  'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300',
+  'bg-pink-100 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300',
+  'bg-teal-100 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300',
+];
+
+const CustomerAvatar: React.FC<{ name: string; url?: string | null }> = ({ name, url }) => {
+  const [failed, setFailed] = useState(false);
+  const initial = name.trim().charAt(0).toUpperCase();
+
+  return (
+    <span
+      className={cn(
+        'flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-bold',
+        AVATAR_TONES[initial.charCodeAt(0) % AVATAR_TONES.length] ?? 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+      )}
+    >
+      {url && !failed ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt="" onError={() => setFailed(true)} className="h-full w-full object-cover" />
+      ) : (
+        initial || <User className="h-4 w-4" />
+      )}
+    </span>
+  );
+};
+
 const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex items-baseline justify-between gap-6 border-b border-dashed border-gray-200 py-2 dark:border-gray-800">
     <span className="shrink-0 text-sm text-gray-500 dark:text-gray-400">{label}</span>
@@ -154,20 +189,23 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   isPending = false,
   pendingAction = null,
   isDelivering = false,
+  isLive = false,
 }) => {
   const deliveryConfig = getDeliveryTypeConfig(order.deliveryType);
+  const timingConfig = getPaymentTimingConfig(order.paymentTiming);
   const tierConfig = order.customer.tier ? getLoyaltyTierConfig(order.customer.tier) : null;
-  const primaryAction = PRIMARY_ACTION_BY_STATUS[order.status];
+  const primaryAction = getPrimaryAction(order);
   const secondaryAction = SECONDARY_ACTION_BY_STATUS[order.status];
 
   // A failed payment has to be settled before the order can be accepted.
   const isConfirmBlocked = primaryAction?.type === 'confirm' && order.paymentStatus === 'failed';
   const canMarkAsPaid = canMarkOrderAsPaid(order);
+  const canMarkAsUnpaid = canMarkOrderAsUnpaid(order);
 
-  // Gates the row's "Delivered" button as well as the panel's controls — it
-  // is the same hand-over, just triggered from the row.
+  // Gates the panel's per-item controls. The row's own "Delivered" button is
+  // already gated by `getPrimaryAction`, which reads the same rule.
   const isDeliverable = canDeliverOrderItems(order);
-  const showPrimaryAction = Boolean(primaryAction) && !(primaryAction?.type === 'delivered' && !isDeliverable);
+  const showPrimaryAction = Boolean(primaryAction);
 
   // Money has already changed hands, so cancelling is off the table. Reject
   // is unaffected — it only ever appears before an order is accepted.
@@ -181,11 +219,8 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   const hasCombos = order.combos.length > 0;
   const isOrderEmpty = order.rounds.length === 0 && !hasCombos;
 
-  // ---- Item delivery ----
-  //
-  // The API keys delivery on the menu item, not the order line, so selection
-  // is keyed the same way. Two lines of the same menu item therefore tick
-  // together — which is exactly what the request would do to them.
+  // The API keys delivery on the menu item, not the order line, so two lines
+  // of the same menu item tick together — exactly what the request does.
   const undeliveredMenuItemIds = useMemo(() => {
     const ids = order.rounds.filter((round) => !round.isDelivered).flatMap((round) => round.items.map((item) => item.menuItemId));
     return [...new Set(ids)];
@@ -198,8 +233,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
     setSelectedMenuItemIds((current) => current.filter((id) => undeliveredMenuItemIds.includes(id)));
   }, [undeliveredMenuItemIds]);
 
-  // A combo is handed over whole, so selection is keyed on the order-combo
-  // line id — which is exactly what `deliveredCombo` carries.
+  // Keyed on the order-combo line id — what `deliveredCombo` carries.
   const undeliveredComboIds = useMemo(() => order.combos.filter((combo) => !combo.isDelivered).map((combo) => combo.id), [order.combos]);
 
   const [selectedComboIds, setSelectedComboIds] = useState<string[]>([]);
@@ -216,10 +250,9 @@ export const OrderRow: React.FC<OrderRowProps> = ({
 
   const canUpdate = isOrderEditable(order);
 
-  // "Delivered" is settled through the delivery endpoint, so it reports its
-  // progress via `isDelivering` rather than `pendingAction`.
-  const isActionRunning = (action: OrderActionType) =>
-    action === 'delivered' ? isDelivering : isPending && pendingAction === action;
+  // "Delivered" goes through the delivery endpoint, so it reports progress
+  // via `isDelivering` rather than `pendingAction`.
+  const isActionRunning = (action: OrderActionType) => (action === 'delivered' ? isDelivering : isPending && pendingAction === action);
 
   const actionLabel = (action: OrderActionType, label: string) => (
     <>
@@ -257,7 +290,9 @@ export const OrderRow: React.FC<OrderRowProps> = ({
         onClick={onToggle}
         className={cn(
           'cursor-pointer transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50',
-          isExpanded && 'bg-[#fafafa] dark:bg-[#272727]/30'
+          isExpanded && 'bg-[#fafafa] dark:bg-[#272727]/30',
+          // Kept until the list is filtered or paged away from.
+          isLive && !isExpanded && 'bg-blue-50/70 dark:bg-blue-950/25'
         )}
       >
         <TableCell className="w-12 pl-4">
@@ -265,8 +300,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
             type="button"
             aria-label={isExpanded ? `Collapse order ${order.orderNumber}` : `Expand order ${order.orderNumber}`}
             aria-expanded={isExpanded}
-            // Toggles on its own and stops there — letting it bubble to the
-            // row would fire a second toggle and undo this one.
+            // Bubbling to the row would fire a second toggle and undo this one.
             onClick={(event) => {
               event.stopPropagation();
               onToggle();
@@ -278,20 +312,18 @@ export const OrderRow: React.FC<OrderRowProps> = ({
         </TableCell>
 
         <TableCell>
-          <div className="font-bold text-gray-900 dark:text-gray-100">#{order.orderNumber}</div>
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-gray-900 dark:text-gray-100">#{order.orderNumber}</span>
+            {isLive && (
+              <span className="shrink-0 rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-white dark:bg-blue-500">NEW</span>
+            )}
+          </div>
           <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{formatOrderTime(order.placedAt)}</div>
         </TableCell>
 
         <TableCell>
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-              {order.customer.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={order.customer.avatarUrl} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <User className="h-4 w-4" />
-              )}
-            </span>
+            <CustomerAvatar name={order.customer.name} url={order.customer.avatarUrl} />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="truncate font-semibold text-gray-900 dark:text-gray-100">{order.customer.name}</span>
@@ -299,10 +331,19 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                   <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide', tierConfig.chipClass)}>{tierConfig.label}</span>
                 )} */}
               </div>
-              {order.customer.username && <div className="truncate text-xs text-gray-500 dark:text-gray-400">@{order.customer.username}</div>}
+              {order.customer.username && (
+                <div className="truncate text-xs text-gray-500 lowercase dark:text-gray-400">@{order.customer.username}</div>
+              )}
             </div>
           </div>
         </TableCell>
+
+        {/* Decides which action buttons this row gets — see `getPrimaryAction`. */}
+        <TableCell>
+          <span className={cn('inline-flex rounded-md px-2.5 py-1 text-xs font-semibold', timingConfig.chipClass)}>{timingConfig.label}</span>
+        </TableCell>
+
+        <TableCell className="text-sm text-gray-600 dark:text-gray-400">{deliveryConfig.label}</TableCell>
 
         <TableCell>
           <span className={cn('inline-flex rounded-md px-2.5 py-1 text-xs font-semibold', deliveryConfig.chipClass)}>{order.deliveryLabel}</span>
@@ -359,6 +400,19 @@ export const OrderRow: React.FC<OrderRowProps> = ({
               </Button>
             )}
 
+            {canMarkAsUnpaid && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => onAdvance(order, MARK_AS_UNPAID_ACTION.type)}
+                className="cursor-pointer font-semibold"
+              >
+                {actionLabel(MARK_AS_UNPAID_ACTION.type, MARK_AS_UNPAID_ACTION.label)}
+              </Button>
+            )}
+
             {secondaryAction && showSecondaryAction && (
               <Button
                 type="button"
@@ -372,7 +426,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
               </Button>
             )}
 
-            {!showPrimaryAction && !canMarkAsPaid && !showSecondaryAction && (
+            {!showPrimaryAction && !canMarkAsPaid && !canMarkAsUnpaid && !showSecondaryAction && (
               <Button type="button" size="sm" variant="outline" onClick={onToggle} className="cursor-pointer font-semibold">
                 View detail
               </Button>
@@ -507,7 +561,6 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                             );
                           })}
                         </ul>
-
                       </div>
                     ))}
 

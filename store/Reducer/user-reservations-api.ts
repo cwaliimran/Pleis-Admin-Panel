@@ -21,6 +21,7 @@ export type ApiReservationCondition = 'free' | 'minimumSpend';
 
 /** The full lifecycle a reservation moves through. */
 export type ApiUserReservationStatus =
+  | 'new'
   | 'pendingPayment'
   | 'needsConfirmation'
   | 'confirmed'
@@ -242,8 +243,8 @@ export interface ApiReservationListMeta {
 export interface GetReservationsV2Args {
   /** Backend spelling — plural `organizations`, singular id. */
   organizationsId: string;
-  /** ISO `yyyy-MM-dd`. */
-  date: string;
+  /** ISO `yyyy-MM-dd`. Omitted for list modes that are not scoped to a day (e.g. status `new`). */
+  date?: string;
   /** 0-based; the offset is re-added below so the API receives a 1-based page. */
   page: number;
   limit: number;
@@ -286,12 +287,12 @@ export const userReservationsApi = createApi({
       query: ({ organizationsId, date, page, limit, startTime, reservationType, status }) => {
         const params: Record<string, string | number> = {
           organizationsId,
-          date,
           page: page + 1,
           limit,
         };
 
         // Each is left off entirely when the board has no such selection.
+        if (date) params.date = date;
         if (startTime) params.startTime = startTime;
         if (reservationType) params.reservationType = reservationType;
         if (status) params.status = status;

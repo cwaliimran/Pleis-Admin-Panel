@@ -5,7 +5,7 @@ export const CHALLENGE_TASK_TYPE_LABELS: Record<ChallengeTaskType, string> = {
   visit: 'Visit X Times',
   earnPoints: 'Earn X Points',
   referUsers: 'Refer X Users',
-  buyMenuItem: 'By Item X Times',
+  buyMenuItem: 'Buy Item X Times',
 };
 
 export const CHALLENGE_TASK_TYPE_OPTIONS = (Object.keys(CHALLENGE_TASK_TYPE_LABELS) as ChallengeTaskType[]).map((value) => ({

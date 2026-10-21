@@ -5,7 +5,9 @@ import Time24hInput from '@/components/common/time-24h-input';
 import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   useAddGiveawayMutation,
@@ -17,9 +19,11 @@ import {
 import { useGetTicketingByEventQuery } from '@/store/Reducer/ticketing-api';
 import { getErrorMessage } from '@/utils/api';
 import { fDateTime, formatStr } from '@/utils/format-time';
+import { cn } from '@/lib/utils';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { AlertCircle } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { AlertCircle, CalendarIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as Yup from 'yup';
@@ -86,12 +90,12 @@ const schema = Yup.object().shape({
   ticketTypeOption: Yup.string()
     .oneOf(['existing', 'new'] as const)
     .required('Ticket type option is required'),
-  // endDateTime: Yup.string().required('End date & time is required'),
   endDateTime: Yup.date()
-  .required('End date is required')
-  .min(new Date(), 'End date must be a future date')
-  .typeError('Invalid End date')
-  .default(null),
+    .transform((value, originalValue) => (originalValue === '' ? undefined : value))
+    .required('Please select both an end date and time')
+    .min(new Date(), 'End date must be a future date')
+    .typeError('Please select both an end date and time')
+    .default(null),
   status: Yup.string()
     .oneOf(['active', 'inactive'] as const)
     .default('active'),
@@ -112,6 +116,7 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [endDatePart, setEndDatePart] = useState('');
   const [endTimePart, setEndTimePart] = useState('');
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const isInitializingEdit = useRef(false);
 
   const [addGiveaway, { isLoading: addGiveawayLoading }] = useAddGiveawayMutation();
@@ -380,8 +385,10 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
   const handleEndDateTimeChange = (datePart: string, timePart: string) => {
     setEndDatePart(datePart);
     setEndTimePart(timePart);
+    // Only validate once both the date and time are set, so picking the date
+    // alone doesn't flash an "invalid/required" error before the user gets to the time field.
     setValue('endDateTime', updateSplitDateTime(datePart, timePart), {
-      shouldValidate: true,
+      shouldValidate: Boolean(datePart && timePart),
       shouldDirty: true,
     });
   };
@@ -529,17 +536,35 @@ const GiveawayModal = ({ open, onClose, isEdit = false, selectedData, organizati
                   {/* End Date & Time */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                      <label htmlFor="giveaway-end-date" className="mb-1 block text-sm font-medium">
-                        End Date
-                      </label>
-                      <input
-                        id="giveaway-end-date"
-                        type="date"
-                        title="End date"
-                        value={endDatePart}
-                        onChange={(e) => handleEndDateTimeChange(e.target.value, endTimePart)}
-                        className="h-10 w-full rounded-md border bg-white px-3 py-2 text-sm shadow-xs placeholder:font-medium placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-700 dark:bg-[#212121] dark:placeholder:text-slate-400"
-                      />
+                      <label className="mb-1 block text-sm font-medium">End Date</label>
+                      <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            title="End date"
+                            className={cn(
+                              'h-10 w-full justify-start px-3 text-left text-sm font-normal',
+                              !endDatePart && 'text-muted-foreground'
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {endDatePart ? format(parseISO(endDatePart), 'dd/MM/yyyy') : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className="dark:bg-secondary w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={endDatePart ? parseISO(endDatePart) : undefined}
+                            disabled={{ before: new Date(new Date().setHours(0, 0, 0, 0)) }}
+                            onSelect={(date) => {
+                              if (!date) return;
+                              handleEndDateTimeChange(format(date, 'yyyy-MM-dd'), endTimePart);
+                              setDatePickerOpen(false);
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <div>
                       <label className="mb-1 block text-sm font-medium">End Time</label>
