@@ -35,7 +35,7 @@ import {
   CHALLENGE_TASK_TYPE_OPTIONS,
 } from '../constants';
 import { Challenge, ChallengeItemRef, ChallengeRewardType, ChallengeTaskType } from '../types';
-import { getSharedMenu } from '../utils';
+import { formatMenuItemOptionLabel, getSharedMenu } from '../utils';
 
 interface ChallengeFormValues {
   image: unknown;
@@ -436,7 +436,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                   queryArgs={qualifyingItemArgs}
                   skip={companySkip}
                   getOptionValue={(item) => item._id}
-                  getOptionLabel={(item) => item.title}
+                  getOptionLabel={formatMenuItemOptionLabel}
                 />
               </>
             )}
@@ -520,7 +520,7 @@ export const ChallengeFormModal: React.FC<ChallengeFormModalProps> = ({ open, ch
                   queryArgs={rewardItemArgs}
                   skip={companySkip}
                   getOptionValue={(item) => item._id}
-                  getOptionLabel={(item) => item.title}
+                  getOptionLabel={formatMenuItemOptionLabel}
                 />
               </>
             )}

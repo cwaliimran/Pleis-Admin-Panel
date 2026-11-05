@@ -1,10 +1,6 @@
 'use client';
 
-import { useGetCategoriesQuery } from '@/store/Reducer/categories';
 import { useAddeventMutation, useGeteventByIdQuery, useUpdateeventMutation } from '@/store/Reducer/events';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
-import { useGetTagsQuery } from '@/store/Reducer/tags';
-import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { uploadFileToAzure } from '@/utils/fileUpload';
@@ -13,7 +9,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Resolver, useForm } from 'react-hook-form';
 import { defaultValues } from './constants';
 import type { EventFormValues } from './types';
@@ -35,33 +31,12 @@ export const useEventForm = ({ userType }: { userType: string }) => {
   const [updateSingleLoading, setUpdateSingleLoading] = useState(false);
   const [updateAllLoading, setUpdateAllLoading] = useState(false);
 
-  // Store event's venue separately to always have it available
-  const [eventVenue, setEventVenue] = useState<any>(null);
-  const [savedVenueId, setSavedVenueId] = useState<string>('');
-
   const hasInitializedRef = useRef(false);
   const isInitializingRef = useRef(false);
-  const venueSetRef = useRef(false);
 
   // Get event data
   const { data: event = {}, isSuccess: eventLoaded } = useGeteventByIdQuery(id ?? skipToken, {
     refetchOnMountOrArgChange: true,
-  });
-
-  // Get all organizations
-  const { data: { data: organizations = [] } = {}, isLoading: orgLoading } = useGetOrganizationQuery({
-    page: 0,
-    limit: 100,
-  });
-
-  const { data: { data: categoriesData = [] } = {}, isLoading: categoriesLoading } = useGetCategoriesQuery({
-    page: 0,
-    limit: 100,
-  });
-
-  const { data: { data: tagsd = [] } = {}, isLoading: tagsLoading } = useGetTagsQuery({
-    page: 0,
-    limit: 100,
   });
 
   const [addEvent, { isLoading: isAddingEvent }] = useAddeventMutation();
@@ -76,31 +51,6 @@ export const useEventForm = ({ userType }: { userType: string }) => {
 
   const { mediaUrl, mediaType, venue, categories, recurring, recurringDays, recurringEnd, organization } = watch();
 
-  // Get venues when organization changes
-  const { data: { data: venuesData = [] } = {}, isLoading: venuesLoading } = useGetVenuesQuery(
-    organization ? { page: 0, limit: 1000, organization } : skipToken,
-    {
-      skip: !organization,
-    }
-  );
-
-  // Merge event venue with fetched venues
-  const venues = useMemo(() => {
-    if (!eventVenue) {
-      return venuesData;
-    }
-
-    // Check if event venue already exists in fetched data
-    const exists = venuesData.some((v: any) => v._id === eventVenue._id);
-
-    if (exists) {
-      return venuesData;
-    }
-
-    // Add event venue to the beginning of the list
-    return [eventVenue, ...venuesData];
-  }, [venuesData, eventVenue]);
-
   const prevOrganizationRef = useRef(organization);
 
   useEffect(() => {
@@ -111,26 +61,9 @@ export const useEventForm = ({ userType }: { userType: string }) => {
   useEffect(() => {
     if (prevOrganizationRef.current && prevOrganizationRef.current !== organization && hasInitializedRef.current && !isInitializingRef.current) {
       setValue('venue', '', { shouldDirty: true });
-      setEventVenue(null);
-      setSavedVenueId('');
-      venueSetRef.current = false;
     }
     prevOrganizationRef.current = organization;
   }, [organization, setValue]);
-
-  // Set venue after venues are loaded in edit mode
-  useEffect(() => {
-    if (isEditMode && hasInitializedRef.current && !venueSetRef.current && savedVenueId && venues.length > 0 && !venuesLoading) {
-      const venueExists = venues.some((v: any) => v._id === savedVenueId);
-
-      if (venueExists) {
-        setValue('venue', savedVenueId, { shouldValidate: true });
-        venueSetRef.current = true;
-      } else {
-        console.warn('⚠️ Venue not found in options:', savedVenueId);
-      }
-    }
-  }, [isEditMode, hasInitializedRef.current, savedVenueId, venues, venuesLoading, setValue]);
 
   // Remove partner organization if same as main
   useEffect(() => {
@@ -491,8 +424,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
   };
 
   const setEditValues = useCallback(() => {
-    if (!event || !event._id || !organizations || organizations.length === 0) {
-      console.log('⏳ Waiting for data...');
+    if (!event || !event._id) {
       return;
     }
 
@@ -503,31 +435,8 @@ export const useEventForm = ({ userType }: { userType: string }) => {
     const parentEvent = event?.recurringMeta?.parentEvent || null;
     setParentEventId(parentEvent);
 
-    // Extract venue information
-    let venueId = '';
-    let venueData = null;
-
-    if (event.basicInfo?.venue) {
-      if (typeof event.basicInfo.venue === 'string') {
-        venueId = event.basicInfo.venue;
-      } else if (event.basicInfo.venue._id) {
-        venueId = event.basicInfo.venue._id;
-        venueData = {
-          _id: event.basicInfo.venue._id,
-          title: event.basicInfo.venue.title || '',
-          floorPlan: event.basicInfo.venue.floorPlan || '',
-          location: event.basicInfo.venue.location || {},
-        };
-      }
-    }
-
-    // Store venue data and ID
-    if (venueData) {
-      setEventVenue(venueData);
-    }
-    if (venueId) {
-      setSavedVenueId(venueId);
-    }
+    const venueId =
+      typeof event.basicInfo?.venue === 'string' ? event.basicInfo.venue : event.basicInfo?.venue?._id || '';
 
     // Show partner organizer section if it exists
     if (event.basicInfo?.partnerOrganization) {
@@ -566,7 +475,7 @@ export const useEventForm = ({ userType }: { userType: string }) => {
       name: event?.basicInfo?.title || '',
       description: event?.basicInfo?.description || '',
       organization: organizationId,
-      venue: '', // Will be set later after venues load
+      venue: venueId,
       partnerOrganization: partnerOrgId,
       categories: event?.basicInfo?.categories?.map((cat: any) => cat._id) || [],
       tags: event?.basicInfo?.tags?.map((tag: any) => tag._id) || [],
@@ -598,27 +507,24 @@ export const useEventForm = ({ userType }: { userType: string }) => {
     setTimeout(() => {
       isInitializingRef.current = false;
     }, 150);
-  }, [event, organizations, reset]);
+  }, [event, reset]);
 
   // Initialize form when data is ready
   useEffect(() => {
-    if (id && eventLoaded && event?._id && organizations && organizations.length > 0 && !hasInitializedRef.current) {
+    if (id && eventLoaded && event?._id && !hasInitializedRef.current) {
       const timer = setTimeout(() => {
         setEditValues();
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [id, eventLoaded, event?._id, organizations, setEditValues]);
+  }, [id, eventLoaded, event?._id, setEditValues]);
 
   // Reset when component unmounts or ID changes
   useEffect(() => {
     return () => {
       hasInitializedRef.current = false;
       isInitializingRef.current = false;
-      venueSetRef.current = false;
       setShowPartnerOrganizer(false);
-      setEventVenue(null);
-      setSavedVenueId('');
       setParentEventId(null);
       setUpdateSingleLoading(false);
       setUpdateAllLoading(false);
@@ -638,14 +544,22 @@ export const useEventForm = ({ userType }: { userType: string }) => {
     methods,
     watch,
     setValue,
-    organizations,
-    orgLoading,
-    venues,
-    venuesLoading,
-    categoriesData,
-    categoriesLoading,
-    tagsd,
-    tagsLoading,
+    selectedOrgLabel: event?.basicInfo?.organization?.basicInfo?.name || event?.basicInfo?.organization?.name || '',
+    selectedPartnerOrgLabel:
+      typeof event?.basicInfo?.partnerOrganization === 'object'
+        ? event?.basicInfo?.partnerOrganization?.basicInfo?.name || event?.basicInfo?.partnerOrganization?.name || ''
+        : '',
+    selectedVenueLabel: typeof event?.basicInfo?.venue === 'object' ? event?.basicInfo?.venue?.title || '' : '',
+    selectedCategories:
+      event?.basicInfo?.categories?.map((cat: any) => ({
+        value: cat._id,
+        label: cat.title,
+      })) || [],
+    selectedTags:
+      event?.basicInfo?.tags?.map((tag: any) => ({
+        value: tag._id,
+        label: tag.title,
+      })) || [],
     addEvent,
     isAddingEvent,
     updateEvent,

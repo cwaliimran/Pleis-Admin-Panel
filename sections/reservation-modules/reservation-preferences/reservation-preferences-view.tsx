@@ -46,6 +46,12 @@ export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProp
   const handleSave = async () => {
     if (!draft) return;
 
+    const maxGuests = draft.automaticResponse.maxGuestsForAutoConfirm;
+    if (maxGuests === '' || !Number.isInteger(maxGuests) || maxGuests < 1) {
+      showError('Enter a max guest count of at least 1 for auto-confirm');
+      return;
+    }
+
     try {
       const message = await savePreferences(draft);
       showSuccess(message || 'Reservation preferences saved');

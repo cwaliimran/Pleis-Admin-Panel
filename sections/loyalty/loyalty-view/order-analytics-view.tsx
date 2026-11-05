@@ -16,22 +16,23 @@ import { useCompanySelection } from '@/app/common/header/company-selection-stora
 const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; userType: string }) => {
   const openModal = useBoolean();
 
+  console.log(isGlobal);
+
   const { organizerOrganizationIds } = useCompanySelection();
 
-  const { data: analyticsRaw, isLoading, isFetching } = useGetOrdersAnalyticsQuery(
-    { organizations: userType === 'organizer' ? organizerOrganizationIds : undefined }, { refetchOnMountOrArgChange: true });
+  const {
+    data: analyticsRaw,
+    isLoading,
+    isFetching,
+  } = useGetOrdersAnalyticsQuery(
+    { organizations: userType === 'organizer' ? organizerOrganizationIds : undefined },
+    { refetchOnMountOrArgChange: true }
+  );
   if (isLoading || isFetching) return null;
-  console.log('analyticsRaw', analyticsRaw);
-  console.log('userType', userType);
 
-  // const activePercent = 75;
-  // const inactivePercent = 25;
-  // const thirdPercent = 40;
-
-  const loyaltyOrderFrequency = 75; // 75% of high frequency orders are from loyalty
-  // const nonLoyaltyOrderFrequency = 25;
-  const loyaltyAvgSpend = 60; // Loyalty users spend 60% more than non-loyalty
-  // const nonLoyaltyAvgSpend = 40;
+  const loyaltyImpact = analyticsRaw?.data?.loyaltyImpact;
+  const loyaltyOrderFrequency = Number(loyaltyImpact?.orderFrequencyLoyalty ?? 0);
+  const loyaltyAvgSpend = Number(loyaltyImpact?.averageSpendLoyalty ?? 0);
 
   // Format stats values based on key before passing to ReservationStatsCard
   const formatStatValue = (key: string, value: any) => {
@@ -213,20 +214,22 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
                     <div className="bg-primary h-full transition-all duration-500" style={{ width: `${loyaltyOrderFrequency}%` }}></div>
                   </div>
                   <h4 className="text-muted-foreground mb-4 text-sm font-medium">
-                    Represents share of high-frequency orders (75% from loyalty users)
+                    Represents share of high-frequency orders ({loyaltyOrderFrequency}% from loyalty users)
                   </h4>
                 </div>
 
                 {/* Average Spend Comparison */}
                 <div className="mx-4 mt-2 flex items-start justify-between">
                   <h4 className="text-md mb-2 font-medium">Average Spend (Loyalty vs Non-Loyalty)</h4>
-                  <h4 className="text-md mb-2 font-medium">+{loyaltyAvgSpend}%</h4>
+                  <h4 className="text-md mb-2 font-medium">{loyaltyAvgSpend}%</h4>
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
                   <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
                     <div className="bg-primary h-full transition-all duration-500" style={{ width: `${loyaltyAvgSpend}%` }}></div>
                   </div>
-                  <h4 className="text-muted-foreground mb-4 text-sm font-medium">Loyalty users spend an average of 60% more per order</h4>
+                  <h4 className="text-muted-foreground mb-4 text-sm font-medium">
+                    Loyalty users spend an average of {loyaltyAvgSpend}% more per order
+                  </h4>
                 </div>
               </div>
             </Card>
@@ -287,11 +290,11 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
         {/* 4. AVERAGE ORDER VALUE OVER TIME (NEW REQUIREMENT - Repurposing ViewsOverTime) */}
         {/* Requirement: Tracks changes in average spend per order */}
         <div className="col-span-12 md:col-span-12">
-          <Card className="dark:bg-secondary col-span-12 shadow-md">
+          <Card className="dark:bg-secondary col-span-12 px-3 shadow-md">
             <CardHeader>
-              <h3 className="text-md mb-3 font-medium">Average Order Value (AOV) Over Time</h3>
+              <h3 className="text-xl font-semibold">Average Order Value (AOV) Over Time</h3>
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold">€15.90</h3>
+                {/* <h3 className="text-xl font-bold">€15.90</h3> */}
                 <h3 className="text-md font-[400] text-gray-400">{/* Last 30 Days <span className="ml-1 text-red-500">-1.5%</span> */}</h3>
               </div>
             </CardHeader>
@@ -316,7 +319,7 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
             </div>
           </CardHeader>
           <CardContent>
-            <OrderTransactionList  userType={userType}  /> {/* <-- Using the new component */}
+            <OrderTransactionList userType={userType} /> {/* <-- Using the new component */}
           </CardContent>
         </Card>
 
@@ -328,7 +331,7 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
             </div>
           </CardHeader>
           <CardContent>
-            <MenuItemPerformanceTable  userType={userType} />
+            <MenuItemPerformanceTable userType={userType} />
           </CardContent>
         </Card>
 

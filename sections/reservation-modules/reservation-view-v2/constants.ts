@@ -51,6 +51,7 @@ export const getCapacityLevel = (bookedSeats: number, capacity: number): Capacit
 };
 
 export const RESERVATION_STATUS_CONFIG: Record<ReservationStatus, { label: string; chipClass: string }> = {
+  new: { label: 'New', chipClass: 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300' },
   pendingPayment: { label: 'Pending payment', chipClass: 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' },
   needsConfirmation: { label: 'Needs confirmation', chipClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300' },
   confirmed: { label: 'Confirmed', chipClass: 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300' },
@@ -73,8 +74,15 @@ export const ALL_STATUSES_VALUE = 'all';
 
 export const LIST_FILTER_OPTIONS: { value: ListFilter; label: string }[] = [
   { value: ALL_STATUSES_VALUE, label: 'All statuses' },
-  ...RESERVATION_STATUS_OPTIONS,
+  ...RESERVATION_STATUS_OPTIONS.filter((option) => option.value !== 'new' && option.value !== 'needsConfirmation'),
 ];
+
+export const LIST_QUICK_TABS = [
+  { id: 'new', label: 'New' },
+  { id: 'needsConfirmation', label: 'Need Confirmation' },
+] as const;
+
+export type ListQuickTabId = (typeof LIST_QUICK_TABS)[number]['id'];
 
 export const USER_RESERVATION_STATUS_OPTIONS = RESERVATION_STATUS_OPTIONS;
 

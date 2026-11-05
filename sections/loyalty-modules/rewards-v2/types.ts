@@ -36,22 +36,19 @@ export interface Reward {
   creationMethod: RewardCreationMethod;
 
   /**
-   * When false the reward is invisible to browsing — it can only be claimed
-   * through a challenge. Views, favorites and conversion are then meaningless
-   * and render as "—" rather than 0.
+   * When false the reward is hidden from the app rewards list. It can still
+   * be linked from challenges. Metric columns still show 0 when the API
+   * sends an empty value.
    */
   availableAsReward: boolean;
   /** Obtainable only by completing a challenge, never by spending points. */
   challengeOnly: boolean;
-  /** Surfaced through promotions rather than the rewards list. */
-  isPromotionOnly: boolean;
 
   // ---- `buyMenuItemReward` only ----
-  /** The API links exactly one menu item, and nests its menu inside it. */
+  /** Shared parent menu, when every linked item sits in one. `''` when they do not. */
   menuId?: string;
   menuName?: string;
-  menuItemId?: string;
-  menuItemName?: string;
+  menuItems: { id: string; name: string; presetTypeName: string; amountQuantity: string }[];
 
   // ---- `ticketReward` only ----
   /** Ids only — the API does not populate these. */

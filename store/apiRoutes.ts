@@ -210,6 +210,9 @@ export const API_ROUTES = {
   ADMIN_FAQS: `/admin/faqs`,
   ADMIN_FAQS_BY_ID: (id: string) => `/admin/faqs/${id}`,
 
+  ADMIN_SYSTEM_LOGS: `/admin/system-logs`,
+  ADMIN_SYSTEM_LOGS_FILES: `/admin/system-logs/files`,
+
   ADMIN_HELP_SUPPORT: `/admin/support`,
   ADMIN_HELP_SUPPORT_BY_ID: (id: string) => `/admin/support/${id}`,
 
@@ -299,6 +302,8 @@ export const API_ROUTES = {
 
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL: `/admin/global-loyalty/status-levels`,
   ADMIN_GLOBAL_LOYALTY_STATUS_LEVEL_BY_ID: (id: string) => `/admin/global-loyalty/status-levels/${id}`,
+
+  ADMIN_GLOBAL_LOYALTY_AWARD_POINTS: `/admin/global-loyalty/club-members/award-points`,
 
   ORGANIZER_VENUES_TYPES: `/organizer/venue-types`,
   ORGANIZER_VENUES_TYPE_BY_ID: (id: string) => `/organizer/venue-types/${id}`,

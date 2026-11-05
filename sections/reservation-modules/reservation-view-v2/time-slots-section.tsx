@@ -14,6 +14,7 @@ interface TimeSlotsSectionProps {
   isLoading?: boolean;
   isEmpty?: boolean;
   emptyMessage?: string;
+  disabled?: boolean;
 }
 
 export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({
@@ -23,6 +24,7 @@ export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({
   isLoading = false,
   isEmpty = false,
   emptyMessage = 'No reservations on this date',
+  disabled = false,
 }) => {
   const renderBody = () => {
     if (isLoading) {
@@ -89,7 +91,7 @@ export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({
   };
 
   return (
-    <SectionCard title="Time slots" caption={SLOT_WINDOW_LABEL}>
+    <SectionCard title="Time slots" caption={SLOT_WINDOW_LABEL} disabled={disabled}>
       {renderBody()}
     </SectionCard>
   );

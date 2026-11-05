@@ -5,7 +5,6 @@ import { RHFSelectField } from '@/components/rhf';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useGetSuppliersQuery } from '@/store/Reducer/suppliers';
 import { getErrorMessage } from '@/utils/api';
 import { showError } from '@/utils/toast';
@@ -53,6 +52,7 @@ const defaultValues = {
   oib: '',
   bankAccountNumber: '',
   representativeName: '',
+  billkoApiKey: '',
   location: {
     fullAddress: '',
     country: '',
@@ -81,28 +81,12 @@ interface UserModalProps {
 const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, onClose, onSubmit, userType }) => {
   const [currentRole, setCurrentRole] = React.useState<RoleKey>(getDefaultRole(userType));
 
-  const { data: orgData } = useGetOrganizationQuery({
-    page: 0,
-    search: '',
-    limit: '1000',
-    status: '',
-  });
-
   const { data: supplierData, isLoading: supplierLoading } = useGetSuppliersQuery({
     page: 0,
     search: '',
     limit: '1000',
     status: '',
   });
-
-  const organizationOptions = React.useMemo(
-    () =>
-      orgData?.data?.map((org: any) => ({
-        value: org._id,
-        label: org?.basicInfo?.name,
-      })) || [],
-    [orgData]
-  );
 
   const supplierOptions = React.useMemo(
     () =>
@@ -189,6 +173,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, on
               oib: data.oib,
               bankAccountNumber: data.bankAccountNumber,
               representativeName: data.representativeName,
+              billkoApiKey: data.billkoApiKey || '',
               location: {
                 coordinates: [0, 0], // Default coordinates since we're not using Google Places
                 fullAddress: data.location?.fullAddress || '',
@@ -265,7 +250,6 @@ const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, on
               <CommonFields mode="create" />
               <RoleSpecificFields
                 role={currentRole}
-                organizationOptions={organizationOptions}
                 supplierOptions={supplierOptions}
                 supplierLoading={supplierLoading}
                 methods={methods}

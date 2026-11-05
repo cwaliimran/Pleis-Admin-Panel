@@ -1,6 +1,6 @@
 import {
   ArrowBigUp,
-  Box,
+  // Box,
   Building,
   CalendarDays,
   ChartBar,
@@ -22,6 +22,11 @@ import {
   ListFilter,
   BadgeInfo,
   ClipboardList,
+  ScrollText,
+  Terminal,
+  Activity,
+  AlertTriangle,
+  Globe,
 } from 'lucide-react';
 import { paths } from './paths';
 
@@ -423,12 +428,12 @@ export const menuGroups: MenuGroup[] = [
         icon: CalendarDays,
       },
       {
-        title: 'Venue types',
+        title: 'Venue Types',
         url: paths.superAdmin.venueType.default,
         icon: ChartBar,
       },
       {
-        title: 'Browser control',
+        title: 'Browser Control',
         url: paths.superAdmin.browserControl.default,
         icon: ChartBar,
       },
@@ -438,7 +443,7 @@ export const menuGroups: MenuGroup[] = [
         icon: ChartBar,
       },
       {
-        title: 'Notification center',
+        title: 'Notification Center',
         url: paths.superAdmin.globalNotification,
         icon: CalendarDays,
       },
@@ -526,7 +531,7 @@ export const menuGroups: MenuGroup[] = [
         icon: UsersRound,
       },
       {
-        title: 'Pending user list',
+        title: 'Pending User List',
         url: paths.superAdmin.users.pendingList,
         icon: UsersRound,
       },
@@ -537,22 +542,89 @@ export const menuGroups: MenuGroup[] = [
         icon: UsersRound,
       },
       {
-        title: 'Terms of service',
+        title: 'Terms of Service',
         url: paths.superAdmin.terms.default,
         icon: UsersRound,
       },
     ],
   },
+  // {
+  //   label: 'Transaction history',
+  //   key: paths.superAdmin.transactionsHistory,
+  //   icon: FileClock,
+  // },
   {
-    label: 'Transaction history',
+    label: 'Transactions',
     key: paths.superAdmin.transactionsHistory,
     icon: FileClock,
+    items: [
+      {
+        title: 'Transactions list',
+        url: paths.superAdmin.transactionsHistory,
+        icon: UsersRound,
+      },
+      // {
+      //   title: 'Transactions list',
+      //   url: paths.superAdmin.transactionsHistoryV2,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Payouts & batches v1',
+      //   url: paths.superAdmin.payoutsBatches,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Payouts & batches v2',
+      //   url: paths.superAdmin.payoutsBatchesV2,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Ticketing history v1',
+      //   url: paths.superAdmin.ticketingHistory,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Ticketing history',
+      //   url: paths.superAdmin.ticketingHistoryV2,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Reservation history v1',
+      //   url: paths.superAdmin.reservationHistory,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Reservation history',
+      //   url: paths.superAdmin.reservationHistoryV2,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Ordering history v1',
+      //   url: paths.superAdmin.orderingHistory,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Ordering history',
+      //   url: paths.superAdmin.orderingHistoryV2,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Loyalty history v1',
+      //   url: paths.superAdmin.loyaltyHistory,
+      //   icon: UsersRound,
+      // },
+      // {
+      //   title: 'Loyalty history',
+      //   url: paths.superAdmin.loyaltyHistoryV2,
+      //   icon: UsersRound,
+      // },
+    ],
   },
-  {
-    label: 'Bundles',
-    key: paths.superAdmin.bundles,
-    icon: Box,
-  },
+  // {
+  //   label: 'Bundles',
+  //   key: paths.superAdmin.bundles,
+  //   icon: Box,
+  // },
   {
     label: 'Promo codes',
     key: paths.superAdmin.promoCodes,
@@ -572,6 +644,45 @@ export const menuGroups: MenuGroup[] = [
     label: 'FAQs',
     key: paths.superAdmin.faqs,
     icon: ListFilter,
+  },
+  {
+    label: 'System Logs',
+    key: paths.superAdmin.systemLogs.default,
+    icon: ScrollText,
+    items: [
+      {
+        title: 'Live Stream',
+        url: paths.superAdmin.systemLogs.default,
+        icon: Activity,
+      },
+      {
+        title: 'Access',
+        icon: Globe,
+        items: [
+          {
+            title: 'HTTP Requests',
+            url: paths.superAdmin.systemLogs.access,
+            icon: Globe,
+          },
+        ],
+      },
+      {
+        title: 'Application',
+        icon: Terminal,
+        items: [
+          {
+            title: 'Server Info',
+            url: paths.superAdmin.systemLogs.app,
+            icon: Terminal,
+          },
+          {
+            title: 'Errors & Warnings',
+            url: paths.superAdmin.systemLogs.errors,
+            icon: AlertTriangle,
+          },
+        ],
+      },
+    ],
   },
   // {
   //   label: 'Giveaways',

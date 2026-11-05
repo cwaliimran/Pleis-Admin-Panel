@@ -3,17 +3,21 @@
 import ButtonLoading from '@/components/common/button-loading';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ComboPicker } from './combo-picker';
 import {
+  DEFAULT_UPDATE_ORDER_PAYMENT_METHOD,
   MAX_ITEM_QUANTITY,
   MIN_ITEM_QUANTITY,
+  UPDATE_ORDER_PAYMENT_METHOD_OPTIONS,
   formatCurrency,
   formatOrderTime,
   getComboPriceModeLabel,
-  getPaymentTypeLabel,
+  toUpdateOrderPaymentMethod,
+  UpdateOrderPaymentMethod,
 } from './constants';
 import { MenuItemPicker } from './menu-item-picker';
 import { ComboOption, MenuItemOption, Order, OrderDraftCombo, OrderDraftItem, OrderUpdatePayload } from './types';
@@ -172,6 +176,7 @@ const RemoveButton: React.FC<{ label: string; disabled?: boolean; onClick: () =>
 export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order, organizationId, isSubmitting, onClose, onConfirm }) => {
   const [items, setItems] = useState<OrderDraftItem[]>([]);
   const [combos, setCombos] = useState<OrderDraftCombo[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<UpdateOrderPaymentMethod>(DEFAULT_UPDATE_ORDER_PAYMENT_METHOD);
 
   const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(null);
 
@@ -180,6 +185,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
 
     setItems(toDraftItems(order));
     setCombos(toDraftCombos(order));
+    setPaymentMethod(toUpdateOrderPaymentMethod(order.paymentType));
   }, [open, order?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleQuantityChange = (menuItemId: string, quantity: number) =>
@@ -286,7 +292,34 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
               <ReadOnlyRow label="Placed" value={order ? formatOrderTime(order.placedAt) : '-'} />
               <ReadOnlyRow label="Order ID" value={order?.orderNumber || '-'} />
               <ReadOnlyRow label="Delivery Option" value={order?.deliveryOption?.title || '-'} />
-              <ReadOnlyRow label="Payment method" value={order ? getPaymentTypeLabel(order.paymentType) : '-'} />
+
+              <div className="border-b border-dashed border-gray-200 py-2 last:border-0 dark:border-gray-800">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">Payment method</span>
+                  <Select
+                    value={paymentMethod}
+                    disabled={isSubmitting}
+                    onValueChange={(next) => setPaymentMethod(next as UpdateOrderPaymentMethod)}
+                  >
+                    <SelectTrigger
+                      aria-label="Payment method"
+                      className="h-8 w-[148px] cursor-pointer bg-white text-xs font-semibold shadow-none dark:bg-[#1a1a1a]"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UPDATE_ORDER_PAYMENT_METHOD_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="cursor-pointer text-xs">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-amber-600 dark:text-amber-400">
+                  Not working yet — changing this is not saved with the order.
+                </p>
+              </div>
             </div>
           </div>
 

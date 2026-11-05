@@ -1,0 +1,278 @@
+import { Reservation, ReservationDetail } from '../types/types';
+
+const CABARET = { company: 'Cabaret Grupa d.o.o.', organization: 'PLEIS Cabaret', venue: 'PLEIS Cabaret — Tkalčićeva' };
+const NOKTURNO = { company: 'Nokturno Ugostiteljstvo d.o.o.', organization: 'Nokturno', venue: 'Nokturno — Jarun' };
+
+const detail = (input: ReservationDetail): ReservationDetail => input;
+
+const FREE_VOUCHER_NOTE = 'Free reservation — not a payment, no transaction, money filters treat it as out of scope.';
+const FREE_SETTLEMENT_NOTE = 'No documents — nothing is generated before the payment succeeds.';
+const VOUCHER_FUNDED_NOTE = 'Excluded from payout by design (VOUCHER_FUNDED) — a prepaid min-spend is not a completed sale until redeemed.';
+
+export const MOCK_RESERVATIONS: Reservation[] = [
+  {
+    id: 'rsv-3312',
+    reservationId: 'RSV-3312',
+    guestName: 'Petra Novak',
+    action: 'create',
+    ...CABARET,
+    isToday: true,
+    slotNote: 'Today 21:00 · Standard table',
+    reservationTypeCategory: 'standard_table',
+    reservationTypeLabel: 'Standard table',
+    guests: 4,
+    table: 'T12',
+    condition: 'free',
+    voucher: null,
+    status: 'confirmed',
+    autoConfirmed: true,
+    hasRejectionReason: false,
+    hasGuestNote: true,
+    staffLabel: 'Auto-confirmed',
+    staffVia: null,
+    occasion: 'Birthday',
+    contactPhone: '+385 91 234 5678',
+    settlementStatus: 'NO_TRANSACTION',
+    createdAt: '10/08/2026 15:40',
+    isLatestState: true,
+    detail: detail({
+      reservation: { typeLabel: 'Standard table', condition: 'free', guests: 4, table: 'T12', occasion: 'Birthday', contact: '+385 91 234 5678' },
+      voucherNote: FREE_VOUCHER_NOTE,
+      staff: { label: 'Auto-confirmed', via: null },
+      settlement: { status: 'NO_TRANSACTION', note: FREE_SETTLEMENT_NOTE },
+    }),
+  },
+  {
+    id: 'rsv-3318',
+    reservationId: 'RSV-3318',
+    guestName: 'Ivana Horvat',
+    action: 'update',
+    ...CABARET,
+    isToday: true,
+    slotNote: 'Today 22:00 · VIP booth · min spend',
+    reservationTypeCategory: 'vip_booth',
+    reservationTypeLabel: 'VIP booth',
+    guests: 2,
+    table: 'VIP 3',
+    condition: 'minimum_spend',
+    voucher: { code: 'PLS-7K2M-QX41-9DF3', status: 'ISSUED', prepaidAmount: 50.0, balance: 50.0, validUntil: 'to 09/08 04:00', expiringWithin7Days: true },
+    status: 'confirmed',
+    autoConfirmed: false,
+    hasRejectionReason: false,
+    hasGuestNote: false,
+    staffLabel: 'Confirmed by Emir Softić',
+    staffVia: 'web_admin_app',
+    contactPhone: '+385 91 555 1122',
+    settlementStatus: 'EXCLUDED',
+    createdAt: '03/08/2026 18:24',
+    isLatestState: true,
+    detail: detail({
+      reservation: { typeLabel: 'VIP booth · min spend', condition: 'minimum_spend', guests: 2, table: 'VIP 3', contact: '+385 91 555 1122' },
+      staff: { label: 'Confirmed by Emir Softić', via: 'web_admin_app' },
+      settlement: { status: 'EXCLUDED', note: VOUCHER_FUNDED_NOTE },
+    }),
+  },
+  {
+    id: 'rsv-3299',
+    reservationId: 'RSV-3299',
+    guestName: 'Marko Perić',
+    action: 'no_show',
+    ...CABARET,
+    isToday: false,
+    slotNote: '02/08 22:00 · VIP booth · min spend',
+    reservationTypeCategory: 'vip_booth',
+    reservationTypeLabel: 'VIP booth',
+    guests: 6,
+    table: 'VIP 1',
+    condition: 'minimum_spend',
+    voucher: { code: 'PLS-9A1C-MM72-K1L0', status: 'FORFEITED', prepaidAmount: 60.0, balance: 0.0, validUntil: 'expired 03/08' },
+    status: 'no_show',
+    autoConfirmed: false,
+    hasRejectionReason: false,
+    hasGuestNote: false,
+    staffLabel: 'Closed by Emir Softić',
+    staffVia: 'mobile_staff_app',
+    contactPhone: '+385 91 222 8899',
+    settlementStatus: 'EXCLUDED',
+    createdAt: '28/07/2026 12:00',
+    isLatestState: true,
+    detail: detail({
+      reservation: { typeLabel: 'VIP booth · min spend', condition: 'minimum_spend', guests: 6, table: 'VIP 1', contact: '+385 91 222 8899' },
+      staff: { label: 'Closed by Emir Softić', via: 'mobile_staff_app' },
+      settlement: { status: 'EXCLUDED', note: 'Voucher forfeited on no-show — excluded from payout.' },
+    }),
+  },
+  {
+    id: 'rsv-3325',
+    reservationId: 'RSV-3325',
+    guestName: 'Luka Babić',
+    action: 'create',
+    ...CABARET,
+    isToday: false,
+    slotNote: '12/08 22:00 · VIP booth · min spend',
+    reservationTypeCategory: 'vip_booth',
+    reservationTypeLabel: 'VIP booth',
+    guests: 3,
+    condition: 'minimum_spend',
+    voucher: null,
+    status: 'awaiting_payment',
+    statusNote: 'deadline 10/08 18:00 · passed',
+    deadlinePassed: true,
+    autoConfirmed: false,
+    hasRejectionReason: false,
+    hasGuestNote: false,
+    staffLabel: '—',
+    staffVia: null,
+    contactPhone: '+385 91 333 4455',
+    settlementStatus: 'NO_TRANSACTION',
+    createdAt: '09/08/2026 20:11',
+    isLatestState: true,
+    detail: detail({
+      reservation: { typeLabel: 'VIP booth · min spend', condition: 'minimum_spend', guests: 3, contact: '+385 91 333 4455' },
+      staff: { label: '—', via: null },
+      settlement: { status: 'NO_TRANSACTION', note: FREE_SETTLEMENT_NOTE },
+    }),
+  },
+  {
+    id: 'rsv-3301',
+    reservationId: 'RSV-3301',
+    guestName: 'Ana Kovač',
+    action: 'update',
+    ...CABARET,
+    isToday: false,
+    slotNote: '09/08 21:30 · Standard table',
+    reservationTypeCategory: 'standard_table',
+    reservationTypeLabel: 'Standard table',
+    guests: 5,
+    table: 'T4',
+    condition: 'free',
+    voucher: null,
+    status: 'show',
+    autoConfirmed: false,
+    hasRejectionReason: false,
+    hasGuestNote: false,
+    staffLabel: 'Checked in by Emir Softić',
+    staffVia: 'mobile_staff_app',
+    guestCodesNote: '2 / 3 guest codes used',
+    contactPhone: '+385 91 444 6677',
+    settlementStatus: 'NO_TRANSACTION',
+    createdAt: '07/08/2026 10:02',
+    isLatestState: true,
+    detail: detail({
+      reservation: { typeLabel: 'Standard table', condition: 'free', guests: 5, table: 'T4', contact: '+385 91 444 6677' },
+      voucherNote: FREE_VOUCHER_NOTE,
+      staff: { label: 'Checked in by Emir Softić', via: 'mobile_staff_app' },
+      settlement: { status: 'NO_TRANSACTION', note: FREE_SETTLEMENT_NOTE },
+    }),
+  },
+  {
+    id: 'rsv-3289',
+    reservationId: 'RSV-3289',
+    guestName: 'Utopia Technologies',
+    action: 'cancel',
+    ...NOKTURNO,
+    isToday: false,
+    slotNote: '08/08 20:00 · Standard table',
+    reservationTypeCategory: 'standard_table',
+    reservationTypeLabel: 'Standard table',
+    guests: 8,
+    condition: 'free',
+    voucher: null,
+    status: 'cancelled',
+    statusNote: 'Venue at capacity for the slot',
+    autoConfirmed: false,
+    hasRejectionReason: true,
+    hasGuestNote: false,
+    staffLabel: 'Closed by Zoran Marić',
+    staffVia: 'web_admin_app',
+    contactPhone: '+385 91 777 3344',
+    settlementStatus: 'NO_TRANSACTION',
+    createdAt: '05/08/2026 09:30',
+    isLatestState: true,
+    detail: detail({
+      reservation: { typeLabel: 'Standard table', condition: 'free', guests: 8, contact: '+385 91 777 3344' },
+      voucherNote: FREE_VOUCHER_NOTE,
+      staff: { label: 'Closed by Zoran Marić', via: 'web_admin_app' },
+      settlement: { status: 'NO_TRANSACTION', note: FREE_SETTLEMENT_NOTE },
+    }),
+  },
+  {
+    id: 'rsv-3330',
+    reservationId: 'RSV-3330',
+    guestName: 'Hamed Gill',
+    action: 'create',
+    ...CABARET,
+    isToday: false,
+    slotNote: '12/08 22:00 · VIP booth · min spend',
+    reservationTypeCategory: 'vip_booth',
+    reservationTypeLabel: 'VIP booth',
+    guests: 4,
+    table: 'VIP 2',
+    condition: 'minimum_spend',
+    voucher: { code: 'PLS-4D8N-TT19-Q0Z2', status: 'PARTIALLY_USED', prepaidAmount: 80.0, balance: 22.5, validUntil: 'to 12/08 04:00', expiringWithin7Days: true },
+    status: 'confirmed',
+    autoConfirmed: true,
+    hasRejectionReason: false,
+    hasGuestNote: false,
+    staffLabel: 'Auto-confirmed',
+    staffVia: null,
+    contactPhone: '+385 91 888 2211',
+    settlementStatus: 'EXCLUDED',
+    createdAt: '06/08/2026 17:45',
+    isLatestState: true,
+    detail: detail({
+      reservation: { typeLabel: 'VIP booth · min spend', condition: 'minimum_spend', guests: 4, table: 'VIP 2', contact: '+385 91 888 2211' },
+      staff: { label: 'Auto-confirmed', via: null },
+      settlement: { status: 'EXCLUDED', note: VOUCHER_FUNDED_NOTE },
+    }),
+  },
+];
+
+export const SUPERSEDED_RESERVATIONS: Reservation[] = [
+  {
+    ...MOCK_RESERVATIONS[1],
+    id: 'rsv-3318-prev',
+    action: 'create',
+    status: 'new',
+    autoConfirmed: false,
+    staffLabel: '—',
+    staffVia: null,
+    isLatestState: false,
+    createdAt: '01/08/2026 09:10',
+    detail: detail({ ...MOCK_RESERVATIONS[1].detail, staff: { label: '—', via: null } }),
+  },
+  {
+    ...MOCK_RESERVATIONS[4],
+    id: 'rsv-3301-prev',
+    action: 'create',
+    status: 'confirmed',
+    staffLabel: 'Auto-confirmed',
+    staffVia: null,
+    guestCodesNote: undefined,
+    isLatestState: false,
+    createdAt: '02/08/2026 16:45',
+    detail: detail({ ...MOCK_RESERVATIONS[4].detail, staff: { label: 'Auto-confirmed', via: null } }),
+  },
+];
+
+export const MOCK_TIMEZONE_NOTE = 'All times Europe/Zagreb';
+export const MOCK_PAGE_SIZE = 7;
+export const MOCK_TOTAL_RECORDS = 12;
+
+const cloneExtra = (base: Reservation, offset: number): Reservation => {
+  const suffix = `-x${offset}`;
+  return { ...base, id: `${base.id}${suffix}`, reservationId: `${base.reservationId}${suffix}` };
+};
+
+const buildAllReservations = (): Reservation[] => {
+  const all = [...MOCK_RESERVATIONS];
+  let offset = 0;
+  while (all.length < MOCK_TOTAL_RECORDS) {
+    all.push(cloneExtra(MOCK_RESERVATIONS[offset % MOCK_RESERVATIONS.length], offset));
+    offset += 1;
+  }
+  return all;
+};
+
+export const ALL_MOCK_RESERVATIONS: Reservation[] = buildAllReservations();
+export const ALL_MOCK_RESERVATIONS_WITH_SUPERSEDED: Reservation[] = [...ALL_MOCK_RESERVATIONS, ...SUPERSEDED_RESERVATIONS];
