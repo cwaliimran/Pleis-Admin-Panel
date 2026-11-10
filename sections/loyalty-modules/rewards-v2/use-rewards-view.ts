@@ -5,7 +5,7 @@ import type { ApiReward, ApiRewardMenuItem, ApiRewardStats } from '@/store/Reduc
 import { useGetRewardTypesQuery, useGetRewardsV2Query } from '@/store/Reducer/rewards-v2-api';
 import { useMemo } from 'react';
 import { REWARD_TYPE_OPTIONS_LIMIT } from './constants';
-import { Reward, RewardStats, RewardsMeta, RewardsQuery } from './types';
+import { Reward, RewardMenuItem, RewardStats, RewardsMeta, RewardsQuery } from './types';
 import { toMetric } from './utils';
 
 const EMPTY_STATS: RewardStats = {
@@ -16,10 +16,10 @@ const EMPTY_STATS: RewardStats = {
   mostClaimed: null,
 };
 
+type MappedMenuItem = RewardMenuItem & { menuId: string; menuName: string };
+
 /** Older records return one item; newer ones return the whole list. */
-const toMenuItems = (
-  value?: ApiRewardMenuItem | ApiRewardMenuItem[] | null
-): { id: string; name: string; menuId: string; menuName: string; presetTypeName: string; amountQuantity: string }[] => {
+const toMenuItems = (value?: ApiRewardMenuItem | ApiRewardMenuItem[] | null): MappedMenuItem[] => {
   if (!value) return [];
 
   const list = Array.isArray(value) ? value : [value];
@@ -35,8 +35,15 @@ const toMenuItems = (
         name: entry.title || entry._id,
         menuId: entry.menu?._id ?? '',
         menuName: entry.menu?.title ?? '',
-        presetTypeName: preset && typeof preset === 'object' ? preset.name || preset.title || '' : '',
         amountQuantity: entry.amountQuantity?.trim() ?? '',
+        presetType:
+          preset && typeof preset === 'object'
+            ? {
+                name: preset.name,
+                title: preset.title,
+                type: preset.type && typeof preset.type === 'object' ? { name: preset.type.name } : preset.type,
+              }
+            : (preset ?? null),
       },
     ];
   });
@@ -62,7 +69,7 @@ const toReward = (item: ApiReward): Reward => {
 
   menuId: sharedMenu?.menuId,
   menuName: sharedMenu?.menuName,
-  menuItems: menuItems.map(({ id, name, presetTypeName, amountQuantity }) => ({ id, name, presetTypeName, amountQuantity })),
+  menuItems: menuItems.map(({ id, name, amountQuantity, presetType }) => ({ id, name, amountQuantity, presetType })),
 
   eventId: item.event ?? undefined,
   ticketId: item.ticket ?? undefined,

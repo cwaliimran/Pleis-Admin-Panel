@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
 import { getStatusVariant } from '@/utils/short-utils';
 import React, { useMemo, useState } from 'react';
 import { formatMenuItemOptionLabel } from '../challenges-v2/utils';
@@ -47,31 +46,17 @@ const OnOffValue: React.FC<{ on: boolean }> = ({ on }) =>
 export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({ open, reward, onClose }) => {
   const [itemsOpen, setItemsOpen] = useState(false);
 
-  // The reward record only stores the item title, so sizes that share a name
-  // look identical until we read preset type and amount off the menu.
-  const { data: menuItemsData } = useGetMenuItemByMenuIdQuery(
-    { menuId: reward?.menuId ?? '' },
-    { skip: !open || !reward?.menuId || reward.creationMethod !== 'buyMenuItemReward' }
+  const linkedLabels = useMemo(
+    () =>
+      (reward?.menuItems ?? []).map((item) =>
+        formatMenuItemOptionLabel({
+          title: item.name,
+          amountQuantity: item.amountQuantity,
+          presetType: item.presetType,
+        })
+      ),
+    [reward]
   );
-
-  const linkedLabels = useMemo(() => {
-    const byId = new Map<string, { title?: string; amountQuantity?: string; presetType?: { name?: string; title?: string } | string | null }>(
-      (menuItemsData?.data ?? []).map((item: { _id: string; title?: string; amountQuantity?: string; presetType?: { name?: string; title?: string } | string | null }) => [
-        item._id,
-        item,
-      ])
-    );
-
-    return (reward?.menuItems ?? []).map((item) => {
-      const fetched = byId.get(item.id);
-
-      return formatMenuItemOptionLabel({
-        title: fetched?.title || item.name,
-        amountQuantity: fetched?.amountQuantity || item.amountQuantity,
-        presetType: fetched?.presetType ?? (item.presetTypeName ? { name: item.presetTypeName } : null),
-      });
-    });
-  }, [menuItemsData, reward]);
 
   if (!reward) return null;
 

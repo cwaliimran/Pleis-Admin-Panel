@@ -171,8 +171,17 @@ interface EventTicket {
 
 const asBooleanString = (value: boolean): ApiBooleanString => (value ? 'true' : 'false');
 
-const toInitialSelected = (items: { id: string; name: string }[]) =>
-  items.length > 0 ? items.map((item) => ({ value: item.id, label: item.name })) : undefined;
+const toInitialSelected = (items: Reward['menuItems']) =>
+  items.length > 0
+    ? items.map((item) => ({
+        value: item.id,
+        label: formatMenuItemOptionLabel({
+          title: item.name,
+          amountQuantity: item.amountQuantity,
+          presetType: item.presetType,
+        }),
+      }))
+    : undefined;
 
 const toDateOnly = (value: Date | string): string => {
   if (value instanceof Date) {

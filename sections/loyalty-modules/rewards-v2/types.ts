@@ -26,6 +26,14 @@ export type RewardSortKey = ApiRewardSortBy;
 /** Empty string means "no sort" and is omitted from the request. */
 export type RewardSortOrder = 'asc' | 'desc' | '';
 
+/** Linked catalogue row on a menu-item reward — enough to label it like the form picker. */
+export interface RewardMenuItem {
+  id: string;
+  name: string;
+  amountQuantity: string;
+  presetType: { name?: string; title?: string; type?: { name?: string } | string | null } | string | null;
+}
+
 export interface Reward {
   id: string;
   name: string;
@@ -48,7 +56,11 @@ export interface Reward {
   /** Shared parent menu, when every linked item sits in one. `''` when they do not. */
   menuId?: string;
   menuName?: string;
-  menuItems: { id: string; name: string; presetTypeName: string; amountQuantity: string }[];
+  /**
+   * Same shape the form picker labels from: `presetType.type.name`, item title,
+   * then `amountQuantity` — e.g. "Soft Drinks, Coca-Cola, 250ml".
+   */
+  menuItems: RewardMenuItem[];
 
   // ---- `ticketReward` only ----
   /** Ids only — the API does not populate these. */

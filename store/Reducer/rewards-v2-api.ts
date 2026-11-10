@@ -39,7 +39,12 @@ export interface ApiRewardMenuItem {
   _id: string;
   title: string;
   menu?: ApiRewardMenu | null;
-  presetType?: { _id?: string; name?: string; title?: string } | string | null;
+  presetType?: {
+    _id?: string;
+    name?: string;
+    title?: string;
+    type?: { _id?: string; name?: string } | string | null;
+  } | string | null;
   amountQuantity?: string;
 }
 

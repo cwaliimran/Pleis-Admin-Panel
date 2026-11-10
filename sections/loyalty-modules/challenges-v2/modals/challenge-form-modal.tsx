@@ -16,7 +16,6 @@ import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import { useGetRewardsV2Query } from '@/store/Reducer/rewards-v2-api';
 import { useGetTiersQuery } from '@/store/Reducer/tiers-api';
-import { LoyaltyUserType } from '../../types';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -25,6 +24,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
+import { LoyaltyUserType } from '../../types';
 import ChallengeCalculatorPanel from '../components/challenge-calculator-panel';
 
 import {
@@ -35,7 +35,7 @@ import {
   CHALLENGE_TASK_TYPE_OPTIONS,
 } from '../constants';
 import { Challenge, ChallengeItemRef, ChallengeRewardType, ChallengeTaskType } from '../types';
-import { formatMenuItemOptionLabel, getSharedMenu } from '../utils';
+import { formatChallengeItemLabel, formatMenuItemOptionLabel, getSharedMenu } from '../utils';
 
 interface ChallengeFormValues {
   image: unknown;
@@ -165,7 +165,8 @@ const toDateOnly = (value: Date | string): string => {
   return String(value).slice(0, 10);
 };
 
-const toInitialSelected = (refs: ChallengeItemRef[]) => (refs.length > 0 ? refs.map((ref) => ({ value: ref.id, label: ref.name })) : undefined);
+const toInitialSelected = (refs: ChallengeItemRef[]) =>
+  refs.length > 0 ? refs.map((ref) => ({ value: ref.id, label: formatChallengeItemLabel(ref) })) : undefined;
 
 interface ChallengeFormModalProps {
   open: boolean;
