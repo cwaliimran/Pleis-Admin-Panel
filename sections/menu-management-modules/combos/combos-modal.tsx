@@ -2,20 +2,25 @@
 
 import ButtonLoading from '@/components/common/button-loading';
 import FormProvider, { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
+import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import { FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { noImageUrl, noImageUrlDev, noImageUrlDevCap } from '@/constant/constant';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
 import { useAddComboMutation, useUpdateComboMutation } from '@/store/Reducer/combos-api';
 import { useGetMenuItemSubcategoriesQuery } from '@/store/Reducer/menu-item-subcategories-api';
 import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { getErrorMessage } from '@/utils/api';
+import { IMAGE_ONLY_ERROR, isImageFile } from '@/utils/fileUpload';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo, useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as Yup from 'yup';
+import { toImageKey } from '../menuItems/menuItems-utils';
 import { AvailabilityCards, ComponentsCard, InfoCallout, SectionHeading } from './combos-modal-fields';
 import {
   clampQuantity,
@@ -34,8 +39,11 @@ import { ComboComponent, ComboComponentLine, ComboFormMenuItem, ComboFormValues,
 
 const MENU_ITEM_FETCH_LIMIT = 1000;
 
+const PLACEHOLDER_IMAGE_URLS: string[] = [noImageUrl, noImageUrlDev, noImageUrlDevCap];
+
 const defaultValues: ComboFormValues = {
   name: '',
+  image: null,
   subCategory: '',
   description: '',
   menuItems: [],
@@ -46,6 +54,12 @@ const defaultValues: ComboFormValues = {
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Combo name is required'),
+  image: Yup.mixed()
+    .nullable()
+    .test('is-image', IMAGE_ONLY_ERROR, (value) => {
+      if (!(value instanceof FileList) || value.length === 0) return true;
+      return isImageFile(value[0]);
+    }),
   subCategory: Yup.string().required('Subcategory is required'),
   description: Yup.string().optional(),
 
@@ -87,7 +101,8 @@ const schema = Yup.object().shape({
 const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, userType }: ComboModalProps) => {
   const [addCombo, { isLoading: addLoading }] = useAddComboMutation();
   const [updateCombo, { isLoading: updateLoading }] = useUpdateComboMutation();
-  const submitting = addLoading || updateLoading;
+  const { uploadImage, uploading: imageUploading } = useImageUpload();
+  const submitting = addLoading || updateLoading || imageUploading;
 
   const validationContext = useRef({ sumOfParts: 0 }).current;
 
@@ -154,8 +169,10 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
     if (!open) return;
 
     if (isEdit && selectedData) {
+      const imageValue = selectedData.image && !PLACEHOLDER_IMAGE_URLS.includes(selectedData.image) ? selectedData.image : null;
       reset({
         name: selectedData.name,
+        image: imageValue,
         subCategory: getRefId(selectedData.subCategory),
         description: selectedData.description || '',
         menuItems: getComboLines(selectedData.menuItems).map((line) => ({ menuItem: line.id, quantity: line.quantity })),
@@ -186,6 +203,18 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
   const removeComponent = (id: string) => commitLines(selectedLines.filter((line) => line.menuItem !== id));
 
   const handleSubmit = async (formData: ComboFormValues) => {
+    // A newly picked file is uploaded first and already yields a bare key; a plain string is an
+    // already-hosted image (kept from the record) whose absolute URL has to be reduced to that
+    // same key before it goes in the payload.
+    let imageKey: string | undefined;
+    if (formData.image instanceof FileList && formData.image.length > 0) {
+      const uploaded = await uploadImage(formData.image[0]);
+      if (!uploaded) return;
+      imageKey = uploaded;
+    } else if (typeof formData.image === 'string' && formData.image) {
+      imageKey = toImageKey(formData.image);
+    }
+
     const payload: any = {
       name: formData.name,
       subCategory: formData.subCategory,
@@ -196,6 +225,7 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
 
       status: availability.isUnorderable ? 'draft' : formData.status,
     };
+    if (imageKey) payload.image = imageKey;
     if (userType === 'super-admin' && companyId) payload.companyOrganizer = companyId;
 
     try {
@@ -232,6 +262,14 @@ const ComboModal = ({ open, onClose, isEdit = false, selectedData, companyId, us
           <div className="mt-2 w-full">
             <FormProvider methods={methods} onSubmit={methods.handleSubmit(handleSubmit)}>
               <div className="mt-0 flex w-full flex-col gap-6">
+                <RHFUploadAvatar
+                  name="image"
+                  label="Image"
+                  initialImage={
+                    typeof selectedData?.image === 'string' && !PLACEHOLDER_IMAGE_URLS.includes(selectedData.image) ? selectedData.image : null
+                  }
+                />
+
                 <div className="flex flex-col gap-4">
                   <SectionHeading title="Combo details" />
 

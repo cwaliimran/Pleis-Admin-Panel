@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useGetSuppliersGloabalQuery } from '@/store/Reducer/suppliers';
 import { useSignupMutation } from '@/store/Reducer/user';
+import { LegalDocument, useGetPublicLegalDocumentsQuery } from '@/store/Reducer/legal';
+import '@/app/common/terms-html.css';
 import { getErrorMessage } from '@/utils/api';
 import { getDeviceType } from '@/utils/getDeviceType';
 import { showError, showSuccess } from '@/utils/toast';
@@ -53,6 +55,7 @@ interface FormData {
   location: LocationData;
   suppliers: string[];
   terms: boolean;
+  privacy: boolean;
 }
 
 // ============================================================
@@ -81,7 +84,9 @@ const defaultValues: FormData = {
     postalCode: '',
   },
   suppliers: [],
+  // Spec 1.3: mandatory and unchecked by default
   terms: false,
+  privacy: false,
 };
 
 // ============================================================
@@ -151,7 +156,8 @@ const schema = Yup.object().shape({
     postalCode: Yup.string().required('Postal code is required'),
   }),
   suppliers: Yup.array().of(Yup.string()),
-  terms: Yup.boolean().oneOf([true], 'You must accept terms and conditions').required(),
+  terms: Yup.boolean().oneOf([true], 'You must accept the Partner Terms and Conditions').required(),
+  privacy: Yup.boolean().oneOf([true], 'You must confirm you have read the Privacy Policy').required(),
 });
 
 // ============================================================
@@ -165,6 +171,10 @@ function SignUpView() {
   const modalOpen = useBoolean();
 
   const [signUp, { isLoading: signUpLoading }] = useSignupMutation();
+  // Current versions of the documents the partner accepts (stored in the consent log).
+  const { data: legalDocs } = useGetPublicLegalDocumentsQuery(['partner_terms', 'privacy_policy']);
+  const [viewingDoc, setViewingDoc] = React.useState<LegalDocument | null>(null);
+  const docByType = (type: string) => legalDocs?.data?.find((d) => d.type === type);
 
   const { data: supplierData } = useGetSuppliersGloabalQuery({
     page: 0,
@@ -194,8 +204,11 @@ function SignUpView() {
     reset,
     trigger,
     control,
+    watch,
     formState: { errors },
   } = methods;
+  const termsChecked = watch('terms');
+  const privacyChecked = watch('privacy');
 
   const parsePhoneNumber = (phoneInput: { code: string; number: string } | string): { code: string; number: string } => {
     if (typeof phoneInput === 'string') {
@@ -223,7 +236,7 @@ function SignUpView() {
       password: data.password,
       deviceType,
       userType: 'organizer',
-      deviceId: '123',
+      deviceId: 'test',
       timezone,
       companyDetails: {
         name: data.companyName.trim(),
@@ -240,7 +253,11 @@ function SignUpView() {
         },
         suppliers: data.suppliers,
       },
-      termsAccepted: data.terms,
+      termsAccepted: data.terms && data.privacy,
+      legalAcceptance: {
+        partnerTerms: data.terms ? docByType('partner_terms')?.version ?? true : false,
+        privacyPolicy: data.privacy ? docByType('privacy_policy')?.version ?? true : false,
+      },
     };
   };
 
@@ -410,26 +427,48 @@ function SignUpView() {
                   />
                 </div>
 
-                <div className="mt-4 flex items-center gap-3">
-                  <Controller
-                    name="terms"
-                    control={control}
-                    render={({ field }) => (
-                      <>
-                        <Checkbox
-                          id="terms"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="cursor-pointer border border-gray-800 dark:border-gray-400"
-                        />
-                        <Label className="cursor-pointer" htmlFor="terms">
-                          Accept terms and conditions
-                        </Label>
-                      </>
-                    )}
-                  />
-                </div>
-                {errors.terms && <p className="mt-1 text-xs text-red-500">{errors.terms.message}</p>}
+                {/* Spec 1.3 — both mandatory, unchecked by default, document names open the full text */}
+                {(
+                  [
+                    { name: 'terms', type: 'partner_terms', before: 'I accept the ', link: 'Partner Terms and Conditions' },
+                    { name: 'privacy', type: 'privacy_policy', before: 'I have read the ', link: 'Privacy Policy' },
+                  ] as const
+                ).map((item) => (
+                  <div key={item.name}>
+                    <div className="mt-4 flex items-start gap-3">
+                      <Controller
+                        name={item.name}
+                        control={control}
+                        render={({ field }) => (
+                          <>
+                            <Checkbox
+                              id={item.name}
+                              checked={field.value}
+                              onCheckedChange={(v) => field.onChange(v === true)}
+                              className="mt-0.5 cursor-pointer border border-gray-800 dark:border-gray-400"
+                            />
+                            <Label className="cursor-pointer leading-snug font-normal" htmlFor={item.name}>
+                              <span>
+                                {item.before}
+                                <button
+                                  type="button"
+                                  className="font-medium underline"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setViewingDoc(docByType(item.type) || null);
+                                  }}
+                                >
+                                  {item.link}
+                                </button>
+                              </span>
+                            </Label>
+                          </>
+                        )}
+                      />
+                    </div>
+                    {errors[item.name] && <p className="mt-1 text-xs text-red-500">{errors[item.name]?.message}</p>}
+                  </div>
+                ))}
 
                 <div className="mt-6 grid grid-cols-2 gap-4">
                   <Button
@@ -452,8 +491,8 @@ function SignUpView() {
                   ) : (
                     <Button
                       type="submit"
-                      className="h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] dark:bg-white dark:text-black hover:dark:bg-white"
-                      disabled={signUpLoading}
+                      className="h-[45px] w-full cursor-pointer bg-[#0f172b] text-white transition-colors duration-200 hover:bg-[#0f172b] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black hover:dark:bg-white"
+                      disabled={signUpLoading || !termsChecked || !privacyChecked}
                     >
                       Sign Up
                     </Button>
@@ -507,19 +546,19 @@ function SignUpView() {
             </p>
           </div>
 
-          <p className="text-muted-foreground mt-6 text-center text-xs">
-            By signing up, you agree to our{' '}
-            <Link href="/term-and-service" className="hover:text-primary underline transition-colors">
-              Terms
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy-policy" className="hover:text-primary underline transition-colors">
-              Privacy Policy
-            </Link>
-            .
-          </p>
         </motion.div>
       </div>
+
+      <Dialog open={!!viewingDoc} onOpenChange={(o) => !o && setViewingDoc(null)}>
+        <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col md:max-w-[760px]!">
+          <DialogHeader>
+            <DialogTitle>{viewingDoc?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto pr-2">
+            <div className="terms-html" dangerouslySetInnerHTML={{ __html: viewingDoc?.content || '' }} />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={modalOpen.value} onOpenChange={modalOpen.onToggle}>
         <DialogContent aria-describedby={undefined} className="dark:bg-secondary sm:max-w-[425px]">

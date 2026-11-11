@@ -11,6 +11,7 @@ import { addDays, format, parseISO, startOfWeek } from 'date-fns';
 import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { RESERVATION_STATUS_CONFIG, TIME_SLOTS } from './constants';
+import type { ListQuickTabId } from './constants';
 import { ReservationFormModal } from './modals/reservation-form-modal';
 import { ReservationListSection } from './reservation-list-section';
 import { ReservationTypesSection } from './reservation-types-section';
@@ -40,6 +41,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [listFilter, setListFilter] = useState<ListFilter>('all');
   const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<ListQuickTabId | null>(null);
 
   const [editing, setEditing] = useState<Reservation | null>(null);
   const [pendingStatusId, setPendingStatusId] = useState<string | null>(null);
@@ -51,6 +53,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
   const [updateStatus] = useUpdateUserReservationStatusMutation();
 
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, index) => format(addDays(weekStart, index), ISO)), [weekStart]);
+  const isQuickTab = Boolean(activeTab);
 
   const {
     days,
@@ -68,10 +71,10 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     isFetching: isListFetching,
   } = useReservationList({
     organizationId,
-    date: selectedDate,
-    slot: selectedSlot,
-    typeId: selectedTypeId,
-    filter: listFilter,
+    date: isQuickTab ? undefined : selectedDate,
+    slot: isQuickTab ? null : selectedSlot,
+    typeId: isQuickTab ? null : selectedTypeId,
+    filter: activeTab ?? listFilter,
     page,
   });
 
@@ -100,6 +103,11 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
 
   const handleFilterChange = (filter: ListFilter) => {
     setListFilter(filter);
+    setPage(1);
+  };
+
+  const handleTabChange = (tab: ListQuickTabId | null) => {
+    setActiveTab(tab);
     setPage(1);
   };
 
@@ -139,11 +147,14 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
   const isRejecting = pendingStatus?.status === 'rejected';
 
   const listSubtitle = useMemo(() => {
+    if (activeTab === 'new') return 'New · all dates';
+    if (activeTab === 'needsConfirmation') return 'Need confirmation · all dates';
+
     const dayLabel = format(parseISO(selectedDate), 'EEE dd/MM');
     const slotLabel = selectedSlot ? `slot ${selectedSlot}` : 'all slots';
     const typeLabel = types.find((type) => type.typeId === selectedTypeId)?.name || 'all types';
     return `${dayLabel} · ${slotLabel} · ${typeLabel}`;
-  }, [selectedDate, selectedSlot, selectedTypeId, types]);
+  }, [activeTab, selectedDate, selectedSlot, selectedTypeId, types]);
 
   return (
     <div className="flex flex-col gap-6 pb-10">
@@ -185,6 +196,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             onSelectDate={handleSelectDate}
             onPickWeek={handlePickWeek}
             isLoading={isCalendarLoading}
+            disabled={isQuickTab}
           />
 
           <TimeSlotsSection
@@ -194,14 +206,15 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             isLoading={isCalendarLoading || isCalendarFetching}
             isEmpty={!hasDataForDate}
             emptyMessage={`No reservations on ${format(parseISO(selectedDate), 'EEE dd/MM/yyyy')}`}
+            disabled={isQuickTab}
           />
 
-          <ReservationTypesSection types={types} selectedTypeId={selectedTypeId} onSelectType={handleSelectType} />
+          <ReservationTypesSection types={types} selectedTypeId={selectedTypeId} onSelectType={handleSelectType} disabled={isQuickTab} />
 
           <ReservationListSection
             data={reservations}
             subtitle={listSubtitle}
-            filter={listFilter}
+            filter={isQuickTab ? 'all' : listFilter}
             onFilterChange={handleFilterChange}
             pagination={pagination}
             onPageChange={setPage}
@@ -210,6 +223,8 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             onCreate={handleOpenCreate}
             onEdit={handleOpenEdit}
             onSetStatus={handleRequestStatus}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
           />
         </>
       )}

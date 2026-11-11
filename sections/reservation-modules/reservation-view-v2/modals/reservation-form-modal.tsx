@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,8 +25,8 @@ import {
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { format, parseISO } from 'date-fns';
-import { CalendarIcon, ChevronDown, ChevronRight } from 'lucide-react';
+import { format, parseISO, startOfDay } from 'date-fns';
+import { CalendarIcon, Check, ChevronDown, ChevronRight } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Resolver } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
@@ -50,6 +51,10 @@ import { useReservationTimeRules } from '../use-reservation-time-rules';
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
+const DATE_ISO = 'yyyy-MM-dd';
+
+const todayIso = () => format(startOfDay(new Date()), DATE_ISO);
+
 const DEFAULT_PHONE_CODE = '+385';
 
 const CREATE_DEFAULT_STATUS: ApiUserReservationStatus = 'needsConfirmation';
@@ -59,6 +64,7 @@ interface FormLimits {
   availableTables?: number;
   availableCapacity?: number;
   conditionType: ApiReservationCondition;
+  minimumSpend?: number;
   occasionRequired: boolean;
 }
 
@@ -71,6 +77,7 @@ const readLimits = (type?: ApiReservationType): FormLimits =>
         availableTables: type.availableTables,
         availableCapacity: type.availableCapacity,
         conditionType: type.conditionType ?? 'free',
+        minimumSpend: type.minimumSpend,
         occasionRequired: type.occasionRequired ?? false,
       }
     : NO_LIMITS;
@@ -142,7 +149,10 @@ const makeSchema = (getLimits: () => FormLimits, getRules: () => ReservationTime
         });
       }),
 
-    date: Yup.string().required('Date is required').default(''),
+    date: Yup.string()
+      .required('Date is required')
+      .test('not-past', 'Date cannot be in the past', (value) => !value || value >= todayIso())
+      .default(''),
 
     startTime: Yup.string()
       .default('')
@@ -165,6 +175,13 @@ const makeSchema = (getLimits: () => FormLimits, getRules: () => ReservationTime
       .test('amount-required', 'Amount is required for a minimum-spend reservation type', (value) => {
         if (getLimits().conditionType !== 'minimumSpend') return true;
         return value !== undefined && !Number.isNaN(value);
+      })
+      .test('amount-minimum-spend', '', function (value) {
+        const { conditionType, minimumSpend } = getLimits();
+        if (conditionType !== 'minimumSpend' || minimumSpend === undefined) return true;
+        if (value === undefined || Number.isNaN(value) || value >= minimumSpend) return true;
+
+        return this.createError({ message: `Amount must be at least ${minimumSpend} for this reservation type` });
       }),
 
     occasion: Yup.string()
@@ -172,7 +189,7 @@ const makeSchema = (getLimits: () => FormLimits, getRules: () => ReservationTime
       .test('occasion-required', 'This reservation type requires an occasion', (value) => !getLimits().occasionRequired || Boolean(value)),
 
     notes: Yup.string().default(''),
-    status: Yup.mixed<ApiUserReservationStatus>().oneOf(USER_RESERVATION_STATUSES).required(),
+    status: Yup.mixed<ApiUserReservationStatus>().oneOf([...USER_RESERVATION_STATUSES, 'new']).required(),
   });
 
 const ProfileField: React.FC<{ label: string; value: string }> = ({ label, value }) => (
@@ -306,7 +323,7 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
       reservationType: '',
       partySize: EMPTY_NUMBER,
       numberOfTables: EMPTY_NUMBER,
-      date: seed.date,
+      date: seed.date >= todayIso() ? seed.date : todayIso(),
       startTime: seed.time,
       endTime: deriveEndTime(seed.time),
       amount: EMPTY_NUMBER,
@@ -582,50 +599,71 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
             <div className="flex flex-col gap-3">
               <h3 className="text-[11px] font-bold tracking-wide text-gray-400 uppercase dark:text-gray-500">Guest</h3>
 
+              <FormField
+                control={control}
+                name="email"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Email *</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type="email"
+                          placeholder="guest@email.com"
+                          className={cn('h-[40px] pr-24', fieldState.invalid && 'border-destructive ring-destructive/40')}
+                          {...field}
+                        />
+                        {guestProfile && (
+                          <span className="pointer-events-none absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 text-xs font-semibold text-green-600 dark:text-green-400">
+                            <Check className="h-3.5 w-3.5" />
+                            Existing
+                          </span>
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="grid items-start gap-4 sm:grid-cols-2">
                 <RHFTextField name="firstName" label="First name *" placeholder="First name" />
                 <RHFTextField name="lastName" label="Last name *" placeholder="Last name" />
               </div>
 
-              <div className="grid items-start gap-4 sm:grid-cols-2 mb-2">
-                <div>
-                  <RHFTextField name="email" type="email" label="Email *" placeholder="guest@email.com" />
-                </div>
+              <FormField
+                control={control}
+                name="phone"
+                render={({ field, fieldState }) => {
+                  const code = watch('phoneCode') || '';
+                  const displayValue = field.value && code ? `${code}${field.value}` : field.value || '';
 
-                <FormField
-                  control={control}
-                  name="phone"
-                  render={({ field, fieldState }) => {
-                    const code = watch('phoneCode') || '';
-                    const displayValue = field.value && code ? `${code}${field.value}` : field.value || '';
-
-                    return (
-                      <FormItem>
-                        <FormLabel>Phone number *</FormLabel>
-                        <PhoneInput
-                          value={displayValue}
-                          country="hr"
-                          onChange={(value, country: { dialCode?: string }) => {
-                            const dialCode = country?.dialCode || '';
-                            field.onChange(value.replace(dialCode, ''));
-                            setValue('phoneCode', `+${dialCode}`, { shouldValidate: true, shouldDirty: true });
-                          }}
-                          placeholder="Phone number"
-                          inputProps={{ 'aria-invalid': fieldState.invalid }}
-                          containerClass="w-full"
-                          dropdownStyle={{ zIndex: 9999, position: 'fixed', width: '16rem' }}
-                          buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
-                          inputClass={cn(
-                            'file:text-foreground placeholder:text-muted-foreground border-input !border-gray-100 dark:!border-gray-500 !shadow-sm flex !h-[40px] !w-full min-w-0 rounded-lg !bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-                            fieldState.invalid && 'border-destructive ring-destructive/40'
-                          )}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-              </div>
+                  return (
+                    <FormItem className="mb-2">
+                      <FormLabel>Phone number *</FormLabel>
+                      <PhoneInput
+                        value={displayValue}
+                        country="hr"
+                        onChange={(value, country: { dialCode?: string }) => {
+                          const dialCode = country?.dialCode || '';
+                          field.onChange(value.replace(dialCode, ''));
+                          setValue('phoneCode', `+${dialCode}`, { shouldValidate: true, shouldDirty: true });
+                        }}
+                        placeholder="Phone number"
+                        inputProps={{ 'aria-invalid': fieldState.invalid }}
+                        containerClass="w-full"
+                        dropdownStyle={{ zIndex: 9999, position: 'fixed', width: '16rem' }}
+                        buttonClass="!bg-transparent !border-none !shadow-none px-2 text-gray-800"
+                        inputClass={cn(
+                          'file:text-foreground placeholder:text-muted-foreground border-input !border-gray-100 dark:!border-gray-500 !shadow-sm flex !h-[40px] !w-full min-w-0 rounded-lg !bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+                          fieldState.invalid && 'border-destructive ring-destructive/40'
+                        )}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
 
               <button
                 type="button"
@@ -707,9 +745,10 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
                             mode="single"
                             weekStartsOn={1}
                             selected={field.value ? parseISO(field.value) : undefined}
+                            disabled={{ before: startOfDay(new Date()) }}
                             onSelect={(date) => {
-                              if (!date) return;
-                              field.onChange(format(date, 'yyyy-MM-dd'));
+                              if (!date || date < startOfDay(new Date())) return;
+                              field.onChange(format(date, DATE_ISO));
                               setDatePickerOpen(false);
                             }}
                           />
@@ -783,8 +822,18 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
 
                 {limits.conditionType === 'minimumSpend' && (
                   <div>
-                    <RHFTextField name="amount" type="number" min={0} label="Amount *" placeholder="e.g. 50" />
-                    <p className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">Minimum spend the guest agreed to.</p>
+                    <RHFTextField
+                      name="amount"
+                      type="number"
+                      min={limits.minimumSpend ?? 0}
+                      label="Amount *"
+                      placeholder={limits.minimumSpend !== undefined ? `Min. ${limits.minimumSpend}` : 'e.g. 50'}
+                    />
+                    <p className="mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                      {limits.minimumSpend !== undefined
+                        ? `Minimum spend must be at least ${limits.minimumSpend}.`
+                        : 'Minimum spend the guest agreed to.'}
+                    </p>
                   </div>
                 )}
               </div>

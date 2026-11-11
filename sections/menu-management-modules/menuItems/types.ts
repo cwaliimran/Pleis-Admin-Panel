@@ -51,6 +51,8 @@ export interface MenuItemRecord {
   cuisine?: string;
   isRecommended?: boolean;
   isTogo?: boolean;
+  /** 18+ statutory age restriction — never orderable to go */
+  ageRestricted?: boolean;
   isRequiresOrderConfirmation?: boolean;
   /** Sent to the API as a string ('true'/'false'), so it may come back as either. */
   upSellItem?: boolean | string;
@@ -159,6 +161,7 @@ export type MenuItemFormValues = {
   isRecommended: boolean;
   upSellItem: boolean;
   isTogo: boolean;
+  ageRestricted: boolean;
   isRequiresOrderConfirmation: boolean;
 };
 

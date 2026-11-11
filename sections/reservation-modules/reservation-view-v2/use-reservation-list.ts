@@ -8,7 +8,7 @@ import { ListFilter, Reservation, ReservationPagination, TypeOccupancy } from '.
 
 interface UseReservationListArgs {
   organizationId?: string;
-  date: string;
+  date?: string;
   slot: string | null;
   typeId: string | null;
   filter: ListFilter;
@@ -67,6 +67,7 @@ const toTypeOccupancy = (stat: ApiReservationTypeCapacityStat): TypeOccupancy =>
   name: stat.reservationTypeName,
   bookedSeats: stat.bookedCapacity ?? 0,
   totalSeats: stat.maxCapacity ?? 0,
+  ageRestricted: !!stat.ageRestricted,
 });
 
 export const useReservationList = ({
@@ -81,7 +82,7 @@ export const useReservationList = ({
   const { data, isLoading, isFetching } = useGetReservationsV2Query(
     {
       organizationsId: organizationId as string,
-      date,
+      date: date || undefined,
       page: page - 1,
       limit,
       startTime: slot || undefined,

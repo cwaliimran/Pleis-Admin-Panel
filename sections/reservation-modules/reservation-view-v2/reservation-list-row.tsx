@@ -14,17 +14,41 @@ interface ReservationListRowProps {
   onSetStatus: (item: Reservation, status: ReservationStatus) => void;
 }
 
+const toDisplayDate = (value?: string): string => {
+  const match = value?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value || '';
+};
+
 export const ReservationListRow: React.FC<ReservationListRowProps> = ({ item, disabled = false, onEdit, onSetStatus }) => {
   const statusConfig = RESERVATION_STATUS_CONFIG[item.status];
   const occasionOrEvent = [item.occasion, item.eventName].filter(Boolean).join(' · ');
   const confirmStatus: ReservationStatus = (item.amount ?? 0) > 0 ? 'pendingPayment' : 'confirmed';
+  const displayDate = toDisplayDate(item.date);
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       <TableCell>
         <div className="font-bold text-gray-900 dark:text-gray-100">{item.guestName}</div>
+        {/* <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+          {item?.time && item?.endTime
+            ? `${item.pleisId || item.sourceLabel || '—'} · ${item.time} - ${item.endTime}`
+            : item.pleisId || item.sourceLabel || '—'}
+        </div> */}
+
         <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-          {item.pleisId || item.sourceLabel || '—'} · {item?.time} - {item?.endTime}
+          {item.time && item.endTime ? (
+            <span>
+              {displayDate} · {item.time} - {item.endTime}
+            </span>
+          ) : item.date && item.time ? (
+            <span>
+              {displayDate} · {item.time}
+            </span>
+          ) : item.date ? (
+            <span>{displayDate}</span>
+          ) : (
+            <span>—</span>
+          )}
         </div>
       </TableCell>
 

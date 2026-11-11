@@ -30,13 +30,13 @@ const LevelStatusTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit
         <ImageWithModal src={item?.backgroundImage || ''} title="Background" width={250} height={250} className="h-11 w-20" />
       </TableCell>
 
-      <TableCell className="text-left">{item?.bonusPointsPerEuro || 'N/A'}</TableCell>
+      <TableCell className="text-left">{item?.bonusPointsPerEuro ?? 'N/A'}</TableCell>
 
       <TableCell className="text-left capitalize">{item?.type || 'N/A'}</TableCell>
 
-      <TableCell className="text-left">{item?.entryPoints || 'N/A'}</TableCell>
+      <TableCell className="text-left">{item?.entryPoints ?? 'N/A'}</TableCell>
 
-      <TableCell className="text-left">{item?.retainPoints || 'N/A'}</TableCell>
+      <TableCell className="text-left">{item?.retainPoints ?? 'N/A'}</TableCell>
 
       <TableCell className="text-left">{fDate(item?.createdAt, formatStr.split.date)}</TableCell>
 

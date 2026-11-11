@@ -8,8 +8,10 @@ import { CustomBadgeVariant, DeliveryOptionStatus, DeliveryOptionType } from './
 export const DELIVERY_OPTION_TYPE_CONFIG: Record<DeliveryOptionType, { label: string; variant: CustomBadgeVariant }> = {
   counterPickup: { label: 'Counter pickup', variant: 'info' },
   tableDelivery: { label: 'Table delivery', variant: 'warning' },
-  toGo: { label: 'To go', variant: 'error' },
 };
+
+/** Shown for options migrated from the removed "To go" destination (#146). */
+export const DELIVERY_OPTION_NO_DESTINATION = { label: 'Choose destination', variant: 'error' as CustomBadgeVariant };
 
 export const DELIVERY_OPTION_TYPE_OPTIONS: { value: DeliveryOptionType; label: string }[] = (
   Object.keys(DELIVERY_OPTION_TYPE_CONFIG) as DeliveryOptionType[]

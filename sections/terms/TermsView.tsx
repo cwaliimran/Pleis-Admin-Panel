@@ -1,542 +1,282 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { EditorState, getDefaultKeyBinding, KeyBindingUtil, RichUtils } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
 import { stateFromHTML } from 'draft-js-import-html';
-import { FileText, Save, ShieldCheck, Users } from 'lucide-react';
+import { FileText, History, Receipt, ScrollText, ShieldCheck, SlidersHorizontal, Upload, Users } from 'lucide-react';
 
 import { AppLoading } from '@/components/atoms/app-loading';
 import ButtonLoading from '@/components/common/button-loading';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import {
-  useGetOrganizerTermsQuery,
-  useGetCustomerTermsQuery,
-  useGetPrivacyPolicyQuery,
-  useCreateSettingsMutation,
-  useUpdateSettingsMutation,
-} from '@/store/Reducer/settings';
+  LegalDocument,
+  LegalDocumentType,
+  useGetAdminLegalDocumentsQuery,
+  useGetLegalDocumentHistoryQuery,
+  usePublishLegalDocumentMutation,
+} from '@/store/Reducer/legal';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
 
+import ComplianceSettings from './ComplianceSettings';
+import ConsentLogTable from './ConsentLogTable';
+import { editorStyles } from './constants';
 import { RichTextEditor } from './RichTextEditor';
-import { DocumentType, EditorStateMap, InitialContentMap, HasChangesMap, SettingsIdMap } from './types';
-import { DOCUMENT_TYPE_CONFIG, TERMS_NOT_FOUND_MESSAGE, PRIVACY_NOT_FOUND_MESSAGE, editorStyles } from './constants';
 
-export default function TermsView() {
-  // API Hooks
-  const { data: organizerData, isLoading: isLoadingOrganizer, error: organizerError } = useGetOrganizerTermsQuery();
-  const { data: customerData, isLoading: isLoadingCustomer, error: customerError } = useGetCustomerTermsQuery();
-  const { data: privacyData, isLoading: isLoadingPrivacy, error: privacyError } = useGetPrivacyPolicyQuery();
+/**
+ * Legal documents are versioned: every publish creates a new immutable version, so each
+ * consent record points at the exact text that was accepted. "Require re-acceptance"
+ * prompts users / partners to accept again on their next login.
+ */
+const DOCS: { type: LegalDocumentType; title: string; short: string; audience: string; icon: React.ReactNode }[] = [
+  { type: 'partner_terms', title: 'Partner Terms and Conditions', short: 'Partner T&C', audience: 'Partners — accepted at partner registration', icon: <Users className="h-4 w-4" /> },
+  { type: 'terms_of_use', title: 'Terms of Use', short: 'Terms of Use', audience: 'Buyers — accepted at app registration', icon: <FileText className="h-4 w-4" /> },
+  { type: 'sales_terms', title: 'Sales Terms', short: 'Sales Terms', audience: 'Buyers — shown in App → Settings → Legal', icon: <Receipt className="h-4 w-4" /> },
+  { type: 'privacy_policy', title: 'Privacy Policy', short: 'Privacy', audience: 'Buyers + partners — accepted at registration', icon: <ShieldCheck className="h-4 w-4" /> },
+];
 
-  const [createSettings, { isLoading: isCreating }] = useCreateSettingsMutation();
-  const [updateSettings, { isLoading: isUpdating }] = useUpdateSettingsMutation();
-
-  // State Management
-  const [activeTab, setActiveTab] = useState<DocumentType>('organizer_terms');
-  const [isInitialized, setIsInitialized] = useState({
-    organizer_terms: false,
-    customer_terms: false,
-    privacy_policy: false,
-  });
-
-  const [editorStates, setEditorStates] = useState<EditorStateMap>({
-    organizer_terms: EditorState.createEmpty(),
-    customer_terms: EditorState.createEmpty(),
-    privacy_policy: EditorState.createEmpty(),
-  });
-
-  const [initialContents, setInitialContents] = useState<InitialContentMap>({
-    organizer_terms: null,
-    customer_terms: null,
-    privacy_policy: null,
-  });
-
-  const [hasChanges, setHasChanges] = useState<HasChangesMap>({
-    organizer_terms: false,
-    customer_terms: false,
-    privacy_policy: false,
-  });
-
-  const [settingsIds, setSettingsIds] = useState<SettingsIdMap>({
-    organizer_terms: null,
-    customer_terms: null,
-    privacy_policy: null,
-  });
-
-  // Helper function to convert HTML to EditorState
-  const createEditorStateFromHTML = useCallback((html: string): EditorState => {
-    const contentState = stateFromHTML(html, {
-      customBlockFn: (element) => {
-        if (element.tagName === 'LI' && element.parentElement) {
-          const depth = Array.from(element.parentElement.querySelectorAll('ul, ol')).length - 1;
-          if (element.parentElement.tagName === 'UL') {
-            return { type: 'unordered-list-item', depth };
-          }
-          if (element.parentElement.tagName === 'OL') {
-            return { type: 'ordered-list-item', depth };
-          }
-        }
-        return undefined;
-      },
-    });
-    return EditorState.createWithContent(contentState);
-  }, []);
-
-  // Helper function to convert EditorState to HTML
-  const convertEditorStateToHTML = useCallback((editorState: EditorState): string => {
-    const contentState = editorState.getCurrentContent();
-    const options = {
-      blockStyleFn: (block: any) => {
-        const blockType = block.getType();
-        const depth = block.getDepth();
-        if (blockType === 'unordered-list-item') {
-          return {
-            element: 'li',
-            nest: 'ul',
-            attributes: { style: `margin-left: ${depth * 1.5}rem` },
-          };
-        }
-        if (blockType === 'ordered-list-item') {
-          return {
-            element: 'li',
-            nest: 'ol',
-            attributes: { style: `margin-left: ${depth * 1.5}rem` },
-          };
-        }
-        return undefined;
-      },
-    };
-    return stateToHTML(contentState, options);
-  }, []);
-
-  // Initialize Organizer Terms
-  useEffect(() => {
-    if (organizerData?.data && !isInitialized.organizer_terms) {
-      const content = organizerData.data.terms_and_conditions;
-      const id = organizerData.data._id;
-
-      if (content) {
-        setEditorStates((prev) => ({
-          ...prev,
-          organizer_terms: createEditorStateFromHTML(content),
-        }));
-        setInitialContents((prev) => ({
-          ...prev,
-          organizer_terms: content,
-        }));
+const htmlToEditor = (html: string): EditorState => {
+  if (!html) return EditorState.createEmpty();
+  const contentState = stateFromHTML(html, {
+    customBlockFn: (element) => {
+      if (element.tagName === 'LI' && element.parentElement) {
+        const depth = Array.from(element.parentElement.querySelectorAll('ul, ol')).length - 1;
+        if (element.parentElement.tagName === 'UL') return { type: 'unordered-list-item', depth };
+        if (element.parentElement.tagName === 'OL') return { type: 'ordered-list-item', depth };
       }
-
-      if (id) {
-        setSettingsIds((prev) => ({
-          ...prev,
-          organizer_terms: id,
-        }));
-      }
-
-      setIsInitialized((prev) => ({ ...prev, organizer_terms: true }));
-    }
-  }, [organizerData, isInitialized.organizer_terms, createEditorStateFromHTML]);
-
-  // Initialize Customer Terms
-  useEffect(() => {
-    if (customerData?.data && !isInitialized.customer_terms) {
-      const content = customerData.data.customer_terms_and_conditions;
-      const id = customerData.data._id;
-
-      if (content) {
-        setEditorStates((prev) => ({
-          ...prev,
-          customer_terms: createEditorStateFromHTML(content),
-        }));
-        setInitialContents((prev) => ({
-          ...prev,
-          customer_terms: content,
-        }));
-      }
-
-      if (id) {
-        setSettingsIds((prev) => ({
-          ...prev,
-          customer_terms: id,
-        }));
-      }
-
-      setIsInitialized((prev) => ({ ...prev, customer_terms: true }));
-    }
-  }, [customerData, isInitialized.customer_terms, createEditorStateFromHTML]);
-
-  // Initialize Privacy Policy
-  useEffect(() => {
-    if (privacyData?.data && !isInitialized.privacy_policy) {
-      const content = privacyData.data.privacy_policy;
-      const id = privacyData.data._id;
-
-      if (content) {
-        setEditorStates((prev) => ({
-          ...prev,
-          privacy_policy: createEditorStateFromHTML(content),
-        }));
-        setInitialContents((prev) => ({
-          ...prev,
-          privacy_policy: content,
-        }));
-      }
-
-      if (id) {
-        setSettingsIds((prev) => ({
-          ...prev,
-          privacy_policy: id,
-        }));
-      }
-
-      setIsInitialized((prev) => ({ ...prev, privacy_policy: true }));
-    }
-  }, [privacyData, isInitialized.privacy_policy, createEditorStateFromHTML]);
-
-  // Editor Change Handler
-  const handleEditorChange = useCallback(
-    (newEditorState: EditorState, type: DocumentType) => {
-      setEditorStates((prev) => ({
-        ...prev,
-        [type]: newEditorState,
-      }));
-
-      const currentHtml = convertEditorStateToHTML(newEditorState);
-      setHasChanges((prev) => ({
-        ...prev,
-        [type]: currentHtml !== initialContents[type],
-      }));
+      return undefined;
     },
-    [initialContents, convertEditorStateToHTML]
-  );
+  });
+  return EditorState.createWithContent(contentState);
+};
 
-  // Key Command Handler
-  const handleKeyCommand = useCallback((command: string, editorState: EditorState, type: DocumentType) => {
-    const newState = RichUtils.handleKeyCommand(editorState, command);
-    if (newState) {
-      setEditorStates((prev) => ({
-        ...prev,
-        [type]: newState,
-      }));
+const editorToHtml = (editorState: EditorState): string =>
+  stateToHTML(editorState.getCurrentContent(), {
+    blockStyleFn: (block: any) => {
+      const blockType = block.getType();
+      const depth = block.getDepth();
+      if (blockType === 'unordered-list-item') return { element: 'li', nest: 'ul', attributes: { style: `margin-left: ${depth * 1.5}rem` } };
+      if (blockType === 'ordered-list-item') return { element: 'li', nest: 'ol', attributes: { style: `margin-left: ${depth * 1.5}rem` } };
+      return undefined;
+    },
+  } as any);
+
+const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString('hr-HR') : '—');
+const today = () => new Date().toISOString().slice(0, 10);
+
+function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS)[number] }) {
+  const [editorState, setEditorState] = useState(() => htmlToEditor(doc?.content || ''));
+  const [baseline, setBaseline] = useState(doc?.content || '');
+  const [summary, setSummary] = useState('');
+  const [effectiveDate, setEffectiveDate] = useState(today());
+  const [requiresReacceptance, setRequiresReacceptance] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+  const [publish, { isLoading: isPublishing }] = usePublishLegalDocumentMutation();
+  const { data: historyData, isFetching: historyLoading } = useGetLegalDocumentHistoryQuery(meta.type, { skip: !showHistory });
+
+  // Reload the editor when a newer version arrives from the server.
+  useEffect(() => {
+    setEditorState(htmlToEditor(doc?.content || ''));
+    setBaseline(doc?.content || '');
+  }, [doc?._id, doc?.content]);
+
+  const html = useMemo(() => editorToHtml(editorState), [editorState]);
+  const hasChanges = html !== baseline && editorState.getCurrentContent().hasText();
+
+  const handleKeyCommand = useCallback((command: string, state: EditorState) => {
+    const next = RichUtils.handleKeyCommand(state, command);
+    if (next) {
+      setEditorState(next);
       return 'handled' as const;
     }
     return 'not-handled' as const;
   }, []);
 
-  // Key Binding Function
   const keyBindingFn = useCallback((e: React.KeyboardEvent) => {
     if (KeyBindingUtil.hasCommandModifier(e)) {
-      switch (e.keyCode) {
-        case 49:
-          return 'header-one';
-        case 50:
-          return 'header-two';
-        case 51:
-          return 'header-three';
-        default:
-          return getDefaultKeyBinding(e);
-      }
+      if (e.keyCode === 49) return 'header-one';
+      if (e.keyCode === 50) return 'header-two';
+      if (e.keyCode === 51) return 'header-three';
     }
     return getDefaultKeyBinding(e);
   }, []);
 
-  // Toggle Inline Style
-  const toggleInlineStyle = useCallback((style: string, type: DocumentType) => {
-    setEditorStates((prev) => ({
-      ...prev,
-      [type]: RichUtils.toggleInlineStyle(prev[type], style),
-    }));
-  }, []);
-
-  // Toggle Block Type
-  const toggleBlockType = useCallback((blockType: string, type: DocumentType) => {
-    setEditorStates((prev) => ({
-      ...prev,
-      [type]: RichUtils.toggleBlockType(prev[type], blockType),
-    }));
-  }, []);
-
-  // Check if Inline Style is Active
-  const isInlineStyleActive = useCallback(
-    (style: string, type: DocumentType): boolean => {
-      const currentStyle = editorStates[type].getCurrentInlineStyle();
-      return currentStyle.has(style);
-    },
-    [editorStates]
-  );
-
-  // Check if Block Type is Active
-  const isBlockTypeActive = useCallback(
-    (blockType: string, type: DocumentType): boolean => {
-      const editorState = editorStates[type];
-      const selection = editorState.getSelection();
-      const blockKey = selection.getStartKey();
-      const currentBlock = editorState.getCurrentContent().getBlockForKey(blockKey);
-      return currentBlock.getType() === blockType;
-    },
-    [editorStates]
-  );
-
-  // Check if document needs to be created (not found error)
-  const needsCreation = useCallback(
-    (type: DocumentType): boolean => {
-      if (type === 'organizer_terms') {
-        const isNotFound =
-          organizerError &&
-          typeof organizerError === 'object' &&
-          'data' in organizerError &&
-          organizerError.data !== null &&
-          typeof organizerError.data === 'object' &&
-          'message' in organizerError.data &&
-          typeof organizerError.data.message === 'string' &&
-          organizerError.data.message === TERMS_NOT_FOUND_MESSAGE;
-        return Boolean(isNotFound);
-      }
-
-      if (type === 'customer_terms') {
-        const isNotFound =
-          customerError &&
-          typeof customerError === 'object' &&
-          'data' in customerError &&
-          customerError.data !== null &&
-          typeof customerError.data === 'object' &&
-          'message' in customerError.data &&
-          typeof customerError.data.message === 'string' &&
-          customerError.data.message === TERMS_NOT_FOUND_MESSAGE;
-        return Boolean(isNotFound);
-      }
-
-      if (type === 'privacy_policy') {
-        const isNotFound =
-          privacyError &&
-          typeof privacyError === 'object' &&
-          'data' in privacyError &&
-          privacyError.data !== null &&
-          typeof privacyError.data === 'object' &&
-          'message' in privacyError.data &&
-          typeof privacyError.data.message === 'string' &&
-          (privacyError.data.message === PRIVACY_NOT_FOUND_MESSAGE || privacyError.data.message === TERMS_NOT_FOUND_MESSAGE);
-        return Boolean(isNotFound);
-      }
-
-      return false;
-    },
-    [organizerError, customerError, privacyError]
-  );
-
-  // Save Handler
-  const handleSave = useCallback(
-    async (type: DocumentType) => {
-      const html = convertEditorStateToHTML(editorStates[type]);
-      const apiField = DOCUMENT_TYPE_CONFIG[type].apiField;
-      const isCreate = needsCreation(type);
-
-      try {
-        let response;
-
-        if (isCreate) {
-          // CREATE - POST request
-          const createPayload = {
-            [apiField]: html,
-          };
-          response = await createSettings(createPayload).unwrap();
-        } else {
-          // UPDATE - PUT request
-          const settingsId = settingsIds[type];
-          if (!settingsId) {
-            showError('Settings ID not found. Please refresh the page.');
-            return;
-          }
-
-          const updatePayload = {
-            id: settingsId,
-            [apiField]: html,
-          };
-          response = await updateSettings(updatePayload).unwrap();
-        }
-
-        if (!response) {
-          showError('No response from server. Please try again later.');
-          return;
-        }
-
-        if ('error' in response && response.error) {
-          const errorMessage = getErrorMessage(response.error);
-          showError(errorMessage);
-          return;
-        }
-
-        // Success
-        const successMessage = response.message || `${DOCUMENT_TYPE_CONFIG[type].title} ${isCreate ? 'created' : 'updated'} successfully`;
-        showSuccess(successMessage);
-
-        // Update states after successful save
-        setInitialContents((prev) => ({
-          ...prev,
-          [type]: html,
-        }));
-
-        setHasChanges((prev) => ({
-          ...prev,
-          [type]: false,
-        }));
-
-        // Update settings ID if it was a creation
-        if (isCreate && response.data?._id) {
-          setSettingsIds((prev) => ({
-            ...prev,
-            [type]: response.data._id,
-          }));
-        }
-      } catch (error) {
-        const errorMessage = getErrorMessage(error);
-        showError(errorMessage);
-      }
-    },
-    [editorStates, settingsIds, convertEditorStateToHTML, needsCreation, createSettings, updateSettings]
-  );
-
-  // Render Editor for each type
-  const renderEditor = useCallback(
-    (type: DocumentType) => {
-      return (
-        <RichTextEditor
-          editorState={editorStates[type]}
-          onEditorChange={(state) => handleEditorChange(state, type)}
-          onKeyCommand={(command, state) => handleKeyCommand(command, state, type)}
-          keyBindingFn={keyBindingFn}
-          placeholder={DOCUMENT_TYPE_CONFIG[type].placeholder}
-          onToggleInlineStyle={(style) => toggleInlineStyle(style, type)}
-          onToggleBlockType={(blockType) => toggleBlockType(blockType, type)}
-          isInlineStyleActive={(style) => isInlineStyleActive(style, type)}
-          isBlockTypeActive={(blockType) => isBlockTypeActive(blockType, type)}
-        />
-      );
-    },
-    [editorStates, handleEditorChange, handleKeyCommand, keyBindingFn, toggleInlineStyle, toggleBlockType, isInlineStyleActive, isBlockTypeActive]
-  );
-
-  // Loading state
-  const isLoading = isLoadingOrganizer || isLoadingCustomer || isLoadingPrivacy;
-  const isSaving = isCreating || isUpdating;
+  const handlePublish = async () => {
+    if (requiresReacceptance && !summary.trim()) {
+      showError('Add a short summary of changes — it is shown to users when they are asked to accept again.');
+      return;
+    }
+    try {
+      const res = await publish({
+        type: meta.type,
+        content: html,
+        summary: summary.trim(),
+        effectiveDate,
+        requiresReacceptance,
+      }).unwrap();
+      showSuccess(`${meta.title} v${res.data.version} published${requiresReacceptance ? ' — users will be asked to accept it on next login' : ''}`);
+      setSummary('');
+      setBaseline(html);
+    } catch (error) {
+      showError(getErrorMessage(error));
+    }
+  };
 
   return (
-    <>
-      {isLoading ? (
-        <AppLoading />
-      ) : (
-        <div className="container mx-auto w-full p-6">
-          <style dangerouslySetInnerHTML={{ __html: editorStyles }} />
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold">{meta.title}</h3>
+          <p className="text-muted-foreground text-sm">{meta.audience}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {doc && (
+            <Badge variant="secondary">
+              Current: v{doc.version} · effective {formatDate(doc.effectiveDate)}
+            </Badge>
+          )}
+          <Button variant="outline" size="sm" onClick={() => setShowHistory((s) => !s)} className="flex items-center gap-2">
+            <History className="h-4 w-4" /> {showHistory ? 'Hide history' : 'Version history'}
+          </Button>
+        </div>
+      </div>
 
-          <Card className="dark:bg-secondary w-full">
-            <CardHeader>
-              <CardTitle>
-                <h2 className="text-xl">Legal Documents</h2>
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DocumentType)} className="w-full">
-                <TabsList className="grid h-12 w-full grid-cols-3">
-                  <TabsTrigger value="organizer_terms" className="flex cursor-pointer items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    <span className="hidden sm:inline">Organizer Terms</span>
-                    <span className="sm:hidden">Organizer</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="customer_terms" className="flex cursor-pointer items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    <span className="hidden sm:inline">Customer Terms</span>
-                    <span className="sm:hidden">Customer</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="privacy_policy" className="flex cursor-pointer items-center gap-2">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span className="hidden sm:inline">Privacy Policy</span>
-                    <span className="sm:hidden">Privacy</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Organizer Terms Tab */}
-                <TabsContent value="organizer_terms" className="mt-3">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">{DOCUMENT_TYPE_CONFIG.organizer_terms.title}</h3>
-                    <div className="flex gap-2">
-                      {isSaving ? (
-                        <Button size="sm" className="flex items-center gap-2" disabled>
-                          <ButtonLoading title="Saving" />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => handleSave('organizer_terms')}
-                          size="sm"
-                          className="flex items-center gap-2"
-                          disabled={!hasChanges.organizer_terms}
-                        >
-                          <Save className="h-4 w-4" />
-                          Save
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  {renderEditor('organizer_terms')}
-                </TabsContent>
-
-                {/* Customer Terms Tab */}
-                <TabsContent value="customer_terms" className="mt-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">{DOCUMENT_TYPE_CONFIG.customer_terms.title}</h3>
-                    <div className="flex gap-2">
-                      {isSaving ? (
-                        <Button size="sm" className="flex items-center gap-2" disabled>
-                          <ButtonLoading title="Saving" />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => handleSave('customer_terms')}
-                          size="sm"
-                          className="flex items-center gap-2"
-                          disabled={!hasChanges.customer_terms}
-                        >
-                          <Save className="h-4 w-4" />
-                          Save
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  {renderEditor('customer_terms')}
-                </TabsContent>
-
-                {/* Privacy Policy Tab */}
-                <TabsContent value="privacy_policy" className="mt-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">{DOCUMENT_TYPE_CONFIG.privacy_policy.title}</h3>
-                    <div className="flex gap-2">
-                      {isSaving ? (
-                        <Button size="sm" className="flex items-center gap-2" disabled>
-                          <ButtonLoading title="Saving" />
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => handleSave('privacy_policy')}
-                          size="sm"
-                          className="flex items-center gap-2"
-                          disabled={!hasChanges.privacy_policy}
-                        >
-                          <Save className="h-4 w-4" />
-                          Save
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  {renderEditor('privacy_policy')}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+      {showHistory && (
+        <div className="rounded-md border p-3 text-sm dark:border-gray-700">
+          {historyLoading ? (
+            <p className="text-muted-foreground">Loading…</p>
+          ) : (
+            <ul className="divide-y dark:divide-gray-700">
+              {(historyData?.data || []).map((v) => (
+                <li key={v._id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <span className="font-medium">v{v.version}</span>
+                  <span className="text-muted-foreground flex-1 px-2">{v.summary || '—'}</span>
+                  <span className="text-muted-foreground">
+                    effective {formatDate(v.effectiveDate)} · published {formatDate(v.publishedAt)}
+                  </span>
+                  <Badge variant={v.requiresReacceptance ? 'default' : 'outline'}>{v.requiresReacceptance ? 'Re-acceptance' : 'Editorial'}</Badge>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
-    </>
+
+      <RichTextEditor
+        editorState={editorState}
+        onEditorChange={setEditorState}
+        onKeyCommand={handleKeyCommand}
+        keyBindingFn={keyBindingFn}
+        placeholder={`Enter the ${meta.title} here...`}
+        onToggleInlineStyle={(style) => setEditorState((s) => RichUtils.toggleInlineStyle(s, style))}
+        onToggleBlockType={(blockType) => setEditorState((s) => RichUtils.toggleBlockType(s, blockType))}
+        isInlineStyleActive={(style) => editorState.getCurrentInlineStyle().has(style)}
+        isBlockTypeActive={(blockType) => {
+          const key = editorState.getSelection().getStartKey();
+          return editorState.getCurrentContent().getBlockForKey(key)?.getType() === blockType;
+        }}
+      />
+
+      <div className="grid gap-4 rounded-md border p-4 md:grid-cols-[1fr_200px] dark:border-gray-700">
+        <div className="space-y-2">
+          <Label htmlFor={`summary-${meta.type}`}>Summary of changes</Label>
+          <Textarea
+            id={`summary-${meta.type}`}
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder="Shown to users / partners when they are asked to accept the new version"
+            rows={2}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={`effective-${meta.type}`}>Effective date</Label>
+          <Input id={`effective-${meta.type}`} type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} />
+        </div>
+        <div className="flex items-start gap-2 md:col-span-2">
+          <Checkbox
+            id={`reaccept-${meta.type}`}
+            checked={requiresReacceptance}
+            onCheckedChange={(v) => setRequiresReacceptance(v === true)}
+            className="mt-0.5 cursor-pointer"
+          />
+          <Label htmlFor={`reaccept-${meta.type}`} className="cursor-pointer leading-snug font-normal">
+            Require acceptance of this version (users / partners must accept it again on next login).
+            <span className="text-muted-foreground block text-xs">Untick only for editorial fixes (typos, formatting) — a new version is still recorded.</span>
+          </Label>
+        </div>
+        <div className="flex justify-end md:col-span-2">
+          {isPublishing ? (
+            <Button size="sm" disabled>
+              <ButtonLoading title="Publishing" />
+            </Button>
+          ) : (
+            <Button size="sm" onClick={handlePublish} disabled={!hasChanges} className="flex items-center gap-2">
+              <Upload className="h-4 w-4" /> Publish new version
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function TermsView() {
+  const { data, isLoading } = useGetAdminLegalDocumentsQuery();
+  const [activeTab, setActiveTab] = useState<string>('partner_terms');
+  const byType = useMemo(() => Object.fromEntries((data?.data || []).map((d) => [d.type, d])), [data]);
+
+  if (isLoading) return <AppLoading />;
+
+  return (
+    <div className="container mx-auto w-full p-6">
+      <style dangerouslySetInnerHTML={{ __html: editorStyles }} />
+      <Card className="dark:bg-secondary w-full">
+        <CardHeader>
+          <CardTitle>
+            <h2 className="text-xl">Legal Documents</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 md:h-12 md:grid-cols-6">
+              {DOCS.map((d) => (
+                <TabsTrigger key={d.type} value={d.type} className="flex cursor-pointer items-center gap-2">
+                  {d.icon}
+                  <span>{d.short}</span>
+                </TabsTrigger>
+              ))}
+              <TabsTrigger value="consent_log" className="flex cursor-pointer items-center gap-2">
+                <ScrollText className="h-4 w-4" />
+                <span>Consent log</span>
+              </TabsTrigger>
+              <TabsTrigger value="compliance" className="flex cursor-pointer items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4" />
+                <span>Compliance</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {DOCS.map((d) => (
+              <TabsContent key={d.type} value={d.type} className="mt-4">
+                <DocumentEditor doc={byType[d.type]} meta={d} />
+              </TabsContent>
+            ))}
+            <TabsContent value="consent_log" className="mt-4">
+              <ConsentLogTable />
+            </TabsContent>
+            <TabsContent value="compliance" className="mt-4">
+              <ComplianceSettings />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

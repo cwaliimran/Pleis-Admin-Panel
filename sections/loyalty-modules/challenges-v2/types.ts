@@ -33,13 +33,19 @@ export interface ChallengeSpecialTicket {
   isFastTrack: boolean;
 }
 
-/** A menu item reference. `name` falls back to the id when unpopulated. */
+/**
+ * A menu item reference. `name` falls back to the id when unpopulated.
+ * `presetType` / `amountQuantity` come through on `buyMenuItem` tasks so labels
+ * can match the form picker: "Soft Drinks, Coca-Cola, 250ml".
+ */
 export interface ChallengeItemRef {
   id: string;
   name: string;
   /** Parent menu, used to seed the form's menu filter. `''` when unpopulated. */
   menuId: string;
   menuName: string;
+  amountQuantity: string;
+  presetType: { name?: string; title?: string; type?: { name?: string } | string | null } | string | null;
 }
 
 export interface Challenge {

@@ -24,6 +24,7 @@ export interface TypeOccupancy {
   name: string;
   bookedSeats: number;
   totalSeats: number;
+  ageRestricted?: boolean;
 }
 
 export interface GuestProfile {

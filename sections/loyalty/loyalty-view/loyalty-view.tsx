@@ -42,21 +42,19 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
     all: 'all',
   };
 
-  const dashboardQuery = global
-    ? useGetGlobalLoyaltyDashboardQuery(
-        {
-          dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
-        },
-        { refetchOnMountOrArgChange: true }
-      )
-    : useGetLoyaltyDashboardQuery(
-        {
-          dateFilter: dateFilterMap[activeDurationTab] ?? 'all',
-          companyOrganizer: companyId,
-          organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
-        },
-        { refetchOnMountOrArgChange: true }
-      );
+  const dateFilter = dateFilterMap[activeDurationTab] ?? 'all';
+
+  const globalDashboardQuery = useGetGlobalLoyaltyDashboardQuery({ dateFilter }, { refetchOnMountOrArgChange: true, skip: !global });
+  const loyaltyDashboardQuery = useGetLoyaltyDashboardQuery(
+    {
+      dateFilter,
+      companyOrganizer: companyId,
+      organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
+    },
+    { refetchOnMountOrArgChange: true, skip: global }
+  );
+
+  const dashboardQuery = global ? globalDashboardQuery : loyaltyDashboardQuery;
 
   const { data: dashboardRaw = {} as any, isLoading, isFetching } = dashboardQuery;
 
@@ -708,16 +706,17 @@ const LoyaltyView = ({ global, userType }: { global: boolean; userType: string }
 
       <div className="mt-3 grid gap-4 md:grid-cols-3">
         <div className="space-y-5">
-          {(
-            Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.mostPopularRewards) &&
-            dashboardRaw.data.globalRewardsUsageStats.mostPopularRewards
+          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.mostPopularRewards)
+            ? dashboardRaw.data.globalRewardsUsageStats.mostPopularRewards
+            : []
           ).map((item: any, index: number) => (
             <RewardCard key={item.rewardId || index} item={item} />
           ))}
         </div>
         <div className="space-y-5">
-          {(
-            Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.expiredRewards) && dashboardRaw.data.globalRewardsUsageStats.expiredRewards
+          {(Array.isArray(dashboardRaw?.data?.globalRewardsUsageStats?.expiredRewards)
+            ? dashboardRaw.data.globalRewardsUsageStats.expiredRewards
+            : []
           ).map((item: any, index: number) => (
             <RewardCard key={item.rewardId || index} item={item} />
           ))}

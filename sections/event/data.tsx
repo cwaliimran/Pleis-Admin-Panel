@@ -157,10 +157,10 @@ export const tabsData = [
     label: 'Tickets',
     value: 'tickets',
   },
-  {
-    label: 'Reservations',
-    value: 'reservations',
-  },
+  // {
+  //   label: 'Reservations',
+  //   value: 'reservations',
+  // },
   {
     label: 'Notifications',
     value: 'notifications',

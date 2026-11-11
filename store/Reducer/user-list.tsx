@@ -122,6 +122,14 @@ export const userListApi = createApi({
       transformResponse: (res) => res.data,
     }),
 
+    awardLoyaltyPoints: builder.mutation({
+      query: (body) => ({
+        url: API_ROUTES.ADMIN_GLOBAL_LOYALTY_AWARD_POINTS,
+        method: 'POST',
+        body,
+      }),
+    }),
+
     /* ─────────────────────────────────────────────
      * User lookup by contact detail
      *
@@ -286,6 +294,7 @@ export const {
   useGetUsersForCompanyFilterQuery,
   useGetUserByIdQuery,
   useGetUserDetailsQuery,
+  useAwardLoyaltyPointsMutation,
   useAddUserMutation,
   useAddUserSuperAdminAndGuestMutation,
   useUpdateUserMutation,

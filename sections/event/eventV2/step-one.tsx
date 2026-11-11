@@ -1,28 +1,34 @@
 'use client';
 
-import { RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFMultiSelectField from '@/components/rhf/RHFMultiSelectField';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import { RHFAsyncCombobox, RHFSelectField, RHFTextField } from '@/components/rhf';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useGetCategoriesQuery } from '@/store/Reducer/categories';
+import { useGetOrganizationQuery } from '@/store/Reducer/organization';
+import { useGetTagsQuery } from '@/store/Reducer/tags';
+import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { Plus, X } from 'lucide-react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import type { StepOneProps } from './types';
+
+const ORGANIZATION_QUERY_ARGS = { sortBy: 'organizationName', sortOrder: 'asc' };
+const VENUE_QUERY_ARGS = { sortBy: 'title', sortOrder: 'asc' };
+const CATEGORIES_QUERY_ARGS = { sortBy: 'title', sortOrder: 'asc' };
+const TAGS_QUERY_ARGS = { sortBy: 'title', sortOrder: 'asc' };
+const ASYNC_TRIGGER_CLASS =
+  'h-10 rounded-4xl border-gray-200 px-5 text-left text-[14px] shadow-none hover:bg-transparent dark:border-gray-700 dark:hover:bg-transparent';
 
 const StepOne = ({
   methods,
   watch,
   setValue,
-  organizations,
-  orgLoading,
-  venues,
-  venuesLoading,
-  categoriesData,
-  categoriesLoading,
-  tagsd,
-  tagsLoading,
+  selectedOrgLabel,
+  selectedPartnerOrgLabel,
+  selectedVenueLabel,
+  selectedCategories,
+  selectedTags,
   setFile,
   showPartnerOrganizer,
   setShowPartnerOrganizer,
@@ -35,10 +41,21 @@ const StepOne = ({
   const mediaType = watch('mediaType');
   const organization = watch('organization');
   const partnerOrganization = watch('partnerOrganization');
-  const venue = watch('venue');
+  const [orgLabel, setOrgLabel] = useState(selectedOrgLabel);
+  const [partnerOrgLabel, setPartnerOrgLabel] = useState(selectedPartnerOrgLabel);
+  const [venueLabel, setVenueLabel] = useState(selectedVenueLabel);
 
-  // Show skeleton only if loading AND we don't have venues yet AND we don't have a selected venue
-  const showVenueSkeleton = venuesLoading && venues?.length === 0 && !venue;
+  useEffect(() => {
+    if (selectedOrgLabel) setOrgLabel(selectedOrgLabel);
+  }, [selectedOrgLabel]);
+
+  useEffect(() => {
+    if (selectedPartnerOrgLabel) setPartnerOrgLabel(selectedPartnerOrgLabel);
+  }, [selectedPartnerOrgLabel]);
+
+  useEffect(() => {
+    if (selectedVenueLabel) setVenueLabel(selectedVenueLabel);
+  }, [selectedVenueLabel]);
 
   return (
     <div className="space-y-8">
@@ -122,84 +139,79 @@ const StepOne = ({
       <div>
         <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">Organization</label>
 
-        {orgLoading ? (
-          <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-            <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-          </div>
-        ) : (
-          <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
-            <RHFCustomDropdown
-              name="organization"
-              placeholder="Choose Organization"
-              className="sm:max-w-30 lg:max-w-110"
-              triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
-              contentClassName="rounded-xl shadow-md"
-              options={organizations?.map((org: any) => ({
-                value: org?._id,
-                label: org?.basicInfo?.name,
-              }))}
-              isLoading={orgLoading}
-              showNone={false}
-            />
-          </div>
-        )}
+        <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
+          <RHFAsyncCombobox
+            name="organization"
+            placeholder="Choose Organization"
+            searchPlaceholder="Search organizations..."
+            className="sm:max-w-30 lg:max-w-110"
+            triggerClassName={ASYNC_TRIGGER_CLASS}
+            limit={100}
+            selectedLabel={orgLabel}
+            useOptionsQuery={useGetOrganizationQuery}
+            queryArgs={ORGANIZATION_QUERY_ARGS}
+            getOptionValue={(org: any) => org._id}
+            getOptionLabel={(org: any) => org?.basicInfo?.name}
+            onValueChange={(_value, item) => {
+              setOrgLabel(item?.basicInfo?.name || '');
+              setVenueLabel('');
+            }}
+          />
+        </div>
       </div>
 
       <div>
         <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">VENUE</label>
 
-        {showVenueSkeleton ? (
-          <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-            <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-          </div>
-        ) : (
-          <div className="w-full items-center gap-2 md:flex md:w-[70%]">
-            <RHFCustomDropdown
-              name="venue"
-              placeholder={!organization ? 'Select organization first' : 'Suggested Venue'}
-              className="sm:max-w-30 lg:max-w-110"
-              triggerClassName="h-10 rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
-              contentClassName="rounded-xl shadow-md"
-              disabled={!organization}
-              options={venues?.map((val: any) => ({
-                value: val?._id,
-                label: val?.title,
-              }))}
-              isLoading={venuesLoading && venues?.length === 0}
-              showNone={false}
-            />
+        <div className="w-full items-center gap-2 md:flex md:w-[70%]">
+          <RHFAsyncCombobox
+            name="venue"
+            placeholder={!organization ? 'Select organization first' : 'Suggested Venue'}
+            searchPlaceholder="Search venues..."
+            className="sm:max-w-30 lg:max-w-110"
+            triggerClassName={ASYNC_TRIGGER_CLASS}
+            limit={100}
+            selectedLabel={venueLabel}
+            disabled={!organization}
+            skip={!organization}
+            useOptionsQuery={useGetVenuesQuery}
+            queryArgs={{ ...VENUE_QUERY_ARGS, organization }}
+            getOptionValue={(item: any) => item._id}
+            getOptionLabel={(item: any) => item?.title}
+            onValueChange={(_value, item) => {
+              setVenueLabel(item?.title || '');
+            }}
+          />
 
-            <Button
-              type="button"
-              className={`bg-primary hover:bg-primary mt-2 rounded-4xl py-2 text-white ${!organization ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-              disabled={!organization}
-              onClick={() => setVenueModal(true)}
-            >
-              Add Venue
-            </Button>
-          </div>
-        )}
+          <Button
+            type="button"
+            className={`bg-primary hover:bg-primary mt-2 rounded-4xl py-2 text-white ${!organization ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+            disabled={!organization}
+            onClick={() => setVenueModal(true)}
+          >
+            Add Venue
+          </Button>
+        </div>
 
         <div className="mt-8">
           <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">Category</label>
 
-          {categoriesLoading ? (
-            <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-              <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-            </div>
-          ) : (
-            <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
-              <RHFMultiSelectField
-                name="categories"
-                placeholder="Choose Category"
-                options={categoriesData?.map((val: any) => ({
-                  value: val._id,
-                  label: val.title,
-                }))}
-                className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
-              />
-            </div>
-          )}
+          <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
+            <RHFAsyncCombobox
+              name="categories"
+              placeholder="Choose Category"
+              searchPlaceholder="Search categories..."
+              className="sm:max-w-30 lg:max-w-110"
+              triggerClassName={ASYNC_TRIGGER_CLASS}
+              limit={100}
+              multiple
+              initialSelected={selectedCategories}
+              useOptionsQuery={useGetCategoriesQuery}
+              queryArgs={CATEGORIES_QUERY_ARGS}
+              getOptionValue={(item: any) => item._id}
+              getOptionLabel={(item: any) => item.title}
+            />
+          </div>
         </div>
       </div>
 
@@ -207,23 +219,22 @@ const StepOne = ({
       <div>
         <label className="text-sm font-medium tracking-wide text-gray-700 uppercase dark:text-gray-300">TAGS</label>
 
-        {tagsLoading ? (
-          <div className="mt-2 w-full gap-2 md:flex md:w-[50%]">
-            <Skeleton className="h-8.75 flex-1 cursor-not-allowed rounded-4xl border-gray-200 px-5" />
-          </div>
-        ) : (
-          <div className="mt-2 w-full items-center gap-2 md:flex md:w-[70%]">
-            <RHFMultiSelectField
-              name="tags"
-              placeholder="Choose Tag"
-              options={tagsd?.map((val: any) => ({
-                value: val._id,
-                label: val.title,
-              }))}
-              className="h-10 cursor-pointer rounded-4xl border-gray-200 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
-            />
-          </div>
-        )}
+        <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
+          <RHFAsyncCombobox
+            name="tags"
+            placeholder="Choose Tag"
+            searchPlaceholder="Search tags..."
+            className="sm:max-w-30 lg:max-w-110"
+            triggerClassName={ASYNC_TRIGGER_CLASS}
+            limit={100}
+            multiple
+            initialSelected={selectedTags}
+            useOptionsQuery={useGetTagsQuery}
+            queryArgs={TAGS_QUERY_ARGS}
+            getOptionValue={(item: any) => item._id}
+            getOptionLabel={(item: any) => item.title}
+          />
+        </div>
       </div>
 
       {/* Status */}
@@ -237,7 +248,7 @@ const StepOne = ({
               { label: 'Active', value: 'active' },
               { label: 'Inactive', value: 'inactive' },
             ]}
-            className="h-10 cursor-pointer rounded-4xl border-slate-600 px-5 text-left text-[14px] focus:border-blue-600 sm:min-w-30 lg:min-w-110"
+            className={`${ASYNC_TRIGGER_CLASS} w-full cursor-pointer sm:min-w-30 lg:min-w-110`}
           />
         </div>
       </div>
@@ -254,33 +265,39 @@ const StepOne = ({
         </button>
 
         {showPartnerOrganizer && (
-          <div className="mt-2 flex w-[70%] gap-2">
-            <RHFCustomDropdown
+          <div className="mt-2 w-full gap-2 md:flex md:w-[70%]">
+            <RHFAsyncCombobox
               name="partnerOrganization"
               placeholder="Search for partner organization"
+              searchPlaceholder="Search organizations..."
               className="sm:max-w-30 lg:max-w-110"
-              triggerClassName="h-[42px] rounded-4xl border-gray-200 cursor-pointer dark:border-gray-700 px-5"
-              contentClassName="rounded-xl shadow-md"
+              triggerClassName={ASYNC_TRIGGER_CLASS}
+              limit={100}
+              selectedLabel={partnerOrgLabel}
               disabled={!organization}
-              options={organizations
-                ?.filter((org: any) => org._id !== organization)
-                ?.map((org: any) => ({
-                  value: org?._id,
-                  label: org?.basicInfo?.name,
-                }))}
-              isLoading={orgLoading}
-              showNone={false}
+              skip={!organization}
+              useOptionsQuery={useGetOrganizationQuery}
+              queryArgs={ORGANIZATION_QUERY_ARGS}
+              filterOption={(org: any) => org._id !== organization}
+              getOptionValue={(org: any) => org._id}
+              getOptionLabel={(org: any) => org?.basicInfo?.name}
+              onValueChange={(_value, item) => {
+                setPartnerOrgLabel(item?.basicInfo?.name || '');
+              }}
             />
           </div>
         )}
         {partnerOrganization && (
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge className="bg-secondary flex items-center gap-1 py-1 text-xs text-white dark:bg-white dark:text-black">
-              {organizations?.find((org: any) => org._id === partnerOrganization)?.basicInfo?.name || partnerOrganization}
+              {partnerOrgLabel || partnerOrganization}
               <button
                 title="Remove Organizer"
                 type="button"
-                onClick={() => setValue('partnerOrganization', '')}
+                onClick={() => {
+                  setValue('partnerOrganization', '');
+                  setPartnerOrgLabel('');
+                }}
                 className="ml-1 rounded-full p-0.5 hover:bg-gray-200 dark:hover:bg-gray-600"
               >
                 <X className="h-3 w-3 cursor-pointer" />

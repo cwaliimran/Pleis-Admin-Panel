@@ -23,7 +23,7 @@ import { useCompanySelection } from '@/app/common/header/company-selection-stora
 
 const headLabel = [
   { id: 'item', label: 'Menu Item', align: 'left' },
-  { id: 'category', label: 'Category', align: 'start' },
+  { id: 'category', label: 'Subcategory', align: 'start' },
   { id: 'salesCount', label: 'Sales Count', align: 'start' },
   { id: 'totalRevenue', label: 'Revenue', align: 'start' },
   { id: 'status', label: 'Availability', align: 'start' },

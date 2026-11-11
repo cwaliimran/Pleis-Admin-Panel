@@ -2,7 +2,7 @@ import { fetchBaseQuery } from '@reduxjs/toolkit/query';
 import { handleApiError } from '../handleApiError';
 import { CurrentUrl } from '@/constant/constant';
 import { logout } from '../slice/userSlice';
-import { resetStore } from '../store';
+import { resetStore } from '../resetStore';
 
 const getResolvedTimezone = (): string => {
   try {

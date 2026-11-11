@@ -32,6 +32,7 @@ const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 const googleMapsLibraries: 'places'[] = ['places'];
 
 const ORGANIZATION_QUERY_ARGS = { sortBy: 'organizationName', sortOrder: 'asc' };
+const VENUE_TYPE_QUERY_ARGS = { sortBy: 'title', sortOrder: 'asc' };
 
 const defaultValues = {
   title: '',
@@ -296,6 +297,7 @@ const VenueTypeModalV2 = ({ open, onClose, isEditMode = false, selectedVenueData
                 multiple
                 initialSelected={selectedVenueTypes}
                 useOptionsQuery={useGetVenueTypesQuery}
+                queryArgs={VENUE_TYPE_QUERY_ARGS}
                 getOptionValue={(venueType: any) => venueType._id.toString()}
                 getOptionLabel={(venueType: any) => venueType.title}
               />

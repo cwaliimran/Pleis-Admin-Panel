@@ -25,7 +25,7 @@ export const RewardsStatsCards: React.FC<RewardsStatsCardsProps> = ({ stats, isL
     { label: 'Total Redemptions', value: stats.totalRedemptions.toLocaleString(), hint: 'QR scanned at venue' },
     {
       label: 'Most Claimed',
-      value: stats.mostClaimed ? `${stats.mostClaimed.name} · ${stats.mostClaimed.claims.toLocaleString()} claims` : '—',
+      value: stats.mostClaimed ? `${stats.mostClaimed.name} · ${stats.mostClaimed.claims.toLocaleString()} claims` : '0',
       compact: true,
     },
   ];

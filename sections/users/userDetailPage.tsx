@@ -279,7 +279,7 @@ const UserDetailPage = ({ userDashboardType }: UserDetailPageProps) => {
 
                 <div className="rounded-lg">
                   {/* ---------------- OVERVIEW ---------------- */}
-                  {showOverview && <UserOverView userType={userType} user={user} apiData={apiData} />}
+                  {showOverview && <UserOverView userType={userType} user={user} apiData={apiData} onUpdateSuccess={refetch} />}
 
                   {/* ---------------- TRANSACTION ---------------- */}
                   {showTransactions && <UserAllTransactionView userId={id} />}

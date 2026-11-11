@@ -15,11 +15,11 @@ const HelpSupportTableRow: FC<TableRowProps> = ({ item, handleDelete, handleEdit
     <TableRow className="h-14 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
       {/* Photo */}
       <TableCell>
-        <Avatar className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800">
+        <Avatar className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-gray-100 shadow-sm dark:bg-gray-800">
           {item?.user?.profileIcon && item?.user?.profileIcon !== noImageUrl && item?.user?.profileIcon !== noImageUrlDev ? (
-            <AvatarImage src={item.user.profileIcon} alt={item.user.username} className="object-cover" />
+            <AvatarImage src={item.user.profileIcon} alt={item.user.username} className="h-full w-full cursor-pointer object-cover" />
           ) : (
-            <span className="text-sm font-semibold text-gray-500">{item?.user?.firstName?.[0]?.toUpperCase()}</span>
+            <span className="text-lg font-semibold text-gray-500 dark:text-gray-300">{item?.user?.firstName?.[0]?.toUpperCase() || ''}</span>
           )}
         </Avatar>
       </TableCell>

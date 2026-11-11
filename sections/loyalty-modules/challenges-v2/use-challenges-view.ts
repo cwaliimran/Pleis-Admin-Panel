@@ -26,19 +26,29 @@ const toItemRefs = (value?: ApiChallengeRef[] | ApiChallengeRef | null): Challen
 
   return list.reduce<ChallengeItemRef[]>((refs, entry) => {
     if (typeof entry === 'string') {
-      if (entry) refs.push({ id: entry, name: entry, menuId: '', menuName: '' });
+      if (entry) refs.push({ id: entry, name: entry, menuId: '', menuName: '', amountQuantity: '', presetType: null });
       return refs;
     }
 
     if (!entry?._id) return refs;
 
     const menu = entry.menu;
+    const preset = entry.presetType;
 
     refs.push({
       id: entry._id,
       name: entry.title || entry._id,
       menuId: typeof menu === 'string' ? menu : (menu?._id ?? ''),
       menuName: typeof menu === 'string' ? '' : (menu?.title ?? ''),
+      amountQuantity: entry.amountQuantity?.trim() ?? '',
+      presetType:
+        preset && typeof preset === 'object'
+          ? {
+              name: preset.name,
+              title: preset.title,
+              type: preset.type && typeof preset.type === 'object' ? { name: preset.type.name } : preset.type,
+            }
+          : (preset ?? null),
     });
 
     return refs;
