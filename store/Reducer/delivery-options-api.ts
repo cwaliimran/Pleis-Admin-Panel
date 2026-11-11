@@ -11,7 +11,7 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 // ---------- Wire enums ----------
 
-export type ApiDeliveryMethod = 'counterPickup' | 'tableDelivery' | 'toGo';
+export type ApiDeliveryMethod = 'counterPickup' | 'tableDelivery' | null; // #146: in-place only; null = migrated from \"to go\", operator must choose
 
 export type ApiDeliveryOptionStatus = 'active' | 'inactive';
 

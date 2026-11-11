@@ -186,6 +186,7 @@ export interface ApiReservationTypeCapacityStat {
   reservationTypeName: string;
   bookedCapacity: number;
   maxCapacity: number;
+  ageRestricted?: boolean;
 }
 
 export interface ApiReservationOccasion {

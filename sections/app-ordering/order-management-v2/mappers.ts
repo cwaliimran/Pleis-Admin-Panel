@@ -269,7 +269,8 @@ export const mapDeliveryOptionFilters = (options: ApiDeliveryOption[] | null | u
     .map((option) => ({
       id: option._id,
       title: option.title?.trim() || 'Untitled option',
-      method: option.deliveryMethod,
+      // #146: options migrated from "to go" have no destination yet (null)
+      method: (option.deliveryMethod ?? 'counterPickup') as DeliveryType,
       isActive: option.status !== 'inactive',
     }));
 

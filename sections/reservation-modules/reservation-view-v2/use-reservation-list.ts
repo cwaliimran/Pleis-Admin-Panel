@@ -67,6 +67,7 @@ const toTypeOccupancy = (stat: ApiReservationTypeCapacityStat): TypeOccupancy =>
   name: stat.reservationTypeName,
   bookedSeats: stat.bookedCapacity ?? 0,
   totalSeats: stat.maxCapacity ?? 0,
+  ageRestricted: !!stat.ageRestricted,
 });
 
 export const useReservationList = ({

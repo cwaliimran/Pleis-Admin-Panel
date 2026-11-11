@@ -52,6 +52,7 @@ const headLabel = [
     sortKey: 'createdAt',
   },
   { id: 'timeslot', label: 'Timeslot', align: 'left' },
+  { id: 'ageRestricted', label: '18+', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];

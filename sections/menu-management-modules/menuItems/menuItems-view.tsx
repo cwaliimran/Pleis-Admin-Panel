@@ -12,7 +12,9 @@ import { useGetServingsQuery } from '@/store/Reducer/serving-api';
 import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
-import { Plus } from 'lucide-react';
+import { Download, Plus, Upload } from 'lucide-react';
+import { saveTextFile, useExportMenuItemsMutation } from '@/store/Reducer/menu-items-import-api';
+import MenuItemsImportDialog from './import/menu-items-import-dialog';
 import { useEffect, useMemo, useState } from 'react';
 import MenuItemDeleteImpactModal from './menuItems-delete-impact-modal';
 import MenuItemModal from './menuItems-modal-v2';
@@ -33,6 +35,8 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const editModal = useBoolean();
   const deleteModal = useBoolean();
   const impactModal = useBoolean();
+  const importModal = useBoolean();
+  const [exportItems, { isLoading: exporting }] = useExportMenuItemsMutation();
 
   const { companyId } = useCompanySelectionState();
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
@@ -182,11 +186,43 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
           <p className="text-muted-foreground text-sm">All items across all menus for this venue.</p>
         </div>
 
-        <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
-          <Plus />
-          Create Menu Item
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {/* Requirement Set #122 — CSV / Excel import and CSV export of the menu item list */}
+          <Button
+            variant="outline"
+            className="cursor-pointer rounded-4xl py-2"
+            onClick={importModal.onTrue}
+            disabled={companySkip}
+            title={companySkip ? 'Select a company first' : 'Import from CSV / Excel'}
+          >
+            <Upload />
+            Import
+          </Button>
+          <Button
+            variant="outline"
+            className="cursor-pointer rounded-4xl py-2"
+            disabled={companySkip || exporting}
+            title={companySkip ? 'Select a company first' : menuId ? 'Export the selected menu' : 'Export all menus'}
+            onClick={async () => {
+              try {
+                const csv = await exportItems({ companyOrganizer: scopedCompanyId || undefined, menu: menuId || undefined }).unwrap();
+                saveTextFile(csv, `pleis-menu-items-${new Date().toISOString().slice(0, 10)}.csv`);
+              } catch (error) {
+                showError(getErrorMessage(error));
+              }
+            }}
+          >
+            <Download />
+            {exporting ? 'Exporting…' : 'Export CSV'}
+          </Button>
+          <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
+            <Plus />
+            Create Menu Item
+          </Button>
+        </div>
       </div>
+
+      <MenuItemsImportDialog open={importModal.value} onClose={importModal.onFalse} companyOrganizer={scopedCompanyId || undefined} />
 
       <MenuItemTable
         data={menuItems}

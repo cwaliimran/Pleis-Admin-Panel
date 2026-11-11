@@ -140,7 +140,6 @@ export const OrderingSettingsView: React.FC<{ userType: 'organizer' | 'super-adm
   // Delivery methods
   const counterPickup = watch('deliveryMethods.counterPickup');
   const tableDelivery = watch('deliveryMethods.tableDelivery');
-  const toGo = watch('deliveryMethods.toGo');
 
   // Load initial data from API
   useEffect(() => {
@@ -161,7 +160,7 @@ export const OrderingSettingsView: React.FC<{ userType: 'organizer' | 'super-adm
         deliveryMethods: {
           counterPickup: settings.deliveryMethods?.counterPickup ?? true,
           tableDelivery: settings.deliveryMethods?.tableDelivery ?? false,
-          toGo: settings.deliveryMethods?.toGo ?? false,
+          toGo: false, // #146
         },
       };
 
@@ -170,20 +169,20 @@ export const OrderingSettingsView: React.FC<{ userType: 'organizer' | 'super-adm
   }, [apiData, reset]);
 
   // Validate at least one delivery method is enabled
-  const validateDeliveryMethods = (counterPickup: boolean, tableDelivery: boolean, toGo: boolean): boolean => {
-    return counterPickup || tableDelivery || toGo;
+  // #146: only in-place destinations count (To go is no longer a destination)
+  const validateDeliveryMethods = (counterPickup: boolean, tableDelivery: boolean): boolean => {
+    return counterPickup || tableDelivery;
   };
 
   // Handle delivery method toggle with validation
-  const handleDeliveryMethodToggle = (field: 'counterPickup' | 'tableDelivery' | 'toGo', newValue: boolean) => {
+  const handleDeliveryMethodToggle = (field: 'counterPickup' | 'tableDelivery', newValue: boolean) => {
     // Check if this would leave no delivery methods enabled
     const futureState = {
       counterPickup: field === 'counterPickup' ? newValue : counterPickup,
       tableDelivery: field === 'tableDelivery' ? newValue : tableDelivery,
-      toGo: field === 'toGo' ? newValue : toGo,
     };
 
-    if (!validateDeliveryMethods(futureState.counterPickup, futureState.tableDelivery, futureState.toGo)) {
+    if (!validateDeliveryMethods(futureState.counterPickup, futureState.tableDelivery)) {
       showError('At least one delivery method must be enabled. Ordering will be unavailable if all methods are disabled.');
       return;
     }
@@ -241,7 +240,7 @@ export const OrderingSettingsView: React.FC<{ userType: 'organizer' | 'super-adm
     }
 
     // Validate at least one delivery method
-    if (!validateDeliveryMethods(data.deliveryMethods.counterPickup, data.deliveryMethods.tableDelivery, data.deliveryMethods.toGo)) {
+    if (!validateDeliveryMethods(data.deliveryMethods.counterPickup, data.deliveryMethods.tableDelivery)) {
       showError('At least one delivery method must be enabled');
       return;
     }
@@ -524,29 +523,7 @@ export const OrderingSettingsView: React.FC<{ userType: 'organizer' | 'super-adm
                     </p>
                   </div>
 
-                  {/* To Go */}
-                  <div
-                    className={`rounded-xl border-2 p-5 transition-all ${
-                      toGo
-                        ? 'border-green-500 bg-green-50 dark:border-green-600 dark:bg-green-950/30'
-                        : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-[#1a1a1a]'
-                    }`}
-                  >
-                    <div className="mb-3 flex items-start justify-between">
-                      <div>
-                        <div className="mb-2 text-3xl">🛍️</div>
-                        <h3 className="mb-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">To Go</h3>
-                      </div>
-                      <ToggleSwitch
-                        checked={toGo}
-                        onChange={(val) => handleDeliveryMethodToggle('toGo', val)}
-                        disabled={isLoading || updateUserLoading}
-                      />
-                    </div>
-                    <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                      Similar to counter pickup but specifically marked for takeaway orders. Packaged for transport.
-                    </p>
-                  </div>
+                  {/* #146: "To go" is no longer a delivery destination — it is an attribute of a menu item. */}
                 </div>
 
                 <InfoBox

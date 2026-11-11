@@ -103,6 +103,7 @@ const schema = Yup.object().shape({
   taxPercentage: Yup.string().required('Tax percentage is required'),
   needsConfirmation: Yup.boolean(),
   allowPreOrderMenuItems: Yup.boolean(),
+  ageRestricted: Yup.boolean(),
   ticketRequirement: Yup.boolean(),
   optionalEventId: Yup.string().notRequired(),
   timingSlotsEnabled: Yup.boolean(),
@@ -121,6 +122,7 @@ const defaultValues: ReservationFormValues = {
   taxPercentage: '5',
   needsConfirmation: true,
   allowPreOrderMenuItems: false,
+  ageRestricted: false,
   ticketRequirement: false,
   optionalEventId: '',
   timingSlotsEnabled: false,
@@ -488,6 +490,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         taxPercentage: selectedData?.taxPercentage?.toString() || '25',
         needsConfirmation: selectedData?.needsConfirmation ?? true,
         allowPreOrderMenuItems: selectedData?.allowPreOrderMenuItems ?? false,
+        ageRestricted: selectedData?.ageRestricted ?? false,
         ticketRequirement: selectedData?.ticketRequirement ?? false,
         optionalEventId: event?._id || selectedData?.optionalEventId?._id || selectedData?.optionalEventId || '',
         timingSlotsEnabled: selectedData?.timingSlots?.enabled || false,
@@ -623,6 +626,7 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
         taxPercentage: formData.taxPercentage,
         needsConfirmation: formData.needsConfirmation,
         allowPreOrderMenuItems: formData.allowPreOrderMenuItems,
+        ageRestricted: !!formData.ageRestricted,
         ticketRequirement: formData.ticketRequirement,
         status: formData.status,
       };
@@ -844,6 +848,25 @@ const ReservationModal = ({ open, onClose, isEdit = false, selectedData, organiz
                       </Label>
                       <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                         Allow users to pre-order menu items when making this reservation
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 18+ age restriction (Legal spec section 3) */}
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+                    <Checkbox
+                      id="ageRestricted"
+                      checked={!!watch('ageRestricted')}
+                      onCheckedChange={(checked) => setValue('ageRestricted', !!checked, { shouldDirty: true })}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="ageRestricted" className="cursor-pointer font-semibold">
+                        🔞 18+ age restricted
+                      </Label>
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                        Subject to a statutory age restriction — guests see an 18+ badge and an age notice before paying
                       </p>
                     </div>
                   </div>

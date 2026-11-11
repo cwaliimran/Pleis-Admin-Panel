@@ -49,6 +49,7 @@
     "draft-js-export-html": "^1.4.1",
     "draft-js-import-html": "^1.4.1",
     "framer-motion": "^12.23.2",
+    "immutable": "^3.7.6",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.525.0",

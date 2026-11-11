@@ -31,6 +31,7 @@ export const mapApiReservationType = (type: ApiReservationType): ReservationType
   taxPercentage: (type.tax ?? 0) as TaxPercentage,
   requiresConfirmation: type.requireConfirmationToApprove ?? false,
   asksForOccasion: type.occasionRequired ?? false,
+  ageRestricted: type.ageRestricted ?? false,
   // `deleted` records are filtered out by the query, so anything not active reads as inactive.
   status: type.status === 'active' ? 'active' : 'inactive',
   visibleToGuests: type.isVisibleToGuest ?? true,
@@ -64,6 +65,7 @@ export const toReservationTypeBody = (payload: ReservationTypePayload): Reservat
   bonosPoints: Number(payload.bonusPoints),
   requireConfirmationToApprove: payload.requiresConfirmation,
   occasionRequired: payload.asksForOccasion,
+  ageRestricted: !!payload.ageRestricted,
   isVisibleToGuest: payload.visibleToGuests,
   status: payload.status,
   // The local ids exist only for the modal's rows — the wire wants bare strings.

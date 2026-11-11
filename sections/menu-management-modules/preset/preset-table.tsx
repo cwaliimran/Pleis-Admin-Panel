@@ -39,6 +39,7 @@ const HEAD_LABEL = [
     sortable: true,
     sortKey: 'createdAt',
   },
+  { id: 'ageRestricted', label: '18+', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'left' },
 ];

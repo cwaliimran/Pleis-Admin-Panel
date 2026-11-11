@@ -33,7 +33,10 @@ export const ReservationTypesSection: React.FC<ReservationTypesSectionProps> = (
                   : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
               )}
             >
-              <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{type.name}</span>
+              <span className="flex items-center gap-1.5 text-sm font-bold text-gray-900 dark:text-gray-100">
+                {type.name}
+                {type.ageRestricted && <span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">18+</span>}
+              </span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {type.bookedSeats} / {type.totalSeats} seats
               </span>

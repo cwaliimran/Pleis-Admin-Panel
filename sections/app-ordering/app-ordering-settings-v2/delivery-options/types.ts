@@ -7,7 +7,9 @@ import { CustomBadgeVariant } from '../types';
 // `mappers.ts` is the only place that knows both.
 // ============================================================
 
-export type DeliveryOptionType = 'counterPickup' | 'tableDelivery' | 'toGo';
+// Requirement Set #146: in-place destinations only (table, counter/bar). "To go" is a menu item
+// attribute. `null` = migrated from the former "to go" destination — the operator must choose one.
+export type DeliveryOptionType = 'counterPickup' | 'tableDelivery';
 
 export type DeliveryOptionStatus = 'active' | 'inactive';
 
@@ -17,7 +19,7 @@ export interface DeliveryOption {
   /** `title` on the wire. */
   name: string;
   /** `deliveryMethod` on the wire. */
-  type: DeliveryOptionType;
+  type: DeliveryOptionType | null;
   status: DeliveryOptionStatus;
   /** Backend-generated; the customer-facing QR link is derived from it. */
   publicId: string | null;

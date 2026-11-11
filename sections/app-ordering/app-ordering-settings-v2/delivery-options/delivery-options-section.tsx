@@ -22,7 +22,7 @@ interface DeliveryOptionsSectionProps {
 
 /** Sort on what the user actually sees in the cell, not the raw enum key. */
 const getSortValue = (option: DeliveryOption, key: string): string => {
-  if (key === 'type') return DELIVERY_OPTION_TYPE_CONFIG[option.type].label;
+  if (key === 'type') return option.type ? DELIVERY_OPTION_TYPE_CONFIG[option.type].label : 'Choose destination';
   if (key === 'status') return DELIVERY_OPTION_STATUS_CONFIG[option.status].label;
   return option.name;
 };

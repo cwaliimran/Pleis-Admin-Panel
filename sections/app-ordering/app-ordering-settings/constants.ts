@@ -26,12 +26,6 @@ export const DELIVERY_METHODS: DeliveryMethod[] = [
     title: 'Table Delivery',
     description: 'Customers enter their table number. Staff delivers orders directly to the table.',
   },
-  {
-    id: 'togo',
-    icon: '🛍️',
-    title: 'To Go',
-    description: 'Similar to counter pickup but specifically marked for takeaway orders. Packaged for transport.',
-  },
 ];
 
 export const DEFAULT_SETTINGS = {
