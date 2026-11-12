@@ -539,6 +539,10 @@ export const API_ROUTES = {
   TRANSACTIONS: (isAdmin: boolean) => (isAdmin ? '/webhooks/orders-transactions' : '/webhooks/orders-transactions'),
   TRANSACTIONS_BY_ID: (isAdmin: boolean, id: string) => (isAdmin ? `/webhooks/orders-transactions/${id}` : `/webhooks/orders-transactions/${id}`),
   TRANSACTIONS_ANALYTICS: '/webhooks/orders-transactions/analytics',
+  // Money transactions from the payment ledger: one row per captured payment (#10, #8)
+  TRANSACTION_LEDGER: (isAdmin: boolean) => (isAdmin ? '/admin/transaction-ledger' : '/organizer/transaction-ledger'),
+  TRANSACTION_LEDGER_EXPORT: (isAdmin: boolean) => (isAdmin ? '/admin/transaction-ledger/export' : '/organizer/transaction-ledger/export'),
+  TRANSACTION_LEDGER_EXCLUDE: (entryId: string) => `/admin/payouts/ledger-entries/${entryId}/exclude`,
 
   ORGANIZER_ORGANIZATION_ANALYTICS: `/organizer/organizations-analytics/`,
   ADMIN_ORGANIZATION_ANALYTICS: `/admin/organizations-analytics/`,

@@ -15,19 +15,21 @@ interface TransactionHistoryTableRowProps {
   onView: (item: Transaction) => void;
   onDownloadDocuments: (item: Transaction) => void;
   onExclude: (item: Transaction) => void;
+  isOrganizer?: boolean;
 }
 
-const TransactionHistoryTableRow: FC<TransactionHistoryTableRowProps> = ({ item, onView, onDownloadDocuments, onExclude }) => {
+const TransactionHistoryTableRow: FC<TransactionHistoryTableRowProps> = ({ item, onView, onDownloadDocuments, onExclude, isOrganizer = false }) => {
   const isGuest = !item.user;
 
   return (
     <TableRow className="h-14 w-full transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#272727]/50">
-      <TableCell className="max-w-40 text-left whitespace-normal">
-        <p className="font-medium">{isGuest ? 'Guest' : item.user!.name}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-400">{isGuest ? '— no account' : item.user!.email}</p>
+      <TableCell className="min-w-60 text-left whitespace-normal">
+        <p className="font-medium break-words">{isGuest ? 'Guest' : item.user!.name}</p>
+        {/* Emails have no spaces; break-all keeps them inside the cell instead of running into Organization. */}
+        <p className="text-xs break-all text-gray-500 dark:text-gray-400">{isGuest ? '— no account' : item.user!.email}</p>
       </TableCell>
 
-      <TableCell className="text-left">{item.organization || '—'}</TableCell>
+      <TableCell className="min-w-48 text-left break-words whitespace-normal">{item.organization || '—'}</TableCell>
 
       <TableCell className="text-left">
         <p className="font-medium">{item.transactionId}</p>
@@ -36,7 +38,7 @@ const TransactionHistoryTableRow: FC<TransactionHistoryTableRowProps> = ({ item,
         </p>
       </TableCell>
 
-      <TableCell className="text-left">
+      <TableCell className="min-w-60 text-left whitespace-normal">
         <CategoryTypeCell category={item.category} subtype={item.subtype} status={item.status} />
       </TableCell>
 
@@ -52,21 +54,23 @@ const TransactionHistoryTableRow: FC<TransactionHistoryTableRowProps> = ({ item,
 
       <TableCell className="text-left">{formatEuro(item.organizerNet)}</TableCell>
 
-      <TableCell className="max-w-35 text-left whitespace-normal">
-        <p className="font-medium">{formatEuro(item.pleisNet)}</p>
-        {item.pleisNetNote && <p className="text-xs text-gray-500 dark:text-gray-400">{item.pleisNetNote}</p>}
+      {!isOrganizer && (
+        <TableCell className="max-w-35 text-left whitespace-normal">
+          <p className="font-medium">{item.pleisNet == null ? '—' : formatEuro(item.pleisNet)}</p>
+          {item.pleisNetNote && <p className="text-xs text-gray-500 dark:text-gray-400">{item.pleisNetNote}</p>}
+        </TableCell>
+      )}
+
+      <TableCell className="min-w-56 text-left whitespace-normal">
+        <p className="break-words">{item.paymentMethod || '—'}</p>
+        {item.paymentSubNote && <p className="text-xs break-words text-gray-500 dark:text-gray-400">{item.paymentSubNote}</p>}
       </TableCell>
 
-      <TableCell className="max-w-40 text-left whitespace-normal">
-        <p>{item.paymentMethod || '—'}</p>
-        {item.paymentSubNote && <p className="text-xs text-gray-500 dark:text-gray-400">{item.paymentSubNote}</p>}
-      </TableCell>
-
-      <TableCell className="max-w-55 text-left whitespace-normal">
+      <TableCell className="min-w-64 text-left whitespace-normal">
         <SettlementCell status={item.settlementStatus} note={item.settlementNote} />
       </TableCell>
 
-      <TableCell className="text-left whitespace-normal">
+      <TableCell className="min-w-40 pl-4 text-left">
         <FiscalizationCell status={item.fiscalizationStatus} />
       </TableCell>
 
@@ -102,11 +106,15 @@ const TransactionHistoryTableRow: FC<TransactionHistoryTableRowProps> = ({ item,
                 <Download />
                 Download documents
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" disabled={item.settlementStatus === 'EXCLUDED'} onClick={() => onExclude(item)}>
-                <Ban />
-                Exclude from payout
-              </DropdownMenuItem>
+              {!isOrganizer && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" disabled={item.settlementStatus === 'EXCLUDED'} onClick={() => onExclude(item)}>
+                    <Ban />
+                    Exclude from payout
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

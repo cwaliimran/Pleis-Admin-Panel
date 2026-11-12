@@ -144,23 +144,25 @@ const TransactionHistoryFilters: FC<TransactionHistoryFiltersProps> = ({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="text-muted-foreground mr-1 text-xs font-semibold tracking-wide uppercase">Presets</span>
-        {PRESET_OPTIONS.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            onClick={() => onPresetChange(activePreset === preset.id ? null : preset.id)}
-            className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-              activePreset === preset.id
-                ? FILTER_ACTIVE_SOLID
-                : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-transparent dark:text-gray-200 dark:hover:bg-gray-800'
-            }`}
-          >
-            {preset.label}
-          </button>
-        ))}
-      </div>
+      {PRESET_OPTIONS.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-muted-foreground mr-1 text-xs font-semibold tracking-wide uppercase">Presets</span>
+          {PRESET_OPTIONS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => onPresetChange(activePreset === preset.id ? null : preset.id)}
+              className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                activePreset === preset.id
+                  ? FILTER_ACTIVE_SOLID
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-transparent dark:text-gray-200 dark:hover:bg-gray-800'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {activePresetLabel && (
         <div className="mt-3 flex items-center gap-3">

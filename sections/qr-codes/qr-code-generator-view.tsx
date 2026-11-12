@@ -83,14 +83,19 @@ export const QRCodeGeneratorView: React.FC = () => {
   };
 
   const handleDownloadSavedQR = (qrCode: any) => {
+    if (!qrCode?.link) {
+      showError('This QR code has no link yet');
+      return;
+    }
+    const size = Number(qrCode.size) || 512;
     const canvas = document.createElement('canvas');
-    canvas.width = qrCode.size;
-    canvas.height = qrCode.size;
+    canvas.width = size;
+    canvas.height = size;
 
     import('qrcode')
       .then((QRCode) => {
-        QRCode.toCanvas(canvas, qrCode.image, {
-          width: qrCode.size,
+        QRCode.toCanvas(canvas, qrCode.link, {
+          width: size,
           margin: 2,
           color: {
             dark: qrCode.color,

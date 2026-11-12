@@ -35,15 +35,17 @@ const TYPE_LABELS: Record<string, string> = {
 export const toPrintLabel = (qrCode: any): QRLabel => {
   const place = qrCode?.organizationName || qrCode?.venueTitle || qrCode?.eventName || qrCode?.loyaltyClub || '';
   const label = String(qrCode?.label || '').trim();
-  const tableText = qrCode?.globalQrType === 'checkInTableID' && qrCode?.tableNo != null ? `Table ${qrCode.tableNo}` : '';
+  const tableName = String(qrCode?.tableLabel || (qrCode?.tableNo != null ? `Table ${qrCode.tableNo}` : '')).trim();
+  const tableText = qrCode?.globalQrType === 'checkInTableID' ? tableName : '';
 
   const title = place || label || tableText || TYPE_LABELS[qrCode?.globalQrType] || 'QR code';
-  const subtitleParts = [label && label !== title ? label : '', tableText && !label.toLowerCase().includes(String(qrCode?.tableNo)) ? tableText : '']
+  const subtitleParts = [label && label !== title ? label : '', tableText && !label.toLowerCase().includes(tableText.toLowerCase()) ? tableText : '']
     .filter(Boolean)
     .join(' · ');
 
   return {
-    value: qrCode?.image || '',
+    // The deep link the code carries (#59), not the image URL.
+    value: qrCode?.link || '',
     title,
     subtitle: subtitleParts || TYPE_LABELS[qrCode?.globalQrType] || undefined,
     color: qrCode?.color,
@@ -52,8 +54,13 @@ export const toPrintLabel = (qrCode: any): QRLabel => {
 };
 
 const sortForSequence = (a: any, b: any) => {
-  const tableA = a?.globalQrType === 'checkInTableID' ? Number(a?.tableNo) : Number.POSITIVE_INFINITY;
-  const tableB = b?.globalQrType === 'checkInTableID' ? Number(b?.tableNo) : Number.POSITIVE_INFINITY;
+  const tableNumber = (code: any) => {
+    if (code?.globalQrType !== 'checkInTableID') return Number.POSITIVE_INFINITY;
+    const match = String(code?.tableLabel ?? code?.tableNo ?? '').match(/\d+/);
+    return match ? Number(match[0]) : Number.POSITIVE_INFINITY;
+  };
+  const tableA = tableNumber(a);
+  const tableB = tableNumber(b);
   if (tableA !== tableB) return tableA - tableB;
   return String(a?.label || '').localeCompare(String(b?.label || ''), undefined, { numeric: true });
 };
@@ -79,7 +86,7 @@ export const QRLabelSheetModal: React.FC<QRLabelSheetModalProps> = ({ open, onCl
   const preset = LABEL_SHEET_PRESETS.find((item) => item.id === presetId) ?? LABEL_SHEET_PRESETS[0];
   const perSheet = labelsPerSheet(preset);
 
-  const codes = useMemo(() => [...(qrCodes ?? [])].filter((code) => code?._id && code?.image).sort(sortForSequence), [qrCodes]);
+  const codes = useMemo(() => [...(qrCodes ?? [])].filter((code) => code?._id && code?.link).sort(sortForSequence), [qrCodes]);
 
   useEffect(() => {
     if (!open) return;

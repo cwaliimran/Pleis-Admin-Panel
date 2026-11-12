@@ -86,6 +86,7 @@ export const paths = {
 
     bundles: '/organizer/bundles',
     transactionsHistory: '/organizer/transactions-history',
+    transactionsHistoryV2: '/organizer/transactions-history-v2',
 
     reservation: '/organizer/reservation',
     reservationV2: '/organizer/reservation-v2',

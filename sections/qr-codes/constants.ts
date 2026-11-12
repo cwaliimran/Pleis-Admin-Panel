@@ -1,5 +1,10 @@
 import { QRTypeConfig } from './types';
 
+// Every code is a deep link `<link base>q/<token>` issued by the server on
+// save (#59, #82). Before saving, the preview draws a placeholder of the same
+// length so it looks like the printed code.
+const previewLink = () => 'https://pleis.hr/q/0000000000';
+
 export const QR_TYPE_CONFIG: Record<string, QRTypeConfig> = {
   'organizer-page': {
     icon: '🏢',
@@ -15,7 +20,7 @@ export const QR_TYPE_CONFIG: Record<string, QRTypeConfig> = {
         options: [], // Will be populated dynamically
       },
     ],
-    generateUrl: (data) => `https://app.venue.com/organizer/${data.organizationId}`,
+    generateUrl: previewLink,
     globalQrType: 'organization',
   },
   'event-page': {
@@ -32,7 +37,7 @@ export const QR_TYPE_CONFIG: Record<string, QRTypeConfig> = {
         options: [], // Will be populated dynamically
       },
     ],
-    generateUrl: (data) => `https://app.venue.com/event/${data.eventId}`,
+    generateUrl: previewLink,
     globalQrType: 'event',
   },
   'loyalty-page': {
@@ -53,7 +58,7 @@ export const QR_TYPE_CONFIG: Record<string, QRTypeConfig> = {
         ], // Dummy data for now
       },
     ],
-    generateUrl: (data) => `https://app.venue.com/loyalty/${data.loyaltyId}`,
+    generateUrl: previewLink,
     globalQrType: 'loyalty',
   },
   'checkin-ordering': {
@@ -70,7 +75,7 @@ export const QR_TYPE_CONFIG: Record<string, QRTypeConfig> = {
         options: [], // Will be populated dynamically
       },
     ],
-    generateUrl: (data) => `https://app.venue.com/checkin/${data.venueId}`,
+    generateUrl: previewLink,
     globalQrType: 'checkInOrder',
   },
   'checkin-table': {
@@ -87,14 +92,15 @@ export const QR_TYPE_CONFIG: Record<string, QRTypeConfig> = {
         options: [], // Will be populated dynamically
       },
       {
-        type: 'text',
-        id: 'tableNo',
-        label: 'Table Number',
-        placeholder: 'e.g., 1, 12, A5',
+        type: 'select',
+        id: 'deliveryOptionId',
+        label: 'Select Table',
+        placeholder: 'Choose a table',
         required: true,
+        options: [], // The venue's "Table delivery" destinations
       },
     ],
-    generateUrl: (data) => `https://app.venue.com/checkin/${data.venueId}?table=${data.tableNo}`,
+    generateUrl: previewLink,
     globalQrType: 'checkInTableID',
   },
 };

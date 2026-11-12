@@ -12,6 +12,7 @@ import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Upload } from '
 import React, { useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 
+import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -105,7 +106,11 @@ export default function MenuItemsImportDialog({ open, onClose, companyOrganizer 
   }, [sheet, headerRow]);
   const dataRows = useMemo(() => (sheet ? sheet.rawRows.slice(headerRow + 1) : []), [sheet, headerRow]);
 
-  const missingRequired = fields.filter((f) => f.required && !mapping[f.key] && !defaults[f.key]);
+  // Template v2 lists the menus in row 1, so no menu column is needed then
+  const fileMenus = headerRow > 0 ? sheet?.fileMenus || [] : [];
+  const missingRequired = fields.filter(
+    (f) => f.required && !mapping[f.key] && !defaults[f.key] && !(f.key === 'menu' && fileMenus.length > 0)
+  );
 
   const reset = () => {
     setStep(0);
@@ -122,8 +127,19 @@ export default function MenuItemsImportDialog({ open, onClose, companyOrganizer 
   };
 
   const close = () => {
+    setConfirmDiscard(false);
     reset();
     onClose();
+  };
+
+  // A file is loaded and the import has not finished yet → closing would throw the work away
+  const hasUnsavedWork = !!file && step !== 5;
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+
+  // Only the × icon (and the footer Close on the first / last step) reaches this — outside clicks and Esc are blocked
+  const requestClose = () => {
+    if (hasUnsavedWork) setConfirmDiscard(true);
+    else close();
   };
 
   const options = (extra: Partial<ImportOptions> = {}): ImportOptions => ({
@@ -220,7 +236,10 @@ export default function MenuItemsImportDialog({ open, onClose, companyOrganizer 
     if (!report) return;
     const rows = report.results.filter((r) => r.action === 'error');
     const esc = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-    const csv = ['row,name,errors', ...rows.map((r) => [String(r.row), r.title, r.errors.join(' | ')].map(esc).join(','))].join('\r\n');
+    const csv = [
+      'row,menu,name,errors',
+      ...rows.map((r) => [String(r.row), r.menu || '', r.title, r.errors.join(' | ')].map(esc).join(',')),
+    ].join('\r\n');
     saveTextFile(`﻿${csv}\r\n`, 'menu-import-errors.csv');
   };
 
@@ -276,437 +295,497 @@ export default function MenuItemsImportDialog({ open, onClose, companyOrganizer 
   };
 
   const unresolvedEntries = Object.entries(report?.unresolved || {});
-  const unmappedLeft = unresolvedEntries.reduce(
-    (n, [key, values]) => n + Object.keys(values).filter((v) => !valueMappings[key]?.[v]).length,
-    0
-  );
+  const unmappedLeft = unresolvedEntries.reduce((n, [key, values]) => n + Object.keys(values).filter((v) => !valueMappings[key]?.[v]).length, 0);
 
   /* ---------------- render ---------------- */
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && close()}>
-      <DialogContent className="dark:bg-secondary flex max-h-[92vh] w-full flex-col gap-4 md:max-w-[1150px]!">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <FileSpreadsheet className="h-5 w-5" /> Import menu items
-          </DialogTitle>
-          <DialogDescription>
-            Any .csv or .xlsx — map the organizer&apos;s columns and values to Pleis, check every row, then import.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={(o) => !o && requestClose()}>
+        <DialogContent
+          className="dark:bg-secondary flex max-h-[92vh] w-full flex-col gap-4 md:max-w-[1150px]!"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <FileSpreadsheet className="h-5 w-5" /> Import menu items
+            </DialogTitle>
+            <DialogDescription>
+              Any .csv or .xlsx — map the organizer&apos;s columns and values to Pleis, check every row, then import.
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* stepper */}
-        <ol className="flex flex-wrap gap-2 text-xs">
-          {STEPS.map((s, i) => (
-            <li
-              key={s}
-              className={`rounded-full border px-3 py-1 ${i === step ? 'border-primary bg-primary text-primary-foreground' : i < step ? 'border-primary/40' : 'opacity-60'}`}
-            >
-              {i + 1}. {s}
-            </li>
-          ))}
-        </ol>
-
-        <div className="min-h-[300px] overflow-y-auto pr-1">
-          {/* 1. UPLOAD */}
-          {step === 0 && (
-            <div className="space-y-5">
-              <div
-                className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 text-center dark:border-gray-700"
-                onClick={() => inputRef.current?.click()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  onFile(e.dataTransfer.files?.[0] || null);
-                }}
+          {/* stepper */}
+          <ol className="flex flex-wrap gap-2 text-xs">
+            {STEPS.map((s, i) => (
+              <li
+                key={s}
+                className={`rounded-full border px-3 py-1 ${i === step ? 'border-primary bg-primary text-primary-foreground' : i < step ? 'border-primary/40' : 'opacity-60'}`}
               >
-                <Upload className="h-8 w-8 opacity-60" />
-                <div className="font-medium">{parsing ? 'Reading file…' : 'Drop a file here or click to choose'}</div>
-                <div className="text-muted-foreground text-sm">.csv (any delimiter) or .xlsx · up to 10 MB · every sheet is read</div>
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept=".csv,.tsv,.txt,.xlsx"
-                  className="hidden"
-                  onChange={(e) => onFile(e.target.files?.[0] || null)}
-                />
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4 dark:border-gray-700">
-                <div className="text-sm">
-                  <div className="font-medium">Pleis menu item format</div>
-                  <div className="text-muted-foreground">
-                    Every column we import, example rows with this company&apos;s menus and subcategories, a “Valid values” sheet and instructions.
-                    Copy the organizer&apos;s menu into these columns and import it as is. Exports use the same columns.
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => onTemplate('xlsx')} disabled={downloading} className="flex items-center gap-2">
-                    <Download className="h-4 w-4" /> Excel template
-                  </Button>
-                  <Button variant="ghost" onClick={() => onTemplate('csv')} disabled={downloading}>
-                    CSV
-                  </Button>
-                </div>
-              </div>
-              <ul className="text-muted-foreground list-disc space-y-1 pl-5 text-xs">
-                <li>An item is updated when its “Pleis item ID” matches, otherwise when the same name exists in the same menu; any other row creates a new item.</li>
-                <li>Every row needs a name, menu, subcategory, price and tax class (25 / 13 / 5 / 0). 18+ items can never be marked “to go”.</li>
-                <li>A menu, subcategory, brand, serving, daypart, diet tag or allergen that does not exist yet is created on import (you see the list before importing). Preset types must already exist.</li>
-              </ul>
-            </div>
-          )}
+                {i + 1}. {s}
+              </li>
+            ))}
+          </ol>
 
-          {/* 2. PREVIEW */}
-          {step === 1 && sheet && (
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-end gap-4">
-                <div className="text-sm">
-                  <div className="font-medium">{file?.name}</div>
-                  <div className="text-muted-foreground">
-                    {dataRows.length} data rows · {headers.length} columns{sheet.truncated ? ' · only the first 10,000 rows are imported' : ''}
-                  </div>
+          <div className="min-h-[300px] overflow-y-auto pr-1">
+            {/* 1. UPLOAD */}
+            {step === 0 && (
+              <div className="space-y-5">
+                <div
+                  className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 text-center dark:border-gray-700"
+                  onClick={() => inputRef.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    onFile(e.dataTransfer.files?.[0] || null);
+                  }}
+                >
+                  <Upload className="h-8 w-8 opacity-60" />
+                  <div className="font-medium">{parsing ? 'Reading file…' : 'Drop a file here or click to choose'}</div>
+                  <div className="text-muted-foreground text-sm">.csv (any delimiter) or .xlsx · up to 10 MB · every sheet is read</div>
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    accept=".csv,.tsv,.txt,.xlsx"
+                    className="hidden"
+                    onChange={(e) => onFile(e.target.files?.[0] || null)}
+                  />
                 </div>
-                {sheets.length > 1 && (
-                  <div className="w-56">
-                    <Label className="mb-1 block text-xs">Sheet</Label>
-                    <Select value={sheet.name} onValueChange={onSheetChange}>
-                      <SelectTrigger className="h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sheets.map((s) => (
-                          <SelectItem key={s.name} value={s.name}>
-                            {s.name} ({s.rowCount})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                <div className="w-72">
-                  <Label className="mb-1 block text-xs">Header row (column names)</Label>
-                  <Select value={String(headerRow)} onValueChange={(v) => setHeaderRow(Number(v))}>
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sheet.rawRows.slice(0, 15).map((r, i) => (
-                        <SelectItem key={i} value={String(i)}>
-                          Row {i + 1}: {r.filter(Boolean).slice(0, 3).join(' · ').slice(0, 40) || '(empty)'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="max-h-[420px] overflow-auto rounded-md border dark:border-gray-700">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">#</TableHead>
-                      {headers.map((h) => (
-                        <TableHead key={h} className="whitespace-nowrap">
-                          {h}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {dataRows.slice(0, 50).map((r, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="text-muted-foreground text-xs">{headerRow + 2 + i}</TableCell>
-                        {headers.map((h, j) => (
-                          <TableCell key={h} className="max-w-[220px] truncate text-sm" title={r[j] || ''}>
-                            {r[j] || ''}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              {dataRows.length > 50 && <p className="text-muted-foreground text-xs">Showing the first 50 of {dataRows.length} rows.</p>}
-            </div>
-          )}
-
-          {/* 3. MAP COLUMNS */}
-          {step === 2 && (
-            <div className="space-y-4">
-              {missingRequired.length > 0 ? (
-                <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950/40">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <div>
-                    <b>Missing required fields:</b> {missingRequired.map((f) => f.label).join(', ')}. Map a column, or set a value for all rows.
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 rounded-md border border-green-300 bg-green-50 p-3 text-sm dark:border-green-800 dark:bg-green-950/40">
-                  <CheckCircle2 className="h-4 w-4" /> All required fields are covered.
-                </div>
-              )}
-              <div className="overflow-auto rounded-md border dark:border-gray-700">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Pleis field</TableHead>
-                      <TableHead className="w-[260px]">Column in the file</TableHead>
-                      <TableHead>Sample</TableHead>
-                      <TableHead className="w-[230px]">Value for all rows (if empty)</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {fields.map((f) => (
-                      <TableRow key={f.key}>
-                        <TableCell>
-                          <div className="flex items-center gap-2 font-medium">
-                            {f.label}
-                            {f.required && <Badge variant="destructive">required</Badge>}
-                          </div>
-                          {f.help && <div className="text-muted-foreground text-xs">{f.help}</div>}
-                        </TableCell>
-                        <TableCell>
-                          <Select
-                            value={mapping[f.key] || NONE}
-                            onValueChange={(v) => setMapping((m) => {
-                              const next = { ...m };
-                              if (v === NONE) delete next[f.key];
-                              else next[f.key] = v;
-                              return next;
-                            })}
-                          >
-                            <SelectTrigger className="h-9 w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={NONE}>— not mapped —</SelectItem>
-                              {headers.map((h) => (
-                                <SelectItem key={h} value={h}>
-                                  {h}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground max-w-[200px] truncate text-xs">{sampleFor(mapping[f.key])}</TableCell>
-                        <TableCell>{fieldDefaultControl(f)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              {headers.filter((h) => !Object.values(mapping).includes(h)).length > 0 && (
-                <p className="text-muted-foreground text-xs">
-                  Not imported (no field mapped): {headers.filter((h) => !Object.values(mapping).includes(h)).join(', ')}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* 4. MAP VALUES */}
-          {step === 3 && (
-            <div className="space-y-5">
-              <p className="text-sm">
-                These values from the file do not match anything in Pleis yet. Connect each one to a Pleis record (for example the organizer&apos;s
-                category “Pivo” → our subcategory “Drinks”), or skip it.
-              </p>
-              {unresolvedEntries.length === 0 && <p className="text-sm">All values are matched.</p>}
-              {unresolvedEntries.map(([key, values]) => {
-                const f = fields.find((x) => x.key === key);
-                const ref = f?.ref || key;
-                return (
-                  <div key={key} className="rounded-md border p-3 dark:border-gray-700">
-                    <div className="mb-2 font-semibold">
-                      {f?.label || key} <span className="text-muted-foreground text-xs font-normal">→ Pleis {REF_LABELS[ref] || ref}</span>
-                    </div>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      {Object.entries(values).map(([raw, count]) => (
-                        <div key={raw} className="flex items-center gap-2">
-                          <div className="w-1/2 truncate text-sm" title={raw}>
-                            “{raw}” <span className="text-muted-foreground text-xs">× {count}</span>
-                          </div>
-                          <Select
-                            value={valueMappings[key]?.[raw] || NONE}
-                            onValueChange={(v) => setValueMappings((vm) => ({ ...vm, [key]: { ...(vm[key] || {}), [raw]: v === NONE ? '' : v } }))}
-                          >
-                            <SelectTrigger className="h-9 w-1/2">
-                              <SelectValue placeholder="Choose…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={NONE}>Choose…</SelectItem>
-                              <SelectItem value={skipValue}>Skip this value</SelectItem>
-                              {(lookups[ref] || []).map((o) => (
-                                <SelectItem key={o.id} value={o.id}>
-                                  {o.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ))}
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4 dark:border-gray-700">
+                  <div className="text-sm">
+                    <div className="font-medium">Pleis menu item format</div>
+                    <div className="text-muted-foreground">
+                      Every column we import, example rows with this company&apos;s menus and subcategories, a “Valid values” sheet and instructions.
+                      Copy the organizer&apos;s menu into these columns and import it as is. Exports use the same columns.
                     </div>
                   </div>
-                );
-              })}
-              {unmappedLeft > 0 && <p className="text-muted-foreground text-xs">{unmappedLeft} value(s) still unconnected — rows using them will be reported as errors.</p>}
-            </div>
-          )}
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => onTemplate('xlsx')} disabled={downloading} className="flex items-center gap-2">
+                      <Download className="h-4 w-4" /> Excel template
+                    </Button>
+                    <Button variant="ghost" onClick={() => onTemplate('csv')} disabled={downloading}>
+                      CSV
+                    </Button>
+                  </div>
+                </div>
+                <ul className="text-muted-foreground list-disc space-y-1 pl-5 text-xs">
+                  <li>Row 1 lists the menus (B1 →): every item in the file is placed in all of them. Column names are in row 2, items from row 3.</li>
+                  <li>
+                    An item is updated when its “Pleis item ID” matches, otherwise when the same name exists in the same menu (the amount separates
+                    items with the same name); any other row creates a new item. Items not in the file are left unchanged.
+                  </li>
+                  <li>
+                    Every row needs a preset type, name, subcategory, price and tax class (25 / 13 / 5 / 0), and yes / no in every yes / no column.
+                    18+ items can never be marked “to go”.
+                  </li>
+                  <li>
+                    A menu, subcategory, brand, serving, daypart, diet tag or allergen that does not exist yet is created on import (you see the list
+                    before importing). Preset types must already exist.
+                  </li>
+                </ul>
+              </div>
+            )}
 
-          {/* 5. REVIEW */}
-          {step === 4 && report && (
-            <div className="space-y-4">
-              {report.toCreate && Object.keys(report.toCreate).length > 0 && (
-                <div className="rounded-md border border-blue-300 bg-blue-50 p-3 text-sm dark:border-blue-800 dark:bg-blue-950/40">
-                  <div className="mb-1 font-semibold">Will be created on import (do not exist yet):</div>
-                  <ul className="list-disc space-y-0.5 pl-5">
-                    {Object.entries(report.toCreate).map(([ref, names]) => (
-                      <li key={ref}>
-                        <b>{REF_LABELS[ref] || ref}</b>: {names.join(', ')}
-                      </li>
-                    ))}
-                  </ul>
-                  {report.toCreate.menu && (report.venues?.length || 0) > 1 && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <span>Venue for the new menu(s):</span>
-                      <Select value={venue || report.defaultVenue || ''} onValueChange={setVenue}>
-                        <SelectTrigger className="h-8 w-64">
-                          <SelectValue placeholder="Choose venue" />
+            {/* 2. PREVIEW */}
+            {step === 1 && sheet && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-end gap-4">
+                  <div className="text-sm">
+                    <div className="font-medium">{file?.name}</div>
+                    <div className="text-muted-foreground">
+                      {dataRows.length} data rows · {headers.length} columns{sheet.truncated ? ' · only the first 10,000 rows are imported' : ''}
+                    </div>
+                  </div>
+                  {sheets.length > 1 && (
+                    <div className="w-56">
+                      <Label className="mb-1 block text-xs">Sheet</Label>
+                      <Select value={sheet.name} onValueChange={onSheetChange}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {(report.venues || []).map((v) => (
-                            <SelectItem key={v.id} value={v.id}>
-                              {v.label}
+                          {sheets.map((s) => (
+                            <SelectItem key={s.name} value={s.name}>
+                              {s.name} ({s.rowCount})
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                   )}
+                  {fileMenus.length > 0 && (
+                    <div className="text-sm">
+                      <Label className="mb-1 block text-xs">Menus (row 1) — every item goes into each</Label>
+                      <div className="flex flex-wrap gap-1">
+                        {fileMenus.map((m) => (
+                          <Badge key={m} variant="secondary">
+                            {m}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="w-72">
+                    <Label className="mb-1 block text-xs">Header row (column names)</Label>
+                    <Select value={String(headerRow)} onValueChange={(v) => setHeaderRow(Number(v))}>
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sheet.rawRows.slice(0, 15).map((r, i) => (
+                          <SelectItem key={i} value={String(i)}>
+                            Row {i + 1}: {r.filter(Boolean).slice(0, 3).join(' · ').slice(0, 40) || '(empty)'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              )}
-              <div className="flex flex-wrap gap-2 text-sm">
-                <Badge variant="secondary">{report.summary.total} rows</Badge>
-                <Badge className="bg-green-600 text-white">{report.summary.create} new</Badge>
-                <Badge className="bg-blue-600 text-white">{report.summary.update} update</Badge>
-                <Badge variant="destructive">{report.summary.error} with errors</Badge>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <RadioGroup value={stopOnError ? 'stop' : 'valid'} onValueChange={(v) => setStopOnError(v === 'stop')} className="flex flex-wrap gap-4">
-                  <Label className="flex cursor-pointer items-center gap-2 font-normal">
-                    <RadioGroupItem value="valid" /> Import valid rows only
-                  </Label>
-                  <Label className="flex cursor-pointer items-center gap-2 font-normal">
-                    <RadioGroupItem value="stop" /> Import nothing if any row has an error
-                  </Label>
-                </RadioGroup>
-                <Label className="flex cursor-pointer items-center gap-2 text-sm font-normal">
-                  <input type="checkbox" checked={onlyErrors} onChange={(e) => setOnlyErrors(e.target.checked)} /> Show errors only
-                </Label>
-              </div>
-              <div className="max-h-[380px] overflow-auto rounded-md border dark:border-gray-700">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">Row</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead className="w-24">Result</TableHead>
-                      <TableHead>Problems / notes</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {report.results
-                      .filter((r) => !onlyErrors || r.action === 'error')
-                      .map((r) => (
-                        <TableRow key={r.row}>
-                          <TableCell className="text-muted-foreground text-xs">{r.row}</TableCell>
-                          <TableCell className="text-sm">{r.title || '—'}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={r.action === 'error' ? 'destructive' : 'secondary'}
-                              className={r.action === 'create' ? 'bg-green-600 text-white' : r.action === 'update' ? 'bg-blue-600 text-white' : ''}
-                            >
-                              {r.action === 'create' ? 'new' : r.action}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            {r.errors.length > 0 && <span className="text-red-600 dark:text-red-400">{r.errors.join(' · ')}</span>}
-                            {r.errors.length === 0 && (r.notes?.length || 0) > 0 && <span className="text-blue-600 dark:text-blue-400">{r.notes?.join(' · ')}</span>}
-                          </TableCell>
+                <div className="max-h-[420px] overflow-auto rounded-md border dark:border-gray-700">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">#</TableHead>
+                        {headers.map((h) => (
+                          <TableHead key={h} className="whitespace-nowrap">
+                            {h}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {dataRows.slice(0, 50).map((r, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="text-muted-foreground text-xs">{headerRow + 2 + i}</TableCell>
+                          {headers.map((h, j) => (
+                            <TableCell key={h} className="max-w-[220px] truncate text-sm" title={r[j] || ''}>
+                              {r[j] || ''}
+                            </TableCell>
+                          ))}
                         </TableRow>
                       ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </div>
-          )}
-
-          {/* 6. DONE */}
-          {step === 5 && report && (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
-              <div className="text-lg font-semibold">Import finished</div>
-              <div className="text-sm">
-                {report.written?.created ?? 0} items created · {report.written?.updated ?? 0} updated · {report.summary.error} not imported
-              </div>
-              {report.written?.records && Object.keys(report.written.records).length > 0 && (
-                <div className="text-muted-foreground text-sm">
-                  Also created: {Object.entries(report.written.records).map(([ref, n]) => `${n} ${REF_LABELS[ref] || ref}${n > 1 ? 's' : ''}`).join(', ')}
+                    </TableBody>
+                  </Table>
                 </div>
-              )}
-              {report.summary.error > 0 && (
-                <Button variant="outline" onClick={downloadErrorReport} className="flex items-center gap-2">
-                  <Download className="h-4 w-4" /> Download rows with errors
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
+                {dataRows.length > 50 && <p className="text-muted-foreground text-xs">Showing the first 50 of {dataRows.length} rows.</p>}
+              </div>
+            )}
 
-        {/* footer */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4 dark:border-gray-700">
-          <Button variant="ghost" onClick={step === 0 || step === 5 ? close : () => setStep((s) => (s === 4 && unresolvedEntries.length === 0 ? 1 : s - 1) as Step)}>
-            {step === 0 || step === 5 ? 'Close' : 'Back'}
-          </Button>
-          <div className="flex gap-2">
-            {step === 1 && (
-              <>
-                <Button variant="outline" onClick={() => setStep(2)} disabled={fieldsLoading || headers.length === 0}>
-                  {missingRequired.length ? 'Map columns' : 'Adjust columns'}
-                </Button>
-                {missingRequired.length === 0 && (
-                  <Button onClick={() => runValidate()} disabled={validating || fieldsLoading}>
-                    {validating ? 'Checking…' : 'Check rows'}
-                  </Button>
-                )}
-              </>
-            )}
+            {/* 3. MAP COLUMNS */}
             {step === 2 && (
-              <Button onClick={() => runValidate()} disabled={validating || missingRequired.length > 0}>
-                {validating ? 'Checking…' : 'Check rows'}
-              </Button>
+              <div className="space-y-4">
+                {missingRequired.length > 0 ? (
+                  <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950/40">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <b>Missing required fields:</b> {missingRequired.map((f) => f.label).join(', ')}. Map a column, or set a value for all rows.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-md border border-green-300 bg-green-50 p-3 text-sm dark:border-green-800 dark:bg-green-950/40">
+                    <CheckCircle2 className="h-4 w-4" /> All required fields are covered.
+                  </div>
+                )}
+                <div className="overflow-auto rounded-md border dark:border-gray-700">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Pleis field</TableHead>
+                        <TableHead className="w-[260px]">Column in the file</TableHead>
+                        <TableHead>Sample</TableHead>
+                        <TableHead className="w-[230px]">Value for all rows (if empty)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {fields.map((f) => (
+                        <TableRow key={f.key}>
+                          <TableCell>
+                            <div className="flex items-center gap-2 font-medium">
+                              {f.label}
+                              {f.required && <Badge variant="destructive">required</Badge>}
+                            </div>
+                            {f.help && <div className="text-muted-foreground text-xs">{f.help}</div>}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={mapping[f.key] || NONE}
+                              onValueChange={(v) =>
+                                setMapping((m) => {
+                                  const next = { ...m };
+                                  if (v === NONE) delete next[f.key];
+                                  else next[f.key] = v;
+                                  return next;
+                                })
+                              }
+                            >
+                              <SelectTrigger className="h-9 w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={NONE}>— not mapped —</SelectItem>
+                                {headers.map((h) => (
+                                  <SelectItem key={h} value={h}>
+                                    {h}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground max-w-[200px] truncate text-xs">{sampleFor(mapping[f.key])}</TableCell>
+                          <TableCell>{fieldDefaultControl(f)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {headers.filter((h) => !Object.values(mapping).includes(h)).length > 0 && (
+                  <p className="text-muted-foreground text-xs">
+                    Not imported (no field mapped): {headers.filter((h) => !Object.values(mapping).includes(h)).join(', ')}
+                  </p>
+                )}
+              </div>
             )}
+
+            {/* 4. MAP VALUES */}
             {step === 3 && (
-              <Button onClick={() => runValidate(4)} disabled={validating}>
-                {validating ? 'Checking…' : 'Apply and review'}
-              </Button>
+              <div className="space-y-5">
+                <p className="text-sm">
+                  These values from the file do not match anything in Pleis yet. Connect each one to a Pleis record (for example the organizer&apos;s
+                  category “Pivo” → our subcategory “Drinks”), or skip it.
+                </p>
+                {unresolvedEntries.length === 0 && <p className="text-sm">All values are matched.</p>}
+                {unresolvedEntries.map(([key, values]) => {
+                  const f = fields.find((x) => x.key === key);
+                  const ref = f?.ref || key;
+                  return (
+                    <div key={key} className="rounded-md border p-3 dark:border-gray-700">
+                      <div className="mb-2 font-semibold">
+                        {f?.label || key} <span className="text-muted-foreground text-xs font-normal">→ Pleis {REF_LABELS[ref] || ref}</span>
+                      </div>
+                      <div className="grid gap-2 md:grid-cols-2">
+                        {Object.entries(values).map(([raw, count]) => (
+                          <div key={raw} className="flex items-center gap-2">
+                            <div className="w-1/2 truncate text-sm" title={raw}>
+                              “{raw}” <span className="text-muted-foreground text-xs">× {count}</span>
+                            </div>
+                            <Select
+                              value={valueMappings[key]?.[raw] || NONE}
+                              onValueChange={(v) => setValueMappings((vm) => ({ ...vm, [key]: { ...(vm[key] || {}), [raw]: v === NONE ? '' : v } }))}
+                            >
+                              <SelectTrigger className="h-9 w-1/2">
+                                <SelectValue placeholder="Choose…" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value={NONE}>Choose…</SelectItem>
+                                <SelectItem value={skipValue}>Skip this value</SelectItem>
+                                {(lookups[ref] || []).map((o) => (
+                                  <SelectItem key={o.id} value={o.id}>
+                                    {o.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {unmappedLeft > 0 && (
+                  <p className="text-muted-foreground text-xs">
+                    {unmappedLeft} value(s) still unconnected — rows using them will be reported as errors.
+                  </p>
+                )}
+              </div>
             )}
+
+            {/* 5. REVIEW */}
             {step === 4 && report && (
-              <>
+              <div className="space-y-4">
+                {report.toCreate && Object.keys(report.toCreate).length > 0 && (
+                  <div className="rounded-md border border-blue-300 bg-blue-50 p-3 text-sm dark:border-blue-800 dark:bg-blue-950/40">
+                    <div className="mb-1 font-semibold">Will be created on import (do not exist yet):</div>
+                    <ul className="list-disc space-y-0.5 pl-5">
+                      {Object.entries(report.toCreate).map(([ref, names]) => (
+                        <li key={ref}>
+                          <b>{REF_LABELS[ref] || ref}</b>: {names.join(', ')}
+                        </li>
+                      ))}
+                    </ul>
+                    {report.toCreate.menu && (report.venues?.length || 0) > 1 && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span>Venue for the new menu(s):</span>
+                        <Select value={venue || report.defaultVenue || ''} onValueChange={setVenue}>
+                          <SelectTrigger className="h-8 w-64">
+                            <SelectValue placeholder="Choose venue" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(report.venues || []).map((v) => (
+                              <SelectItem key={v.id} value={v.id}>
+                                {v.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <Badge variant="secondary">
+                    {report.summary.rows ?? report.summary.total} rows
+                    {(report.fileMenus?.length || 0) > 1 ? ` × ${report.fileMenus?.length} menus` : ''}
+                  </Badge>
+                  <Badge className="bg-green-600 text-white">{report.summary.create} new</Badge>
+                  <Badge className="bg-blue-600 text-white">{report.summary.update} update</Badge>
+                  <Badge variant="destructive">{report.summary.error} with errors</Badge>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <RadioGroup
+                    value={stopOnError ? 'stop' : 'valid'}
+                    onValueChange={(v) => setStopOnError(v === 'stop')}
+                    className="flex flex-wrap gap-4"
+                  >
+                    <Label className="flex cursor-pointer items-center gap-2 font-normal">
+                      <RadioGroupItem value="valid" /> Import valid rows only
+                    </Label>
+                    <Label className="flex cursor-pointer items-center gap-2 font-normal">
+                      <RadioGroupItem value="stop" /> Import nothing if any row has an error
+                    </Label>
+                  </RadioGroup>
+                  <Label className="flex cursor-pointer items-center gap-2 text-sm font-normal">
+                    <input type="checkbox" checked={onlyErrors} onChange={(e) => setOnlyErrors(e.target.checked)} /> Show errors only
+                  </Label>
+                </div>
+                <div className="max-h-[380px] overflow-auto rounded-md border dark:border-gray-700">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Row</TableHead>
+                        <TableHead>Name</TableHead>
+                        {(report.fileMenus?.length || 0) > 1 && <TableHead>Menu</TableHead>}
+                        <TableHead className="w-24">Result</TableHead>
+                        <TableHead>Problems / notes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {report.results
+                        .filter((r) => !onlyErrors || r.action === 'error')
+                        .map((r) => (
+                          <TableRow key={`${r.row}-${r.menu || ''}`}>
+                            <TableCell className="text-muted-foreground text-xs">{r.row}</TableCell>
+                            <TableCell className="text-sm">{r.title || '—'}</TableCell>
+                            {(report.fileMenus?.length || 0) > 1 && <TableCell className="text-xs">{r.menu || '—'}</TableCell>}
+                            <TableCell>
+                              <Badge
+                                variant={r.action === 'error' ? 'destructive' : 'secondary'}
+                                className={r.action === 'create' ? 'bg-green-600 text-white' : r.action === 'update' ? 'bg-blue-600 text-white' : ''}
+                              >
+                                {r.action === 'create' ? 'new' : r.action}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              {r.errors.length > 0 && <span className="text-red-600 dark:text-red-400">{r.errors.join(' · ')}</span>}
+                              {r.errors.length === 0 && (r.notes?.length || 0) > 0 && (
+                                <span className="text-blue-600 dark:text-blue-400">{r.notes?.join(' · ')}</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+
+            {/* 6. DONE */}
+            {step === 5 && report && (
+              <div className="flex flex-col items-center gap-3 py-10 text-center">
+                <CheckCircle2 className="h-10 w-10 text-green-600" />
+                <div className="text-lg font-semibold">Import finished</div>
+                <div className="text-sm">
+                  {report.written?.created ?? 0} items created · {report.written?.updated ?? 0} updated · {report.summary.error} not imported
+                </div>
+                {report.written?.records && Object.keys(report.written.records).length > 0 && (
+                  <div className="text-muted-foreground text-sm">
+                    Also created:{' '}
+                    {Object.entries(report.written.records)
+                      .map(([ref, n]) => `${n} ${REF_LABELS[ref] || ref}${n > 1 ? 's' : ''}`)
+                      .join(', ')}
+                  </div>
+                )}
                 {report.summary.error > 0 && (
-                  <Button variant="outline" onClick={downloadErrorReport}>
-                    Download errors
+                  <Button variant="outline" onClick={downloadErrorReport} className="flex items-center gap-2">
+                    <Download className="h-4 w-4" /> Download rows with errors
                   </Button>
                 )}
-                <Button
-                  onClick={runCommit}
-                  disabled={committing || report.summary.create + report.summary.update === 0 || (stopOnError && report.summary.error > 0)}
-                >
-                  {committing ? 'Importing…' : `Import ${report.summary.create + report.summary.update} item(s)`}
-                </Button>
-              </>
+              </div>
             )}
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+          {/* footer */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-4 dark:border-gray-700">
+            <Button
+              variant="ghost"
+              onClick={
+                step === 0 || step === 5 ? requestClose : () => setStep((s) => (s === 4 && unresolvedEntries.length === 0 ? 1 : s - 1) as Step)
+              }
+            >
+              {step === 0 || step === 5 ? 'Close' : 'Back'}
+            </Button>
+            <div className="flex gap-2">
+              {step === 1 && (
+                <>
+                  <Button variant="outline" onClick={() => setStep(2)} disabled={fieldsLoading || headers.length === 0}>
+                    {missingRequired.length ? 'Map columns' : 'Adjust columns'}
+                  </Button>
+                  {missingRequired.length === 0 && (
+                    <Button onClick={() => runValidate()} disabled={validating || fieldsLoading}>
+                      {validating ? 'Checking…' : 'Check rows'}
+                    </Button>
+                  )}
+                </>
+              )}
+              {step === 2 && (
+                <Button onClick={() => runValidate()} disabled={validating || missingRequired.length > 0}>
+                  {validating ? 'Checking…' : 'Check rows'}
+                </Button>
+              )}
+              {step === 3 && (
+                <Button onClick={() => runValidate(4)} disabled={validating}>
+                  {validating ? 'Checking…' : 'Apply and review'}
+                </Button>
+              )}
+              {step === 4 && report && (
+                <>
+                  {report.summary.error > 0 && (
+                    <Button variant="outline" onClick={downloadErrorReport}>
+                      Download errors
+                    </Button>
+                  )}
+                  <Button
+                    onClick={runCommit}
+                    disabled={committing || report.summary.create + report.summary.update === 0 || (stopOnError && report.summary.error > 0)}
+                  >
+                    {committing ? 'Importing…' : `Import ${report.summary.create + report.summary.update} item(s)`}
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={confirmDiscard}
+        title="Discard this import?"
+        content={`“${file?.name ?? 'The file'}” and your column / value mappings will be lost. Nothing has been imported yet.`}
+        confirmText="Discard"
+        cancelText="Keep editing"
+        onClose={() => setConfirmDiscard(false)}
+        onConfirm={close}
+      />
+    </>
   );
 }

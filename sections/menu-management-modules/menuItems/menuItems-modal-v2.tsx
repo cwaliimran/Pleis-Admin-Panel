@@ -85,10 +85,11 @@ const schema = Yup.object().shape({
       const { startTime } = this.parent;
       return !startTime || !!value;
     })
-    .test('after-start', 'End time must be after start time', function (value) {
+    // An end before the start runs past midnight (e.g. 22:00–04:00) — the app supports that window
+    .test('differs-from-start', 'End time must differ from start time', function (value) {
       const { startTime } = this.parent;
       if (!value || !startTime) return true;
-      return value > startTime;
+      return value !== startTime;
     }),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
   presetType: Yup.string().required('Preset type is required'),

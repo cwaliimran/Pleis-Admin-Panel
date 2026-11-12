@@ -18,17 +18,18 @@ import TransactionHistoryPagination from '../pagination/transaction-history-pagi
 import TransactionHistoryTableRow from './transaction-history-table-row';
 
 const HEAD_LABEL = [
-  { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.name' },
-  { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization' },
+  // min-w keeps each column wide enough that wrapped text stays inside its own cell.
+  { id: 'user', label: 'User', align: 'left', sortable: true, sortKey: 'user.name', className: 'min-w-60' },
+  { id: 'organization', label: 'Organization', align: 'left', sortable: true, sortKey: 'organization', className: 'min-w-48' },
   { id: 'transactionId', label: 'Transaction ID', align: 'left' },
-  { id: 'type', label: 'Type', align: 'left' },
+  { id: 'type', label: 'Type', align: 'left', className: 'min-w-60' },
   { id: 'amount', label: 'Amount', align: 'left' },
   { id: 'commission', label: 'Commission', align: 'left' },
   { id: 'organizerNet', label: 'Organizer net', align: 'left' },
   { id: 'pleisNet', label: 'Pleis net', align: 'left' },
-  { id: 'payment', label: 'Payment', align: 'left' },
-  { id: 'settlement', label: 'Settlement', align: 'left' },
-  { id: 'fiscalization', label: 'Fiscalization', align: 'left' },
+  { id: 'payment', label: 'Payment', align: 'left', className: 'min-w-56' },
+  { id: 'settlement', label: 'Settlement', align: 'left', className: 'min-w-64' },
+  { id: 'fiscalization', label: 'Fiscalization', align: 'left', className: 'min-w-40 pl-4' },
   { id: 'documents', label: 'Documents', align: 'left' },
   { id: 'capturedAt', label: 'Captured', align: 'left', sortable: true, sortKey: 'capturedAt' },
   { id: 'actions', label: '', align: 'center' },
@@ -37,6 +38,8 @@ const HEAD_LABEL = [
 interface TransactionHistoryTableProps {
   data: Transaction[];
   loading?: boolean;
+  /** #8: organizer view — no Pleis net column, no payout actions. */
+  isOrganizer?: boolean;
   currentPage: number;
   totalPages: number;
   totalRecords: number;
@@ -64,6 +67,7 @@ interface TransactionHistoryTableProps {
 const TransactionHistoryTable: FC<TransactionHistoryTableProps> = ({
   data,
   loading,
+  isOrganizer = false,
   currentPage,
   totalPages,
   totalRecords,
@@ -87,6 +91,7 @@ const TransactionHistoryTable: FC<TransactionHistoryTableProps> = ({
   onApplyAdvancedFilters,
   onClearAdvancedFilters,
 }) => {
+  const headLabel = isOrganizer ? HEAD_LABEL.filter((column) => column.id !== 'pleisNet') : HEAD_LABEL;
   const { sortedData, sortConfig, handleSort } = useTableSort({ data });
   const advancedFiltersPanel = useBoolean(false);
   const activeAdvancedFilterCount = countActiveFilters(advancedFilters);
@@ -132,11 +137,11 @@ const TransactionHistoryTable: FC<TransactionHistoryTableProps> = ({
 
       <div className="mt-4 min-h-[45vh] rounded-lg border">
         <Table className="w-full rounded-md border">
-          <TableHeadCustom headLabel={HEAD_LABEL} onSort={handleSort} sortConfig={sortConfig} />
+          <TableHeadCustom headLabel={headLabel} onSort={handleSort} sortConfig={sortConfig} />
 
-          <TableBodyWrapper loading={loading} colSpan={HEAD_LABEL.length} dataLength={sortedData?.length || 0}>
+          <TableBodyWrapper loading={loading} colSpan={headLabel.length} dataLength={sortedData?.length || 0}>
             {sortedData?.map((item) => (
-              <TransactionHistoryTableRow key={item.id} item={item} onView={onView} onDownloadDocuments={onDownloadDocuments} onExclude={onExclude} />
+              <TransactionHistoryTableRow key={item.id} item={item} isOrganizer={isOrganizer} onView={onView} onDownloadDocuments={onDownloadDocuments} onExclude={onExclude} />
             ))}
           </TableBodyWrapper>
         </Table>

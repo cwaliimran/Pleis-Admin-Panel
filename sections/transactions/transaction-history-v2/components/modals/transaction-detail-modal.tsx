@@ -49,7 +49,7 @@ const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose
               <InfoLine label="Organizer net" value={formatEuro(moneySplit.organizerNet)} />
               {moneySplit.serviceFeeLabel && <InfoLine label={moneySplit.serviceFeeLabel} value={formatEuro(moneySplit.serviceFeeAmount)} />}
               {moneySplit.gatewayCostLabel && <InfoLine label={moneySplit.gatewayCostLabel} value={formatSignedEuro(moneySplit.gatewayCostAmount)} />}
-              <InfoLine label="Pleis net" value={formatEuro(moneySplit.pleisNet)} />
+              {moneySplit.pleisNet != null && <InfoLine label="Pleis net" value={formatEuro(moneySplit.pleisNet)} />}
             </section>
 
             <section>

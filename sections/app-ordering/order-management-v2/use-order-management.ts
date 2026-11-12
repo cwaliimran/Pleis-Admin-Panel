@@ -280,7 +280,7 @@ export const useOrderManagement = ({ userType, organizationId, filters, page, li
             items: combo.menuItemIds,
             quantity: String(combo.quantity),
           })),
-          userId: order.customer.id || undefined,
+          ...(payload.paymentMethod ? { paymentMethod: payload.paymentMethod } : {}),
         }).unwrap();
 
         await refetch();

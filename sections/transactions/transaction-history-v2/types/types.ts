@@ -41,7 +41,7 @@ export interface MoneySplit {
   serviceFeeAmount?: number;
   gatewayCostLabel?: string;
   gatewayCostAmount?: number;
-  pleisNet: number;
+  pleisNet?: number | null;
 }
 
 export interface SettlementDetail {
@@ -71,6 +71,11 @@ export interface TransactionDetail {
 
 export interface Transaction {
   id: string;
+  /** PaymentLedgerEntry id (exclude from payout). */
+  ledgerEntryId?: string;
+  orderId?: string;
+  paymentChannel?: 'pleis' | 'offapp';
+  edited?: boolean;
   transactionId: string;
   reference: string;
   user: TransactionUser | null;
@@ -83,7 +88,7 @@ export interface Transaction {
   commissionRate: number | null;
   commissionAmount: number | null;
   organizerNet: number | null;
-  pleisNet: number;
+  pleisNet?: number | null;
   pleisNetNote?: string;
   paymentMethod?: string;
   paymentSubNote?: string;

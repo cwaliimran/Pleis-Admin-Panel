@@ -245,6 +245,8 @@ export interface OrderDraftCombo {
 export interface OrderUpdatePayload {
   items: { menuItemId: string; quantity: number }[];
   combos: { comboId: string; menuItemIds: string[]; quantity: number }[];
+  /** Sent only when staff changed it (#130). */
+  paymentMethod?: string;
 }
 
 // ---------- Live updates (Socket.IO) ----------

@@ -267,9 +267,15 @@ export const menuGroups: MenuGroup[] = [
     key: paths.organizer.users.list,
     icon: Calendar,
   },
+  // Requirement Set v13.8 #1 / #8 / #10: one "Transaction list", own company only, live Monri data.
+  // {
+  //   label: 'Transaction history',
+  //   key: paths.organizer.transactionsHistory,
+  //   icon: FileClock,
+  // },
   {
-    label: 'Transaction history',
-    key: paths.organizer.transactionsHistory,
+    label: 'Transaction list',
+    key: paths.organizer.transactionsHistoryV2,
     icon: FileClock,
   },
   {

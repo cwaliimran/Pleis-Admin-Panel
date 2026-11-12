@@ -10,7 +10,7 @@ export const CategoryTypeCell: FC<{ category: TransactionCategory; subtype: stri
         <span className={`h-2 w-2 rounded-full ${config.dotClassName}`} />
         {config.label}
       </div>
-      <p className="max-w-45 text-xs whitespace-normal text-gray-500 dark:text-gray-400">
+      <p className="text-xs break-words whitespace-normal text-gray-500 dark:text-gray-400">
         {subtype} · <span className="font-medium">{status}</span>
       </p>
     </div>
@@ -23,7 +23,8 @@ export const SettlementCell: FC<{ status: SettlementStatus; note?: string }> = (
   return (
     <div>
       <p className={`text-xs font-semibold tracking-wide uppercase ${config.className}`}>{status}</p>
-      {note && <p className="mt-0.5 max-w-55 text-xs whitespace-normal text-gray-500 dark:text-gray-400">{note}</p>}
+      {/* Reason codes like RESERVATION_ACT_NOT_COMMISSIONED have no spaces: allow a line break after each underscore. */}
+      {note && <p className="mt-0.5 text-xs break-words whitespace-normal text-gray-500 dark:text-gray-400">{note.replace(/_/g, '_​')}</p>}
     </div>
   );
 };

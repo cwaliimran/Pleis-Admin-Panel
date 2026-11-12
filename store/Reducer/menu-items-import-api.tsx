@@ -29,6 +29,8 @@ export interface LookupOption {
 export interface ImportSheet {
   name: string;
   headerRow: number;
+  /** template v2: menus listed in row 1 (B1 →) — every item is placed in all of them */
+  fileMenus?: string[];
   rawRows: string[][];
   headers: string[];
   rowCount: number;
@@ -38,6 +40,8 @@ export interface ImportSheet {
 
 export interface ImportRowResult {
   row: number;
+  /** menu this result is for (a row is checked once per menu in row 1) */
+  menu?: string;
   action: 'create' | 'update' | 'error';
   matchId: string | null;
   title: string;
@@ -50,7 +54,8 @@ export interface ImportReport {
   sheet: string;
   headerRow: number;
   headers: string[];
-  summary: { total: number; create: number; update: number; error: number };
+  summary: { rows?: number; total: number; create: number; update: number; error: number };
+  fileMenus?: string[];
   results: ImportRowResult[];
   unresolved: Record<string, Record<string, number>>;
   /** names that do not exist yet and are created on import, per record type */

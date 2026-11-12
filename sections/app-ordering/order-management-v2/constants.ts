@@ -277,7 +277,9 @@ export const MARK_AS_UNPAID_ACTION: ActionConfig = { type: 'markAsUnpaid', label
  * payment provider, so staff have nothing to confirm and the button would
  * let them mark an order paid that never was.
  */
-export const MARK_AS_PAID_PAYMENT_TYPES: PaymentType[] = ['card', 'cash'];
+// #89: only the Off App Payment Options (Cash, Card at the venue terminal, Other).
+// 'card' is the in-app Monri card: Pleis sets Paid from the Monri result, never by hand.
+export const MARK_AS_PAID_PAYMENT_TYPES: PaymentType[] = ['cash', 'cardTerminal', 'other'];
 
 /**
  * A `payLater` order that is collected rather than carried to the customer.
@@ -338,6 +340,7 @@ export const canMarkOrderAsPaid = (order: ActionableOrder) => {
  */
 export const canMarkOrderAsUnpaid = (order: ActionableOrder) => {
   if (order.paymentStatus !== 'pending') return false;
+  if (!MARK_AS_PAID_PAYMENT_TYPES.includes(order.paymentType)) return false;
   return PAYMENT_ACTION_STATUSES.includes(order.status);
 };
 
@@ -362,9 +365,17 @@ export const getPrimaryAction = (order: ActionableOrder): ActionConfig | null =>
   return null;
 };
 
-/** Only rewritable while nothing is committed — unaccepted and unpaid. */
+/**
+ * Edit order (Requirement Set #129, #130): open while Payment = Unpaid, whatever
+ * the fulfilment status, in agreement with the guest. Once Paid nothing is
+ * edited — the correction is a refund. A closed order is not edited either.
+ */
 export const isOrderEditable = (order: { status: OrderStatus; paymentStatus: PaymentStatus }) =>
-  order.status === 'pending' && order.paymentStatus === 'pending';
+  (order.paymentStatus === 'pending' || order.paymentStatus === 'failed') &&
+  !['cancelled', 'rejected', 'expired'].includes(order.status as string);
+
+/** In-app (Pleis) methods: kept as they are unless staff pick a venue method. */
+export const PLEIS_PAYMENT_METHODS = ['card', 'applePay', 'googlePay'] as const;
 
 /** How many menu items the picker reveals at a time. Paginates rendering, not fetching. */
 export const MENU_ITEM_PAGE_SIZE = 15;

@@ -9,15 +9,13 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ComboPicker } from './combo-picker';
 import {
-  DEFAULT_UPDATE_ORDER_PAYMENT_METHOD,
   MAX_ITEM_QUANTITY,
+  PLEIS_PAYMENT_METHODS,
   MIN_ITEM_QUANTITY,
   UPDATE_ORDER_PAYMENT_METHOD_OPTIONS,
   formatCurrency,
   formatOrderTime,
   getComboPriceModeLabel,
-  toUpdateOrderPaymentMethod,
-  UpdateOrderPaymentMethod,
 } from './constants';
 import { MenuItemPicker } from './menu-item-picker';
 import { ComboOption, MenuItemOption, Order, OrderDraftCombo, OrderDraftItem, OrderUpdatePayload } from './types';
@@ -176,7 +174,19 @@ const RemoveButton: React.FC<{ label: string; disabled?: boolean; onClick: () =>
 export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order, organizationId, isSubmitting, onClose, onConfirm }) => {
   const [items, setItems] = useState<OrderDraftItem[]>([]);
   const [combos, setCombos] = useState<OrderDraftCombo[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<UpdateOrderPaymentMethod>(DEFAULT_UPDATE_ORDER_PAYMENT_METHOD);
+  // The order's current method is the default; it is sent only when changed,
+  // so an items-only edit never switches how the guest pays (#130).
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
+  const initialPaymentMethod = (order?.paymentType as string) || '';
+  const isPleisMethod = (PLEIS_PAYMENT_METHODS as readonly string[]).includes(initialPaymentMethod);
+  const paymentOptions = useMemo(
+    () => [
+      ...(isPleisMethod ? [{ value: initialPaymentMethod, label: 'Pleis Payment (in app)' }] : []),
+      ...(initialPaymentMethod === 'voucher' ? [{ value: 'voucher', label: 'Other - Voucher' }] : []),
+      ...UPDATE_ORDER_PAYMENT_METHOD_OPTIONS,
+    ],
+    [initialPaymentMethod, isPleisMethod]
+  );
 
   const [dialogElement, setDialogElement] = useState<HTMLDivElement | null>(null);
 
@@ -185,7 +195,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
 
     setItems(toDraftItems(order));
     setCombos(toDraftCombos(order));
-    setPaymentMethod(toUpdateOrderPaymentMethod(order.paymentType));
+    setPaymentMethod((order.paymentType as string) || '');
   }, [open, order?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleQuantityChange = (menuItemId: string, quantity: number) =>
@@ -269,6 +279,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
     onConfirm({
       items: items.map((item) => ({ menuItemId: item.menuItemId, quantity: item.quantity })),
       combos: combos.map((combo) => ({ comboId: combo.comboId, menuItemIds: combo.menuItemIds, quantity: combo.quantity })),
+      ...(paymentMethod && paymentMethod !== initialPaymentMethod ? { paymentMethod } : {}),
     });
   };
 
@@ -278,7 +289,8 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
         <DialogHeader className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
           <DialogTitle className="text-lg font-bold">Update order #{order?.orderNumber}</DialogTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            This order has not been confirmed or paid yet, so it can still be changed. Prices come from the menu and cannot be edited.
+            This order is not paid yet, so it can still be changed in agreement with the guest. Items already ordered keep their price; new
+            items come from the menu. Once the order is paid it can no longer be edited — use a refund instead.
           </p>
         </DialogHeader>
 
@@ -299,7 +311,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
                   <Select
                     value={paymentMethod}
                     disabled={isSubmitting}
-                    onValueChange={(next) => setPaymentMethod(next as UpdateOrderPaymentMethod)}
+                    onValueChange={(next) => setPaymentMethod(next)}
                   >
                     <SelectTrigger
                       aria-label="Payment method"
@@ -308,7 +320,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {UPDATE_ORDER_PAYMENT_METHOD_OPTIONS.map((option) => (
+                      {paymentOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value} className="cursor-pointer text-xs">
                           {option.label}
                         </SelectItem>
@@ -316,9 +328,12 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
                     </SelectContent>
                   </Select>
                 </div>
-                <p className="mt-1.5 text-[11px] leading-relaxed text-amber-600 dark:text-amber-400">
-                  Not working yet — changing this is not saved with the order.
-                </p>
+                {(order?.voucherDiscount ?? 0) > 0 && (
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">
+                    The guest&apos;s voucher is applied first (now {formatCurrency(order?.voucherDiscount ?? 0)}) and recalculated with the
+                    edit; the method pays the rest.
+                  </p>
+                )}
               </div>
             </div>
           </div>

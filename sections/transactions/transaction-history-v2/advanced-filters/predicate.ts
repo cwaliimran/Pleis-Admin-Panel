@@ -105,10 +105,10 @@ export const matchesAdvancedFilters = (transaction: Transaction, values: FilterV
 
   if (!inRange(transaction.amount, asRange(values.grossAmount))) return false;
   if (transaction.organizerNet !== null && !inRange(transaction.organizerNet, asRange(values.organizerNet))) return false;
-  if (!inRange(transaction.pleisNet, asRange(values.pleisNet))) return false;
+  if (!inRange(transaction.pleisNet ?? 0, asRange(values.pleisNet))) return false;
   if (transaction.commissionRate !== null && !inRange(transaction.commissionRate, asRange(values.commissionRate))) return false;
 
-  if (!matchesTriState(asString(values.negativePleisNet) as TriState, transaction.pleisNet < 0)) return false;
+  if (!matchesTriState(asString(values.negativePleisNet) as TriState, (transaction.pleisNet ?? 0) < 0)) return false;
 
   return true;
 };

@@ -13,7 +13,10 @@ import { getErrorMessage } from '@/utils/api';
 import { formatDate } from '@/utils/format-time';
 import { showError, showSuccess } from '@/utils/toast';
 import { Download, Plus, Upload } from 'lucide-react';
-import { saveTextFile, useExportMenuItemsMutation } from '@/store/Reducer/menu-items-import-api';
+import { downloadAuthorized } from '@/store/Reducer/menu-items-import-api';
+import API_ROUTES from '@/store/apiRoutes';
+import { RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
 import MenuItemsImportDialog from './import/menu-items-import-dialog';
 import { useEffect, useMemo, useState } from 'react';
 import MenuItemDeleteImpactModal from './menuItems-delete-impact-modal';
@@ -36,7 +39,8 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
   const deleteModal = useBoolean();
   const impactModal = useBoolean();
   const importModal = useBoolean();
-  const [exportItems, { isLoading: exporting }] = useExportMenuItemsMutation();
+  const [exporting, setExporting] = useState(false);
+  const { user } = useSelector((state: RootState) => state.userSlice);
 
   const { companyId } = useCompanySelectionState();
   const scopedCompanyId = userType === 'super-admin' ? companyId : undefined;
@@ -204,16 +208,25 @@ const MenuItemView = ({ userType }: { userType: 'organizer' | 'super-admin' }) =
             disabled={companySkip || exporting}
             title={companySkip ? 'Select a company first' : menuId ? 'Export the selected menu' : 'Export all menus'}
             onClick={async () => {
+              // Excel in the template v2 layout (menus in row 1, numbers and times as real cells) — edit and import it back as is
+              setExporting(true);
               try {
-                const csv = await exportItems({ companyOrganizer: scopedCompanyId || undefined, menu: menuId || undefined }).unwrap();
-                saveTextFile(csv, `pleis-menu-items-${new Date().toISOString().slice(0, 10)}.csv`);
+                const base = userType === 'super-admin' ? API_ROUTES.ADMIN_MENU_ITEMS : API_ROUTES.ORGANIZER_MENU_ITEMS;
+                const qs = new URLSearchParams({
+                  format: 'xlsx',
+                  ...(scopedCompanyId ? { companyOrganizer: scopedCompanyId } : {}),
+                  ...(menuId ? { menu: menuId } : {}),
+                });
+                await downloadAuthorized(`${base}/export?${qs}`, user?.token, `pleis-menu-items-${new Date().toISOString().slice(0, 10)}.xlsx`);
               } catch (error) {
                 showError(getErrorMessage(error));
+              } finally {
+                setExporting(false);
               }
             }}
           >
             <Download />
-            {exporting ? 'Exporting…' : 'Export CSV'}
+            {exporting ? 'Exporting…' : 'Export Excel'}
           </Button>
           <Button className="bg-primary hover:bg-primary cursor-pointer rounded-4xl py-2 text-white" onClick={handleCreateNew}>
             <Plus />

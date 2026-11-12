@@ -558,14 +558,15 @@ export const menuGroups: MenuGroup[] = [
     key: paths.superAdmin.transactionsHistory,
     icon: FileClock,
     items: [
+      // Requirement Set v13.8 #1 / #10: one "Transaction list", populated from live Monri data.
       {
-        title: 'Transactions list',
-        url: paths.superAdmin.transactionsHistory,
+        title: 'Transaction list',
+        url: paths.superAdmin.transactionsHistoryV2,
         icon: UsersRound,
       },
       // {
       //   title: 'Transactions list',
-      //   url: paths.superAdmin.transactionsHistoryV2,
+      //   url: paths.superAdmin.transactionsHistory,
       //   icon: UsersRound,
       // },
       // {

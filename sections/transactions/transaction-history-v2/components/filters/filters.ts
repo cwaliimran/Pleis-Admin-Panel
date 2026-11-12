@@ -16,7 +16,10 @@ export interface PresetOption {
   predicate: (transaction: Transaction) => boolean;
 }
 
-export const PRESET_OPTIONS: PresetOption[] = [
+// Presets are dropped (Pleis decision of 26.10.2026, Requirement Set #1): only
+// the date basis with From / To remains. Kept empty so the bar renders none.
+export const PRESET_OPTIONS: PresetOption[] = [];
+export const LEGACY_PRESET_OPTIONS: PresetOption[] = [
   {
     id: 'ready_for_payout',
     label: 'Ready for payout',
@@ -43,10 +46,8 @@ export const DATE_BASIS_OPTIONS = [
   { value: 'captured_at', label: 'captured_at' },
   { value: 'created_at', label: 'created_at' },
   { value: 'updated_at', label: 'updated_at' },
-  { value: 'payout_eligible_at', label: 'payout_eligible_at' },
   { value: 'settled_at', label: 'settled_at' },
   { value: 'fiscalized_at', label: 'fiscalized_at' },
-  { value: 'document_generated_at', label: 'document_generated_at' },
   { value: 'excluded_at', label: 'excluded_at' },
 ];
 

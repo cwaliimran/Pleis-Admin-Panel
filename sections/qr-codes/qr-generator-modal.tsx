@@ -6,7 +6,7 @@ import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
-import { useImageUpload } from '@/hooks/useImageUpload';
+import { useGetDeliveryOptionsQuery } from '@/store/Reducer/delivery-options-api';
 import { useGeteventsQuery } from '@/store/Reducer/events';
 import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
@@ -58,7 +58,7 @@ const createSchema = (qrType: QRCodeType | null) => {
       break;
     case 'checkin-table':
       baseSchema.venueId = Yup.string().required('Venue is required');
-      baseSchema.tableNo = Yup.string().required('Table number is required');
+      baseSchema.deliveryOptionId = Yup.string().required('Table is required');
       break;
   }
 
@@ -71,7 +71,24 @@ type QRFormValues = {
   eventId?: string;
   loyaltyId?: string;
   venueId?: string;
-  tableNo?: string;
+  deliveryOptionId?: string;
+};
+
+const TARGET_FIELDS = ['organizationId', 'eventId', 'loyaltyId', 'venueId', 'deliveryOptionId'] as const;
+
+/** Renders a code's deep link to a PNG and downloads it. */
+const downloadLinkAsPng = async (link: string, filename: string, dark: string, light: string) => {
+  const canvas = document.createElement('canvas');
+  await QRCode.toCanvas(canvas, link, { width: 512, margin: 2, color: { dark, light } });
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(filename || 'QR-Code').replace(/\s+/g, '-')}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
 };
 
 export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onClose, qrType }) => {
@@ -85,7 +102,6 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
   const bgColor = '#ffffff';
 
   const { companyId } = useCompanySelectionState();
-  const { uploadImage, uploading: imageUploading } = useImageUpload();
   const [addQrcode, { isLoading: addQrcodeLoading }] = useAddQrcodeMutation();
 
   const config = qrType ? QR_TYPE_CONFIG[qrType] : null;
@@ -99,12 +115,12 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
       eventId: '',
       loyaltyId: '',
       venueId: '',
-      tableNo: '',
+      deliveryOptionId: '',
     },
     mode: 'onChange',
   });
 
-  const { reset, watch } = methods;
+  const { reset, watch, setValue, getValues } = methods;
 
   // Watch all form values for preview
   const formValues = watch();
@@ -196,6 +212,37 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
     [venueData]
   );
 
+  // A table is a "Table delivery" destination of the venue's organization (#59).
+  const selectedVenueOrganizationId = useMemo(() => {
+    const venue = venueData?.data?.find((item: any) => item?._id?.toString() === formValues.venueId);
+    const organization = venue?.organization;
+    return (typeof organization === 'string' ? organization : organization?._id)?.toString() || '';
+  }, [venueData, formValues.venueId]);
+
+  const { data: deliveryOptions = [], isFetching: isLoadingTables } = useGetDeliveryOptionsQuery(
+    { organizationId: selectedVenueOrganizationId, limit: 1000 },
+    { skip: !isOpen || qrType !== 'checkin-table' || !selectedVenueOrganizationId }
+  );
+
+  const tableOptions = useMemo(
+    () =>
+      deliveryOptions
+        .filter((option) => option.deliveryMethod === 'tableDelivery' && option.status === 'active')
+        .map((option) => ({ label: option.title, value: option._id })),
+    [deliveryOptions]
+  );
+
+  // A different venue has different tables.
+  useEffect(() => {
+    if (qrType === 'checkin-table') setValue('deliveryOptionId', '');
+  }, [formValues.venueId, qrType, setValue]);
+
+  // The table's name is the label printed next to the code unless one is typed.
+  useEffect(() => {
+    const table = tableOptions.find((option) => option.value === formValues.deliveryOptionId);
+    if (table && !getValues('label')) setValue('label', table.label, { shouldValidate: true });
+  }, [formValues.deliveryOptionId, tableOptions, getValues, setValue]);
+
   const companyOptions = useMemo<CompanyOption[]>(
     () =>
       companyList?.map((company: any) => ({
@@ -215,139 +262,50 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
         // For non-admin users, auto-set loyaltyId from their company
         loyaltyId: !isAdmin && qrType === 'loyalty-page' ? user?.basicInfo?._id : '',
         venueId: '',
-        tableNo: '',
+        deliveryOptionId: '',
       });
     }
   }, [isOpen, config, reset, isAdmin, qrType, user?.basicInfo?._id]);
 
+  // Target fields filled in so far, keyed by field id.
+  const buildFormData = () => {
+    const formData: Record<string, string> = {};
+    TARGET_FIELDS.forEach((field) => {
+      const value = formValues[field];
+      if (value) formData[field] = value;
+    });
+    return formData;
+  };
+
+  // The real link carries a token the server issues on save (#59), so the
+  // preview shows the code's shape with a placeholder link.
+  const getCurrentUrl = () => {
+    if (!config) return '';
+    const formData = buildFormData();
+    const isValid = config.fields.every((field) => !field.required || formData[field.id]);
+    return isValid ? config.generateUrl(formData) : '';
+  };
+
   // UPDATE PREVIEW
   useEffect(() => {
-    updatePreview();
-  }, [formValues, config]);
-
-  const updatePreview = () => {
-    if (!config || !canvasRef.current) return;
-
-    // Build form data object for URL generation
-    const formData: Record<string, string> = {};
-
-    if (formValues.organizationId) formData.organizationId = formValues.organizationId;
-    if (formValues.eventId) formData.eventId = formValues.eventId;
-    if (formValues.loyaltyId) formData.loyaltyId = formValues.loyaltyId;
-    if (formValues.venueId) formData.venueId = formValues.venueId;
-    if (formValues.tableNo) formData.tableNo = formValues.tableNo;
-
-    // Check if all required fields are filled
-    const isValid = config.fields.every((field) => !field.required || formData[field.id]);
-
-    if (!isValid) {
-      // Clear canvas
+    if (!canvasRef.current) return;
+    const url = getCurrentUrl();
+    if (!url) {
       const ctx = canvasRef.current.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      }
+      if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
       return;
     }
-
-    // Generate URL
-    const url = config.generateUrl(formData);
-
-    // Generate QR Code on canvas
     QRCode.toCanvas(canvasRef.current, url, {
       width: 300,
       margin: 2,
-      color: {
-        dark: color,
-        light: bgColor,
-      },
+      color: { dark: color, light: bgColor },
     }).catch((error) => {
       console.error('QR Code generation error:', error);
     });
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formValues, config]);
 
-  // GENERATE QR CODE AS BLOB
-  const generateQRCodeBlob = async (): Promise<Blob | null> => {
-    if (!config) return null;
-
-    const formData: Record<string, string> = {};
-
-    if (formValues.organizationId) formData.organizationId = formValues.organizationId;
-    if (formValues.eventId) formData.eventId = formValues.eventId;
-    if (formValues.loyaltyId) formData.loyaltyId = formValues.loyaltyId;
-    if (formValues.venueId) formData.venueId = formValues.venueId;
-    if (formValues.tableNo) formData.tableNo = formValues.tableNo;
-
-    const url = config.generateUrl(formData);
-
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-
-    try {
-      await QRCode.toCanvas(canvas, url, {
-        width: 512,
-        margin: 2,
-        color: {
-          dark: color,
-          light: bgColor,
-        },
-      });
-
-      return new Promise((resolve) => {
-        canvas.toBlob((blob) => {
-          resolve(blob);
-        }, 'image/png');
-      });
-    } catch (error) {
-      console.error('QR Code generation error:', error);
-      return null;
-    }
-  };
-
-  // AUTO-DOWNLOAD PNG
-  const autoDownloadPNG = async () => {
-    if (!config) return;
-
-    const formData: Record<string, string> = {};
-
-    if (formValues.organizationId) formData.organizationId = formValues.organizationId;
-    if (formValues.eventId) formData.eventId = formValues.eventId;
-    if (formValues.loyaltyId) formData.loyaltyId = formValues.loyaltyId;
-    if (formValues.venueId) formData.venueId = formValues.venueId;
-    if (formValues.tableNo) formData.tableNo = formValues.tableNo;
-
-    const url = config.generateUrl(formData);
-    const filename = formValues.label || 'QR-Code';
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-
-    try {
-      await QRCode.toCanvas(canvas, url, {
-        width: 512,
-        margin: 2,
-        color: {
-          dark: color,
-          light: bgColor,
-        },
-      });
-
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${filename.replace(/\s+/g, '-')}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-        }
-      }, 'image/png');
-    } catch (error) {
-      console.error('Auto-download error:', error);
-    }
-  };
-
-  // SAVE QR CODE TO DATABASE
+  // SAVE QR CODE: the server issues the token and returns the code's link.
   const handleSubmit = async (data: QRFormValues) => {
     if (!config) {
       showError('Invalid QR type configuration');
@@ -360,34 +318,12 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
     }
 
     try {
-      // Generate QR code as blob
-      const qrBlob = await generateQRCodeBlob();
-      if (!qrBlob) {
-        showError('Failed to generate QR code image');
-        return;
-      }
-
-      // Convert blob to file for upload
-      const file = new File([qrBlob], `qr-${Date.now()}.png`, { type: 'image/png' });
-
-      // Upload image to Azure
-      const uploadedImageKey = await uploadImage(file);
-
-      if (!uploadedImageKey) {
-        showError('Failed to upload QR code image');
-        return;
-      }
-
-      // Build payload based on QR type
       const payload: any = {
         label: data.label,
-        image: uploadedImageKey,
         globalQrType: config.globalQrType,
-        // companyOrganizer: companyId,
         companyOrganizer: user?.accountState?.userType === 'admin' ? companyId : undefined,
       };
 
-      // Add type-specific fields
       switch (config.globalQrType) {
         case 'organization':
           payload.organizationId = data.organizationId;
@@ -403,29 +339,27 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
           break;
         case 'checkInTableID':
           payload.venueId = data.venueId;
-          payload.tableNo = parseInt(data.tableNo || '0', 10);
+          payload.deliveryOptionId = data.deliveryOptionId;
           break;
       }
 
-      // Call API
       const response = await addQrcode(payload).unwrap();
 
       if (response?.error) {
-        const errorMessage = getErrorMessage(response.error);
-        showError(errorMessage);
+        showError(getErrorMessage(response.error));
         return;
       }
 
       showSuccess(response?.message || 'QR Code saved successfully');
 
-      // Auto-download PNG
-      await autoDownloadPNG();
+      const link = response?.data?.link;
+      if (link) {
+        await downloadLinkAsPng(link, data.label, color, bgColor).catch((error) => console.error('Auto-download error:', error));
+      }
 
-      // Close modal
       onClose();
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      showError(errorMessage);
+      showError(getErrorMessage(error));
     }
   };
 
@@ -434,26 +368,9 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
     onClose();
   };
 
-  // Get current URL for display
-  const getCurrentUrl = () => {
-    if (!config) return '';
-
-    const formData: Record<string, string> = {};
-
-    if (formValues.organizationId) formData.organizationId = formValues.organizationId;
-    if (formValues.eventId) formData.eventId = formValues.eventId;
-    if (formValues.loyaltyId) formData.loyaltyId = formValues.loyaltyId;
-    if (formValues.venueId) formData.venueId = formValues.venueId;
-    if (formValues.tableNo) formData.tableNo = formValues.tableNo;
-
-    const isValid = config.fields.every((field) => !field.required || formData[field.id]);
-
-    return isValid ? config.generateUrl(formData) : '';
-  };
-
   if (!isOpen || !config) return null;
 
-  const isLoading = addQrcodeLoading || imageUploading;
+  const isLoading = addQrcodeLoading;
   const currentUrl = getCurrentUrl();
 
   return (
@@ -595,7 +512,16 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
                       showNone={false}
                     />
                   )}
-                  <RHFTextField name="tableNo" label="Table Number" placeholder="e.g., 1, 12, A5" />
+                  {formValues.venueId && (
+                    <RHFCustomDropdown
+                      name="deliveryOptionId"
+                      label="Select Table"
+                      placeholder={isLoadingTables ? 'Loading tables' : tableOptions.length ? 'Choose a table' : 'No tables for this venue'}
+                      options={tableOptions}
+                      isLoading={isLoadingTables}
+                      showNone={false}
+                    />
+                  )}
                 </>
               )}
 
@@ -616,7 +542,7 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
               <canvas ref={canvasRef} width="300" height="300" className="max-w-full" />
               <div className="mt-4 text-center text-sm font-semibold text-gray-900 dark:text-gray-100">{formValues.label || 'QR Code Label'}</div>
               <div className="mt-1 max-w-full text-center text-xs break-all text-gray-500 dark:text-gray-500">
-                {currentUrl || 'Please fill in all required fields'}
+                {currentUrl ? 'The link is created when you save.' : 'Please fill in all required fields'}
               </div>
             </div>
 

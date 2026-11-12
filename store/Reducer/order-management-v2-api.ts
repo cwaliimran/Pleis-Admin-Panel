@@ -261,6 +261,8 @@ export interface UpdateOrderDetailsV2Args {
    * whole list, so omitting it is how combos would be lost.
    */
   combos?: UpdateOrderComboV2[];
+  /** #130: the guest's method, sent only when staff changed it. */
+  paymentMethod?: string;
   /** The `_id` of the user the order belongs to. */
   userId?: string;
 }
@@ -409,8 +411,10 @@ export const orderManagementV2Api = createApi({
     }),
 
     updateOrderDetailsV2: builder.mutation<{ message?: string; data?: ApiOrder }, UpdateOrderDetailsV2Args>({
-      query: ({ id, items, combos, userId }) => {
+      query: ({ id, items, combos, userId, paymentMethod }) => {
         const body: Record<string, unknown> = { items };
+        // #130: only when staff changed it — an items-only edit keeps the method.
+        if (paymentMethod) body.paymentMethod = paymentMethod;
 
         // Checked against `undefined` rather than length — an empty array is
         // the caller saying "this order has no combos any more".

@@ -53,7 +53,11 @@ const OrderTransactionList = ({ scope = {} }: { userType?: string; scope?: Analy
       : '-',
     paymentStatus: item.paymentStatus || '-',
     paymentMethod: item.paymentMethod || '-',
-    totalAmount: item.totalPrice ? `€${item.totalPrice}` : '-',
+    // Always two decimals; float sums like 9.700000000000003 render as €9.70.
+    totalAmount:
+      item.totalPrice !== null && item.totalPrice !== undefined && item.totalPrice !== '' && Number.isFinite(Number(item.totalPrice))
+        ? `€${Number(item.totalPrice).toFixed(2)}`
+        : '-',
     orderStatus: item.status || '-',
     paidAt: item.paidAt
       ? new Date(item.paidAt).toLocaleString('en-GB', {

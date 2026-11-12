@@ -12,8 +12,9 @@ export const SavedQRCard: React.FC<SavedQRCardProps> = ({ qrCode, onDownload, on
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, qrCode.image, {
+    // The code is the server-issued deep link (#59), never the image URL.
+    if (canvasRef.current && qrCode?.link) {
+      QRCode.toCanvas(canvasRef.current, qrCode.link, {
         width: 200,
         margin: 2,
         color: {
