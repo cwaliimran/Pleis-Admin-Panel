@@ -24,7 +24,7 @@ import {
   getOrderSummaryLines,
   getPaymentStatusConfig,
   getPaymentTimingConfig,
-  getPaymentTypeLabel,
+  formatPaymentDetail,
   getPrimaryAction,
   getRoundDeliveryConfig,
   isOrderEditable,
@@ -359,7 +359,9 @@ export const OrderRow: React.FC<OrderRowProps> = ({
           )}
         </TableCell>
 
-        <TableCell className="text-sm text-gray-600 dark:text-gray-400">{getPaymentTypeLabel(order.paymentType)}</TableCell>
+        <TableCell className="text-sm text-gray-600 dark:text-gray-400" title={order.paymentLabel}>
+          {order.paymentTypeGroup}
+        </TableCell>
 
         <TableCell>
           <OrderStatusBadge status={order.status} />
@@ -630,7 +632,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
                   <DetailRow label="Order ID" value={order.orderNumber} />
                   <DetailRow label="Placed" value={formatOrderTime(order.placedAt)} />
                   <DetailRow label="Delivery" value={order.deliveryLabel} />
-                  <DetailRow label="Payment" value={getPaymentTypeLabel(order.paymentType)} />
+                  <DetailRow label="Payment" value={formatPaymentDetail(order.paymentTypeGroup, order.paymentLabel)} />
                   <DetailRow
                     label="Customer"
                     value={order.customer.username ? `${order.customer.name} · @${order.customer.username}` : order.customer.name}

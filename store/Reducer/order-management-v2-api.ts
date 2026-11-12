@@ -31,7 +31,14 @@ export type ApiPickupType = 'tableDelivery' | 'counterPickup' | 'toGo';
 /** Pre-rename spellings still carried by older orders; `mapPickupType` folds them in. */
 export type ApiLegacyPickupType = 'tableService' | 'counter' | 'togo';
 
-export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'googlePay';
+/**
+ * #68 / Legal_req_features_2 §1. Pleis (Monri): card, applePay, googlePay.
+ * At the venue: cash, cardTerminal, other. voucher = voucher covered the whole order.
+ */
+export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'googlePay' | 'cardTerminal' | 'other' | 'voucher';
+
+/** The four values organizers see. */
+export type ApiOrganizerPaymentMethod = 'Pleis' | 'Card' | 'Cash' | 'Other';
 
 /**
  * When the customer settles up. `payNow` is paid before anything is handed
@@ -157,6 +164,9 @@ export interface ApiOrder {
   priceBreakdown?: ApiPriceBreakdown | null;
   status: ApiOrderStatus;
   paymentMethod: ApiPaymentMethod;
+  /** Recorded value, e.g. "Card", "Other - Voucher + Cash". */
+  paymentMethodLabel?: string;
+  organizerPaymentMethod?: ApiOrganizerPaymentMethod;
   /** Absent on orders placed before the field was introduced. */
   paymentTiming?: ApiPaymentTiming;
   paymentStatus: ApiPaymentStatus;

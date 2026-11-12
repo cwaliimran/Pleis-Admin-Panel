@@ -10,7 +10,7 @@ import type {
   ApiOrdersMeta,
 } from '@/store/Reducer/order-management-v2-api';
 import type { ApiDeliveryOption } from '@/store/Reducer/delivery-options-api';
-import { DEFAULT_PAGE_LIMIT, DELIVERY_TYPE_CONFIG } from './constants';
+import { DEFAULT_PAGE_LIMIT, DELIVERY_TYPE_CONFIG, getPaymentTypeGroup, getPaymentTypeLabel } from './constants';
 import {
   ComboOption,
   DeliveryOptionFilter,
@@ -157,6 +157,8 @@ export const mapApiOrder = (order: ApiOrder): Order => {
     deliveryLabel: mapDeliveryLabel(order),
     tableNumber: order.tableNumber?.trim() || '',
     paymentType: order.paymentMethod,
+    paymentTypeGroup: order.organizerPaymentMethod || getPaymentTypeGroup(order.paymentMethod),
+    paymentLabel: order.paymentMethodLabel || getPaymentTypeLabel(order.paymentMethod),
     // The stricter flow, so a missing value never allows handing an order
     // over before it has been paid for.
     paymentTiming: order.paymentTiming || 'payNow',

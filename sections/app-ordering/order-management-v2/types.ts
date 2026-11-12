@@ -119,6 +119,10 @@ export interface Order {
   /** Raw table number, empty unless `tableDelivery`. `deliveryLabel` folds it in for display. */
   tableNumber: string;
   paymentType: PaymentType;
+  /** One of Pleis, Card, Cash, Other (Legal_req_features_2 §1). */
+  paymentTypeGroup: string;
+  /** Recorded payment method value, e.g. "Other - Voucher + Card". */
+  paymentLabel: string;
   /** Defaults to `payNow` when the API omits it — the stricter of the two flows. */
   paymentTiming: PaymentTiming;
   paymentStatus: PaymentStatus;

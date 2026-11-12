@@ -10,6 +10,10 @@ export interface PaymentSettings {
   inAppPayment: boolean;
   /** true → charge once the order is accepted. false → pay later, bill settled after delivery. */
   payNow: boolean;
-  /** Cash at the venue. Settled by staff confirming receipt in the app. */
+  /** Off App Payment Options (order-settings prototype v2.3). Cash at the venue — receipt marker Gotovina. */
   cash: boolean;
+  /** Card on the venue's own terminal — receipt marker Kartica. */
+  card: boolean;
+  /** A voucher or any other method the venue accepts — receipt marker Ostalo. */
+  other: boolean;
 }

@@ -21,6 +21,8 @@ export const mapApiPaymentMethods = (record?: ApiOrderingSettings | null): Payme
     // Charge-at-accept only exists with a provider — never show Pay now on without one.
     payNow: inAppPayment && Boolean(paymentMethod.payNow),
     cash: Boolean(paymentMethod.cash),
+    card: Boolean(paymentMethod.card),
+    other: Boolean(paymentMethod.other),
   };
 };
 
@@ -33,4 +35,6 @@ export const toApiPaymentMethods = (values: PaymentSettings): PaymentSettings =>
   inAppPayment: values.inAppPayment,
   payNow: values.inAppPayment && values.payNow,
   cash: values.cash,
+  card: values.card,
+  other: values.other,
 });

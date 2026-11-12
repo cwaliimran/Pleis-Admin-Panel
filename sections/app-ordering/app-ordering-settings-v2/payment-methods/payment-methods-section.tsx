@@ -18,6 +18,8 @@ const schema: Yup.ObjectSchema<PaymentSettings> = Yup.object().shape({
   inAppPayment: Yup.boolean().required(),
   payNow: Yup.boolean().required(),
   cash: Yup.boolean().required(),
+  card: Yup.boolean().required(),
+  other: Yup.boolean().required(),
 });
 
 interface PaymentMethodsSectionProps {
@@ -48,13 +50,15 @@ export const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ or
   const inAppPayment = watch('inAppPayment');
   const payNow = watch('payNow');
   const cash = watch('cash');
+  const card = watch('card');
+  const other = watch('other');
 
   const isBusy = isFetching || isSaving;
 
   const submit = handleSubmit(async (formValues) => {
-    // Turning both off would leave the customer with no way to pay at all.
-    if (!formValues.inAppPayment && !formValues.cash) {
-      showError('Enable at least one payment method — in-app payment or cash');
+    // At least one method must stay enabled (Legal_req_features_2 §1).
+    if (!formValues.inAppPayment && !formValues.cash && !formValues.card && !formValues.other) {
+      showError('Enable at least one payment method: In-app payment, Cash, Card or Other');
       return;
     }
 
@@ -82,6 +86,8 @@ export const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ or
         <>
           <SettingRowSkeleton divider />
           <SettingRowSkeleton divider descriptionLines={3} />
+          <SettingRowSkeleton divider />
+          <SettingRowSkeleton divider />
           <SettingRowSkeleton />
         </>
       ) : (
@@ -91,8 +97,10 @@ export const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ or
             title="In-app payment"
             description={
               <>
-                Customers can pay directly through the app using a connected payment provider. If disabled, only{' '}
-                <span className="font-semibold text-gray-900 dark:text-gray-200">Cash</span> at the venue is available.
+                Customers can pay directly through the app using a connected payment provider. Shown to the guest as{' '}
+                <span className="font-semibold text-gray-900 dark:text-gray-200">Pleis Payment</span>; the receipt marker is always{' '}
+                <span className="font-semibold text-gray-900 dark:text-gray-200">Ostalo</span>, because Pleis is the intermediary in that payment. If
+                disabled, the guest sees only the Off App Payment Options enabled below.
               </>
             }
             control={
@@ -130,17 +138,49 @@ export const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({ or
             }
           />
 
+          <div className="pt-4 pb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Off App Payment Options</div>
+
           <SettingRow
+            divider
             title="Cash"
             description={
               <>
                 Customers can pay with cash at the venue. The order moves to{' '}
                 <span className="font-semibold text-gray-900 dark:text-gray-200">Waiting for payment</span> after delivery; staff confirm receipt in
-                the app to mark it <span className="font-semibold text-gray-900 dark:text-gray-200">Paid</span>.
+                the app to mark it <span className="font-semibold text-gray-900 dark:text-gray-200">Paid</span>. Receipt marker:{' '}
+                <span className="font-semibold text-gray-900 dark:text-gray-200">Gotovina</span>.
               </>
             }
             control={
               <ToggleSwitch ariaLabel="Cash" checked={cash} disabled={isBusy} onChange={(next) => setValue('cash', next, { shouldDirty: true })} />
+            }
+          />
+
+          <SettingRow
+            divider
+            title="Card"
+            description={
+              <>
+                Customers can pay by card on the venue&apos;s own terminal. The money never passes through Pleis, so the order carries no processing
+                fee. Receipt marker: <span className="font-semibold text-gray-900 dark:text-gray-200">Kartica</span>.
+              </>
+            }
+            control={
+              <ToggleSwitch ariaLabel="Card" checked={card} disabled={isBusy} onChange={(next) => setValue('card', next, { shouldDirty: true })} />
+            }
+          />
+
+          <SettingRow
+            title="Other"
+            description={
+              <>
+                A voucher or any other method the venue accepts. Shown to the guest as{' '}
+                <span className="font-semibold text-gray-900 dark:text-gray-200">Other</span>. Receipt marker:{' '}
+                <span className="font-semibold text-gray-900 dark:text-gray-200">Ostalo</span>.
+              </>
+            }
+            control={
+              <ToggleSwitch ariaLabel="Other" checked={other} disabled={isBusy} onChange={(next) => setValue('other', next, { shouldDirty: true })} />
             }
           />
         </>

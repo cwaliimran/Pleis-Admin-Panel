@@ -126,8 +126,22 @@ export const PAYMENT_TYPE_CONFIG: Record<PaymentType, { label: string }> = {
   card: { label: 'Card' },
   applePay: { label: 'Apple Pay' },
   googlePay: { label: 'Google Pay' },
-  // payLater: { label: 'Pay Later' },
+  cardTerminal: { label: 'Card (venue terminal)' },
+  other: { label: 'Other' },
+  voucher: { label: 'Other - Voucher' },
 };
+
+/** Organizers see payment as one of four values (Legal_req_features_2 §1). */
+export const getPaymentTypeGroup = (type: PaymentType): string => {
+  if (type === 'card' || type === 'applePay' || type === 'googlePay') return 'Pleis';
+  if (type === 'cash') return 'Cash';
+  if (type === 'cardTerminal') return 'Card';
+  return 'Other';
+};
+
+/** "Pleis · Apple Pay", "Other · Other - Voucher + Cash" — group first, the recorded value when it adds detail. */
+export const formatPaymentDetail = (group: string, label: string): string =>
+  !label || label === group ? group : `${group} · ${label}`;
 
 export const getPaymentTypeLabel = (type: PaymentType) => PAYMENT_TYPE_CONFIG[type]?.label || humanizeKey(type);
 
@@ -136,10 +150,11 @@ export const getPaymentTypeLabel = (type: PaymentType) => PAYMENT_TYPE_CONFIG[ty
  * `googlePay` does not exist on `PaymentType` yet.
  */
 export const UPDATE_ORDER_PAYMENT_METHOD_OPTIONS = [
+  // Staff change the method before payment to what the guest actually used at
+  // the venue (Legal_req_features_2 §1); in-app methods are the guest's own step.
   { value: 'cash', label: 'Cash' },
-  { value: 'card', label: 'Card' },
-  { value: 'applePay', label: 'Apple Pay' },
-  { value: 'googlePay', label: 'Google Pay' },
+  { value: 'cardTerminal', label: 'Card (venue terminal)' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 export type UpdateOrderPaymentMethod = (typeof UPDATE_ORDER_PAYMENT_METHOD_OPTIONS)[number]['value'];

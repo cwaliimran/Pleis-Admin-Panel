@@ -11,4 +11,6 @@ export const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
   inAppPayment: false,
   payNow: false,
   cash: false,
+  card: false,
+  other: false,
 };
