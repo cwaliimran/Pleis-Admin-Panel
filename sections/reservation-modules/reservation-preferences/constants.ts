@@ -1,4 +1,4 @@
-import { CancellationWindowHours, OffsetMinutes, ReservationPreferences, SlotDurationMinutes } from './types';
+import { CancellationWindowHours, NoShowGraceMinutes, OffsetMinutes, ReservationPreferences, SlotDurationMinutes } from './types';
 
 // ============================================================
 // Time slots
@@ -33,6 +33,17 @@ export const CANCELLATION_WINDOW_OPTIONS: { value: CancellationWindowHours; labe
   { value: 24, label: '24 hours before' },
   { value: 48, label: '48 hours before' },
   { value: 72, label: '72 hours before' },
+];
+
+// ============================================================
+// No-show policy (prototype v3.2)
+// ============================================================
+
+export const NO_SHOW_GRACE_OPTIONS: { value: NoShowGraceMinutes; label: string }[] = [
+  { value: 15, label: '15 minutes' },
+  { value: 30, label: '30 minutes' },
+  { value: 45, label: '45 minutes' },
+  { value: 60, label: '60 minutes' },
 ];
 
 // Reservation-type options, table head and helpers live with the section
@@ -73,5 +84,8 @@ export const DEFAULT_PREFERENCES: ReservationPreferences = {
   },
   cancellationPolicy: {
     freeCancellationHours: 0,
+  },
+  noShowPolicy: {
+    gracePeriodMinutes: 30,
   },
 };

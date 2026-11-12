@@ -10,7 +10,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { addDays, format, parseISO, startOfWeek } from 'date-fns';
 import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { RESERVATION_STATUS_CONFIG, TIME_SLOTS } from './constants';
+import { IRREVERSIBLE_STATUSES, RESERVATION_STATUS_CONFIG, TIME_SLOTS } from './constants';
 import type { ListQuickTabId } from './constants';
 import { ReservationFormModal } from './modals/reservation-form-modal';
 import { ReservationListSection } from './reservation-list-section';
@@ -121,15 +121,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     formModal.onTrue();
   };
 
-  const handleRequestStatus = (item: Reservation, status: ReservationStatus) => {
-    setPendingStatus({ item, status });
-    statusConfirm.onTrue();
-  };
-
-  const handleConfirmStatus = async () => {
-    if (!pendingStatus) return;
-
-    const { item, status } = pendingStatus;
+  const applyStatus = async (item: Reservation, status: ReservationStatus) => {
     setPendingStatusId(item.id);
 
     try {
@@ -144,7 +136,46 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     }
   };
 
-  const isRejecting = pendingStatus?.status === 'rejected';
+  // Prototype v3.2: Reject, Cancel and No-show cannot be undone, so they ask first;
+  // Confirm and Check in apply directly.
+  const handleRequestStatus = (item: Reservation, status: ReservationStatus) => {
+    if (IRREVERSIBLE_STATUSES.includes(status)) {
+      setPendingStatus({ item, status });
+      statusConfirm.onTrue();
+      return;
+    }
+    void applyStatus(item, status);
+  };
+
+  const handleConfirmStatus = async () => {
+    if (!pendingStatus) return;
+    await applyStatus(pendingStatus.item, pendingStatus.status);
+  };
+
+  const confirmCopy = useMemo(() => {
+    if (!pendingStatus) return { title: '', content: '', confirmText: 'Confirm' };
+
+    const { item, status } = pendingStatus;
+    const label = RESERVATION_STATUS_CONFIG[status].label;
+
+    if (status === 'cancelled' && item.payment === 'paid') {
+      return {
+        title: 'Cancel reservation?',
+        content: `${item.guestName} has paid the minimum spend. If the free cancellation window is closed, the prepayment is already with the organizer: the organizer refunds the guest directly and the commission is reversed on the next statement. This cannot be changed back.`,
+        confirmText: 'Yes, cancel',
+      };
+    }
+
+    const title = status === 'noShow' ? 'Mark as No-show?' : status === 'rejected' ? 'Reject reservation?' : 'Cancel reservation?';
+    const forfeitNote = status === 'noShow' && item.payment === 'paid' ? ' The minimum spend voucher is forfeited and nothing is refunded.' : '';
+    const confirmText = status === 'noShow' ? 'Yes, no-show' : status === 'rejected' ? 'Yes, reject' : 'Yes, cancel';
+
+    return {
+      title,
+      content: `This sets ${item.guestName}'s reservation to ${label}. It cannot be changed back.${forfeitNote}`,
+      confirmText,
+    };
+  }, [pendingStatus]);
 
   const listSubtitle = useMemo(() => {
     if (activeTab === 'new') return 'New · all dates';
@@ -246,16 +277,11 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
 
       <ConfirmDialog
         open={statusConfirm.value}
-        title={isRejecting ? 'Reject reservation?' : 'Confirm reservation?'}
-        content={
-          pendingStatus
-            ? `The reservation for "${pendingStatus.item.guestName}" will be marked as ${RESERVATION_STATUS_CONFIG[
-                pendingStatus.status
-              ].label.toLowerCase()}.`
-            : ''
-        }
+        title={confirmCopy.title}
+        content={confirmCopy.content}
+        confirmText={confirmCopy.confirmText}
+        cancelText="Back"
         isLoading={Boolean(pendingStatusId)}
-        buttonClass={isRejecting ? undefined : 'bg-green-600 hover:bg-green-600/80'}
         onClose={() => {
           statusConfirm.onFalse();
           setPendingStatus(null);

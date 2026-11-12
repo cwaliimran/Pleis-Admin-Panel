@@ -1,11 +1,12 @@
 import type {
   ApiAutomaticResponse,
   ApiCancellationPolicy,
+  ApiNoShowPolicy,
   ApiReservationPreferences,
   ApiTimeSlotsSetting,
 } from '@/store/Reducer/reservation-preferences-api';
-import { CANCELLATION_WINDOW_OPTIONS, DEFAULT_PREFERENCES, OFFSET_OPTIONS, SLOT_DURATION_OPTIONS } from './constants';
-import { CancellationWindowHours, OffsetMinutes, ReservationPreferences, SlotDurationMinutes } from './types';
+import { CANCELLATION_WINDOW_OPTIONS, DEFAULT_PREFERENCES, NO_SHOW_GRACE_OPTIONS, OFFSET_OPTIONS, SLOT_DURATION_OPTIONS } from './constants';
+import { CancellationWindowHours, NoShowGraceMinutes, OffsetMinutes, ReservationPreferences, SlotDurationMinutes } from './types';
 
 // ============================================================
 // Wire ↔ view model
@@ -63,12 +64,21 @@ const mapCancellationPolicy = (policy: ApiCancellationPolicy | null | undefined)
       : 0,
 });
 
+const mapNoShowPolicy = (policy: ApiNoShowPolicy | null | undefined): ReservationPreferences['noShowPolicy'] => ({
+  gracePeriodMinutes: pickOption<NoShowGraceMinutes>(
+    policy?.gracePeriodMinutes,
+    NO_SHOW_GRACE_OPTIONS,
+    DEFAULT_PREFERENCES.noShowPolicy.gracePeriodMinutes
+  ),
+});
+
 /** `null` — an organization that has never saved — maps to the UI defaults. */
 export const mapApiReservationPreferences = (preferences: ApiReservationPreferences | null | undefined): ReservationPreferences => ({
   reservationSystemEnabled: preferences?.isReservationEnabled ?? DEFAULT_PREFERENCES.reservationSystemEnabled,
   timeSlots: mapTimeSlots(preferences?.timeSlotsSetting),
   automaticResponse: mapAutomaticResponse(preferences?.automaticResponse),
   cancellationPolicy: mapCancellationPolicy(preferences?.cancellationPolicy),
+  noShowPolicy: mapNoShowPolicy(preferences?.noShowPolicy),
 });
 
 /** View model → wire. The whole document goes over on every save. */
@@ -90,5 +100,8 @@ export const toReservationPreferencesBody = (preferences: ReservationPreferences
     // The single dropdown carries both fields: 0 means the policy is off.
     status: preferences.cancellationPolicy.freeCancellationHours > 0 ? ('enabled' as const) : ('disabled' as const),
     hoursBeforeReservation: preferences.cancellationPolicy.freeCancellationHours,
+  },
+  noShowPolicy: {
+    gracePeriodMinutes: preferences.noShowPolicy.gracePeriodMinutes,
   },
 });

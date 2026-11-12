@@ -6,6 +6,9 @@ export type ReservationStatus = ApiUserReservationStatus;
 
 export type ListFilter = 'all' | ReservationStatus;
 
+/** Derived, never stored on the reservation (prototype v3.2 "Minimum spend payment and voucher"). */
+export type PaymentState = 'free' | 'awaiting' | 'paid' | 'refunded' | 'forfeited' | 'none';
+
 export type CapacityLevel = 'empty' | 'low' | 'medium' | 'high';
 
 export interface DaySummary {
@@ -64,6 +67,11 @@ export interface Reservation {
   amount?: number;
   note: string;
   status: ReservationStatus;
+  payment: PaymentState;
+  /** Confirmed only (#93): "Mark as no-show" is allowed from slot start + grace period. */
+  canMarkNoShow?: boolean;
+  noShowAvailableTime?: string;
+  noShowGraceMinutes?: number;
   eventName?: string;
   guestProfile?: GuestProfile;
 }

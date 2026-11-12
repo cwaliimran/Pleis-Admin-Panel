@@ -1,7 +1,7 @@
 import type { ApiWeekdayKey } from '@/store/Reducer/organization';
 import type { ApiReservationCondition } from '@/store/Reducer/user-reservations-api';
 import { USER_RESERVATION_STATUSES } from '@/store/Reducer/user-reservations-api';
-import { CapacityLevel, ListFilter, ReservationStatus } from './types';
+import { CapacityLevel, ListFilter, PaymentState, ReservationStatus } from './types';
 
 export const SLOT_START_HOUR = 0;
 export const SLOT_END_HOUR = 23;
@@ -50,18 +50,44 @@ export const getCapacityLevel = (bookedSeats: number, capacity: number): Capacit
   return 'low';
 };
 
+// Status pills follow the Reservations prototype v3.2 palette.
+const AMBER_PILL = 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300';
+const VIOLET_PILL = 'bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300';
+const GREEN_PILL = 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300';
+const RED_PILL = 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300';
+const BLUE_PILL = 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300';
+const MUTED_PILL = 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+
 export const RESERVATION_STATUS_CONFIG: Record<ReservationStatus, { label: string; chipClass: string }> = {
   new: { label: 'New', chipClass: 'bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300' },
-  pendingPayment: { label: 'Pending payment', chipClass: 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300' },
-  needsConfirmation: { label: 'Needs confirmation', chipClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300' },
-  confirmed: { label: 'Confirmed', chipClass: 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300' },
-  checkedIn: { label: 'Checked in', chipClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300' },
-  rejected: { label: 'Rejected', chipClass: 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300' },
-  cancelled: { label: 'Cancelled', chipClass: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
-  completed: { label: 'Completed', chipClass: 'bg-purple-100 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300' },
+  needsConfirmation: { label: 'Need confirmation', chipClass: AMBER_PILL },
+  pendingPayment: { label: 'Awaiting payment', chipClass: VIOLET_PILL },
+  confirmed: { label: 'Confirmed', chipClass: GREEN_PILL },
+  rejected: { label: 'Rejected', chipClass: RED_PILL },
+  cancelled: { label: 'Cancelled', chipClass: RED_PILL },
+  checkedIn: { label: 'Checked in', chipClass: BLUE_PILL },
+  noShow: { label: 'No-show', chipClass: RED_PILL },
+  // Legacy only — Completed is removed from the lifecycle (#54).
+  completed: { label: 'Completed', chipClass: MUTED_PILL },
 };
 
-export const SELECTABLE_STATUSES: ReservationStatus[] = USER_RESERVATION_STATUSES.filter((status) => status !== 'pendingPayment');
+/**
+ * Manual transitions per status (#54, prototype v3.2). Confirming a Minimum spend
+ * request moves it to Awaiting payment on the server; Awaiting payment becomes
+ * Confirmed only on payment capture. Statuses not listed are final.
+ */
+export const ALLOWED_TRANSITIONS: Partial<Record<ReservationStatus, ReservationStatus[]>> = {
+  needsConfirmation: ['confirmed', 'rejected', 'cancelled'],
+  pendingPayment: ['cancelled'],
+  confirmed: ['checkedIn', 'noShow', 'cancelled'],
+};
+
+export const isOpenStatus = (status: ReservationStatus): boolean => Boolean(ALLOWED_TRANSITIONS[status]);
+
+/** Reject, Cancel and No-show cannot be undone, so they ask first. */
+export const IRREVERSIBLE_STATUSES: ReservationStatus[] = ['rejected', 'cancelled', 'noShow'];
+
+export const SELECTABLE_STATUSES: ReservationStatus[] = USER_RESERVATION_STATUSES;
 
 export const RESERVATION_STATUS_OPTIONS: { value: ReservationStatus; label: string }[] = SELECTABLE_STATUSES.map((value) => ({
   value,
@@ -72,10 +98,7 @@ export const toStatusOption = (value: ReservationStatus) => ({ value, label: RES
 
 export const ALL_STATUSES_VALUE = 'all';
 
-export const LIST_FILTER_OPTIONS: { value: ListFilter; label: string }[] = [
-  { value: ALL_STATUSES_VALUE, label: 'All statuses' },
-  ...RESERVATION_STATUS_OPTIONS.filter((option) => option.value !== 'new' && option.value !== 'needsConfirmation'),
-];
+export const LIST_FILTER_OPTIONS: { value: ListFilter; label: string }[] = [{ value: ALL_STATUSES_VALUE, label: 'All statuses' }, ...RESERVATION_STATUS_OPTIONS];
 
 export const LIST_QUICK_TABS = [
   { id: 'new', label: 'New' },
@@ -83,6 +106,15 @@ export const LIST_QUICK_TABS = [
 ] as const;
 
 export type ListQuickTabId = (typeof LIST_QUICK_TABS)[number]['id'];
+
+export const PAYMENT_CONFIG: Record<PaymentState, { label: string; textClass: string }> = {
+  free: { label: 'Free', textClass: 'text-gray-500 dark:text-gray-400' },
+  awaiting: { label: 'Awaiting', textClass: 'text-violet-600 dark:text-violet-300' },
+  paid: { label: 'Paid', textClass: 'text-green-600 dark:text-green-400' },
+  refunded: { label: 'Refunded', textClass: 'text-amber-600 dark:text-amber-400' },
+  forfeited: { label: 'Forfeited', textClass: 'text-red-600 dark:text-red-400' },
+  none: { label: '—', textClass: 'text-gray-500 dark:text-gray-400' },
+};
 
 export const USER_RESERVATION_STATUS_OPTIONS = RESERVATION_STATUS_OPTIONS;
 
@@ -116,7 +148,8 @@ export const RESERVATION_LIST_TABLE_HEAD = [
   { id: 'seats', label: 'Seats', align: 'left' },
   { id: 'occasion', label: 'Occasion / Event', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
-  { id: 'actions', label: '', align: 'right' },
+  { id: 'payment', label: 'Payment', align: 'left' },
+  { id: 'actions', label: 'Actions', align: 'right' },
 ];
 
 export const DEFAULT_PAGE_LIMIT = 10;

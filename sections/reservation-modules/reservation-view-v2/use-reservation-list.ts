@@ -4,7 +4,7 @@ import type { ApiReservationListItem, ApiReservationTypeCapacityStat } from '@/s
 import { useGetReservationsV2Query } from '@/store/Reducer/user-reservations-api';
 import { useMemo } from 'react';
 import { DEFAULT_PAGE_LIMIT, fromIsoDate, fromIsoTime } from './constants';
-import { ListFilter, Reservation, ReservationPagination, TypeOccupancy } from './types';
+import { ListFilter, PaymentState, Reservation, ReservationPagination, TypeOccupancy } from './types';
 
 interface UseReservationListArgs {
   organizationId?: string;
@@ -23,6 +23,20 @@ interface UseReservationListReturn {
   isLoading: boolean;
   isFetching: boolean;
 }
+
+/** Payment is derived from condition, status and capture (prototype v3.2), never stored. */
+const derivePayment = (item: ApiReservationListItem): PaymentState => {
+  if (!((item.amount ?? 0) > 0)) return 'free';
+
+  const paymentStatus = item.paymentDetails?.paymentStatus;
+  const wasPaid = paymentStatus === 'paid' || paymentStatus === 'refunded';
+
+  if (item.status === 'pendingPayment') return 'awaiting';
+  if (item.status === 'noShow') return wasPaid || item.voucher?.status === 'forfeited' ? 'forfeited' : 'none';
+  if (item.status === 'cancelled') return wasPaid ? 'refunded' : 'none';
+  if (paymentStatus === 'paid') return 'paid';
+  return 'none';
+};
 
 const toReservation = (item: ApiReservationListItem): Reservation => {
   const dateSlot = item.timingSlots?.dateTimeSlots?.[0];
@@ -59,6 +73,10 @@ const toReservation = (item: ApiReservationListItem): Reservation => {
     amount: item.amount,
     note: item.notes ?? '',
     status: item.status,
+    payment: derivePayment(item),
+    canMarkNoShow: item.canMarkNoShow,
+    noShowAvailableTime: fromIsoTime(item.noShowAvailableAt ?? undefined) || undefined,
+    noShowGraceMinutes: item.noShowGraceMinutes,
   };
 };
 

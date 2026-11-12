@@ -48,6 +48,15 @@ export interface CancellationPolicySettings {
   freeCancellationHours: CancellationWindowHours;
 }
 
+// ---------- No-show policy ----------
+
+/** Grace period after the reservation time before No-show can be marked (#93). */
+export type NoShowGraceMinutes = 15 | 30 | 45 | 60;
+
+export interface NoShowPolicySettings {
+  gracePeriodMinutes: NoShowGraceMinutes;
+}
+
 // Reservation types own their types — see `reservation-types/types.ts`. Like
 // occasions, they persist through their own endpoints rather than the
 // page-level save, so they are not part of the aggregate below.
@@ -64,4 +73,5 @@ export interface ReservationPreferences {
   timeSlots: TimeSlotSettings;
   automaticResponse: AutomaticResponseSettings;
   cancellationPolicy: CancellationPolicySettings;
+  noShowPolicy: NoShowPolicySettings;
 }

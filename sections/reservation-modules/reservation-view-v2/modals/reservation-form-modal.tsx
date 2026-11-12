@@ -37,8 +37,8 @@ import {
   CONDITION_TYPE_LABELS,
   NO_OCCASION_VALUE,
   SELECT_ITEM_CLASS,
+  ALLOWED_TRANSITIONS,
   SELECT_TRIGGER_CLASS,
-  USER_RESERVATION_STATUS_OPTIONS,
   deriveEndTime,
   formatDuration,
   fromIsoTime,
@@ -536,12 +536,13 @@ export const ReservationFormModal: React.FC<ReservationFormModalProps> = ({
     [reservationTypes]
   );
 
+  // Prototype v3.2: the status field offers only the transitions allowed from the
+  // current status. No-show only once the grace period after the slot has passed (#93).
   const statusOptions = useMemo(() => {
     const current = reservation?.status;
-    if (!current || USER_RESERVATION_STATUS_OPTIONS.some((option) => option.value === current)) {
-      return USER_RESERVATION_STATUS_OPTIONS;
-    }
-    return [toStatusOption(current), ...USER_RESERVATION_STATUS_OPTIONS];
+    if (!current) return [];
+    const next = (ALLOWED_TRANSITIONS[current] ?? []).filter((status) => status !== 'noShow' || reservation?.canMarkNoShow !== false);
+    return [toStatusOption(current), ...next.map(toStatusOption)];
   }, [reservation]);
 
   const profileRows = useMemo(() => {

@@ -9,6 +9,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import React, { useEffect, useMemo, useState } from 'react';
 import { AutomaticResponseSection } from './automatic-response-section';
 import { CancellationPolicySection } from './cancellation-policy-section';
+import { NoShowPolicySection } from './no-show-policy-section';
 import { OccasionsSection } from './occasions';
 import { ReservationSystemCard } from './reservation-system-card';
 import { ReservationTypesSection } from './reservation-types';
@@ -112,6 +113,8 @@ export const ReservationPreferencesView: React.FC<ReservationPreferencesViewProp
             disabled={isSaving}
             onChange={(cancellationPolicy) => patch({ cancellationPolicy })}
           />
+
+          <NoShowPolicySection value={draft.noShowPolicy} disabled={isSaving} onChange={(noShowPolicy) => patch({ noShowPolicy })} />
         </div>
 
         <ReservationTypesSection organizationId={organizationId} />

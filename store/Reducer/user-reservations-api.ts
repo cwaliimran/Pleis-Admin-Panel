@@ -19,26 +19,36 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 export type ApiReservationCondition = 'free' | 'minimumSpend';
 
-/** The full lifecycle a reservation moves through. */
+/**
+ * The full lifecycle a reservation moves through (Requirement Set #54,
+ * Reservations prototype v3.2). `completed` is no longer set — it stays in the
+ * union only so historic rows still type-check. `new` is a list filter, not a status.
+ */
 export type ApiUserReservationStatus =
   | 'new'
   | 'pendingPayment'
   | 'needsConfirmation'
   | 'confirmed'
   | 'checkedIn'
+  | 'noShow'
   | 'rejected'
   | 'cancelled'
   | 'completed';
 
+/** Live statuses, in the order the status filter lists them (prototype v3.2). */
 export const USER_RESERVATION_STATUSES: ApiUserReservationStatus[] = [
-  'pendingPayment',
   'needsConfirmation',
+  'pendingPayment',
   'confirmed',
-  'checkedIn',
   'rejected',
   'cancelled',
-  'completed',
+  'checkedIn',
+  'noShow',
 ];
+
+export type ApiReservationPaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+
+export type ApiReservationVoucherStatus = 'pending' | 'applied' | 'expired' | 'cancelled' | 'forfeited' | null;
 
 /**
  * A single start/end pair, each a bare 24h wall-clock time — `"10:00"`, not a
@@ -231,6 +241,14 @@ export interface ApiReservationListItem {
   bookingId?: string;
   createdAt?: string;
   updatedAt?: string;
+  paymentDetails?: { paymentStatus?: ApiReservationPaymentStatus | null } | null;
+  voucher?: { status?: ApiReservationVoucherStatus; discountAmount?: number; usedAmount?: number } | null;
+  /** Confirmed rows only (#93): when "Mark as no-show" becomes available, in the viewer's timezone. */
+  noShowAvailableAt?: string | null;
+  canMarkNoShow?: boolean;
+  noShowGraceMinutes?: number;
+  checkInRecord?: { at?: string | null } | null;
+  noShowRecord?: { at?: string | null } | null;
 }
 
 export interface ApiReservationListMeta {
