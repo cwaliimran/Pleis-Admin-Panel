@@ -17,8 +17,8 @@ import DashboardSkeleton from '@/sections/super-admin-dashboard/components/Dashb
 const OrderAnalyticsView = ({ userType }: { global?: boolean; userType: string }) => {
   const openModal = useBoolean();
 
-  // #131 / D-06: company and organization scope on top; every figure and list follows it.
-  const { scope, ScopeBar, ready } = useAnalyticsScope(userType);
+  // #131 / D-06: the Company / Organizations scope chosen in the page header; every figure and list follows it.
+  const { scope, ready } = useAnalyticsScope(userType);
 
   const {
     data: analyticsRaw,
@@ -26,12 +26,7 @@ const OrderAnalyticsView = ({ userType }: { global?: boolean; userType: string }
     isFetching,
   } = useGetOrdersAnalyticsQuery(scope, { refetchOnMountOrArgChange: true, skip: !ready });
   if (!ready || isLoading || isFetching) {
-    return (
-      <>
-        {ScopeBar}
-        <DashboardSkeleton />
-      </>
-    );
+    return <DashboardSkeleton />;
   }
 
   const loyaltyImpact = analyticsRaw?.data?.loyaltyImpact;
@@ -54,7 +49,6 @@ const OrderAnalyticsView = ({ userType }: { global?: boolean; userType: string }
 
   return (
     <>
-      {ScopeBar}
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
         {analyticsRaw?.data?.stats?.map((card: any, index: number) => (
           <ReservationStatsCard

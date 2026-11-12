@@ -16,8 +16,8 @@ import { useAnalyticsScope } from '@/sections/analytics-scope/analytics-scope-ba
 
 const ReservationAnalyticsView = ({ userType }: { global?: boolean; userType: string }) => {
 
-  // #128 / D-06: company and organization scope on top; every figure and list follows it.
-  const { scope, ScopeBar, ready } = useAnalyticsScope(userType);
+  // #128 / D-06: the Company / Organizations scope chosen in the page header; every figure and list follows it.
+  const { scope, ready } = useAnalyticsScope(userType);
 
   const { data: dashboardRaw = {} as any, isLoading, isFetching } = useGetReservationsAnalyticsQuery(scope, {
     refetchOnMountOrArgChange: true,
@@ -28,17 +28,11 @@ const ReservationAnalyticsView = ({ userType }: { global?: boolean; userType: st
   const userLevelStats = dashboardRaw?.data?.userLevelStats || [];
 
   if (!ready || isLoading || isFetching) {
-    return (
-      <>
-        {ScopeBar}
-        <DashboardSkeleton />
-      </>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
     <>
-      {ScopeBar}
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
         {dashboardRaw?.data?.stats?.map((card: any, index: number) => (
           <ReservationStatsCard key={index} item={card} />

@@ -13,10 +13,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 // ============================================================
 // Analytics scope (Requirement Set #128, #131; Defects Report D-06)
 //
+// The selectors sit in the page header like on every other admin page
+// (AnalyticsScopeHeaderControls); the analytics views read the same selection
+// through useAnalyticsScope.
+//
 // Super admin: global by default; pick a company, then optionally some of its
 // organizations. Organizer / manager: always their own company; optionally
 // narrow to some of their organizations. Nothing selected = all. The backend
-// enforces the same limits, so this bar only expresses what the user wants.
+// enforces the same limits, so the selection only expresses what the user wants.
+//
+// Kept separate from the header's company selection used by other pages, so
+// choosing "All companies" here never clears the company those pages need.
 // ============================================================
 
 export type AnalyticsUserType = 'super-admin' | 'organizer' | string;
@@ -28,25 +35,89 @@ export interface AnalyticsScope {
   organizations?: string[];
 }
 
+interface StoredSelection {
+  companyId: string;
+  organizationIds: string[];
+}
+
 interface Option {
   value: string;
   label: string;
 }
 
 const ALL = 'all';
+const CHANGE_EVENT = 'analyticsScopeChanged';
+
+/** Routes that show the analytics scope selectors in the header. */
+export const ANALYTICS_SCOPE_ROUTES = [
+  '/super-admin/analytics',
+  '/super-admin/app-ordering/order-analytics',
+  '/organizer/analytics',
+  '/organizer/app-ordering/order-analytics',
+];
+
+export const isAnalyticsScopeRoute = (pathname: string) => ANALYTICS_SCOPE_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+
 const storageKey = (userType: string) => `analytics-scope:${userType}`;
 
-const readStored = (userType: string): { companyId: string; organizationIds: string[] } => {
+const readSelection = (userType: string): StoredSelection => {
   try {
-    const raw = window.localStorage.getItem(storageKey(userType));
-    const parsed = raw ? JSON.parse(raw) : null;
+    const parsed = JSON.parse(window.localStorage.getItem(storageKey(userType)) || 'null');
     return {
-      companyId: typeof parsed?.companyId === 'string' ? parsed.companyId : ALL,
-      organizationIds: Array.isArray(parsed?.organizationIds) ? parsed.organizationIds : [],
+      companyId: userType === 'super-admin' && typeof parsed?.companyId === 'string' ? parsed.companyId : ALL,
+      organizationIds: Array.isArray(parsed?.organizationIds) ? parsed.organizationIds.filter((id: unknown) => typeof id === 'string') : [],
     };
   } catch {
     return { companyId: ALL, organizationIds: [] };
   }
+};
+
+const writeSelection = (userType: string, selection: StoredSelection) => {
+  try {
+    window.localStorage.setItem(storageKey(userType), JSON.stringify(selection));
+  } catch {
+    /* storage unavailable — the event below still updates the open page */
+  }
+  window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { userType, selection } }));
+};
+
+/** Reactive selection shared by the header controls and the analytics views. */
+const useStoredSelection = (userType: string) => {
+  const [selection, setSelection] = useState<StoredSelection>({ companyId: ALL, organizationIds: [] });
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setSelection(readSelection(userType));
+    setReady(true);
+    const onChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ userType: string; selection: StoredSelection }>).detail;
+      if (detail?.userType === userType) setSelection(detail.selection);
+    };
+    window.addEventListener(CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(CHANGE_EVENT, onChange);
+  }, [userType]);
+
+  const update = (next: StoredSelection) => {
+    setSelection(next);
+    writeSelection(userType, next);
+  };
+
+  return { selection, update, ready };
+};
+
+/** Query arguments for the analytics views. `ready` is false until the stored selection is read. */
+export const useAnalyticsScope = (userType: AnalyticsUserType) => {
+  const isAdmin = userType === 'super-admin';
+  const { selection, ready } = useStoredSelection(userType);
+
+  const scope = useMemo<AnalyticsScope>(() => {
+    const next: AnalyticsScope = {};
+    if (isAdmin && selection.companyId !== ALL) next.companyOrganizer = selection.companyId;
+    if ((!isAdmin || selection.companyId !== ALL) && selection.organizationIds.length) next.organizations = selection.organizationIds;
+    return next;
+  }, [isAdmin, selection]);
+
+  return { scope, ready };
 };
 
 const OrganizationsMultiSelect: React.FC<{
@@ -78,13 +149,13 @@ const OrganizationsMultiSelect: React.FC<{
           aria-expanded={open}
           aria-label="Organizations"
           disabled={disabled}
-          className="h-10 w-full cursor-pointer justify-between bg-white font-normal shadow-none md:w-72 dark:bg-[#1a1a1a]"
+          className="h-10 w-full cursor-pointer justify-between bg-white font-normal shadow-none dark:bg-[#171717]"
         >
           <span className="truncate">{isLoading ? 'Loading organizations…' : label}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="start">
+      <PopoverContent className="w-72 p-0" align="end">
         <Command>
           <CommandInput placeholder="Search organizations…" />
           <CommandList>
@@ -92,15 +163,10 @@ const OrganizationsMultiSelect: React.FC<{
             <CommandGroup>
               <CommandItem value={`__all__ ${allLabel}`} onSelect={() => onChange([])} className="cursor-pointer">
                 <Check className={cn('mr-2 h-4 w-4', selected.length === 0 ? 'opacity-100' : 'opacity-0')} />
-                {allLabel}
+                All organizations
               </CommandItem>
               {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={`${option.label} ${option.value}`}
-                  onSelect={() => toggle(option.value)}
-                  className="cursor-pointer"
-                >
+                <CommandItem key={option.value} value={`${option.label} ${option.value}`} onSelect={() => toggle(option.value)} className="cursor-pointer">
                   <Check className={cn('mr-2 h-4 w-4', selected.includes(option.value) ? 'opacity-100' : 'opacity-0')} />
                   <span className="truncate">{option.label}</span>
                 </CommandItem>
@@ -113,32 +179,11 @@ const OrganizationsMultiSelect: React.FC<{
   );
 };
 
-/**
- * Scope for both analytics screens. Returns the query arguments and the bar to
- * render above the figures.
- */
-export const useAnalyticsScope = (userType: AnalyticsUserType) => {
+/** Company + Organizations selectors rendered in the page header on analytics routes. */
+export const AnalyticsScopeHeaderControls: React.FC<{ userType: AnalyticsUserType }> = ({ userType }) => {
   const isAdmin = userType === 'super-admin';
-  const [companyId, setCompanyId] = useState<string>(ALL);
-  const [organizationIds, setOrganizationIds] = useState<string[]>([]);
-  const [restored, setRestored] = useState(false);
-
-  // Remember the last scope per role (a convenience only; the page works without it).
-  useEffect(() => {
-    const stored = readStored(userType);
-    setCompanyId(isAdmin ? stored.companyId : ALL);
-    setOrganizationIds(stored.organizationIds);
-    setRestored(true);
-  }, [userType, isAdmin]);
-
-  useEffect(() => {
-    if (!restored) return;
-    try {
-      window.localStorage.setItem(storageKey(userType), JSON.stringify({ companyId, organizationIds }));
-    } catch {
-      /* storage unavailable — keep the in-memory scope */
-    }
-  }, [restored, userType, companyId, organizationIds]);
+  const { selection, update } = useStoredSelection(userType);
+  const { companyId, organizationIds } = selection;
 
   const { data: companyList, isLoading: isLoadingCompanies } = useGetCompanyListQuery({ page: 0, limit: '500' }, { skip: !isAdmin });
   const { data: companyOrgs, isFetching: isFetchingCompanyOrgs } = useGetOrganizationByCompanyQuery(
@@ -164,42 +209,20 @@ export const useAnalyticsScope = (userType: AnalyticsUserType) => {
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [isAdmin, companyOrgs, ownOrgs]);
 
-  // Drop organizations that are not in the current list (company switched, org removed).
-  const effectiveOrgIds = useMemo(
-    () => (organizationOptions.length ? organizationIds.filter((id) => organizationOptions.some((o) => o.value === id)) : organizationIds),
-    [organizationIds, organizationOptions]
-  );
+  // Forget organizations that are no longer in the list (company switched, org removed).
+  useEffect(() => {
+    if (!organizationOptions.length || !organizationIds.length) return;
+    const kept = organizationIds.filter((id) => organizationOptions.some((o) => o.value === id));
+    if (kept.length !== organizationIds.length) update({ companyId, organizationIds: kept });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [organizationOptions]);
 
-  const scope = useMemo<AnalyticsScope>(() => {
-    const next: AnalyticsScope = {};
-    if (isAdmin && companyId !== ALL) next.companyOrganizer = companyId;
-    if ((!isAdmin || companyId !== ALL) && effectiveOrgIds.length) next.organizations = effectiveOrgIds;
-    return next;
-  }, [isAdmin, companyId, effectiveOrgIds]);
-
-  const companyLabel = isAdmin ? (companyId === ALL ? 'All companies' : companyOptions.find((c) => c.value === companyId)?.label || 'Company') : null;
-  const orgLabel =
-    effectiveOrgIds.length === 0
-      ? isAdmin && companyId === ALL
-        ? 'all organizations'
-        : 'all organizations of this company'
-      : effectiveOrgIds.length === 1
-        ? organizationOptions.find((o) => o.value === effectiveOrgIds[0])?.label || '1 organization'
-        : `${effectiveOrgIds.length} organizations`;
-
-  const ScopeBar = (
-    <div className="dark:bg-secondary mt-5 flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 md:flex-row md:flex-wrap md:items-end dark:border-gray-800">
+  return (
+    <div className="flex w-full gap-3 md:w-auto">
       {isAdmin && (
-        <div className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Company</span>
-          <Select
-            value={companyId}
-            onValueChange={(next) => {
-              setCompanyId(next);
-              setOrganizationIds([]);
-            }}
-          >
-            <SelectTrigger aria-label="Company" className="h-10 w-full cursor-pointer bg-white shadow-none md:w-72 dark:bg-[#1a1a1a]">
+        <div className="w-full rounded-md bg-white md:w-auto md:min-w-50 dark:bg-[#171717]">
+          <Select value={companyId} onValueChange={(next) => update({ companyId: next, organizationIds: [] })}>
+            <SelectTrigger aria-label="Company" className="h-10 w-full cursor-pointer bg-white shadow-none md:min-w-50 dark:bg-[#171717]">
               <SelectValue placeholder={isLoadingCompanies ? 'Loading companies…' : 'All companies'} />
             </SelectTrigger>
             <SelectContent className="max-h-80">
@@ -216,24 +239,16 @@ export const useAnalyticsScope = (userType: AnalyticsUserType) => {
         </div>
       )}
 
-      <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">Organizations</span>
+      <div className="w-full rounded-md bg-white md:w-60 dark:bg-[#171717]">
         <OrganizationsMultiSelect
           options={organizationOptions}
-          value={effectiveOrgIds}
-          onChange={setOrganizationIds}
+          value={organizationIds}
+          onChange={(next) => update({ companyId, organizationIds: next })}
           disabled={isAdmin && companyId === ALL}
           isLoading={isAdmin ? isFetchingCompanyOrgs : isFetchingOwnOrgs}
-          allLabel={isAdmin && companyId === ALL ? 'Choose a company first' : 'All organizations'}
+          allLabel="All organizations"
         />
       </div>
-
-      <p className="text-sm text-gray-500 md:ml-auto dark:text-gray-400">
-        Showing {companyLabel ? `${companyLabel} · ` : ''}
-        {orgLabel}
-      </p>
     </div>
   );
-
-  return { scope, ScopeBar, ready: restored };
 };
