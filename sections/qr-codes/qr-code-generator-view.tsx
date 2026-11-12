@@ -1,15 +1,18 @@
 'use client';
 
 import ConfirmDialog from '@/components/comfirm-dialog/confirm-dialog';
+import { Button } from '@/components/ui/button';
 import PaginationControls from '@/components/table/pagination-controls';
 import { useBoolean } from '@/hooks/useBoolean';
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useDeleteQrcodeMutation, useGetQrcodesQuery } from '@/store/Reducer/qrcodes-api';
 import { getErrorMessage } from '@/utils/api';
 import { showError, showSuccess } from '@/utils/toast';
+import { Printer } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { EmptyState, QRCardSkeletonGrid, SavedQRCardSkeletonGrid } from './qr-card-skeleton';
 import { QRGeneratorModal } from './qr-generator-modal';
+import { QRLabelSheetModal } from './qr-label-sheet-modal';
 import { QRTypeCard } from './qr-type-card';
 import { SavedQRCard } from './saved-qr-card';
 import { QRCodeType } from './types';
@@ -21,6 +24,7 @@ export const QRCodeGeneratorView: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedQRType, setSelectedQRType] = useState<QRCodeType | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [labelSheet, setLabelSheet] = useState<{ open: boolean; codeId: string | null }>({ open: false, codeId: null });
 
   const [deleteQrcode, { isLoading: deleteLoading }] = useDeleteQrcodeMutation();
 
@@ -227,8 +231,18 @@ export const QRCodeGeneratorView: React.FC = () => {
 
           {/* Saved QR Codes Section */}
           <div>
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Generated QR Codes</h2>
+              <Button
+                type="button"
+                variant="outline"
+                className="cursor-pointer gap-2 font-semibold"
+                disabled={!localData?.length}
+                onClick={() => setLabelSheet({ open: true, codeId: null })}
+              >
+                <Printer className="h-4 w-4" />
+                Print labels
+              </Button>
             </div>
 
             {/* Loading State */}
@@ -240,7 +254,13 @@ export const QRCodeGeneratorView: React.FC = () => {
               <>
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
                   {localData?.map((qrCode: any, index: number) => (
-                    <SavedQRCard key={qrCode?._id || index} qrCode={qrCode} onDownload={handleDownloadSavedQR} onDelete={handleDeleteSavedQR} />
+                    <SavedQRCard
+                      key={qrCode?._id || index}
+                      qrCode={qrCode}
+                      onDownload={handleDownloadSavedQR}
+                      onDelete={handleDeleteSavedQR}
+                      onPrint={(code) => setLabelSheet({ open: true, codeId: code?._id ?? null })}
+                    />
                   ))}
                 </div>
 
@@ -263,6 +283,13 @@ export const QRCodeGeneratorView: React.FC = () => {
 
         {/* Generator Modal */}
         <QRGeneratorModal isOpen={isModalOpen} onClose={handleCloseModal} qrType={selectedQRType} />
+
+        <QRLabelSheetModal
+          open={labelSheet.open}
+          initialCodeId={labelSheet.codeId}
+          qrCodes={localData}
+          onClose={() => setLabelSheet({ open: false, codeId: null })}
+        />
       </section>
 
       <ConfirmDialog

@@ -2,13 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import { fDate, formatStr } from '@/utils/format-time';
-import { Download, Trash2 } from 'lucide-react';
+import { Download, Printer, Trash2 } from 'lucide-react';
 import QRCode from 'qrcode';
 import React, { useEffect, useRef } from 'react';
 import { QR_TYPE_CONFIG } from './constants';
 import { SavedQRCardProps } from './types';
 
-export const SavedQRCard: React.FC<SavedQRCardProps> = ({ qrCode, onDownload, onDelete }) => {
+export const SavedQRCard: React.FC<SavedQRCardProps> = ({ qrCode, onDownload, onDelete, onPrint }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -39,9 +39,20 @@ export const SavedQRCard: React.FC<SavedQRCardProps> = ({ qrCode, onDownload, on
       </div>
 
       <div className="flex items-center justify-center gap-2">
-        <Button onClick={() => onDownload(qrCode)} className="flex items-center justify-center gap-2 text-sm font-semibold">
+        <Button onClick={() => onDownload(qrCode)} title="Download image" className="flex items-center justify-center gap-2 text-sm font-semibold">
           <Download className="h-4 w-4" />
         </Button>
+
+        {onPrint && (
+          <Button
+            onClick={() => onPrint(qrCode)}
+            title="Print labels"
+            variant="outline"
+            className="flex cursor-pointer items-center justify-center gap-2 text-sm font-semibold"
+          >
+            <Printer className="h-4 w-4" />
+          </Button>
+        )}
 
         <Button
           className={`flex cursor-pointer items-center justify-center gap-2 bg-[#E7000B] hover:bg-[#E7000B]/80`}

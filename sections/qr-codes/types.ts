@@ -50,6 +50,8 @@ export interface SavedQRCardProps {
   qrCode: any;
   onDownload: (qrCode: SavedQRCode) => void;
   onDelete: (id: string) => void;
+  /** Opens the label sheet print dialog with this code (#60). */
+  onPrint?: (qrCode: any) => void;
 }
 
 export interface QRCodePayload {
