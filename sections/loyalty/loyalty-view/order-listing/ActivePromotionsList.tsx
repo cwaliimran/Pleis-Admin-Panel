@@ -1,7 +1,7 @@
 // components/lists/ActivePromotionsList.tsx
 
 'use client';
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import {
   Pagination,
@@ -16,9 +16,9 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Table } from '@/components/ui/table';
 import { useGetActivePromotionsQuery } from '@/store/Reducer/orders-api';
 import PromotionsTableRow from './PromotionsTableRow';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import type { AnalyticsScope } from '@/sections/analytics-scope/analytics-scope-bar';
 
-const ActivePromotionsList = ({ userType }: { userType: string }) => {
+const ActivePromotionsList = ({ scope = {} }: { userType?: string; scope?: AnalyticsScope }) => {
  const headLabel = [
   { id: 'promotionName', label: 'Title', align: 'left' },
   { id: 'type', label: 'Promotion Type', align: 'start' },
@@ -29,13 +29,15 @@ const ActivePromotionsList = ({ userType }: { userType: string }) => {
 ];
 
   const [page, setPage] = useState(1);
+  const scopeKey = JSON.stringify(scope);
+  useEffect(() => {
+    setPage(1);
+  }, [scopeKey]);
   const [limit, setLimit] = useState(5);
-
-  const { organizerOrganizationIds } = useCompanySelection();
 
 
   const { data: promotionsRaw, isLoading } = useGetActivePromotionsQuery(
-    { page, limit, organizations: userType === 'organizer' ? organizerOrganizationIds : undefined },
+    { page, limit, ...scope },
     { refetchOnMountOrArgChange: true }
   );
 

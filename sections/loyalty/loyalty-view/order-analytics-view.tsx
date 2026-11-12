@@ -11,24 +11,28 @@ import RevenueTrendsChart from '@/sections/invoices/revenueTrendsChart';
 import OrderTransactionList from './order-listing/OrderTransactionList';
 import MenuItemPerformanceTable from './order-listing/MenuItemPerformanceTable';
 import ActivePromotionsList from './order-listing/ActivePromotionsList';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useAnalyticsScope } from '@/sections/analytics-scope/analytics-scope-bar';
+import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
 
-const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; userType: string }) => {
+const OrderAnalyticsView = ({ userType }: { global?: boolean; userType: string }) => {
   const openModal = useBoolean();
 
-  console.log(isGlobal);
-
-  const { organizerOrganizationIds } = useCompanySelection();
+  // #131 / D-06: company and organization scope on top; every figure and list follows it.
+  const { scope, ScopeBar, ready } = useAnalyticsScope(userType);
 
   const {
     data: analyticsRaw,
     isLoading,
     isFetching,
-  } = useGetOrdersAnalyticsQuery(
-    { organizations: userType === 'organizer' ? organizerOrganizationIds : undefined },
-    { refetchOnMountOrArgChange: true }
-  );
-  if (isLoading || isFetching) return null;
+  } = useGetOrdersAnalyticsQuery(scope, { refetchOnMountOrArgChange: true, skip: !ready });
+  if (!ready || isLoading || isFetching) {
+    return (
+      <>
+        {ScopeBar}
+        <DashboardSkeleton />
+      </>
+    );
+  }
 
   const loyaltyImpact = analyticsRaw?.data?.loyaltyImpact;
   const loyaltyOrderFrequency = Number(loyaltyImpact?.orderFrequencyLoyalty ?? 0);
@@ -50,6 +54,7 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
 
   return (
     <>
+      {ScopeBar}
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
         {analyticsRaw?.data?.stats?.map((card: any, index: number) => (
           <ReservationStatsCard
@@ -319,7 +324,7 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
             </div>
           </CardHeader>
           <CardContent>
-            <OrderTransactionList userType={userType} /> {/* <-- Using the new component */}
+            <OrderTransactionList userType={userType} scope={scope} /> {/* <-- Using the new component */}
           </CardContent>
         </Card>
 
@@ -331,7 +336,7 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
             </div>
           </CardHeader>
           <CardContent>
-            <MenuItemPerformanceTable userType={userType} />
+            <MenuItemPerformanceTable userType={userType} scope={scope} />
           </CardContent>
         </Card>
 
@@ -343,7 +348,7 @@ const OrderAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; u
             </div>
           </CardHeader>
           <CardContent>
-            <ActivePromotionsList userType={userType} />
+            <ActivePromotionsList userType={userType} scope={scope} />
           </CardContent>
         </Card>
       </div>

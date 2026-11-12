@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import { Table } from '@/components/ui/table';
 import {
@@ -15,7 +15,7 @@ import {
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StaffLogTableRow from './StaffConfirmationTableRow';
 import { useGetStaffChangeLogsQuery } from '@/store/Reducer/reservations-api';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import type { AnalyticsScope } from '@/sections/analytics-scope/analytics-scope-bar';
 
 const headLabel = [
   { id: 'staff', label: 'Staff Member', align: 'left' },
@@ -24,15 +24,17 @@ const headLabel = [
   { id: 'date', label: 'Date', align: 'left' },
 ];
 
-const StaffConfirmationsLog = ({ userType }: { userType: string }) => {
+const StaffConfirmationsLog = ({ scope = {} }: { userType?: string; scope?: AnalyticsScope }) => {
   const [page, setPage] = useState(1);
+  const scopeKey = JSON.stringify(scope);
+  useEffect(() => {
+    setPage(1);
+  }, [scopeKey]);
   const [limit, setLimit] = useState(10);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-   const { organizerOrganizationIds } = useCompanySelection();
-
   const { data: logsRaw, isLoading } = useGetStaffChangeLogsQuery(
-    { page, limit, organizations: userType === 'organizer' ? organizerOrganizationIds : undefined },
+    { page, limit, ...scope },
     { refetchOnMountOrArgChange: true }
   );
 

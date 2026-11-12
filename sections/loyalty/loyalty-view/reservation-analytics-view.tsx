@@ -12,25 +12,33 @@ import ReservationList from '../ReservationTransactionList';
 import StaffConfirmationsLog from '../StaffConfirmation';
 import { useGetReservationsAnalyticsQuery } from '@/store/Reducer/reservations-api';
 import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useAnalyticsScope } from '@/sections/analytics-scope/analytics-scope-bar';
 
-const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; userType: string }) => {
+const ReservationAnalyticsView = ({ userType }: { global?: boolean; userType: string }) => {
 
-  const { organizerOrganizationIds } = useCompanySelection();
+  // #128 / D-06: company and organization scope on top; every figure and list follows it.
+  const { scope, ScopeBar, ready } = useAnalyticsScope(userType);
 
-  const { data: dashboardRaw = {} as any, isLoading, isFetching } = useGetReservationsAnalyticsQuery({
-     organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
-  }, { refetchOnMountOrArgChange: true });
+  const { data: dashboardRaw = {} as any, isLoading, isFetching } = useGetReservationsAnalyticsQuery(scope, {
+    refetchOnMountOrArgChange: true,
+    skip: !ready,
+  });
 
   const openModal = useBoolean();
   const userLevelStats = dashboardRaw?.data?.userLevelStats || [];
 
-  if (isLoading || isFetching) {
-    return <DashboardSkeleton />;
+  if (!ready || isLoading || isFetching) {
+    return (
+      <>
+        {ScopeBar}
+        <DashboardSkeleton />
+      </>
+    );
   }
 
   return (
     <>
+      {ScopeBar}
       <div className="mt-5 grid grid-cols-1 gap-2 md:grid-cols-3 md:gap-x-4 md:gap-y-4 lg:grid-cols-4">
         {dashboardRaw?.data?.stats?.map((card: any, index: number) => (
           <ReservationStatsCard key={index} item={card} />
@@ -210,7 +218,7 @@ const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: bool
           </CardHeader>
 
           <CardContent>
-            <ReservationList userType={userType} />
+            <ReservationList userType={userType} scope={scope} />
           </CardContent>
         </Card>
       </div>
@@ -224,7 +232,7 @@ const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: bool
           </CardHeader>
 
           <CardContent>
-            <StaffConfirmationsLog userType={userType} />
+            <StaffConfirmationsLog userType={userType} scope={scope} />
           </CardContent>
         </Card>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import TableHeadCustom from "@/components/table/table-head-custom";
 import {
   Pagination,
@@ -28,7 +28,7 @@ import { Table } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import LoyaltyTableRow from "./loyaltyTableRow2";
 import { useGetReservationTransactionsQuery } from "@/store/Reducer/reservations-api";
-import { useCompanySelection } from "@/app/common/header/company-selection-storage";
+import type { AnalyticsScope } from '@/sections/analytics-scope/analytics-scope-bar';
 
 const ticketTypeLabelMap: Record<string, string> = {
   vipEventPass: "VIP",
@@ -47,16 +47,18 @@ const headLabel = [
   { id: "staff", label: "Staff", align: "start" },
 ];
 
-const ReservationList = ( { userType }: { userType: string }) => {
+const ReservationList = ({ scope = {} }: { userType?: string; scope?: AnalyticsScope }) => {
   const [page, setPage] = useState(1);
+  const scopeKey = JSON.stringify(scope);
+  useEffect(() => {
+    setPage(1);
+  }, [scopeKey]);
   const [limit, setLimit] = useState(5);
   const [modalOpen, setModalOpen] = useState(false);
   const [staffMembers, setStaffMembers] = useState<any[]>([]);
 
-  const { organizerOrganizationIds } = useCompanySelection();
-
   const { data: transactionsRaw, isLoading } = useGetReservationTransactionsQuery(
-    { page, limit,  organizations: userType === 'organizer' ? organizerOrganizationIds : undefined, },
+    { page, limit, ...scope },
     { refetchOnMountOrArgChange: true }
   );
 
