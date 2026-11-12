@@ -1,7 +1,7 @@
 import type { ApiWeekdayKey } from '@/store/Reducer/organization';
 import type { ApiReservationCondition } from '@/store/Reducer/user-reservations-api';
 import { USER_RESERVATION_STATUSES } from '@/store/Reducer/user-reservations-api';
-import { CapacityLevel, ListFilter, PaymentState, ReservationStatus } from './types';
+import { CapacityLevel, ListFilters, PaymentState, ReservationStatus } from './types';
 
 export const SLOT_START_HOUR = 0;
 export const SLOT_END_HOUR = 23;
@@ -96,16 +96,9 @@ export const RESERVATION_STATUS_OPTIONS: { value: ReservationStatus; label: stri
 
 export const toStatusOption = (value: ReservationStatus) => ({ value, label: RESERVATION_STATUS_CONFIG[value].label });
 
-export const ALL_STATUSES_VALUE = 'all';
+export const EMPTY_LIST_FILTERS: ListFilters = { statuses: [], isNew: false };
 
-export const LIST_FILTER_OPTIONS: { value: ListFilter; label: string }[] = [{ value: ALL_STATUSES_VALUE, label: 'All statuses' }, ...RESERVATION_STATUS_OPTIONS];
-
-export const LIST_QUICK_TABS = [
-  { id: 'new', label: 'New' },
-  { id: 'needsConfirmation', label: 'Need Confirmation' },
-] as const;
-
-export type ListQuickTabId = (typeof LIST_QUICK_TABS)[number]['id'];
+export const NEW_FILTER_LABEL = 'New (last 48 h)';
 
 export const PAYMENT_CONFIG: Record<PaymentState, { label: string; textClass: string }> = {
   free: { label: 'Free', textClass: 'text-gray-500 dark:text-gray-400' },

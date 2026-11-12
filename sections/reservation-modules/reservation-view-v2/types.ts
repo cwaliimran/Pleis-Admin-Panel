@@ -4,7 +4,13 @@ export type UserType = 'organizer' | 'super-admin';
 
 export type ReservationStatus = ApiUserReservationStatus;
 
-export type ListFilter = 'all' | ReservationStatus;
+/** Reservation list filters (#56, Filters v5 §2.1): OR within a filter, AND across filters. */
+export interface ListFilters {
+  /** Empty = every status. */
+  statuses: ReservationStatus[];
+  /** Created in the last 48 h (prototype v3.2). */
+  isNew: boolean;
+}
 
 /** Derived, never stored on the reservation (prototype v3.2 "Minimum spend payment and voucher"). */
 export type PaymentState = 'free' | 'awaiting' | 'paid' | 'refunded' | 'forfeited' | 'none';

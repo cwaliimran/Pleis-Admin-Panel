@@ -16,9 +16,11 @@ interface WeekViewSectionProps {
   onPickWeek: (date: Date) => void;
   isLoading?: boolean;
   disabled?: boolean;
+  /** False when the day filter is cleared (all dates): no day is highlighted. */
+  isDaySelected?: boolean;
 }
 
-export const WeekViewSection: React.FC<WeekViewSectionProps> = ({ days, selectedDate, onSelectDate, onPickWeek, isLoading = false, disabled = false }) => {
+export const WeekViewSection: React.FC<WeekViewSectionProps> = ({ days, selectedDate, onSelectDate, onPickWeek, isLoading = false, disabled = false, isDaySelected = true }) => {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
@@ -26,7 +28,7 @@ export const WeekViewSection: React.FC<WeekViewSectionProps> = ({ days, selected
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {days.map((day) => {
           const date = parseISO(day.date);
-          const isSelected = day.date === selectedDate;
+          const isSelected = isDaySelected && day.date === selectedDate;
 
           return (
             <button

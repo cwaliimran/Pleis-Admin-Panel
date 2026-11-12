@@ -257,12 +257,14 @@ export interface ApiReservationListMeta {
   totalRecords: number;
   limit: number;
   reservationTypeCapacityStats?: ApiReservationTypeCapacityStat[];
+  /** Reservations created in the last 48 h within the other filters (#56). */
+  newCount?: number;
 }
 
 export interface GetReservationsV2Args {
   /** Backend spelling — plural `organizations`, singular id. */
   organizationsId: string;
-  /** ISO `yyyy-MM-dd`. Omitted for list modes that are not scoped to a day (e.g. status `new`). */
+  /** ISO `yyyy-MM-dd`. Omitted when the day filter is cleared (all dates). */
   date?: string;
   /** 0-based; the offset is re-added below so the API receives a 1-based page. */
   page: number;
@@ -271,7 +273,10 @@ export interface GetReservationsV2Args {
   startTime?: string;
   /** Reservation type `_id`. Sent only when a type is selected on the board. */
   reservationType?: string;
-  status?: ApiUserReservationStatus;
+  /** Status filter (#56): any of these (OR); empty = every status. */
+  statuses?: ApiUserReservationStatus[];
+  /** New filter (#56): created in the last 48 h. AND'd with the other filters. */
+  isNew?: boolean;
 }
 
 export interface GetReservationsV2Response {
@@ -303,7 +308,7 @@ export const userReservationsApi = createApi({
     }),
 
     getReservationsV2: builder.query<GetReservationsV2Response, GetReservationsV2Args>({
-      query: ({ organizationsId, date, page, limit, startTime, reservationType, status }) => {
+      query: ({ organizationsId, date, page, limit, startTime, reservationType, statuses, isNew }) => {
         const params: Record<string, string | number> = {
           organizationsId,
           page: page + 1,
@@ -314,7 +319,8 @@ export const userReservationsApi = createApi({
         if (date) params.date = date;
         if (startTime) params.startTime = startTime;
         if (reservationType) params.reservationType = reservationType;
-        if (status) params.status = status;
+        if (statuses?.length) params.status = statuses.join(',');
+        if (isNew) params.isNew = 'true';
 
         return {
           url: '',

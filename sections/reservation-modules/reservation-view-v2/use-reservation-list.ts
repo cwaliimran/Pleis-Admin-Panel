@@ -4,14 +4,14 @@ import type { ApiReservationListItem, ApiReservationTypeCapacityStat } from '@/s
 import { useGetReservationsV2Query } from '@/store/Reducer/user-reservations-api';
 import { useMemo } from 'react';
 import { DEFAULT_PAGE_LIMIT, fromIsoDate, fromIsoTime } from './constants';
-import { ListFilter, PaymentState, Reservation, ReservationPagination, TypeOccupancy } from './types';
+import { ListFilters, PaymentState, Reservation, ReservationPagination, TypeOccupancy } from './types';
 
 interface UseReservationListArgs {
   organizationId?: string;
   date?: string;
   slot: string | null;
   typeId: string | null;
-  filter: ListFilter;
+  filters: ListFilters;
   page: number;
   limit?: number;
 }
@@ -20,6 +20,8 @@ interface UseReservationListReturn {
   reservations: Reservation[];
   types: TypeOccupancy[];
   pagination: ReservationPagination;
+  /** New reservations within the other filters, shown beside the New filter. */
+  newCount: number;
   isLoading: boolean;
   isFetching: boolean;
 }
@@ -93,7 +95,7 @@ export const useReservationList = ({
   date,
   slot,
   typeId,
-  filter,
+  filters,
   page,
   limit = DEFAULT_PAGE_LIMIT,
 }: UseReservationListArgs): UseReservationListReturn => {
@@ -105,7 +107,8 @@ export const useReservationList = ({
       limit,
       startTime: slot || undefined,
       reservationType: typeId || undefined,
-      status: filter === 'all' ? undefined : filter,
+      statuses: filters.statuses,
+      isNew: filters.isNew,
     },
     { skip: !organizationId, refetchOnMountOrArgChange: true }
   );
@@ -124,5 +127,5 @@ export const useReservationList = ({
     [data, page, limit]
   );
 
-  return { reservations, types, pagination, isLoading, isFetching };
+  return { reservations, types, pagination, newCount: data?.meta?.newCount ?? 0, isLoading, isFetching };
 };
