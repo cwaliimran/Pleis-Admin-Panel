@@ -180,6 +180,7 @@ export const PAYMENT_STATUS_CONFIG: Record<PaymentStatus, BadgeConfig> = {
   pending: { label: 'Pending', icon: Clock, tone: 'amber' },
   failed: { label: 'Failed', icon: CircleAlert, tone: 'red' },
   unpaidClosed: { label: 'Unpaid Closed', icon: CircleAlert, tone: 'red' },
+  refunded: { label: 'Refunded', icon: CircleDashed, tone: 'gray' },
 };
 
 export const getPaymentStatusConfig = (status: PaymentStatus): BadgeConfig =>
@@ -267,6 +268,31 @@ export const SECONDARY_ACTION_BY_STATUS: Partial<Record<OrderStatus, ActionConfi
   ready: { type: 'cancel', label: 'Cancel' },
   sent: { type: 'cancel', label: 'Cancel' },
   pendingPayment: { type: 'cancel', label: 'Cancel' },
+};
+
+/**
+ * Paid through Pleis (gateway or reservation voucher): Cancel / Reject
+ * refunds the guest in full (Monri v1.4 §6.4). Paid at the venue: Pleis holds
+ * no money, so a paid order can't be cancelled.
+ */
+export const REFUNDABLE_PAYMENT_TYPES: string[] = ['card', 'applePay', 'googlePay', 'voucher'];
+
+export const getSecondaryAction = (order: {
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentType: PaymentType;
+}): ActionConfig | null => {
+  const secondary = SECONDARY_ACTION_BY_STATUS[order.status] || null;
+  if (!secondary) return null;
+  if (order.paymentStatus === 'refunded') return null;
+  if (
+    secondary.type === 'cancel' &&
+    order.paymentStatus === 'paid' &&
+    !REFUNDABLE_PAYMENT_TYPES.includes(order.paymentType)
+  ) {
+    return null;
+  }
+  return secondary;
 };
 
 export const MARK_AS_PAID_ACTION: ActionConfig = { type: 'markAsPaid', label: 'Mark as Paid' };

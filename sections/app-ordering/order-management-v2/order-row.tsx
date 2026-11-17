@@ -30,7 +30,7 @@ import {
   isOrderEditable,
   MARK_AS_PAID_ACTION,
   MARK_AS_UNPAID_ACTION,
-  SECONDARY_ACTION_BY_STATUS,
+  getSecondaryAction,
 } from './constants';
 import { DestructiveActionType, Order, OrderActionType, OrderCombo } from './types';
 import type { DeliverItemsPayload } from './use-order-management';
@@ -195,7 +195,7 @@ export const OrderRow: React.FC<OrderRowProps> = ({
   const timingConfig = getPaymentTimingConfig(order.paymentTiming);
   const tierConfig = order.customer.tier ? getLoyaltyTierConfig(order.customer.tier) : null;
   const primaryAction = getPrimaryAction(order);
-  const secondaryAction = SECONDARY_ACTION_BY_STATUS[order.status];
+  const secondaryAction = getSecondaryAction(order);
 
   // A failed payment has to be settled before the order can be accepted.
   const isConfirmBlocked = primaryAction?.type === 'confirm' && order.paymentStatus === 'failed';

@@ -47,7 +47,8 @@ export type ApiOrganizerPaymentMethod = 'Pleis' | 'Card' | 'Cash' | 'Other';
  */
 export type ApiPaymentTiming = 'payNow' | 'payLater';
 
-export type ApiPaymentStatus = 'pending' | 'paid' | 'failed' | 'unpaidClosed';
+// refunded: the whole payment went back to the guest (Monri v1.4 §6).
+export type ApiPaymentStatus = 'pending' | 'paid' | 'failed' | 'unpaidClosed' | 'refunded';
 
 /** Which bucket of statuses to list — the backend decides the membership. */
 export type ApiOrderTab = 'active' | 'past';
