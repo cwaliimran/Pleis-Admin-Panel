@@ -7,7 +7,7 @@ import { PhoneNumber } from './types';
 
 export const splitPhoneByDial = (phone: string, dialCode: string): PhoneNumber => {
   const cleanPhone = phone.replace(/[^0-9]/g, '');
-  const code = dialCode || '+92'; // Default to Pakistan code
+  const code = dialCode || '+385'; // Default to Croatia code
   const number = cleanPhone.replace(new RegExp(`^${code.replace('+', '')}`), '').trim();
   return { code, number };
 };

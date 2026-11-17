@@ -62,6 +62,12 @@ interface FormData {
 // CONSTANTS
 // ============================================================
 
+/**
+ * Person-name pattern: starts with a letter, then any Unicode letter (č, ć, š, ž, đ, …),
+ * combining mark, space, hyphen, apostrophe (straight or curly) or period.
+ */
+const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s'’.-]*$/u;
+
 const STEP_1_FIELDS: (keyof FormData)[] = ['fname', 'lname', 'organizationName', 'email', 'password', 'confirmPassword', 'phone'];
 
 const defaultValues: FormData = {
@@ -71,7 +77,7 @@ const defaultValues: FormData = {
   email: '',
   password: '',
   confirmPassword: '',
-  phone: { code: '+92', number: '' },
+  phone: { code: '+385', number: '' },
   companyName: '',
   oib: '',
   bankAccountNumber: '',
@@ -100,18 +106,18 @@ const schema = Yup.object().shape({
     .required('First name is required')
     .min(2, 'First name must be at least 2 characters')
     .max(50, 'First name must be at most 50 characters')
-    .matches(/^[A-Za-z\s'-]+$/, 'First name can only contain letters, spaces, apostrophes, and hyphens'),
+    .matches(NAME_PATTERN, 'First name can only contain letters, spaces, apostrophes, hyphens and periods'),
   lname: Yup.string()
     .trim()
     .required('Last name is required')
     .min(2, 'Last name must be at least 2 characters')
     .max(50, 'Last name must be at most 50 characters')
-    .matches(/^[A-Za-z\s'-]+$/, 'Last name can only contain letters, spaces, apostrophes, and hyphens'),
+    .matches(NAME_PATTERN, 'Last name can only contain letters, spaces, apostrophes, hyphens and periods'),
   organizationName: Yup.string().required('Organization name is required').trim(),
   email: Yup.string().required('Email is required').email('Invalid email format'),
   password: Yup.string()
     .required('Password is required')
-    .min(6, 'Password must be at least 8 characters')
+    .min(8, 'Password must be at least 8 characters')
     .max(64, 'Password must be at most 64 characters')
     .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
     .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
@@ -122,14 +128,14 @@ const schema = Yup.object().shape({
     .required('Confirm password is required')
     .oneOf([Yup.ref('password')], 'Passwords must match'),
   phone: Yup.object().shape({
-    code: Yup.string().default('+92'),
+    code: Yup.string().default('+385'),
     number: Yup.string().required('Phone number is required'),
   }),
 
   // Step 2 — Business Details
   companyName: Yup.string()
     .required('Company name is required')
-    .matches(/^[A-Za-z\s&]+$/, 'Company name must only contain letters, spaces, and &')
+    .matches(/^[\p{L}\p{M}\s&]+$/u, 'Company name must only contain letters, spaces, and &')
     .max(100, 'Company name must be at most 100 characters'),
   oib: Yup.string()
     .required('VAT is required')
@@ -146,7 +152,7 @@ const schema = Yup.object().shape({
     }),
   representativeFullName: Yup.string()
     .required('Representative full name is required')
-    .matches(/^[A-Za-z\s]+$/, 'Representative name must only contain letters and spaces')
+    .matches(NAME_PATTERN, 'Representative name can only contain letters, spaces, apostrophes, hyphens and periods')
     .max(100, 'Representative name must be at most 100 characters'),
   location: Yup.object().shape({
     fullAddress: Yup.string().required('Full address is required'),
@@ -212,13 +218,13 @@ function SignUpView() {
 
   const parsePhoneNumber = (phoneInput: { code: string; number: string } | string): { code: string; number: string } => {
     if (typeof phoneInput === 'string') {
-      if (!phoneInput) return { code: '+92', number: '' };
+      if (!phoneInput) return { code: '+385', number: '' };
       const cleaned = phoneInput.replace(/[\s\-\(\)]/g, '');
       if (cleaned.startsWith('+')) {
         const match = cleaned.match(/^\+(\d{1,3})(.+)$/);
         if (match) return { code: `+${match[1]}`, number: match[2] };
       }
-      return { code: '+92', number: cleaned };
+      return { code: '+385', number: cleaned };
     }
     return phoneInput;
   };

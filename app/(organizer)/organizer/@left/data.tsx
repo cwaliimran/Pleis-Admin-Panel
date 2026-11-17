@@ -12,6 +12,7 @@ import {
   List,
   ListOrdered,
   Podcast,
+  Scale,
   ShoppingBasket,
   Tags,
   TicketSlash,
@@ -292,5 +293,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Marketing Requests',
     key: paths.organizer.marketingRequests,
     icon: Volume1,
+  },
+  // PLEIS Legal spec 1.5 / Requirement Set #101: Partner Dashboard → Legal.
+  {
+    label: 'Legal',
+    key: paths.organizer.legal,
+    icon: Scale,
   },
 ];

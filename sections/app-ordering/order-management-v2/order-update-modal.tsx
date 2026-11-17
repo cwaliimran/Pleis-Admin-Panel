@@ -13,6 +13,7 @@ import {
   PLEIS_PAYMENT_METHODS,
   MIN_ITEM_QUANTITY,
   UPDATE_ORDER_PAYMENT_METHOD_OPTIONS,
+  canEditOrderItems,
   formatCurrency,
   formatOrderTime,
   getComboPriceModeLabel,
@@ -264,9 +265,16 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
 
   const comboCount = useMemo(() => combos.reduce((total, combo) => total + combo.quantity, 0), [combos]);
 
+  // Delivered: the items were handed over and are fixed; only the payment
+  // method can still change until the order is paid. The server enforces it too.
+  const itemsLocked = Boolean(order) && !canEditOrderItems(order as Order);
+  const lineControlsDisabled = isSubmitting || itemsLocked;
+
+  const paymentChanged = Boolean(paymentMethod) && paymentMethod !== initialPaymentMethod;
   const isDirty = Boolean(
     order &&
-      (itemsSignature(items) !== itemsSignature(toDraftItems(order)) ||
+      (paymentChanged ||
+        itemsSignature(items) !== itemsSignature(toDraftItems(order)) ||
         combosSignature(combos) !== combosSignature(toDraftCombos(order)))
   );
 
@@ -274,12 +282,16 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
   const canSave = isDirty && !isOrderEmpty && !isSubmitting;
 
   const handleConfirm = () => {
-    if (!canSave) return;
+    if (!canSave || !order) return;
+
+    // Locked lines go back exactly as the order has them.
+    const sentItems = itemsLocked ? toDraftItems(order) : items;
+    const sentCombos = itemsLocked ? toDraftCombos(order) : combos;
 
     onConfirm({
-      items: items.map((item) => ({ menuItemId: item.menuItemId, quantity: item.quantity })),
-      combos: combos.map((combo) => ({ comboId: combo.comboId, menuItemIds: combo.menuItemIds, quantity: combo.quantity })),
-      ...(paymentMethod && paymentMethod !== initialPaymentMethod ? { paymentMethod } : {}),
+      items: sentItems.map((item) => ({ menuItemId: item.menuItemId, quantity: item.quantity })),
+      combos: sentCombos.map((combo) => ({ comboId: combo.comboId, menuItemIds: combo.menuItemIds, quantity: combo.quantity })),
+      ...(paymentChanged ? { paymentMethod } : {}),
     });
   };
 
@@ -289,8 +301,9 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
         <DialogHeader className="border-b border-gray-200 px-6 py-4 dark:border-gray-800">
           <DialogTitle className="text-lg font-bold">Update order #{order?.orderNumber}</DialogTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            This order is not paid yet, so it can still be changed in agreement with the guest. Items already ordered keep their price; new
-            items come from the menu. Once the order is paid it can no longer be edited — use a refund instead.
+            {itemsLocked
+              ? 'This order has been delivered, so its items can no longer be changed. Only the payment method can be changed until the order is paid.'
+              : 'This order is not paid yet, so it can still be changed in agreement with the guest. Items already ordered keep their price; new items come from the menu. Once the order is delivered its items can no longer be changed, and once it is paid nothing can be edited — use a refund instead.'}
           </p>
         </DialogHeader>
 
@@ -342,15 +355,17 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
           <div className="px-6 py-5">
             <SectionHeading title="Items" count={`${items.length} ${items.length === 1 ? 'line' : 'lines'}`} />
 
-            <div className="mb-3">
-              <MenuItemPicker
-                organizationId={organizationId}
-                selectedIds={selectedMenuItemIds}
-                disabled={isSubmitting}
-                portalContainer={dialogElement}
-                onSelect={handleAddItem}
-              />
-            </div>
+            {!itemsLocked && (
+              <div className="mb-3">
+                <MenuItemPicker
+                  organizationId={organizationId}
+                  selectedIds={selectedMenuItemIds}
+                  disabled={isSubmitting}
+                  portalContainer={dialogElement}
+                  onSelect={handleAddItem}
+                />
+              </div>
+            )}
 
             {items.length > 0 && (
               <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
@@ -371,7 +386,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
                       <QuantityStepper
                         quantity={item.quantity}
                         label={item.name}
-                        disabled={isSubmitting}
+                        disabled={lineControlsDisabled}
                         onStep={(delta) => handleStep(item.menuItemId, delta)}
                         onChange={(quantity) => handleQuantityChange(item.menuItemId, quantity)}
                       />
@@ -380,7 +395,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
                         {formatCurrency(item.unitPrice * item.quantity)}
                       </span>
 
-                      <RemoveButton label={item.name} disabled={isSubmitting} onClick={() => handleRemove(item.menuItemId)} />
+                      <RemoveButton label={item.name} disabled={lineControlsDisabled} onClick={() => handleRemove(item.menuItemId)} />
                     </div>
                   </div>
                 ))}
@@ -390,15 +405,17 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
             <div className="mt-6">
               <SectionHeading title="Combos" count={comboCount > 0 ? `${comboCount} ${comboCount === 1 ? 'combo' : 'combos'}` : 'None'} />
 
-              <div className="mb-3">
-                <ComboPicker
-                  organizationId={organizationId}
-                  selectedIds={selectedComboIds}
-                  disabled={isSubmitting}
-                  portalContainer={dialogElement}
-                  onSelect={handleAddCombo}
-                />
-              </div>
+              {!itemsLocked && (
+                <div className="mb-3">
+                  <ComboPicker
+                    organizationId={organizationId}
+                    selectedIds={selectedComboIds}
+                    disabled={isSubmitting}
+                    portalContainer={dialogElement}
+                    onSelect={handleAddCombo}
+                  />
+                </div>
+              )}
 
               {combos.length > 0 && (
                 <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
@@ -429,7 +446,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
                           <QuantityStepper
                             quantity={combo.quantity}
                             label={combo.name}
-                            disabled={isSubmitting}
+                            disabled={lineControlsDisabled}
                             onStep={(delta) => handleComboStep(combo.comboId, delta)}
                             onChange={(quantity) => handleComboQuantityChange(combo.comboId, quantity)}
                           />
@@ -443,7 +460,7 @@ export const OrderUpdateModal: React.FC<OrderUpdateModalProps> = ({ open, order,
                             )}
                           </span>
 
-                          <RemoveButton label={combo.name} disabled={isSubmitting} onClick={() => handleRemoveCombo(combo.comboId)} />
+                          <RemoveButton label={combo.name} disabled={lineControlsDisabled} onClick={() => handleRemoveCombo(combo.comboId)} />
                         </div>
                       </div>
                     );

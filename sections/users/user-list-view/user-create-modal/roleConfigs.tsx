@@ -284,7 +284,7 @@ const generateValidationSchema = (role: RoleKey) => {
   // simple password min rule
   if (fields.password?.required) {
     shape.password = Yup.string()
-      .min(6, 'Password must be at least 6 characters')
+      .min(8, 'Password must be at least 8 characters')
       .required('Password is required');
   }
   return Yup.object().shape(shape);
@@ -305,7 +305,7 @@ const mapFormToPayload = (role: RoleKey, data: any) => {
     lastName: data.lastName,
     email: data.email,
     phoneNumber: {
-      code: phoneNumber.code || '+92',
+      code: phoneNumber.code || '+385',
       number: phoneNumber.number || '',
     },
     password: data.password,

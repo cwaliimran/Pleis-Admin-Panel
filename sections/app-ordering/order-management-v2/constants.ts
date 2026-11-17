@@ -392,13 +392,23 @@ export const getPrimaryAction = (order: ActionableOrder): ActionConfig | null =>
 };
 
 /**
- * Edit order (Requirement Set #129, #130): open while Payment = Unpaid, whatever
- * the fulfilment status, in agreement with the guest. Once Paid nothing is
- * edited — the correction is a refund. A closed order is not edited either.
+ * Edit order (Requirement Set #129, #130): open while Payment = Unpaid, in
+ * agreement with the guest. Once Paid nothing is edited — the correction is a
+ * refund. A closed order is not edited either. Items: see canEditOrderItems.
  */
 export const isOrderEditable = (order: { status: OrderStatus; paymentStatus: PaymentStatus }) =>
   (order.paymentStatus === 'pending' || order.paymentStatus === 'failed') &&
   !['cancelled', 'rejected', 'expired'].includes(order.status as string);
+
+/** Handed over: `delivered`, or the legacy `completed` / `sent`. */
+export const isOrderDelivered = (order: { status: OrderStatus }) => ['delivered', 'completed', 'sent'].includes(order.status as string);
+
+/**
+ * Items and combos change only before delivery (and before payment). A
+ * delivered, unpaid order keeps only its payment method editable.
+ */
+export const canEditOrderItems = (order: { status: OrderStatus; paymentStatus: PaymentStatus }) =>
+  isOrderEditable(order) && !isOrderDelivered(order);
 
 /** In-app (Pleis) methods: kept as they are unless staff pick a venue method. */
 export const PLEIS_PAYMENT_METHODS = ['card', 'applePay', 'googlePay'] as const;

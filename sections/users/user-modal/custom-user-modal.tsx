@@ -151,7 +151,7 @@ const CustomUserModal: React.FC<UserModalProps> = ({ open, isEdit, isLoading, on
         lastName: data.lastName,
         email: data.email,
         phoneNumber: {
-          code: phoneNumber.code || '+92',
+          code: phoneNumber.code || '+385',
           number: phoneNumber.number || '',
         },
         ...(data.password && { password: data.password }),

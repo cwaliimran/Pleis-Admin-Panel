@@ -1,7 +1,9 @@
 // Versioned legal documents + consent log (PLEIS Legal spec, sections 1 + 5).
+import { CurrentUrl } from '@/constant/constant';
+
 import { settingsApi } from './settings';
 
-export type LegalDocumentType = 'terms_of_use' | 'privacy_policy' | 'sales_terms' | 'partner_terms';
+export type LegalDocumentType = 'terms_of_use' | 'privacy_policy' | 'sales_terms' | 'partner_terms' | 'psa' | 'dpa' | 'dsa_policy';
 
 export interface LegalDocument {
   _id: string;
@@ -25,6 +27,21 @@ export interface LegalStatus {
   pending: LegalDocument[];
   upToDate: boolean;
 }
+
+/** Partner Dashboard → Legal / App → Settings → Legal entry (GET /legal/my-documents). */
+export interface MyLegalDocument extends Partial<LegalDocument> {
+  type: LegalDocumentType;
+  title: string;
+  published: boolean;
+  acceptedVersion: number | null;
+  acceptedAt: string | null;
+}
+
+/** Public PDF download of a document version (latest when `version` is omitted). */
+export const legalDocumentPdfUrl = (type: LegalDocumentType, version?: number) => {
+  const base = String(CurrentUrl || '').replace(/\/+$/, '');
+  return `${base}/legal/documents/${type}/pdf${version ? `?version=${version}` : ''}`;
+};
 
 export interface ConsentLogRow {
   _id: string;
@@ -80,7 +97,12 @@ const legalApi = settingsApi.enhanceEndpoints({ addTagTypes: ['legalDocs', 'lega
     }),
     acceptLegalDocuments: builder.mutation<Envelope<LegalStatus>, { acceptances: { type: LegalDocumentType; version: number }[] }>({
       query: (body) => ({ url: '/legal/accept', method: 'POST', body }),
-      invalidatesTags: ['legalStatus'],
+      invalidatesTags: ['legalStatus', 'legalDocs'],
+    }),
+    // Partner Dashboard → Legal (spec 1.5): documents + the version this account accepted
+    getMyLegalDocuments: builder.query<Envelope<{ userType: string; documents: MyLegalDocument[] }>, void>({
+      query: () => ({ url: '/legal/my-documents', method: 'GET' }),
+      providesTags: ['legalDocs', 'legalStatus'],
     }),
 
     // ---- compliance settings (Requirement Set #108: age_notice_mode) ----
@@ -110,6 +132,7 @@ export const {
   useGetConsentLogsQuery,
   useGetLegalStatusQuery,
   useAcceptLegalDocumentsMutation,
+  useGetMyLegalDocumentsQuery,
   useGetPublicLegalDocumentsQuery,
   useGetComplianceSettingsQuery,
   useUpdateComplianceSettingsMutation,

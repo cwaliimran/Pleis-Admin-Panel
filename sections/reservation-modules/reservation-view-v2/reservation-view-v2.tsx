@@ -17,6 +17,7 @@ import { ReservationTypesSection } from './reservation-types-section';
 import { TimeSlotsSection } from './time-slots-section';
 import { ListFilters, Reservation, ReservationStatus, UserType } from './types';
 import { useReservationCalendar } from './use-reservation-calendar';
+import { useNeedsConfirmation } from './use-needs-confirmation';
 import { useReservationList } from './use-reservation-list';
 import { WeekViewSection } from './week-view-section';
 
@@ -63,6 +64,19 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     isLoading: isCalendarLoading,
     isFetching: isCalendarFetching,
   } = useReservationCalendar({ organizationId, date: selectedDate, weekDates });
+
+  // Prototype v3.2 action dots: reservations waiting in Need confirmation.
+  const needItems = useNeedsConfirmation(organizationId);
+  const needDates = useMemo(() => new Set(needItems.map((item) => item.date)), [needItems]);
+  // Slot dot scope: the selected day, or the shown week when no day is selected; narrowed by the selected type.
+  const needSlots = useMemo(() => {
+    const scopeDates = isDayFilterOn ? [selectedDate] : weekDates;
+    return new Set(
+      needItems
+        .filter((item) => scopeDates.includes(item.date) && (!selectedTypeId || item.reservationTypeId === selectedTypeId))
+        .map((item) => item.slot)
+    );
+  }, [needItems, isDayFilterOn, selectedDate, weekDates, selectedTypeId]);
 
   const {
     reservations,
@@ -261,6 +275,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             onPickWeek={handlePickWeek}
             isLoading={isCalendarLoading}
             isDaySelected={isDayFilterOn}
+            needDates={needDates}
           />
 
           <TimeSlotsSection
@@ -270,6 +285,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             isLoading={isCalendarLoading || isCalendarFetching}
             isEmpty={!hasDataForDate}
             emptyMessage={`No reservations on ${format(parseISO(selectedDate), 'EEE dd/MM/yyyy')}`}
+            needSlots={needSlots}
           />
 
           <ReservationTypesSection types={types} selectedTypeId={selectedTypeId} onSelectType={handleSelectType} />

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { EditorState, getDefaultKeyBinding, KeyBindingUtil, RichUtils } from 'draft-js';
 import { stateToHTML } from 'draft-js-export-html';
 import { stateFromHTML } from 'draft-js-import-html';
-import { FileText, History, Receipt, ScrollText, ShieldCheck, SlidersHorizontal, Upload, Users } from 'lucide-react';
+import { Database, Download, FileSignature, FileText, History, Landmark, Receipt, ScrollText, ShieldCheck, SlidersHorizontal, Upload, Users } from 'lucide-react';
 
 import { AppLoading } from '@/components/atoms/app-loading';
 import ButtonLoading from '@/components/common/button-loading';
@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
   LegalDocument,
+  legalDocumentPdfUrl,
   LegalDocumentType,
   useGetAdminLegalDocumentsQuery,
   useGetLegalDocumentHistoryQuery,
@@ -35,12 +36,26 @@ import { RichTextEditor } from './RichTextEditor';
  * Legal documents are versioned: every publish creates a new immutable version, so each
  * consent record points at the exact text that was accepted. "Require re-acceptance"
  * prompts users / partners to accept again on their next login.
+ * Document list and audiences: PLEIS Legal & Pricing Compliance spec v2, document table + 1.5.
  */
-const DOCS: { type: LegalDocumentType; title: string; short: string; audience: string; icon: React.ReactNode }[] = [
-  { type: 'partner_terms', title: 'Partner Terms and Conditions', short: 'Partner T&C', audience: 'Partners — accepted at partner registration', icon: <Users className="h-4 w-4" /> },
-  { type: 'terms_of_use', title: 'Terms of Use', short: 'Terms of Use', audience: 'Buyers — accepted at app registration', icon: <FileText className="h-4 w-4" /> },
-  { type: 'sales_terms', title: 'Sales Terms', short: 'Sales Terms', audience: 'Buyers — shown in App → Settings → Legal', icon: <Receipt className="h-4 w-4" /> },
-  { type: 'privacy_policy', title: 'Privacy Policy', short: 'Privacy', audience: 'Buyers + partners — accepted at registration', icon: <ShieldCheck className="h-4 w-4" /> },
+const DOCS: {
+  type: LegalDocumentType;
+  title: string;
+  short: string;
+  audience: string;
+  icon: React.ReactNode;
+  // false = not accepted through the registration / re-acceptance prompt (PSA + DPA are accepted
+  // together on the partner's PSA, spec 1.4; the DSA policy is never accepted in the app).
+  promptsAcceptance: boolean;
+  note?: string;
+}[] = [
+  { type: 'partner_terms', title: 'Partner Terms and Conditions', short: 'Partner T&C', audience: 'Partners — accepted at partner registration; shown in Partner Dashboard → Legal', icon: <Users className="h-4 w-4" />, promptsAcceptance: true, note: 'Publishing a version that requires acceptance emails every partner the summary of changes and the effective date; partners acknowledge it on next login.' },
+  { type: 'terms_of_use', title: 'Terms of Use', short: 'Terms of Use', audience: 'Buyers — accepted at app registration; shown in App → Settings → Legal', icon: <FileText className="h-4 w-4" />, promptsAcceptance: true },
+  { type: 'sales_terms', title: 'Sales Terms', short: 'Sales Terms', audience: 'Buyers — accepted at checkout (tickets + reservations); shown in App → Settings → Legal', icon: <Receipt className="h-4 w-4" />, promptsAcceptance: true },
+  { type: 'privacy_policy', title: 'Privacy Policy', short: 'Privacy', audience: 'Buyers + partners — accepted at registration; shown in App → Settings → Legal and Partner Dashboard → Legal', icon: <ShieldCheck className="h-4 w-4" />, promptsAcceptance: true },
+  { type: 'psa', title: 'Partner Service Agreement (PSA)', short: 'PSA', audience: 'Partners — accepted on subscription / commercial module activation; shown in Partner Dashboard → Legal (download PDF)', icon: <FileSignature className="h-4 w-4" />, promptsAcceptance: false, note: 'Standard PSA text. It is accepted together with the DPA (Annex 3) in one step, not through the login prompt.' },
+  { type: 'dpa', title: 'Data Processing Agreement (DPA)', short: 'DPA', audience: 'Partners — accepted with the PSA (PSA Annex 3); shown in Partner Dashboard → Legal', icon: <Database className="h-4 w-4" />, promptsAcceptance: false, note: 'Annex 3 of the PSA. No separate checkbox: it is accepted in the same step as the PSA.' },
+  { type: 'dsa_policy', title: 'DSA Compliance and Contact Point Policy', short: 'DSA', audience: 'Public — not accepted in the app; published for the website', icon: <Landmark className="h-4 w-4" />, promptsAcceptance: false, note: 'Available to the website at GET /legal/documents/dsa_policy (and as PDF).' },
 ];
 
 const htmlToEditor = (html: string): EditorState => {
@@ -77,7 +92,7 @@ function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS
   const [baseline, setBaseline] = useState(doc?.content || '');
   const [summary, setSummary] = useState('');
   const [effectiveDate, setEffectiveDate] = useState(today());
-  const [requiresReacceptance, setRequiresReacceptance] = useState(true);
+  const [requiresReacceptance, setRequiresReacceptance] = useState(meta.promptsAcceptance);
   const [showHistory, setShowHistory] = useState(false);
   const [publish, { isLoading: isPublishing }] = usePublishLegalDocumentMutation();
   const { data: historyData, isFetching: historyLoading } = useGetLegalDocumentHistoryQuery(meta.type, { skip: !showHistory });
@@ -110,7 +125,7 @@ function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS
   }, []);
 
   const handlePublish = async () => {
-    if (requiresReacceptance && !summary.trim()) {
+    if (meta.promptsAcceptance && requiresReacceptance && !summary.trim()) {
       showError('Add a short summary of changes — it is shown to users when they are asked to accept again.');
       return;
     }
@@ -120,9 +135,11 @@ function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS
         content: html,
         summary: summary.trim(),
         effectiveDate,
-        requiresReacceptance,
+        requiresReacceptance: meta.promptsAcceptance && requiresReacceptance,
       }).unwrap();
-      showSuccess(`${meta.title} v${res.data.version} published${requiresReacceptance ? ' — users will be asked to accept it on next login' : ''}`);
+      showSuccess(
+        `${meta.title} v${res.data.version} published${meta.promptsAcceptance && requiresReacceptance ? ' — users will be asked to accept it on next login' : ''}`
+      );
       setSummary('');
       setBaseline(html);
     } catch (error) {
@@ -136,12 +153,22 @@ function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS
         <div>
           <h3 className="text-lg font-semibold">{meta.title}</h3>
           <p className="text-muted-foreground text-sm">{meta.audience}</p>
+          {meta.note ? <p className="text-muted-foreground mt-1 text-xs">{meta.note}</p> : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {doc && (
+          {doc ? (
             <Badge variant="secondary">
               Current: v{doc.version} · effective {formatDate(doc.effectiveDate)}
             </Badge>
+          ) : (
+            <Badge variant="outline">Not published yet</Badge>
+          )}
+          {doc && (
+            <Button variant="outline" size="sm" asChild className="flex items-center gap-2">
+              <a href={legalDocumentPdfUrl(meta.type, doc.version)} target="_blank" rel="noopener noreferrer">
+                <Download className="h-4 w-4" /> PDF
+              </a>
+            </Button>
           )}
           <Button variant="outline" size="sm" onClick={() => setShowHistory((s) => !s)} className="flex items-center gap-2">
             <History className="h-4 w-4" /> {showHistory ? 'Hide history' : 'Version history'}
@@ -162,7 +189,9 @@ function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS
                   <span className="text-muted-foreground">
                     effective {formatDate(v.effectiveDate)} · published {formatDate(v.publishedAt)}
                   </span>
-                  <Badge variant={v.requiresReacceptance ? 'default' : 'outline'}>{v.requiresReacceptance ? 'Re-acceptance' : 'Editorial'}</Badge>
+                  {meta.promptsAcceptance && (
+                    <Badge variant={v.requiresReacceptance ? 'default' : 'outline'}>{v.requiresReacceptance ? 'Re-acceptance' : 'Editorial'}</Badge>
+                  )}
                 </li>
               ))}
             </ul>
@@ -192,7 +221,7 @@ function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS
             id={`summary-${meta.type}`}
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            placeholder="Shown to users / partners when they are asked to accept the new version"
+            placeholder={meta.promptsAcceptance ? 'Shown to users / partners when they are asked to accept the new version' : 'Shown in the version history'}
             rows={2}
           />
         </div>
@@ -200,18 +229,20 @@ function DocumentEditor({ doc, meta }: { doc?: LegalDocument; meta: (typeof DOCS
           <Label htmlFor={`effective-${meta.type}`}>Effective date</Label>
           <Input id={`effective-${meta.type}`} type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} />
         </div>
-        <div className="flex items-start gap-2 md:col-span-2">
-          <Checkbox
-            id={`reaccept-${meta.type}`}
-            checked={requiresReacceptance}
-            onCheckedChange={(v) => setRequiresReacceptance(v === true)}
-            className="mt-0.5 cursor-pointer"
-          />
-          <Label htmlFor={`reaccept-${meta.type}`} className="cursor-pointer leading-snug font-normal">
-            Require acceptance of this version (users / partners must accept it again on next login).
-            <span className="text-muted-foreground block text-xs">Untick only for editorial fixes (typos, formatting) — a new version is still recorded.</span>
-          </Label>
-        </div>
+        {meta.promptsAcceptance && (
+          <div className="flex items-start gap-2 md:col-span-2">
+            <Checkbox
+              id={`reaccept-${meta.type}`}
+              checked={requiresReacceptance}
+              onCheckedChange={(v) => setRequiresReacceptance(v === true)}
+              className="mt-0.5 cursor-pointer"
+            />
+            <Label htmlFor={`reaccept-${meta.type}`} className="cursor-pointer leading-snug font-normal">
+              Require acceptance of this version (users / partners must accept it again on next login).
+              <span className="text-muted-foreground block text-xs">Untick only for editorial fixes (typos, formatting) — a new version is still recorded.</span>
+            </Label>
+          </div>
+        )}
         <div className="flex justify-end md:col-span-2">
           {isPublishing ? (
             <Button size="sm" disabled>
@@ -246,7 +277,7 @@ export default function TermsView() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 md:h-12 md:grid-cols-6">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-9">
               {DOCS.map((d) => (
                 <TabsTrigger key={d.type} value={d.type} className="flex cursor-pointer items-center gap-2">
                   {d.icon}

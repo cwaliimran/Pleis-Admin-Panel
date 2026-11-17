@@ -20,6 +20,7 @@ export const paths = {
     promotionsV2: '/organizer/promotions-v2',
     members: '/organizer/members',
     settings: '/organizer/settings',
+    legal: '/organizer/legal',
     referrals: '/organizer/referrals',
     referralsV2: '/organizer/referrals-v2',
     transactions: {

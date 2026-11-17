@@ -14,8 +14,14 @@ const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s'’.-]*$/u;
 export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false) => {
   const common = {
     image: Yup.mixed().nullable(),
-    firstName: Yup.string().required('First Name is required'),
-    lastName: Yup.string().required('Last Name is required'),
+    firstName: Yup.string()
+      .trim()
+      .required('First Name is required')
+      .matches(NAME_PATTERN, 'First Name can only contain letters, spaces, apostrophes, hyphens and periods'),
+    lastName: Yup.string()
+      .trim()
+      .required('Last Name is required')
+      .matches(NAME_PATTERN, 'Last Name can only contain letters, spaces, apostrophes, hyphens and periods'),
     email: Yup.string()
       .email('Invalid email')
       .required('Email is required')
@@ -23,8 +29,8 @@ export const generateValidationSchema = (role: RoleKey, isEdit: boolean = false)
     phone: Yup.string().required('Phone is required'),
     phoneCode: Yup.string().required('Phone country code is required'),
     password: isEdit
-      ? Yup.string().min(6, 'Password must be at least 6 characters').nullable()
-      : Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+      ? Yup.string().min(8, 'Password must be at least 8 characters').nullable()
+      : Yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
   };
 
   let specific: Record<string, any> = {};

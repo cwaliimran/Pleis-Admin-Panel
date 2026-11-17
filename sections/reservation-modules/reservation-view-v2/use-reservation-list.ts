@@ -40,7 +40,7 @@ const derivePayment = (item: ApiReservationListItem): PaymentState => {
   return 'none';
 };
 
-const toReservation = (item: ApiReservationListItem): Reservation => {
+export const toReservation = (item: ApiReservationListItem): Reservation => {
   const dateSlot = item.timingSlots?.dateTimeSlots?.[0];
   const timeSlot = dateSlot?.timeSlots?.[0];
 
