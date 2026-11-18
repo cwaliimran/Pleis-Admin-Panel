@@ -251,17 +251,15 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
       return;
     }
 
-    if (user?.accountState?.userType === 'admin' && !companyId) {
-      showError('Please select a company first');
-      return;
-    }
-
     try {
       const payload: any = {
         label: data.label,
         globalQrType: config.globalQrType,
-        companyOrganizer: user?.accountState?.userType === 'admin' ? companyId : undefined,
       };
+
+      if (user?.accountState?.userType === 'admin' && companyId) {
+        payload.companyOrganizer = companyId;
+      }
 
       switch (config.globalQrType) {
         case 'organization':
