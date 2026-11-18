@@ -1,7 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFTextField } from '@/components/rhf';
+import FormProvider, { RHFAsyncCombobox, RHFTextField } from '@/components/rhf';
 import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,7 +11,7 @@ import { useGeteventsQuery } from '@/store/Reducer/events';
 import { useGetAllEventsQuery } from '@/store/Reducer/helpers-api';
 import { useGetOrganizationQuery } from '@/store/Reducer/organization';
 import { useAddQrcodeMutation } from '@/store/Reducer/qrcodes-api';
-import { useGetCompanyListQuery } from '@/store/Reducer/user-list';
+import { useGetLoyaltyClubsListQuery } from '@/store/Reducer/user-list';
 import { useGetVenuesQuery } from '@/store/Reducer/venue';
 import { RootState } from '@/store/store';
 import { getErrorMessage } from '@/utils/api';
@@ -19,7 +19,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { X } from 'lucide-react';
 import QRCode from 'qrcode';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import * as Yup from 'yup';
@@ -30,11 +30,6 @@ interface QRGeneratorModalProps {
   isOpen: boolean;
   onClose: () => void;
   qrType: QRCodeType | null;
-}
-
-interface CompanyOption {
-  label: string;
-  value: string;
 }
 
 // Dynamic schema based on QR type
@@ -75,6 +70,18 @@ type QRFormValues = {
 };
 
 const TARGET_FIELDS = ['organizationId', 'eventId', 'loyaltyId', 'venueId', 'deliveryOptionId'] as const;
+const ORGANIZATION_QUERY_ARGS = { status: '', sortBy: 'organizationName', sortOrder: 'asc' };
+const EVENT_QUERY_ARGS = { status: '', sortBy: 'title', sortOrder: 'asc' };
+const VENUE_QUERY_ARGS = { status: '', sortBy: 'title', sortOrder: 'asc' };
+
+const eventLabel = (event: any) => event?.basicInfo?.title || 'No Title';
+const loyaltyLabel = (company: any) =>
+  company?.companyDetails?.loyaltySettings?.title || company?.companyDetails?.name || 'Unknown Company';
+
+const organizationIdFromVenue = (venue: any) => {
+  const organization = venue?.organization;
+  return (typeof organization === 'string' ? organization : organization?._id)?.toString() || '';
+};
 
 /** Renders a code's deep link to a PNG and downloads it. */
 const downloadLinkAsPng = async (link: string, filename: string, dark: string, light: string) => {
@@ -124,40 +131,13 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
 
   // Watch all form values for preview
   const formValues = watch();
-
-  // CONDITIONAL API QUERIES - Only fetch when modal is open and qrType matches
-  const { data: organizationData, isLoading: isLoadingOrganizations } = useGetOrganizationQuery(
-    {
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-    },
-    {
-      skip: !isOpen || qrType !== 'organizer-page',
-    }
-  );
-
-  const { data: eventData, isLoading: isLoadingEvents } = useGeteventsQuery(
-    {
-      page: 0,
-      search: '',
-      limit: '10000',
-      status: '',
-    },
-    {
-      skip: !isOpen || qrType !== 'event-page' || user?.accountState?.userType !== 'admin',
-    }
-  );
-
-  const { data: { data: eventsOrgs = [] } = {}, isLoading: eventsLoading } = useGetAllEventsQuery(
-    {},
-    { skip: user?.accountState?.userType === 'admin' || !isOpen || qrType !== 'event-page' }
-  );
-
   const isAdmin = user?.accountState?.userType === 'admin';
-  const selectedEventData = isAdmin ? eventData?.data : eventsOrgs;
-  const selectedEventsLoading = isAdmin ? isLoadingEvents : eventsLoading;
+
+  const [selectedOrganizationLabel, setSelectedOrganizationLabel] = useState('');
+  const [selectedEventLabel, setSelectedEventLabel] = useState('');
+  const [selectedLoyaltyLabel, setSelectedLoyaltyLabel] = useState('');
+  const [selectedVenueLabel, setSelectedVenueLabel] = useState('');
+  const [selectedVenueOrganizationId, setSelectedVenueOrganizationId] = useState('');
 
   const { data: venueData, isLoading: isLoadingVenues } = useGetVenuesQuery(
     {
@@ -168,39 +148,8 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
       date: undefined,
     },
     {
-      skip: !isOpen || (qrType !== 'checkin-ordering' && qrType !== 'checkin-table'),
+      skip: !isOpen || qrType !== 'checkin-ordering',
     }
-  );
-
-  // Company List Query for Loyalty
-  const {
-    data: companyList,
-    isLoading: isLoadingCompanies,
-    isFetching: isFetchingCompanies,
-  } = useGetCompanyListQuery(
-    {},
-    {
-      skip: !isOpen || qrType !== 'loyalty-page' || user?.accountState?.userType !== 'admin',
-    }
-  );
-
-  // TRANSFORM DATA TO OPTIONS
-  const organizationOptions = useMemo(
-    () =>
-      organizationData?.data?.map((org: any) => ({
-        label: org?.basicInfo?.name || 'No Name',
-        value: org?._id?.toString(),
-      })) || [],
-    [organizationData]
-  );
-
-  const eventOptions = useMemo(
-    () =>
-      selectedEventData?.map((event: any) => ({
-        label: event?.basicInfo?.title || 'No Title',
-        value: event?._id?.toString(),
-      })) || [],
-    [selectedEventData]
   );
 
   const venueOptions = useMemo(
@@ -213,12 +162,6 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
   );
 
   // A table is a "Table delivery" destination of the venue's organization (#59).
-  const selectedVenueOrganizationId = useMemo(() => {
-    const venue = venueData?.data?.find((item: any) => item?._id?.toString() === formValues.venueId);
-    const organization = venue?.organization;
-    return (typeof organization === 'string' ? organization : organization?._id)?.toString() || '';
-  }, [venueData, formValues.venueId]);
-
   const { data: deliveryOptions = [], isFetching: isLoadingTables } = useGetDeliveryOptionsQuery(
     { organizationId: selectedVenueOrganizationId, limit: 1000 },
     { skip: !isOpen || qrType !== 'checkin-table' || !selectedVenueOrganizationId }
@@ -243,15 +186,6 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
     if (table && !getValues('label')) setValue('label', table.label, { shouldValidate: true });
   }, [formValues.deliveryOptionId, tableOptions, getValues, setValue]);
 
-  const companyOptions = useMemo<CompanyOption[]>(
-    () =>
-      companyList?.map((company: any) => ({
-        label: company?.companyDetails?.loyaltySettings?.title || company?.companyDetails?.name || 'Unknown Company',
-        value: company?._id,
-      })) || [],
-    [companyList]
-  );
-
   // RESET FORM WHEN MODAL OPENS
   useEffect(() => {
     if (isOpen && config) {
@@ -264,6 +198,11 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
         venueId: '',
         deliveryOptionId: '',
       });
+      setSelectedOrganizationLabel('');
+      setSelectedEventLabel('');
+      setSelectedLoyaltyLabel('');
+      setSelectedVenueLabel('');
+      setSelectedVenueOrganizationId('');
     }
   }, [isOpen, config, reset, isAdmin, qrType, user?.basicInfo?._id]);
 
@@ -402,65 +341,52 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
             <div className="space-y-4">
               {/* Organization Dropdown */}
               {qrType === 'organizer-page' && (
-                <>
-                  {isLoadingOrganizations ? (
-                    <div className="space-y-2">
-                      <Skeleton className="ml-1 h-3 w-24" />
-                      <Skeleton className="h-12 w-full" />
-                    </div>
-                  ) : (
-                    <RHFCustomDropdown
-                      name="organizationId"
-                      label="Select Organization"
-                      placeholder="Choose an organization"
-                      options={organizationOptions}
-                      isLoading={isLoadingOrganizations}
-                      showNone={false}
-                    />
-                  )}
-                </>
+                <RHFAsyncCombobox
+                  name="organizationId"
+                  label="Select Organization"
+                  placeholder="Choose an organization"
+                  searchPlaceholder="Search organizations..."
+                  limit={50}
+                  selectedLabel={selectedOrganizationLabel}
+                  useOptionsQuery={useGetOrganizationQuery}
+                  queryArgs={ORGANIZATION_QUERY_ARGS}
+                  getOptionValue={(org) => org?._id?.toString()}
+                  getOptionLabel={(org) => org?.basicInfo?.name || 'No Name'}
+                  onValueChange={(_value, org) => setSelectedOrganizationLabel(org?.basicInfo?.name || '')}
+                />
               )}
 
               {/* Event Dropdown */}
               {qrType === 'event-page' && (
-                <>
-                  {selectedEventsLoading ? (
-                    <div className="space-y-2">
-                      <Skeleton className="ml-1 h-3 w-20" />
-                      <Skeleton className="h-9 w-full" />
-                    </div>
-                  ) : (
-                    <RHFCustomDropdown
-                      name="eventId"
-                      label="Select Event"
-                      placeholder="Choose an event"
-                      options={eventOptions}
-                      isLoading={selectedEventsLoading}
-                      showNone={false}
-                    />
-                  )}
-                </>
+                <RHFAsyncCombobox
+                  name="eventId"
+                  label="Select Event"
+                  placeholder="Choose an event"
+                  searchPlaceholder="Search events..."
+                  limit={50}
+                  selectedLabel={selectedEventLabel}
+                  useOptionsQuery={isAdmin ? useGeteventsQuery : useGetAllEventsQuery}
+                  queryArgs={EVENT_QUERY_ARGS}
+                  getOptionValue={(event) => event?._id?.toString()}
+                  getOptionLabel={eventLabel}
+                  onValueChange={(_value, event) => setSelectedEventLabel(eventLabel(event))}
+                />
               )}
 
               {/* Loyalty Dropdown - Admin only */}
               {qrType === 'loyalty-page' && isAdmin && (
-                <>
-                  {isLoadingCompanies || isFetchingCompanies ? (
-                    <div className="space-y-2">
-                      <Skeleton className="ml-1 h-3 w-32" />
-                      <Skeleton className="h-9 w-full" />
-                    </div>
-                  ) : (
-                    <RHFCustomDropdown
-                      name="loyaltyId"
-                      label="Select Loyalty Program"
-                      placeholder="Choose a loyalty program"
-                      options={companyOptions}
-                      isLoading={isLoadingCompanies || isFetchingCompanies}
-                      showNone={false}
-                    />
-                  )}
-                </>
+                <RHFAsyncCombobox
+                  name="loyaltyId"
+                  label="Select Loyalty Program"
+                  placeholder="Choose a loyalty program"
+                  searchPlaceholder="Search loyalty programs..."
+                  limit={50}
+                  selectedLabel={selectedLoyaltyLabel}
+                  useOptionsQuery={useGetLoyaltyClubsListQuery}
+                  getOptionValue={(company) => company?._id?.toString()}
+                  getOptionLabel={loyaltyLabel}
+                  onValueChange={(_value, company) => setSelectedLoyaltyLabel(loyaltyLabel(company))}
+                />
               )}
 
               {/* Loyalty Program Text - Non-admin users */}
@@ -497,21 +423,22 @@ export const QRGeneratorModal: React.FC<QRGeneratorModalProps> = ({ isOpen, onCl
               {/* Venue + Table - Check-in with Table */}
               {qrType === 'checkin-table' && (
                 <>
-                  {isLoadingVenues ? (
-                    <div className="space-y-2">
-                      <Skeleton className="ml-1 h-3 w-20" />
-                      <Skeleton className="h-12 w-full" />
-                    </div>
-                  ) : (
-                    <RHFCustomDropdown
-                      name="venueId"
-                      label="Select Venue"
-                      placeholder="Choose a venue"
-                      options={venueOptions}
-                      isLoading={isLoadingVenues}
-                      showNone={false}
-                    />
-                  )}
+                  <RHFAsyncCombobox
+                    name="venueId"
+                    label="Select Venue"
+                    placeholder="Choose a venue"
+                    searchPlaceholder="Search venues..."
+                    limit={50}
+                    selectedLabel={selectedVenueLabel}
+                    useOptionsQuery={useGetVenuesQuery}
+                    queryArgs={VENUE_QUERY_ARGS}
+                    getOptionValue={(venue) => venue?._id?.toString()}
+                    getOptionLabel={(venue) => venue?.title || 'No Title'}
+                    onValueChange={(_value, venue) => {
+                      setSelectedVenueLabel(venue?.title || '');
+                      setSelectedVenueOrganizationId(organizationIdFromVenue(venue));
+                    }}
+                  />
                   {formValues.venueId && (
                     <RHFCustomDropdown
                       name="deliveryOptionId"

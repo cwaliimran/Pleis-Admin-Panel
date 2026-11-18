@@ -267,7 +267,10 @@ export const userListApi = createApi({
           params,
         };
       },
-      transformResponse: (res) => res.data,
+      transformResponse: (res) => ({
+        data: res.data,
+        meta: res.meta,
+      }),
     }),
 
     updatePendingUser: builder.mutation({
