@@ -24,6 +24,11 @@ export interface TransactionDocument {
   code: DocumentCode;
   label: string;
   subtitle: string;
+  /** Confirmation number (payment / cancellation confirmation) or invoice number. */
+  number?: string | null;
+  /** Invoice id, for invoices (eRačun / invoice / storno invoice). */
+  id?: string;
+  kind?: string;
 }
 
 export interface PaymentAttempt {

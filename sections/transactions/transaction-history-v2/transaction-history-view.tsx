@@ -17,7 +17,7 @@ import TransactionDetailModal from './components/modals/transaction-detail-modal
 import TransactionStatCard from './components/stats/transaction-stat-card';
 import TransactionHistoryTable from './components/table/transaction-history-table';
 import { formatEuro } from './forms/format';
-import { Transaction, TransactionStat } from './types/types';
+import { Transaction, TransactionDocument, TransactionStat } from './types/types';
 
 interface TransactionHistoryViewProps {
   payoutsBatchesHref?: string;
@@ -176,6 +176,47 @@ const TransactionHistoryView = ({ payoutsBatchesHref = '/super-admin/payouts-bat
     }
   };
 
+  // View / Download a payment confirmation or invoice PDF (#8). The document
+  // endpoints need the Bearer token, so the PDF is fetched and opened as a blob.
+  const handleOpenDocument = async (document: TransactionDocument, mode: 'view' | 'download') => {
+    const prefix = isOrganizer ? 'organizer' : 'admin';
+    const path = document.id
+      ? `${prefix}/fiscal-documents/invoices/${encodeURIComponent(document.id)}`
+      : document.number
+        ? `${prefix}/fiscal-documents/confirmations/${encodeURIComponent(document.number)}?format=download`
+        : null;
+    if (!path) {
+      showError(`${document.label} is not available yet`);
+      return;
+    }
+    // Opened before the await so the browser does not block it as a pop-up.
+    const tab = mode === 'view' ? window.open('', '_blank') : null;
+    try {
+      const base = (CurrentUrl || '').replace(/\/+$/, '');
+      const response = await fetch(`${base}/${path}`, {
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
+      const type = response.headers.get('content-type') || '';
+      if (!response.ok || !type.includes('pdf')) throw new Error('not_pdf');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      if (tab) {
+        tab.location.href = url;
+      } else {
+        const link = window.document.createElement('a');
+        link.href = url;
+        link.download = `${document.number || document.label}.pdf`;
+        window.document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+      setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+    } catch {
+      tab?.close();
+      showError(`Could not open ${document.label}`);
+    }
+  };
+
   const handleView = (item: Transaction) => {
     setSelectedTransaction(item);
     detailModal.onTrue();
@@ -295,7 +336,12 @@ const TransactionHistoryView = ({ payoutsBatchesHref = '/super-admin/payouts-bat
         }}
       />
 
-      <TransactionDetailModal open={detailModal.value} onClose={handleCloseDetail} transaction={selectedTransaction} />
+      <TransactionDetailModal
+        open={detailModal.value}
+        onClose={handleCloseDetail}
+        transaction={selectedTransaction}
+        onOpenDocument={handleOpenDocument}
+      />
 
       {!isOrganizer && (
         <ExcludeTransactionModal open={excludeModal.value} transaction={transactionToExclude} onClose={handleCloseExclude} onConfirm={handleConfirmExclude} />

@@ -1,19 +1,20 @@
 'use client';
 
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { showSuccess } from '@/utils/toast';
 import { FC } from 'react';
 import { DocumentCard, InfoLine, PaymentAttemptRow, SectionHeading } from '../table/detail-parts';
 import { formatEuro, formatPercent, formatSignedEuro } from '../../forms/format';
-import { Transaction } from '../../types/types';
+import { Transaction, TransactionDocument } from '../../types/types';
 
 interface TransactionDetailModalProps {
   open: boolean;
   onClose: () => void;
   transaction: Transaction | null;
+  /** Opens the PDF in a new tab (view) or saves it (download). */
+  onOpenDocument: (document: TransactionDocument, mode: 'view' | 'download') => void;
 }
 
-const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose, transaction }) => {
+const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose, transaction, onOpenDocument }) => {
   if (!transaction) return null;
 
   const { moneySplit, parties, settlement, fiscalization, paymentAttempts } = transaction.detail;
@@ -34,7 +35,7 @@ const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose
 
           <div className="flex-1 space-y-6 overflow-y-auto px-1 py-4">
             <section>
-              <SectionHeading title="Money split · integer cents, organizer never carries the gateway cost" />
+              <SectionHeading title="Money split" />
               <InfoLine label="Gross (received)" value={formatEuro(moneySplit.gross)} />
               {moneySplit.commissionRate !== null && (
                 <InfoLine
@@ -53,7 +54,7 @@ const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose
             </section>
 
             <section>
-              <SectionHeading title="Parties · all three snapshotted, reproducible without the pdf" />
+              <SectionHeading title="Parties" />
               <InfoLine label="Buyer" value={`${parties.buyer.name} · ${parties.buyer.subtitle}`} />
               {parties.organizer && <InfoLine label="Organizer (seller)" value={`${parties.organizer.name} · ${parties.organizer.subtitle}`} />}
               <InfoLine label="Pleis (collector)" value={`${parties.pleis.name} · ${parties.pleis.subtitle}`} />
@@ -78,8 +79,8 @@ const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose
                     <DocumentCard
                       key={`${document.code}-${idx}`}
                       document={document}
-                      onView={() => showSuccess(`Opening ${document.label}`)}
-                      onDownload={() => showSuccess(`Downloading ${document.label}`)}
+                      onView={() => onOpenDocument(document, 'view')}
+                      onDownload={() => onOpenDocument(document, 'download')}
                     />
                   ))}
                 </div>
@@ -87,7 +88,7 @@ const TransactionDetailModal: FC<TransactionDetailModalProps> = ({ open, onClose
             </section>
 
             <section>
-              <SectionHeading title="Payment attempts · one row per attempt" />
+              <SectionHeading title="Payment attempts" />
               <div className="space-y-2">
                 {paymentAttempts.map((attempt) => (
                   <PaymentAttemptRow key={attempt.index} attempt={attempt} />

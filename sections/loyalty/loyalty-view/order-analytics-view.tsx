@@ -39,7 +39,8 @@ const OrderAnalyticsView = ({ userType }: { global?: boolean; userType: string }
       case 'totalRevenue':
       case 'revenueAfterCommission':
       case 'averageOrderValue':
-        return `€${Number(value).toLocaleString()}`;
+        // Euros with cents, never rounded away (#131).
+        return `€${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       case 'orderFrequencyPerHour':
         return `${value} / hr`;
       default:
@@ -223,11 +224,15 @@ const OrderAnalyticsView = ({ userType }: { global?: boolean; userType: string }
                   <h4 className="text-md mb-2 font-medium">{loyaltyAvgSpend}%</h4>
                 </div>
                 <div className="mx-4 flex flex-1 flex-col">
-                  <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                    <div className="bg-primary h-full transition-all duration-500" style={{ width: `${loyaltyAvgSpend}%` }}></div>
+                  {/* A difference, not a share: a negative value fills from the right, in red, by its size. */}
+                  <div className={`mb-2 flex h-3 w-full overflow-hidden rounded-full bg-gray-200 ${loyaltyAvgSpend < 0 ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`h-full transition-all duration-500 ${loyaltyAvgSpend < 0 ? 'bg-red-500' : 'bg-primary'}`}
+                      style={{ width: `${Math.min(Math.abs(loyaltyAvgSpend), 100)}%` }}
+                    ></div>
                   </div>
                   <h4 className="text-muted-foreground mb-4 text-sm font-medium">
-                    Loyalty users spend an average of {loyaltyAvgSpend}% more per order
+                    Loyalty users spend an average of {Math.abs(loyaltyAvgSpend)}% {loyaltyAvgSpend < 0 ? 'less' : 'more'} per order
                   </h4>
                 </div>
               </div>
