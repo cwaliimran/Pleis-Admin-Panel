@@ -5,9 +5,9 @@
   "scripts": {
     "local": "dotenv run -f .env.local -- next dev --turbopack --port 4003",
     "dev": "dotenv run -f .env.dev -- next dev --turbopack --port 4004",
-    "prod": "dotenv run -f .env -- next dev --turbopack --port 4005",
+    "prod:local": "dotenv run -f .env -- next dev --turbopack --port 4005",
     "build": "next build",
-    "start": "next start -p 4003",
+    "start": "next start -p ${PORT:-4003}",
     "lint": "next lint"
   },
   "dependencies": {
