@@ -1,4 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
+import { AnalyticsScopeArgs, withAnalyticsScope } from '@/utils/analytics-scope-params';
 import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQueryWithRoleRouting';
 
 export const ordersApi = createApi({
@@ -6,13 +7,10 @@ export const ordersApi = createApi({
   baseQuery: customFetchBaseQueryWithRoleRouting(),
   tagTypes: ['orders'],
   endpoints: (builder) => ({
-    getOrdersAnalytics: builder.query<any, { dateFilter?: string , organizations?: string[] }>(
+    getOrdersAnalytics: builder.query<any, { dateFilter?: string } & AnalyticsScopeArgs>(
       {
-        query: ({ dateFilter, organizations } = {}) => {
-          const params: any = {};
-          if (organizations) {
-            params.organizations = organizations;
-          }
+        query: ({ dateFilter, ...scope } = {}) => {
+          const params: any = withAnalyticsScope({}, scope);
           if (dateFilter) {
             params.dateFilter = dateFilter;
           }
@@ -32,13 +30,10 @@ export const ordersApi = createApi({
       }
     ),
 
-    getOrderTransactions: builder.query<any, { page: number; limit: number , organizations?: string[] }>(
+    getOrderTransactions: builder.query<any, { page: number; limit: number } & AnalyticsScopeArgs>(
       {
-        query: ({ page, limit, organizations } ) => {
-          const params: any = { page, limit };
-          if (organizations) {
-            params.organizations = organizations;
-          }
+        query: ({ page, limit, ...scope }) => {
+          const params: any = withAnalyticsScope({ page, limit }, scope);
          return {
           url: '',
           method: 'GET',
@@ -50,13 +45,10 @@ export const ordersApi = createApi({
         }},
         }),
     
-    getMenuItemPerformance: builder.query<any, { page: number; limit: number ,organizations?: string[] }>(
+    getMenuItemPerformance: builder.query<any, { page: number; limit: number } & AnalyticsScopeArgs>(
       {
-        query: ({ page, limit, organizations }) => {
-          const params: any = { page, limit };
-          if (organizations) {
-            params.organizations = organizations;
-          }
+        query: ({ page, limit, ...scope }) => {
+          const params: any = withAnalyticsScope({ page, limit }, scope);
           return {
             url: '',
             method: 'GET',
@@ -69,19 +61,19 @@ export const ordersApi = createApi({
       }
     ),
 
-    getActivePromotions: builder.query<any, { page: number; limit: number; keyword?: string; status?: string ,organizations?: string[]  }>(
+    getActivePromotions: builder.query<any, { page: number; limit: number; keyword?: string; status?: string } & AnalyticsScopeArgs>(
       {
-        query: ({ page, limit, keyword = '', status = '', organizations }) => {
+        // Promotions belong to a company's loyalty club: the super admin sees the
+        // selected company's (or every company's) promotions, not Pleis global ones.
+        query: ({ page, limit, keyword = '', status = '', companyOrganizer }) => {
           const params: any = { page, limit, keyword, status };
-          if (organizations) {
-            params.organizations = organizations;
-          }
+          if (companyOrganizer) params.companyOrganizer = companyOrganizer;
           return {
             url: '',
             method: 'GET',
             params,
           roleBasedRouting: {
-            adminRoute: '/admin/global-loyalty/promotions',
+            adminRoute: '/admin/loyalty/promotions',
             organizerRoute: '/organizer/loyalty/promotions',
           },
         }

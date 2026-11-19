@@ -4,14 +4,14 @@ import type { ApiReservationListItem, ApiReservationTypeCapacityStat } from '@/s
 import { useGetReservationsV2Query } from '@/store/Reducer/user-reservations-api';
 import { useMemo } from 'react';
 import { DEFAULT_PAGE_LIMIT, fromIsoDate, fromIsoTime } from './constants';
-import { ListFilter, Reservation, ReservationPagination, TypeOccupancy } from './types';
+import { ListFilters, PaymentState, Reservation, ReservationPagination, TypeOccupancy } from './types';
 
 interface UseReservationListArgs {
   organizationId?: string;
-  date: string;
+  date?: string;
   slot: string | null;
   typeId: string | null;
-  filter: ListFilter;
+  filters: ListFilters;
   page: number;
   limit?: number;
 }
@@ -20,11 +20,27 @@ interface UseReservationListReturn {
   reservations: Reservation[];
   types: TypeOccupancy[];
   pagination: ReservationPagination;
+  /** New reservations within the other filters, shown beside the New filter. */
+  newCount: number;
   isLoading: boolean;
   isFetching: boolean;
 }
 
-const toReservation = (item: ApiReservationListItem): Reservation => {
+/** Payment is derived from condition, status and capture (prototype v3.2), never stored. */
+const derivePayment = (item: ApiReservationListItem): PaymentState => {
+  if (!((item.amount ?? 0) > 0)) return 'free';
+
+  const paymentStatus = item.paymentDetails?.paymentStatus;
+  const wasPaid = paymentStatus === 'paid' || paymentStatus === 'refunded';
+
+  if (item.status === 'pendingPayment') return 'awaiting';
+  if (item.status === 'noShow') return wasPaid || item.voucher?.status === 'forfeited' ? 'forfeited' : 'none';
+  if (item.status === 'cancelled') return wasPaid ? 'refunded' : 'none';
+  if (paymentStatus === 'paid') return 'paid';
+  return 'none';
+};
+
+export const toReservation = (item: ApiReservationListItem): Reservation => {
   const dateSlot = item.timingSlots?.dateTimeSlots?.[0];
   const timeSlot = dateSlot?.timeSlots?.[0];
 
@@ -59,6 +75,10 @@ const toReservation = (item: ApiReservationListItem): Reservation => {
     amount: item.amount,
     note: item.notes ?? '',
     status: item.status,
+    payment: derivePayment(item),
+    canMarkNoShow: item.canMarkNoShow,
+    noShowAvailableTime: fromIsoTime(item.noShowAvailableAt ?? undefined) || undefined,
+    noShowGraceMinutes: item.noShowGraceMinutes,
   };
 };
 
@@ -67,6 +87,7 @@ const toTypeOccupancy = (stat: ApiReservationTypeCapacityStat): TypeOccupancy =>
   name: stat.reservationTypeName,
   bookedSeats: stat.bookedCapacity ?? 0,
   totalSeats: stat.maxCapacity ?? 0,
+  ageRestricted: !!stat.ageRestricted,
 });
 
 export const useReservationList = ({
@@ -74,19 +95,20 @@ export const useReservationList = ({
   date,
   slot,
   typeId,
-  filter,
+  filters,
   page,
   limit = DEFAULT_PAGE_LIMIT,
 }: UseReservationListArgs): UseReservationListReturn => {
   const { data, isLoading, isFetching } = useGetReservationsV2Query(
     {
       organizationsId: organizationId as string,
-      date,
+      date: date || undefined,
       page: page - 1,
       limit,
       startTime: slot || undefined,
       reservationType: typeId || undefined,
-      status: filter === 'all' ? undefined : filter,
+      statuses: filters.statuses,
+      isNew: filters.isNew,
     },
     { skip: !organizationId, refetchOnMountOrArgChange: true }
   );
@@ -105,5 +127,5 @@ export const useReservationList = ({
     [data, page, limit]
   );
 
-  return { reservations, types, pagination, isLoading, isFetching };
+  return { reservations, types, pagination, newCount: data?.meta?.newCount ?? 0, isLoading, isFetching };
 };

@@ -61,6 +61,7 @@ const schema: Yup.ObjectSchema<ReservationTypePayload> = Yup.object().shape({
     .required('Tax percentage is required'),
   requiresConfirmation: Yup.boolean().required(),
   asksForOccasion: Yup.boolean().required(),
+  ageRestricted: Yup.boolean().required(),
   status: Yup.mixed<ReservationTypeStatus>().oneOf(['active', 'inactive']).required(),
   visibleToGuests: Yup.boolean().required(),
   importantInformation: Yup.array()
@@ -85,6 +86,7 @@ const EMPTY_VALUES: ReservationTypePayload = {
   taxPercentage: 25,
   requiresConfirmation: false,
   asksForOccasion: true,
+  ageRestricted: false,
   status: 'active',
   visibleToGuests: true,
   importantInformation: [],
@@ -147,6 +149,7 @@ export const ReservationTypeModal: React.FC<ReservationTypeModalProps> = ({
             taxPercentage: reservationType.taxPercentage,
             requiresConfirmation: reservationType.requiresConfirmation,
             asksForOccasion: reservationType.asksForOccasion,
+            ageRestricted: !!reservationType.ageRestricted,
             status: reservationType.status,
             visibleToGuests: reservationType.visibleToGuests,
             importantInformation: reservationType.importantInformation,
@@ -329,6 +332,20 @@ export const ReservationTypeModal: React.FC<ReservationTypeModalProps> = ({
                     ariaLabel="Ask for occasion in reservation form"
                     checked={watch('asksForOccasion')}
                     onChange={(next) => setValue('asksForOccasion', next, { shouldDirty: true })}
+                  />
+                }
+              />
+
+              <SettingRow
+                className="py-0"
+                title="🔞 18+ age restricted"
+                description="Statutory age restriction — guests see an 18+ badge and an age notice before paying."
+                control={
+                  <ToggleSwitch
+                    size="sm"
+                    ariaLabel="18+ age restricted"
+                    checked={!!watch('ageRestricted')}
+                    onChange={(next) => setValue('ageRestricted', next, { shouldDirty: true })}
                   />
                 }
               />

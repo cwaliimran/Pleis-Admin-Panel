@@ -11,13 +11,44 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 // ---------- Wire enums ----------
 
-export type ApiOrderStatus = 'pending' | 'confirmed' | 'sent' | 'pendingPayment' | 'completed' | 'cancelled' | 'rejected' | 'preorder';
+export type ApiOrderStatus =
+  | 'pending'
+  | 'confirmed'
+  /** Prepared and waiting to be collected. Only reached by `payLater` pickups. */
+  | 'ready'
+  /** Doc fulfilment terminal — handed over (prefer over legacy `sent` / `completed`). */
+  | 'delivered'
+  | 'sent'
+  | 'pendingPayment'
+  | 'completed'
+  | 'cancelled'
+  | 'rejected'
+  | 'preorder'
+  | 'expired';
 
-export type ApiPickupType = 'tableService' | 'counter' | 'togo';
+export type ApiPickupType = 'tableDelivery' | 'counterPickup' | 'toGo';
 
-export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'payLater';
+/** Pre-rename spellings still carried by older orders; `mapPickupType` folds them in. */
+export type ApiLegacyPickupType = 'tableService' | 'counter' | 'togo';
 
-export type ApiPaymentStatus = 'pending' | 'paid' | 'failed';
+/**
+ * #68 / Legal_req_features_2 §1. Pleis (Monri): card, applePay, googlePay.
+ * At the venue: cash, cardTerminal, other. voucher = voucher covered the whole order.
+ */
+export type ApiPaymentMethod = 'applePay' | 'card' | 'cash' | 'googlePay' | 'cardTerminal' | 'other' | 'voucher';
+
+/** The four values organizers see. */
+export type ApiOrganizerPaymentMethod = 'Pleis' | 'Card' | 'Cash' | 'Other';
+
+/**
+ * When the customer settles up. `payNow` is paid before anything is handed
+ * over; `payLater` is collected at handover. Added late — orders placed
+ * before it exists come back without the field.
+ */
+export type ApiPaymentTiming = 'payNow' | 'payLater';
+
+// refunded: the whole payment went back to the guest (Monri v1.4 §6).
+export type ApiPaymentStatus = 'pending' | 'paid' | 'failed' | 'unpaidClosed' | 'refunded';
 
 /** Which bucket of statuses to list — the backend decides the membership. */
 export type ApiOrderTab = 'active' | 'past';
@@ -134,16 +165,21 @@ export interface ApiOrder {
   priceBreakdown?: ApiPriceBreakdown | null;
   status: ApiOrderStatus;
   paymentMethod: ApiPaymentMethod;
+  /** Recorded value, e.g. "Card", "Other - Voucher + Cash". */
+  paymentMethodLabel?: string;
+  organizerPaymentMethod?: ApiOrganizerPaymentMethod;
+  /** Absent on orders placed before the field was introduced. */
+  paymentTiming?: ApiPaymentTiming;
   paymentStatus: ApiPaymentStatus;
   orderType: string;
-  pickupType: ApiPickupType;
+  pickupType: ApiPickupType | ApiLegacyPickupType;
   /**
    * The delivery option the customer chose, e.g. "Table Delivery". The
    * backend owns the list, so this is display-only and read straight through
    * rather than matched against a local enum.
    */
   deliveryOption?: { _id: string; title?: string } | null;
-  /** Present only when `pickupType` is `tableService`. */
+  /** Present only when `pickupType` is `tableDelivery`. */
   tableNumber?: string;
   orderNumber: string;
   createdAt: string;
@@ -226,6 +262,8 @@ export interface UpdateOrderDetailsV2Args {
    * whole list, so omitting it is how combos would be lost.
    */
   combos?: UpdateOrderComboV2[];
+  /** #130: the guest's method, sent only when staff changed it. */
+  paymentMethod?: string;
   /** The `_id` of the user the order belongs to. */
   userId?: string;
 }
@@ -293,8 +331,12 @@ export interface GetOrdersV2Args {
   page: number;
   limit: number;
   keyword?: string;
-  orderStatus?: ApiOrderStatus;
-  pickupFilter?: ApiPickupType;
+  orderStatus?: ApiOrderStatus | 'unpaidClosed';
+  /**
+   * A delivery option `_id`, not a pickup type — the filter lists the
+   * organization's own configured options rather than the three methods.
+   */
+  pickupFilter?: string;
   paymentMethod?: ApiPaymentMethod;
   range?: ApiDateRange;
 }
@@ -370,8 +412,10 @@ export const orderManagementV2Api = createApi({
     }),
 
     updateOrderDetailsV2: builder.mutation<{ message?: string; data?: ApiOrder }, UpdateOrderDetailsV2Args>({
-      query: ({ id, items, combos, userId }) => {
+      query: ({ id, items, combos, userId, paymentMethod }) => {
         const body: Record<string, unknown> = { items };
+        // #130: only when staff changed it — an items-only edit keeps the method.
+        if (paymentMethod) body.paymentMethod = paymentMethod;
 
         // Checked against `undefined` rather than length — an empty array is
         // the caller saying "this order has no combos any more".

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import TableHeadCustom from '@/components/table/table-head-custom';
 import {
   Pagination,
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Table } from '@/components/ui/table';
 import OrderTransactionTableRow from './OrderTransactionTableRow';
 import { useGetOrderTransactionsQuery } from '@/store/Reducer/orders-api';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import type { AnalyticsScope } from '@/sections/analytics-scope/analytics-scope-bar';
 
 const transactionListHeadLabel = [
   { id: 'user', label: 'Customer', align: 'left' },
@@ -27,13 +27,15 @@ const transactionListHeadLabel = [
   { id: 'paidAt', label: 'Paid At', align: 'start' },
 ];
 
-const OrderTransactionList = ({ userType }: { userType: string }) => {
+const OrderTransactionList = ({ scope = {} }: { userType?: string; scope?: AnalyticsScope }) => {
   const [page, setPage] = useState(1);
+  const scopeKey = JSON.stringify(scope);
+  useEffect(() => {
+    setPage(1);
+  }, [scopeKey]);
   const [limit, setLimit] = useState(5);
-
-  const { organizerOrganizationIds } = useCompanySelection();
   const { data: transactionsRaw, isLoading } = useGetOrderTransactionsQuery(
-    { page, limit , organizations: userType === 'organizer' ? organizerOrganizationIds : undefined },
+    { page, limit, ...scope },
     { refetchOnMountOrArgChange: true }
   );
 
@@ -51,7 +53,11 @@ const OrderTransactionList = ({ userType }: { userType: string }) => {
       : '-',
     paymentStatus: item.paymentStatus || '-',
     paymentMethod: item.paymentMethod || '-',
-    totalAmount: item.totalPrice ? `€${item.totalPrice}` : '-',
+    // Always two decimals; float sums like 9.700000000000003 render as €9.70.
+    totalAmount:
+      item.totalPrice !== null && item.totalPrice !== undefined && item.totalPrice !== '' && Number.isFinite(Number(item.totalPrice))
+        ? `€${Number(item.totalPrice).toFixed(2)}`
+        : '-',
     orderStatus: item.status || '-',
     paidAt: item.paidAt
       ? new Date(item.paidAt).toLocaleString('en-GB', {

@@ -7,6 +7,7 @@ export type Reservation = {
   taxPercentage: number;
   bonusPoints: number;
   allowPreOrderMenuItems: boolean;
+  ageRestricted?: boolean;
   amount?: number;
   status: 'active' | 'inactive' | string;
   companyOrganizer: string;

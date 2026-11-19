@@ -302,7 +302,7 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
         {/* ---------------------------------------------------------------- */}
         {/* Age Demographics · Region Overview · Gender Analytics            */}
         {/* ---------------------------------------------------------------- */}
-        <div className="mt-5 grid gap-4 md:grid-cols-2 md:gap-x-7 md:gap-y-4 lg:mt-5 lg:grid-cols-3">
+        <div className="mt-4 grid gap-4 md:grid-cols-2 md:gap-x-4 md:gap-y-4 lg:mt-5 lg:grid-cols-3">
           {/* Age Demographics */}
           <Card className="dark:bg-secondary max-h-full w-full shadow-md md:h-[450px]">
             <CardHeader>
@@ -530,7 +530,7 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
         {/* ---------------------------------------------------------------- */}
         {/* Transaction History                                              */}
         {/* ---------------------------------------------------------------- */}
-        <div className="mt-5 grid grid-cols-12">
+        <div className="grid grid-cols-12">
           <div className="col-span-12">
             <TransactionHistoryDashboardWidget userType="super-admin" />
           </div>
@@ -542,7 +542,7 @@ const SuperAdminDashboardView = ({ userType }: { userType: 'super-admin' | 'orga
         {userType === 'super-admin' && (
           <>
             {marketingRequests.length > 0 && (
-              <div className="mt-7 mb-3">
+              <div className="mt-4 mb-3">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-xl font-semibold">Marketing Requests</h3>
                   <button

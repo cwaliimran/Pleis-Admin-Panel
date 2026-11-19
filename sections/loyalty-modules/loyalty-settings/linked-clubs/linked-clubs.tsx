@@ -10,8 +10,6 @@ import SearchedResultsCard from './searched-results-card';
 import { Props } from './types';
 
 const LinkedClubs = ({ selectedCompanyId }: Props) => {
-  console.log('selectedCompanyId', selectedCompanyId);
-
   const [searchKeyword, setSearchKeyword] = useState('');
   const [debouncedKeyword, setDebouncedKeyword] = useState('');
   const [linkingId, setLinkingId] = useState<string | null>(null);

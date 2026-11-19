@@ -58,6 +58,7 @@ export const RESERVATION_TYPES_TABLE_HEAD = [
   { id: 'maxCapacity', label: 'Max capacity', align: 'left' },
   { id: 'conditionType', label: 'Condition type', align: 'left' },
   { id: 'occasion', label: 'Occasion', align: 'left' },
+  { id: 'ageRestricted', label: '18+', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Actions', align: 'center' },
 ];

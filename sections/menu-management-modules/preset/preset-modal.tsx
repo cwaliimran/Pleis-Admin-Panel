@@ -5,6 +5,8 @@ import FormProvider, { RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFCustomCreatableDropdown from '@/components/rhf/rhf-custom-create-dropdown';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
 import FieldSkeleton from '@/components/ui/field-skeleton';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
@@ -26,6 +28,7 @@ type PresetFormValues = {
   description: string;
   basePrice: number;
   status: string;
+  ageRestricted?: boolean;
 };
 
 const defaultValues: PresetFormValues = {
@@ -35,6 +38,7 @@ const defaultValues: PresetFormValues = {
   description: '',
   basePrice: 0,
   status: 'active',
+  ageRestricted: false,
 };
 
 const schema = Yup.object().shape({
@@ -95,6 +99,7 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
     description: data?.description || '',
     basePrice: data?.basePrice || 0,
     status: data?.status || 'active',
+    ageRestricted: !!data?.ageRestricted,
   });
 
   useEffect(() => {
@@ -121,6 +126,7 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
         description: formData.description,
         category: formData.category,
         basePrice: formData.basePrice,
+        ageRestricted: !!formData.ageRestricted,
       };
 
       if (uploadedFileKey) {
@@ -234,6 +240,22 @@ const PresetModal = ({ open, onClose, isEdit = false, selectedData }: PresetModa
 
                 <div className="grid w-full grid-cols-1 gap-4">
                   <RHFTextField name="description" label="Description" placeholder="Enter Description" multiline rows={2} />
+                </div>
+
+                {/* 18+ flag carries over to menu items imported from this preset */}
+                <div className="flex items-start gap-3 rounded-lg border p-3 dark:border-gray-700">
+                  <Checkbox
+                    id="preset-ageRestricted"
+                    checked={!!methods.watch('ageRestricted')}
+                    onCheckedChange={(v) => methods.setValue('ageRestricted', v === true, { shouldDirty: true })}
+                    className="mt-0.5 cursor-pointer"
+                  />
+                  <Label htmlFor="preset-ageRestricted" className="cursor-pointer leading-snug">
+                    🔞 18+ age restricted
+                    <span className="text-muted-foreground block text-xs font-normal">
+                      Statutory age restriction — imported items show an 18+ badge and can never be ordered to go
+                    </span>
+                  </Label>
                 </div>
               </div>
 

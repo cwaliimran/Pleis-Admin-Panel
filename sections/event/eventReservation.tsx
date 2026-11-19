@@ -7,7 +7,6 @@ interface EventReservationProps {
 }
 
 const EventReservation = ({ event, userType }: EventReservationProps) => {
-  console.log('userType', userType);
 
   return (
     <>

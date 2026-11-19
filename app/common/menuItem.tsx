@@ -1,10 +1,14 @@
 'use client';
 
 import { SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
-import { useQuickNavigation } from '@/hooks/useQuickNavigation';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FC, memo, useCallback, useMemo, useState } from 'react';
+import { FC, memo, MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+
+function isModifiedNavigationClick(event: MouseEvent<HTMLAnchorElement>) {
+  return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
+}
 
 type MenuItem = {
   title: string;
@@ -21,7 +25,6 @@ interface MenuItemsProps {
 
 const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false }) => {
   const pathname = usePathname();
-  const { navigate } = useQuickNavigation();
 
   const { toggleSidebar, isMobile } = useSidebar();
 
@@ -43,18 +46,42 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
     return best as string | null;
   }, [items, pathname]);
 
+  const itemContainsActive = useCallback(
+    (item: MenuItem): boolean => {
+      if (item.url && item.url === activeUrl) return true;
+      return !!item.items?.some((child) => itemContainsActive(child));
+    },
+    [activeUrl]
+  );
+
+  // Keep category open when a child route is active
+  useEffect(() => {
+    const next: Record<string, boolean> = {};
+    const walk = (list: MenuItem[], keyPrefix?: string) => {
+      list.forEach((item, idx) => {
+        const itemKey = `${keyPrefix}-${item.title}-${idx}`;
+        if (item.items?.length && itemContainsActive(item)) {
+          next[itemKey] = true;
+        }
+        if (item.items?.length) walk(item.items, itemKey);
+      });
+    };
+    walk(items, parentKey);
+    if (Object.keys(next).length) {
+      setOpenSubMenus((prev) => ({ ...prev, ...next }));
+    }
+  }, [items, parentKey, itemContainsActive]);
+
   const toggleSubMenu = useCallback((itemKey: string) => {
     setOpenSubMenus((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
   }, []);
 
-  const handleClick = useCallback(
-    (url: string) => {
-      if (isMobile) {
-        toggleSidebar();
-      }
-      navigate(url);
+  const handleLinkClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      if (isModifiedNavigationClick(event)) return;
+      if (isMobile) toggleSidebar();
     },
-    [navigate, isMobile, toggleSidebar]
+    [isMobile, toggleSidebar]
   );
 
   return (
@@ -88,9 +115,9 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
                     {ButtonContent}
                   </button>
                 ) : item.url ? (
-                  <button type="button" onClick={() => handleClick(item.url!)} className="w-full text-left">
+                  <Link href={item.url} prefetch={false} onClick={handleLinkClick} className="w-full text-left">
                     {ButtonContent}
-                  </button>
+                  </Link>
                 ) : (
                   <button type="button" disabled>
                     {ButtonContent}
@@ -128,12 +155,10 @@ const MenuItem: FC<MenuItemsProps> = ({ items, parentKey, isCollapsed = false })
               </AnimatePresence>
             )} */}
 
-            {/* 📦 Inline children if expanded */}
+            {/* Inline children if expanded */}
             {hasChildren && !isCollapsed && openSubMenus[itemKey] && (
-              <div className="ml-5 border-l pl-3">
-                <SidebarMenuButton>
-                  <MenuItem items={item.items!} parentKey={itemKey} isCollapsed={false} />
-                </SidebarMenuButton>
+              <div className="ml-5 border-l border-border/60 pl-2">
+                <MenuItem items={item.items!} parentKey={itemKey} isCollapsed={false} />
               </div>
             )}
           </div>

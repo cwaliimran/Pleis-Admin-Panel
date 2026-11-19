@@ -20,6 +20,7 @@ export const paths = {
     promotionsV2: '/organizer/promotions-v2',
     members: '/organizer/members',
     settings: '/organizer/settings',
+    legal: '/organizer/legal',
     referrals: '/organizer/referrals',
     referralsV2: '/organizer/referrals-v2',
     transactions: {
@@ -86,6 +87,7 @@ export const paths = {
 
     bundles: '/organizer/bundles',
     transactionsHistory: '/organizer/transactions-history',
+    transactionsHistoryV2: '/organizer/transactions-history-v2',
 
     reservation: '/organizer/reservation',
     reservationV2: '/organizer/reservation-v2',

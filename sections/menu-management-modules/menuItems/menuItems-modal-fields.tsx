@@ -17,9 +17,19 @@ interface ToggleRowProps {
   description: string;
   isChecked?: (value: any) => boolean;
   toValue?: (checked: boolean) => any;
+  disabled?: boolean;
+  onChanged?: (checked: boolean) => void;
 }
 
-export const ToggleRow: FC<ToggleRowProps> = ({ name, title, description, isChecked = (value) => !!value, toValue = (checked) => checked }) => {
+export const ToggleRow: FC<ToggleRowProps> = ({
+  name,
+  title,
+  description,
+  isChecked = (value) => !!value,
+  toValue = (checked) => checked,
+  disabled = false,
+  onChanged,
+}) => {
   const { control } = useFormContext();
 
   return (
@@ -38,8 +48,18 @@ export const ToggleRow: FC<ToggleRowProps> = ({ name, title, description, isChec
               type="button"
               role="switch"
               aria-checked={checked}
-              onClick={() => field.onChange(toValue(!checked))}
-              className={cn('relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors', checked ? 'bg-primary' : 'bg-input')}
+              aria-disabled={disabled}
+              disabled={disabled}
+              onClick={() => {
+                if (disabled) return;
+                field.onChange(toValue(!checked));
+                onChanged?.(!checked);
+              }}
+              className={cn(
+                'relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors',
+                checked ? 'bg-primary' : 'bg-input',
+                disabled && 'cursor-not-allowed opacity-50'
+              )}
             >
               <span
                 className={cn('absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform', checked && 'translate-x-5')}

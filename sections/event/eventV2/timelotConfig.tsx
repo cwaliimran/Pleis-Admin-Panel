@@ -2,9 +2,11 @@
 
 import Time24hInput from '@/components/common/time-24h-input';
 import { Button } from '@/components/ui/button';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogOverlay, DialogTitle } from '@/components/ui/dialog';
-import { showError } from '@/utils/toast';
-import { Calendar, Plus, Trash2, X } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { showError, showSuccess } from '@/utils/toast';
+import { Calendar, CalendarPlus, Plus, Trash2, X } from 'lucide-react';
 import * as React from 'react';
 import { EventData, getEventDateConstraints, isDateWithinEventSchedule } from './event-ticketing-helpers';
 
@@ -89,14 +91,21 @@ const isValidTime24 = (time: string): boolean => /^([01]\d|2[0-3]):([0-5]\d)$/.t
 
 const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose, onSave, totalQuantity = 0, eventData, initialConfig }) => {
   const [dateTimeSlots, setDateTimeSlots] = React.useState<DateTimeSlot[]>([]);
-  const [selectedDate, setSelectedDate] = React.useState<string>('');
+  const [selectedDates, setSelectedDates] = React.useState<Date[]>([]);
+  const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
+  const pendingDateChipsRef = React.useRef<HTMLDivElement>(null);
+  const discardPendingDatesRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (open && initialConfig) {
+    if (!open) return;
+
+    if (initialConfig) {
       setDateTimeSlots(initialConfig);
-    } else if (open && !initialConfig) {
+    } else {
       setDateTimeSlots([]);
     }
+    setSelectedDates([]);
+    setIsDatePickerOpen(false);
   }, [open, initialConfig]);
 
   const eventConstraints = React.useMemo(() => {
@@ -214,44 +223,117 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
     }
   };
 
-  const addDate = () => {
-    if (!selectedDate) {
-      showError('Please select a date first');
+  const formatDateToString = React.useCallback((date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const getCalendarConstraints = React.useMemo(() => {
+    if (!eventConstraints.minDate || !eventConstraints.maxDate) {
+      return { fromDate: undefined, toDate: undefined };
+    }
+    return {
+      fromDate: new Date(eventConstraints.minDate + 'T00:00:00'),
+      toDate: new Date(eventConstraints.maxDate + 'T23:59:59'),
+    };
+  }, [eventConstraints]);
+
+  const existingDates = React.useMemo(() => {
+    return dateTimeSlots.map((dts) => dts.date);
+  }, [dateTimeSlots]);
+
+  const handleDateSelect = (dates: Date[] | undefined) => {
+    if (!dates) {
+      setSelectedDates([]);
       return;
     }
 
-    if (dateTimeSlots.some((dts) => dts.date === selectedDate)) {
-      showError('This date already exists. Please select a different date.');
+    const filteredDates = dates.filter((date) => !existingDates.includes(formatDateToString(date)));
+    setSelectedDates(filteredDates);
+  };
+
+  const createDefaultTimeSlot = (index: number): TimeSlot => {
+    const defaultStartMinutes = eventStartMinutes;
+    const defaultEndMinutes = Math.min(defaultStartMinutes + 120, eventEndMinutes);
+
+    return {
+      id: `${Date.now()}-${index}-${Math.random().toString(36).slice(2, 9)}`,
+      startTime: minutesToTime(defaultStartMinutes),
+      endTime: minutesToTime(defaultEndMinutes),
+      quantity: 0,
+    };
+  };
+
+  const addDates = () => {
+    if (selectedDates.length === 0) {
+      showError('Please select at least one date');
       return;
     }
 
-    if (eventData && eventConstraints.minDate && eventConstraints.maxDate) {
-      const validation = isDateWithinEventSchedule(selectedDate, eventData ?? null);
-      if (!validation.isValid) {
-        showError(validation.message || 'Selected date is outside event schedule');
+    const newDateTimeSlots: DateTimeSlot[] = [];
+    const invalidDates: string[] = [];
+
+    selectedDates.forEach((date, index) => {
+      const dateStr = formatDateToString(date);
+
+      if (dateTimeSlots.some((dts) => dts.date === dateStr)) {
         return;
       }
+
+      if (eventData && eventConstraints.minDate && eventConstraints.maxDate) {
+        const validation = isDateWithinEventSchedule(dateStr, eventData ?? null);
+        if (!validation.isValid) {
+          invalidDates.push(dateStr);
+          return;
+        }
+      }
+
+      newDateTimeSlots.push({
+        date: dateStr,
+        timeSlots: [createDefaultTimeSlot(index)],
+      });
+    });
+
+    if (invalidDates.length > 0) {
+      showError(`${invalidDates.length} date(s) are outside the event schedule and were not added`);
     }
 
-    // Calculate default start and end times based on event boundaries
-    const defaultStartMinutes = eventStartMinutes;
-    const defaultEndMinutes = Math.min(defaultStartMinutes + 120, eventEndMinutes); // 2 hours later or event end
+    if (newDateTimeSlots.length > 0) {
+      const allSlots = [...dateTimeSlots, ...newDateTimeSlots].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      setDateTimeSlots(allSlots);
+      showSuccess(`${newDateTimeSlots.length} date(s) added successfully`);
+    }
 
-    setDateTimeSlots([
-      ...dateTimeSlots,
-      {
-        date: selectedDate,
-        timeSlots: [
-          {
-            id: Date.now().toString(),
-            startTime: minutesToTime(defaultStartMinutes),
-            endTime: minutesToTime(defaultEndMinutes),
-            quantity: 0,
-          },
-        ],
-      },
-    ]);
-    setSelectedDate('');
+    setSelectedDates([]);
+    setIsDatePickerOpen(false);
+  };
+
+  const handleDatePickerOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      discardPendingDatesRef.current = false;
+      setIsDatePickerOpen(true);
+      return;
+    }
+
+    if (discardPendingDatesRef.current) {
+      discardPendingDatesRef.current = false;
+      setSelectedDates([]);
+      setIsDatePickerOpen(false);
+      return;
+    }
+
+    if (selectedDates.length > 0) {
+      addDates();
+      return;
+    }
+
+    setIsDatePickerOpen(false);
+  };
+
+  const removeSelectedDate = (dateToRemove: Date) => {
+    setSelectedDates(selectedDates.filter((date) => date.getTime() !== dateToRemove.getTime()));
   };
 
   const removeDate = (date: string) => {
@@ -463,21 +545,101 @@ const TimeSlotConfigModal: React.FC<TimeSlotConfigModalProps> = ({ open, onClose
           <div className="space-y-6">
             {/* Date Selection */}
             <div>
-              <label className="mb-2 block text-sm font-medium">Add Date</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="date"
-                  title="select date"
-                  value={selectedDate}
-                  min={eventConstraints.minDate || undefined}
-                  max={eventConstraints.maxDate || undefined}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
-                />
-                <Button type="button" onClick={addDate} className="bg-blue-600 text-white hover:bg-blue-700" disabled={!selectedDate}>
-                  <Plus size={16} className="mr-1" />
-                  Add Date
-                </Button>
+              <label className="mb-2 block text-sm font-medium">Add Dates</label>
+              <div className="flex flex-wrap items-start gap-3">
+                <Popover open={isDatePickerOpen} onOpenChange={handleDatePickerOpenChange}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex items-center gap-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                    >
+                      <CalendarPlus size={16} />
+                      Select Dates
+                      {selectedDates.length > 0 && (
+                        <span className="ml-1 rounded-full bg-blue-600 px-2 py-0.5 text-xs text-white">{selectedDates.length}</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-auto p-0"
+                    align="start"
+                    onEscapeKeyDown={() => {
+                      discardPendingDatesRef.current = true;
+                    }}
+                    onInteractOutside={(event) => {
+                      const target = event.target as Node | null;
+                      if (target && pendingDateChipsRef.current?.contains(target)) {
+                        event.preventDefault();
+                      }
+                    }}
+                  >
+                    <div className="p-3">
+                      <CalendarComponent
+                        mode="multiple"
+                        selected={selectedDates}
+                        onSelect={handleDateSelect}
+                        disabled={(date) => {
+                          const dateStr = formatDateToString(date);
+                          if (getCalendarConstraints.fromDate && date < getCalendarConstraints.fromDate) return true;
+                          if (getCalendarConstraints.toDate && date > getCalendarConstraints.toDate) return true;
+                          if (existingDates.includes(dateStr)) return true;
+                          return false;
+                        }}
+                        fromDate={getCalendarConstraints.fromDate}
+                        toDate={getCalendarConstraints.toDate}
+                        className="rounded-md border-0"
+                      />
+                      <div className="mt-3 flex justify-end gap-2 border-t pt-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            discardPendingDatesRef.current = true;
+                            setSelectedDates([]);
+                            setIsDatePickerOpen(false);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={addDates}
+                          disabled={selectedDates.length === 0}
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                          <Plus size={14} className="mr-1" />
+                          Add {selectedDates.length > 0 ? `${selectedDates.length} Date${selectedDates.length > 1 ? 's' : ''}` : 'Dates'}
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {selectedDates.length > 0 && (
+                  <div ref={pendingDateChipsRef} className="flex flex-1 flex-wrap gap-2">
+                    {selectedDates
+                      .sort((a, b) => a.getTime() - b.getTime())
+                      .map((date) => (
+                        <span
+                          key={date.toISOString()}
+                          className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                        >
+                          {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          <button
+                            type="button"
+                            onClick={() => removeSelectedDate(date)}
+                            className="ml-1 rounded-full p-0.5 hover:bg-blue-200 dark:hover:bg-blue-800"
+                            title="Remove"
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                  </div>
+                )}
               </div>
               {eventConstraints.minDate && eventConstraints.maxDate && (
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">

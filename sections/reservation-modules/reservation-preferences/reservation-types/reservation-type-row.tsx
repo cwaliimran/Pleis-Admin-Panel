@@ -42,6 +42,16 @@ export const ReservationTypeRow: React.FC<ReservationTypeRowProps> = ({ item, di
       </TableCell>
 
       <TableCell>
+        {item.ageRestricted ? (
+          <CustomBadge variant="error" className="pointer-events-none font-bold">
+            18+
+          </CustomBadge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
+
+      <TableCell>
         <CustomBadge variant={isActive ? 'success' : 'error'} className="pointer-events-none">
           {RESERVATION_TYPE_STATUS_CONFIG[item.status].label}
         </CustomBadge>

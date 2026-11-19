@@ -18,6 +18,10 @@ export interface ApiPaymentMethod {
   inAppPayment: boolean;
   payNow: boolean;
   cash: boolean;
+  /** Off App Payment Options › Card (venue terminal). Absent on records saved before #68. */
+  card?: boolean;
+  /** Off App Payment Options › Other. Absent on records saved before #68. */
+  other?: boolean;
 }
 
 export interface ApiOrderingSettings {

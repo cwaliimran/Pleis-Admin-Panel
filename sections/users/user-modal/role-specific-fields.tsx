@@ -13,7 +13,6 @@ type RoleKey = 'admin' | 'organizer' | 'manager' | 'staff' | 'guest' | 'user';
 
 interface RoleSpecificFieldsProps {
   role: RoleKey;
-  organizationOptions: Option[];
   supplierOptions: Option[];
   supplierLoading: boolean;
   methods: UseFormReturn<any, any>;
@@ -23,11 +22,10 @@ interface RoleSpecificFieldsProps {
 
 const RoleSpecificFields: React.FC<RoleSpecificFieldsProps> = ({
   role,
-  organizationOptions,
   supplierOptions,
   supplierLoading,
   methods,
-  // userData,
+  userData,
   mode = 'create',
 }) => {
   switch (role) {
@@ -37,12 +35,11 @@ const RoleSpecificFields: React.FC<RoleSpecificFieldsProps> = ({
     case 'organizer':
       return <OrganizerFields supplierOptions={supplierOptions} methods={methods} supplierLoading={supplierLoading} />;
     case 'manager':
-      return <ManagerFields organizationOptions={organizationOptions} />;
+      return <ManagerFields userData={userData} />;
     case 'staff':
-      return <StaffFields organizationOptions={organizationOptions} />;
-    // return <StaffFields organizationOptions={organizationOptions} methods={methods} userData={userData}/>;
+      return <StaffFields userData={userData} />;
     case 'user':
-      return <UserFields organizationOptions={organizationOptions} mode={mode} />;
+      return <UserFields mode={mode} />;
     default:
       return null;
   }

@@ -12,6 +12,7 @@ import {
   List,
   ListOrdered,
   Podcast,
+  Scale,
   ShoppingBasket,
   Tags,
   TicketSlash,
@@ -267,9 +268,15 @@ export const menuGroups: MenuGroup[] = [
     key: paths.organizer.users.list,
     icon: Calendar,
   },
+  // Requirement Set v13.8 #1 / #8 / #10: one "Transaction list", own company only, live Monri data.
+  // {
+  //   label: 'Transaction history',
+  //   key: paths.organizer.transactionsHistory,
+  //   icon: FileClock,
+  // },
   {
-    label: 'Transaction history',
-    key: paths.organizer.transactionsHistory,
+    label: 'Transaction list',
+    key: paths.organizer.transactionsHistoryV2,
     icon: FileClock,
   },
   {
@@ -286,5 +293,11 @@ export const menuGroups: MenuGroup[] = [
     label: 'Marketing Requests',
     key: paths.organizer.marketingRequests,
     icon: Volume1,
+  },
+  // PLEIS Legal spec 1.5 / Requirement Set #101: Partner Dashboard → Legal.
+  {
+    label: 'Legal',
+    key: paths.organizer.legal,
+    icon: Scale,
   },
 ];

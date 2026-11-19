@@ -1,14 +1,27 @@
 import { Reward } from './types';
 
 /**
- * Share of viewers who went on to claim, as a whole percent. Computed by the
- * server; `null` when the reward is not browsable, since there is no view
- * count to divide by.
+ * Counts and rates from the list payload. The API sends a number, `0`, an
+ * empty string, or an empty array for rewards that have no activity yet.
+ * Every one of those displays as 0.
  */
-export const getConversion = (reward: Reward): number | null => (reward.availableAsReward ? reward.conversion : null);
+export const toMetric = (value: unknown): number => {
+  if (Array.isArray(value)) {
+    if (value.length === 0) return 0;
+    return toMetric(value[0]);
+  }
 
-/** Share of claims that were actually scanned at the venue. */
-export const getRedemptionRate = (reward: Reward): number | null => (reward.claims > 0 ? reward.redemptionRate : null);
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return 0;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
 
 /** `null` when the reward has no total limit. Never reports a negative. */
 export const getRemainingClaims = (reward: Reward): number | null => {
@@ -18,10 +31,7 @@ export const getRemainingClaims = (reward: Reward): number | null => {
 
 export const getPointsSpent = (reward: Reward): number => reward.claims * reward.pointCost;
 
-/** Browsing metrics collapse to an em dash when the reward is not browsable. */
-export const getBrowsingMetric = (reward: Reward, value: number): number | null => (reward.availableAsReward ? value : null);
-
-export const formatMetric = (value: number | null, suffix = ''): string => (value === null ? '—' : `${value.toLocaleString()}${suffix}`);
+export const formatMetric = (value: number, suffix = ''): string => `${value.toLocaleString()}${suffix}`;
 
 /** `''` means the reward is open to every tier. */
 export const getTierName = (reward: Reward): string => reward.tierName || 'Any tier';

@@ -10,13 +10,14 @@ import { showError, showSuccess } from '@/utils/toast';
 import { addDays, format, parseISO, startOfWeek } from 'date-fns';
 import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
-import { RESERVATION_STATUS_CONFIG, TIME_SLOTS } from './constants';
+import { EMPTY_LIST_FILTERS, IRREVERSIBLE_STATUSES, NEW_FILTER_LABEL, RESERVATION_STATUS_CONFIG, TIME_SLOTS } from './constants';
 import { ReservationFormModal } from './modals/reservation-form-modal';
-import { ReservationListSection } from './reservation-list-section';
+import { ReservationListSection, type ActiveFilterChip } from './reservation-list-section';
 import { ReservationTypesSection } from './reservation-types-section';
 import { TimeSlotsSection } from './time-slots-section';
-import { ListFilter, Reservation, ReservationStatus, UserType } from './types';
+import { ListFilters, Reservation, ReservationStatus, UserType } from './types';
 import { useReservationCalendar } from './use-reservation-calendar';
+import { useNeedsConfirmation } from './use-needs-confirmation';
 import { useReservationList } from './use-reservation-list';
 import { WeekViewSection } from './week-view-section';
 
@@ -38,7 +39,11 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
   const [selectedDate, setSelectedDate] = useState<string>(() => format(new Date(), ISO));
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
-  const [listFilter, setListFilter] = useState<ListFilter>('all');
+  // Day, time slot and type select / deselect on click and act as list filters;
+  // nothing selected means all (prototype v3.2). Clicking the selected day again
+  // shows every date.
+  const [isDayFilterOn, setIsDayFilterOn] = useState(true);
+  const [listFilters, setListFilters] = useState<ListFilters>(EMPTY_LIST_FILTERS);
   const [page, setPage] = useState(1);
 
   const [editing, setEditing] = useState<Reservation | null>(null);
@@ -60,29 +65,45 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     isFetching: isCalendarFetching,
   } = useReservationCalendar({ organizationId, date: selectedDate, weekDates });
 
+  // Prototype v3.2 action dots: reservations waiting in Need confirmation.
+  const needItems = useNeedsConfirmation(organizationId);
+  const needDates = useMemo(() => new Set(needItems.map((item) => item.date)), [needItems]);
+  // Slot dot scope: the selected day, or the shown week when no day is selected; narrowed by the selected type.
+  const needSlots = useMemo(() => {
+    const scopeDates = isDayFilterOn ? [selectedDate] : weekDates;
+    return new Set(
+      needItems
+        .filter((item) => scopeDates.includes(item.date) && (!selectedTypeId || item.reservationTypeId === selectedTypeId))
+        .map((item) => item.slot)
+    );
+  }, [needItems, isDayFilterOn, selectedDate, weekDates, selectedTypeId]);
+
   const {
     reservations,
     types,
     pagination,
+    newCount,
     isLoading: isListLoading,
     isFetching: isListFetching,
   } = useReservationList({
     organizationId,
-    date: selectedDate,
-    slot: selectedSlot,
+    date: isDayFilterOn ? selectedDate : undefined,
+    slot: isDayFilterOn ? selectedSlot : null,
     typeId: selectedTypeId,
-    filter: listFilter,
+    filters: listFilters,
     page,
   });
 
   const handlePickWeek = (date: Date) => {
     setWeekStart(toWeekStart(date));
     setSelectedDate(format(date, ISO));
+    setIsDayFilterOn(true);
     setSelectedSlot(null);
     setPage(1);
   };
 
   const handleSelectDate = (date: string) => {
+    setIsDayFilterOn(!(isDayFilterOn && date === selectedDate));
     setSelectedDate(date);
     setSelectedSlot(null);
     setPage(1);
@@ -90,6 +111,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
 
   const handleSelectSlot = (slot: string | null) => {
     setSelectedSlot(slot);
+    if (slot) setIsDayFilterOn(true);
     setPage(1);
   };
 
@@ -98,8 +120,16 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     setPage(1);
   };
 
-  const handleFilterChange = (filter: ListFilter) => {
-    setListFilter(filter);
+  const handleFiltersChange = (filters: ListFilters) => {
+    setListFilters(filters);
+    setPage(1);
+  };
+
+  const handleClearAllFilters = () => {
+    setIsDayFilterOn(false);
+    setSelectedSlot(null);
+    setSelectedTypeId(null);
+    setListFilters(EMPTY_LIST_FILTERS);
     setPage(1);
   };
 
@@ -113,15 +143,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     formModal.onTrue();
   };
 
-  const handleRequestStatus = (item: Reservation, status: ReservationStatus) => {
-    setPendingStatus({ item, status });
-    statusConfirm.onTrue();
-  };
-
-  const handleConfirmStatus = async () => {
-    if (!pendingStatus) return;
-
-    const { item, status } = pendingStatus;
+  const applyStatus = async (item: Reservation, status: ReservationStatus) => {
     setPendingStatusId(item.id);
 
     try {
@@ -136,14 +158,81 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
     }
   };
 
-  const isRejecting = pendingStatus?.status === 'rejected';
+  // Prototype v3.2: Reject, Cancel and No-show cannot be undone, so they ask first;
+  // Confirm and Check in apply directly.
+  const handleRequestStatus = (item: Reservation, status: ReservationStatus) => {
+    if (IRREVERSIBLE_STATUSES.includes(status)) {
+      setPendingStatus({ item, status });
+      statusConfirm.onTrue();
+      return;
+    }
+    void applyStatus(item, status);
+  };
+
+  const handleConfirmStatus = async () => {
+    if (!pendingStatus) return;
+    await applyStatus(pendingStatus.item, pendingStatus.status);
+  };
+
+  const confirmCopy = useMemo(() => {
+    if (!pendingStatus) return { title: '', content: '', confirmText: 'Confirm' };
+
+    const { item, status } = pendingStatus;
+    const label = RESERVATION_STATUS_CONFIG[status].label;
+
+    if (status === 'cancelled' && item.payment === 'paid') {
+      return {
+        title: 'Cancel reservation?',
+        content: `${item.guestName} has paid the minimum spend. If the free cancellation window is closed, the prepayment is already with the organizer: the organizer refunds the guest directly and the commission is reversed on the next statement. This cannot be changed back.`,
+        confirmText: 'Yes, cancel',
+      };
+    }
+
+    const title = status === 'noShow' ? 'Mark as No-show?' : status === 'rejected' ? 'Reject reservation?' : 'Cancel reservation?';
+    const forfeitNote = status === 'noShow' && item.payment === 'paid' ? ' The minimum spend voucher is forfeited and nothing is refunded.' : '';
+    const confirmText = status === 'noShow' ? 'Yes, no-show' : status === 'rejected' ? 'Yes, reject' : 'Yes, cancel';
+
+    return {
+      title,
+      content: `This sets ${item.guestName}'s reservation to ${label}. It cannot be changed back.${forfeitNote}`,
+      confirmText,
+    };
+  }, [pendingStatus]);
+
+  const dayLabel = format(parseISO(selectedDate), 'EEE dd/MM');
+  const typeName = types.find((type) => type.typeId === selectedTypeId)?.name;
 
   const listSubtitle = useMemo(() => {
-    const dayLabel = format(parseISO(selectedDate), 'EEE dd/MM');
-    const slotLabel = selectedSlot ? `slot ${selectedSlot}` : 'all slots';
-    const typeLabel = types.find((type) => type.typeId === selectedTypeId)?.name || 'all types';
-    return `${dayLabel} · ${slotLabel} · ${typeLabel}`;
-  }, [selectedDate, selectedSlot, selectedTypeId, types]);
+    const slotLabel = isDayFilterOn && selectedSlot ? `slot ${selectedSlot}` : 'all slots';
+    return `${isDayFilterOn ? dayLabel : 'All dates'} · ${slotLabel} · ${typeName || 'all types'}`;
+  }, [isDayFilterOn, dayLabel, selectedSlot, typeName]);
+
+  /** Active filters as removable chips with Clear all (Filters v5 §2.6). */
+  const filterChips = useMemo<ActiveFilterChip[]>(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (isDayFilterOn) {
+      chips.push({
+        key: 'day',
+        label: `Day: ${dayLabel}`,
+        onRemove: () => {
+          setIsDayFilterOn(false);
+          setSelectedSlot(null);
+          setPage(1);
+        },
+      });
+    }
+    if (isDayFilterOn && selectedSlot) chips.push({ key: 'slot', label: `Time slot: ${selectedSlot}`, onRemove: () => handleSelectSlot(null) });
+    if (selectedTypeId) chips.push({ key: 'type', label: `Type: ${typeName || 'Selected type'}`, onRemove: () => handleSelectType(null) });
+    if (listFilters.isNew) chips.push({ key: 'new', label: NEW_FILTER_LABEL, onRemove: () => handleFiltersChange({ ...listFilters, isNew: false }) });
+    listFilters.statuses.forEach((status) =>
+      chips.push({
+        key: `status-${status}`,
+        label: `Status: ${RESERVATION_STATUS_CONFIG[status].label}`,
+        onRemove: () => handleFiltersChange({ ...listFilters, statuses: listFilters.statuses.filter((s) => s !== status) }),
+      })
+    );
+    return chips;
+  }, [isDayFilterOn, dayLabel, selectedSlot, selectedTypeId, typeName, listFilters]);
 
   return (
     <div className="flex flex-col gap-6 pb-10">
@@ -185,6 +274,8 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             onSelectDate={handleSelectDate}
             onPickWeek={handlePickWeek}
             isLoading={isCalendarLoading}
+            isDaySelected={isDayFilterOn}
+            needDates={needDates}
           />
 
           <TimeSlotsSection
@@ -194,6 +285,7 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
             isLoading={isCalendarLoading || isCalendarFetching}
             isEmpty={!hasDataForDate}
             emptyMessage={`No reservations on ${format(parseISO(selectedDate), 'EEE dd/MM/yyyy')}`}
+            needSlots={needSlots}
           />
 
           <ReservationTypesSection types={types} selectedTypeId={selectedTypeId} onSelectType={handleSelectType} />
@@ -201,8 +293,11 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
           <ReservationListSection
             data={reservations}
             subtitle={listSubtitle}
-            filter={listFilter}
-            onFilterChange={handleFilterChange}
+            filters={listFilters}
+            onFiltersChange={handleFiltersChange}
+            newCount={newCount}
+            chips={filterChips}
+            onClearAll={handleClearAllFilters}
             pagination={pagination}
             onPageChange={setPage}
             isLoading={isListLoading || isListFetching}
@@ -231,16 +326,11 @@ export const ReservationViewV2: React.FC<ReservationViewV2Props> = ({ userType =
 
       <ConfirmDialog
         open={statusConfirm.value}
-        title={isRejecting ? 'Reject reservation?' : 'Confirm reservation?'}
-        content={
-          pendingStatus
-            ? `The reservation for "${pendingStatus.item.guestName}" will be marked as ${RESERVATION_STATUS_CONFIG[
-                pendingStatus.status
-              ].label.toLowerCase()}.`
-            : ''
-        }
+        title={confirmCopy.title}
+        content={confirmCopy.content}
+        confirmText={confirmCopy.confirmText}
+        cancelText="Back"
         isLoading={Boolean(pendingStatusId)}
-        buttonClass={isRejecting ? undefined : 'bg-green-600 hover:bg-green-600/80'}
         onClose={() => {
           statusConfirm.onFalse();
           setPendingStatus(null);

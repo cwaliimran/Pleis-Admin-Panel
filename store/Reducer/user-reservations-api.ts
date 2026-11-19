@@ -19,25 +19,36 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 export type ApiReservationCondition = 'free' | 'minimumSpend';
 
-/** The full lifecycle a reservation moves through. */
+/**
+ * The full lifecycle a reservation moves through (Requirement Set #54,
+ * Reservations prototype v3.2). `completed` is no longer set — it stays in the
+ * union only so historic rows still type-check. `new` is a list filter, not a status.
+ */
 export type ApiUserReservationStatus =
+  | 'new'
   | 'pendingPayment'
   | 'needsConfirmation'
   | 'confirmed'
   | 'checkedIn'
+  | 'noShow'
   | 'rejected'
   | 'cancelled'
   | 'completed';
 
+/** Live statuses, in the order the status filter lists them (prototype v3.2). */
 export const USER_RESERVATION_STATUSES: ApiUserReservationStatus[] = [
-  'pendingPayment',
   'needsConfirmation',
+  'pendingPayment',
   'confirmed',
-  'checkedIn',
   'rejected',
   'cancelled',
-  'completed',
+  'checkedIn',
+  'noShow',
 ];
+
+export type ApiReservationPaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+
+export type ApiReservationVoucherStatus = 'pending' | 'applied' | 'expired' | 'cancelled' | 'forfeited' | null;
 
 /**
  * A single start/end pair, each a bare 24h wall-clock time — `"10:00"`, not a
@@ -185,6 +196,7 @@ export interface ApiReservationTypeCapacityStat {
   reservationTypeName: string;
   bookedCapacity: number;
   maxCapacity: number;
+  ageRestricted?: boolean;
 }
 
 export interface ApiReservationOccasion {
@@ -229,6 +241,14 @@ export interface ApiReservationListItem {
   bookingId?: string;
   createdAt?: string;
   updatedAt?: string;
+  paymentDetails?: { paymentStatus?: ApiReservationPaymentStatus | null } | null;
+  voucher?: { status?: ApiReservationVoucherStatus; discountAmount?: number; usedAmount?: number } | null;
+  /** Confirmed rows only (#93): when "Mark as no-show" becomes available, in the viewer's timezone. */
+  noShowAvailableAt?: string | null;
+  canMarkNoShow?: boolean;
+  noShowGraceMinutes?: number;
+  checkInRecord?: { at?: string | null } | null;
+  noShowRecord?: { at?: string | null } | null;
 }
 
 export interface ApiReservationListMeta {
@@ -237,13 +257,15 @@ export interface ApiReservationListMeta {
   totalRecords: number;
   limit: number;
   reservationTypeCapacityStats?: ApiReservationTypeCapacityStat[];
+  /** Reservations created in the last 48 h within the other filters (#56). */
+  newCount?: number;
 }
 
 export interface GetReservationsV2Args {
   /** Backend spelling — plural `organizations`, singular id. */
   organizationsId: string;
-  /** ISO `yyyy-MM-dd`. */
-  date: string;
+  /** ISO `yyyy-MM-dd`. Omitted when the day filter is cleared (all dates). */
+  date?: string;
   /** 0-based; the offset is re-added below so the API receives a 1-based page. */
   page: number;
   limit: number;
@@ -251,7 +273,10 @@ export interface GetReservationsV2Args {
   startTime?: string;
   /** Reservation type `_id`. Sent only when a type is selected on the board. */
   reservationType?: string;
-  status?: ApiUserReservationStatus;
+  /** Status filter (#56): any of these (OR); empty = every status. */
+  statuses?: ApiUserReservationStatus[];
+  /** New filter (#56): created in the last 48 h. AND'd with the other filters. */
+  isNew?: boolean;
 }
 
 export interface GetReservationsV2Response {
@@ -283,18 +308,19 @@ export const userReservationsApi = createApi({
     }),
 
     getReservationsV2: builder.query<GetReservationsV2Response, GetReservationsV2Args>({
-      query: ({ organizationsId, date, page, limit, startTime, reservationType, status }) => {
+      query: ({ organizationsId, date, page, limit, startTime, reservationType, statuses, isNew }) => {
         const params: Record<string, string | number> = {
           organizationsId,
-          date,
           page: page + 1,
           limit,
         };
 
         // Each is left off entirely when the board has no such selection.
+        if (date) params.date = date;
         if (startTime) params.startTime = startTime;
         if (reservationType) params.reservationType = reservationType;
-        if (status) params.status = status;
+        if (statuses?.length) params.status = statuses.join(',');
+        if (isNew) params.isNew = 'true';
 
         return {
           url: '',

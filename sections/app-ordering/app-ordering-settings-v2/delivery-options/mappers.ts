@@ -11,7 +11,7 @@ import { DeliveryOption, DeliveryOptionPayload } from './types';
 export const mapApiDeliveryOption = (option: ApiDeliveryOption): DeliveryOption => ({
   id: option._id,
   name: option.title ?? '',
-  type: option.deliveryMethod,
+  type: option.deliveryMethod ?? null,
   status: option.status,
   publicId: option.publicId ?? null,
 });

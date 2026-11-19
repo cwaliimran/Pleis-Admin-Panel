@@ -22,7 +22,7 @@ const defaultValues = {
 
 const schema = Yup.object().shape({
   newPassword: Yup.string()
-    .min(6, 'Password must be at least 6 characters')
+    .min(8, 'Password must be at least 8 characters')
     .required('New password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('newPassword')], 'Passwords do not match')

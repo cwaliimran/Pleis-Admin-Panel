@@ -68,9 +68,3 @@ export interface PromotionsMeta {
   totalRecords: number;
   limit: number;
 }
-
-export interface MenuItemOption {
-  id: string;
-  menuId: string;
-  name: string;
-}

@@ -1,13 +1,23 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import CustomBadge from '@/components/ui/custom-badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { fDate, formatStr } from '@/utils/format-time';
 import { getStatusVariant } from '@/utils/short-utils';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { CHALLENGE_REWARD_TYPE_LABELS, CHALLENGE_STATUS_LABELS, CHALLENGE_TASK_TYPE_LABELS } from '../constants';
-import { Challenge } from '../types';
-import { formatAvgProgress, formatGoal, formatMetric, getCompletionRate, getParticipationRate, getRemainingClaims, getTierName } from '../utils';
+import { Challenge, ChallengeItemRef } from '../types';
+import {
+  formatAvgProgress,
+  formatChallengeItemLabel,
+  formatGoal,
+  formatMetric,
+  getCompletionRate,
+  getParticipationRate,
+  getRemainingClaims,
+  getTierName,
+} from '../utils';
 
 interface ChallengeDetailModalProps {
   open: boolean;
@@ -30,7 +40,40 @@ const MetricTile: React.FC<{ label: string; value: string }> = ({ label, value }
   </div>
 );
 
+const ItemListValue: React.FC<{
+  items: ChallengeItemRef[];
+  labels: string[];
+  onOpen: () => void;
+}> = ({ items, labels, onOpen }) => {
+  if (items.length === 0) return '—';
+  if (items.length === 1) return labels[0] || '—';
+
+  return (
+    <Button
+      type="button"
+      variant="link"
+      className="h-auto cursor-pointer p-0 text-sm font-semibold underline underline-offset-4 dark:text-blue-300"
+      onClick={onOpen}
+    >
+      {items.length} items
+    </Button>
+  );
+};
+
 export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open, challenge, onClose }) => {
+  const [qualifyingOpen, setQualifyingOpen] = useState(false);
+  const [rewardItemsOpen, setRewardItemsOpen] = useState(false);
+
+  const qualifyingLabels = useMemo(
+    () => (challenge?.taskMenuItems ?? []).map(formatChallengeItemLabel),
+    [challenge]
+  );
+
+  const rewardItemLabels = useMemo(
+    () => (challenge?.rewardMenuItems ?? []).map(formatChallengeItemLabel),
+    [challenge]
+  );
+
   if (!challenge) return null;
 
   const remainingClaims = getRemainingClaims(challenge);
@@ -43,7 +86,16 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
       : CHALLENGE_REWARD_TYPE_LABELS[challenge.rewardType];
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) return;
+        setQualifyingOpen(false);
+        setRewardItemsOpen(false);
+        onClose();
+      }}
+    >
       <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-160!">
         <DialogHeader className="space-y-2 text-left">
           <div className="flex flex-wrap items-center gap-2 pr-6">
@@ -75,13 +127,17 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
           <InfoRow label="Goal (X)">{formatGoal(challenge)}</InfoRow>
 
           {challenge.taskType === 'buyMenuItem' && (
-            <InfoRow label="Qualifying Items">{challenge.taskMenuItems.map((item) => item.name).join(', ') || '—'}</InfoRow>
+            <InfoRow label="Qualifying Items">
+              <ItemListValue items={challenge.taskMenuItems} labels={qualifyingLabels} onOpen={() => setQualifyingOpen(true)} />
+            </InfoRow>
           )}
 
           <InfoRow label="Reward Type">{rewardTypeValue}</InfoRow>
 
           {challenge.rewardType === 'menuItem' && (
-            <InfoRow label="Reward Items">{challenge.rewardMenuItems.map((item) => item.name).join(', ') || '—'}</InfoRow>
+            <InfoRow label="Reward Items">
+              <ItemListValue items={challenge.rewardMenuItems} labels={rewardItemLabels} onOpen={() => setRewardItemsOpen(true)} />
+            </InfoRow>
           )}
 
           {challenge.rewardType === 'linkedReward' && <InfoRow label="Linked Reward">{challenge.linkedRewardName || '—'}</InfoRow>}
@@ -135,6 +191,39 @@ export const ChallengeDetailModal: React.FC<ChallengeDetailModalProps> = ({ open
         </section>
       </DialogContent>
     </Dialog>
+
+    <Dialog open={qualifyingOpen} onOpenChange={setQualifyingOpen}>
+      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Qualifying Items</DialogTitle>
+        </DialogHeader>
+
+        <ul className="flex flex-col gap-2">
+          {challenge.taskMenuItems.map((item, index) => (
+            <li key={item.id} className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 dark:border-gray-700/60 dark:text-gray-100">
+              {qualifyingLabels[index]}
+            </li>
+          ))}
+        </ul>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={rewardItemsOpen} onOpenChange={setRewardItemsOpen}>
+      <DialogContent aria-describedby={undefined} className="dark:bg-secondary flex max-h-[90vh] w-full flex-col overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Reward Items</DialogTitle>
+        </DialogHeader>
+
+        <ul className="flex flex-col gap-2">
+          {challenge.rewardMenuItems.map((item, index) => (
+            <li key={item.id} className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 dark:border-gray-700/60 dark:text-gray-100">
+              {rewardItemLabels[index]}
+            </li>
+          ))}
+        </ul>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 

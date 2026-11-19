@@ -31,6 +31,16 @@ const TicketingTableRow: FC<PageProps> = ({ item, handleDelete, handleEdit }) =>
         <CustomBadge variant={item?.timingSlots?.enabled ? 'success' : 'error'}>{item?.timingSlots?.enabled ? 'Enabled' : 'Disabled'}</CustomBadge>
       </TableCell>
 
+      <TableCell className="text-left text-sm">
+        {item?.ageRestricted ? (
+          <CustomBadge variant="error" className="px-2 py-0.5 text-[11px] font-bold">
+            18+
+          </CustomBadge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
+
       <TableCell className="text-muted-foreground text-left text-sm">
         <CustomBadge
           variant={

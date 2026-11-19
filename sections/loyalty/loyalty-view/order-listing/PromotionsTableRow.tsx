@@ -44,7 +44,7 @@ const PromotionsTableRow: FC<{ item: any }> = ({ item }) => {
       <TableCell className="text-start">{formatDate(item.startDate)}</TableCell>
       <TableCell className="text-start">{formatDate(item.endDate)}</TableCell>
       <TableCell className="text-start">
-        <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClasses(item.status)}`}>
+        <span className={`rounded-full capitalize px-2 py-1 text-xs font-medium ${getStatusClasses(item.status)}`}>
           {item.status || '-'}
         </span>
       </TableCell>

@@ -81,6 +81,7 @@ export interface DerivedAvailability {
 export interface ComboRecord {
   _id: string;
   name: string;
+  image?: string;
   subCategory: SubCategoryRef;
   description?: string;
   totalBasePrice: number;
@@ -139,6 +140,7 @@ export type ComboFormMenuItem = {
 
 export type ComboFormValues = {
   name: string;
+  image?: any;
   subCategory: string;
   description?: string;
   menuItems: ComboFormMenuItem[];

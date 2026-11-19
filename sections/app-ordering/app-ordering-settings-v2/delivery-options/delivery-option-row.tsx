@@ -4,7 +4,7 @@ import CustomBadge from '@/components/ui/custom-badge';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Pencil, QrCode, Trash2 } from 'lucide-react';
 import { FC } from 'react';
-import { DELIVERY_OPTION_STATUS_CONFIG, DELIVERY_OPTION_TYPE_CONFIG } from './constants';
+import { DELIVERY_OPTION_NO_DESTINATION, DELIVERY_OPTION_STATUS_CONFIG, DELIVERY_OPTION_TYPE_CONFIG } from './constants';
 import { DeliveryOption } from './types';
 
 interface DeliveryOptionRowProps {
@@ -16,7 +16,7 @@ interface DeliveryOptionRowProps {
 }
 
 const DeliveryOptionRow: FC<DeliveryOptionRowProps> = ({ item, handleEdit, handleGenerateQrCode, handleDelete, disabled = false }) => {
-  const typeConfig = DELIVERY_OPTION_TYPE_CONFIG[item.type];
+  const typeConfig = item.type ? DELIVERY_OPTION_TYPE_CONFIG[item.type] : DELIVERY_OPTION_NO_DESTINATION;
   const statusConfig = DELIVERY_OPTION_STATUS_CONFIG[item.status];
 
   return (

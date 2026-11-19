@@ -82,7 +82,7 @@ export const DeliveryOptionQrModal: React.FC<DeliveryOptionQrModalProps> = ({ op
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">{option?.name || 'Delivery option'}</DialogTitle>
           <DialogDescription>
-            {option ? `${DELIVERY_OPTION_TYPE_CONFIG[option.type].label} — scan to open this delivery option.` : 'Scan to open this delivery option.'}
+            {option ? `${(option.type ? DELIVERY_OPTION_TYPE_CONFIG[option.type].label : 'Choose destination')} — scan to open this delivery option.` : 'Scan to open this delivery option.'}
           </DialogDescription>
         </DialogHeader>
 

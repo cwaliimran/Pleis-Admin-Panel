@@ -58,6 +58,7 @@ const defaultValues: MenuItemFormValues = {
   isRecommended: false,
   upSellItem: false,
   isTogo: false,
+  ageRestricted: false,
   isRequiresOrderConfirmation: false,
 };
 
@@ -84,10 +85,11 @@ const schema = Yup.object().shape({
       const { startTime } = this.parent;
       return !startTime || !!value;
     })
-    .test('after-start', 'End time must be after start time', function (value) {
+    // An end before the start runs past midnight (e.g. 22:00–04:00) — the app supports that window
+    .test('differs-from-start', 'End time must differ from start time', function (value) {
       const { startTime } = this.parent;
       if (!value || !startTime) return true;
-      return value > startTime;
+      return value !== startTime;
     }),
   status: Yup.mixed<'active' | 'inactive'>().oneOf(['active', 'inactive']).required(),
   presetType: Yup.string().required('Preset type is required'),
@@ -102,6 +104,7 @@ const schema = Yup.object().shape({
   isRecommended: Yup.boolean().required(),
   upSellItem: Yup.boolean().required(),
   isTogo: Yup.boolean().required(),
+  ageRestricted: Yup.boolean().required(),
   isRequiresOrderConfirmation: Yup.boolean().required(),
 });
 
@@ -118,6 +121,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
 
   const { reset, control, setValue, trigger, formState } = methods;
   const isDirty = formState?.isDirty;
+  const isAgeRestricted = methods.watch('ageRestricted');
 
   const { data: dietTagsData, isFetching: dietTagsLoading } = useGetDietTagsQuery({ page: 0, limit: 100, search: '', summary: true });
   const { data: allergensData, isFetching: allergensLoading } = useGetAllergensQuery({ page: 0, limit: 100, search: '', summary: true });
@@ -152,6 +156,7 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
         // Sent as a string, so it can come back as one too — `!!'false'` would be true.
         upSellItem: selectedData.upSellItem === true || selectedData.upSellItem === 'true',
         isTogo: !!selectedData.isTogo,
+        ageRestricted: !!selectedData.ageRestricted,
         isRequiresOrderConfirmation: !!selectedData.isRequiresOrderConfirmation,
       });
     } else if (!isEdit) {
@@ -212,6 +217,10 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
         if (dirty.isRecommended) payload.isRecommended = formData.isRecommended;
         if (dirty.upSellItem) payload.upSellItem = String(formData.upSellItem);
         if (dirty.isTogo) payload.isTogo = formData.isTogo;
+        if (dirty.ageRestricted) {
+          payload.ageRestricted = formData.ageRestricted;
+          if (formData.ageRestricted) payload.isTogo = false;
+        }
         if (dirty.isRequiresOrderConfirmation) payload.isRequiresOrderConfirmation = formData.isRequiresOrderConfirmation;
         if (dirty.image && imageKey) payload.image = imageKey;
 
@@ -240,7 +249,8 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
           cuisine: formData.cuisine || '',
           isRecommended: formData.isRecommended,
           upSellItem: String(formData.upSellItem),
-          isTogo: formData.isTogo,
+          isTogo: formData.ageRestricted ? false : formData.isTogo,
+          ageRestricted: formData.ageRestricted,
           isRequiresOrderConfirmation: formData.isRequiresOrderConfirmation,
         };
         if (imageKey) payload.image = imageKey;
@@ -479,7 +489,18 @@ const MenuItemModalV2 = ({ open, onClose, isEdit = false, selectedData, companyI
                     />
                     <ToggleRow name="isRecommended" title="⭐ Recommended" description="Highlighted on the Offer / browse screen" />
                     <ToggleRow name="upSellItem" title="Upsell Item" description="Suggested to guests as an add-on at checkout" />
-                    <ToggleRow name="isTogo" title="To go" description="Item can be ordered for takeaway" />
+                    <ToggleRow
+                      name="isTogo"
+                      title="To go"
+                      description={isAgeRestricted ? 'Not available for 18+ items' : 'Item can be ordered for takeaway'}
+                      disabled={isAgeRestricted}
+                    />
+                    <ToggleRow
+                      name="ageRestricted"
+                      title="🔞 18+ age restricted"
+                      description="Statutory age restriction — shows an 18+ badge; cannot be offered for takeaway or delivery"
+                      onChanged={(checked) => checked && methods.setValue('isTogo', false, { shouldDirty: true })}
+                    />
                     <ToggleRow
                       name="isRequiresOrderConfirmation"
                       title="Requires order confirmation"

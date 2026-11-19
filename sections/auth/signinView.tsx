@@ -91,7 +91,7 @@ export default function LoginPageView({ userType }: LoginPageViewProps) {
         email: data?.email.trim().toLowerCase(),
         password: data?.password,
         deviceType,
-        deviceId: '123',
+        deviceId: 'test',
         timezone,
         userType,
       };

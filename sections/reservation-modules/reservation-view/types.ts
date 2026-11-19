@@ -20,6 +20,7 @@ export type ReservationFormValues = {
   taxPercentage: string;
   needsConfirmation: boolean;
   allowPreOrderMenuItems: boolean;
+  ageRestricted?: boolean;
   ticketRequirement: boolean;
   optionalEventId: string;
   timingSlotsEnabled: boolean;

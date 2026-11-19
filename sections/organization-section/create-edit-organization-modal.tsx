@@ -53,6 +53,24 @@ const PHONE_REGEX = /^\+?[1-9]\d{1,14}$/;
 
 const COMPANY_QUERY_ARGS = { userType: 'organizer', sortBy: 'companyName', sortOrder: 'asc' };
 
+const onlyDigits = (value?: string | null) => String(value || '').replace(/\D/g, '');
+
+const formatPhoneCode = (code?: string | null) => {
+  const digits = onlyDigits(code);
+  return digits ? `+${digits}` : '';
+};
+
+const splitNationalNumber = (rawNumber: string, rawCode: string) => {
+  const codeDigits = onlyDigits(rawCode);
+  const numberDigits = onlyDigits(rawNumber);
+  const phone = codeDigits && numberDigits.startsWith(codeDigits) ? numberDigits.slice(codeDigits.length) : numberDigits;
+
+  return {
+    phone,
+    phoneCode: formatPhoneCode(rawCode),
+  };
+};
+
 // ============================================================
 // VALIDATION SCHEMA
 // ============================================================
@@ -63,8 +81,11 @@ const createValidationSchema = (userType?: string, isEdit?: boolean) => {
     name: Yup.string().required('Organization Name is required').trim().min(2, 'Organization Name must be at least 2 characters'),
     companyName: Yup.string().optional(),
     status: Yup.string().required('Status is required').oneOf(['active', 'inactive'], 'Invalid status'),
-    phone: Yup.string().matches(PHONE_REGEX, 'Invalid phone number').required('Phone number is required'),
-    phoneCode: Yup.string().default(''),
+    phone: Yup.string()
+      .transform((value) => onlyDigits(value))
+      .matches(PHONE_REGEX, { message: 'Invalid phone number', excludeEmptyString: true })
+      .required('Phone number is required'),
+    phoneCode: Yup.string().transform((value) => formatPhoneCode(value)).default(''),
     website: Yup.string().nullable().optional().matches(URL_REGEX, {
       message: 'Website link must be a valid URL',
       excludeEmptyString: true,
@@ -147,8 +168,8 @@ const buildCreatePayload = (formData: OrganizationFormValues, logoKey: string | 
       name: formData.name,
       website: formData.website || '',
       phoneNumber: {
-        code: formData.phoneCode || '',
-        number: formData.phone || '',
+        code: formatPhoneCode(formData.phoneCode),
+        number: onlyDigits(formData.phone),
       },
       socialLinks: {
         youtube: formData.youtube || '',
@@ -179,8 +200,8 @@ const buildUpdatePayload = (formData: OrganizationFormValues, logoKey: string | 
       name: formData.name,
       website: formData.website || '',
       phoneNumber: {
-        code: formData.phoneCode || '',
-        number: formData.phone || '',
+        code: formatPhoneCode(formData.phoneCode),
+        number: onlyDigits(formData.phone),
       },
       socialLinks: {
         youtube: formData.youtube || '',
@@ -237,8 +258,7 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
         user: getSelectedUserId(organization),
       }),
       status: organization?.status || 'active',
-      phone: organization?.basicInfo?.phoneNumber?.number || '',
-      phoneCode: organization?.basicInfo?.phoneNumber?.code || '',
+      ...splitNationalNumber(organization?.basicInfo?.phoneNumber?.number || '', organization?.basicInfo?.phoneNumber?.code || ''),
       website: organization?.basicInfo?.website || '',
       instagram: organization?.basicInfo?.socialLinks?.instagram || '',
       facebook: organization?.basicInfo?.socialLinks?.facebook || '',
@@ -401,8 +421,9 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                     name="phone"
                     control={control}
                     render={({ field, fieldState }) => {
-                      const phoneCodeValue = methods.getValues('phoneCode') || '';
-                      const displayValue = field.value && phoneCodeValue ? `${phoneCodeValue}${field.value}` : field.value || '';
+                      const phoneCodeDigits = onlyDigits(methods.getValues('phoneCode'));
+                      const phoneDigits = onlyDigits(field.value);
+                      const displayValue = `${phoneCodeDigits}${phoneDigits}`;
 
                       return (
                         <div>
@@ -411,10 +432,12 @@ const OrganizationModal = ({ open, onClose, organization, userType, onSuccess }:
                             value={displayValue}
                             country="hr"
                             onChange={(value, country: any) => {
-                              const phoneCode = `+${country?.dialCode || ''}`;
-                              const phoneNumber = value.replace(country?.dialCode || '', '');
-                              field.onChange(phoneNumber);
-                              setValue('phoneCode', phoneCode, {
+                              const dialCode = country?.dialCode || '';
+                              const digits = onlyDigits(value);
+                              const nationalNumber = dialCode && digits.startsWith(dialCode) ? digits.slice(dialCode.length) : digits;
+
+                              field.onChange(nationalNumber);
+                              setValue('phoneCode', formatPhoneCode(dialCode), {
                                 shouldValidate: true,
                                 shouldDirty: true,
                               });

@@ -43,6 +43,8 @@ export interface ReservationType {
   requiresConfirmation: boolean;
   /** `occasionRequired` on the wire. */
   asksForOccasion: boolean;
+  /** 18+ statutory age restriction (Legal spec 3). `ageRestricted` on the wire. */
+  ageRestricted: boolean;
   status: ReservationTypeStatus;
   /** `isVisibleToGuest` on the wire. false → managed manually by the organizer. */
   visibleToGuests: boolean;

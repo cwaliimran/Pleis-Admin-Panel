@@ -27,8 +27,10 @@ export const metadata: Metadata = {
   referrer: 'origin',
   creator: 'Utopia Technologies d.o.o',
   publisher: 'Utopia Technologies d.o.o',
-  icons: [],
-  manifest: '/site.webmanifest',
+  icons: {
+    icon: [{ url: '/pleis-favicon.png?v=3', type: 'image/png' }],
+    apple: '/pleis-favicon.png?v=3',
+  },
   openGraph: {
     type: 'website',
     determiner: 'the',

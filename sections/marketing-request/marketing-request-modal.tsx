@@ -72,7 +72,7 @@ const MarketingRequestModal = ({ open, onClose }: MarketingRequestModalProps) =>
         budget: Number(formData.budget),
         email: formData.email,
         phoneNumber: {
-          code: formData.phoneCode || '+92',
+          code: formData.phoneCode || '+385',
           number: formData.phone,
         },
       };

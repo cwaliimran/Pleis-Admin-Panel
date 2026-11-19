@@ -57,6 +57,7 @@ export interface FormData {
     reservationType: string;
     transfer: boolean;
     transferFee: string;
+    ageRestricted?: boolean;
   };
 }
 
@@ -79,6 +80,7 @@ export interface TicketPayload {
   };
   resaleProtection: string;
   transferFee?: number;
+  ageRestricted?: boolean;
   timeSensitivePricing?: {
     earlyBird?: {
       endDate: string;
@@ -433,6 +435,7 @@ export const transformApiDataToForm = (apiData: any): Partial<FormData> => {
       reservationType: apiData.requiresReservation?.type || '',
       transfer: !!apiData.transferFee,
       transferFee: apiData.transferFee?.toString() || '',
+      ageRestricted: !!apiData.ageRestricted,
     },
   };
 
@@ -514,6 +517,10 @@ export const getUpdatedFields = (formData: FormData, originalData: any): Partial
     } else {
       updatedFields.transferFee = null;
     }
+  }
+
+  if (!!formData.features.ageRestricted !== !!originalData.ageRestricted) {
+    updatedFields.ageRestricted = !!formData.features.ageRestricted;
   }
 
   const originalEarlyBird = originalData.timeSensitivePricing?.earlyBird;
@@ -688,6 +695,8 @@ export const transformTicketPayload = (formData: FormData, editMode: boolean = f
   if (formData.features.transfer && formData.features.transferFee) {
     payload.transferFee = parseFloat(formData.features.transferFee);
   }
+
+  payload.ageRestricted = !!formData.features.ageRestricted;
 
   const timeSensitivePricing: any = {};
   if (formData.features.earlyBirdEnabled) {

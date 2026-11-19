@@ -20,6 +20,7 @@ import Profile from '../profile';
 import { CompanySelectionStorage } from './company-selection-storage';
 import NavigationSearch from './navigation-search';
 import { RouteConfig } from './route-config';
+import { AnalyticsScopeHeaderControls, isAnalyticsScopeRoute } from '@/sections/analytics-scope/analytics-scope-bar';
 import { CompanyOption, OrganizationOption, OrganizerOrganization, StoredCompany, StoredOrganization } from './types';
 
 interface HeaderProps {
@@ -351,6 +352,11 @@ const Header: FC<HeaderProps> = ({ links }) => {
             </div>
           )}
         </FormProvider>
+
+        {/* #128 / #131 (D-06): Company and Organizations scope on the analytics screens */}
+        {isAnalyticsScopeRoute(pathname || '') && (isAdmin || isOrganizer) && (
+          <AnalyticsScopeHeaderControls userType={isAdmin ? 'super-admin' : 'organizer'} />
+        )}
 
         <NavigationSearch />
 

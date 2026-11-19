@@ -22,6 +22,7 @@ const HEAD_LABEL = [
   // { id: 'type', label: 'Type', align: 'left' },
   { id: 'serving', label: 'Serving', align: 'left' },
   { id: 'price', label: 'Price (€)', align: 'left', sortable: true, sortKey: 'basePrice' },
+  { id: 'ageRestricted', label: '18+', align: 'left' },
   { id: 'status', label: 'Status', align: 'left' },
   { id: 'actions', label: 'Action', align: 'center' },
 ];

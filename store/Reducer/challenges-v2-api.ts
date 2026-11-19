@@ -35,6 +35,13 @@ export type ApiChallengeRef =
       _id: string;
       title?: string;
       menu?: { _id: string; title?: string } | string | null;
+      presetType?: {
+        _id?: string;
+        name?: string;
+        title?: string;
+        type?: { _id?: string; name?: string } | string | null;
+      } | string | null;
+      amountQuantity?: string;
     };
 
 /** Accepted `sortBy` values. Note `status` is not among them. */

@@ -39,6 +39,11 @@ export interface ApiCancellationPolicy {
   hoursBeforeReservation?: number;
 }
 
+export interface ApiNoShowPolicy {
+  /** Minutes after the reservation time before staff may mark No-show (#93). */
+  gracePeriodMinutes?: number;
+}
+
 export interface ApiReservationPreferences {
   /** Absent when the organization has never been saved — the GET returns `{}`. */
   _id?: string;
@@ -48,6 +53,7 @@ export interface ApiReservationPreferences {
   timeSlotsSetting?: ApiTimeSlotsSetting | null;
   automaticResponse?: ApiAutomaticResponse | null;
   cancellationPolicy?: ApiCancellationPolicy | null;
+  noShowPolicy?: ApiNoShowPolicy | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -65,6 +71,7 @@ export interface UpdateReservationPreferencesArgs {
   timeSlotsSetting: Required<ApiTimeSlotsSetting>;
   automaticResponse: Required<ApiAutomaticResponse>;
   cancellationPolicy: Required<ApiCancellationPolicy>;
+  noShowPolicy: Required<ApiNoShowPolicy>;
 }
 
 export interface ReservationPreferencesMutationResponse {

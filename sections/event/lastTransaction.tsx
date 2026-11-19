@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { noImageUrl, noImageUrlDev } from '@/constant/constant';
-// import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
 const LastTransaction = ({ data }: { data: any }) => {
@@ -16,7 +15,7 @@ const LastTransaction = ({ data }: { data: any }) => {
               {data?.user?.profileIcon && data?.user?.profileIcon !== noImageUrl && data?.user?.profileIcon !== noImageUrlDev ? (
                 <Image
                   src={data?.user?.profileIcon || ''}
-                  alt="Image"
+                  alt="Profile"
                   className="h-7 w-7 rounded-full object-cover"
                   priority
                   height={25}
@@ -35,11 +34,6 @@ const LastTransaction = ({ data }: { data: any }) => {
             </div>
           </div>
         ))}
-        {/* <div className="flex items-center justify-center">
-          <Button variant="outline" className="w-full cursor-pointer">
-            See full transaction list
-          </Button>
-        </div> */}
       </CardContent>
     </Card>
   );

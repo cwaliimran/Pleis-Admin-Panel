@@ -81,6 +81,7 @@ const defaultValues = {
     reservationType: '',
     transfer: false,
     transferFee: '',
+    ageRestricted: false,
   },
 };
 
@@ -112,6 +113,7 @@ const schema = Yup.object().shape({
   }),
   features: Yup.object().shape({
     timeslot: Yup.boolean(),
+    ageRestricted: Yup.boolean(),
     timeSlotConfig: Yup.mixed()
       .nullable()
       .when('timeslot', {
@@ -257,6 +259,7 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
   const fasttrackEnabled = watch('features.fasttrack');
   const reservationEnabled = watch('features.reservation');
   const transferEnabled = watch('features.transfer');
+  const ageRestrictedEnabled = watch('features.ageRestricted');
   const baseQuantity = watch('quantity');
   const publishType = watch('publishSettings.publishType');
   const earlyBirdDateTimeValue = watch('features.earlyBirdDate') || '';
@@ -647,6 +650,26 @@ const TicketingModal: React.FC<TicketingModalProps> = ({ open, onClose, editMode
                           ))}
                         </div>
                       </FeatureSectionContent>
+                    </FeatureSection>
+
+                    <FeatureSection>
+                      <ToggleSwitch
+                        value={!!ageRestrictedEnabled}
+                        onChange={(val) =>
+                          setValue('features.ageRestricted', val, {
+                            shouldDirty: true,
+                          })
+                        }
+                        label="🔞 18+ age restricted"
+                        disabled={isLoading}
+                      />
+                      {ageRestrictedEnabled && (
+                        <FeatureSectionContent>
+                          <p className="text-muted-foreground text-xs">
+                            Statutory age restriction — guests see an 18+ badge on this ticket and an age notice before paying.
+                          </p>
+                        </FeatureSectionContent>
+                      )}
                     </FeatureSection>
 
                     <FeatureSection>

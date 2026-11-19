@@ -11,7 +11,7 @@ import { customFetchBaseQueryWithRoleRouting } from '../utils/customFetchBaseQue
 
 // ---------- Wire enums ----------
 
-export type ApiDeliveryMethod = 'counterPickup' | 'tableDelivery' | 'toGo';
+export type ApiDeliveryMethod = 'counterPickup' | 'tableDelivery' | null; // #146: in-place only; null = migrated from \"to go\", operator must choose
 
 export type ApiDeliveryOptionStatus = 'active' | 'inactive';
 
@@ -40,6 +40,8 @@ export interface DeliveryOptionBody {
 
 export interface GetDeliveryOptionsArgs {
   organizationId: string;
+  /** Omitted by the settings screen, which shows whatever the endpoint defaults to. */
+  limit?: number;
 }
 
 export interface CreateDeliveryOptionArgs {
@@ -71,15 +73,16 @@ export const deliveryOptionsApi = createApi({
 
   endpoints: (builder) => ({
     getDeliveryOptions: builder.query<ApiDeliveryOption[], GetDeliveryOptionsArgs>({
-      query: ({ organizationId }) => ({
+      query: ({ organizationId, limit }) => ({
         url: '',
         method: 'GET',
+        params: limit ? { limit } : {},
         roleBasedRouting: {
           adminRoute: API_ROUTES.ADMIN_DELIVERY_OPTIONS(organizationId),
           organizerRoute: API_ROUTES.ORGANIZER_DELIVERY_OPTIONS(organizationId),
         },
       }),
-      // The list is unpaginated — the response carries no `meta`.
+      // The response carries no `meta` — `limit` just widens the page.
       transformResponse: (res: { data?: ApiDeliveryOption[] }): ApiDeliveryOption[] => res?.data ?? [],
       providesTags: ['delivery-options'],
     }),

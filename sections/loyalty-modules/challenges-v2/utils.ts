@@ -44,3 +44,29 @@ export const formatMetric = (value: number | null, suffix = ''): string => (valu
 
 /** `''` means the challenge is open to every tier. */
 export const getTierName = (challenge: Challenge): string => challenge.tierName || 'Any tier';
+
+/**
+ * Menu-item picker label: "Chicken Mandi, Coca-Cola, 400g".
+ * The preset name lives on `presetType.type.name`. Amount is the backend string unchanged.
+ * A bare id for `presetType` is skipped.
+ */
+export const formatMenuItemOptionLabel = (item: {
+  title?: string;
+  amountQuantity?: string;
+  presetType?: { name?: string; title?: string; type?: { name?: string } | string | null } | string | null;
+}): string => {
+  const preset = item.presetType;
+  const nestedType = preset && typeof preset === 'object' ? preset.type : null;
+  const presetName =
+    nestedType && typeof nestedType === 'object' ? nestedType.name || '' : preset && typeof preset === 'object' ? preset.name || preset.title || '' : '';
+  const amount = item.amountQuantity?.trim() ?? '';
+
+  return [presetName, item.title, amount].filter(Boolean).join(', ');
+};
+
+export const formatChallengeItemLabel = (item: ChallengeItemRef): string =>
+  formatMenuItemOptionLabel({
+    title: item.name,
+    amountQuantity: item.amountQuantity,
+    presetType: item.presetType,
+  });

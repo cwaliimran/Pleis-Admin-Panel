@@ -41,9 +41,21 @@ export const AutomaticResponseSection: React.FC<AutomaticResponseSectionProps> =
           id="max-guests-auto-confirm"
           type="number"
           min={1}
+          inputMode="numeric"
+          placeholder="e.g. 8"
           value={value.maxGuestsForAutoConfirm}
           disabled={disabled || !value.autoConfirmWhenCapacity}
-          onChange={(event) => patch({ maxGuestsForAutoConfirm: Number(event.target.value) })}
+          onChange={(event) => {
+            const raw = event.target.value;
+            if (raw === '') {
+              patch({ maxGuestsForAutoConfirm: '' });
+              return;
+            }
+
+            const next = Number(raw);
+            if (Number.isNaN(next)) return;
+            patch({ maxGuestsForAutoConfirm: next });
+          }}
           className="h-10 w-full bg-white dark:bg-[#1a1a1a]"
         />
       </SettingRow>

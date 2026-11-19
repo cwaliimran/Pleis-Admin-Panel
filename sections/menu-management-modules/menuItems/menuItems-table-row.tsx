@@ -77,6 +77,16 @@ const MenuItemTableRow: FC<TableRowProps> = ({ item, lookups, deleteChecking, ha
       </TableCell>
 
       <TableCell className="text-left">
+        {item.ageRestricted ? (
+          <CustomBadge variant="error" className="px-2 py-0.5 text-[11px] font-bold">
+            18+
+          </CustomBadge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </TableCell>
+
+      <TableCell className="text-left">
         <CustomBadge variant={item.status === 'active' ? 'success' : 'error'}>{item.status}</CustomBadge>
       </TableCell>
 

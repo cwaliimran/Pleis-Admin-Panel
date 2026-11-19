@@ -27,8 +27,11 @@ export interface TimeSlotSettings {
 
 export interface AutomaticResponseSettings {
   autoConfirmWhenCapacity: boolean;
-  /** Requests above this party size always require manual review. */
-  maxGuestsForAutoConfirm: number;
+  /**
+   * Requests above this party size always require manual review.
+   * `''` is the in-progress empty field — a cleared input must not snap back to 0.
+   */
+  maxGuestsForAutoConfirm: number | '';
   autoRejectWhenNoCapacity: boolean;
 }
 
@@ -43,6 +46,15 @@ export type CancellationWindowHours = 0 | 6 | 12 | 24 | 48 | 72;
 
 export interface CancellationPolicySettings {
   freeCancellationHours: CancellationWindowHours;
+}
+
+// ---------- No-show policy ----------
+
+/** Grace period after the reservation time before No-show can be marked (#93). */
+export type NoShowGraceMinutes = 15 | 30 | 45 | 60;
+
+export interface NoShowPolicySettings {
+  gracePeriodMinutes: NoShowGraceMinutes;
 }
 
 // Reservation types own their types — see `reservation-types/types.ts`. Like
@@ -61,4 +73,5 @@ export interface ReservationPreferences {
   timeSlots: TimeSlotSettings;
   automaticResponse: AutomaticResponseSettings;
   cancellationPolicy: CancellationPolicySettings;
+  noShowPolicy: NoShowPolicySettings;
 }

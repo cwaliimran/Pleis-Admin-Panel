@@ -12,20 +12,22 @@ import ReservationList from '../ReservationTransactionList';
 import StaffConfirmationsLog from '../StaffConfirmation';
 import { useGetReservationsAnalyticsQuery } from '@/store/Reducer/reservations-api';
 import DashboardSkeleton from '@/sections/super-admin-dashboard/components/DashboardSkeleton';
-import { useCompanySelection } from '@/app/common/header/company-selection-storage';
+import { useAnalyticsScope } from '@/sections/analytics-scope/analytics-scope-bar';
 
-const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: boolean; userType: string }) => {
+const ReservationAnalyticsView = ({ userType }: { global?: boolean; userType: string }) => {
 
-  const { organizerOrganizationIds } = useCompanySelection();
+  // #128 / D-06: the Company / Organizations scope chosen in the page header; every figure and list follows it.
+  const { scope, ready } = useAnalyticsScope(userType);
 
-  const { data: dashboardRaw = {} as any, isLoading, isFetching } = useGetReservationsAnalyticsQuery({
-     organizations: userType === 'organizer' ? organizerOrganizationIds : undefined,
-  }, { refetchOnMountOrArgChange: true });
+  const { data: dashboardRaw = {} as any, isLoading, isFetching } = useGetReservationsAnalyticsQuery(scope, {
+    refetchOnMountOrArgChange: true,
+    skip: !ready,
+  });
 
   const openModal = useBoolean();
   const userLevelStats = dashboardRaw?.data?.userLevelStats || [];
 
-  if (isLoading || isFetching) {
+  if (!ready || isLoading || isFetching) {
     return <DashboardSkeleton />;
   }
 
@@ -180,22 +182,33 @@ const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: bool
                 </div>
               </CardHeader>
 
-              <div className="flex-1 pb-4">
-                {userLevelStats.map((level: any) => (
-                  <div key={level.levelName} className="mb-2">
-                    <div className="mx-4 mt-2 flex items-start justify-between gap-4">
-                      <h4 className="text-md mb-2 font-medium">{level.levelName}</h4>
-                      <h4 className="text-md mb-2 font-medium">{level.percent}%</h4>
-                    </div>
-                    <div className="mx-4 flex flex-1 flex-col">
-                      <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
-                        <div className="bg-primary h-full transition-all duration-500" style={{ width: `${level.percent}%` }} />
+              {userLevelStats.length === 0 ? (
+                // Same height as the Timeslot Occupancy chart beside it, so the row stays aligned.
+                <div className="flex h-[280px] flex-col items-center justify-center gap-1 px-4 text-center">
+                  <p className="text-muted-foreground text-sm">No member activity yet</p>
+                  <p className="text-muted-foreground text-xs">Status levels appear once members make reservations in this scope.</p>
+                </div>
+              ) : (
+                <div className="flex-1 pb-4">
+                  {userLevelStats.map((level: any) => {
+                    const percent = Math.min(100, Math.max(0, Number(level.percent) || 0));
+                    return (
+                      <div key={level.levelName} className="mb-2">
+                        <div className="mx-4 mt-2 flex items-start justify-between gap-4">
+                          <h4 className="text-md mb-2 font-medium">{level.levelName}</h4>
+                          <h4 className="text-md mb-2 font-medium">{percent}%</h4>
+                        </div>
+                        <div className="mx-4 flex flex-1 flex-col">
+                          <div className="mb-2 h-3 w-full overflow-hidden rounded-full bg-gray-200">
+                            <div className="bg-primary h-full transition-all duration-500" style={{ width: `${percent}%` }} />
+                          </div>
+                          <h4 className="text-md mb-2 font-medium">{level.count ?? 0}</h4>
+                        </div>
                       </div>
-                      <h4 className="text-md mb-2 font-medium">{level.count}</h4>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </Card>
           </div>
         </div>
@@ -210,7 +223,7 @@ const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: bool
           </CardHeader>
 
           <CardContent>
-            <ReservationList userType={userType} />
+            <ReservationList userType={userType} scope={scope} />
           </CardContent>
         </Card>
       </div>
@@ -224,7 +237,7 @@ const ReservationAnalyticsView = ({ userType, global: isGlobal }: { global: bool
           </CardHeader>
 
           <CardContent>
-            <StaffConfirmationsLog userType={userType} />
+            <StaffConfirmationsLog userType={userType} scope={scope} />
           </CardContent>
         </Card>
       </div>

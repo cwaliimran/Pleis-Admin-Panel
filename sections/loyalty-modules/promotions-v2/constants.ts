@@ -107,5 +107,3 @@ export const PROMOTIONS_HEAD_LABEL = [
 ];
 
 export const DEFAULT_PAGE_LIMIT = 10;
-
-export const OPTIONS_PAGE_LIMIT = 100;

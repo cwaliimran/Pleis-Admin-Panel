@@ -1,8 +1,7 @@
 'use client';
 
 import ButtonLoading from '@/components/common/button-loading';
-import FormProvider, { RHFChipToggleGroup, RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
-import RHFCustomDropdown from '@/components/rhf/rhf-custom-dropdown';
+import FormProvider, { RHFAsyncCombobox, RHFChipToggleGroup, RHFDate, RHFSelectField, RHFTextField } from '@/components/rhf';
 import RHFTimeField from '@/components/rhf/rhf-time-field';
 import RHFToggleField from '@/components/rhf/rhf-toggle-field';
 import RHFUploadAvatar from '@/components/rhf/rhf-upload-avatar';
@@ -12,11 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useCompanySelectionState } from '@/hooks/useCompanySelectionState';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
-import { useGetMenuItemByMenuIdQuery } from '@/store/Reducer/menu-items-api';
+import { useGetMenuItemsQuery } from '@/store/Reducer/menu-items-api';
 import { useGetMenuListQuery } from '@/store/Reducer/menu-list-api';
 import type { ApiPromotionType, PromotionWriteBody } from '@/store/Reducer/promotions-v2-api';
 import { useCreatePromotionV2Mutation, useUpdatePromotionV2Mutation } from '@/store/Reducer/promotions-v2-api';
-import { LoyaltyUserType } from '../../types';
 import { getErrorMessage } from '@/utils/api';
 import { deleteFileFromAzure } from '@/utils/deleteFile';
 import { showError, showSuccess } from '@/utils/toast';
@@ -24,9 +22,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FieldErrors, useForm } from 'react-hook-form';
 import * as yup from 'yup';
-import PromotionItemsField from '../components/promotion-items-field';
+import { formatMenuItemOptionLabel } from '../../challenges-v2/utils';
+import { LoyaltyUserType } from '../../types';
 import {
-  OPTIONS_PAGE_LIMIT,
   POINTS_MULTIPLIER_OPTIONS,
   PROMOTION_ACTIVE_DAYS_OPTIONS,
   PROMOTION_ITEMS_FIELD_LABELS,
@@ -66,6 +64,9 @@ const VIEW_TYPE_TO_API: Record<PromotionType, ApiPromotionType> = {
 
 const toBlobKey = (url: string): string => (url.includes('/') ? (url.split('/').pop() ?? '') : url);
 
+const toInitialSelected = (items: Promotion['qualifyingItems']) =>
+  items.length > 0 ? items.map((item) => ({ value: item.id, label: formatMenuItemOptionLabel({ title: item.name }) })) : undefined;
+
 const toDateOnly = (value: Date | string): string => {
   if (value instanceof Date) {
     const month = String(value.getMonth() + 1).padStart(2, '0');
@@ -80,7 +81,11 @@ const schema = yup.object({
   title: yup.string().required('Title is required'),
   description: yup.string(),
   type: yup.string().required('Promotion type is required'),
-  menuId: yup.string(),
+  menuId: yup.string().when('type', {
+    is: (value: PromotionType) => ITEM_BASED_TYPES.includes(value),
+    then: (current) => current.required('Menu is required'),
+    otherwise: (current) => current,
+  }),
   qualifyingItemIds: yup
     .array()
     .of(yup.string().required())
@@ -235,45 +240,15 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
     if (activeDaysMode !== 'specific') setValue('activeWeekdays', []);
   }, [activeDaysMode, setValue]);
 
-  // Items belong to the menu they were picked from, so switching menus invalidates the selection.
-  // Driven off the dropdown's change event rather than a `menuId` effect, which would also fire on
-  // the edit-mode `reset` and wipe the promotion's saved items before the user touched anything.
-  const handleMenuChange = (nextMenuId: string | undefined) => {
-    if (nextMenuId === menuId) return;
-    setValue('qualifyingItemIds', [], { shouldDirty: true, shouldValidate: false });
-  };
-
   const itemBased = ITEM_BASED_TYPES.includes(type);
   const timeRequired = type === 'happyHour';
 
-  const { data: menuData, isFetching: menusFetching } = useGetMenuListQuery(
-    { page: 0, search: '', limit: OPTIONS_PAGE_LIMIT, status: '', date: undefined, companyOrganizer: scopedCompanyId },
-    { skip: !open || !itemBased || companySkip }
+  const companyArgs = useMemo(() => ({ companyOrganizer: scopedCompanyId }), [scopedCompanyId]);
+
+  const menuItemArgs = useMemo(
+    () => ({ companyOrganizer: scopedCompanyId, menu: menuId || undefined }),
+    [scopedCompanyId, menuId]
   );
-
-  const { data: menuItemsData, isFetching: menuItemsFetching } = useGetMenuItemByMenuIdQuery({ menuId }, { skip: !menuId || !itemBased });
-
-  const menuOptions = useMemo(() => {
-    const byId = new Map<string, { value: string; label: string }>();
-
-    if (promotion?.menuId) byId.set(promotion.menuId, { value: promotion.menuId, label: promotion.menuName || 'Selected menu' });
-
-    (menuData?.data ?? []).forEach((menu: { _id: string; title: string }) => {
-      byId.set(menu._id, { value: menu._id, label: menu.title });
-    });
-
-    return Array.from(byId.values());
-  }, [menuData, promotion]);
-
-  const itemOptions = useMemo(() => {
-    const byId = new Map((promotion?.qualifyingItems ?? []).map((item) => [item.id, { id: item.id, menuId, name: item.name }]));
-
-    (menuItemsData?.data ?? []).forEach((item: { _id: string; title: string }) => {
-      byId.set(item._id, { id: item._id, menuId, name: item.title });
-    });
-
-    return Array.from(byId.values());
-  }, [menuItemsData, menuId, promotion]);
 
   const hint = PROMOTION_TYPE_HINTS[type];
   const itemsFieldLabel = PROMOTION_ITEMS_FIELD_LABELS[type];
@@ -404,24 +379,40 @@ export const PromotionFormModal: React.FC<PromotionFormModalProps> = ({ open, pr
             )}
 
             {itemBased && (
-              <>
-                <RHFCustomDropdown
+              <div className="flex w-full flex-col gap-4">
+                <RHFAsyncCombobox
                   name="menuId"
                   label="Select Menu"
-                  placeholder={menusFetching ? 'Loading menus...' : 'Select menu'}
-                  options={menuOptions}
-                  showNone={false}
-                  onValueChange={handleMenuChange}
+                  placeholder="Select menu"
+                  searchPlaceholder="Search menus..."
+                  className="w-full"
+                  selectedLabel={promotion?.menuName || undefined}
+                  useOptionsQuery={useGetMenuListQuery}
+                  queryArgs={companyArgs}
+                  skip={companySkip || !open}
+                  getOptionValue={(menu) => menu._id}
+                  getOptionLabel={(menu) => menu.title}
+                  onValueChange={(value) => {
+                    if (value !== menuId) setValue('qualifyingItemIds', []);
+                  }}
                 />
 
-                <PromotionItemsField
+                <RHFAsyncCombobox
                   name="qualifyingItemIds"
-                  label={itemsFieldLabel || 'Add Items'}
-                  placeholder={!menuId ? 'Select a menu first...' : menuItemsFetching ? 'Loading items...' : 'Choose item to add...'}
-                  options={itemOptions}
-                  disabled={!menuId || menuItemsFetching}
+                  label={itemsFieldLabel || 'Add Menu Items'}
+                  placeholder={menuId ? 'Choose items to add...' : 'Select a menu first'}
+                  searchPlaceholder="Search menu items..."
+                  className="w-full"
+                  multiple
+                  disabled={!menuId}
+                  initialSelected={toInitialSelected(promotion?.qualifyingItems ?? [])}
+                  useOptionsQuery={useGetMenuItemsQuery}
+                  queryArgs={menuItemArgs}
+                  skip={companySkip || !open || !menuId}
+                  getOptionValue={(item) => item._id}
+                  getOptionLabel={formatMenuItemOptionLabel}
                 />
-              </>
+              </div>
             )}
 
             {type === 'extraPoints' && (

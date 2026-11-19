@@ -133,6 +133,18 @@ const ReservationBody = ({ data, isLoading, meta, onPageChange, limit, organizat
                       </CustomBadge>
                     </div>
                   </div>
+                  <div>
+                    <div className="text-gray-500">18+</div>
+                    <div className="text-lg font-semibold">
+                      {reservation?.ageRestricted ? (
+                        <CustomBadge variant="error" className="font-bold">
+                          18+
+                        </CustomBadge>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">—</span>
+                      )}
+                    </div>
+                  </div>
                   {reservation.amount !== undefined && (
                     <div>
                       <div className="text-gray-500">Total Price</div>

@@ -40,6 +40,7 @@ export interface ApiReservationType {
   notes?: string[];
   requireConfirmationToApprove?: boolean;
   occasionRequired?: boolean;
+  ageRestricted?: boolean;
   status?: ApiReservationTypeStatus;
   createdAt?: string;
   updatedAt?: string;
@@ -99,6 +100,7 @@ export interface ReservationTypeBody {
   bonosPoints: number;
   requireConfirmationToApprove: boolean;
   occasionRequired: boolean;
+  ageRestricted: boolean;
   isVisibleToGuest: boolean;
   status: Exclude<ApiReservationTypeStatus, 'deleted'>;
   notes: string[];

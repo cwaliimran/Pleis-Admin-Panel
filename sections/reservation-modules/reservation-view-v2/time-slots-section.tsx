@@ -14,6 +14,9 @@ interface TimeSlotsSectionProps {
   isLoading?: boolean;
   isEmpty?: boolean;
   emptyMessage?: string;
+  disabled?: boolean;
+  /** Slots (`HH:mm`) with a reservation in Need confirmation in the current scope (prototype v3.2 action dot). */
+  needSlots?: Set<string>;
 }
 
 export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({
@@ -23,6 +26,8 @@ export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({
   isLoading = false,
   isEmpty = false,
   emptyMessage = 'No reservations on this date',
+  disabled = false,
+  needSlots,
 }) => {
   const renderBody = () => {
     if (isLoading) {
@@ -62,11 +67,18 @@ export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({
                 aria-pressed={isSelected}
                 onClick={() => onSelectSlot(isSelected ? null : slot.time)}
                 className={cn(
-                  'flex cursor-pointer flex-col items-center gap-0.5 rounded-xl border px-2 py-3 transition-colors',
+                  'relative flex cursor-pointer flex-col items-center gap-0.5 rounded-xl border px-2 py-3 transition-colors',
                   CAPACITY_CONFIG[level].chipClass,
                   isSelected && 'ring-2 ring-blue-600 ring-offset-1 dark:ring-offset-[#222121]'
                 )}
               >
+                {needSlots?.has(slot.time) && (
+                  <span
+                    title="Needs confirmation"
+                    aria-label="Needs confirmation"
+                    className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-blue-600 ring-2 ring-white dark:ring-[#1a1a1a]"
+                  />
+                )}
                 <span className="text-sm font-bold">{slot.time}</span>
                 <span className="text-xs font-medium">
                   {slot.bookedSeats > 0 ? (slot.capacity > 0 ? `${slot.bookedSeats} / ${slot.capacity}` : `${slot.bookedSeats}`) : 'No res.'}
@@ -83,13 +95,17 @@ export const TimeSlotsSection: React.FC<TimeSlotsSectionProps> = ({
               {CAPACITY_CONFIG[level].label}
             </span>
           ))}
+          <span className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+            <span className="h-2 w-2 rounded-full bg-blue-600" />
+            Needs confirmation
+          </span>
         </div>
       </>
     );
   };
 
   return (
-    <SectionCard title="Time slots" caption={SLOT_WINDOW_LABEL}>
+    <SectionCard title="Time slots" caption={SLOT_WINDOW_LABEL} disabled={disabled}>
       {renderBody()}
     </SectionCard>
   );

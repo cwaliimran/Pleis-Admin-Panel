@@ -176,6 +176,33 @@ export const loyaltyTransactionsApi = createApi({
       providesTags: (result, error, arg) => (arg.isGlobal ? ['loyalty-transaction'] : ['loyalty-transaction']),
     }),
 
+    /** #10 / #8: live ledger rows; the server applies the role's visibility. */
+    getTransactionLedger: builder.query({
+      query: ({ isAdmin, ...params }: { isAdmin: boolean; [key: string]: string | number | boolean | undefined }) => {
+        const clean: Record<string, string | number | boolean> = {};
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== '') clean[key] = value;
+        });
+        return { url: API_ROUTES.TRANSACTION_LEDGER(isAdmin), method: 'GET', params: clean };
+      },
+      transformResponse: (res: any) => ({
+        rows: res?.data?.rows || [],
+        stats: res?.data?.stats || {},
+        visibility: res?.data?.visibility,
+        meta: res?.meta || { page: 1, limit: 25, total: 0, totalPages: 1 },
+      }),
+      providesTags: ['loyalty-transaction'],
+    }),
+
+    excludeLedgerEntry: builder.mutation({
+      query: ({ entryId, reason }: { entryId: string; reason: string }) => ({
+        url: API_ROUTES.TRANSACTION_LEDGER_EXCLUDE(entryId),
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: ['loyalty-transaction'],
+    }),
+
     getTransactionsById: builder.query({
       query: ({ id, isAdmin }) => ({
         url: API_ROUTES.TRANSACTIONS_BY_ID(isAdmin, id),
@@ -230,4 +257,6 @@ export const {
   useGetTransactionsByIdQuery,
 } = loyaltyTransactionsApi;
 
+export const useGetTransactionLedgerQuery = loyaltyTransactionsApi.endpoints.getTransactionLedger.useQuery;
+export const useExcludeLedgerEntryMutation = loyaltyTransactionsApi.endpoints.excludeLedgerEntry.useMutation;
 export const useGetOrderTransactionsAnalyticsQuery = loyaltyTransactionsApi.endpoints.getOrderTransactionsAnalytics.useQuery;

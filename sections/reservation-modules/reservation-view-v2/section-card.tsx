@@ -11,12 +11,18 @@ interface SectionCardProps {
   children: React.ReactNode;
   className?: string;
   bodyClassName?: string;
+  disabled?: boolean;
 }
 
-export const SectionCard: React.FC<SectionCardProps> = ({ title, caption, subtitle, headerAction, children, className, bodyClassName }) => {
+export const SectionCard: React.FC<SectionCardProps> = ({ title, caption, subtitle, headerAction, children, className, bodyClassName, disabled = false }) => {
   return (
     <section
-      className={cn('overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-[#222121]', className)}
+      aria-disabled={disabled}
+      className={cn(
+        'overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-[#222121]',
+        disabled && 'pointer-events-none opacity-50',
+        className
+      )}
     >
       <header className="flex flex-col gap-3 px-6 pt-5 pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">

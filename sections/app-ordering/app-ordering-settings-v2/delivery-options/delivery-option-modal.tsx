@@ -55,7 +55,7 @@ export const DeliveryOptionModal: React.FC<DeliveryOptionModalProps> = ({ open, 
   // Seed on open so a reopened modal never shows the previous option's values.
   useEffect(() => {
     if (!open) return;
-    reset(option ? { name: option.name, type: option.type, status: option.status } : EMPTY_VALUES);
+    reset(option ? { name: option.name, type: (option.type ?? '') as DeliveryOptionType, status: option.status } : EMPTY_VALUES);
   }, [open, option, reset]);
 
   const submit = handleSubmit(async (values) => {
@@ -85,7 +85,7 @@ export const DeliveryOptionModal: React.FC<DeliveryOptionModalProps> = ({ open, 
 
         <FormProvider methods={methods} onSubmit={submit}>
           <div className="flex flex-col gap-4 py-2">
-            <RHFTextField name="name" label="Name" placeholder="e.g. Table 3, Counter 1, To go" />
+            <RHFTextField name="name" label="Name" placeholder="e.g. Table 3, Counter 1, Bar" />
 
             <FormField
               control={control}

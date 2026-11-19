@@ -1,3 +1,4 @@
+import { AnalyticsScopeArgs, withAnalyticsScope } from '@/utils/analytics-scope-params';
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { UserReservationsApiResponse } from '../../sections/reservation-modules/reservation-view/reservation-types';
 import API_ROUTES from '../apiRoutes';
@@ -134,12 +135,9 @@ export const reservationsApi = createApi({
     }),
 
 
-    getReservationsAnalytics: builder.query({
-      query: ({organizations}) => {
-       const params: any = {};
-        if (organizations) {
-           params.organizations = organizations;
-         }
+    getReservationsAnalytics: builder.query<any, AnalyticsScopeArgs>({
+      query: (scope = {}) => {
+        const params: any = withAnalyticsScope({}, scope);
         return {
           url: '',
           params,
@@ -155,12 +153,9 @@ export const reservationsApi = createApi({
       }),
     }),
 
-    getReservationTransactions: builder.query<any, { page: number; limit: number; organizations?: string[] }>({
-      query: ({ page, limit, organizations }) =>  {
-        const params: any = { page, limit };
-        if (organizations) {
-          params.organizations = organizations;
-        }
+    getReservationTransactions: builder.query<any, { page: number; limit: number } & AnalyticsScopeArgs>({
+      query: ({ page, limit, ...scope }) => {
+        const params: any = withAnalyticsScope({ page, limit }, scope);
         return {
           url: `/admin/reservations-analytics/analytics-transsections`,
           method: 'GET',
@@ -172,12 +167,9 @@ export const reservationsApi = createApi({
       }},
     }),
 
-    getStaffChangeLogs: builder.query<any, { page?: number; limit?: number; organizations?: string[] }>({
-      query: ({ page = 1, limit = 10, organizations } = {}) => {
-          const params: any = { page, limit };
-        if (organizations) {
-          params.organizations = organizations;
-        }
+    getStaffChangeLogs: builder.query<any, { page?: number; limit?: number } & AnalyticsScopeArgs>({
+      query: ({ page = 1, limit = 10, ...scope } = {}) => {
+        const params: any = withAnalyticsScope({ page, limit }, scope);
         return {    
         url: `/admin/reservations-analytics/change-logs`,
         method: 'GET',

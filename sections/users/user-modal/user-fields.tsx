@@ -6,7 +6,6 @@ import RHFDatePickerWithDropdown from '@/components/rhf/rhf-date-custom';
 import type { Option } from './types';
 
 interface UserFieldsProps {
-  organizationOptions: Option[];
   mode?: 'create' | 'edit';
 }
 
